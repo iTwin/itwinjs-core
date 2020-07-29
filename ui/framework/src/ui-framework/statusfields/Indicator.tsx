@@ -67,7 +67,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
         className={className}
         title={this.props.toolTip ? this.props.toolTip : this.props.label}
         style={this.props.style}>
-        <div className="nz-balloon-container" onClick={this._handleOnIndicatorClick}>
+        <div className="nz-balloon-container" onClick={this._handleOnIndicatorClick} role="presentation">
           {(this.props.iconName && !this.props.iconSpec) && <div className={iconClassNames} />}
           {this.props.iconSpec && <div className="uifw-indicator-icon"> <Icon iconSpec={this.props.iconSpec} /></div>}
           {this.props.opened &&

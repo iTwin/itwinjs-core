@@ -26,6 +26,9 @@
   &:hover {
     cursor: pointer;
   }
+  &:focus {
+    outline: none;
+  }
 
   .sheet-image-container {
     position: absolute;

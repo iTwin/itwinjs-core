@@ -17,4 +17,8 @@
   &:hover {
     background: $buic-background-2;
   }
+
+  &:focus {
+    outline: none;
+  }
 }

@@ -182,6 +182,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
     return (
       <div
+        role="presentation"
         className={classNames}
         onKeyUp={this._handleKeyUp}
         onClick={this._handleClick}
@@ -191,6 +192,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         <DivWithOutsideClick onOutsideClick={this._handleOnOutsideClick}>
           <div
             ref={this._menuRef}
+            role="menu"
             tabIndex={0}
             data-testid="core-context-menu-container"
             className={classnames("core-context-menu-container",
@@ -577,7 +579,11 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         className={classnames("core-context-menu-item", className,
           disabled && "core-context-menu-disabled",
           isSelected && "core-context-menu-is-selected")
-        }>
+        }
+        role="menuitem"
+        tabIndex={isSelected ? 0 : -1}
+        aria-disabled={disabled}
+      >
         <div className={classnames("core-context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
           {typeof icon !== "string" ? icon : undefined}
         </div>
@@ -722,11 +728,13 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       this._lastLabel = label;
     }
     return (
+      // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       <div className={classnames("core-context-submenu", ContextMenu.getCSSClassNameFromDirection(renderDirection), className)}
         onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}
         data-testid="core-context-submenu"
         {...props} >
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div
           onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
@@ -735,6 +743,10 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
             disabled && "core-context-menu-disabled",
             isSelected && "core-context-menu-is-selected")}
           data-testid="core-context-submenu-container"
+          role="menuitem"
+          tabIndex={isSelected ? 0 : -1}
+          aria-disabled={disabled}
+          aria-haspopup={true}
         >
           <div className={classnames("core-context-menu-icon", "icon", icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>

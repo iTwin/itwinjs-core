@@ -958,6 +958,8 @@ export interface ControlledSelectableContentProps {
     // (undocumented)
     onSelectedContentIdChanged?: (contentId: string) => void;
     // (undocumented)
+    selectAriaLabel?: string;
+    // (undocumented)
     selectedContentId: string;
 }
 
@@ -1642,7 +1644,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     } | null;
     // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface FilteringInputProps extends CommonProps {
@@ -2955,6 +2957,8 @@ export interface SelectableContentProps {
     children: SelectableContentDefinition[];
     // (undocumented)
     defaultSelectedContentId: string;
+    // (undocumented)
+    selectAriaLabel?: string;
 }
 
 // @internal (undocumented)

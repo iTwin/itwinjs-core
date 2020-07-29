@@ -5,6 +5,10 @@
 @import "../style/themecolors.scss";
 
 .core-tree-expansionToggle {
+  &:focus {
+    outline: none;
+  }
+
   > .toggle {
 
     display: block;

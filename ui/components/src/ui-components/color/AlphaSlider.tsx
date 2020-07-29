@@ -10,6 +10,7 @@ import "./AlphaSlider.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
 
 /** Properties for the [[AlphaSlider]] React component
  * @beta
@@ -28,6 +29,7 @@ export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, 
  */
 export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
   private _container: HTMLDivElement | null = null;
+  private _transparencyLabel = UiComponents.translate("color.transparency");
 
   /** @internal */
   constructor(props: AlphaSliderProps) {
@@ -166,18 +168,15 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
       this.props.className,
     );
 
-    const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
-      left: `${(this.props.alpha * 100)}%`,
-    } : {
-      left: `0px`,
-      top: `${-(this.props.alpha * 100) + 100}%`,
-    };
+    const pointerStyle: React.CSSProperties = this.props.isHorizontal ?
+      { left: `${(this.props.alpha * 100)}%` } :
+      { left: `0px`, top: `${-(this.props.alpha * 100) + 100}%` };
 
     return (
       <div className={containerClasses} style={this.props.style} data-testid="alpha-container">
         <div
           data-testid="alpha-slider"
-          role="slider" aria-label="Transparency"
+          role="slider" aria-label={this._transparencyLabel}
           aria-valuemin={0} aria-valuemax={1} aria-valuenow={this.props.alpha}
           className="components-alpha-slider"
           ref={(container) => this._container = container}

@@ -84,7 +84,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
 
   private _handleKeyDown = (event: React.KeyboardEvent) => {
     // istanbul ignore else
-    if (event.key === "ArrowDown" && !this.state.showPopup) {
+    if ((event.key === "ArrowDown" || event.key === " ") && !this.state.showPopup) {
       event.preventDefault();
       event.stopPropagation();
       this.setState({ showPopup: true });
@@ -109,6 +109,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
           data-testid="components-popup-button"
           tabIndex={0}
           ref={this._buttonRef}
+          role="button"
         >
           <div className="components-popup-button-value">
             {this.props.label}

@@ -204,6 +204,7 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
           .join(" ")}
         key={`${year}.${month}.day.${index}`}
         onClick={this.onDayChange(day)}
+        role="presentation"
       >
         {day ? day.getDate() : ""}
       </td>
@@ -235,9 +236,11 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     return (
       <div className="day-picker">
         <div className="header">
-          <span className="previous-month icon icon-chevron-left" onClick={this.previousMonth} />
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+          <span className="previous-month icon icon-chevron-left" onClick={this.previousMonth} role="button" tabIndex={-1} />
           <span className="month-year">{this.longMonthName(month)} {year}</span>
-          <span className="next-month icon icon-chevron-right" onClick={this.nextMonth} />
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+          <span className="next-month icon icon-chevron-right" onClick={this.nextMonth} role="button" tabIndex={-1} />
         </div>
         <table>
           <thead>

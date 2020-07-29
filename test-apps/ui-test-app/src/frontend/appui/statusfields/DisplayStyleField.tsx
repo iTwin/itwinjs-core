@@ -26,6 +26,9 @@ interface DisplayStyleFieldState {
  * It is used to enable/disable display of shadows.
  */
 export class DisplayStyleField extends React.Component<StatusFieldProps, DisplayStyleFieldState> {
+  private _label = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.label");
+  private _tooltip = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.tooltip");
+
   constructor(props: StatusFieldProps) {
     super(props);
 
@@ -106,7 +109,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
         isInFooterMode={this.props.isInFooterMode}
       >
         <Select options={this.state.styleEntries} value={displayStyleId} onChange={this._handleDisplayStyleSelected}
-          title={IModelApp.i18n.translate("SampleApp:statusFields.displayStyle")}
+          title={this._tooltip} aria-label={this._label}
           className="uifw-statusFields-displayStyle-selector" />
       </FooterIndicator >
     );

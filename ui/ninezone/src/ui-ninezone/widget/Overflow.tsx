@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { useRefs, useRefState, useResizeObserver } from "@bentley/ui-core";
 import { WidgetMenu } from "./Menu";
+import { useLabel } from "../base/NineZone";
 
 /** @internal */
 export interface WidgetOverflowProps {
@@ -37,15 +38,21 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
     "nz-widget-overflow",
     props.hidden && "nz-hidden",
   );
+  const moreWidgetsTitle = useLabel("moreWidgetsTitle");
+
   return (
     <div
       className={className}
       ref={refs}
     >
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
       <div
         className="nz-button"
         onClick={handleClick}
         ref={targetRef}
+        role="button"
+        tabIndex={-1}
+        title={moreWidgetsTitle}
       >
         <div className="nz-icon" />
       </div>

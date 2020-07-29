@@ -231,6 +231,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
         onContextMenu={this._handleRightClick}
         title={this.props.title}
         data-testid="editor-container"
+        role="presentation"
       >
         {this.createEditor()}
       </span>

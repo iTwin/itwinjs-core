@@ -24,5 +24,9 @@
       color: $buic-foreground-primary;
       cursor: pointer;
     }
+
+    &:focus {
+      outline: none;
+    }
   }
 }

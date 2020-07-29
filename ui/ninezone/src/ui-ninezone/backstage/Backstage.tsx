@@ -65,14 +65,14 @@ export class Backstage extends React.PureComponent<BackstageProps> {
       this.props.className);
     return (
       <>
-        <div className={overlayClassName} onClick={this._onClose} />
+        <div className={overlayClassName} onClick={this._onClose} role="presentation" />
         <div className={backstageClassName} style={this.props.style}>
           {this.props.header &&
             <div className="nz-header">
               {this.props.header}
             </div>
           }
-          <ul>
+          <ul role="menu">
             {this.props.children}
           </ul>
           {this.props.footer &&

@@ -8,7 +8,11 @@
     }
   },
   "plugins": [
+    "jsx-a11y",
     "react-hooks"
+  ],
+  "extends": [
+    "plugin:jsx-a11y/recommended"
   ],
   "rules": {
     "react-hooks/rules-of-hooks": "error",

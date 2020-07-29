@@ -326,7 +326,10 @@
     "selectFile": "Select Local File"
   },
   "statusFields": {
-    "displayStyle": "Display Style",
+    "displayStyle": {
+      "tooltip": "Display Style",
+      "label": "Display"
+    },
     "sampleField": "Sample StatusBar Field",
     "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"

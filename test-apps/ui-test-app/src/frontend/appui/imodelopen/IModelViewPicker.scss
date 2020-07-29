@@ -50,6 +50,7 @@
   display: flex;
   flex-wrap: wrap;
   overflow: auto;
+  outline: none;
 
   @include uicore-touch-scrolling;
   @include uicore-scrollbar();

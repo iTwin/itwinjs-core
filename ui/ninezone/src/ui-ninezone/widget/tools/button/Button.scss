@@ -44,6 +44,10 @@
       height: 0;
     }
   }
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .nz-toolbar-button-background {

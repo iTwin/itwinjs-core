@@ -43,5 +43,9 @@
         transform: rotate(45deg);
       }
     }
+
+    &:focus {
+      outline: none;
+    }
   }
 }

@@ -289,6 +289,7 @@ export function ListboxItem(props: ListboxItemProps) {
   }, [listboxId, value]);
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
     <li
       // In a single-select listbox, the selected option has `aria-selected`
       // set to `true`.

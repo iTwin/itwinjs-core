@@ -47,6 +47,7 @@ function GroupToolComponent(props: GroupToolProps) {
     targeted && "nz-targeted",
     props.className);
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
     <div
       className={itemClassName}
       onClick={props.isDisabled ? undefined : props.onClick}

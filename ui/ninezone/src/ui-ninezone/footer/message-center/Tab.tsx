@@ -34,10 +34,13 @@ export class MessageCenterTab extends React.PureComponent<MessageCenterTabProps>
       this.props.className);
 
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
         className={className}
         style={this.props.style}
         onClick={this.props.onClick}
+        role="tab"
+        tabIndex={-1}
       >
         {this.props.children}
       </div>

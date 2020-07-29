@@ -12,9 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 
-/************************************************************************
- * SignInDialog - OIDC sign-in dialog.
- ***********************************************************************/
+// cspell:ignore signingin
 
 /** Properties for the [[SignIn]] component
  * @public
@@ -67,8 +65,23 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
 
   private _onSignInClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    this._onSigningIn();
+  }
+
+  private _onSigningIn = () => {
     this.setState({ isSigningIn: true });
     this.props.onSignIn();
+  }
+
+  private _handleKeyUp = (event: React.KeyboardEvent, onActivate?: () => void) => {
+    const key = event.key;
+
+    switch (key) {
+      case "Enter":
+      case " ":
+        onActivate && onActivate();
+        break;
+    }
   }
 
   public render() {
@@ -78,12 +91,24 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
         <div className="components-signin-content">
           <span className="icon icon-user" />
           <span className="components-signin-prompt">{this.state.prompt}</span>
-          <button className="components-signin-button" type="button" disabled={this.state.isSigningIn && disableSignInOnClick} onClick={this._onSignInClick}>{this.state.signInButton}</button>
+          <button className="components-signin-button" disabled={this.state.isSigningIn && disableSignInOnClick}
+            onClick={this._onSignInClick} onKeyUp={(e) => this._handleKeyUp(e, this._onSigningIn)}>
+            {this.state.signInButton}
+          </button>
           {this.props.onRegister !== undefined &&
-            <span className="components-signin-register">{this.state.profilePrompt}<a onClick={this.props.onRegister}>{this.state.registerAnchor}</a></span>
+            <span className="components-signin-register">
+              {this.state.profilePrompt}
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+              <a onClick={this.props.onRegister} onKeyUp={(e) => this._handleKeyUp(e, this.props.onRegister)} role="link" tabIndex={0}>
+                {this.state.registerAnchor}
+              </a>
+            </span>
           }
           {this.props.onOffline !== undefined &&
-            <a className="components-signin-offline" onClick={this.props.onOffline}>{this.state.offlineButton}</a>
+            // eslint-disable-next-line jsx-a11y/anchor-is-valid
+            <a className="components-signin-offline" onClick={this.props.onOffline} onKeyUp={(e) => this._handleKeyUp(e, this.props.onOffline)} role="link" tabIndex={0}>
+              {this.state.offlineButton}
+            </a>
           }
           {this.state.isSigningIn && this.props.signingInMessage !== undefined &&
             <span className="components-signingin-message">{this.props.signingInMessage}</span>

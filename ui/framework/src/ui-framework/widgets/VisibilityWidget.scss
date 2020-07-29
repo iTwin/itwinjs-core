@@ -31,13 +31,21 @@
       margin-left: auto;
       padding: 4px;
       cursor: pointer;
-    }
+
+      &:focus {
+        outline: none;
+      }
+     }
 
     .uifw-visibility-tree-options {
       padding: 4px;
       font-size: 14px;
       margin-right: 6px;
       cursor: pointer;
+
+      &:focus {
+        outline: none;
+      }
     }
   }
 

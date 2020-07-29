@@ -109,5 +109,9 @@
         }
       }
     }
+
+    &:focus {
+      outline: none;
+    }
   }
 }

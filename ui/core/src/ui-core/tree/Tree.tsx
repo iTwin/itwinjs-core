@@ -108,6 +108,8 @@ export class Tree extends React.PureComponent<TreeProps> {
         onMouseDown={this.props.onMouseDown}
         onMouseMove={this.props.onMouseMove}
         onMouseUp={this.props.onMouseUp}
+        role="tree"
+        tabIndex={-1}
       >
         {this.props.children}
       </div>

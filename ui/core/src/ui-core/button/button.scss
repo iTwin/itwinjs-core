@@ -54,7 +54,7 @@
 
 @mixin uicore-buttons-button-disabled {
 
-  opacity:                0.4;
+  opacity:                $uicore-opacity-disabled;
   background-color:       $uicore-gray;
   border:                 0;
   color:                  $uicore-white;

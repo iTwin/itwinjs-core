@@ -11,6 +11,7 @@ exports[`<MessageCenterDialog /> renders correctly 1`] = `
 >
   <div
     className="nz-tabs"
+    role="tablist"
   />
   <div
     className="nz-messages"

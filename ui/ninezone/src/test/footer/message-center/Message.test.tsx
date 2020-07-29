@@ -17,7 +17,7 @@ describe("<MessageCenterMessage />", () => {
 
   it("renders correctly with icon and content", () => {
     shallow(
-      <MessageCenterMessage icon={<img></img>}>
+      <MessageCenterMessage icon={<img alt=""></img>}>
         Custom message
       </MessageCenterMessage>,
     ).should.matchSnapshot();

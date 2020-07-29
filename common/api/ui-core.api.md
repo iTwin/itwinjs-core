@@ -1563,6 +1563,7 @@ export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<H
     parse?: ((value: string) => number | null);
     // (undocumented)
     precision?: number | (() => number | null | undefined);
+    setFocus?: boolean;
     // (undocumented)
     snap?: boolean;
     // @internal (undocumented)
@@ -2058,6 +2059,7 @@ export interface ToggleProps extends CommonProps {
     rounded?: boolean;
     setFocus?: boolean;
     showCheckmark?: boolean;
+    title?: string;
 }
 
 // @internal
@@ -2293,7 +2295,7 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
 // @internal
 export const useTargeted: (ref: React.RefObject<Element>) => boolean;
 
-// @internal (undocumented)
+// @internal
 export function useWidgetOpacityContext(): WidgetOpacityContextProps;
 
 // @public
@@ -2328,7 +2330,7 @@ export class WidgetElementSet extends Set<React.RefObject<Element>> {
 // @internal
 export const WidgetOpacityContext: React.Context<WidgetOpacityContextProps>;
 
-// @internal (undocumented)
+// @internal
 export interface WidgetOpacityContextProps {
     // (undocumented)
     readonly onElementRef: (elementRef: React.RefObject<Element>) => void;

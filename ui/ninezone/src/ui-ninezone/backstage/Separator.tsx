@@ -21,7 +21,7 @@ export class BackstageSeparator extends React.PureComponent<CommonProps> {
       this.props.className);
 
     return (
-      <li className={className} style={this.props.style} />
+      <li className={className} style={this.props.style} role="separator" />
     );
   }
 }

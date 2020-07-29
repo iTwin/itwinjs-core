@@ -2880,6 +2880,7 @@ export class ScreenViewport extends Viewport {
   protected addLogo() {
     const logo = this._logo = IModelApp.makeHTMLElement("img", { parent: this.vpDiv, className: "imodeljs-icon" });
     logo.src = "images/imodeljs-icon.svg";
+    logo.alt = "";
 
     const showLogos = (ev: Event) => {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;

@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useResizeObserver } from "@bentley/ui-core";
 import { Ellipsis } from "@bentley/ui-ninezone";
+import { UiFramework } from "../UiFramework";
 
 /** Properties of [[StatusBarOverflow]] component.
  * @internal
@@ -31,12 +32,18 @@ export const StatusBarOverflow = React.memo(function StatusBarOverflow(props: St
     "uifw-statusbar-overflow",
     props.className,
   );
+  const title = React.useRef(UiFramework.translate("statusBar.overflow"));
+
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
     <div
       className={className}
       onClick={props.onClick}
       ref={ref}
       style={props.style}
+      role="button"
+      tabIndex={-1}
+      title={title.current}
     >
       <Ellipsis />
     </div>

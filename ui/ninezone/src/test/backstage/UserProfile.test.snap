@@ -3,6 +3,8 @@
 exports[`<UserProfile /> renders correctly 1`] = `
 <div
   className="nz-backstage-userProfile"
+  role="button"
+  tabIndex={-1}
 >
   <span
     style={
@@ -18,6 +20,8 @@ exports[`<UserProfile /> renders correctly 1`] = `
 exports[`<UserProfile /> renders safe area aware correctly 1`] = `
 <div
   className="nz-backstage-userProfile nz-safe-area-bottom nz-safe-area-left nz-safe-area-right nz-safe-area-top"
+  role="button"
+  tabIndex={-1}
 >
   <span
     style={

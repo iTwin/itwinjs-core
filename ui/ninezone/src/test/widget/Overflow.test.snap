@@ -34,6 +34,8 @@ exports[`WidgetOverflow should render 1`] = `
 >
   <div
     class="nz-button"
+    role="button"
+    tabindex="-1"
   >
     <div
       class="nz-icon"

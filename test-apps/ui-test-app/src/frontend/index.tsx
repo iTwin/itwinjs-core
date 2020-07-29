@@ -55,7 +55,8 @@ import { HyperModeling } from "@bentley/hypermodeling-frontend";
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx
+
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
@@ -208,6 +209,13 @@ export class SampleAppIModelApp {
 
     // Mobx configuration
     mobxConfigure({ enforceActions: "observed" });
+
+    if (SampleAppIModelApp.testAppConfiguration?.reactAxeConsole) {
+      if (process.env.NODE_ENV !== "production") {
+        const axe = require("react-axe");
+        axe(React, ReactDOM, 1000);
+      }
+    }
   }
 
   public static async initialize() {
@@ -665,6 +673,7 @@ async function main() {
     SampleAppIModelApp.testAppConfiguration = {
       snapshotPath: process.env.imjs_TESTAPP_SNAPSHOT_FILEPATH,
       startWithSnapshots: process.env.imjs_TESTAPP_START_WITH_SNAPSHOTS,
+      reactAxeConsole: process.env.imjs_TESTAPP_REACT_AXE_CONSOLE,
     } as TestAppConfiguration;
     Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // tslint:disable-line:no-console
   }

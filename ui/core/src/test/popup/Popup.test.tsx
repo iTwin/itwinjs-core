@@ -197,10 +197,10 @@ describe("<Popup />", () => {
           <span />
           <div>
             <div>
-              <a href="#" data-testid="item-one">test1</a>
+              <a href="test" data-testid="item-one">test1</a>
             </div>
           </div>
-          <a href="#" data-testid="item-two">test2</a>
+          <a href="test" data-testid="item-two">test2</a>
         </div>
       </Popup>
     </div>);

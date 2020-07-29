@@ -5,7 +5,8 @@
     "loading": "loading",
     "noData": "The data required for this tree layout is not available in this iModel.",
     "length": "Length",
-    "label": "Label"
+    "label": "Label",
+    "of": "of"
   },
   "button": {
     "label": {
@@ -134,5 +135,13 @@
   "drawing": {
     "unrotate": "Un-Rotate",
     "rotateStyle": "Toggle background-rotate"
+  },
+  "color": {
+    "hue": "Hue",
+    "saturation": "Saturation",
+    "transparency": "Transparency"
+  },
+  "toolbar": {
+    "overflow": "More toolbar items"
   }
 }

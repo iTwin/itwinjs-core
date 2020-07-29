@@ -237,22 +237,33 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       this.state.dragging && "cube-dragging",
     );
 
+    const upTitle = this.getArrowTitle(Pointer.Up);
+    const downTitle = this.getArrowTitle(Pointer.Down);
+    const leftTitle = this.getArrowTitle(Pointer.Left);
+    const rightTitle = this.getArrowTitle(Pointer.Right);
+
     return (
       <div className={classnames("components-cube-container", this.props.className)}
         style={this.props.style}
         data-testid="components-cube-navigation-aid"
         onMouseDown={this._handleBoxMouseDown}
-        onTouchStart={this._handleBoxTouchStart} >
+        onTouchStart={this._handleBoxTouchStart}
+        role="presentation"
+      >
         <div className={"cube-element-container"}>
           <Cube
             className={cubeClassNames}
             rotMatrix={rotMatrix}
             faces={faces} />
         </div>
-        <PointerButton data-testid="cube-pointer-button-up" visible={visible} pointerType={Pointer.Up} onArrowClick={this._onArrowClick} />
-        <PointerButton data-testid="cube-pointer-button-down" visible={visible} pointerType={Pointer.Down} onArrowClick={this._onArrowClick} />
-        <PointerButton data-testid="cube-pointer-button-left" visible={visible} pointerType={Pointer.Left} onArrowClick={this._onArrowClick} />
-        <PointerButton data-testid="cube-pointer-button-right" visible={visible} pointerType={Pointer.Right} onArrowClick={this._onArrowClick} />
+        <PointerButton data-testid="cube-pointer-button-up"
+          visible={visible} pointerType={Pointer.Up} onArrowClick={this._onArrowClick} title={upTitle} />
+        <PointerButton data-testid="cube-pointer-button-down"
+          visible={visible} pointerType={Pointer.Down} onArrowClick={this._onArrowClick} title={downTitle} />
+        <PointerButton data-testid="cube-pointer-button-left"
+          visible={visible} pointerType={Pointer.Left} onArrowClick={this._onArrowClick} title={leftTitle} />
+        <PointerButton data-testid="cube-pointer-button-right"
+          visible={visible} pointerType={Pointer.Right} onArrowClick={this._onArrowClick} title={rightTitle} />
       </div>
     );
   }
@@ -366,7 +377,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     return result;
   }
 
-  private _onArrowClick = (arrow: Pointer) => {
+  private getArrowRotationAndFace(arrow: Pointer): { newRotation: Matrix3d, face: Face } {
     const localRotationAxis = Vector3d.create(0, 0, 0);
     switch (arrow) {
       case Pointer.Up:
@@ -386,7 +397,17 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     const newRotation = localRotation.multiplyMatrixMatrix(this.state.endRotMatrix);
     CubeNavigationAid.snapWorldToViewMatrixToCubeFeatures(newRotation, DEFAULT_TOLERANCE, newRotation);
     const face = CubeNavigationAid._getMatrixFace(newRotation);
+    return { newRotation, face };
+  }
+
+  private _onArrowClick = (arrow: Pointer) => {
+    const { newRotation, face } = this.getArrowRotationAndFace(arrow);
     this._animateRotation(newRotation, face);
+  }
+
+  private getArrowTitle(arrow: Pointer) {
+    const { face } = this.getArrowRotationAndFace(arrow);
+    return this._labels[face];
   }
 
   private _lastClientXY: Vector2d = Vector2d.createZero();
@@ -604,6 +625,7 @@ export class FaceCell extends React.Component<FaceCellProps> {
       active && "cube-active",
     );
 
+    // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
     return <div
       onMouseDown={this._handleMouseDown}
       onMouseUp={this._handleMouseUp}
@@ -613,7 +635,11 @@ export class FaceCell extends React.Component<FaceCellProps> {
       onTouchEnd={this._handleTouchEnd}
       data-testid={"nav-cube-face-cell-" + face + "-" + n}
       className={classNames}
-      {...props}>{children}</div>;
+      role="presentation"
+      {...props}
+    >
+      {children}
+    </div>;
   }
   private _handleMouseOver = () => {
     const { vector } = this.props;
@@ -685,20 +711,23 @@ interface PointerProps extends React.AllHTMLAttributes<HTMLDivElement> {
   visible: boolean;
   pointerType: Pointer;
   onArrowClick(pointer: Pointer): void;
+  title: string;
   ["data-testid"]?: string;
 }
 
 class PointerButton extends React.Component<PointerProps> {
   public render(): React.ReactNode {
-    const { visible, pointerType, onArrowClick, ...props } = this.props;
+    const { visible, pointerType, onArrowClick, title, ...props } = this.props;
     const classes = classnames(
       "cube-pointer", "icon",
       pointerClass[pointerType],
       pointerIconClass[pointerType],
       visible && "cube-visible",
     );
+
     return (
-      <div className={classes} {...props}
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+      <div className={classes} role="button" tabIndex={-1} title={title} {...props}
         onClick={this._handleClick} />
     );
   }

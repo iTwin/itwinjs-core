@@ -46,7 +46,7 @@ export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
 
     return (
       <div className={cName} style={this.props.style}>
-        <div aria-expanded={ariaExpanded} className="header" onClick={this.props.onClick}
+        <div role="button" aria-expanded={ariaExpanded} className="header" onClick={this.props.onClick}
           onKeyPress={this.props.onKeyPress} onKeyDown={this.props.onKeyDown} tabIndex={tabIndex}>
           <div className="icon-container">
             <i className="icon icon-chevron-right" />

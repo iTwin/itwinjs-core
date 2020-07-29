@@ -35,6 +35,9 @@ export interface NineZoneProps {
 export interface NineZoneLabels {
   dockToolSettingsTitle?: string;
   sendWidgetHomeTitle?: string;
+  moreWidgetsTitle?: string;
+  moreToolSettingsTitle?: string;
+  resizeGripTitle?: string;
 }
 
 /** @internal future */

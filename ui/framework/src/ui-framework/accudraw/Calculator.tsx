@@ -133,6 +133,8 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
       <Input value={this.state.displayValue} readOnly={true} />;
 
     return (
+      // The event handler is only being used to capture bubbled events
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
       <div {...props} ref={this._mainDiv} tabIndex={-1} className={classNames} onKeyDown={this._handleKeyDown}>
         <div className="uifw-calculator-top">
           {topSection}

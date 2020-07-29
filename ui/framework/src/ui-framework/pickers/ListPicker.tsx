@@ -89,7 +89,8 @@ export class ListPickerItem extends React.PureComponent<ListPickerItemProps> {
     const title: string | undefined = (this.props.label && this.props.label.length > 25) ? this.props.label : undefined;
 
     return (
-      <div className={itemClassName} onClick={this.props.onClick}>
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+      <div className={itemClassName} onClick={this.props.onClick} role="button" tabIndex={-1}>
         <div className="label" title={title}>
           {this.props.label}
         </div>
@@ -138,7 +139,11 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
 
     return (
       <Panel className={className} style={this.props.style} key={this.props.title}>
-        <div onClick={this._onClick} className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <div onClick={this._onClick}
+          className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}
+          role="button" tabIndex={-1} aria-expanded={this.state.expanded}
+        >
           <div className="ListPickerInnerContainer-header-content">
             <div className="ListPickerInnerContainer-expander">{icon}</div>
             <div className="ListPickerInnerContainer-title">{this.props.title}</div>

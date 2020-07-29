@@ -124,7 +124,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     if (event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
-      const weightButton = document.activeElement  as HTMLElement;
+      const weightButton = document.activeElement as HTMLElement;
       // istanbul ignore else
       if (weightButton.tagName === "BUTTON") {
         try {
@@ -158,6 +158,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     return (
       <div className="components-weightpicker-popup-container">
         {title && <h4>{title}</h4>}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
         <ul data-testid="components-weightpicker-popup-lines" className="components-weightpicker-popup-lines" onKeyDown={this._handleKeyDown} ref={this._setWeightContainer}>
           {this.props.weights.map((weight, index) => {
             const classNames = classnames(

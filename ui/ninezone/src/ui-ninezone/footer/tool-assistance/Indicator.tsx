@@ -37,10 +37,13 @@ export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
         className={classnames("nz-footer-toolAssistance-indicator", className)}
         {...props}
       >
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div
           className="nz-indicator"
           onClick={onClick}
           ref={indicatorRef}
+          role="button"
+          tabIndex={-1}
         >
           <div className="nz-icons">
             {icons}

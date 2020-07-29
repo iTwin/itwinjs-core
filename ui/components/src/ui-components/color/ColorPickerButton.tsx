@@ -20,11 +20,11 @@ import { ColorSwatch } from "./Swatch";
  * @beta
  */
 export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
-  /** active color */
+  /** Active color */
   activeColor: ColorDef;
-  /** available colors */
+  /** Available colors */
   colorDefs?: ColorDef[];
-  /** function to run when user selects color swatch */
+  /** Function to run when user selects color swatch */
   onColorPick?: ((color: ColorDef) => void) | undefined;
   /** Show swatches as squares unless round is set to true */
   round?: boolean;
@@ -134,7 +134,8 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
 
     return (
       <>
-        <button data-testid="components-colorpicker-button" onClick={this._togglePopup} className={buttonClassNames} style={buttonStyle} disabled={this.props.disabled} ref={(element) => { this._target = element; }} />
+        <button data-testid="components-colorpicker-button" onClick={this._togglePopup} className={buttonClassNames}
+          style={buttonStyle} disabled={this.props.disabled} ref={(element) => { this._target = element; }} />
         <Popup
           className="components-colorpicker-popup"
           isOpen={this.state.showPopup}

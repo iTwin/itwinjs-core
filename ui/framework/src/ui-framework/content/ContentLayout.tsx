@@ -58,8 +58,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
 
     return (
       <div className={classnames("uifw-contentlayout-wrapper", this.props.className)} style={this.props.style}
-        onMouseDown={this._handleMouseDown}
-        onMouseMove={UiShowHideManager.handleContentMouseMove}
+        onMouseDown={this._handleMouseDown} onMouseMove={UiShowHideManager.handleContentMouseMove} role="presentation"
       >
         {this.state.content}
         <div className={overlayClassName} />
@@ -554,7 +553,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     if (this.state.contentContainer) {
       return (
         <div id="uifw-contentlayout-div" className={this.props.className} style={this.props.style} key={this.state.contentLayoutDef.id}
-          onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp}
+          onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp} role="presentation"
         >
           {this.state.contentContainer}
         </div>

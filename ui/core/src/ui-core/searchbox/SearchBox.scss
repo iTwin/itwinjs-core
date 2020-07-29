@@ -42,5 +42,9 @@
       color: $buic-foreground-primary;
     }
 
+    &:focus {
+      outline: none;
+    }
+
   }
 }

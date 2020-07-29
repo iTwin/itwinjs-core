@@ -56,6 +56,10 @@
       width: 64px;
       line-height: 20px;
       text-align: center;
+
+      &:focus {
+        outline: none;
+      }
     }
 
     .close {
@@ -119,6 +123,10 @@
 
         &:first-child {
           border-bottom: 1px solid $buic-background-toolbutton-stroke;
+        }
+
+        &:focus {
+          outline: none;
         }
       }
     }

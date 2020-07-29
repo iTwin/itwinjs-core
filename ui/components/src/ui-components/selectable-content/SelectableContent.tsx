@@ -30,6 +30,7 @@ export interface ControlledSelectableContentProps {
   selectedContentId: string;
   onSelectedContentIdChanged?: (contentId: string) => void;
   children: SelectableContentDefinition[];
+  selectAriaLabel?: string;
 }
 
 /**
@@ -48,6 +49,7 @@ export function ControlledSelectableContent(props: ControlledSelectableContentPr
     <div className="components-selectable-content">
       <div className="components-selectable-content-header">
         <ThemedSelect openMenuOnClick={true} openMenuOnFocus={true} isSearchable={false} onChange={onContentIdSelected}
+          aria-label={props.selectAriaLabel}
           value={{ label: selectedContent?.label, value: selectedContent?.id }}
           options={props.children.map((componentDef) => ({
             label: componentDef.label,
@@ -69,6 +71,7 @@ export function ControlledSelectableContent(props: ControlledSelectableContentPr
 export interface SelectableContentProps {
   defaultSelectedContentId: string;
   children: SelectableContentDefinition[];
+  selectAriaLabel?: string;
 }
 
 /**
@@ -83,7 +86,7 @@ export function SelectableContent(props: SelectableContentProps) {
     setSelectedContentId(id);
   }, []);
   return (
-    <ControlledSelectableContent selectedContentId={selectedContentId} onSelectedContentIdChanged={onSelectedContentIdChanged}>
+    <ControlledSelectableContent selectedContentId={selectedContentId} onSelectedContentIdChanged={onSelectedContentIdChanged} selectAriaLabel={props.selectAriaLabel}>
       {props.children}
     </ControlledSelectableContent>
   );

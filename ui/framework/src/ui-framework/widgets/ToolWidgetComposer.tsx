@@ -29,6 +29,7 @@ export interface BackstageAppButtonProps {
  * @beta
  */
 export function BackstageAppButton(props: BackstageAppButtonProps) {
+  const backstageLabel = React.useRef(UiFramework.translate("buttons.openBackstageMenu"));
   const backstageToggleCommand = BackstageManager.getBackstageToggleCommand(props.icon);
   const [icon, setIcon] = React.useState(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
   const isInitialMount = React.useRef(true);
@@ -61,6 +62,7 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
         icon={
           <Icon iconSpec={icon} />
         }
+        title={backstageToggleCommand.tooltip || backstageLabel.current}
       />
     </div>
   );

@@ -5,11 +5,14 @@ exports[`<SplitButton /> renders correctly 1`] = `
   className="core-split-button"
   data-testid="core-split-button-root"
   onKeyUp={[Function]}
+  role="button"
   tabIndex={0}
 >
   <div
     className="core-split-button-label"
     data-testid="core-split-button-label"
+    role="button"
+    tabIndex={-1}
   >
      
     test
@@ -20,6 +23,8 @@ exports[`<SplitButton /> renders correctly 1`] = `
   <div
     className="core-split-button-arrow"
     onClick={[Function]}
+    role="button"
+    tabIndex={-1}
   >
     <div
       className="core-split-button-arrow-icon icon icon-chevron-down"
@@ -45,11 +50,14 @@ exports[`<SplitButton /> renders with drawBorder correctly 1`] = `
   className="core-split-button core-split-button-border"
   data-testid="core-split-button-root"
   onKeyUp={[Function]}
+  role="button"
   tabIndex={0}
 >
   <div
     className="core-split-button-label"
     data-testid="core-split-button-label"
+    role="button"
+    tabIndex={-1}
   >
      
     test
@@ -60,6 +68,8 @@ exports[`<SplitButton /> renders with drawBorder correctly 1`] = `
   <div
     className="core-split-button-arrow"
     onClick={[Function]}
+    role="button"
+    tabIndex={-1}
   >
     <div
       className="core-split-button-arrow-icon icon icon-chevron-down"
@@ -85,11 +95,14 @@ exports[`<SplitButton /> renders with icon correctly 1`] = `
   className="core-split-button"
   data-testid="core-split-button-root"
   onKeyUp={[Function]}
+  role="button"
   tabIndex={0}
 >
   <div
     className="core-split-button-label"
     data-testid="core-split-button-label"
+    role="button"
+    tabIndex={-1}
   >
     <Icon
       iconSpec="icon-placeholder"
@@ -103,6 +116,8 @@ exports[`<SplitButton /> renders with icon correctly 1`] = `
   <div
     className="core-split-button-arrow"
     onClick={[Function]}
+    role="button"
+    tabIndex={-1}
   >
     <div
       className="core-split-button-arrow-icon icon icon-chevron-down"

@@ -117,6 +117,9 @@ export interface ReactNumericInputProps extends Omit<
   step?: ReactStepFunctionProp;
   strict: boolean;
   value?: number | string;
+
+  /** Indicates whether to set focus to the input element */
+  setFocus?: boolean;
 }
 
 /** @internal */
@@ -475,7 +478,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
 
     // This is a special case! If the component has the "autoFocus" prop
     // and the browser did focus it we have to pass that to the onFocus
-    if (!this._inputFocus && IS_BROWSER && document.activeElement === this.refsInput) {
+    if ((!this._inputFocus && IS_BROWSER && document.activeElement === this.refsInput) || this.props.setFocus) {
       this._inputFocus = true;
       this.refsInput.focus();
       this._invokeEventCallback("onFocus", {

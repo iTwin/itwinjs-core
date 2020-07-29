@@ -58,10 +58,11 @@ describe("Checkbox", () => {
 
   it("allows stopping click propagation", () => {
     const outsideClickSpy = sinon.spy();
+    const keyboardSpy = sinon.spy();
     const checkboxClickSpy = sinon.fake((e: React.MouseEvent) => e.stopPropagation());
     const changeSpy = sinon.spy();
     const result = render(
-      <div onClick={outsideClickSpy}>
+      <div role="presentation" onClick={outsideClickSpy} onKeyUp={keyboardSpy}>
         <Checkbox label="Test checkbox" onClick={checkboxClickSpy} onChange={changeSpy} />
       </div>,
     );

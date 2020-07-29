@@ -8,7 +8,9 @@
 
 import * as React from "react";
 
-/** @internal */
+/** Properties for [[WidgetOpacityContext]]
+ * @internal
+ */
 export interface WidgetOpacityContextProps {
   readonly onElementRef: (elementRef: React.RefObject<Element>) => void;
   readonly proximityScale: number;
@@ -24,7 +26,9 @@ export const WidgetOpacityContext = React.createContext<WidgetOpacityContextProp
   proximityScale: 1.0,
 });
 
-/** @internal */
+/** Hook for using [[WidgetOpacityContext]]
+ * @internal
+ */
 export function useWidgetOpacityContext() {
   return React.useContext(WidgetOpacityContext);
 }

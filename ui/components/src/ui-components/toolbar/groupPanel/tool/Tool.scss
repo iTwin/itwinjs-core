@@ -91,6 +91,10 @@
     @include components-active-tool;
   }
 
+  &:focus {
+    outline: none;
+  }
+
   &.components-pointer-up {
     @include components-internal-targeted {
       @include components-active-tool;

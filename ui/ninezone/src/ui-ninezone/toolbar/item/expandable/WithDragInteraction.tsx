@@ -137,6 +137,7 @@ export const withDragInteraction = <P extends {}, C>(
         onClick={handleClick}
         onPointerDown={handlePointerDown}
         style={style}
+        role="presentation"
       >
         <Component
           {...otherProps as any}

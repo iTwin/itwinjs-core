@@ -26,7 +26,8 @@ import { SolarDataProvider } from "./interfaces";
 import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
 
-// cSpell:ignore millisec
+// cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline
+
 const millisecPerMinute = 1000 * 60;
 const millisecPerHour = millisecPerMinute * 60;
 const millisecPerDay = millisecPerHour * 24;
@@ -709,7 +710,11 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
             <span title={this._speedLabel}>{speed}x</span>
             <SpeedTimeline className="speed" onChange={this._onSpeedChange} speed={this.state.speed} />
           </div>
-          <span title={this._loopLabel} className={classnames("icon icon-media-controls-loop", !loop && "no-loop-playback", loop && "loop-playback")} onClick={this._onToggleLoop}></span>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+          <span title={this._loopLabel}
+            className={classnames("icon", "icon-media-controls-loop", !loop && "no-loop-playback", loop && "loop-playback")} onClick={this._onToggleLoop}
+            role="button" tabIndex={-1}
+          ></span>
           <button data-testid="shadow-settings-button" title={this._settingLabel} className="shadow-settings-button" ref={(element) => this._settings = element} onClick={this._onOpenSettingsPopup}>
             <span className="icon icon-settings" />
           </button>
@@ -741,7 +746,10 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
               </div>
             </div>
           </Popup>
-          <span title={expandMinimizeLabel} data-testid="solar-timeline-toggle-expand" className="expanded-icon icon icon-chevron-up" onClick={this._onToggleDisplay}></span>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+          <span title={expandMinimizeLabel} data-testid="solar-timeline-toggle-expand" className="expanded-icon icon icon-chevron-up" onClick={this._onToggleDisplay}
+            role="button" tabIndex={-1}
+          ></span>
         </div>
       </div>
     );

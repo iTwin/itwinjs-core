@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/button/primary-large";
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/typography";
 
 $user-profile-circle-size: 60px;
 
 .uifw-user-profile {
-  background: white;
+  background: $buic-background-window;
   width: auto;
   height: auto;
   position: absolute;
@@ -20,6 +20,7 @@ $user-profile-circle-size: 60px;
   padding: 30px;
   border-radius: 3px;
   font-size: $uicore-font-size;
+  box-shadow: 2px 4px 8px 2px rgba(0,0,0,0.25);
 
   > .profile-info {
     flex: 1;
@@ -34,19 +35,19 @@ $user-profile-circle-size: 60px;
       display: flex;
       justify-content: center;
       align-items: center;
-      color: #fff;
+      color: $buic-background-window;
       margin-bottom: 10px;
       -webkit-border-radius: 50%;
       -moz-border-radius: 50%;
       border-radius: 50%;
-      border: 2px solid rgba(0,0,0,0.1);
+      border: 2px solid rgba($buic-background-5, 0.1);
     }
 
     > span:not(.circle) {
       margin-top: 15px;
       text-overflow: ellipsis;
       white-space: nowrap;
-      color: $uicore-gray;
+      color: $buic-foreground-body;
       overflow: hidden;
     }
   }
@@ -55,7 +56,7 @@ $user-profile-circle-size: 60px;
     flex: initial;
     width: 1px;
     margin: 10px 30px;
-    background: #eee;
+    background: $buic-foreground-disabled;
   }
 
   > .signout {
@@ -66,7 +67,7 @@ $user-profile-circle-size: 60px;
 
     > span:first-of-type {
       font-size: $uicore-font-size-title;
-      color: $uicore-gray;
+      color: $buic-foreground-body;
       margin-top: 10px;
     }
 

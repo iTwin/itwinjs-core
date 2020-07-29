@@ -23,6 +23,7 @@ import { PopupItem } from "./PopupItem";
 import { PopupItemsPanel } from "./PopupItemsPanel";
 import { PopupItemWithDrag } from "./PopupItemWithDrag";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
+import { UiComponents } from "../UiComponents";
 
 /** Describes the data needed to insert a custom framework-specific button into an ToolbarWithOverflow.
  * @beta
@@ -264,6 +265,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const useHeight = (expandsTo === Direction.Right || expandsTo === Direction.Left);
   const [isOverflowPanelOpen, setIsOverflowPanelOpen] = React.useState(false);
   const [popupPanelCount, setPopupPanelCount] = React.useState(0);
+  const overflowTitle = React.useRef(UiComponents.translate("toolbar.overflow"));
   const isMounted = React.useRef(false);
   React.useEffect(() => {
     isMounted.current = true;
@@ -372,6 +374,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
             </OverflowItemsContainer>
           </ToolbarOverflowPanel>
         }
+        title={overflowTitle.current}
       />
     </ToolbarItemContext.Provider>);
   }, [handleClick, handleClose, handleOverflowResize, isOverflowPanelOpen, expandsTo, overflowPanelItems, useHeight]);
@@ -403,6 +406,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
           ref={refs}
           style={props.style}
           onKeyDown={props.onKeyDown}
+          role="presentation"
         >
           <ToolbarItems
             className="components-items"

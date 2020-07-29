@@ -95,6 +95,7 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
         onContextMenu={this._onContextMenu}
         onMouseEnter={this._onMouseEnter}
         onMouseLeave={this._onMouseLeave}
+        role="presentation"
       >
         <div className="components-property-record-label">{this.props.labelElement}</div>
         {needElementSeparator

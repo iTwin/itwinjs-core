@@ -29,10 +29,12 @@ export function Panel(props: PanelProps) {
     props.className);
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
       className={className}
       style={props.style}
       onKeyDown={props.onKeyDown}
+      role="region"
     >
       {props.children}
     </div>

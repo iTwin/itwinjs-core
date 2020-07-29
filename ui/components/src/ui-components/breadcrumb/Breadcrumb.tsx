@@ -468,7 +468,9 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
           onKeyDown={this._handleKeyDown} onKeyUp={this._handleKeyUp}
           onChange={this._handleChange} onPaste={this._handleChange} onCut={this._handleChange} onFocus={this._handleChange} onClick={this._handleChange}
           spellCheck={false}></input>
-        <div className="components-breadcrumb-close icon icon-close" data-testid="components-breadcrumb-input-close" onClick={this._handleClose} />
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <div className="components-breadcrumb-close icon icon-close" data-testid="components-breadcrumb-input-close" onClick={this._handleClose}
+          role="button" tabIndex={-1} />
         <ContextMenu
           ref={(el) => { this._autocomplete = el; }}
           style={{ width: "100%" }}
@@ -739,15 +741,24 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
       nodes.push(node);
     }
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
         className="components-breadcrumb-dropdown"
         data-testid="components-breadcrumb-dropdown-background"
         style={{ width: this.props.width! }}
-        onClick={this._focusInput}>
-        {!this.props.staticOnly && this.props.showUpDir ? <div data-testid="components-breadcrumb-up-dir" className={classnames("components-breadcrumb-up-dir", "icon", "icon-sort-up", {
-          root: this.props.node === undefined,
-        })
-        } onClick={this._handleUpClick} /> : undefined}
+        onClick={this._focusInput}
+        role="button" tabIndex={-1}
+      >
+        {!this.props.staticOnly && this.props.showUpDir ?
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+          <div data-testid="components-breadcrumb-up-dir"
+            className={classnames(
+              "components-breadcrumb-up-dir",
+              "icon", "icon-sort-up",
+              { root: this.props.node === undefined })
+            } onClick={this._handleUpClick} role="button" tabIndex={-1} />
+          : undefined
+        }
         <div className="components-breadcrumb-crumb-list"
           data-testid="components-breadcrumb-crumb-list">
           <BreadcrumbDropdownNode

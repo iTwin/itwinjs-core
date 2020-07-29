@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { Ellipsis } from "../base/Ellipsis";
+import { useLabel } from "../base/NineZone";
 
 /** Properties of [[ToolSettingsOverflow]] component.
  * @internal
@@ -34,12 +35,18 @@ export const DockedToolSettingsOverflow = React.memo( // tslint:disable-line: va
         "nz-toolSettings-overflow",
         props.className,
       );
+      const moreToolSettingsTitle = useLabel("moreToolSettingsTitle");
+
       return (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events
         <div
           className={className}
           onClick={props.onClick}
           ref={refs}
           style={props.style}
+          role="button"
+          tabIndex={-1}
+          title={moreToolSettingsTitle}
         >
           <Ellipsis />
         </div>

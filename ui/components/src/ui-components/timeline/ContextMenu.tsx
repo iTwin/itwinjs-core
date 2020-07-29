@@ -50,9 +50,10 @@ export class ContextMenuItem extends React.Component<MenuItem> {
 
     return (
       <>
-        {this.props.isSeparator && <div className="separator" onClick={this._onClick} />}
+        {this.props.isSeparator && <div className="separator" role="separator" />}
         {!this.props.isSeparator &&
-          <li className={menuClassName} onClick={this._onClick}>
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+          <li className={menuClassName} onClick={this._onClick} role="menuitem">
             {this.props.checked && <span className="icon icon-checkmark" />}
             {(this.props.icon && !this.props.checked) && <span className={classnames("user-icon icon", this.props.icon)} />}
             <span>{this.props.name}</span>

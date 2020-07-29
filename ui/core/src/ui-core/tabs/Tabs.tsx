@@ -126,11 +126,13 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
             role="tab"
             aria-selected={index === this.state.activeIndex}
           >
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a ref={this._anchorRefs[index]}
               tabIndex={index === this.state.activeIndex ? 0 : -1}
               onClick={() => this._handleTabClick(index)}
               onKeyDown={(event) => this._handleKeydownEvent(event, index)}
               onKeyUp={(event) => this._handleKeyupEvent(event, index)}
+              role="button"
             >
               {label}
             </a>

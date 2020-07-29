@@ -14,6 +14,7 @@ import { CommandItemDef } from "../shared/CommandItemDef";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
+import { UiFramework } from "../UiFramework";
 
 /** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  *  @public @deprecated use ToolWidgetComposer instead
@@ -21,6 +22,7 @@ import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
   private _reactNode: React.ReactNode;
+  private _backstageLabel = UiFramework.translate("buttons.openBackstageMenu");
 
   constructor(props: ToolWidgetProps) {
     super(props);
@@ -56,6 +58,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
           icon={
             <Icon iconSpec={this._appButton.iconSpec} />
           }
+          title={this._appButton.tooltip || this._backstageLabel}
         />
       );
     }

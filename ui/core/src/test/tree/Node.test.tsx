@@ -38,7 +38,7 @@ describe("<Node />", () => {
   });
 
   it("renders icon correctly", () => {
-    const icon = (<img src="testIcon" />);
+    const icon = (<img src="testIcon" alt="Test" />);
     shallow(<Node label="a" level={0} icon={icon} />).should.matchSnapshot();
   });
 

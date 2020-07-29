@@ -86,9 +86,12 @@ export class InputFieldMessage extends React.PureComponent<InputFieldMessageProp
               </span>
             </div>
           </div>
-          {showCloseButton && <div className="uifw-popup-message-close" onClick={this._onInputMessageClose}>
-            <i className="icon icon-close" />
-          </div>}
+          {showCloseButton &&
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+            <div className="uifw-popup-message-close" onClick={this._onInputMessageClose} role="button" tabIndex={-1}>
+              <i className="icon icon-close" />
+            </div>
+          }
         </div>
       </Popup>);
   }

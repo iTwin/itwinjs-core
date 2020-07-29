@@ -72,6 +72,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-l
     <div
       className="nz-widget-tabs"
       ref={ref}
+      role="tablist"
     >
       {tabChildren.map(([key, child], index, array) => {
         return (

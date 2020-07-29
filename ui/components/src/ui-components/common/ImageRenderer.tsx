@@ -31,7 +31,7 @@ export class ImageRenderer {
   private renderBinary(data: string, format: ImageFileFormat) {
     // Convert binary to base64
     const dataAsBase64 = this.hexToBase64(data);
-    return (<img src={`data:image/${format};base64,${dataAsBase64}`} />);
+    return (<img src={`data:image/${format};base64,${dataAsBase64}`} alt="" />);
   }
 
   /** Render svg string into JSX */
@@ -43,7 +43,7 @@ export class ImageRenderer {
 
   /** Render image from an url */
   private renderUrl(url: string) {
-    return (<img src={url} />);
+    return (<img src={url} alt="" />);
   }
 
   /** Render image as ui-core icon */

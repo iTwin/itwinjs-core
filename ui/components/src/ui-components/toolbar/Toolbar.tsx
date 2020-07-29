@@ -117,6 +117,7 @@ export function Toolbar(props: ToolbarProps) {
             className={className}
             style={props.style}
             onKeyDown={props.onKeyDown}
+            role="presentation"
           >
             <ToolbarItems
               className="components-items"

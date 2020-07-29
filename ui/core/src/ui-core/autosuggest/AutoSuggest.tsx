@@ -223,6 +223,8 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     };
 
     return (
+      // The onKeyDown event handler is only being used to capture bubbled events
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
       <div className={this.props.className} style={this.props.style} onKeyDown={this._handleKeyDown}>
         <ReactAutosuggest
           theme={this._theme}

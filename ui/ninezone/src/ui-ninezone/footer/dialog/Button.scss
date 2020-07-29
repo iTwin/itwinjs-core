@@ -16,4 +16,8 @@
   &:active {
     color: $buic-foreground-activehover;
   }
+
+  &:focus {
+    outline: none;
+  }
 }

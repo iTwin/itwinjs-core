@@ -7,6 +7,8 @@ exports[`ModelsTree #integration renders component with real data and no active 
   >
     <div
       class="core-tree components-controlledTree"
+      role="tree"
+      tabindex="-1"
     >
       <div
         style="overflow: visible; height: 0px; width: 0px;"
@@ -25,6 +27,8 @@ exports[`ModelsTree #integration renders component with real data and no active 
               <div
                 class="core-tree-node with-checkbox"
                 data-testid="tree-node"
+                role="treeitem"
+                tabindex="-1"
               >
                 <div
                   class="contents"
@@ -32,8 +36,11 @@ exports[`ModelsTree #integration renders component with real data and no active 
                   style="margin-left: 0px;"
                 >
                   <div
+                    aria-label="tree.collapse"
                     class="core-tree-expansionToggle is-expanded expansion-toggle"
                     data-testid="tree-node-expansion-toggle"
+                    role="button"
+                    tabindex="-1"
                   >
                     <i
                       class="toggle icon icon-chevron-right"
@@ -44,6 +51,7 @@ exports[`ModelsTree #integration renders component with real data and no active 
                   >
                     <span
                       class="bui-webfont-icon icon-imodel-hollow-2"
+                      role="presentation"
                     />
                   </div>
                   <div
@@ -65,6 +73,8 @@ exports[`ModelsTree #integration renders component with real data and no active 
               <div
                 class="core-tree-node with-checkbox"
                 data-testid="tree-node"
+                role="treeitem"
+                tabindex="-1"
               >
                 <div
                   class="contents"
@@ -72,8 +82,11 @@ exports[`ModelsTree #integration renders component with real data and no active 
                   style="margin-left: 20px;"
                 >
                   <div
+                    aria-label="tree.expand"
                     class="core-tree-expansionToggle expansion-toggle"
                     data-testid="tree-node-expansion-toggle"
+                    role="button"
+                    tabindex="-1"
                   >
                     <i
                       class="toggle icon icon-chevron-right"
@@ -84,6 +97,7 @@ exports[`ModelsTree #integration renders component with real data and no active 
                   >
                     <span
                       class="bui-webfont-icon icon-folder"
+                      role="presentation"
                     />
                   </div>
                   <div
@@ -3183,6 +3197,8 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
     >
       <div
         class="core-tree components-controlledTree"
+        role="tree"
+        tabindex="-1"
       >
         <div
           style="overflow: visible; height: 0px; width: 0px;"
@@ -3201,6 +3217,8 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
                 <div
                   class="core-tree-node with-checkbox"
                   data-testid="tree-node"
+                  role="treeitem"
+                  tabindex="-1"
                 >
                   <div
                     class="contents"

@@ -5,7 +5,8 @@
     "errorSuffix": "Please review input and try again."
   },
   "general": {
-    "search": "Search"
+    "search": "Search",
+    "clear": "Clear"
   },
   "dialog": {
     "ok": "OK",
@@ -17,5 +18,9 @@
   },
   "reactselect": {
     "noSelectOption": "Option not found"
+  },
+  "tree": {
+    "expand": "Expand",
+    "collapse": "Collapse"
   }
 }

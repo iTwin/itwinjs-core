@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
 
 /** Properties for the [[HueSlider]] React component
  * @beta
@@ -29,6 +30,7 @@ export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, Co
  */
 export class HueSlider extends React.PureComponent<HueSliderProps> {
   private _container: HTMLDivElement | null = null;
+  private _hueLabel = UiComponents.translate("color.hue");
 
   /** @internal */
   constructor(props: HueSliderProps) {
@@ -179,18 +181,15 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
       this.props.className,
     );
 
-    const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
-      left: `${(this.props.hsv.h * 100) / 360}%`,
-    } : {
-      left: `0px`,
-      top: `${-((this.props.hsv.h * 100) / 360) + 100}%`,
-    };
+    const pointerStyle: React.CSSProperties = this.props.isHorizontal ?
+      { left: `${(this.props.hsv.h * 100) / 360}%` } :
+      { left: `0px`, top: `${-((this.props.hsv.h * 100) / 360) + 100}%` };
 
     return (
       <div className={containerClasses} style={this.props.style} data-testid="hue-container">
         <div
           data-testid="hue-slider"
-          role="slider" aria-label="Hue"
+          role="slider" aria-label={this._hueLabel}
           aria-valuemin={0} aria-valuemax={360} aria-valuenow={this.props.hsv.h}
           className="components-hue-slider"
           ref={(container) => this._container = container}

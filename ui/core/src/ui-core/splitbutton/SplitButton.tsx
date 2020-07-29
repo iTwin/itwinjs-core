@@ -81,10 +81,19 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
         tabIndex={0}
         onKeyUp={this._handleKeyUp}
         ref={this._buttonRef}
+        role="button"
       >
-        <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}>{icon} {this.props.label}</div>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}
+          role="button" tabIndex={-1}
+        >
+          {icon} {this.props.label}
+        </div>
         <div className={classnames("core-split-button-divider", this.props.drawBorder && "core-split-button-border")} />
-        <div className={"core-split-button-arrow"} ref={this._arrowElement} onClick={this._handleArrowClick}>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <div className={"core-split-button-arrow"} ref={this._arrowElement} onClick={this._handleArrowClick}
+          role="button" tabIndex={-1}
+        >
           <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} />
           <ContextMenu
             ref={(el) => { this._menu = el; }}

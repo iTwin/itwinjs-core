@@ -43,6 +43,8 @@ export interface ToggleProps extends CommonProps {
   large?: boolean;
   /** Indicates whether to set focus to the input element */
   setFocus?: boolean;
+  /** Tooltip text */
+  title?: string;
 }
 
 /**
@@ -144,7 +146,8 @@ export function Toggle(props: ToggleProps) {
     <label ref={setHeightFromRef} style={toggleStyle} className={toggleClassName} onBlur={handleBlur}>
       <input type="checkbox" ref={inputElement} className="core-toggle-input"
         checked={checked} disabled={props.disabled}
-        onChange={handleChange} onBlur={handleCheckboxBlur} />
+        onChange={handleChange} onBlur={handleCheckboxBlur}
+        title={props.title} />
       <span className="core-toggle-background" />
       <span className={checkmarkClassName} />
       <span className={handleClassName} style={toggleHandleStyle} />

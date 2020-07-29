@@ -39,7 +39,7 @@ import { ReactDataGridColumn, TableColumn } from "./TableColumn";
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
 import ReactDataGrid = require("react-data-grid");
 
-// cspell:ignore Overscan
+// cspell:ignore Overscan columnfiltering
 
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;
@@ -1133,7 +1133,8 @@ export class Table extends React.Component<TableProps, TableState> {
           onClickCapture={onClick}
           onMouseMove={onMouseMove}
           onMouseDown={onMouseDown}
-          style={props.row.style}>
+          style={props.row.style}
+          role="presentation">
           {row}
         </div>;
       } else {
@@ -1414,7 +1415,10 @@ export class Table extends React.Component<TableProps, TableState> {
     return (
       <>
         <div className={tableClassName} style={this.props.style}
-          onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._handleShowHideContextMenu : undefined}>
+          onMouseDown={this._onMouseDown}
+          onContextMenu={this.props.showHideColumns ? this._handleShowHideContextMenu : undefined}
+          role="presentation"
+        >
           {this.props.showHideColumns &&
             <ShowHideMenu
               opened={this.state.menuVisible}

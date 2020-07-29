@@ -48,6 +48,7 @@ export const withIsPressed = <ComponentProps extends {}>(
     public render() {
       const { isPressed, onIsPressedChange, ...props } = this.props; // todo: better solution to rest object of intersected type
       return (
+        // eslint-disable-next-line jsx-a11y/no-static-element-interactions
         <div className="withispressed-wrapper"
           onMouseDown={this.handleOnPointerDown}
           onMouseUp={this.handleOnPointerUp}

@@ -141,7 +141,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
       );
     } else if (this.state.views && this.state.views.length > 0) {
       return (
-        <div className="views-list">
+        <div className="views-list" tabIndex={0}>
           {this.state.views.map((view: ViewDefinitionProps, i: number) => (
             <ViewCard key={i} view={view} onClick={this._onViewClick.bind(this, view)} />
           ))}

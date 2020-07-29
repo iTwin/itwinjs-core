@@ -62,17 +62,23 @@ export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSe
         </div>
         {!this.state.isTopIndicatorVisible ? undefined :
           <div className="nz-indicator">
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
             <div
               className="nz-triangle"
               onClick={this._scrollTop}
+              role="button"
+              tabIndex={-1}
             />
           </div>
         }
         {!this.state.isBottomIndicatorVisible ? undefined :
           <div className="nz-indicator nz-bottom">
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
             <div
               className="nz-triangle"
               onClick={this._scrollBottom}
+              role="button"
+              tabIndex={-1}
             />
           </div>
         }

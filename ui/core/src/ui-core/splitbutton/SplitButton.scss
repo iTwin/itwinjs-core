@@ -37,6 +37,9 @@
     &:hover {
       color: $buic-foreground-primary;
     }
+    &:focus {
+      outline: none;
+    }
 
     @include uicore-text(body);
   }
@@ -69,6 +72,10 @@
 
     > .context-menu {
       top: $uicore-inputs-padding-bordered;
+    }
+
+    &:focus {
+      outline: none;
     }
   }
 

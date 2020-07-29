@@ -126,6 +126,7 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
         "isVisible": true,
         "stateSyncIds": Array [],
       },
+      "_backstageLabel": "buttons.openBackstageMenu",
       "_classId": undefined,
       "_fillZone": false,
       "_handleSyncUiEvent": [Function],

@@ -19,7 +19,6 @@
   },
   "general": {
     "sheet": "Sheet",
-    "of": "of",
     "alert": "Alert",
     "settings": "Settings",
     "minimize": "Minimize",
@@ -123,7 +122,8 @@
   "buttons": {
     "yes": "Yes",
     "no": "No",
-    "clearSelection": "Clear Selection"
+    "clearSelection": "Clear Selection",
+    "openBackstageMenu": "Open Backstage Menu"
   },
   "navigationAid": {
     "sheetsModalFrontstage": "Sheet Views"
@@ -252,7 +252,13 @@
   "widget": {
     "tooltips": {
       "dockToolSettings": "Dock to top",
-      "sendHome": "Send to panel"
+      "sendHome": "Send to panel",
+      "moreWidgets": "More widgets",
+      "moreToolSettings": "More tool settings",
+      "resizeGrip": "Resize widget panel"
     }
+  },
+  "statusBar": {
+    "overflow": "More status fields"
   }
 }

@@ -319,8 +319,9 @@ export class ModelSelectorWidget extends React.Component<
     );
     return (
       <div>
-        <ul className="uifw-category-model-horizontal-tabs">
+        <ul className="uifw-category-model-horizontal-tabs" role="tablist">
           {this._groups.map((group: any) => (
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
             <li
               key={group.id}
               className={
@@ -329,7 +330,9 @@ export class ModelSelectorWidget extends React.Component<
                   : ""
               }
               onClick={this._onExpand.bind(this, group)}
+              role="tab"
             >
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a>{group.label}</a>
             </li>
           ))}

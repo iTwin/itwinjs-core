@@ -74,7 +74,7 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
   }, []);
 
   return (
-    <div
+    <main role="main"
       id="uifw-configurableui-wrapper"
       className={props.className}
       style={props.style}
@@ -91,6 +91,6 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       <CursorPopupMenu />
       <CursorPopupRenderer />
       <PopupRenderer />
-    </div>
+    </main>
   );
 }

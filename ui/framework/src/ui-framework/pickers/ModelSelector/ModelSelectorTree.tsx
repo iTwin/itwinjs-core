@@ -14,7 +14,7 @@ import { NodeKey } from "@bentley/presentation-common";
 import { DEPRECATED_treeWithFilteringSupport } from "@bentley/presentation-components";
 import { DEPRECATED_Tree, FilteringInput, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import {
-  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize,
+  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize, UiCore,
 } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
@@ -32,6 +32,8 @@ export class CategoryModelTree extends React.Component<
   private _optionsElement: HTMLElement | null = null;
   private _allNodeIds: string[] = [];
   private _isMounted = false;
+  private _searchLabel = UiCore.translate("general.search");
+  private _closeLabel = UiCore.translate("dialog.close");
 
   constructor(props: CategoryModelTreeProps) {
     super(props);
@@ -165,6 +167,7 @@ export class CategoryModelTree extends React.Component<
         imageOn="icon-visibility"
         imageOff="icon-visibility-hide-2"
         onClick={props.onChange}
+        tooltip={UiFramework.translate(props.checked ? "modelTree.status.visible" : "modelTree.status.hidden")}
       />
     );
   }
@@ -306,15 +309,24 @@ export class CategoryModelTree extends React.Component<
         )}
         <div className="option-group">
           {!this.state.showSearchBox ?
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
             <span
               className="icon icon-search"
               onClick={this._onToggleSearchBox.bind(this)}
+              role="button"
+              tabIndex={-1}
+              title={this._searchLabel}
             /> :
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
             <span
               className="icon icon-close"
               onClick={this._onToggleSearchBox.bind(this)}
+              role="button"
+              tabIndex={-1}
+              title={this._closeLabel}
             />
           }
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
           <span
             className="options icon icon-more-2"
             title={UiFramework.translate("categoriesModels.options")}
@@ -322,6 +334,8 @@ export class CategoryModelTree extends React.Component<
             ref={(element) => {
               this._optionsElement = element;
             }}
+            role="button"
+            tabIndex={-1}
           />
           <GlobalContextMenu
             opened={this.state.isOptionsOpened}

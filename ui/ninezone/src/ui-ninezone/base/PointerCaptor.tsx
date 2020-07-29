@@ -53,6 +53,7 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
         onPointerDown={this._handlePointerDown}
         onClick={this.props.onClick}
         style={this.props.style}
+        role="presentation"
       >
         <div className="nz-overlay" />
         {this.props.children}

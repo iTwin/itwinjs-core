@@ -67,6 +67,7 @@ export class TableCell extends React.PureComponent<TableCellProps> {
         onClick={this.props.onClick}
         onMouseMove={this.props.onMouseMove}
         onMouseDown={this.props.onMouseDown}
+        role="presentation"
       >
         {this.props.children}
       </div>

@@ -41,4 +41,8 @@
   &:hover {
     color: $buic-foreground-primary-tone;
   }
+
+  &:focus {
+    outline: none;
+  }
 }

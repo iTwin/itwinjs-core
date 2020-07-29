@@ -29,12 +29,15 @@ function BackArrowComponent(props: BackArrowProps) {
     targeted && "nz-targeted",
     props.className);
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
     <div
       className={className}
       onClick={props.onClick}
       onPointerUp={props.onPointerUp}
       ref={ref}
       style={props.style}
+      role="button"
+      tabIndex={-1}
     />
   );
 }

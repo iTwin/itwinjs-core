@@ -13,12 +13,15 @@ exports[`FloatingWidget should render 1`] = `
     />
     <div
       class="nz-widget-tabs"
+      role="tablist"
     >
       <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
           class="nz-button"
+          role="button"
+          tabindex="-1"
         >
           <div
             class="nz-icon"
@@ -60,12 +63,15 @@ exports[`FloatingWidget should render dragged 1`] = `
     />
     <div
       class="nz-widget-tabs"
+      role="tablist"
     >
       <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
           class="nz-button"
+          role="button"
+          tabindex="-1"
         >
           <div
             class="nz-icon"
@@ -107,12 +113,15 @@ exports[`FloatingWidget should render minimized 1`] = `
     />
     <div
       class="nz-widget-tabs"
+      role="tablist"
     >
       <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
           class="nz-button"
+          role="button"
+          tabindex="-1"
         >
           <div
             class="nz-icon"

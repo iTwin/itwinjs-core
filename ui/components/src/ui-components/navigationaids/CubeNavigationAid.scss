@@ -117,9 +117,15 @@ $arrow-margin: -3px;
     &:not(.cube-visible) {
       display: none;
     }
+
     &:hover {
       color: $buic-row-selection;
     }
+
+    &:focus {
+      outline: none;
+    }
+
     &.cube-up {
       margin: $arrow-margin auto;
       left: 0px;

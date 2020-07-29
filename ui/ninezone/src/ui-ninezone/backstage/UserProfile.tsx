@@ -39,10 +39,13 @@ export class UserProfile extends React.PureComponent<UserProfileProps> {
       this.props.className);
 
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
         className={className}
         onClick={this.props.onClick}
         style={this.props.style}
+        role="button"
+        tabIndex={-1}
       >
         <span style={{ backgroundColor: this.props.color }}>{this.props.initials}</span>
         <span>{this.props.children}</span>

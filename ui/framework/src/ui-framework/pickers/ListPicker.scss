@@ -67,6 +67,10 @@ $item-height: 32px;
   white-space: nowrap;
   height: $item-height;
   color: $label-color;
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .ListPickerInnerContainer-header-expanded {
@@ -136,6 +140,10 @@ $item-height: 32px;
     > .icon, .label {
       filter: $no-shadow;
     }
+  }
+
+  &:focus {
+    outline: none;
   }
 
   &.is-focused {

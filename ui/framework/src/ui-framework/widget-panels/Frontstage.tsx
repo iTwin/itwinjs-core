@@ -173,6 +173,9 @@ export function useLabels() {
   return React.useMemo<NineZoneLabels>(() => ({
     dockToolSettingsTitle: UiFramework.translate("widget.tooltips.dockToolSettings"),
     sendWidgetHomeTitle: UiFramework.translate("widget.tooltips.sendHome"),
+    moreWidgetsTitle: UiFramework.translate("widget.tooltips.moreWidgets"),
+    moreToolSettingsTitle: UiFramework.translate("widget.tooltips.moreToolSettings"),
+    resizeGripTitle: UiFramework.translate("widget.tooltips.resizeGrip"),
   }), []);
 }
 

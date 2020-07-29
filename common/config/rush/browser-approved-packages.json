@@ -399,6 +399,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
+      "name": "eslint-plugin-jsx-a11y",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "eslint-plugin-react-hooks",
       "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
@@ -665,6 +669,10 @@
     {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-axe",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-beautiful-dnd",

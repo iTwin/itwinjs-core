@@ -18,6 +18,10 @@
     background: $buic-background-2;
   }
 
+  &:focus {
+    outline: none;
+  }
+
   &.nz-hidden {
     visibility: hidden;
   }

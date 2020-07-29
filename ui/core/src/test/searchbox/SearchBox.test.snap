@@ -9,12 +9,15 @@ exports[`SearchBox renders renders correctly 1`] = `
     onCut={[Function]}
     onKeyDown={[Function]}
     onPaste={[Function]}
-    placeholder="searchbox.search"
+    placeholder="general.search"
     role="searchbox"
   />
   <div
     className="core-searchbox-button"
     onClick={[Function]}
+    role="button"
+    tabIndex={-1}
+    title="general.search"
   >
     <span
       className="core-searchbox-icon icon icon-search"

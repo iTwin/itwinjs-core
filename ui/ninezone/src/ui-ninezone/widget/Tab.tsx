@@ -156,6 +156,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     <div
       className={className}
       ref={refs}
+      role="tab"
     >
       <span title={tab.label}>{tab.label}</span>
       {!widgetTabsEntryContext && <div className="nz-icon" />}

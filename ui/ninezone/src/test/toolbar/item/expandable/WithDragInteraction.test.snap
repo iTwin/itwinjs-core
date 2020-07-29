@@ -4,6 +4,7 @@ exports[`<WithDragInteraction /> renders correctly 1`] = `
 <div
   onClick={[Function]}
   onPointerDown={[Function]}
+  role="presentation"
   style={
     Object {
       "touchAction": "none",

@@ -16,6 +16,8 @@ exports[`StagePanelHeader should render with collapse button 1`] = `
   <i
     className="uifw-collapse icon icon-close"
     onClick={[Function]}
+    role="button"
+    tabIndex={-1}
   />
 </div>
 `;

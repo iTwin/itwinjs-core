@@ -1200,6 +1200,12 @@ export interface NineZoneLabels {
     // (undocumented)
     dockToolSettingsTitle?: string;
     // (undocumented)
+    moreToolSettingsTitle?: string;
+    // (undocumented)
+    moreWidgetsTitle?: string;
+    // (undocumented)
+    resizeGripTitle?: string;
+    // (undocumented)
     sendWidgetHomeTitle?: string;
 }
 
@@ -2471,6 +2477,7 @@ export interface ToolbarButtonProps extends CommonProps {
     mouseProximity?: number;
     onClick?: () => void;
     small?: boolean;
+    title?: string;
 }
 
 // @internal

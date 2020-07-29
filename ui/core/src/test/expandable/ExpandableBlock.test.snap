@@ -8,6 +8,7 @@ exports[`ExpandableBlock <ExpandableBlock /> renders correctly collapsed 1`] = `
     aria-expanded="false"
     className="header"
     onClick={[Function]}
+    role="button"
   >
     <div
       className="icon-container"
@@ -37,6 +38,7 @@ exports[`ExpandableBlock <ExpandableBlock /> renders correctly expanded 1`] = `
     aria-expanded="true"
     className="header"
     onClick={[Function]}
+    role="button"
   >
     <div
       className="icon-container"

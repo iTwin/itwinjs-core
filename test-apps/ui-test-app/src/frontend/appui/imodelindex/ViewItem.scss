@@ -53,7 +53,7 @@ $border-color: #eee;
 
   &.selected {
     background: $uicore-white;
-    outline: $outline-size solid $uicore-blue;
+    outline: $outline-size solid $uicore-blue-5;
     z-index: 1;
   }
 }
@@ -96,7 +96,7 @@ $border-color: #eee;
   }
 
   &.selected {
-    outline: $outline-size solid $uicore-blue;
+    outline: $outline-size solid $uicore-blue-5;
     z-index: 1;
   }
 }

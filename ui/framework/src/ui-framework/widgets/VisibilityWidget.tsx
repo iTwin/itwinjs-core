@@ -23,6 +23,8 @@ import { connectIModelConnection } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 
+// cspell:ignore modeltree
+
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`
  * @public
@@ -194,13 +196,17 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     };
     return (<div className="uifw-visibility-tree">
       <div className="uifw-visibility-tree-header">
+        {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select className="uifw-visibility-tree-select" onChange={this._onShowTree.bind(this)}>
           <option value={VisibilityComponentHierarchy.Models}>{UiFramework.translate("visibilityWidget.modeltree")}</option>
           {showCategories && <option value={VisibilityComponentHierarchy.Categories}>{UiFramework.translate("visibilityWidget.categories")}</option>}
           {showContainment && <option value={VisibilityComponentHierarchy.SpatialContainment}>{UiFramework.translate("visibilityWidget.containment")}</option>}
         </select>
-        <span className="icon icon-search" style={searchStyle} onClick={this._onToggleSearchBox} />
-        <span className="uifw-visibility-tree-options icon icon-more-vertical-2" style={searchStyle} title={UiFramework.translate("visibilityWidget.options")} ref={(element) => { this._optionsElement = element; }} onClick={this._onShowOptions.bind(this)}></span>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <span className="icon icon-search" style={searchStyle} onClick={this._onToggleSearchBox} role="button" tabIndex={-1} />
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <span className="uifw-visibility-tree-options icon icon-more-vertical-2" style={searchStyle} title={UiFramework.translate("visibilityWidget.options")}
+          ref={(element) => { this._optionsElement = element; }} onClick={this._onShowOptions.bind(this)} role="button" tabIndex={-1} />
         <ContextMenu parent={this._optionsElement} isOpened={this.state.showOptions} onClickOutside={this._onCloseOptions.bind(this)} position={RelativePosition.BottomRight}>
           <ContextMenuItem key={0} icon="icon-visibility" onClick={this._onSetEnableAll} name={UiFramework.translate("pickerButtons.showAll")} />
           <ContextMenuItem key={1} icon="icon-visibility-hide-2" onClick={this._onClearAll} name={UiFramework.translate("pickerButtons.hideAll")} />

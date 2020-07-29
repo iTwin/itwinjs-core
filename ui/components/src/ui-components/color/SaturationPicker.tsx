@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
 
 /** Properties for the [[SaturationPicker]] React component
  * @beta
@@ -27,6 +28,7 @@ export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivEleme
  */
 export class SaturationPicker extends React.PureComponent<SaturationPickerProps> {
   private _container: HTMLDivElement | null = null;
+  private _saturationLabel = UiComponents.translate("color.saturation");
 
   /** @internal */
   constructor(props: SaturationPickerProps) {
@@ -81,13 +83,17 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     let value = -((top * 100) / containerHeight) + 100;
 
     // istanbul ignore if
-    if (saturation < 0) saturation = 0;
+    if (saturation < 0)
+      saturation = 0;
     // istanbul ignore if
-    if (saturation > 100) saturation = 100;
+    if (saturation > 100)
+      saturation = 100;
     // istanbul ignore if
-    if (value < 0) value = 0;
+    if (value < 0)
+      value = 0;
     // istanbul ignore if
-    if (value > 100) value = 100;
+    if (value > 100)
+      value = 100;
 
     return new HSVColor(hsv.h, saturation, value);
   }
@@ -177,7 +183,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
       <div className={classnames("components-saturation-container", this.props.className)} style={this.props.style} data-testid="saturation-container">
         <div
           data-testid="saturation-region"
-          role="slider" aria-label="Saturation"
+          role="slider" aria-label={this._saturationLabel} aria-valuenow={this.props.hsv.s}
           style={colorStyle}
           className="components-saturation-region"
           ref={(container) => this._container = container}

@@ -9,6 +9,9 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
     labels={
       Object {
         "dockToolSettingsTitle": "widget.tooltips.dockToolSettings",
+        "moreToolSettingsTitle": "widget.tooltips.moreToolSettings",
+        "moreWidgetsTitle": "widget.tooltips.moreWidgets",
+        "resizeGripTitle": "widget.tooltips.resizeGrip",
         "sendWidgetHomeTitle": "widget.tooltips.sendHome",
       }
     }

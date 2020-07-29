@@ -54,13 +54,17 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
         isInFooterMode={this.props.isInFooterMode}
       >
         {this.props.isInFooterMode &&
-          <span className="uifw-statusFields-selectionScope-label">{this._label}:</span>
+          <label className="uifw-statusFields-selectionScope-label" htmlFor="components-selectionScope-selector">
+            {this._label}:
+          </label>
         }
+        {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
           className="uifw-statusFields-selectionScope-selector"
           value={this.props.activeSelectionScope}
           onChange={this._updateSelectValue}
           data-testid="components-selectionScope-selector"
+          id="components-selectionScope-selector"
           title={this._toolTip}>
 
           {this.props.availableSelectionScopes && this.props.availableSelectionScopes.map((scope: PresentationSelectionScope, index: number) => {

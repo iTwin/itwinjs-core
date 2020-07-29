@@ -132,16 +132,22 @@
       .option-group {
         margin: 10px 0 10px auto;
 
+        .icon {
+          &:focus {
+            outline: none;
+          }
+        }
+
         .icon-search {
           margin-left: auto;
           margin-right: 6px;
-          font-size: 14;
+          font-size: 14px;
         }
 
         .icon-close {
           margin-left: auto;
           margin-right: 6px;
-          font-size: 14;
+          font-size: 14px;
         }
 
         .options {

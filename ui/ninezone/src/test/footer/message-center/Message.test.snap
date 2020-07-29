@@ -13,7 +13,9 @@ exports[`<MessageCenterMessage /> renders correctly with icon and content 1`] = 
   <div
     className="nz-icon"
   >
-    <img />
+    <img
+      alt=""
+    />
   </div>
   <div
     className="nz-content"

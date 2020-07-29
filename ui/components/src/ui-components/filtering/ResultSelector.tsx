@@ -10,6 +10,7 @@ import "./ResultSelector.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
 
 /** [[ResultSelector]] React Component state
  * @internal
@@ -37,6 +38,7 @@ export interface ResultSelectorProps extends CommonProps {
  * @public
  */
 export class ResultSelector extends React.PureComponent<ResultSelectorProps, ResultSelectorState> {
+  private _ofLabel = UiComponents.translate("general.of");
 
   /** @internal */
   constructor(props: ResultSelectorProps) {
@@ -124,7 +126,7 @@ export class ResultSelector extends React.PureComponent<ResultSelectorProps, Res
 
         <span style={{ pointerEvents: this.props.resultCount ? "auto" : "none" }}
           className="components-result-selector-current-result"
-          onClick={this._onSelectedResultClick}>
+          onClick={this._onSelectedResultClick} role="presentation">
           {this.state.selectedResultInEditMode ?
             <input type="number"
               style={{ width: `${this.state.selectedResultEdit.length * 0.60 + 1}em` }}
@@ -133,7 +135,7 @@ export class ResultSelector extends React.PureComponent<ResultSelectorProps, Res
               onBlur={this._onSelectedResultConfirmed}
               onKeyDown={this._onSelectedResultKeyDown} /> :
             this.state.selectedResultId}
-          <span style={{ marginLeft: "5px", marginRight: "5px" }}>of</span>
+          <span style={{ marginLeft: "5px", marginRight: "5px" }}>{this._ofLabel}</span>
           <span>{this.props.resultCount}</span>
         </span>
 
