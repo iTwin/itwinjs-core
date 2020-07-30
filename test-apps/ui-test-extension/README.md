@@ -1,10 +1,10 @@
-# WMS Example Extension
+# Dialog Items Example Extension
 
 Copyright © Bentley Systems, Incorporated. All rights reserved.
 
-An iModel.js example Extension that demonstrates adding a WMS (Web Map Service) tiled graphics provider to the graphics of a view:
+An iModel.js Extension that demonstrates how to use the DialogItem and related interfaces in @bentley/ui-abstract to create user interfaces without writing any React code.
 
-This extension serves as an example of a extension that can be added to iModel.js host applications.
+This extension is an example of an extension that can be added to iModel.js host applications.
 See http://imodeljs.org for comprehensive documentation on the iModel.js API and the various constructs used in this sample.
 
 ## Development Setup
@@ -19,7 +19,18 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
   npm run build
   ```
 
-4. Copy all the output files in the lib/build directory tree to imjs_extensions/iotDemo directory in the web resources of the host application.
+4. Copy all the output files in the lib/extension directory tree to imjs_extensions/ui-test directory in the build directory of the host application.
+
+### To run in ui-test-app, on a Windows machine, use the following key-ins from the root imodeljs directory.
+
+  ```sh
+  cd test-apps\ui-test-app\build
+  md imjs_extensions
+  cd imjs_extensions
+  mklink /d ui-test ..\..\..\ui-test-extension\lib\extension
+  cd ..\..\..
+  npm run start:servers
+  ```
 
 5. Start the host application - go to its directory and run:
 
@@ -29,7 +40,7 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 
-7. Start the extension using the ExtensionTool - ExtensionTool.run("localhost:3000/wmsExtension");
+7. Start the extension using the ExtensionTool - ExtensionTool.run("ui-test");
 
 ## Contributing
 

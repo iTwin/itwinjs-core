@@ -468,6 +468,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@bentley/ui-test-extension",
+      "projectFolder": "test-apps/ui-test-extension",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "iot-demo",
       "projectFolder": "extensions/iot-demo",
       "reviewCategory": "internal",
