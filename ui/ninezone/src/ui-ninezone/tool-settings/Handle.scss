@@ -31,7 +31,7 @@
     > .nz-dot {
       width: $dot-size;
       height: $dot-size;
-      background-color: currentColor;
+      background-color: $buic-foreground-disabled;
 
       &:last-child {
         margin-left: $dot-gap;

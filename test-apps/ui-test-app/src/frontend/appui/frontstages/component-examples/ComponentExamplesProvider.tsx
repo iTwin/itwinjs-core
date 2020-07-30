@@ -18,6 +18,8 @@ import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExam
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
+import { SampleAppIModelApp } from "../../..";
+import { Logger } from "@bentley/bentleyjs-core";
 
 // tslint:disable: no-console
 
@@ -50,7 +52,16 @@ export class ComponentExamplesProvider {
         createComponentExample("Large Disabled Button", "Button with disabled and size={ButtonSize.Large} props", <Button disabled size={ButtonSize.Large}>Disabled Button</Button>),
         createComponentExample("Large Blue Button", "Button with ButtonType.Blue and size={ButtonSize.Large}", <Button buttonType={ButtonType.Blue} size={ButtonSize.Large}>Blue Button</Button>),
         createComponentExample("Large Hollow Button", "Button with ButtonType.Hollow and size={ButtonSize.Large}", <Button buttonType={ButtonType.Hollow} size={ButtonSize.Large}>Hollow Button</Button>),
-        createComponentExample("Underlined Button", "UnderlinedButton component", <UnderlinedButton>Underlined Button</UnderlinedButton>),
+        createComponentExample("Underlined Button", "UnderlinedButton component",
+          <UnderlinedButton
+            onActivate={() => Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `UnderlinedButton activated`)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `UnderlinedButton clicked`);
+            }}>
+            Underlined Button
+          </UnderlinedButton>),
       ],
     };
   }

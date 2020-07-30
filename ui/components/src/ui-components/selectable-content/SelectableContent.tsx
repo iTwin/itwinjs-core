@@ -49,6 +49,7 @@ export function ControlledSelectableContent(props: ControlledSelectableContentPr
     <div className="components-selectable-content">
       <div className="components-selectable-content-header">
         <ThemedSelect openMenuOnClick={true} openMenuOnFocus={true} isSearchable={false} onChange={onContentIdSelected}
+          className="components-selectable-content-selector"
           aria-label={props.selectAriaLabel}
           value={{ label: selectedContent?.label, value: selectedContent?.id }}
           options={props.children.map((componentDef) => ({

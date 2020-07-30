@@ -33,7 +33,7 @@
       &:after {
         content: "";
         display: block;
-        border-color: $buic-background-4;
+        border-color: $buic-foreground-disabled;
         border-style: solid;
         border-width: 0.15em 0.15em 0 0;
         width: 0.5em;
@@ -41,6 +41,15 @@
         margin-left: -0.15em;
         box-sizing: border-box;
         transform: rotate(45deg);
+      }
+
+    }
+
+    &:hover {
+      > .nz-icon {
+        &:after {
+          border-color: $buic-foreground-activehover;
+        }
       }
     }
 

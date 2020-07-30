@@ -58,12 +58,20 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   constructor(props: MainTabsProps) {
     super(props);
 
+    const activeIndex = this.validateActiveIndex(props.activeIndex);
     this.state = {
-      activeIndex: props.activeIndex ?? 0,
+      activeIndex,
     };
 
     props.labels.forEach(() => this._anchorRefs.push(React.createRef<HTMLAnchorElement>()));
     this._itemKeyboardNavigator = new ItemKeyboardNavigator(this._handleFocusItem, this._activateTab);
+  }
+
+  private validateActiveIndex(idx?: number): number {
+    let activeIndex = 0;
+    if (idx && idx >= 0 && idx < this.props.labels.length)
+      activeIndex = idx;
+    return activeIndex;
   }
 
   /** @internal */
@@ -76,8 +84,30 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   public componentDidUpdate(prevProps: MainTabsProps) {
     if (prevProps.labels !== this.props.labels)
       this._itemKeyboardNavigator.itemCount = this.props.labels.length;
+
     if (prevProps.orientation !== this.props.orientation)
       this._itemKeyboardNavigator.orientation = this.props.orientation;
+
+    if (prevProps.activeIndex !== this.props.activeIndex) {
+      let hadFocus = false;
+      const element = this._anchorRefs[this.state.activeIndex].current;
+      // istanbul ignore else
+      if (element && document.activeElement === element)
+        hadFocus = true;
+      const activeIndex = this.validateActiveIndex(this.props.activeIndex);
+
+      this.setState(
+        () => ({ activeIndex }),
+        () => {
+          // istanbul ignore else
+          if (hadFocus) {
+            const newElement = this._anchorRefs[this.state.activeIndex].current;
+            // istanbul ignore else
+            if (newElement)
+              newElement.focus();
+          }
+        });
+    }
   }
 
   private _handleFocusItem = (index: number) => {

@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { useDragToolSettings } from "../base/DragManager";
-import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
+import { getUniqueId, NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { useDrag } from "../widget/TabBar";
 
 /** Properties of [[DockedToolSettingsHandle]] component.
@@ -40,15 +40,18 @@ export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHa
   }, [dispatch, newWidgetDragItemId, onDragStart]);
   const dragRef = useDrag(handleDragStart);
   const refs = useRefs(dragRef, resizeObserverRef);
+  const title = useLabel("toolSettingsHandleTitle");
   const className = classnames(
     "nz-toolSettings-handle",
     props.className,
   );
+
   return (
     <div
       className={className}
       ref={refs}
       style={props.style}
+      title={title}
     >
       <div className="nz-row">
         <div className="nz-dot" />

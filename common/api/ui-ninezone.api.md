@@ -1207,6 +1207,8 @@ export interface NineZoneLabels {
     resizeGripTitle?: string;
     // (undocumented)
     sendWidgetHomeTitle?: string;
+    // (undocumented)
+    toolSettingsHandleTitle?: string;
 }
 
 // @internal (undocumented)

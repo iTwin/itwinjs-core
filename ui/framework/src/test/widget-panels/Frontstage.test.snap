@@ -13,6 +13,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
         "moreWidgetsTitle": "widget.tooltips.moreWidgets",
         "resizeGripTitle": "widget.tooltips.resizeGrip",
         "sendWidgetHomeTitle": "widget.tooltips.sendHome",
+        "toolSettingsHandleTitle": "widget.tooltips.toolSettingsHandle",
       }
     }
     state={

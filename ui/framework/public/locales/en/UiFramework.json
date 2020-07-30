@@ -255,7 +255,8 @@
       "sendHome": "Send to panel",
       "moreWidgets": "More widgets",
       "moreToolSettings": "More tool settings",
-      "resizeGrip": "Resize widget panel"
+      "resizeGrip": "Resize widget panel",
+      "toolSettingsHandle": "Undock tool settings"
     }
   },
   "statusBar": {

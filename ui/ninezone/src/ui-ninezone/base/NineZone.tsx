@@ -38,6 +38,7 @@ export interface NineZoneLabels {
   moreWidgetsTitle?: string;
   moreToolSettingsTitle?: string;
   resizeGripTitle?: string;
+  toolSettingsHandleTitle?: string;
 }
 
 /** @internal future */

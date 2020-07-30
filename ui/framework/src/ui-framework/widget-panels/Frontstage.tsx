@@ -176,6 +176,7 @@ export function useLabels() {
     moreWidgetsTitle: UiFramework.translate("widget.tooltips.moreWidgets"),
     moreToolSettingsTitle: UiFramework.translate("widget.tooltips.moreToolSettings"),
     resizeGripTitle: UiFramework.translate("widget.tooltips.resizeGrip"),
+    toolSettingsHandleTitle: UiFramework.translate("widget.tooltips.toolSettingsHandle"),
   }), []);
 }
 
