@@ -31,7 +31,6 @@ import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
 import { PartialHierarchyModification } from '@bentley/presentation-common';
-import { PartialHierarchyModificationJSON } from '@bentley/presentation-common';
 import { PresentationDataCompareOptions } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
