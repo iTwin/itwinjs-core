@@ -6,9 +6,10 @@
  * @module Logging
  */
 
+import { BeEvent } from "./BeEvent";
 import { BentleyError, GetMetaDataFunction, IModelStatus } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
-import { ClientRequestContext } from "./ClientRequestContext";
+import { addClientRequestContext, ClientRequestContext } from "./ClientRequestContext";
 import { IDisposable } from "./Disposable";
 
 /** Defines the *signature* for a log function.
@@ -60,6 +61,7 @@ export class Logger {
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
   private static _logExceptionCallstacks = false;
+  private static _makeMetaDataEvent: BeEvent<(...arg: any[]) => void> = new BeEvent<(...arg: any[]) => void>();
 
   /** Initialize the logger streams. Should be called at application initialization time. */
   public static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void {
@@ -69,6 +71,7 @@ export class Logger {
     Logger._logTrace = logTrace;
     Logger.turnOffLevelDefault();
     Logger.turnOffCategories();
+    Logger.clearMetaDataSources();
   }
 
   /**
@@ -107,13 +110,38 @@ export class Logger {
     );
   }
 
-  // WIP: This modifies the incoming Object!
-  private static addClientRequestContext(metaData: any) {
-    const requestContext = ClientRequestContext.current;
-    metaData.ActivityId = requestContext.activityId;
-    metaData.SessionId = requestContext.sessionId;
-    metaData.ApplicationId = requestContext.applicationId;
-    metaData.ApplicationVersion = requestContext.applicationVersion;
+  /** Register a metadata source to the logger.
+   * Source should be in the form of a callback function that adds properties to a metadata object.
+   * @beta
+   */
+  public static registerMetaDataSource(callback: (metadata: any) => void): boolean {
+    if (!this._makeMetaDataEvent.has(callback)) {
+      this._makeMetaDataEvent.addListener(callback);
+      return true;
+    }
+    return false;
+  }
+
+  /** Remove a metadata source.
+   * @beta
+   */
+  public static removeMetaDataSource(callback: (md: any) => void) {
+    return this._makeMetaDataEvent.removeListener(callback);
+  }
+
+  /** Clear all of a logger's metadata sources.
+   * @beta
+   */
+  private static clearMetaDataSources(): void {
+    this._makeMetaDataEvent.clear();
+  }
+
+  /** Add metadata from all registered sources.
+   * @beta
+   */
+  private static addMetaDataFromSources(metaData: any): void {
+    Logger.registerMetaDataSource(addClientRequestContext);
+    this._makeMetaDataEvent.raiseEvent(metaData);
   }
 
   /** @internal used by addon */
@@ -145,7 +173,7 @@ export class Logger {
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
     const metaData: any = getMetaData ? { ...getMetaData() } : {}; // Copy object to avoid mutating the original
-    Logger.addClientRequestContext(metaData);
+    Logger.addMetaDataFromSources(metaData);
     return metaData;
   }
 

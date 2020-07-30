@@ -8,6 +8,9 @@
 export class AbandonedError extends Error {
 }
 
+// @internal
+export const addClientRequestContext: (metaData: any) => void;
+
 // @public
 export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | undefined;
 
@@ -1012,6 +1015,10 @@ export class Logger {
     static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static makeMetaData(getMetaData?: GetMetaDataFunction): any;
     static parseLogLevel(str: string): LogLevel;
+    // @beta
+    static registerMetaDataSource(callback: (metadata: any) => void): boolean;
+    // @beta
+    static removeMetaDataSource(callback: (md: any) => void): boolean;
     // @internal
     static setCurrentClientRequestContext(obj: any): void;
     static setLevel(category: string, minLevel: LogLevel): void;
