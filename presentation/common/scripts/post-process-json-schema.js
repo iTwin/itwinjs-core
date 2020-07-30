@@ -32,9 +32,9 @@ function handleArray(arr) {
   return arr;
 }
 function handleDescription(descr) {
-  descr = descr.replace(/\[\[([\w\d\.]+)\]\]/ig, "`$1`");
-  descr = descr.replace(/\*\*([\w\d\.\:]+)\*\*/ig, "$1");
-  descr = descr.replace(/\[([\w\d\s\.\:]+)\]\(\$docs[\\\/\w\d-#\.]+\)/ig, "$1");
+  descr = descr.replace(/\[\[([\w\d\.]+)\]\]/ig, "`$1`"); // replace [[something]] to: `something`
+  descr = descr.replace(/\*\*([\w\d\.\:]+)\*\*/ig, "$1"); // replace **something** to: something
+  descr = descr.replace(/\[([\w\d\s\.\:]+)\]\(\$docs[\\\/\w\d-#\.]+\)/ig, "$1"); // replace [something]($docs/link) to: something
   return descr;
 }
 
@@ -44,9 +44,9 @@ fs.writeFileSync(schemaPath, JSON.stringify(processedSchema, undefined, 2));
 const isCI = (process.env.TF_BUILD);
 if (isCI) {
   // break CI builds if the schema file changes during the build
-  const schemaFileStatus = execSync(`git status -s "${yargs.path}"`).toString().trim();
-  if (schemaFileStatus !== "") {
-    console.error("JSON schema file was modified during a CI build. Please build the package locally and commit the changes.\n");
+  const schemaFileDiff = execSync(`git diff "${yargs.path}"`).toString().trim();
+  if (schemaFileDiff !== "") {
+    console.error(`JSON schema file was modified during a CI build. Please build the package locally and commit the changes. Diff:\n\n${schemaFileDiff}\n\n`);
     process.exit(1);
   }
 }

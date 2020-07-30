@@ -1,5 +1,6 @@
 package.json text eol=lf
 package-lock.json text eol=lf
+presentation/common/Ruleset.schema.json text eol=lf
 
 # Don't allow people to merge changes to these generated files, because the result
 # may be invalid.  You need to run "rush update" again.
