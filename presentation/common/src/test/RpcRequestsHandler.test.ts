@@ -23,7 +23,7 @@ import {
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, ExtendedContentRpcRequestOptions,
-  ExtendedHierarchyRpcRequestOptions,
+  ExtendedHierarchyRpcRequestOptions, PresentationDataCompareRpcOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import {
   createRandomDescriptorJSON, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKeyJSON,
@@ -478,19 +478,21 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards compareHierarchies call", async () => {
-      const handlerOptions: PresentationDataCompareOptions<IModelRpcProps> = {
+      const handlerOptions: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON> = {
+        imodel: token,
         prev: {
           rulesetOrId: "test1",
         },
         rulesetOrId: "test2",
-        imodel: token,
+        expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
       };
-      const rpcOptions: PresentationRpcRequestOptions<PresentationDataCompareOptions<any>> = {
+      const rpcOptions: PresentationDataCompareRpcOptions = {
         clientId,
         prev: {
           rulesetOrId: "test1",
         },
         rulesetOrId: "test2",
+        expandedNodeKeys: [...handlerOptions.expandedNodeKeys!],
       };
       const result = new Array<PartialHierarchyModificationJSON>();
       rpcInterfaceMock.setup(async (x) => x.compareHierarchies(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();

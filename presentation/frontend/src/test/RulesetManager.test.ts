@@ -18,9 +18,8 @@ describe("RulesetManager", () => {
 
   beforeEach(() => {
     onRulesetModifiedSpy = sinon.stub<[RegisteredRuleset, Ruleset], Promise<void>>().resolves();
-    manager = RulesetManagerImpl.create({
-      onRulesetModified: onRulesetModifiedSpy,
-    });
+    manager = RulesetManagerImpl.create();
+    manager.onRulesetModified.addListener(onRulesetModifiedSpy);
   });
 
   describe("get", () => {

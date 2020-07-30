@@ -15,7 +15,7 @@ import {
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
   ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node,
   NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus,
-  PresentationUnitSystem, RequestPriority, Ruleset, RulesetVariable, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -757,30 +757,39 @@ export class PresentationManager {
   }
 
   /** @deprecated Use an overload with one argument */
-  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]>;
+  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
   /**
    * Compares two hierarchies specified in the request options
    * TODO: Return results in pages
    * @beta
    */
-  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>>): Promise<PartialHierarchyModification[]>;
-  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]> {
+  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<PartialHierarchyModification[]>;
+  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
     }
 
-    const prev = getPrevValues(requestContextOrOptions);
+    if (!requestContextOrOptions.prev.rulesetOrId && !requestContextOrOptions.prev.rulesetVariables)
+      return [];
+
+    const { strippedOptions: { imodel, requestContext, ...options } } = this.registerRuleset(requestContextOrOptions);
+
     const currRulesetId = this.getRulesetIdObject(requestContextOrOptions.rulesetOrId);
-    const prevRulesetId = this.getRulesetIdObject(prev.rulesetOrId);
+    const prevRulesetId = options.prev.rulesetOrId ? this.getRulesetIdObject(options.prev.rulesetOrId) : currRulesetId;
     if (prevRulesetId.parts.id !== currRulesetId.parts.id)
       throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
 
-    this.registerRuleset(requestContextOrOptions);
-    const imodelAddon = this.getNativePlatform().getImodelAddon(requestContextOrOptions.imodel);
-    const modificationJsons = await this.getNativePlatform().compareHierarchies(requestContextOrOptions.requestContext, imodelAddon, {
+    const currRulesetVariables = options.rulesetVariables ?? [];
+    const prevRulesetVariables = options.prev.rulesetVariables ?? currRulesetVariables;
+
+    const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
+    const modificationJsons = await this.getNativePlatform().compareHierarchies(requestContext, imodelAddon, {
       prevRulesetId: prevRulesetId.uniqueId,
       currRulesetId: currRulesetId.uniqueId,
-      locale: normalizeLocale(requestContextOrOptions.locale ?? this.activeLocale) ?? "",
+      prevRulesetVariables: JSON.stringify(prevRulesetVariables),
+      currRulesetVariables: JSON.stringify(currRulesetVariables),
+      expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
+      locale: normalizeLocale(options.locale ?? this.activeLocale) ?? "",
     });
     return modificationJsons.map(PartialHierarchyModification.fromJSON);
   }
@@ -809,23 +818,6 @@ const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | De
   if (descriptorOrOverrides instanceof Descriptor)
     return descriptorOrOverrides.createDescriptorOverrides();
   return descriptorOrOverrides as DescriptorOverrides;
-};
-
-const hasPrevRuleset = (prev: ({ rulesetOrId: string | Ruleset } | { rulesetVariables: RulesetVariable[] })): prev is ({ rulesetOrId: string | Ruleset }) => {
-  return !!(prev as { rulesetOrId: string | Ruleset }).rulesetOrId;
-};
-
-const getPrevValues = (options: PresentationDataCompareOptions<IModelDb>) => {
-  if (hasPrevRuleset(options.prev)) {
-    return {
-      rulesetOrId: options.prev.rulesetOrId,
-      rulesetVariables: options.rulesetVariables ?? [],
-    };
-  }
-  return {
-    rulesetOrId: options.rulesetOrId,
-    rulesetVariables: options.prev.rulesetVariables,
-  };
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {

@@ -2383,10 +2383,17 @@ describe("PresentationManager", () => {
     });
 
     it("[deprecated] addon to compare hierarchies after ruleset change", async () => {
+      const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
+      const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+      const nodeKey = createRandomECInstancesNodeKey();
+
       // what the addon receives
       const expectedParams = {
         prevRulesetId: "test",
+        prevRulesetVariables: JSON.stringify([var1]),
         currRulesetId: "test",
+        currRulesetVariables: JSON.stringify([var2]),
+        expandedNodeKeys: JSON.stringify([NodeKey.toJSON(nodeKey)]),
         locale: "",
       };
 
@@ -2396,31 +2403,154 @@ describe("PresentationManager", () => {
         position: 1,
         node: createRandomECInstancesNodeJSON(),
       }];
-      nativePlatformMock.setup((x) => x.compareHierarchies(moq.It.isAny(), moq.It.isAny(), expectedParams))
+      nativePlatformMock.setup((x) => x.compareHierarchies(ClientRequestContext.current, moq.It.isAny(), expectedParams))
         .returns(async () => addonResponse);
 
       // test
-      const options: PresentationDataCompareOptions<IModelDb> = {
+      const options: PresentationDataCompareOptions<IModelDb, NodeKey> = {
         imodel: imodelMock.object,
         prev: {
           rulesetOrId: "test",
+          rulesetVariables: [var1],
         },
         rulesetOrId: "test",
-        rulesetVariables: [],
+        rulesetVariables: [var2],
+        expandedNodeKeys: [nodeKey],
       };
       const result = await manager.compareHierarchies(ClientRequestContext.current, options);
       expect(result).to.deep.eq(addonResponse.map(PartialHierarchyModification.fromJSON));
     });
 
+    it("requests addon to compare hierarchies based on ruleset and variables' changes", async () => {
+      const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
+      const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+      const nodeKey = createRandomECInstancesNodeKey();
+
+      // what the addon receives
+      const expectedParams = {
+        prevRulesetId: "test",
+        prevRulesetVariables: JSON.stringify([var1]),
+        currRulesetId: "test",
+        currRulesetVariables: JSON.stringify([var2]),
+        expandedNodeKeys: JSON.stringify([NodeKey.toJSON(nodeKey)]),
+        locale: "",
+      };
+
+      // what the addon returns
+      const addonResponse: PartialHierarchyModificationJSON[] = [{
+        type: "Insert",
+        position: 1,
+        node: createRandomECInstancesNodeJSON(),
+      }];
+      nativePlatformMock.setup((x) => x.compareHierarchies(ClientRequestContext.current, moq.It.isAny(), expectedParams))
+        .returns(async () => addonResponse);
+
+      // test
+      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        requestContext: ClientRequestContext.current,
+        imodel: imodelMock.object,
+        prev: {
+          rulesetOrId: "test",
+          rulesetVariables: [var1],
+        },
+        rulesetOrId: "test",
+        rulesetVariables: [var2],
+        expandedNodeKeys: [nodeKey],
+      };
+      const result = await manager.compareHierarchies(options);
+      expect(result).to.deep.eq(addonResponse.map(PartialHierarchyModification.fromJSON));
+    });
+
+    it("requests addon to compare hierarchies based on ruleset changes", async () => {
+      // what the addon receives
+      const expectedParams = {
+        prevRulesetId: "test",
+        prevRulesetVariables: JSON.stringify([]),
+        currRulesetId: "test",
+        currRulesetVariables: JSON.stringify([]),
+        expandedNodeKeys: JSON.stringify([]),
+        locale: "",
+      };
+
+      // what the addon returns
+      const addonResponse: PartialHierarchyModificationJSON[] = [{
+        type: "Delete",
+        node: createRandomECInstancesNodeJSON(),
+      }];
+      nativePlatformMock.setup((x) => x.compareHierarchies(ClientRequestContext.current, moq.It.isAny(), expectedParams))
+        .returns(async () => addonResponse);
+
+      // test
+      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        requestContext: ClientRequestContext.current,
+        imodel: imodelMock.object,
+        prev: {
+          rulesetOrId: "test",
+        },
+        rulesetOrId: "test",
+      };
+      const result = await manager.compareHierarchies(options);
+      expect(result).to.deep.eq(addonResponse.map(PartialHierarchyModification.fromJSON));
+    });
+
+    it("requests addon to compare hierarchies based on ruleset variables' changes", async () => {
+      const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
+      const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+
+      // what the addon receives
+      const expectedParams = {
+        prevRulesetId: "test",
+        prevRulesetVariables: JSON.stringify([var1]),
+        currRulesetId: "test",
+        currRulesetVariables: JSON.stringify([var2]),
+        expandedNodeKeys: JSON.stringify([]),
+        locale: "",
+      };
+
+      // what the addon returns
+      const addonResponse: PartialHierarchyModificationJSON[] = [{
+        type: "Update",
+        node: createRandomECInstancesNodeJSON(),
+        changes: [],
+      }];
+      nativePlatformMock.setup((x) => x.compareHierarchies(ClientRequestContext.current, moq.It.isAny(), expectedParams))
+        .returns(async () => addonResponse);
+
+      // test
+      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        requestContext: ClientRequestContext.current,
+        imodel: imodelMock.object,
+        prev: {
+          rulesetVariables: [var1],
+        },
+        rulesetOrId: "test",
+        rulesetVariables: [var2],
+      };
+      const result = await manager.compareHierarchies(options);
+      expect(result).to.deep.eq(addonResponse.map(PartialHierarchyModification.fromJSON));
+    });
+
+    it("returns empty result if neither ruleset nor ruleset variables changed", async () => {
+      const result = await manager.compareHierarchies({
+        requestContext: ClientRequestContext.current,
+        imodel: imodelMock.object,
+        prev: {},
+        rulesetOrId: "test",
+      });
+      nativePlatformMock.verify((x) => x.compareHierarchies(ClientRequestContext.current, moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      expect(result).to.deep.eq([]);
+    });
+
     it("throws when trying to compare hierarchies with different ruleset ids", async () => {
       // test
-      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>> = {
+      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
         requestContext: ClientRequestContext.current,
         imodel: imodelMock.object,
         prev: {
           rulesetOrId: "1",
         },
         rulesetOrId: "2",
+        expandedNodeKeys: [],
       };
       await expect(manager.compareHierarchies(options)).to.eventually.be.rejected;
       nativePlatformMock.verify((x) => x.compareHierarchies(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -2432,8 +2562,11 @@ describe("PresentationManager", () => {
       // what the addon receives
       const expectedParams = {
         prevRulesetId: "test",
+        prevRulesetVariables: "[]",
         currRulesetId: "test",
+        currRulesetVariables: "[]",
         locale: "test",
+        expandedNodeKeys: "[]",
       };
 
       // what the addon returns
@@ -2441,13 +2574,14 @@ describe("PresentationManager", () => {
         .returns(async () => []).verifiable(moq.Times.once());
 
       // test
-      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>> = {
+      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
         requestContext: ClientRequestContext.current,
         imodel: imodelMock.object,
         prev: {
           rulesetOrId: "test",
         },
         rulesetOrId: "test",
+        expandedNodeKeys: [],
       };
       await manager.compareHierarchies(options);
       nativePlatformMock.verifyAll();
@@ -2459,8 +2593,11 @@ describe("PresentationManager", () => {
       // what the addon receives
       const expectedParams = {
         prevRulesetId: "test",
+        prevRulesetVariables: "[]",
         currRulesetId: "test",
+        currRulesetVariables: "[]",
         locale: "options locale",
+        expandedNodeKeys: "[]",
       };
 
       // what the addon returns
@@ -2468,7 +2605,7 @@ describe("PresentationManager", () => {
         .returns(async () => []).verifiable(moq.Times.once());
 
       // test
-      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>> = {
+      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
         requestContext: ClientRequestContext.current,
         imodel: imodelMock.object,
         prev: {
@@ -2476,79 +2613,10 @@ describe("PresentationManager", () => {
         },
         rulesetOrId: "test",
         locale: "options locale",
+        expandedNodeKeys: [],
       };
       await manager.compareHierarchies(options);
       nativePlatformMock.verifyAll();
-    });
-
-    it("requests addon to compare hierarchies after ruleset change", async () => {
-      // what the addon receives
-      const expectedParams = {
-        prevRulesetId: "test",
-        currRulesetId: "test",
-        locale: "",
-      };
-
-      // what the addon returns
-      const addonResponse: PartialHierarchyModificationJSON[] = [{
-        type: "Insert",
-        position: 1,
-        node: createRandomECInstancesNodeJSON(),
-      }];
-      nativePlatformMock.setup((x) => x.compareHierarchies(moq.It.isAny(), moq.It.isAny(), expectedParams))
-        .returns(async () => addonResponse);
-
-      // test
-      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>> = {
-        requestContext: ClientRequestContext.current,
-        imodel: imodelMock.object,
-        prev: {
-          rulesetOrId: "test",
-        },
-        rulesetOrId: "test",
-        rulesetVariables: [],
-      };
-      const result = await manager.compareHierarchies(options);
-      expect(result).to.deep.eq(addonResponse.map(PartialHierarchyModification.fromJSON));
-    });
-
-    it("requests addon to compare hierarchies after ruleset variables' change", async () => {
-      // what the addon receives
-      const expectedParams = {
-        prevRulesetId: "test",
-        currRulesetId: "test",
-        locale: "",
-      };
-
-      // what the addon returns
-      const addonResponse: PartialHierarchyModificationJSON[] = [{
-        type: "Insert",
-        position: 1,
-        node: createRandomECInstancesNodeJSON(),
-      }];
-      nativePlatformMock.setup((x) => x.compareHierarchies(moq.It.isAny(), moq.It.isAny(), expectedParams))
-        .returns(async () => addonResponse);
-
-      // test
-      const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>> = {
-        requestContext: ClientRequestContext.current,
-        imodel: imodelMock.object,
-        prev: {
-          rulesetVariables: [{
-            id: "var",
-            type: VariableValueTypes.Bool,
-            value: false,
-          }],
-        },
-        rulesetOrId: "test",
-        rulesetVariables: [{
-          id: "var",
-          type: VariableValueTypes.Bool,
-          value: true,
-        }],
-      };
-      const result = await manager.compareHierarchies(options);
-      expect(result).to.deep.eq(addonResponse.map(PartialHierarchyModification.fromJSON));
     });
 
   });

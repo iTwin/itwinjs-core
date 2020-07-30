@@ -41,11 +41,18 @@ export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContent
 export interface PresentationPropertyDataProviderProps {
   /** IModelConnection to use for requesting property data. */
   imodel: IModelConnection;
+
   /**
    * Id of the ruleset to use when requesting properties or a ruleset itself. If not
    * set, default presentation rules are used which return content for the selected elements.
    */
   ruleset?: string | Ruleset;
+
+  /**
+   * Auto-update property data when ruleset, ruleset variables or data in the iModel changes.
+   * @alpha
+   */
+  enableContentAutoUpdate?: boolean;
 }
 
 /**
@@ -68,6 +75,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
       imodel: props.imodel,
       ruleset: props.ruleset ? props.ruleset : DEFAULT_PROPERTY_GRID_RULESET.id,
       displayType: DefaultContentDisplayTypes.PropertyPane,
+      enableContentAutoUpdate: props.enableContentAutoUpdate,
     });
     this._useDefaultRuleset = !props.ruleset;
     this._includeFieldsWithNoValues = true;

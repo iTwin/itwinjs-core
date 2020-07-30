@@ -8,11 +8,10 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentDescriptorRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, Item, KeySet,
-  NestedContentField, Paged, RegisteredRuleset, Ruleset, SelectionInfo,
+  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, Item, KeySet, NestedContentField,
+  Paged, RegisteredRuleset, Ruleset, SelectionInfo,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -24,6 +23,7 @@ import { Presentation, PresentationManager, RulesetManager } from "@bentley/pres
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
+import { mockPresentationManager } from "../_helpers/UiComponents";
 
 /**
  * The Provider class is used to make protected ContentDataProvider
@@ -47,30 +47,29 @@ describe("ContentDataProvider", () => {
   let rulesetId: string;
   let displayType: string;
   let provider: Provider;
-  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
   let invalidateCacheSpy: sinon.SinonSpy<[CacheInvalidationProps], void>;
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+  let presentationManagerMock: moq.IMock<PresentationManager>;
+  let rulesetsManagerMock: moq.IMock<RulesetManager>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+
   before(() => {
     rulesetId = faker.random.word();
     displayType = faker.random.word();
-    Presentation.setPresentationManager(presentationManagerMock.object);
-  });
-
-  after(() => {
-    Presentation.terminate();
   });
 
   beforeEach(() => {
-    onContentUpdateEvent = new BeEvent();
-    presentationManagerMock.reset();
-    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
-    provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType });
+    const mocks = mockPresentationManager();
+    rulesetsManagerMock = mocks.rulesetsManager;
+    presentationManagerMock = mocks.presentationManager;
+    Presentation.setPresentationManager(presentationManagerMock.object);
+
+    provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType, enableContentAutoUpdate: true });
     invalidateCacheSpy = sinon.spy(provider, "invalidateCache");
   });
 
   afterEach(() => {
     provider.dispose();
+    Presentation.terminate();
   });
 
   describe("constructor", () => {
@@ -88,10 +87,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("registers ruleset", async () => {
-      const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
       rulesetsManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (r) => new RegisteredRuleset(r, "test", () => { }));
-      presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
-
       const ruleset = await createRandomRuleset();
       const p = new Provider({ imodel: imodelMock.object, ruleset, displayType });
       expect(p.rulesetId).to.eq(ruleset.id);
@@ -100,9 +96,7 @@ describe("ContentDataProvider", () => {
 
     it("disposes registered ruleset after provided is disposed before registration completes", async () => {
       const registerPromise = new ResolvablePromise<RegisteredRuleset>();
-      const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
       rulesetsManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async () => registerPromise);
-      presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
 
       const ruleset = await createRandomRuleset();
       const p = new Provider({ imodel: imodelMock.object, ruleset, displayType });
@@ -119,9 +113,7 @@ describe("ContentDataProvider", () => {
 
     it("disposes registered ruleset", async () => {
       const registerPromise = new ResolvablePromise<RegisteredRuleset>();
-      const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
       rulesetsManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async () => registerPromise);
-      presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
 
       const ruleset = await createRandomRuleset();
       const p = new Provider({ imodel: imodelMock.object, ruleset, displayType });
@@ -648,15 +640,32 @@ describe("ContentDataProvider", () => {
 
   describe("reacting to updates", () => {
 
-    it("doesn't react to updates to unrelated rulesets", () => {
+    it("doesn't react to imodel content updates to unrelated rulesets", () => {
       const ruleset: Ruleset = { id: "unrelated", rules: [] };
-      onContentUpdateEvent.raiseEvent(ruleset, "FULL");
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: "FULL" });
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
-    it("invalidates cache when update happens to related ruleset", () => {
+    it("invalidates cache when imodel content change happens to related ruleset", () => {
       const ruleset: Ruleset = { id: rulesetId, rules: [] };
-      onContentUpdateEvent.raiseEvent(ruleset, "FULL");
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: "FULL" });
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
+    });
+
+    it("doesn't react to unrelated ruleset modifications", () => {
+      const ruleset = new RegisteredRuleset({ id: "unrelated", rules: [] }, "", () => { });
+      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset);
+      expect(invalidateCacheSpy).to.not.be.called;
+    });
+
+    it("invalidates cache when related ruleset is modified", () => {
+      const ruleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
+      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset);
+      expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
+    });
+
+    it("invalidates cache when related ruleset variables change", () => {
+      presentationManagerMock.object.vars("").onVariableChanged.raiseEvent("var_id", "prev", "curr");
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 

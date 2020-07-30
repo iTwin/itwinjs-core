@@ -1470,17 +1470,18 @@ export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDelet
 export const PRESENTATION_COMMON_ROOT: string;
 
 // @alpha
-export interface PresentationDataCompareOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {
+    // (undocumented)
+    expandedNodeKeys?: TNodeKey[];
     // (undocumented)
     prev: {
-        rulesetOrId: Ruleset | string;
-    } | {
-        rulesetVariables: RulesetVariable[];
+        rulesetOrId?: Ruleset | string;
+        rulesetVariables?: RulesetVariable[];
     };
 }
 
 // @alpha
-export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<PresentationDataCompareOptions<never>>;
+export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<PresentationDataCompareOptions<any, NodeKeyJSON>>;
 
 // @public
 export class PresentationError extends BentleyError {
@@ -1999,7 +2000,7 @@ export class RpcRequestsHandler implements IDisposable {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
-    compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps>): Promise<PartialHierarchyModificationJSON[]>;
+    compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]>;
     // (undocumented)
     computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
     // (undocumented)
