@@ -22,6 +22,7 @@ import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
+import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -39,6 +40,9 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 export abstract class IModelReadRpcInterface extends RpcInterface {
   /** Returns the IModelReadRpcInterface instance for the frontend. */
   public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
+
+  /** Returns the IModelReadRpcInterface instance for a custom RPC routing configuration. */
+  public static getClientForRouting(token: RpcRoutingToken): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface, token); }
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "IModelReadRpcInterface";

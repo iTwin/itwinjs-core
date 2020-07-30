@@ -206,6 +206,7 @@ import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RgbColorProps } from '@bentley/imodeljs-common';
+import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -4043,6 +4044,7 @@ export abstract class IModelConnection extends IModel {
     // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
+    routingContext: IModelRoutingContext;
     saveChanges(description?: string): Promise<void>;
     readonly selectionSet: SelectionSet;
     // @internal (undocumented)
@@ -4116,6 +4118,22 @@ export class IModelFrameLifecycle {
     static readonly onChangeCameraView: BeEvent<(data: FrameCameraViewData) => void>;
     // (undocumented)
     static readonly onRenderOpaque: BeEvent<(data: FrameRenderData) => void>;
+}
+
+// @public
+export class IModelRoutingContext {
+    // (undocumented)
+    get active(): boolean;
+    // (undocumented)
+    static get current(): IModelRoutingContext | undefined;
+    // (undocumented)
+    static readonly default: IModelRoutingContext;
+    // (undocumented)
+    static for(token: RpcRoutingToken): IModelRoutingContext;
+    // (undocumented)
+    route<T>(handler: () => T): T;
+    // (undocumented)
+    readonly token: RpcRoutingToken;
 }
 
 // @internal

@@ -3269,6 +3269,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]>;
     static getClient(): IModelReadRpcInterface;
+    static getClientForRouting(token: RpcRoutingToken): IModelReadRpcInterface;
     // (undocumented)
     getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String>;
     // (undocumented)
@@ -3369,6 +3370,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
     static getClient(): IModelWriteRpcInterface;
+    static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface;
     // (undocumented)
     getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
     // (undocumented)
@@ -5909,6 +5911,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     // (undocumented)
     close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
     static getClient(): SnapshotIModelRpcInterface;
+    static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface;
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)

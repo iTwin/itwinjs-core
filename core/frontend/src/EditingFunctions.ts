@@ -79,8 +79,8 @@ export class EditingFunctions {
    * @alpha
    */
   public async deleteElements(ids: Id64Array) {
-    await IModelWriteRpcInterface.getClient().requestResources(this._connection.getRpcProps(), ids, [], DbOpcode.Delete);
-    return IModelWriteRpcInterface.getClient().deleteElements(this._connection.getRpcProps(), ids);
+    await IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).requestResources(this._connection.getRpcProps(), ids, [], DbOpcode.Delete);
+    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).deleteElements(this._connection.getRpcProps(), ids);
   }
 
   /** Update the project extents of this iModel.
@@ -91,7 +91,7 @@ export class EditingFunctions {
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
     if (OpenMode.ReadWrite !== this._connection.openMode)
       throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
-    return IModelWriteRpcInterface.getClient().updateProjectExtents(this._connection.getRpcProps(), newExtents.toJSON());
+    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).updateProjectExtents(this._connection.getRpcProps(), newExtents.toJSON());
   }
 
   /** Commit pending changes to this iModel
@@ -103,9 +103,9 @@ export class EditingFunctions {
     if (OpenMode.ReadWrite !== this._connection.openMode)
       throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
 
-    const affectedModels = await IModelWriteRpcInterface.getClient().getModelsAffectedByWrites(this._connection.getRpcProps()); // TODO: Remove this when we get tile healing
+    const affectedModels = await IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).getModelsAffectedByWrites(this._connection.getRpcProps()); // TODO: Remove this when we get tile healing
 
-    await IModelWriteRpcInterface.getClient().saveChanges(this._connection.getRpcProps(), description);
+    await IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).saveChanges(this._connection.getRpcProps(), description);
 
     IModelApp.viewManager.refreshForModifiedModels(affectedModels); // TODO: Remove this when we get tile healing
   }
@@ -116,7 +116,7 @@ export class EditingFunctions {
    */
   // tslint:disable-next-line:prefer-get
   public async hasPendingTxns(): Promise<boolean> {
-    return IModelWriteRpcInterface.getClient().hasPendingTxns(this._connection.getRpcProps());
+    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasPendingTxns(this._connection.getRpcProps());
   }
 
   /**
@@ -125,7 +125,7 @@ export class EditingFunctions {
    */
   // tslint:disable-next-line:prefer-get
   public async hasUnsavedChanges(): Promise<boolean> {
-    return IModelWriteRpcInterface.getClient().hasUnsavedChanges(this._connection.getRpcProps());
+    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasUnsavedChanges(this._connection.getRpcProps());
   }
 
   /**
@@ -133,7 +133,7 @@ export class EditingFunctions {
    * @alpha
    */
   public async getParentChangeset(): Promise<string> {
-    return IModelWriteRpcInterface.getClient().getParentChangeset(this._connection.getRpcProps());
+    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).getParentChangeset(this._connection.getRpcProps());
   }
 }
 
@@ -186,7 +186,7 @@ export namespace EditingFunctions {
     /** @private */
     public constructor(c: IModelConnection) {
       this._connection = c;
-      this._rpc = IModelWriteRpcInterface.getClient();
+      this._rpc = IModelWriteRpcInterface.getClientForRouting(c.routingContext.token);
     }
 
     /** Create and insert a new SpatialCategory. This first obtains the necessary locks and reserves the Code. This method is not suitable for creating many Categories.
@@ -207,7 +207,7 @@ export namespace EditingFunctions {
     /** @private */
     public constructor(c: IModelConnection) {
       this._connection = c;
-      this._rpc = IModelWriteRpcInterface.getClient();
+      this._rpc = IModelWriteRpcInterface.getClientForRouting(c.routingContext.token);
     }
 
     /** Create and insert a new PhysicalPartition element and a SpatialModel. This first obtains the necessary locks and reserves the Code. This method is not suitable for creating many models.
@@ -229,7 +229,7 @@ export namespace EditingFunctions {
     /** @private */
     public constructor(c: IModelConnection) {
       this._connection = c;
-      this._rpc = IModelWriteRpcInterface.getClient();
+      this._rpc = IModelWriteRpcInterface.getClientForRouting(c.routingContext.token);
     }
 
     /** Send all pending requests for locks and codes to the server. */
