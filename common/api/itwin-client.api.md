@@ -140,7 +140,7 @@ export class ECJsonTypeMap {
 // @beta
 export interface FileHandler {
     // (undocumented)
-    agent: https.Agent;
+    agent?: https.Agent;
     basename(filePath: string): string;
     downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;

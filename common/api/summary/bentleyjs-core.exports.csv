@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
+internal;addClientRequestContext: (metaData: any) => void
 public;asInstanceOf
 beta;assert(condition: boolean, msg?: string): asserts condition
 alpha;AsyncMutex

@@ -12,10 +12,10 @@ import { assert, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { BrowserAuthorizationLogger } from "./BrowserAuthorizationLogger";
 
 export abstract class BrowserAuthorizationBase<TConfig> {
-  protected _userManager: UserManager;
+  protected _userManager?: UserManager;
 
   protected _basicSettings: TConfig;
-  protected _advancedSettings: UserManagerSettings;
+  protected _advancedSettings?: UserManagerSettings;
 
   protected constructor(configuration: TConfig) {
     assert(!isElectronRenderer, "Cannot use Browser-based authorization classes within Electron");

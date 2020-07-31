@@ -4,8 +4,7 @@
     "experimentalDecorators": true,
     "target": "es2017",
     "module": "commonjs",
-    "outDir": "lib",
-    "strictPropertyInitialization": false
+    "outDir": "lib"
   },
   "include": [
     "src/**/*.ts",

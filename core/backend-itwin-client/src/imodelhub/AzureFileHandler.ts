@@ -31,7 +31,7 @@ const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
  */
 export class BufferedStream extends Transform {
   private _buffer?: Buffer;
-  private _bufferPointer: number;
+  private _bufferPointer: number = 0;
   private _bufferSize: number;
   public constructor(bufferSize: number) {
     super();
@@ -113,7 +113,7 @@ export class BufferedStream extends Transform {
  */
 export class AzureFileHandler implements FileHandler {
   /** @internal */
-  public agent: https.Agent;
+  public agent?: https.Agent;
   private _threshold: number;
   private _useDownloadBuffer: boolean | undefined;
 

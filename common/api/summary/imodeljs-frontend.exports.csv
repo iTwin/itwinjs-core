@@ -221,6 +221,7 @@ public;IModelAppOptions
 public;class IModelConnection 
 public;IModelConnection
 internal;IModelFrameLifecycle
+public;IModelRoutingContext
 internal;IModelTile 
 internal;IModelTileContent 
 internal;IModelTileParams 

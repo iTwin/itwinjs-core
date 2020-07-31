@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "accomoadate strict property initialization on dependent subpackages",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client",
+  "email": "evan.preslar@bentley.com"
+}

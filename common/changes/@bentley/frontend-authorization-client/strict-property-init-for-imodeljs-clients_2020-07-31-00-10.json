@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-authorization-client",
+      "comment": "enable strict property initialization compiler flag",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-authorization-client",
+  "email": "evan.preslar@bentley.com"
+}
