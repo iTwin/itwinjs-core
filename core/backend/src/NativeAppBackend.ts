@@ -10,8 +10,9 @@ import * as path from "path";
 import { BeEvent, BentleyError, BentleyStatus, Logger } from "@bentley/bentleyjs-core";
 import { Events, InternetConnectivityStatus, OverriddenBy } from "@bentley/imodeljs-common";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
+import { EmitStrategy } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { EmitStrategy, EventSinkManager } from "./EventSink";
+import { EventSinkManager } from "./EventSink";
 import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
 
 const loggerCategory = BackendLoggerCategory.NativeApp;

@@ -121,6 +121,7 @@ beta;ElectronRpcRequest
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
+alpha;ElementGeometryChange
 public;ElementLoadProps
 public;ElementProps 
 beta;EntityMetaData 
@@ -274,6 +275,7 @@ beta;MobileRpcRequest
 alpha;ModelClipGroup
 internal;ModelClipGroupProps
 alpha;ModelClipGroups
+alpha;ModelGeometryChanges
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 

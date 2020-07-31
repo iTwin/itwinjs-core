@@ -1925,6 +1925,14 @@ export interface ElementAspectProps extends EntityProps {
     element: RelatedElementProps;
 }
 
+// @alpha
+export interface ElementGeometryChange {
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    range?: Range3dProps;
+}
+
 // @public
 export interface ElementLoadProps {
     // (undocumented)
@@ -2020,6 +2028,7 @@ export namespace Events {
         onBriefcaseDownloadProgress = "download-progress";
         const // (undocumented)
         onInternetConnectivityChanged = "onInternetConnectivityChanged";
+        const modelGeometryChanges = "modelGeometryChanges";
     }
 }
 
@@ -3897,6 +3906,15 @@ export class ModelClipGroups {
     readonly groups: ModelClipGroup[];
     // @internal (undocumented)
     toJSON(): ModelClipGroupProps[];
+}
+
+// @alpha
+export interface ModelGeometryChanges {
+    deleted?: Id64String[];
+    inserted?: ElementGeometryChange[];
+    modelId: Id64String;
+    range?: Range3dProps;
+    updated?: ElementGeometryChange[];
 }
 
 // @public

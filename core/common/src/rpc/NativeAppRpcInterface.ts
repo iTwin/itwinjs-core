@@ -6,7 +6,8 @@
  * @module RpcInterface
  */
 
-import { LogLevel } from "@bentley/bentleyjs-core";
+import { Id64String, LogLevel } from "@bentley/bentleyjs-core";
+import { Range3dProps } from "@bentley/geometry-core";
 import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOptions, RequestBriefcaseProps } from "../BriefcaseTypes";
 import { IModelProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
@@ -36,7 +37,33 @@ export namespace Events {
     export const onMemoryWarning = "onMemoryWarning";
     export const onBriefcaseDownloadProgress = "download-progress";
     export const onInternetConnectivityChanged = "onInternetConnectivityChanged";
+    /** [[QueuedEvent.data]] is an array of [[ModelGeometryChanges]]. */
+    export const modelGeometryChanges = "modelGeometryChanges";
   }
+}
+
+/** Describes a change to the geometry of a [GeometricElement]($backend).
+ * @alpha
+ */
+export interface ElementGeometryChange {
+  id: Id64String;
+  range?: Range3dProps;
+}
+
+/** Describes changes to the geometry of a [GeometricModel]($backend).The changes can result from a normal transaction, or an undo/redo.
+ * @alpha
+ */
+export interface ModelGeometryChanges {
+  /** The Id of the geometric model whose geometry changed. */
+  modelId: Id64String;
+  /** The current range of the model. */
+  range?: Range3dProps;
+  /** A list of newly-inserted geometric elements. */
+  inserted?: ElementGeometryChange[];
+  /** A list of existing elements whose geometry was modified. */
+  updated?: ElementGeometryChange[];
+  /** A list of newly-deleted geometric elements. */
+  deleted?: Id64String[];
 }
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.

@@ -13,10 +13,11 @@ import {
   NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager, StorageValue,
   TileTreeContentIds,
 } from "@bentley/imodeljs-common";
+import { EmitStrategy } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ProgressCallback, ProgressInfo } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { EmitStrategy, EventSinkManager } from "../EventSink";
+import { EventSinkManager } from "../EventSink";
 import { BriefcaseDb } from "../IModelDb";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { NativeAppStorage } from "../NativeAppStorage";
