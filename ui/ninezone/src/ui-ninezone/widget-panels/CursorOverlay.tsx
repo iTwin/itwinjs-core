@@ -11,7 +11,7 @@ import * as React from "react";
 import { CursorTypeContext } from "../base/NineZone";
 
 /** @internal */
-export type CursorType = "ew-resize" | "ns-resize" | "grabbing";
+export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing";
 
 /** Controls cursor type of the application.
  * I.e. when dragging a widget "grabbing" cursor should be displayed until user drops the widget.

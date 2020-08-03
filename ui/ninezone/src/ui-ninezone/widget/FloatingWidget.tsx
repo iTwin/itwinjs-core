@@ -20,8 +20,11 @@ import { Widget, WidgetProvider } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 
+type FloatingWidgetEdgeHandle = "left" | "right" | "top" | "bottom";
+type FloatingWidgetCornerHandle = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
+
 /** @internal */
-export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
+export type FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle;
 
 /** @internal */
 export interface FloatingWidgetProps {
@@ -94,6 +97,10 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
       <FloatingWidgetHandle handle="top" />
       <FloatingWidgetHandle handle="right" />
       <FloatingWidgetHandle handle="bottom" />
+      <FloatingWidgetHandle handle="topLeft" />
+      <FloatingWidgetHandle handle="topRight" />
+      <FloatingWidgetHandle handle="bottomLeft" />
+      <FloatingWidgetHandle handle="bottomRight" />
     </Widget>
   );
 });
@@ -155,12 +162,22 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
 
 /** @internal */
 export function getResizeBy(handle: FloatingWidgetResizeHandle, offset: PointProps) {
-  if (handle === "left") {
-    return new Rectangle(-offset.x);
-  } else if (handle === "top") {
-    return new Rectangle(0, -offset.y);
-  } else if (handle === "right") {
-    return new Rectangle(0, 0, offset.x);
+  switch (handle) {
+    case "left":
+      return new Rectangle(-offset.x);
+    case "top":
+      return new Rectangle(0, -offset.y);
+    case "right":
+      return new Rectangle(0, 0, offset.x);
+    case "bottom":
+      return new Rectangle(0, 0, 0, offset.y);
+    case "topLeft":
+      return new Rectangle(-offset.x, -offset.y);
+    case "topRight":
+      return new Rectangle(0, -offset.y, offset.x);
+    case "bottomLeft":
+      return new Rectangle(-offset.x, 0, 0, offset.y);
+    case "bottomRight":
+      return new Rectangle(0, 0, offset.x, offset.y);
   }
-  return new Rectangle(0, 0, 0, offset.y);
 }

@@ -118,4 +118,49 @@ describe("getResizeBy", () => {
       bottom: 20,
     });
   });
+
+  it("left", () => {
+    getResizeBy("left", { x: 10, y: 20 }).should.eql({
+      left: -10,
+      top: 0,
+      right: 0,
+      bottom: 0,
+    });
+  });
+
+  it("topLeft", () => {
+    getResizeBy("topLeft", { x: 10, y: 20 }).should.eql({
+      left: -10,
+      top: -20,
+      right: 0,
+      bottom: 0,
+    });
+  });
+
+  it("topRight", () => {
+    getResizeBy("topRight", { x: 10, y: 20 }).should.eql({
+      left: 0,
+      top: -20,
+      right: 10,
+      bottom: 0,
+    });
+  });
+
+  it("bottomLeft", () => {
+    getResizeBy("bottomLeft", { x: 10, y: 20 }).should.eql({
+      left: -10,
+      top: 0,
+      right: 0,
+      bottom: 20,
+    });
+  });
+
+  it("bottomRight", () => {
+    getResizeBy("bottomRight", { x: 10, y: 20 }).should.eql({
+      left: 0,
+      top: 0,
+      right: 10,
+      bottom: 20,
+    });
+  });
 });

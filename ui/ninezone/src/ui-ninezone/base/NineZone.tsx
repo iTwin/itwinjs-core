@@ -12,6 +12,7 @@ import { Rectangle, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { CursorType } from "../widget-panels/CursorOverlay";
 import { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";
+import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
 import {
   DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
@@ -171,7 +172,7 @@ function CursorTypeProvider(props: { children?: React.ReactNode }) {
   else if (draggedPanelSide)
     type = sideToCursorType(draggedPanelSide);
   else if (draggedResizeHandle)
-    type = sideToCursorType(draggedResizeHandle);
+    type = handleToCursorType(draggedResizeHandle);
   return (
     <CursorTypeContext.Provider value={type}>
       {props.children}
@@ -221,6 +222,24 @@ export function sideToCursorType(side: PanelSide): CursorType {
     case "left":
     case "right":
       return "ew-resize";
+  }
+}
+
+/** @internal */
+export function handleToCursorType(handle: FloatingWidgetResizeHandle): CursorType {
+  switch (handle) {
+    case "bottom":
+    case "top":
+      return "ns-resize";
+    case "left":
+    case "right":
+      return "ew-resize";
+    case "topLeft":
+    case "bottomRight":
+      return "nwse-resize";
+    case "topRight":
+    case "bottomLeft":
+      return "nesw-resize";
   }
 }
 

@@ -8,7 +8,7 @@ import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { Rectangle } from "@bentley/ui-core";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
-import { createNineZoneState, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, useLabel } from "../../ui-ninezone";
+import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, useLabel } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils";
 
@@ -132,5 +132,39 @@ describe("useLabel", () => {
     };
     const { result } = renderHook(() => useLabel("dockToolSettingsTitle"), { wrapper: (props: {}) => <NineZoneLabelsContext.Provider value={labels} {...props} /> });
     result.current!.should.eq("test");
+  });
+});
+
+describe("handleToCursorType", () => {
+  it("bottom", () => {
+    handleToCursorType("bottom").should.eq("ns-resize");
+  });
+
+  it("top", () => {
+    handleToCursorType("top").should.eq("ns-resize");
+  });
+
+  it("left", () => {
+    handleToCursorType("left").should.eq("ew-resize");
+  });
+
+  it("right", () => {
+    handleToCursorType("right").should.eq("ew-resize");
+  });
+
+  it("topLeft", () => {
+    handleToCursorType("topLeft").should.eq("nwse-resize");
+  });
+
+  it("bottomRight", () => {
+    handleToCursorType("bottomRight").should.eq("nwse-resize");
+  });
+
+  it("topRight", () => {
+    handleToCursorType("topRight").should.eq("nesw-resize");
+  });
+
+  it("bottomLeft", () => {
+    handleToCursorType("bottomLeft").should.eq("nesw-resize");
   });
 });

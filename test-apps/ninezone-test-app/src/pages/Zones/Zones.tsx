@@ -6,7 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import "./Zones.scss";
 import * as React from "react";
 import { ActionButton, GroupButton } from "@bentley/ui-abstract";
-import { ToolbarItem, ToolbarWithOverflow } from "@bentley/ui-components";
+import { ToolbarItem, ToolbarWithOverflow, UiComponents } from "@bentley/ui-components";
 import { Point } from "@bentley/ui-core";
 import {
   NineZone,
@@ -273,7 +273,34 @@ const useSettings = () => {
   }), [settings]);
 };
 
+const page = function () {
+  let status = "pending";
+  let suspender = UiComponents.initialize({
+    registerNamespace: () => ({ name: "", readFinished: Promise.resolve() }),
+    translateWithNamespace: () => Promise.resolve(),
+  } as any).then(
+    () => {
+      status = "done";
+    },
+    (e) => {
+      status = "error";
+      console.log(e);
+    }
+  );
+  return {
+    initialize: () => {
+      if (status === "pending")
+        throw suspender;
+      else if (status === "error")
+        throw new Error();
+      else if (status === "done")
+        return;
+    },
+  }
+}();
+
 export default function Zones() {
+  page.initialize();
   React.useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
     return () => {
@@ -339,7 +366,7 @@ export default function Zones() {
     <FloatingWidgets />
   </>, [content, ui, settings]);
   return (
-    <React.StrictMode>
+    <>
       <div className="nzdemo-header">
         HEADER
       </div>
@@ -356,7 +383,7 @@ export default function Zones() {
           {nineZone}
         </NineZone>
       </div>
-    </React.StrictMode >
+    </>
   );
 }
 

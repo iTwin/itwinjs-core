@@ -16,18 +16,20 @@ const ZoneTargets = React.lazy(() => import("./pages/ZoneTargets" /* webpackChun
 
 export default function Router() {
   return (
-    <HashRouter>
+    <React.StrictMode>
       <React.Suspense fallback="Loading...">
-        <Switch>
-          <Route exact path="/" component={Home} />
-          <Route path="/zones" component={Zones} />
-          <Route path="/zones2" component={Zones2} />
-          <Route path="/stage-panels" component={StagePanels} />
-          <Route path="/zone-targets" component={ZoneTargets} />
-          <Route path="/footer" component={Footer} />
-          <Route path="/tools" component={Tools} />
-        </Switch>
+        <HashRouter>
+          <Switch>
+            <Route exact path="/" component={Home} />
+            <Route path="/zones" component={Zones} />
+            <Route path="/zones2" component={Zones2} />
+            <Route path="/stage-panels" component={StagePanels} />
+            <Route path="/zone-targets" component={ZoneTargets} />
+            <Route path="/footer" component={Footer} />
+            <Route path="/tools" component={Tools} />
+          </Switch>
+        </HashRouter>
       </React.Suspense>
-    </HashRouter>
+    </React.StrictMode>
   );
 }

@@ -260,10 +260,10 @@ export class CssProperties {
 }
 
 // @internal (undocumented)
-export type CursorType = "ew-resize" | "ns-resize" | "grabbing";
+export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing";
 
 // @internal (undocumented)
-export const CursorTypeContext: React.Context<"ew-resize" | "ns-resize" | "grabbing" | undefined>;
+export const CursorTypeContext: React.Context<"nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing" | undefined>;
 
 // @beta
 export class Dialog extends React.PureComponent<DialogProps> {
@@ -370,7 +370,7 @@ export interface DockedToolSettingsState {
 export const DraggedPanelSideContext: React.Context<"left" | "right" | "top" | "bottom" | undefined>;
 
 // @internal (undocumented)
-export const DraggedResizeHandleContext: React.Context<"left" | "right" | "top" | "bottom" | undefined>;
+export const DraggedResizeHandleContext: React.Context<"left" | "right" | "top" | "bottom" | "topLeft" | "topRight" | "bottomLeft" | "bottomRight" | undefined>;
 
 // @internal (undocumented)
 export const DraggedTabContext: React.Context<boolean>;
@@ -587,7 +587,7 @@ export interface FloatingWidgetResizeAction {
 }
 
 // @internal (undocumented)
-export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
+export type FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle;
 
 // @internal
 export const FloatingWidgets: React.NamedExoticComponent<object>;
@@ -923,6 +923,9 @@ export class HandleModeHelpers {
     static readonly TIMEDOUT_CLASS_NAME = "nz-handle-timedout";
     static readonly VISIBLE_CLASS_NAME = "nz-handle-visible";
 }
+
+// @internal (undocumented)
+export function handleToCursorType(handle: FloatingWidgetResizeHandle): CursorType;
 
 // @beta
 export enum HorizontalAnchor {

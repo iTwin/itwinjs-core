@@ -33,6 +33,7 @@
 
 .nz-widget-floatingWidget_handle {
   $size: 0.5em;
+  $cornerSize: 1em;
 
   position: absolute;
 
@@ -66,5 +67,37 @@
   &.nz-bottom {
     left: 0;
     bottom: -$size / 2;
+  }
+
+  &.nz-topLeft,
+  &.nz-topRight,
+  &.nz-bottomLeft,
+  &.nz-bottomRight {
+    height: $cornerSize;
+    width: $cornerSize;
+  }
+
+  &.nz-topLeft {
+    left: -$cornerSize / 3;
+    top: -$cornerSize / 3;
+    cursor: nwse-resize;
+  }
+
+  &.nz-topRight {
+    right: -$cornerSize / 3;
+    top: -$cornerSize / 3;
+    cursor: nesw-resize;
+  }
+
+  &.nz-bottomLeft {
+    left: -$cornerSize / 3;
+    bottom: -$cornerSize / 3;
+    cursor: nesw-resize;
+  }
+
+  &.nz-bottomRight {
+    right: -$cornerSize / 3;
+    bottom: -$cornerSize / 3;
+    cursor: nwse-resize;
   }
 }
