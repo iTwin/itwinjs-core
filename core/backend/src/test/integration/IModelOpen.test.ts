@@ -29,7 +29,7 @@ describe("IModelOpen (#integration)", () => {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
     testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
-    testChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, testIModelId);
+    testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
 
     // Open and close the iModel to ensure it works and is closed
     const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, testIModelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(testChangeSetId));
