@@ -11,6 +11,7 @@ import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVe
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Quadrature } from "../../numerics/Quadrature";
+import { SimpleNewton } from "../../numerics/Newton";
 /**
  * XYCurveEvaluator is an abstract with methods for evaluating X and Y parts of a curve parameterized by a fraction.
  * * The required methods call for independent X and Y evaluation.
@@ -99,6 +100,27 @@ export abstract class XYCurveEvaluator {
     }
     return sum;
   }
+  /**
+   * Inverse integrated distance
+   * @param fraction0 start of fraction interval
+   * @param fraction1 end of fraction interval
+   * @param distance0 distance at start
+   * @param distance1 distance at end
+   * @param targetDistance intermediate distance.
+   */
+  public inverseDistanceFraction(fraction0: number, fraction1: number, distance0: number, distance1: number, targetDistance: number): number | undefined {
+    const startFraction = Geometry.inverseInterpolate(fraction0, distance0, fraction1, distance1, targetDistance);
+    if (startFraction !== undefined) {
+      return SimpleNewton.runNewton1D(startFraction,
+        (fraction: number) => {
+          const d = this.integrateDistanceBetweenFractions(fraction0, fraction);
+          return distance0 + d - targetDistance;
+        },
+        (fraction: number) => this.fractionToTangentMagnitude(fraction));
+    }
+    return undefined;
+  }
+
   /**
    *
    * @param fraction fractional position along x axis

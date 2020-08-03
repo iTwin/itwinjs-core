@@ -72,22 +72,28 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     this._nominalR1 = nominalR1;
     this._evaluator = evaluator;
     this._globalStrokes = LineString3d.create();
+    this._activeStrokes = LineString3d.create();
     // initialize for compiler -- but this will be recomputed in refreshComputeProperties ...
     this.refreshComputedProperties();
   }
-  /** Recompute strokes */
-  public refreshComputedProperties() {
-    this._globalStrokes.clear();
-    const sweepRadians = this.nominalL1 / (2.0 * this.nominalR1);
-    const radiansStep = 0.02;
-    const numInterval = StrokeOptions.applyAngleTol(undefined, 4, sweepRadians, radiansStep);
-    this._globalStrokes.ensureEmptyUVParams();
-    this._globalStrokes.ensureEmptyFractions();
-    const distances = this._globalStrokes.packedUVParams!;
+  /**
+   * Compute stroke data in an interval.
+   * @param strokes strokes to clear and refill.
+   * @param fraction0 start fraction
+   * @param fraction1 end fraction
+   */
+  private computeStrokes(strokes: LineString3d, fractionA: number, fractionB: number, numInterval: number) {
+    if (numInterval < 1)
+      numInterval = 1;
+    strokes.clear();
+    strokes.ensureEmptyUVParams();
+    strokes.ensureEmptyFractions();
+    const distances = strokes.packedUVParams!;
+    const nominalIntervalLength = Math.abs(fractionB - fractionA) * this._nominalL1;
     for (let i = 0; i <= numInterval; i++) {
-      const fraction = i / numInterval;
-      const nominalDistanceAlong = fraction * this._nominalL1;
-      this._globalStrokes.packedPoints.pushXYZ(this._evaluator.fractionToX(fraction),
+      const fraction = Geometry.interpolate(fractionA, i / numInterval, fractionB);
+      const nominalDistanceAlong = fraction * nominalIntervalLength;
+      strokes.packedPoints.pushXYZ(this._evaluator.fractionToX(fraction),
         this._evaluator.fractionToY(fraction), 0);
       distances.pushXY(fraction, nominalDistanceAlong); // the second distance will be updated below
     }
@@ -102,6 +108,18 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       fraction0 = fraction1;
       trueDistance0 = trueDistance1;
     }
+
+  }
+  /** Recompute strokes */
+  public refreshComputedProperties() {
+    const sweepRadians = this.nominalL1 / (2.0 * this.nominalR1);
+    const radiansStep = 0.02;
+    const numInterval = StrokeOptions.applyAngleTol(undefined, 4, sweepRadians, radiansStep);
+    this.computeStrokes(this._globalStrokes, 0, 1, numInterval);
+    const numActiveInterval = Math.ceil(this._activeFractionInterval.absoluteDelta() * numInterval);
+    this._activeStrokes = LineString3d.create();
+    this.computeStrokes(this._activeStrokes, this._activeFractionInterval.x0, this._activeFractionInterval.x1,
+      numActiveInterval);
   }
   /**
    * Create a spiral object which uses numXTerm terms from the clothoid X series and numYTerm from the clothoid Y series.
@@ -284,7 +302,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     return distanceData.getYAtUncheckedPointIndex(n - 1);
   }
   /** Return length of the spiral.
-   * * NEEDS WORK
+   * * True length is stored at back of uvParams . . .
    */
   public curveLength() { return this.quickLength(); }
   /** Test if `other` is an instance of `TransitionSpiral3d` */
@@ -322,7 +340,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       numStroke = options.applyMaxEdgeLength(numStroke, this.quickLength());
       numStroke = options.applyMinStrokesPerPrimitive(numStroke);
     } else {
-      numStroke = StrokeOptions.applyAngleTol(undefined, 4, nominalRadians);
+      numStroke = StrokeOptions.applyAngleTol(undefined, 4, nominalRadians, 0.02);
     }
     numStroke = Math.ceil(this._activeFractionInterval.absoluteDelta() * numStroke);
     return numStroke;

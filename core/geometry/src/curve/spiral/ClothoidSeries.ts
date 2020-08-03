@@ -100,7 +100,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     let alpha = s;
     let m = 1;
     let n = 5;
-    for (let i = 1; i <= numTerms; i++) {
+    for (let i = 1; i < numTerms; i++) {
       alpha *= beta / (m * (m + 1));
       result += alpha / n;
       m += 2;
@@ -122,7 +122,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     let alpha = q1 * s;
     let m = 2;
     let n = 7;
-    for (let i = 1; i <= numTerms; i++) {
+    for (let i = 1; i < numTerms; i++) {
       alpha *= beta / (m * (m + 1));
       result += alpha / n;
       m += 2;
@@ -138,13 +138,14 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     // new Term = old Term * beta / (m(m+1))
     const s = fraction * this.nominalLength1;
     let result = 1;
-    if (numTerms < 2)
+    if (numTerms < 2) {
       return result * this.nominalLength1;
+    }
     const q1 = s * s * this.constantDiv2LR;
     const beta = - q1 * q1;
     let alpha = 1.0;
     let m = 1;
-    for (let i = 1; i <= numTerms; i++) {
+    for (let i = 1; i < numTerms; i++) {
       alpha *= beta / (m * (m + 1));
       result += alpha;
       m += 2;
@@ -166,7 +167,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     const beta = - q1 * q1;
     let alpha = q1;
     let m = 2;
-    for (let i = 1; i <= numTerms; i++) {
+    for (let i = 1; i < numTerms; i++) {
       alpha *= beta / (m * (m + 1));
       result += alpha;
       m += 2;
@@ -178,8 +179,11 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     // DX is "cosine"
     // DDX is "- sine" series times chain rule dTheta/ds = 2 * s * this.constantDivLR
     const s = fraction * this.nominalLength1;
+
+    const dTheta = 2 * this.constantDiv2LR * s;
     const sine = this.fractionToDYGo(fraction, numTerms - 1);
-    return -2 * sine * s * this.constantDiv2LR * this.nominalLength1;
+    const resultA = (- dTheta * sine * this.nominalLength1);
+    return resultA;
   }
   public fractionToDDYGo(fraction: number, numTerms: number): number {
     // DY is "sine"

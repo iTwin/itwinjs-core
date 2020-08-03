@@ -1432,6 +1432,7 @@ export class CurveFactory {
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
     static createLineSpiralArcSpiralLine(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, lengthA: number, lengthB: number, arcRadius: number): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
+    static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
     static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[];
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
@@ -4158,6 +4159,7 @@ export class PowerPolynomial {
 
 // @internal
 export class Quadrature {
+    static doGaussIntegral(x0: number, x1: number, f: (x: number) => number, numInterval: number, numGauss?: number): number;
     static readonly gaussW1Interval01: Float64Array;
     static readonly gaussW2Interval01: Float64Array;
     static readonly gaussW3Interval01: Float64Array;
@@ -5122,9 +5124,9 @@ export type TransformProps = number[][] | number[] | {
 // @public
 export abstract class TransitionSpiral3d extends CurvePrimitive {
     protected constructor(spiralType: string | undefined, localToWorld: Transform, activeFractionInterval: Segment1d | undefined, designProperties: TransitionConditionalProperties | undefined);
-    // (undocumented)
     get activeFractionInterval(): Segment1d;
     protected _activeFractionInterval: Segment1d;
+    abstract get activeStrokes(): LineString3d;
     protected applyRigidPartOfTransform(transformA: Transform): {
         rigidAxes: Matrix3d;
         scale: number;
@@ -5134,7 +5136,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     static curvatureToRadius(curvature: number): number;
     get designProperties(): TransitionConditionalProperties | undefined;
     protected _designProperties: TransitionConditionalProperties | undefined;
-    // (undocumented)
+    static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number;
     get localToWorld(): Transform;
     protected _localToWorld: Transform;
     static radius0LengthSweepRadiansToRadius1(radius0: number, arcLength: number, sweepRadians: number): number;

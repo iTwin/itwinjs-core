@@ -344,7 +344,7 @@ export class CurveFactory {
    * * First spiral begins at given start point.
    * * first tangent aims at shoulder
    * * outbound spiral joins line from shoulder to target.
-   * @param spiralType name of spiral type.
+   * @param spiralType name of spiral type.  THIS MUST BE AN "Integrated" SPIRAL TYPE
    * @param startPoint inbound start point.
    * @param shoulder point target point for (both) spiral-to-line tangencies
    * @return array with the computed spirals, or undefined if failure.
@@ -390,9 +390,62 @@ export class CurveFactory {
     return undefined;
   }
   /**
+   * Compute 2 spirals (all in XY) for a symmetric line-to-line transition.
+   * * Spiral length is given.
+   * * tangency points float on both lines.
+   * @param spiralType name of spiral type.  THIS MUST BE AN "Integrated" SPIRAL TYPE
+   * @param pointA inbound start point.
+   * @param shoulder point target point for (both) spiral-to-line tangencies
+   * @param spiralLength for each part of the spiral pair.
+   * @return array with the computed spirals, or undefined if failure.
+   */
+  public static createLineSpiralSpiralLineWithSpiralLength
+    (
+      spiralType: IntegratedSpiralTypeName,
+      pointA: Point3d,
+      pointB: Point3d,
+      pointC: Point3d,
+      spiralLength: number,
+  ): GeometryQuery[] | undefined {
+    const vectorAB = Vector3d.createStartEnd(pointA, pointB);
+    const vectorBC = Vector3d.createStartEnd(pointB, pointC);
+    const radiansAB = Math.atan2(vectorAB.y, vectorAB.x);
+    const lineTurnAngle = vectorAB.angleToXY(vectorBC);
+    const spiralTurnRadians = 0.5 * lineTurnAngle.radians;
+    const bisectorRadians = 0.5 * (Math.PI - lineTurnAngle.radians);
+    const radiansCB = Math.atan2(-vectorBC.y, -vectorBC.x);
+    const spiralAB0 = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0, undefined, Angle.zero(), Angle.createRadians(spiralTurnRadians),
+      spiralLength, undefined, Transform.createIdentity());
+    if (spiralAB0) {
+      const localEndPoint = spiralAB0.fractionToPoint(1);
+      const distanceAB = pointA.distance(pointB);
+      const distanceCB = pointC.distance(pointB);
+      // The spiral eventually has to end on the bisector, at localEndPoint.y height from the inbound line
+      // distance from shoulder to projection of that point to point E on the inbound line is
+      const distanceBE = localEndPoint.y / Math.tan(bisectorRadians);
+      const xFractionAB = Geometry.conditionalDivideFraction(distanceAB - distanceBE - localEndPoint.x, distanceAB);
+      const xFractionCB = Geometry.conditionalDivideFraction(distanceCB - distanceBE - localEndPoint.x, distanceCB);
+      if (xFractionAB !== undefined && xFractionCB !== undefined) {
+        const axesA = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansAB));
+        const frameAOrigin = pointA.interpolate(xFractionAB, pointB);
+        const frameA = Transform.createRefs(frameAOrigin, axesA);
+        const spiralAB = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0, undefined, Angle.zero(), Angle.createRadians(spiralTurnRadians),
+          spiralLength, undefined, frameA)!;
+        const axesB = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansCB));
+        const frameBOrigin = pointC.interpolate(xFractionCB, pointB);
+        const frameB = Transform.createRefs(frameBOrigin, axesB);
+        const spiralBC = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0, undefined, Angle.zero(), Angle.createRadians(-spiralTurnRadians),
+          spiralLength, undefined, frameB)!;
+        return [spiralAB, spiralBC];
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Compute 2 spirals and an arc (all in XY) for a symmetric line-to-line transition.
    * Spiral lengths and arc radius are given.   (e.g. from design speed standards.)
-   * @param spiralType name of spiral type.
+   * @param spiralType name of spiral type.  THIS MUST BE AN "Integrated" SPIRAL TYPE
    * @param pointA inbound start point.
    * @param pointB shoulder (target)  point for (both) spiral-to-line tangencies
    * @param lengthA inbound spiral length
@@ -453,6 +506,8 @@ export class CurveFactory {
       const rayB0 = spiralB.fractionToPointAndUnitTangent(1.0);
       rayB0.direction.scaleInPlace(-1.0);
       const sweep = rayA1.direction.angleToXY(rayB0.direction);
+      if (radiusA < 0)
+        sweep.setRadians(- sweep.radians);
       const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep)!;
       return [spiralA, arc, spiralB];
     }
