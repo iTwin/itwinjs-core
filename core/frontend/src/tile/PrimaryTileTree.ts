@@ -196,11 +196,14 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   protected computeBaseTransform(tree: TileTree): Transform {
     assert(tree instanceof PlanProjectionTileTree);
+    const baseElevation = (tree as PlanProjectionTileTree).baseElevation;
+    if (undefined === this._curTransform)
+      this._curTransform = { transform: tree.iModelTransform.clone(), elevation: baseElevation };
+
     const settings = this.getSettings();
-    const elevation = settings?.elevation ?? (tree as PlanProjectionTileTree).baseElevation;
-    if (undefined === this._curTransform) {
-      this._curTransform = { transform: tree.iModelTransform.clone(), elevation };
-    } else if (this._curTransform.elevation !== elevation) {
+    const elevation = settings?.elevation ?? baseElevation;
+
+    if (this._curTransform.elevation !== elevation) {
       const transform = tree.iModelTransform.clone();
       if (undefined !== settings?.elevation)
         transform.origin.z = elevation;
