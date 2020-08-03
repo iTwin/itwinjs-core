@@ -1,5 +1,5 @@
 ---
-browserTabTitle: Getting Started with iModel.js
+browserTabTitle: iModel.js Tutorials
 ---
 
 ### ECSQL tutorial
