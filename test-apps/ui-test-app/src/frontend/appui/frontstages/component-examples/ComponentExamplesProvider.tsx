@@ -14,6 +14,9 @@ import {
   NewBadge, NumericInput, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile,
   Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch } from "@bentley/ui-components";
+import { ModalDialogManager } from "@bentley/ui-framework";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
@@ -22,6 +25,49 @@ import { SampleAppIModelApp } from "../../..";
 import { Logger } from "@bentley/bentleyjs-core";
 
 // tslint:disable: no-console
+
+export function ColorPickerToggle() {
+  const [colorDialogTitle] = React.useState("Select Color");
+  const [selectedColor, setSelectedColor] = React.useState(ColorDef.red);
+  const handleBackgroundColorDialogOk = React.useCallback((newColorDef: ColorDef) => {
+    ModalDialogManager.closeDialog();
+    setSelectedColor(newColorDef);
+  }, []);
+
+  const handleBackgroundColorDialogCancel = React.useCallback(() => {
+    ModalDialogManager.closeDialog();
+  }, []);
+
+  const presetColors = React.useRef(
+    [
+      ColorDef.create(ColorByName.red),
+      ColorDef.create(ColorByName.orange),
+      ColorDef.create(ColorByName.yellow),
+      ColorDef.create(ColorByName.green),
+      ColorDef.create(ColorByName.blue),
+      ColorDef.create(ColorByName.indigo),
+      ColorDef.create(ColorByName.violet),
+      ColorDef.create(ColorByName.black),
+      ColorDef.create(ColorByName.white),
+      ColorDef.create(ColorByName.cyan),
+      ColorDef.create(ColorByName.fuchsia),
+      ColorDef.create(ColorByName.tan),
+      ColorDef.create(ColorByName.gray),
+      ColorDef.create(ColorByName.brown),
+      ColorDef.create(ColorByName.purple),
+      ColorDef.create(ColorByName.olive),
+    ]);
+
+  const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
+    e.preventDefault();
+    ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
+      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
+  }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
+
+  return (
+    <ColorSwatch className="map-manager-base-item-color" colorDef={selectedColor} round={false} onColorPick={handleBgColorClick} />
+  );
+}
 
 /** Creates a Component Example */
 export const createComponentExample = (title: string, description: string | undefined, content: React.ReactNode): ComponentExampleProps => {
@@ -84,6 +130,25 @@ export class ComponentExamplesProvider {
             <CheckListBoxItem label="Item 3" />
             <CheckListBoxItem label="Item 4" />
           </CheckListBox>),
+      ],
+    };
+  }
+
+  private static get colorSamples(): ComponentExampleCategory {
+    const colorDef = ColorDef.blue;
+    const handleColorPick = (color: ColorDef) => {
+      console.log(`color picked: ${color.toRgbaString()}`);
+    };
+
+    return {
+      title: "Color Controls",
+      examples: [
+        createComponentExample("Color Swatch", undefined,
+          <ColorSwatch colorDef={colorDef} onColorPick={handleColorPick} />),
+        createComponentExample("Color Picker Button", undefined,
+          <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} />),
+        createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
+        createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} />),
       ],
     };
   }
@@ -409,6 +474,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.badgeSamples,
       ComponentExamplesProvider.buttonSamples,
       ComponentExamplesProvider.checkListBoxSamples,
+      ComponentExamplesProvider.colorSamples,
       ComponentExamplesProvider.contextMenuSample,
       ComponentExamplesProvider.expandableListBlockSamples,
       ComponentExamplesProvider.inputsSamples,

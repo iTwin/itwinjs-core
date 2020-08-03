@@ -13,13 +13,67 @@ import { HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 
+// hue is a value from 0 to 360
+function calculateHue(currentPos: number, high: number, isVertical: boolean) {
+  // istanbul ignore next
+  if (currentPos < 0) {
+    return 359;
+  } else if (currentPos > high) {
+    return 0;
+  } else {
+    let percent = ((currentPos * 100) / high);
+    if (isVertical)
+      percent = 100 - percent;
+    return Math.round(((359 * percent) / 100));
+  }
+}
+
+function calculateChange(currentHue: number, e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, container: HTMLDivElement) {
+  const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = container.getBoundingClientRect();
+
+  let x: number | undefined;
+  if ("pageX" in e) {
+    x = (e as React.MouseEvent<HTMLDivElement>).pageX;
+  } else {
+    // istanbul ignore if
+    if (undefined === e.touches || 0 === e.touches.length)
+      return currentHue;
+    x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
+  }
+  // istanbul ignore if
+  if (undefined === x)
+    return currentHue;
+
+  let y: number | undefined;
+  if ("pageY" in e) {
+    y = (e as React.MouseEvent<HTMLDivElement>).pageY;
+  } else {
+    // istanbul ignore if
+    if (undefined === e.touches || 0 === e.touches.length)
+      return currentHue;
+    y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
+  }
+  // istanbul ignore if
+  if (undefined === y)
+    return currentHue;
+
+  const pointerX = x - (containerLeft + window.pageXOffset);
+  const pointerY = y - (containerTop + window.pageYOffset);
+
+  if (!isHorizontal) { // vertical
+    return calculateHue(pointerY, containerHeight, true);
+  } else {  // horizontal
+    return calculateHue(pointerX, containerWidth, false);
+  }
+}
+
 /** Properties for the [[HueSlider]] React component
  * @beta
  */
 export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
-  /** function to run when user selects color swatch */
+  /** function to run when user hue is changed */
   onHueChange?: ((hue: HSVColor) => void) | undefined;
   /** HSV Color Value */
   hsv: HSVColor;
@@ -28,181 +82,140 @@ export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, Co
 /** HueSlider component used to set the hue value.
  * @beta
  */
-export class HueSlider extends React.PureComponent<HueSliderProps> {
-  private _container: HTMLDivElement | null = null;
-  private _hueLabel = UiComponents.translate("color.hue");
+export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps) {
+  const container = React.useRef<HTMLDivElement>(null);
+  const [hueLabel] = React.useState(() => UiComponents.translate("color.hue"));
+  const isDragging = React.useRef(false);
 
-  /** @internal */
-  constructor(props: HueSliderProps) {
-    super(props);
-  }
+  const onChange = React.useCallback((e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore else
+    if (container.current) {
+      const newHue = calculateChange(hsv.h, e, !!isHorizontal, container.current);
+      // istanbul ignore else
+      const newColor = hsv.clone(newHue);
+      // istanbul ignore else
+      if (onHueChange)
+        onHueChange(newColor);
+    }
+  }, [isHorizontal, hsv, onHueChange]);
 
-  private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, hsv: HSVColor, container: HTMLDivElement): HSVColor | undefined => {
+  const onDragging = React.useCallback((e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore else
+    if (isDragging.current) {
+      onChange(e);
+    }
+  }, [onChange]);
+
+  const onMouseUp = React.useCallback(() => {
+    // istanbul ignore else
+    if (isDragging.current) {
+      isDragging.current = false;
+    }
+  }, []);
+
+  const onTouchEnd = React.useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    // istanbul ignore else
+    if (isDragging.current) {
+      onChange(event);
+      isDragging.current = false;
+    }
+  }, [onChange]);
+
+  const onMouseDown = React.useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = container.getBoundingClientRect();
 
-    let x = 0;
-    if ("pageX" in e) {
-      x = (e as React.MouseEvent<HTMLDivElement>).pageX;
-    } else {
-      // istanbul ignore if
-      if (undefined === e.touches)
-        return undefined;
-      x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
-    }
-    // istanbul ignore if
-    if (undefined === x)
-      return undefined;
-
-    let y = 0;
-    if ("pageY" in e) {
-      y = (e as React.MouseEvent<HTMLDivElement>).pageY;
-    } else {
-      // istanbul ignore if
-      if (undefined === e.touches)
-        return;
-      y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
-    }
-    // istanbul ignore if
-    if (undefined === y)
-      return undefined;
-
-    const left = x - (containerLeft + window.pageXOffset);
-    const top = y - (containerTop + window.pageYOffset);
-
-    if (!isHorizontal) {
-      let h;
-      // istanbul ignore next
-      if (top < 0) {
-        h = 360;
-      } else if (top > containerHeight) {
-        h = 0;
-      } else {
-        const percent = -((top * 100) / containerHeight) + 100;
-        h = ((360 * percent) / 100);
-      }
-      // istanbul ignore else
-      if (hsv.h !== h)
-        return this.props.hsv.clone(h);
-    } else {  // horizontal
-      let h;
-      // istanbul ignore next
-      if (left < 0) {
-        h = 0;
-      } else if (left > containerWidth) {
-        h = 360;
-      } else {
-        const percent = (left * 100) / containerWidth;
-        h = ((360 * percent) / 100);
-      }
-
-      // istanbul ignore else
-      if (hsv.h !== h)
-        return this.props.hsv.clone(h);
-    }
-    // istanbul ignore next
-    return undefined;
-  }
-
-  /** @internal */
-  public componentWillUnmount() {
-    this._unbindEventListeners();
-  }
-
-  private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    // istanbul ignore if
-    if (e.target !== e.currentTarget)
-      return;
     // istanbul ignore else
-    if (this._container && this.props.onHueChange) {
-      const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.hsv, this._container);
-      change && typeof this.props.onHueChange === "function" && this.props.onHueChange(change);
+    if (e.target !== e.currentTarget) {
+      // istanbul ignore else
+      if (!isDragging.current) {
+        document.addEventListener("mouseup", onMouseUp, { capture: true, once: true });
+        isDragging.current = true;
+      }
     }
-  }
 
-  private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    // istanbul ignore if
-    if (e.target !== e.currentTarget)
-      return;
-    this._onChange(e);
+    onChange(e);
+
     // istanbul ignore else
-    if (this._container)
-      this._container.focus();
-    window.addEventListener("mousemove", this._onChange as any);
-    window.addEventListener("mouseup", this._onMouseUp);
-  }
+    if (container.current)
+      container.current.focus();
+  }, [onChange, onMouseUp]);
 
-  private _onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
+  const onTouchStart = React.useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore else
+    if (e.target !== e.currentTarget)
+      isDragging.current = true;
+
+    onChange(e);
+
+    // istanbul ignore else
+    if (container.current)
+      container.current.focus();
+  }, [onChange]);
+
+  const onKeyDown = React.useCallback((evt: React.KeyboardEvent<HTMLDivElement>) => {
     let newHue: number | undefined;
-    const hueValue = this.props.hsv.clone();
+    const hueValue = hsv.h;
     if (evt.key === "ArrowLeft" || evt.key === "ArrowDown") {
-      newHue = hueValue.h - (evt.ctrlKey ? 10 : 1);
+      newHue = hueValue - (evt.ctrlKey ? 10 : 1);
     } else if (evt.key === "ArrowRight" || evt.key === "ArrowUp") {
-      newHue = hueValue.h + (evt.ctrlKey ? 10 : 1);
+      newHue = hueValue + (evt.ctrlKey ? 10 : 1);
     } else if (evt.key === "PageDown") {
-      newHue = hueValue.h - (evt.ctrlKey ? 180 : 60);
+      newHue = hueValue - (evt.ctrlKey ? 180 : 60);
     } else if (evt.key === "PageUp") {
-      newHue = hueValue.h + (evt.ctrlKey ? 180 : 60);
+      newHue = hueValue + (evt.ctrlKey ? 180 : 60);
     } else if (evt.key === "Home") {
       newHue = 0;
     } else {
       // istanbul ignore else
       if (evt.key === "End") {
-        newHue = 360;
+        newHue = 359;
       }
     }
 
     // istanbul ignore else
     if (undefined !== newHue) {
       // istanbul ignore if
-      if (newHue > 360) newHue = 360;
+      if (newHue > 359) newHue = 359; // 360 is same as zero
       // istanbul ignore if
       if (newHue < 0) newHue = 0;
-      const newColor = this.props.hsv.clone(newHue);
+
+      const newColor = hsv.clone(newHue);
       // istanbul ignore else
-      if (this.props.onHueChange)
-        this.props.onHueChange(newColor);
+      if (onHueChange)
+        onHueChange(newColor);
+      evt.preventDefault();
     }
-  }
+  }, [hsv, onHueChange]);
 
-  private _onMouseUp = () => {
-    this._unbindEventListeners();
-  }
+  const containerClasses = classnames(
+    isHorizontal ? "components-hue-container-horizontal" : "components-hue-container-vertical",
+    className,
+  );
 
-  private _unbindEventListeners() {
-    window.removeEventListener("mousemove", this._onChange as any);
-    window.removeEventListener("mouseup", this._onMouseUp);
-  }
+  const pointerStyle: React.CSSProperties = isHorizontal ? { left: `${(hsv.h * 100) / 360}%`, backgroundColor: `hsl(${hsv.h} ,100%, 50%)` } :
+    { left: `0px`, top: `${-((hsv.h * 100) / 360) + 100}%`, backgroundColor: `hsl(${hsv.h} ,100%, 50%)` };
 
-  /** @internal */
-  public render(): React.ReactNode {
-    const containerClasses = classnames(
-      this.props.isHorizontal ? "components-hue-container-horizontal" : "components-hue-container-vertical",
-      this.props.className,
-    );
-
-    const pointerStyle: React.CSSProperties = this.props.isHorizontal ?
-      { left: `${(this.props.hsv.h * 100) / 360}%` } :
-      { left: `0px`, top: `${-((this.props.hsv.h * 100) / 360) + 100}%` };
-
-    return (
-      <div className={containerClasses} style={this.props.style} data-testid="hue-container">
-        <div
-          data-testid="hue-slider"
-          role="slider" aria-label={this._hueLabel}
-          aria-valuemin={0} aria-valuemax={360} aria-valuenow={this.props.hsv.h}
-          className="components-hue-slider"
-          ref={(container) => this._container = container}
-          onMouseDown={this._onMouseDown}
-          onTouchMove={this._onChange}
-          onTouchStart={this._onChange}
-          tabIndex={0}
-          onKeyDown={this._onKeyDown}
-        >
-          <div style={pointerStyle} className="components-hue-pointer" data-testid="hue-pointer" />
-        </div>
+  return (
+    <div className={containerClasses} style={style} data-testid="hue-container" >
+      <div
+        data-testid="hue-slider"
+        role="slider" aria-label={hueLabel}
+        aria-valuemin={0} aria-valuemax={360} aria-valuenow={hsv.h}
+        className="components-hue-slider"
+        ref={container}
+        onMouseDown={onMouseDown}
+        onMouseMove={onDragging}
+        onTouchMove={onDragging}
+        onMouseUp={onMouseUp}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+      >
+        <div style={pointerStyle} className="components-hue-pointer" data-testid="hue-pointer" />
       </div>
-    );
-  }
-
+    </div >
+  );
 }

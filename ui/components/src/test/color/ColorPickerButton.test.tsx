@@ -16,12 +16,12 @@ describe("<ColorPickerButton/>", () => {
   afterEach(cleanup);
 
   it("should render", () => {
-    const renderedComponent = render(<ColorPickerButton activeColor={colorDef} />);
+    const renderedComponent = render(<ColorPickerButton initialColor={colorDef} />);
     expect(renderedComponent).not.to.be.undefined;
   });
 
   it("round swatches with title should render", () => {
-    const renderedComponent = render(<ColorPickerButton activeColor={colorDef} round={true} />);
+    const renderedComponent = render(<ColorPickerButton initialColor={colorDef} round={true} />);
     expect(renderedComponent).not.to.be.undefined;
   });
 
@@ -33,7 +33,7 @@ describe("<ColorPickerButton/>", () => {
       spyOnColorPick();
     }
 
-    const renderedComponent = render(<ColorPickerButton activeColor={colorDef} onColorPick={handleColorPick} dropDownTitle="test-title" />);
+    const renderedComponent = render(<ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} dropDownTitle="test-title" />);
     expect(renderedComponent.getByTestId("components-colorpicker-button")).to.exist;
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-button");
     // renderedComponent.debug();
@@ -56,7 +56,7 @@ describe("<ColorPickerButton/>", () => {
   });
 
   it("readonly - button press should not open popup", async () => {
-    const renderedComponent = render(<ColorPickerButton activeColor={colorDef} colorDefs={[ColorDef.blue, ColorDef.black, ColorDef.red]} readonly={true} />);
+    const renderedComponent = render(<ColorPickerButton initialColor={colorDef} colorDefs={[ColorDef.blue, ColorDef.black, ColorDef.red]} readonly={true} />);
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-button");
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);

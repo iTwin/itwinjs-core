@@ -802,18 +802,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 }
 
 // @beta
-export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
-    // (undocumented)
-    static get defaultColors(): ColorDef[];
-    // @internal (undocumented)
-    static defaultProps: Partial<ColorPickerProps>;
-    // @internal (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    setFocus(): void;
-    // @internal (undocumented)
-    readonly state: Readonly<ColorPickerState>;
-    }
+export const ColorPickerButton: React.ForwardRefExoticComponent<ColorPickerProps & React.RefAttributes<HTMLButtonElement>>;
 
 // @beta
 export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
@@ -833,12 +822,38 @@ export interface ColorPickerDialogProps {
 }
 
 // @beta
-export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element;
+
+// @beta
+export interface ColorPickerPanelProps {
+    // (undocumented)
     activeColor: ColorDef;
+    // (undocumented)
+    colorPresets?: ColorDef[];
+    // (undocumented)
+    onColorChange: (selectedColor: ColorDef) => void;
+}
+
+// @beta
+export const ColorPickerPopup: React.ForwardRefExoticComponent<ColorPickerPopupProps & React.RefAttributes<HTMLButtonElement>>;
+
+// @beta
+export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+    colorDefs?: ColorDef[];
+    disabled?: boolean;
+    initialColor: ColorDef;
+    onColorChange?: ((newColor: ColorDef) => void) | undefined;
+    popupPosition?: RelativePosition;
+    readonly?: boolean;
+}
+
+// @beta
+export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDefs?: ColorDef[];
     disabled?: boolean;
     dropDownTitle?: string;
-    numColumns: number;
+    initialColor: ColorDef;
+    numColumns?: number;
     onColorPick?: ((color: ColorDef) => void) | undefined;
     readonly?: boolean;
     round?: boolean;
@@ -1816,14 +1831,7 @@ export enum HitBoxZ {
 }
 
 // @beta
-export class HueSlider extends React.PureComponent<HueSliderProps> {
-    // @internal
-    constructor(props: HueSliderProps);
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): React.ReactNode;
-    }
+export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element;
 
 // @beta
 export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
@@ -2890,14 +2898,7 @@ export interface RowProps {
 }
 
 // @beta
-export class SaturationPicker extends React.PureComponent<SaturationPickerProps> {
-    // @internal
-    constructor(props: SaturationPickerProps);
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): React.ReactNode;
-    }
+export function SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element;
 
 // @beta
 export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {

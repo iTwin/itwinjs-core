@@ -61,9 +61,13 @@ public;CellProps
 beta;CheckBoxInfo
 beta;CheckboxStateChange
 beta;ColorEditor 
-beta;ColorPickerButton 
+beta;ColorPickerButton: React.ForwardRefExoticComponent
 beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element
 beta;ColorPickerDialogProps
+beta;ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element
+beta;ColorPickerPanelProps
+beta;ColorPickerPopup: React.ForwardRefExoticComponent
+beta;ColorPickerPopupProps 
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
@@ -161,7 +165,7 @@ beta;HighlightingEngine
 internal;HitBoxX
 internal;HitBoxY
 internal;HitBoxZ
-beta;HueSlider 
+beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
 beta;HueSliderProps 
 alpha;IconEditor 
 alpha;IconPickerButton 
@@ -294,7 +298,7 @@ public;ResultSelector
 public;ResultSelectorProps 
 public;RowItem
 public;RowProps
-beta;SaturationPicker 
+beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
 beta;SaturationPickerProps 
 internal;scheduleSubscription
 internal;Scrubber 

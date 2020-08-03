@@ -169,7 +169,7 @@
 
       > .core-dialog-footer {
         flex-shrink: 0;
-        padding: $uicore-unbordered-padding;
+        padding: 0 $uicore-unbordered-padding $uicore-unbordered-padding $uicore-unbordered-padding;
 
         > .core-dialog-buttons {
           display: flex;

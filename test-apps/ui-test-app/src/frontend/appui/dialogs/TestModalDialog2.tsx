@@ -83,17 +83,17 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
         <div className="modal-dialog2">
           <div className="list-contents">
             <span className="list-header">List 1</span>
-            <ColorPickerButton className="color-picker-text" activeColor={this.state.colors1[0]} onColorPick={(color: ColorDef) => this._handleColorChange1(color, 0)} /><span className="label-data">Color1</span>
-            <ColorPickerButton className="color-picker-text" activeColor={this.state.colors1[1]} onColorPick={(color: ColorDef) => this._handleColorChange1(color, 1)} /><span className="label-data">Color2</span>
-            <ColorPickerButton className="color-picker-text" activeColor={this.state.colors1[2]} onColorPick={(color: ColorDef) => this._handleColorChange1(color, 2)} /><span className="label-data">Color3</span>
-            <ColorPickerButton className="color-picker-text" activeColor={this.state.colors1[3]} onColorPick={(color: ColorDef) => this._handleColorChange1(color, 3)} /><span className="label-data">Color4</span>
+            <ColorPickerButton className="color-picker-text" initialColor={this.state.colors1[0]} onColorPick={(color: ColorDef) => this._handleColorChange1(color, 0)} /><span className="label-data">Color1</span>
+            <ColorPickerButton className="color-picker-text" initialColor={this.state.colors1[1]} onColorPick={(color: ColorDef) => this._handleColorChange1(color, 1)} /><span className="label-data">Color2</span>
+            <ColorPickerButton className="color-picker-text" initialColor={this.state.colors1[2]} onColorPick={(color: ColorDef) => this._handleColorChange1(color, 2)} /><span className="label-data">Color3</span>
+            <ColorPickerButton className="color-picker-text" initialColor={this.state.colors1[3]} onColorPick={(color: ColorDef) => this._handleColorChange1(color, 3)} /><span className="label-data">Color4</span>
           </div>
           <div className="list-contents">
             <span className="list-header">List 2</span>
-            <ColorPickerButton className="color-picker-text" activeColor={this.state.colors2[0]} onColorPick={(color: ColorDef) => this._handleColorChange2(color, 0)} /><span className="label-data">Color1</span>
-            <ColorPickerButton className="color-picker-text" activeColor={this.state.colors2[1]} onColorPick={(color: ColorDef) => this._handleColorChange2(color, 1)} /><span className="label-data">Color2</span>
-            <ColorPickerButton className="color-picker-text" activeColor={this.state.colors2[2]} onColorPick={(color: ColorDef) => this._handleColorChange2(color, 2)} /><span className="label-data">Color3</span>
-            <ColorPickerButton className="color-picker-text" activeColor={this.state.colors2[3]} onColorPick={(color: ColorDef) => this._handleColorChange2(color, 3)} /><span className="label-data">Color4</span>
+            <ColorPickerButton className="color-picker-text" initialColor={this.state.colors2[0]} onColorPick={(color: ColorDef) => this._handleColorChange2(color, 0)} /><span className="label-data">Color1</span>
+            <ColorPickerButton className="color-picker-text" initialColor={this.state.colors2[1]} onColorPick={(color: ColorDef) => this._handleColorChange2(color, 1)} /><span className="label-data">Color2</span>
+            <ColorPickerButton className="color-picker-text" initialColor={this.state.colors2[2]} onColorPick={(color: ColorDef) => this._handleColorChange2(color, 2)} /><span className="label-data">Color3</span>
+            <ColorPickerButton className="color-picker-text" initialColor={this.state.colors2[3]} onColorPick={(color: ColorDef) => this._handleColorChange2(color, 3)} /><span className="label-data">Color4</span>
           </div>
         </div >
       </Dialog >

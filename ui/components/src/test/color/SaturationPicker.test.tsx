@@ -9,9 +9,18 @@ import sinon from "sinon";
 import { HSVColor } from "@bentley/imodeljs-common";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { SaturationPicker } from "../../ui-components/color/SaturationPicker";
+import TestUtils from "../TestUtils";
 
 describe("<SaturationPicker />", () => {
   const hsv = new HSVColor(30, 30, 30);
+
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
 
   const satDivStyle: React.CSSProperties = {
     top: `0`,
@@ -104,6 +113,29 @@ describe("<SaturationPicker />", () => {
       sliderDiv.dispatchEvent(createBubbledEvent("mouseup", { pageX: 0, pageY: 0 }));
     });
 
+    it("drag @0,0 -> @200,200 ", () => {
+      let expectedS = 0;
+      let expectedV = 100;
+
+      function handleSaturationChange(newHsv: HSVColor): void {
+        expect(Math.abs(newHsv.s - expectedS)).to.be.lessThan(2);
+        expect(Math.abs(newHsv.v - expectedV)).to.be.lessThan(2);
+      }
+
+      const renderedComponent = render(<div style={satDivStyle}><SaturationPicker hsv={hsv} onSaturationChange={handleSaturationChange} /></div>);
+      const pointerDiv = renderedComponent.getByTestId("saturation-pointer");
+      const sliderDiv = renderedComponent.getByTestId("saturation-region");
+      pointerDiv.dispatchEvent(createBubbledEvent("mousedown", { pageX: 0, pageY: 0 }));
+
+      expectedS = 50;
+      expectedV = 50;
+      sliderDiv.dispatchEvent(createBubbledEvent("mousemove", { pageX: 100, pageY: 100 }));
+
+      expectedS = 100;
+      expectedV = 0;
+      sliderDiv.dispatchEvent(createBubbledEvent("mouseup", { pageX: 200, pageY: 200 }));
+    });
+
     it("point @200,200", () => {
       function handleSaturationChange(newHsv: HSVColor): void {
         expect(newHsv.s).to.be.equal(100);
@@ -150,6 +182,29 @@ describe("<SaturationPicker />", () => {
       const sliderDiv = renderedComponent.getByTestId("saturation-region");
       sliderDiv.dispatchEvent(createBubbledEvent("touchstart", { touches: [{ pageX: 0, pageY: 0 }] }));
       sliderDiv.dispatchEvent(createBubbledEvent("touchend", { touches: [{ pageX: 0, pageY: 0 }] }));
+    });
+
+    it("drag @0,0 -> @200,200 ", () => {
+      let expectedS = 0;
+      let expectedV = 100;
+
+      function handleSaturationChange(newHsv: HSVColor): void {
+        expect(Math.abs(newHsv.s - expectedS)).to.be.lessThan(1);
+        expect(Math.abs(newHsv.v - expectedV)).to.be.lessThan(1);
+      }
+
+      const renderedComponent = render(<div style={satDivStyle}><SaturationPicker hsv={hsv} onSaturationChange={handleSaturationChange} /></div>);
+      const pointerDiv = renderedComponent.getByTestId("saturation-pointer");
+      const sliderDiv = renderedComponent.getByTestId("saturation-region");
+      pointerDiv.dispatchEvent(createBubbledEvent("touchstart", { touches: [{ pageX: 0, pageY: 0 }] }));
+
+      expectedS = 50;
+      expectedV = 50;
+      sliderDiv.dispatchEvent(createBubbledEvent("touchmove", { touches: [{ pageX: 100, pageY: 100 }] }));
+
+      expectedS = 100;
+      expectedV = 0;
+      sliderDiv.dispatchEvent(createBubbledEvent("touchend", { touches: [{ pageX: 200, pageY: 200 }] }));
     });
 
     it("point @200,200", () => {

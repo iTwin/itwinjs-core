@@ -9,9 +9,66 @@
 import "./SaturationPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { HSVColor } from "@bentley/imodeljs-common";
+import { ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
+
+function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
+  hsv: HSVColor, container: HTMLDivElement): HSVColor | undefined {
+  const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = container.getBoundingClientRect();
+
+  let x: number | undefined;
+  if ("pageX" in e) {
+    x = (e as React.MouseEvent<HTMLDivElement>).pageX;
+  } else {
+    // istanbul ignore if
+    if (undefined !== e.touches && e.touches.length)
+      x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
+  }
+  // istanbul ignore if
+  if (undefined === x)
+    return hsv;
+
+  let y = 0;
+  if ("pageY" in e) {
+    y = (e as React.MouseEvent<HTMLDivElement>).pageY;
+  } else {
+    // istanbul ignore if
+    if (undefined !== e.touches && e.touches.length)
+      y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
+  }
+  // istanbul ignore if
+  if (undefined === y)
+    return hsv;
+
+  let left = x - (containerLeft + window.pageXOffset);
+  let top = y - (containerTop + window.pageYOffset);
+
+  // istanbul ignore next
+  if (left < 0) {
+    left = 0;
+  } else if (left > containerWidth) {
+    left = containerWidth;
+  } else if (top < 0) {
+    top = 0;
+  } else if (top > containerHeight) {
+    top = containerHeight;
+  }
+
+  let saturation = Math.round((left * 100) / containerWidth);
+  let value = Math.round(-((top * 100) / containerHeight) + 100);
+
+  // istanbul ignore if
+  if (saturation < 0) saturation = 0;
+  // istanbul ignore if
+  if (saturation > 100) saturation = 100;
+  // istanbul ignore if
+  if (value < 0) value = 0;
+  // istanbul ignore if
+  if (value > 100) value = 100;
+
+  return hsv.clone(hsv.h, saturation, value);
+}
 
 /** Properties for the [[SaturationPicker]] React component
  * @beta
@@ -26,103 +83,77 @@ export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivEleme
 /** SaturationPicker component used to set the saturation value.
  * @beta
  */
-export class SaturationPicker extends React.PureComponent<SaturationPickerProps> {
-  private _container: HTMLDivElement | null = null;
-  private _saturationLabel = UiComponents.translate("color.saturation");
+export function SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps) {
+  const container = React.useRef<HTMLDivElement>(null);
+  const [saturationLabel] = React.useState(() => UiComponents.translate("color.saturation"));
+  const isDragging = React.useRef(false);
 
-  /** @internal */
-  constructor(props: SaturationPickerProps) {
-    super(props);
-  }
+  const onChange = React.useCallback((e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore else
+    if (container.current) {
+      const newHsvColor = calculateChange(e, hsv, container.current);
+      // istanbul ignore else
+      if (newHsvColor) {
+        // istanbul ignore else
+        if (onSaturationChange)
+          onSaturationChange(newHsvColor);
+      }
+    }
+  }, [hsv, onSaturationChange]);
 
-  private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, hsv: HSVColor, container: HTMLDivElement): HSVColor | undefined => {
+  const onDragging = React.useCallback((e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore else
+    if (isDragging.current) {
+      onChange(e);
+    }
+  }, [onChange]);
+
+  const onMouseUp = React.useCallback(() => {
+    // istanbul ignore else
+    if (isDragging.current) {
+      isDragging.current = false;
+    }
+  }, []);
+
+  const onTouchEnd = React.useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore else
+    if (isDragging.current) {
+      onChange(event);
+      isDragging.current = false;
+    }
+  }, [onChange]);
+
+  const onMouseDown = React.useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // istanbul ignore else
+    if (e.target !== e.currentTarget) {
+      isDragging.current = true;
+      document.addEventListener("mouseup", onMouseUp, { capture: true, once: true });
+    }
+
+    onChange(e);
+
+    // istanbul ignore else
+    if (container.current)
+      container.current.focus();
+
     e.preventDefault();
-    const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = container.getBoundingClientRect();
+  }, [onChange, onMouseUp]);
 
-    let x = 0;
-    if ("pageX" in e) {
-      x = (e as React.MouseEvent<HTMLDivElement>).pageX;
-    } else {
-      // istanbul ignore if
-      if (undefined === e.touches)
-        return undefined;
-      x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
-    }
-    // istanbul ignore if
-    if (undefined === x)
-      return undefined;
-
-    let y = 0;
-    if ("pageY" in e) {
-      y = (e as React.MouseEvent<HTMLDivElement>).pageY;
-    } else {
-      // istanbul ignore if
-      if (undefined === e.touches)
-        return;
-      y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
-    }
-    // istanbul ignore if
-    if (undefined === y)
-      return undefined;
-
-    let left = x - (containerLeft + window.pageXOffset);
-    let top = y - (containerTop + window.pageYOffset);
-
-    // istanbul ignore next
-    if (left < 0) {
-      left = 0;
-    } else if (left > containerWidth) {
-      left = containerWidth;
-    } else if (top < 0) {
-      top = 0;
-    } else if (top > containerHeight) {
-      top = containerHeight;
-    }
-
-    let saturation = (left * 100) / containerWidth;
-    let value = -((top * 100) / containerHeight) + 100;
-
-    // istanbul ignore if
-    if (saturation < 0)
-      saturation = 0;
-    // istanbul ignore if
-    if (saturation > 100)
-      saturation = 100;
-    // istanbul ignore if
-    if (value < 0)
-      value = 0;
-    // istanbul ignore if
-    if (value > 100)
-      value = 100;
-
-    return new HSVColor(hsv.h, saturation, value);
-  }
-
-  /** @internal */
-  public componentWillUnmount() {
-    this._unbindEventListeners();
-  }
-
-  private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+  const onTouchStart = React.useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     // istanbul ignore else
-    if (this._container && this.props.onSaturationChange) {
-      const change = this._calculateChange(e, this.props.hsv, this._container);
-      change && typeof this.props.onSaturationChange === "function" && this.props.onSaturationChange(change);
-    }
-  }
+    if (e.target !== e.currentTarget)
+      isDragging.current = true;
 
-  private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    this._onChange(e);
+    onChange(e);
+
     // istanbul ignore else
-    if (this._container)
-      this._container.focus();
-    window.addEventListener("mousemove", this._onChange as any);
-    window.addEventListener("mouseup", this._onMouseUp);
-  }
+    if (container.current)
+      container.current.focus();
+  }, [onChange]);
 
-  private _onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
-    const h = this.props.hsv.h;
-    let { s, v } = { ...this.props.hsv };
+  const onKeyDown = React.useCallback((evt: React.KeyboardEvent<HTMLDivElement>) => {
+    const h = hsv.h;
+    let { s, v } = { ...hsv };
     if (evt.key === "ArrowLeft") {
       s -= (evt.ctrlKey ? 10 : 1);
     } else if (evt.key === "ArrowDown") {
@@ -153,50 +184,39 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     // istanbul ignore if
     if (v > 100) v = 100;
 
-    // istanbul ignore else
-    if (this.props.onSaturationChange)
-      this.props.onSaturationChange(new HSVColor(h, s, v));
-  }
+    const newColor = new HSVColor(h, s, v);
+    if (onSaturationChange)
+      onSaturationChange(newColor);
 
-  private _onMouseUp = () => {
-    this._unbindEventListeners();
-  }
+    evt.preventDefault();
+  }, [hsv, onSaturationChange]);
 
-  private _unbindEventListeners() {
-    window.removeEventListener("mousemove", this._onChange as any);
-    window.removeEventListener("mouseup", this._onMouseUp);
-  }
+  const pointerStyle: React.CSSProperties = React.useMemo(() => ({
+    left: `${hsv.s}%`,
+    top: `${-(hsv.v) + 100}%`,
+    backgroundColor: `${ColorDef.fromHSV(hsv).toRgbString()}`,
+  }), [hsv]);
 
-  /** @internal */
-  public render(): React.ReactNode {
+  const colorStyle: React.CSSProperties = React.useMemo(() => ({ backgroundColor: `hsl(${hsv.h} ,100%, 50%)` }), [hsv]);
 
-    const pointerStyle: React.CSSProperties = {
-      left: `${this.props.hsv.s}%`,
-      top: `${-(this.props.hsv.v) + 100}%`,
-    };
-
-    const colorStyle: React.CSSProperties = {
-      backgroundColor: `hsl(${this.props.hsv.h},100%, 50%)`,
-    };
-
-    return (
-      <div className={classnames("components-saturation-container", this.props.className)} style={this.props.style} data-testid="saturation-container">
-        <div
-          data-testid="saturation-region"
-          role="slider" aria-label={this._saturationLabel} aria-valuenow={this.props.hsv.s}
-          style={colorStyle}
-          className="components-saturation-region"
-          ref={(container) => this._container = container}
-          onMouseDown={this._onMouseDown}
-          onTouchMove={this._onChange}
-          onTouchStart={this._onChange}
-          tabIndex={0}
-          onKeyDown={this._onKeyDown}
-        >
-          <div style={pointerStyle} className="components-saturation-pointer" data-testid="saturation-pointer" />
-        </div>
+  return (
+    <div className={classnames("components-saturation-container", className)} style={style} data-testid="saturation-container" >
+      <div
+        data-testid="saturation-region"
+        role="slider" aria-label={saturationLabel} aria-valuenow={hsv.s}
+        style={colorStyle}
+        className="components-saturation-region"
+        ref={container}
+        onMouseDown={onMouseDown}
+        onMouseMove={onDragging}
+        onTouchMove={onDragging}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+      >
+        <div style={pointerStyle} className="components-saturation-pointer" data-testid="saturation-pointer" />
       </div>
-    );
-  }
-
+    </div >
+  );
 }

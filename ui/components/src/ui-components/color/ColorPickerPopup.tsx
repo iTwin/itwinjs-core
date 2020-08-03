@@ -6,57 +6,41 @@
  * @module Color
  */
 
-import "./ColorPickerButton.scss";
-import classnames from "classnames";
+// cSpell:ignore colorpicker
+
 import * as React from "react";
+import classnames from "classnames";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup, useRefs } from "@bentley/ui-core";
-import { ColorSwatch } from "./Swatch";
+import { ColorPickerPanel } from "./ColorPickerPanel";
 
-// cSpell:ignore colorpicker
+import "./ColorPickerPopup.scss";
 
-function ColorOptions({ handleColorPicked, options, numColumns, round, title }: { handleColorPicked: ((color: ColorDef) => void), options: ColorDef[], numColumns: number, round: boolean, title?: string }) {
-  const containerStyle: React.CSSProperties = { gridTemplateColumns: `repeat(${numColumns}, 1fr)` };
-  return (
-    <div className="components-colorpicker-popup-container">
-      {title && <h4>{title}</h4>}
-      <div data-testid="components-colorpicker-popup-colors" className="components-colorpicker-popup-colors" style={containerStyle}>
-        {options.map((color, index) => <ColorSwatch className="components-colorpicker-swatch" key={index} colorDef={color}
-          onColorPick={handleColorPicked} round={round} />)}
-      </div>
-    </div>
-  );
-}
-
-/** Properties for the [[ColorPickerButton]] React component
+/** Properties for the [[ColorPickerPopup]] React component
  * @beta
  */
-export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
-  /** Active color */
+export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+  /** Current color */
   initialColor: ColorDef;
-  /** Available colors */
+  /** Preset colors. Pass undefined to show default preset colors. Pass empty array to show no presets. */
   colorDefs?: ColorDef[];
-  /** Function to run when user selects color swatch */
-  onColorPick?: ((color: ColorDef) => void) | undefined;
-  /** Show swatches as squares unless round is set to true */
-  round?: boolean;
+  /** Function to call when the color value is changed */
+  onColorChange?: ((newColor: ColorDef) => void) | undefined;
   /** Disabled or not */
   disabled?: boolean;
-  /** Readonly or not */
+  /** Readonly or not, color displayed on button but button will not trigger pop-up */
   readonly?: boolean;
-  /** Title to show at top of DropDown */
-  dropDownTitle?: string;
-  /** Number of columns */
-  numColumns?: number;
+  /** popup position. If not set RelativePosition.BottomLeft is used */
+  popupPosition?: RelativePosition;
 }
 
-/** ColorPickerButton component
+/** ColorPickerPopup component
  * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
  * @beta
  */
-export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPickerProps>( // tslint:disable-line: variable-name
-  function ColorPickerButton(props, ref) { // tslint:disable-line: no-shadowed-variable
+export const ColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerPopupProps>( // tslint:disable-line: variable-name
+  function ColorPickerPopup(props, ref) { // tslint:disable-line: no-shadowed-variable
     const target = React.useRef<HTMLButtonElement>(null);
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
@@ -82,6 +66,7 @@ export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPicker
         ColorDef.create(ColorByName.olive),
       ]);
 
+    // istanbul ignore next
     const closePopup = React.useCallback(() => {
       setShowPopup(false);
     }, []);
@@ -90,39 +75,40 @@ export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPicker
       setShowPopup(!showPopup);
     }, [showPopup]);
 
-    const handleColorPicked = React.useCallback((color: ColorDef) => {
-      closePopup();
-
-      if (!color.equals(colorDef)) {
-        setColorDef(color);
+    const handleColorChanged = React.useCallback((newColor: ColorDef) => {
+      // istanbul ignore else
+      if (!newColor.equals(colorDef)) {
+        setColorDef(newColor);
 
         // istanbul ignore else
-        if (props.onColorPick)
-          props.onColorPick(color);
+        if (props.onColorChange)
+          props.onColorChange(newColor);
       }
-    }, [closePopup, colorDef, props]);
+    }, [colorDef, props]);
 
     const { b, g, r, t } = colorDef.colors;
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
 
     const buttonStyle = { backgroundColor: rgbaString, ...props.style } as React.CSSProperties;
-    const buttonClassNames = classnames("components-colorpicker-button",
-      props.round && "round",
+    const buttonClassNames = classnames("components-colorpicker-popup-button",
       props.readonly && "readonly",
       props.className,
     );
 
     const colorOptions = props.colorDefs && props.colorDefs.length ? props.colorDefs : defaultColors.current;
+    const popupPosition = undefined !== props.popupPosition ? props.popupPosition : RelativePosition.BottomLeft;
     return (
       <>
-        <button data-testid="components-colorpicker-button" onClick={togglePopup} className={buttonClassNames} style={buttonStyle} disabled={props.disabled} ref={refs} />
+        <button data-testid="components-colorpicker-popup-button" onClick={togglePopup} className={buttonClassNames} style={buttonStyle} disabled={props.disabled} ref={refs} />
         <Popup
           className="components-colorpicker-popup"
           isOpen={showPopup}
-          position={RelativePosition.BottomLeft}
+          position={popupPosition}
           onClose={closePopup}
           target={target.current} >
-          <ColorOptions handleColorPicked={handleColorPicked} options={colorOptions} numColumns={props.numColumns ? props.numColumns : 4} round={!!props.round} title={props.dropDownTitle} />
+          <div className="components-colorpicker-popup-panel-padding">
+            <ColorPickerPanel activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
+          </div>
         </Popup>
       </>
     );
