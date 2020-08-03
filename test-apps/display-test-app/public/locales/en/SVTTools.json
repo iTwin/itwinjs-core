@@ -102,6 +102,9 @@
     },
     "ToggleAspectRatioSkewDecorator": {
       "keyin": "dta aspect skew decorator"
+    },
+    "ApplyModelTransform": {
+      "keyin": "dta model transform"
     }
   }
 }

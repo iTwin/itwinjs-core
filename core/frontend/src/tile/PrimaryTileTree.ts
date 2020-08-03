@@ -151,6 +151,15 @@ class PrimaryTreeReference extends TileTreeReference {
     const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
     return { type: BatchType.Primary, edgesRequired, animationId };
   }
+
+  protected computeBaseTransform(tree: TileTree): Transform {
+    return super.computeTransform(tree);
+  }
+
+  protected computeTransform(tree: TileTree): Transform {
+    const tf = this.computeBaseTransform(tree);
+    return this._view.getModelDisplayTransform(this._model.id, tf);
+  }
 }
 
 class PlanProjectionTreeReference extends PrimaryTreeReference {
@@ -185,7 +194,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     return args;
   }
 
-  protected computeTransform(tree: TileTree): Transform {
+  protected computeBaseTransform(tree: TileTree): Transform {
     assert(tree instanceof PlanProjectionTileTree);
     const settings = this.getSettings();
     const elevation = settings?.elevation ?? (tree as PlanProjectionTileTree).baseElevation;

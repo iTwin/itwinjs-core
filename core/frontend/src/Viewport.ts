@@ -43,7 +43,7 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewRect } from "./ViewRect";
-import { MarginPercent, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
+import { MarginPercent, ModelDisplayTransformProvider, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
 import { SheetViewState } from "./Sheet";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
@@ -2664,8 +2664,14 @@ export abstract class Viewport implements IDisposable {
    */
   public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
-    if (undefined !== npc)
+    if (undefined !== npc) {
       this.npcToWorld(npc, npc);
+
+      // If this is a plan projection model, invert the elevation applied to its display transform.
+      const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+      if (undefined !== modelId)
+        npc.z -= this.view.getModelElevation(modelId);
+    }
 
     return npc;
   }
@@ -2727,6 +2733,16 @@ export abstract class Viewport implements IDisposable {
    */
   public cssPixelsToDevicePixels(cssPixels: number): number {
     return this.target.cssPixelsToDevicePixels(cssPixels);
+  }
+
+  /** @see [[ViewState.setModelDisplayTransformProvider]]
+   * @internal
+   */
+  public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
+    if (provider !== this.view.modelDisplayTransformProvider) {
+      this.view.modelDisplayTransformProvider = provider;
+      this.invalidateScene();
+    }
   }
 }
 

@@ -168,6 +168,15 @@ export class ViewPose2d extends ViewPose {
   public get rotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
 }
 
+/** Interface adopted by an object that wants to apply a per-model display transform.
+ * This is intended chiefly for use by model alignment tools.
+ * @see [[ViewState.modelDisplayTransformProvider]].
+ * @internal
+ */
+export interface ModelDisplayTransformProvider {
+  getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+}
+
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
@@ -179,6 +188,7 @@ export abstract class ViewState extends ElementState {
 
   private _auxCoordSystem?: AuxCoordSystemState;
   private _extentLimits?: ExtentLimits;
+  private _modelDisplayTransformProvider?: ModelDisplayTransformProvider;
   public description?: string;
   public isPrivate?: boolean;
 
@@ -203,6 +213,7 @@ export abstract class ViewState extends ElementState {
     this.displayStyle = source.displayStyle.clone();
     this._extentLimits = source._extentLimits;
     this._auxCoordSystem = source._auxCoordSystem;
+    this._modelDisplayTransformProvider = source._modelDisplayTransformProvider;
   }
 
   /** Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
@@ -1026,6 +1037,27 @@ export abstract class ViewState extends ElementState {
 
   protected _updateMaxGlobalScopeFactor() { this._maxGlobalScopeFactor = Math.max(this._maxGlobalScopeFactor, this.globalScopeFactor); }
 
+  /** Return elevation applied to model when displayed. This is strictly relevant to plan projection models.
+   * @internal
+   */
+  public getModelElevation(_modelId: Id64String): number { return 0; }
+
+  /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
+   * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
+   * @see [[Viewport.setModelDisplayTransformProvider]].
+   * @internal
+   */
+  public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
+    return this._modelDisplayTransformProvider;
+  }
+  public set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) {
+    this._modelDisplayTransformProvider = provider;
+  }
+
+  /** @internal */
+  public getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform {
+    return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
+  }
 }
 
 /** Defines the state of a view of 3d models.
@@ -1754,6 +1786,12 @@ export abstract class ViewState3d extends ViewState {
 
     builder.addPolyface(polyface, true);
     context.addDecorationFromBuilder(builder);
+  }
+
+  /** @internal */
+  public getModelElevation(modelId: Id64String): number {
+    const settings = this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
+    return settings && settings.elevation ? settings.elevation : 0;
   }
 }
 

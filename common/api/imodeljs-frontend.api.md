@@ -5645,6 +5645,12 @@ export interface ModalReturn {
     stop: (_ev: Event) => void;
 }
 
+// @internal
+export interface ModelDisplayTransformProvider {
+    // (undocumented)
+    getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+}
+
 // @public
 export class ModelSelectorState extends ElementState {
     constructor(props: ModelSelectorProps, iModel: IModelConnection);
@@ -10845,6 +10851,8 @@ export abstract class Viewport implements IDisposable {
     setFlashed(id: string | undefined, duration: number): void;
     // (undocumented)
     setLightSettings(settings: LightSettings): void;
+    // @internal
+    setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void;
     setNeverDrawn(ids: Id64Set): void;
     // @internal (undocumented)
     setRedrawPending(): void;
@@ -11103,6 +11111,10 @@ export abstract class ViewState extends ElementState {
     getGridSpacing(): XAndY;
     // (undocumented)
     getGridsPerRef(): number;
+    // @internal (undocumented)
+    getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+    // @internal
+    getModelElevation(_modelId: Id64String): number;
     abstract getOrigin(): Point3d;
     abstract getRotation(): Matrix3d;
     // @internal (undocumented)
@@ -11135,6 +11147,9 @@ export abstract class ViewState extends ElementState {
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions): void;
     // @alpha
     get maxGlobalScopeFactor(): number;
+    // @internal
+    get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined;
+    set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined);
     get name(): string;
     // @internal (undocumented)
     outputStatusMessage(status: ViewStatus): ViewStatus;
@@ -11277,6 +11292,8 @@ export abstract class ViewState3d extends ViewState {
     getLensAngle(): Angle;
     // @internal (undocumented)
     getModelClip(modelId: Id64String): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    getModelElevation(modelId: Id64String): number;
     // (undocumented)
     getOrigin(): Point3d;
     // (undocumented)
