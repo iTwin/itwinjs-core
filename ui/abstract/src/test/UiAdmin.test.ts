@@ -164,4 +164,12 @@ describe("UiAdmin", () => {
     expect(uiAdmin.closeToolSettingsPopup()).to.be.false;
   });
 
+  it("isFocusOnHome should return false by default", () => {
+    expect(uiAdmin.isFocusOnHome).to.be.false;
+  });
+
+  it("setFocusToHome does nothing by default", () => {
+    uiAdmin.setFocusToHome();
+  });
+
 });

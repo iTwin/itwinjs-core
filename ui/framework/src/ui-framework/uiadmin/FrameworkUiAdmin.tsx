@@ -17,6 +17,7 @@ import { CursorInformation } from "../cursor/CursorInformation";
 import { PopupManager } from "../popup/PopupManager";
 import { CursorMenuData } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
@@ -26,8 +27,14 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** @internal */
   public onInitialized() { }
 
-  /** Gets the cursor X and Y position. */
+  /** Gets the cursor X and Y position, which is mouseEvent.pageX and mouseEvent.pageY. */
   public get cursorPosition(): XAndY { return CursorInformation.cursorPosition; }
+
+  /** Determines if focus is set to Home */
+  public get isFocusOnHome(): boolean { return KeyboardShortcutManager.isFocusOnHome; }
+
+  /** Sets focus to Home */
+  public setFocusToHome(): void { KeyboardShortcutManager.setFocusToHome(); }
 
   /** Show a context menu at a particular location.
    * @param items Properties of the menu items to display.

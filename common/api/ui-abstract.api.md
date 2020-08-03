@@ -1031,9 +1031,11 @@ export class UiAdmin {
     hideInputEditor(): boolean;
     hideMenuButton(_id: string): boolean;
     hideToolbar(): boolean;
+    get isFocusOnHome(): boolean;
     // @internal (undocumented)
     onInitialized(): void;
     openToolSettingsPopup(_dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
+    setFocusToHome(): void;
     showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showCard(_content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;

@@ -129,25 +129,31 @@ export class KeyboardShortcut extends ItemDefBase {
       this._isShiftKeyRequired = props.isShiftKeyRequired;
   }
 
+  /** Returns the id for this shortcut */
   public get id(): string { return this.keyMapKey; }
 
+  /** Returns the shortcut container */
   public get shortcutContainer(): KeyboardShortcutContainer {
     return this._shortcuts;
   }
 
+  /** Finds a shortcut with a given key in the shortcut's container */
   public getShortcut(mapKey: string): KeyboardShortcut | undefined {
     return this._shortcuts.findKey(mapKey);
   }
 
+  /** Returns the shortcut's key map key used as the id */
   public get keyMapKey(): string {
     const keyMapKey = KeyboardShortcutContainer.generateKeyMapKey(this.key, this._isAltKeyRequired, this._isCtrlKeyRequired, this._isShiftKeyRequired);
     return keyMapKey;
   }
 
+  /** Returns the [[ActionButtonItemDef]] associated with this shortcut */
   public get item(): ActionButtonItemDef | undefined {
     return this._item;
   }
 
+  /** Called when the [[ActionButtonItemDef]] associated with this shortcut is invoked */
   public itemPicked(): void {
     if (this._shortcuts.areKeyboardShortcutsAvailable()) {
       this._shortcuts.showShortcutsMenu();
@@ -182,6 +188,7 @@ export class KeyboardShortcutContainer {
   private _keyMap: Map<string, KeyboardShortcut> = new Map<string, KeyboardShortcut>();
   private _keyArray: KeyboardShortcut[] = new Array<KeyboardShortcut>();
 
+  /** Registers a Keyboard Shortcut associated with a given key in the managed list */
   public registerKey(keyMapKey: string, inShortcut: KeyboardShortcut): KeyboardShortcut | undefined {
     let shortcut: KeyboardShortcut | undefined;
 
@@ -206,14 +213,17 @@ export class KeyboardShortcutContainer {
     return shortcut;
   }
 
+  /** Finds a Keyboard Shortcut associated with a given key */
   public findKey(keyMapKey: string): KeyboardShortcut | undefined {
     return this._keyMap.get(keyMapKey);
   }
 
+  /** Determines if any Keyboard Shortcuts are available in this container */
   public areKeyboardShortcutsAvailable(): boolean {
     return this._keyMap.size !== 0;
   }
 
+  /** Empties any Keyboard Shortcuts from this container */
   public emptyData(): void {
     this._keyMap.clear();
     this._keyArray.length = 0;
@@ -223,6 +233,7 @@ export class KeyboardShortcutContainer {
     return this._keyArray.slice();
   }
 
+  /** Generates a key used for storing and finding the Keyboard Shortcuts in this container */
   public static generateKeyMapKey(keyboardKey: string, isAltKeyRequired: boolean, isCtrlKeyRequired: boolean, isShiftKeyRequired: boolean): string {
     let keyMapKey = keyboardKey;
 
@@ -236,6 +247,7 @@ export class KeyboardShortcutContainer {
     return keyMapKey;
   }
 
+  /** Displays a menu for the Keyboard Shortcuts in this container */
   public showShortcutsMenu() {
     const offset = 8;
     KeyboardShortcutMenu.onKeyboardShortcutMenuEvent.emit({
@@ -254,17 +266,20 @@ export class KeyboardShortcutManager {
 
   private static _shortcuts: KeyboardShortcutContainer = new KeyboardShortcutContainer();
 
+  /** Loads Keyboard Shortcuts into the managed list */
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]) {
     shortcutList.forEach((shortcutProps: KeyboardShortcutProps) => {
       this.loadKeyboardShortcut(shortcutProps);
     });
   }
 
+  /** Loads a Keyboard Shortcut into the managed list */
   public static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps) {
     const shortcut = new KeyboardShortcut(shortcutProps);
     this._shortcuts.registerKey(shortcut.keyMapKey, shortcut);
   }
 
+  /** Processes a keystroke and invokes a matching Keyboard Shortcut */
   public static processKey(keyboardKey: string, isAltKeyPressed: boolean = false, isCtrlKeyPressed: boolean = false, isShiftKeyPressed: boolean = false): boolean {
     const keyMapKey = KeyboardShortcutContainer.generateKeyMapKey(keyboardKey, isAltKeyPressed, isCtrlKeyPressed, isShiftKeyPressed);
 
@@ -277,19 +292,23 @@ export class KeyboardShortcutManager {
     return false;
   }
 
+  /** Returns the managed list of Keyboard Shortcuts */
   public static get shortcutContainer(): KeyboardShortcutContainer {
     return this._shortcuts;
   }
 
+  /** Returns a Keyboard Shortcut from the managed lists */
   public static getShortcut(keyMapKey: string): KeyboardShortcut | undefined {
     return this._shortcuts.findKey(keyMapKey);
   }
 
+  /** Determines if focus is set to Home */
   public static get isFocusOnHome(): boolean {
     const element = document.activeElement as HTMLElement;
     return element && element === document.body;
   }
 
+  /** Sets focus to Home */
   public static setFocusToHome(): void {
     const element = document.activeElement as HTMLElement;
     if (element && element !== document.body) {
@@ -298,12 +317,14 @@ export class KeyboardShortcutManager {
     }
   }
 
+  /** Displays the Keyboard Shortcuts menu at the cursor */
   public static displayShortcutsMenu(): void {
     if (this._shortcuts.areKeyboardShortcutsAvailable()) {
       this._shortcuts.showShortcutsMenu();
     }
   }
 
+  /** Closes the Keyboard Shortcuts menu */
   public static closeShortcutsMenu(): void {
     KeyboardShortcutMenu.onKeyboardShortcutMenuEvent.emit({
       menuVisible: false,
@@ -313,7 +334,9 @@ export class KeyboardShortcutManager {
     });
   }
 
+  /** Returns the cursor X position, which is mouseEvent.pageX. */
   public static get cursorX(): number { return CursorInformation.cursorX; }
+  /** Returns the cursor Y position, which is mouseEvent.pageY. */
   public static get cursorY(): number { return CursorInformation.cursorY; }
 
 }

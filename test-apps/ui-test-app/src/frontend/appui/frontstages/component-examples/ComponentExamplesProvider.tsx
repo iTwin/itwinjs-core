@@ -222,6 +222,15 @@ export class ComponentExamplesProvider {
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
         createComponentExample("Image Checkbox", "ImageCheckbox with SVG fonts", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
+
+        createComponentExample("Input Described By", "Input with aria-describedby",
+          <div>
+            <label htmlFor="phone">Phone</label>
+            <Input id="phone" name="phone" type="tel"
+              pattern="^(\(?0[1-9]{1}\)?)?[0-9 -]*$"
+              aria-describedby="phone-desc" />
+            <p id="phone-desc">For example, (02) 1234 1234</p>
+          </div>),
       ],
     };
   }

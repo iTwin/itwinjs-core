@@ -25,7 +25,7 @@ import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
-// cSpell:ignore cursormenu
+// cSpell:ignore cursormenu cursorpopup
 
 /** Properties for [[ConfigurableUiContent]]
  * @public

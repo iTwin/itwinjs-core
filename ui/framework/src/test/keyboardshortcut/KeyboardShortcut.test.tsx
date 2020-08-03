@@ -227,16 +227,18 @@ describe("KeyboardShortcut", () => {
       expect(KeyboardShortcutManager.cursorY).to.eq(200);
     });
 
-    it("setFocusToHome should make document.body active element", () => {
+    it("setFocusToHome should set focus to home", () => {
       const buttonElement = document.createElement("button");
       document.body.appendChild(buttonElement);
       buttonElement.focus();
       let activeElement = document.activeElement as HTMLElement;
       expect(activeElement === buttonElement).to.be.true;
+      expect(KeyboardShortcutManager.isFocusOnHome).to.be.false;
 
       KeyboardShortcutManager.setFocusToHome();
       activeElement = document.activeElement as HTMLElement;
       expect(activeElement === document.body).to.be.true;
+      expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
       document.body.removeChild(buttonElement);
     });
   });

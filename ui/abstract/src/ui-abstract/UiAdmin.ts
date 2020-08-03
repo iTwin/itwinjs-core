@@ -30,6 +30,12 @@ export class UiAdmin {
   /** Create an XAndY object. */
   public createXAndY(x: number, y: number): XAndY { return { x, y }; }
 
+  /** Determines if focus is set to Home */
+  public get isFocusOnHome(): boolean { return false; }
+
+  /** Sets focus to Home */
+  public setFocusToHome(): void { }
+
   /** Show a context menu at a particular location.
    * @param _menuItemsProps Properties of the menu items to display.
    * @param _location Location of the context menu, relative to the origin of htmlElement or the window.
