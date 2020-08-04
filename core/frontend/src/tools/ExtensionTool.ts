@@ -45,7 +45,7 @@ export class ExtensionTool extends Tool {
 
   private static showLoadSuccess(extensionName: string) {
     const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.Success", { extensionName });
-    const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, undefined, OutputMessageType.InputField);
+    const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, undefined, OutputMessageType.Toast);
     IModelApp.notifications.outputMessage(info);
     Logger.logInfo(loggerCategory, briefMessage);
   }

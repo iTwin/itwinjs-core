@@ -52,6 +52,7 @@
     "@bentley/ui-core": "2.5.0-dev.5",
     "@bentley/ui-framework": "2.5.0-dev.5",
     "@bentley/ui-ninezone": "2.5.0-dev.5",
+    "@bentley/presentation-common": "2.5.0-dev.5",
     "classnames": "^2.2.5",
     "react": "^16.8.0",
     "react-compound-slider": "^2.5.0",

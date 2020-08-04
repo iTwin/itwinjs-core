@@ -24,11 +24,12 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
 ### To run in ui-test-app, on a Windows machine, use the following key-ins from the root imodeljs directory.
 
   ```sh
-  cd test-apps\ui-test-app\build
+  cd test-apps\ui-test-app
+  cd build
   md imjs_extensions
   cd imjs_extensions
   mklink /d ui-test ..\..\..\ui-test-extension\lib\extension
-  cd ..\..\..
+  cd ..\..
   npm run start:servers
   ```
 
