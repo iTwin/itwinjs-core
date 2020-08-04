@@ -251,7 +251,7 @@ export class MapLayerSettings {
         }
         break;
     }
-    return MapLayerSettings.fromJSON({ name, formatId, url, transparency: mapSettings.transparency === false ? 0.0 : mapSettings.transparency, transparentBackground: false, isBase: true })!;
+    return MapLayerSettings.fromJSON({ name, formatId, url, transparentBackground: false, isBase: true })!;
   }
 
   /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.

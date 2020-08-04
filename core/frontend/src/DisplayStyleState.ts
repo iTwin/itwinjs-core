@@ -118,6 +118,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this._backgroundDrapeMap.setBaseLayerSettings(mapBase);
       this.settings.mapImagery.backgroundBase = mapBase;
     }
+    // THe settings change may cause a different tree to be used... make sure its imagery is in synch.
+    this._backgroundMap.clearLayers();
+    this._backgroundDrapeMap.clearLayers();
   }
 
   /** @internal */

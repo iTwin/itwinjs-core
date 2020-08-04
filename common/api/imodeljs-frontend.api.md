@@ -4969,6 +4969,8 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
+    clearLayers(): void;
+    // (undocumented)
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
