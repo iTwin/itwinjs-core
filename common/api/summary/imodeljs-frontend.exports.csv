@@ -285,6 +285,7 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
+alpha;MobileAuthorizationClient 
 internal;MockRender
 internal;ModalOptions
 internal;ModalReturn

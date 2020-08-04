@@ -85,6 +85,7 @@ export * from "./geometry/LineStyle";
 export * from "./geometry/Placement";
 export * from "./geometry/TextString";
 export * from "./oidc/DesktopAuthorizationClientConfiguration";
+export * from "./oidc/MobileAuthorizationClientConfiguration";
 export * from "./rpc/DevToolsRpcInterface";
 export * from "./rpc/EditorRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";

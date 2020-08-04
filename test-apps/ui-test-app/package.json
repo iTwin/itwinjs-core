@@ -22,7 +22,11 @@
     "test": "",
     "cover": "",
     "docs": "",
-    "copyConfig": "internal-tools copy-config"
+    "copyConfig": "internal-tools copy-config",
+    "build:ios-backend": "npm run build:backend && webpack --config ./ios/backend.config --env.outdir=./lib/ios --env.entry=./lib/backend/mobile/MobileMain.js --env.bundlename=main",
+    "install-ios-lib": "node ./ios/scripts/installIosNativeLib.js",
+    "copy:ios-frontend": "mkdir -p ./lib/ios && rm -rf ./lib/ios/www && cp -R ./build ./lib/ios/www",
+    "build:ios": "npm run install-ios-lib && npm run build:frontend && npm run build:ios-backend && npm run copy:ios-frontend"
   },
   "repository": {},
   "keywords": [
@@ -64,7 +68,10 @@
     "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.7.4"
+    "typescript": "~3.7.4",
+    "fs-extra": "^8.1.0",
+    "webpack": "4.42.0",
+    "semver": "^5.5.0"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "2.5.0-dev.5",

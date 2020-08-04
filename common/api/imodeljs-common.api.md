@@ -1445,6 +1445,9 @@ export interface DecorationGeometryProps {
 // @alpha
 export const defaultDesktopAuthorizationClientExpiryBuffer: number;
 
+// @alpha
+export const defaultMobileAuthorizationClientExpiryBuffer: number;
+
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
@@ -2020,6 +2023,8 @@ export namespace Events {
         onBriefcaseDownloadProgress = "download-progress";
         const // (undocumented)
         onInternetConnectivityChanged = "onInternetConnectivityChanged";
+        const // (undocumented)
+        onUserStateChanged = "onUserStateChanged";
     }
 }
 
@@ -3807,6 +3812,14 @@ export class MeshPolylineList extends Array<MeshPolyline> {
     constructor(...args: MeshPolyline[]);
 }
 
+// @alpha
+export interface MobileAuthorizationClientConfiguration {
+    clientId: string;
+    expiryBuffer?: number;
+    redirectUri: string;
+    scope: string;
+}
+
 // @beta (undocumented)
 export type MobileRpcChunks = Array<string | Uint8Array>;
 
@@ -3939,6 +3952,10 @@ export enum MonochromeMode {
 
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
+    authGetAccessToken(): Promise<string>;
+    authInitialize(_issuer: string, _config: any): Promise<void>;
+    authSignIn(): Promise<void>;
+    authSignOut(): Promise<void>;
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_key: BriefcaseKey): Promise<void>;
@@ -3955,21 +3972,13 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
     requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean>;
     requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps>;
-    // (undocumented)
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
-    // (undocumented)
     storageKeys(_storageId: string): Promise<string[]>;
-    // (undocumented)
     storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void>;
-    // (undocumented)
     storageMgrNames(): Promise<string[]>;
-    // (undocumented)
     storageMgrOpen(_storageId: string): Promise<string>;
-    // (undocumented)
     storageRemove(_storageId: string, _key: string): Promise<void>;
-    // (undocumented)
     storageRemoveAll(_storageId: string): Promise<void>;
-    // (undocumented)
     storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
 }
 

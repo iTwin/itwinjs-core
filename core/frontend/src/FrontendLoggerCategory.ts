@@ -21,13 +21,16 @@ export enum FrontendLoggerCategory {
   IModelConnection = "imodeljs-frontend.IModelConnection",
 
   /** The logger category used by OIDC-related functions on iOS. */
-  IOSAuthorizationClient = "imodeljs-frontend.IOSAuthorizationClient",
+  MobileAuthorizationClient = "imodeljs-frontend.MobileAuthorizationClient",
 
   /** The logger category used by EventSource */
   EventSource = "imodeljs-frontend.EventSource",
 
   /** The logger category used for general authorization purposes */
   Authorization = "imodeljs-frontend.Authorization",
+
+  /** The logger category used for NativeApp */
+  NativeApp = "imodeljs-frontend.NativeApp",
 
   /** The logger category used by feature-flag-related functions */
   FeatureToggle = "imodeljs-frontend.FeatureToggles",

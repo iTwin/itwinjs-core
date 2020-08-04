@@ -153,6 +153,7 @@ import { Matrix4d } from '@bentley/geometry-core';
 import { MeshEdges } from '@bentley/imodeljs-common';
 import { MeshPolyline } from '@bentley/imodeljs-common';
 import { MeshPolylineList } from '@bentley/imodeljs-common';
+import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
@@ -3051,7 +3052,8 @@ export enum FrontendLoggerCategory {
     FeatureTracking = "imodeljs-frontend.FeatureTracking",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
-    IOSAuthorizationClient = "imodeljs-frontend.IOSAuthorizationClient",
+    MobileAuthorizationClient = "imodeljs-frontend.MobileAuthorizationClient",
+    NativeApp = "imodeljs-frontend.NativeApp",
     // (undocumented)
     Package = "imodeljs-frontend"
 }
@@ -5499,6 +5501,20 @@ export enum MessageBoxValue {
 
 // @internal
 export function metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number;
+
+// @alpha
+export class MobileAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: MobileAuthorizationClientConfiguration);
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    get isAuthorized(): boolean;
+    // (undocumented)
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+}
 
 // @internal
 export namespace MockRender {

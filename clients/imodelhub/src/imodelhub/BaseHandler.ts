@@ -45,11 +45,7 @@ export class IModelBaseHandler extends WsgClient {
   public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super("sv1.1");
     this._fileHandler = fileHandler;
-    const isMobile = typeof (self) !== "undefined" && (self as any).imodeljsMobile;
-    if (!(typeof window === "undefined") && !isMobile) {
-      // tslint:disable-next-line:no-var-requires
-      this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
-    }
+    this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
   }
 
   public formatContextIdForUrl(contextId: string) { return contextId; }

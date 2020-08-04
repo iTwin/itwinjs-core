@@ -212,6 +212,7 @@ public;class LinkElement
 public;LinkModel 
 public;LinkPartition 
 internal;MetaDataRegistry
+alpha;MobileAuthorizationClient 
 public;Model 
 public;ModelSelector 
 internal;NativeAppBackend

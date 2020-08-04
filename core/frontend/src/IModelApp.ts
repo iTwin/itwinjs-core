@@ -11,7 +11,7 @@ const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com
 import { BeDuration, ClientRequestContext, dispose, Guid, GuidString, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, NativeAppRpcInterface, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
@@ -495,10 +495,29 @@ export class IModelApp {
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
       const id = _request.id;
-
+      /* todo: Following is required so to skip call to IModelApp.authorizationClient.getAccessToken() as it causes indirect recursion
+               in case when MobileAuthorizationClient is used which uses NativeAppRpcInterface to get token which by itself end up in this function.
+               We need Rpc operation policy that can be set for methods that does not expect any authorization.
+      **/
+      const authRequired = (request: RpcRequest) => {
+        const authOps = [{
+          interfaceName: NativeAppRpcInterface.interfaceName, operationNames: [
+            "authSignIn", "authSignOut", "authGetAccessToken", "authInitialize", "fetchEvents", "log", "checkInternetConnectivity", "overrideInternetConnectivity", "getConfig", "cancelTileContentRequests"],
+        }];
+        for (const authOp of authOps) {
+          if (authOp.interfaceName === request.operation.interfaceDefinition.interfaceName) {
+            for (const operationName of authOp.operationNames) {
+              if (request.operation.operationName === operationName) {
+                return false;
+              }
+            }
+          }
+        }
+        return true;
+      };
       let authorization: string | undefined;
       let userId: string | undefined;
-      if (IModelApp.authorizationClient) {
+      if (IModelApp.authorizationClient && authRequired(_request)) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
           const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();

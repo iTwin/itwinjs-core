@@ -7,10 +7,10 @@
  */
 
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOptions, RequestBriefcaseProps } from "../BriefcaseTypes";
 import { IModelProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
+import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOptions, RequestBriefcaseProps } from "../BriefcaseTypes";
 
 /**
  * Type of value for storage values
@@ -36,6 +36,7 @@ export namespace Events {
     export const onMemoryWarning = "onMemoryWarning";
     export const onBriefcaseDownloadProgress = "download-progress";
     export const onInternetConnectivityChanged = "onInternetConnectivityChanged";
+    export const onUserStateChanged = "onUserStateChanged";
   }
 }
 
@@ -76,7 +77,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.2.0";
+  public static interfaceVersion = "0.3.0";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -89,6 +90,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _metaData metaData if any.
    */
   public async log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void> { return this.forward(arguments); }
+
   /** Fetch a list of queue events for the specified iModel from the backend, up to the specified maximum number of events.
    * The order of the events in the returned array matches the order in which the events occurred.
    * @param _iModelToken Identifies the iModel
@@ -96,14 +98,18 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @returns Up to _maxToFetch queued events.
    */
   public async fetchEvents(_iModelToken: IModelRpcProps, _maxToFetch: number): Promise<QueuedEvent[]> { return this.forward(arguments); }
+
   /** Check if internet is reachable and how its reachable. */
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> { return this.forward(arguments); }
+
   /** Manually override internet reachability for testing purpose.
    * @param _status New status to set on backend.
    */
   public async overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void> { return this.forward(arguments); }
+
   /** Return config from backend */
   public async getConfig(): Promise<any> { return this.forward(arguments); }
+
   /** Cancels currently pending or active generation of tile content.
    * @param _iModelToken Identifies the iModel
    * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
@@ -158,15 +164,81 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    */
   public async getBriefcases(): Promise<BriefcaseProps[]> { return this.forward(arguments); }
 
-  // Storage Manager Persistence Api
+  /**
+   * Open key/value pair base storage
+   * @param _storageId string identifier of storage
+   */
   public async storageMgrOpen(_storageId: string): Promise<string> { return this.forward(arguments); }
+
+  /**
+   * Close key/value pair base storage
+   * @param _storageId string identifier of storage
+   * @param _deleteIt delete the storage on close
+   */
   public async storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void> { return this.forward(arguments); }
+
+  /**
+   * Get names of available storages
+   * @returns list of name of storage
+   */
   public async storageMgrNames(): Promise<string[]> { return this.forward(arguments); }
 
-  // Storage Persistence Api
+  /**
+   * Get a value against a key.
+   * @param _storageId string identifier of storage
+   * @param _key key identifier for value
+   * @returns key value or undefined
+   */
   public async storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined> { return this.forward(arguments); }
+
+  /**
+   * Set a value against a key.
+   * @param _storageId string identifier of storage
+   * @param _key key identifier for value
+   * @param _value value to be set
+   */
   public async storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void> { return this.forward(arguments); }
+
+  /**
+   * Remove a key/value pair.
+   * @param _storageId string identifier of storage
+   * @param _key key identifier for value
+   */
   public async storageRemove(_storageId: string, _key: string): Promise<void> { return this.forward(arguments); }
+
+  /**
+   * Get list of keys in storage.
+   * @param _storageId string identifier of storage
+   * @returns list of storage ids
+   */
   public async storageKeys(_storageId: string): Promise<string[]> { return this.forward(arguments); }
+
+  /**
+   * Delete all key/value pairs.
+   * @param _storageId string identifier of storage
+   */
   public async storageRemoveAll(_storageId: string): Promise<void> { return this.forward(arguments); }
+
+  /**
+   * Trigger sigIn on backend. This will cause onUserStateChange() event.
+   */
+  public async authSignIn(): Promise<void> { return this.forward(arguments); }
+
+  /**
+   * SignOut user on backend. This will cause onUserStateChange() event.
+   */
+  public async authSignOut(): Promise<void> { return this.forward(arguments); }
+
+  /**
+   * Get access token and perform silent refresh as needed
+   * @returns OIDC token
+   */
+  public async authGetAccessToken(): Promise<string> { return this.forward(arguments); }
+
+  /**
+   * Initialize OIDC client
+   * @param _issuer URL for issuer.
+   * @param _config configuration for oidc client
+   */
+  public async authInitialize(_issuer: string, _config: any): Promise<void> { return this.forward(arguments); }
 }

@@ -7,8 +7,11 @@ import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState } from "@bentley/imodeljs-frontend";
+import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface, RpcConfiguration } from "@bentley/imodeljs-common";
+import {
+  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
+  IModelAppOptions, IModelConnection, MobileAuthorizationClient, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+} from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
@@ -188,7 +191,11 @@ export class SampleAppIModelApp {
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
     opts.viewManager = new AppViewManager(true);  // Favorite Properties Support
-    await IModelApp.startup(opts);
+    if (MobileRpcConfiguration.isMobileFrontend) {
+      await NativeApp.startup(opts);
+      NativeAppLogger.initialize();
+    } else
+      await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
@@ -611,7 +618,10 @@ window.addEventListener("beforeunload", async () => {
 });
 
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
-  const redirectUri = "http://localhost:3000/signin-callback";
+  let redirectUri = "http://localhost:3000/signin-callback";
+  if (MobileRpcConfiguration.isMobileFrontend) {
+    redirectUri = "imodeljs://app/signin-callback";
+  }
   const baseOidcScopes = [
     "openid",
     "email",
@@ -625,7 +635,7 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
     "imodel-extension-service-api",
   ];
 
-  return isElectronRenderer
+  return isElectronRenderer || MobileRpcConfiguration.isMobileFrontend
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
@@ -644,6 +654,10 @@ async function createOidcClient(requestContext: ClientRequestContext, oidcConfig
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
+  } else if (MobileRpcConfiguration.isMobileFrontend) {
+    const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
+    await mobileClient.initialize(requestContext);
+    return mobileClient;
   } else {
     await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
@@ -678,12 +692,12 @@ async function main() {
     Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // tslint:disable-line:no-console
   }
 
-  const oidcConfig = getOidcConfiguration();
-  const oidcClient = await createOidcClient(new ClientRequestContext(), oidcConfig);
-
   const rpcInterfaces = getSupportedRpcs();
   if (isElectronRenderer) {
     ElectronRpcManager.initializeClient({}, rpcInterfaces);
+  } else if (MobileRpcConfiguration.isMobileFrontend) {
+    rpcInterfaces.push(NativeAppRpcInterface);
+    MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {
     const urlClient = new UrlDiscoveryClient();
     const requestContext = new ClientRequestContext();
@@ -692,6 +706,9 @@ async function main() {
   } else {
     BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
   }
+
+  const oidcConfig = getOidcConfiguration();
+  const oidcClient = await createOidcClient(new ClientRequestContext(), oidcConfig);
 
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {

@@ -115,6 +115,7 @@ import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
+import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
@@ -3158,6 +3159,20 @@ export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
     }
+
+// @alpha
+export class MobileAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: MobileAuthorizationClientConfiguration);
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    get isAuthorized(): boolean;
+    // (undocumented)
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+}
 
 // @public
 export class Model extends Entity implements ModelProps {

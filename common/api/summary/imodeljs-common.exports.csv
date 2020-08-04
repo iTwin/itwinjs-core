@@ -87,6 +87,7 @@ internal;CurrentImdlVersion
 beta;CustomAttribute
 beta;DecorationGeometryProps
 alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
+alpha;defaultMobileAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DesktopAuthorizationClientConfiguration
@@ -265,6 +266,7 @@ internal;MeshEdge
 internal;MeshEdges
 internal;MeshPolyline
 internal;MeshPolylineList 
+alpha;MobileAuthorizationClientConfiguration
 beta;MobileRpcChunks = Array
 beta;class MobileRpcConfiguration 
 beta;MobileRpcGateway

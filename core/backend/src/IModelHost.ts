@@ -616,18 +616,12 @@ export class KnownLocations {
 
   /** The directory where the imodeljs-backend assets are stored. */
   public static get packageAssetsDir(): string {
-    const imodeljsMobile = Platform.imodeljsMobile;
-    if (imodeljsMobile !== undefined) {
-      return path.join(process.execPath!, "Assets", "assets");
-    }
-    // Assume that we are running in nodejs
     return path.join(__dirname, "assets");
   }
 
   /** The temporary directory. */
   public static get tmpdir(): string {
-    const imodeljsMobile = Platform.imodeljsMobile;
-    return imodeljsMobile !== undefined ? imodeljsMobile.knownLocations.tempDir : os.tmpdir();
+    return os.tmpdir();
   }
 }
 

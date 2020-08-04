@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodel-bridge",
+      "comment": "Remove special code handling for mobile.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodel-bridge",
+  "email": "Affan.Khan@Bentley.com"
+}
