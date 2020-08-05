@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaProps } from "@bentley/ecschema-metadata";
+import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { IModelDb } from "./IModelDb";
 
 const loggerCategory: string = BackendLoggerCategory.IModelSchemaLoader;
@@ -79,7 +78,7 @@ class IModelSchemaLocater implements ISchemaLocater {
    * @throws [IModelError]($common) if the schema exists, but cannot be loaded.
    */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined {
-    const schemaProps = this.getSchemaJson(schemaKey.name);
+    const schemaProps = this.getSchemaString(schemaKey.name);
     if (!schemaProps)
       return undefined;
 
@@ -87,12 +86,12 @@ class IModelSchemaLocater implements ISchemaLocater {
     return Schema.fromJsonSync(schemaProps, context) as T;
   }
 
-  /** Read schema data from the iModel as JSON
+  /** Read schema data from the iModel as JSON string
    * @param schemaName A string with the name of the schema to load.
-   * @returns The JSON properties of the schema or `undefined` if the schema is not found.
+   * @returns A string with the JSON for the schema or `undefined` if the schema is not found.
    * @throws [IModelError]($common) if the schema exists, but cannot be loaded.
    */
-  private getSchemaJson<T extends SchemaProps>(schemaName: string): T | undefined {
+  private getSchemaString(schemaName: string): string | undefined {
     const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getSchema(schemaName);
     if (undefined !== val.error) {
       if (IModelStatus.NotFound === val.error.status) {
@@ -100,6 +99,6 @@ class IModelSchemaLocater implements ISchemaLocater {
       }
       throw new IModelError(val.error.status, "reading schema=" + schemaName, Logger.logWarning, loggerCategory);
     }
-    return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
+    return val.result;
   }
 }
