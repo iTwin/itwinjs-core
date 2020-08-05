@@ -6,7 +6,7 @@
  * @module TypeConverters
  */
 
-import { EnumerationChoice, Primitives, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
+import { EnumerationChoice, EnumerationChoicesInfo, Primitives, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 
@@ -20,12 +20,26 @@ export class EnumTypeConverter extends TypeConverter {
       return "";
 
     if (propertyDescription.enum) {
-      const pos = this.getPosition(propertyDescription.enum.choices, value);
-      if (-1 !== pos)
-        return propertyDescription.enum.choices[pos].label;
+      return this.getMatchingStringValue(propertyDescription.enum, value);
     }
 
     return super.convertToString(value);
+  }
+
+  private async getMatchingStringValue(enumVal: EnumerationChoicesInfo, value: Primitives.Enum) {
+    let choices: EnumerationChoice[] = [];
+
+    if (enumVal.choices instanceof Promise) {
+      choices = await enumVal.choices;
+    } else {
+      choices = enumVal.choices;
+    }
+
+    const pos = this.getPosition(choices, value);
+    if (-1 !== pos)
+      return choices[pos].label;
+
+    return this.convertToString(value);
   }
 
   private getPosition(choices: EnumerationChoice[], value: Primitives.Enum): number {

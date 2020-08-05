@@ -45,6 +45,8 @@ describe("<EnumButtonGroupEditor />", () => {
     }
 
     const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record} onCommit={handleCommit} />);
+    expect(await waitForElement(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
+
     const greenButton = renderedComponent.getByTestId("Green");
     expect(greenButton.tagName).to.be.equal("BUTTON");
     expect(greenButton.classList.contains("nz-is-active")).to.be.false;
@@ -70,6 +72,7 @@ describe("<EnumButtonGroupEditor />", () => {
     }
 
     const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record} onCommit={handleCommit} />);
+    expect(await waitForElement(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
     const greenButton = renderedComponent.getByTestId("Green");
     expect(greenButton.tagName).to.be.equal("BUTTON");
     expect(greenButton.classList.contains("nz-is-active")).to.be.false;
@@ -85,7 +88,7 @@ describe("<EnumButtonGroupEditor />", () => {
     TestUtils.addEnumButtonGroupEditorSpecification(record);
 
     const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record} />);
-
+    expect(await waitForElement(() => renderedComponent.getByTestId("Blue"))).not.to.be.null;
     const blueButton = renderedComponent.getByTestId("Blue");
     expect(blueButton.tagName).to.be.equal("BUTTON");
     expect(blueButton.classList.contains("nz-is-disabled")).to.be.equal(!TestUtils.blueEnumValueIsEnabled);
@@ -95,10 +98,11 @@ describe("<EnumButtonGroupEditor />", () => {
     expect(blueButton.classList.contains("nz-is-disabled")).to.be.equal(!TestUtils.blueEnumValueIsEnabled);
   });
 
-  it("renders editor for 'enum' type and 'enum-buttongroup' editor", () => {
+  it("renders editor for 'enum' type and 'enum-buttongroup' editor", async () => {
     const propertyRecord = TestUtils.createEnumProperty("Test", 1);
     TestUtils.addEnumButtonGroupEditorSpecification(propertyRecord);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    expect(await waitForElement(() => renderedComponent.getByTestId("Blue"))).not.to.be.null;
     expect(renderedComponent.container.querySelector(".components-enumbuttongroup-editor")).to.not.be.null;
   });
 

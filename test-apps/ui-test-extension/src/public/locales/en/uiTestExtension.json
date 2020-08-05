@@ -37,7 +37,9 @@
         "Red": "Red",
         "White": "White",
         "Blue": "Blue",
-        "Yellow": "Yellow"
+        "Yellow": "Yellow",
+        "Green": "Green",
+        "Pink": "Pink"
       }
     },
     "uiTestExtension-GenericTool": {

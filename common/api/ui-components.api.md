@@ -21,6 +21,7 @@ import * as CSS from 'csstype';
 import { CSSProperties } from 'react';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { DndComponentClass } from 'react-dnd';
+import { EnumerationChoice } from '@bentley/ui-abstract';
 import { Face } from '@bentley/ui-core';
 import { GlobalContextMenuProps } from '@bentley/ui-core';
 import { GlobalDialogProps } from '@bentley/ui-core';

@@ -22,7 +22,7 @@ export interface EnumerationChoice {
  * @beta
  */
 export interface EnumerationChoicesInfo {
-  choices: EnumerationChoice[];
+  choices: Promise<EnumerationChoice[]> | EnumerationChoice[];
   isStrict?: boolean;
   maxDisplayedRows?: number;
 }

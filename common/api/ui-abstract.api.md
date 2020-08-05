@@ -412,7 +412,7 @@ export interface EnumerationChoice {
 // @beta
 export interface EnumerationChoicesInfo {
     // (undocumented)
-    choices: EnumerationChoice[];
+    choices: Promise<EnumerationChoice[]> | EnumerationChoice[];
     // (undocumented)
     isStrict?: boolean;
     // (undocumented)

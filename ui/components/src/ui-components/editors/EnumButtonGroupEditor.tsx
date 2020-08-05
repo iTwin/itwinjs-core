@@ -23,6 +23,7 @@ import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManag
 interface EnumButtonGroupEditorState {
   selectValue: string | number;
   enumIcons: IconDefinition[];
+  choices: EnumerationChoice[];
 }
 
 /** EnumButtonGroupEditor React component that is a property editor with select input
@@ -35,6 +36,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   public readonly state: Readonly<EnumButtonGroupEditorState> = {
     selectValue: "",
     enumIcons: [],
+    choices: [],
   };
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -79,7 +81,15 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
         selectValue = primitiveValue as number;
       }
 
-      const numChoices = propertyRecord!.property.enum!.choices.length;
+      let choices: EnumerationChoice[] = [];
+      if (propertyRecord && propertyRecord.property.enum)
+        if (propertyRecord.property.enum.choices instanceof Promise) {
+          choices = await propertyRecord.property.enum.choices;
+        } else {
+          choices = propertyRecord.property.enum.choices;
+        }
+
+      const numChoices = choices.length;
       const enumIcons = new Array<IconDefinition>(numChoices);
       enumIcons.fill({ iconSpec: "icon icon-placeholder" });
 
@@ -99,18 +109,17 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
           }
         }
       }
-      this.setState({ selectValue, enumIcons });
+
+      this.setState({ selectValue, enumIcons, choices });
     }
   }
 
   private _handleButtonClick = (index: number) => {
     const propertyRecord = this.props.propertyRecord as PropertyRecord;
-    // istanbul ignore next
-    const choices = propertyRecord ? propertyRecord.property.enum!.choices : undefined;
 
     // istanbul ignore else
-    if (choices && choices.length > index) {
-      const selectValue = choices[index].value;
+    if (this.state.choices && this.state.choices.length > index) {
+      const selectValue = this.state.choices[index].value;
 
       this.setState({
         selectValue,
@@ -128,8 +137,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   }
 
   private getButton(choice: EnumerationChoice, index: number) {
-    const { propertyRecord } = this.props;
-    const choiceValue = propertyRecord!.property.enum!.choices[index].value;
+    const choiceValue = this.state.choices ? this.state.choices[index].value : 0;
     const isActive = (choiceValue === this.state.selectValue) ? true : false;
     let isDisabled = false;
     const isEnabledFunction = this.state.enumIcons[index].isEnabledFunction;
@@ -160,16 +168,9 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
 
   /** @internal */
   public render() {
-    const { propertyRecord } = this.props;
-    let choices: EnumerationChoice[] | undefined;
-
-    // istanbul ignore else
-    if (propertyRecord && propertyRecord.property.enum)
-      choices = propertyRecord.property.enum.choices;
-
     return (
       <div className={classnames("components-enumbuttongroup-editor", this.props.className)} style={this.props.style}>
-        {choices && this.state.enumIcons.length && choices.map((choice: EnumerationChoice, index: number) => this.getButton(choice, index))}
+        {this.state.choices && this.state.enumIcons.length && this.state.choices.map((choice: EnumerationChoice, index: number) => this.getButton(choice, index))}
       </div>);
   }
 }

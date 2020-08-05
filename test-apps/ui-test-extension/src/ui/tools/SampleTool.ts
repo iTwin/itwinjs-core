@@ -30,6 +30,8 @@ enum ToolOptions {
   White,
   Blue,
   Yellow,
+  Green,
+  Pink,
 }
 
 export class SampleTool extends PrimitiveTool {
@@ -58,19 +60,26 @@ export class SampleTool extends PrimitiveTool {
 
   // Tool Setting Properties
   // ------------- Enum based picklist ---------------
+  // Example of async method used to populate enum values
+  private _getChoices = async () => {
+    return [
+      { label: SampleTool.getOptionString("Red"), value: ToolOptions.Red },
+      { label: SampleTool.getOptionString("White"), value: ToolOptions.White },
+      { label: SampleTool.getOptionString("Blue"), value: ToolOptions.Blue },
+      { label: SampleTool.getOptionString("Yellow"), value: ToolOptions.Yellow },
+      { label: SampleTool.getOptionString("Green"), value: ToolOptions.Green },
+      { label: SampleTool.getOptionString("Pink"), value: ToolOptions.Pink },
+    ];
+  }
+
   private static _optionsName = "enumAsPicklist";
-  private static _getEnumAsPicklistDescription = (): PropertyDescription => {
+  private _getEnumAsPicklistDescription = (): PropertyDescription => {
     return {
       name: SampleTool._optionsName,
       displayLabel: SampleTool.getPrompt("Options"),
       typename: "enum",
       enum: {
-        choices: [
-          { label: SampleTool.getOptionString("Red"), value: ToolOptions.Red },
-          { label: SampleTool.getOptionString("White"), value: ToolOptions.White },
-          { label: SampleTool.getOptionString("Blue"), value: ToolOptions.Blue },
-          { label: SampleTool.getOptionString("Yellow"), value: ToolOptions.Yellow },
-        ],
+        choices: this._getChoices(),
       },
     };
   }
@@ -449,7 +458,7 @@ export class SampleTool extends PrimitiveTool {
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
     const readonly = true;
     const toolSettings = new Array<DialogItem>();
-    toolSettings.push({ value: this._optionsValue, property: SampleTool._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
+    toolSettings.push({ value: this._optionsValue, property: this._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     toolSettings.push({ value: this._colorValue, property: SampleTool._getColorDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 } });
     toolSettings.push({ value: this._weightValue, property: SampleTool._getWeightDescription(), editorPosition: { rowPriority: 3, columnIndex: 2 } });
     toolSettings.push({ value: this._lockValue, property: SampleTool._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });

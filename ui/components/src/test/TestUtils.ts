@@ -138,13 +138,14 @@ export class TestUtils {
 
     const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;
-    propertyRecord.property.enum = { choices: [], isStrict: false };
-    propertyRecord.property.enum.choices = [
-      { label: "Yellow", value: "yellow" },
-      { label: "Red", value: "red" },
-      { label: "Green", value: "green" },
-      { label: "Blue", value: "blue" },
-    ];
+    propertyRecord.property.enum = {
+      choices: [
+        { label: "Yellow", value: "yellow" },
+        { label: "Red", value: "red" },
+        { label: "Green", value: "green" },
+      ],
+      isStrict: false,
+    };
 
     if (column)
       column.propertyDescription = description;
@@ -165,15 +166,18 @@ export class TestUtils {
       typename: StandardTypeNames.Enum,
     };
 
+    const getChoices = async () => {
+      return [
+        { label: "Yellow", value: 0 },
+        { label: "Red", value: 1 },
+        { label: "Green", value: 2 },
+        { label: "Blue", value: 3 },
+      ];
+    };
+
     const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;
-    propertyRecord.property.enum = { choices: [], isStrict: false };
-    propertyRecord.property.enum.choices = [
-      { label: "Yellow", value: 0 },
-      { label: "Red", value: 1 },
-      { label: "Green", value: 2 },
-      { label: "Blue", value: 3 },
-    ];
+    propertyRecord.property.enum = { choices: getChoices(), isStrict: false };
 
     if (column)
       column.propertyDescription = description;

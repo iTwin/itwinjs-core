@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Update EnumerationChoicesInfo to use Promise so enum choices can be defined asynchronously.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "Bill.Steinbock@bentley.com"
+}
