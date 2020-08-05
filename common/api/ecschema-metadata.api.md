@@ -267,6 +267,7 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
         messageArgs?: ARGS | undefined;
         category: DiagnosticCategory;
     };
+    code: string;
     diagnosticType: DiagnosticType;
 };
 
@@ -440,6 +441,7 @@ export const DiagnosticCodes: {
     BaseClassOfDifferentType: string;
     CustomAttributeNotOfConcreteClass: string;
     CustomAttributeSchemaMustBeReferenced: string;
+    CustomAttributeClassNotFound: string;
     EnumerationTypeUnsupported: string;
     MixinAppliedToClassMustDeriveFromConstraint: string;
     IncompatibleValueTypePropertyOverride: string;
@@ -454,11 +456,50 @@ export const DiagnosticCodes: {
 
 // @beta
 export const Diagnostics: {
+    SupplementalSchemasCannotBeReferenced: {
+        new (schema: Schema, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Schema;
+            messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+        code: string;
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    SchemaRefAliasMustBeUnique: {
+        new (schema: Schema, messageArgs: [string, string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Schema;
+            messageArgs?: [string, string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+        code: string;
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    ReferenceCyclesNotAllowed: {
+        new (schema: Schema, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Schema;
+            messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+        code: string;
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
     BaseClassIsSealed: {
         new (ecClass: AnyClass, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string] | undefined;
@@ -470,7 +511,7 @@ export const Diagnostics: {
         new (ecClass: AnyClass, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string, string] | undefined;
@@ -482,7 +523,7 @@ export const Diagnostics: {
         new (container: CustomAttributeContainerProps, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
@@ -493,7 +534,18 @@ export const Diagnostics: {
         new (container: CustomAttributeContainerProps, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: CustomAttributeContainerProps;
+            messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+    };
+    CustomAttributeClassNotFound: {
+        new (container: CustomAttributeContainerProps, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
@@ -504,7 +556,7 @@ export const Diagnostics: {
         new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [string] | undefined;
@@ -516,7 +568,7 @@ export const Diagnostics: {
         new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs?: [string, string, string] | undefined;
@@ -528,7 +580,7 @@ export const Diagnostics: {
         new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
@@ -539,7 +591,7 @@ export const Diagnostics: {
         new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
@@ -550,7 +602,7 @@ export const Diagnostics: {
         new (property: AnyProperty, messageArgs?: [string, string, string, string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string, string, string] | undefined;
@@ -561,7 +613,7 @@ export const Diagnostics: {
         new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
@@ -573,7 +625,7 @@ export const Diagnostics: {
         new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
@@ -585,7 +637,7 @@ export const Diagnostics: {
         new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
@@ -597,10 +649,7 @@ export const Diagnostics: {
         new (constraint: RelationshipConstraint, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema; /**
-             * EC-1502
-             * Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name
-             */
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
@@ -611,10 +660,7 @@ export const Diagnostics: {
         new (constraint: RelationshipConstraint, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema; /**
-             * EC-1502
-             * Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name
-             */
+            readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
@@ -898,7 +944,6 @@ export namespace Editors {
         createPrimitiveArrayProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults>;
         // (undocumented)
         createPrimitiveArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitiveArrayPropertyProps): Promise<PropertyEditResults>;
-        // (undocumented)
         createPrimitiveProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults>;
         // (undocumented)
         createPrimitivePropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitivePropertyProps): Promise<PropertyEditResults>;
@@ -2724,6 +2769,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
+        code: string;
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     SchemaReferenceMissing: {
@@ -2736,6 +2782,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [Schema] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
+        code: string;
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     SchemaReferenceDelta: {
@@ -2748,6 +2795,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [Schema, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
+        code: string;
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     SchemaItemDelta: {
@@ -3116,9 +3164,10 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
 // @alpha
 export class SchemaContextEditor {
     constructor(schemaContext: SchemaContext);
+    addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults>;
+    addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults>;
     // (undocumented)
     readonly constants: Editors.Constants;
-    // (undocumented)
     createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaEditResults>;
     // (undocumented)
     readonly customAttributes: Editors.CustomAttributes;

@@ -834,3 +834,11 @@ export class PassingRuleSet implements IRuleSet {
     sinon.spy(passingConstantRule),
   ];
 }
+
+export async function toArray(asyncIterable: AsyncIterable<Diagnostics.AnyDiagnostic>): Promise<Diagnostics.AnyDiagnostic []> {
+  const result: Diagnostics.AnyDiagnostic [] = [];
+  for await (const value of asyncIterable) {
+    result.push(value);
+  }
+  return result;
+}

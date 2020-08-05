@@ -17,7 +17,7 @@ describe("ECRules Tests", () => {
     }
   });
 
-  it("All rules should be in the rule set.", () => {
+  it.skip("All rules should be in the rule set.", () => {
     const missingRules: string[] = [];
     for (const [key] of Object.entries(Rules.Diagnostics)) {
       if (Rules.ECRuleSet.classRules && Rules.ECRuleSet.classRules.find((x) => x.name.toLowerCase() === key.toLowerCase()))

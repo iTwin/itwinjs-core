@@ -12,6 +12,7 @@ import { EntityClass } from "../../../src/Metadata/EntityClass";
 import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
 import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
+import { toArray } from "../../TestUtils/DiagnosticHelpers";
 
 describe("CustomAttribute Rules Tests", () => {
   let testSchema: Schema;
@@ -36,7 +37,7 @@ describe("CustomAttribute Rules Tests", () => {
       const testEntity = new EntityClass(testSchema, "TestEntity");
       (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
 
-      const result = Rules.customAttributeNotOfConcreteClass(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+      const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
 
       let resultHasEntries = false;
       for await (const diagnostic of result!) {
@@ -57,7 +58,7 @@ describe("CustomAttribute Rules Tests", () => {
       const testEntity = new EntityClass(testSchema, "TestEntity");
       (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
 
-      const result = Rules.customAttributeNotOfConcreteClass(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+      const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
 
       for await (const _diagnostic of result!) {
         expect(false, "Rule should have passed").to.be.true;
@@ -71,19 +72,16 @@ describe("CustomAttribute Rules Tests", () => {
       const testEntity = new EntityClass(testSchema, "TestEntity");
       (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
 
-      const result = Rules.customAttributeSchemaMustBeReferenced(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+      const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+      const results = await toArray(result);
 
-      let resultHasEntries = false;
-      for await (const diagnostic of result!) {
-        resultHasEntries = true;
-        expect(diagnostic).to.not.be.undefined;
-        expect(diagnostic!.ecDefinition).to.equal(testEntity);
-        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
-        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.CustomAttributeSchemaMustBeReferenced);
-        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
-      }
-      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+      expect(results.length).to.equal(2, "Expected 2 diagnostics");
+      const diagnostic = results[0];
+      expect(diagnostic!.ecDefinition).to.equal(testEntity);
+      expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
+      expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+      expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.CustomAttributeSchemaMustBeReferenced);
+      expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
     });
 
     it("CustomAttribute schema is referenced, rule passes", async () => {
@@ -92,7 +90,7 @@ describe("CustomAttribute Rules Tests", () => {
       const testEntity = new EntityClass(testSchema, "TestEntity");
       (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
 
-      const result = Rules.customAttributeSchemaMustBeReferenced(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+      const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
 
       for await (const _diagnostic of result!) {
         expect(false, "Rule should have passed").to.be.true;
@@ -105,7 +103,7 @@ describe("CustomAttribute Rules Tests", () => {
       const testEntity = new EntityClass(testSchema, "TestEntity");
       (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestSchema.TestCA" });
 
-      const result = Rules.customAttributeSchemaMustBeReferenced(testEntity, testEntity.customAttributes!.get("TestSchema.TestCA")!);
+      const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestSchema.TestCA")!);
 
       for await (const _diagnostic of result!) {
         expect(false, "Rule should have passed").to.be.true;

@@ -247,6 +247,7 @@ export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> ext
 export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
   return class extends SchemaDiagnostic<ARGS> {
+    public static code = code;
     public get code(): string { return code; }
     public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };
