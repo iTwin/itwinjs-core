@@ -56,4 +56,4 @@ class FancyDecorator {
 
 ## ui-components
 
-Breaking change to the `beta` ColorPopupButton component: the component's `activeColor` property has been renamed to `initialColor`.
+Breaking change to the `beta` interface [ColorPickerProps]($ui-components). The `activeColor` property has been renamed to `initialColor`. The modified props are used by the   [ColorPickerButton]($ui-components) React component.
