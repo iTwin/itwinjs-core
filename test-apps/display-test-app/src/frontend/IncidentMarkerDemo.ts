@@ -195,6 +195,9 @@ export class IncidentMarkerDemo {
     this.loadAll(extents); // tslint:disable-line: no-floating-promises
   }
 
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
+
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
   public decorate(context: DecorateContext) {
     if (!context.viewport.view.isSpatialView())
@@ -209,7 +212,7 @@ export class IncidentMarkerDemo {
     if (!this._awaiting) {
       this._awaiting = true;
       this._loading.then(() => {
-        context.viewport.invalidateDecorations();
+        context.viewport.invalidateCachedDecorations(this);
         this._awaiting = false;
       }).catch(() => undefined);
     }

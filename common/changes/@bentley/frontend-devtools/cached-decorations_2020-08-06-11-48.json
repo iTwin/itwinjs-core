@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Make certain devtools with decorators cache their decorations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Mark.Schlosser@bentley.com"
+}

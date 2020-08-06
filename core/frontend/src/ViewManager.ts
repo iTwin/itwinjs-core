@@ -13,18 +13,14 @@ import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
-import { DecorateContext } from "./ViewContext";
-import { ScreenViewport } from "./Viewport";
+import { ScreenViewport, ViewportDecorator } from "./Viewport";
 import { System } from "./render/webgl/System";
 
-/** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
+/** Interface for drawing [[Decorations]] into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
  * Decorators generate [[Decorations]].
  * @public
  */
-export interface Decorator {
-  /** Implement this method to add Decorations into the supplied DecorateContext. */
-  decorate(context: DecorateContext): void;
-
+export interface Decorator extends ViewportDecorator {
   /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator.
    * @param id The Id of the currently selected pickable graphics.
    * @returns true if 'id' belongs to this Decorator
@@ -306,6 +302,16 @@ export class ViewManager {
   /** Call the specified function on each [[Viewport]] registered with the ViewManager. */
   public forEachViewport(func: (vp: ScreenViewport) => void) { this._viewports.forEach((vp) => func(vp)); }
 
+  /** Force each registered [[Viewport]] to regenerate all of its cached [[Decorations]] on the next frame. If the decorator parameter is specified, only
+   * the specified decorator will have its cached decorations invalidated for all viewports.
+   * @see [[Viewport.invalidateCachedDecorations]] to manually remove a decorator's cached decorations from a viewport, forcing them to be regenerated.
+   * @beta
+   */
+  public invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void {
+    if (decorator.useCachedDecorations)
+      this.forEachViewport((vp) => vp.invalidateCachedDecorations(decorator));
+  }
+
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
   public invalidateDecorationsAllViews(): void {
     this.forEachViewport((vp) => vp.invalidateDecorations());
@@ -449,13 +455,13 @@ export class ViewManager {
    */
   public dropDecorator(decorator: Decorator): boolean {
     const index = this.decorators.indexOf(decorator);
-    if (index >= 0) {
-      this.decorators.splice(index, 1);
-      this.invalidateDecorationsAllViews();
-      return true;
-    }
+    if (index < 0)
+      return false;
 
-    return false;
+    this.invalidateCachedDecorationsAllViews(decorator);
+    this.decorators.splice(index, 1);
+    this.invalidateDecorationsAllViews();
+    return true;
   }
 
   /** Get the tooltip for a pickable decoration.

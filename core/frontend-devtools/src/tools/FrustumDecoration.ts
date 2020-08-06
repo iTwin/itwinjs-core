@@ -168,6 +168,9 @@ export class FrustumDecorator implements Decorator {
     this._decoration = FrustumDecoration.create(vp, options);
   }
 
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
+
   public decorate(context: DecorateContext): void {
     if (undefined !== this._decoration)
       this._decoration.decorate(context);
@@ -250,11 +253,14 @@ class SelectedViewFrustumDecoration {
   protected _removeDecorationListener?: () => void;
   protected _removeViewChangedListener?: () => void;
 
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
+
   public constructor(vp: Viewport, private _options?: FrustumDecorationOptions) {
     this._targetVp = vp;
     this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
     this._removeViewChangedListener = vp.onViewChanged.addListener(this.onViewChanged, this);
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   protected stop(): void {
@@ -266,13 +272,16 @@ class SelectedViewFrustumDecoration {
       this._removeViewChangedListener();
       this._removeViewChangedListener = undefined;
     }
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   public onViewChanged(targetVp: Viewport): void {
     if (targetVp !== this._targetVp)
       return;
-    IModelApp.viewManager.forEachViewport((vp) => { if (vp !== this._targetVp) vp.invalidateDecorations(); });
+    const decorator = SelectedViewFrustumDecoration._decorator;
+    if (undefined !== decorator)
+      IModelApp.viewManager.forEachViewport((vp) => { if (vp !== this._targetVp) vp.invalidateCachedDecorations(decorator); });
   }
 
   public decorate(context: DecorateContext): void {
@@ -356,12 +365,15 @@ class ShadowFrustumDecoration {
   private _targetVp: Viewport;
   private _cleanup?: () => void;
 
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
+
   public constructor(vp: Viewport) {
     this._targetVp = vp;
     const removeDecorator = IModelApp.viewManager.addDecorator(this);
     const removeOnRender = vp.onRender.addListener((_) => this.onRender());
     this._cleanup = () => { removeDecorator(); removeOnRender(); };
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   private stop(): void {
@@ -369,11 +381,14 @@ class ShadowFrustumDecoration {
       this._cleanup();
       this._cleanup = undefined;
     }
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   public onRender(): void {
-    IModelApp.viewManager.forEachViewport((vp) => { if (vp !== this._targetVp) vp.invalidateDecorations(); });
+    const decorator = ShadowFrustumDecoration._instance;
+    if (undefined !== decorator)
+      IModelApp.viewManager.forEachViewport((vp) => { if (vp !== this._targetVp) vp.invalidateCachedDecorations(decorator); });
   }
 
   public decorate(context: DecorateContext): void {

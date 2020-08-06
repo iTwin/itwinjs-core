@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-frontend",
+      "comment": "Cache decorations for hypermodeling decorator.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-frontend",
+  "email": "Mark.Schlosser@bentley.com"
+}

@@ -29,7 +29,7 @@ function createConfig(shouldInstrument) {
         /draco_encoder_nodejs.js$/
       ],
       rules: [
-        /* Commented out per Caleb until OOM errors on Linux are resolved.
+        /* UNCOMMENT THIS BLOCK FOR SOURCE MAPS
         {
           test: /\.js$/,
           use: "source-map-loader",

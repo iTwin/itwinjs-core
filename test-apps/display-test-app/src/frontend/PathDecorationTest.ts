@@ -3,14 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { AxisAlignedBox3d, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@bentley/geometry-core";
+
+class PathCanvasDecoration implements CanvasDecoration {
+  public drawDecoration(ctx: CanvasRenderingContext2D) {
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "white";
+    ctx.fillText("Path Decoration Test Tool Active", 256, 256);
+  }
+}
 
 /** This class decorates a viewport with a small path.
  */
 export class PathDecorationTest {
   public static decorator?: PathDecorationTest; // static variable so we can tell if the test is active.
+  public static canvasDecoration = new PathCanvasDecoration();
 
   private _path: Path;
   private _pickId?: string;
@@ -19,13 +30,17 @@ export class PathDecorationTest {
     this._path = _getPath(extents);
   }
 
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
+
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. Here we add the line string. */
   public decorate(context: DecorateContext) {
     if (undefined === this._pickId)
       this._pickId = context.viewport.iModel.transientIds.next;
-    const lineBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._pickId);
-    lineBuilder.addPath(this._path);
-    context.addDecorationFromBuilder(lineBuilder);
+    const pathBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._pickId);
+    pathBuilder.addPath(this._path);
+    context.addDecorationFromBuilder(pathBuilder);
+    context.addCanvasDecoration(PathDecorationTest.canvasDecoration);
   }
 
   /** Test any hits against this id. */
@@ -74,7 +89,7 @@ function _getPath(extents: AxisAlignedBox3d): Path {
   const range1d = Range1d.createXX(0.0, 0.2);
   const curves = [];
 
-  const numIterations = 500;
+  const numIterations = 1000;
   for (let i = 0; i < numIterations; i++) {
     const fract = range1d.fractionToPoint((i + 1.0) / numIterations);
     const halfFract = fract * 0.5;

@@ -36,8 +36,11 @@ class ShadowMapDecoration {
     }
 
     this._target.solarShadowMap.onGraphicsChanged = undefined;
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
+
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;
@@ -68,7 +71,7 @@ class ShadowMapDecoration {
       this._graphics.push(owner);
     }
 
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   public static toggle(vp: Viewport, enabled?: boolean): void {

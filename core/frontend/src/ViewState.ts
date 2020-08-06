@@ -177,6 +177,38 @@ export interface ModelDisplayTransformProvider {
   getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
 }
 
+/** Decorates the viewport with the view's grid. Graphics are cached as long as scene remains valid. */
+class GridDecorator {
+  public constructor(private readonly _view: ViewState) { }
+
+  public readonly useCachedDecorations = true;
+
+  public decorate(context: DecorateContext): void {
+    const vp = context.viewport;
+    if (!vp.isGridOn)
+      return;
+
+    const orientation = this._view.getGridOrientation();
+    if (GridOrientationType.AuxCoord < orientation) {
+      return; // NEEDSWORK...
+    }
+    if (GridOrientationType.AuxCoord === orientation) {
+      this._view.auxiliaryCoordinateSystem.drawGrid(context);
+      return;
+    }
+
+    const isoGrid = false;
+    const gridsPerRef = this._view.getGridsPerRef();
+    const spacing = Point2d.createFrom(this._view.getGridSpacing());
+    const origin = Point3d.create();
+    const matrix = Matrix3d.createIdentity();
+    const fixedRepsAuto = Point2d.create();
+
+    this._view.getGridSettings(vp, origin, matrix, orientation);
+    context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
+  }
+}
+
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
@@ -191,6 +223,7 @@ export abstract class ViewState extends ElementState {
   private _modelDisplayTransformProvider?: ModelDisplayTransformProvider;
   public description?: string;
   public isPrivate?: boolean;
+  private readonly _gridDecorator: GridDecorator;
 
   /** Selects the categories that are display by this ViewState. */
   public categorySelector: CategorySelectorState;
@@ -204,6 +237,7 @@ export abstract class ViewState extends ElementState {
     this.isPrivate = props.isPrivate;
     this.displayStyle = displayStyle;
     this.categorySelector = categoryOrClone;
+    this._gridDecorator = new GridDecorator(this);
     if (!(categoryOrClone instanceof ViewState))  // is this from the clone method?
       return; // not from clone
 
@@ -450,28 +484,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public drawGrid(context: DecorateContext): void {
-    const vp = context.viewport;
-    if (!vp.isGridOn)
-      return;
-
-    const orientation = this.getGridOrientation();
-    if (GridOrientationType.AuxCoord < orientation) {
-      return; // NEEDSWORK...
-    }
-    if (GridOrientationType.AuxCoord === orientation) {
-      this.auxiliaryCoordinateSystem.drawGrid(context);
-      return;
-    }
-
-    const isoGrid = false;
-    const gridsPerRef = this.getGridsPerRef();
-    const spacing = Point2d.createFrom(this.getGridSpacing());
-    const origin = Point3d.create();
-    const matrix = Matrix3d.createIdentity();
-    const fixedRepsAuto = Point2d.create();
-
-    this.getGridSettings(vp, origin, matrix, orientation);
-    context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
+    context.addFromDecorator(this._gridDecorator);
   }
 
   /** @internal */

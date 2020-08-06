@@ -625,6 +625,7 @@ export class FrustumDecorator implements Decorator {
     static enable(vp: Viewport, options?: FrustumDecorationOptions): void;
     // (undocumented)
     static get isEnabled(): boolean;
+    readonly useCachedDecorations = true;
 }
 
 // @alpha (undocumented)
@@ -925,6 +926,7 @@ export class ProjectExtentsDecoration {
     static toggle(imodel: IModelConnection, enabled?: boolean): boolean;
     // (undocumented)
     protected updateDecorationListener(add: boolean): void;
+    readonly useCachedDecorations = true;
 }
 
 // @alpha (undocumented)

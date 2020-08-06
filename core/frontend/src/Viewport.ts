@@ -30,7 +30,7 @@ import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
-import { GraphicList } from "./render/RenderGraphic";
+import { GraphicList, RenderGraphicOwner } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
@@ -45,6 +45,7 @@ import { ViewingSpace } from "./ViewingSpace";
 import { ViewRect } from "./ViewRect";
 import { MarginPercent, ModelDisplayTransformProvider, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
 import { SheetViewState } from "./Sheet";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -71,6 +72,38 @@ export interface TiledGraphicsProvider {
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
   /** If defined, overrides the logic for adding this provider's graphics into the scene. Otherwise, [[TileTreeReference.addToScene]] is invoked for each reference. */
   addToScene?: (context: SceneContext) => void;
+}
+
+/** Interface for drawing [[Decorations]] into, or on top of, a [[ScreenViewport]].
+ * @public
+ */
+export interface ViewportDecorator {
+  /** Override to enable cached decorations for this decorator.
+   * By default, a decorator is asked to recreate its decorations from scratch via its [[decorate]] method whenever the viewport's decorations are invalidated.
+   * Decorations become invaliated for a variety of reasons, including when the scene changes and when the mouse moves.
+   * Most decorators care only about when the scene changes, and may create decorations that are too expensive to recreate on every mouse motion.
+   * If `useCachedDecorations` is true, then the viewport will cache the most-recently-created decorations for this decorator, and only invoke its [[decorate]] method if it has no cached decorations for it.
+   * The cached decorations are discarded:
+   *  - Whenever the scene changes; and
+   *  - When the decorator explicitly requests it via [[Viewport.invalidateCachedDecorations]] or [[ViewManager.invalidateCachedDecorationsAllViews]].
+   * The decorator should invoke the latter when the criteria governing its decorations change.
+   */
+  readonly useCachedDecorations?: true;
+
+  /** Implement this method to add [[Decorations}} into the supplied DecorateContext.
+   * @see [[useCachedDecorations]] to avoid unncessarily recreating decorations.
+   */
+  decorate(context: DecorateContext): void;
+}
+
+/** @internal */
+export type CachedDecoration = { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner }
+  | { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean }
+  | { type: "html", htmlElement: HTMLElement };
+
+function disposeCachedDecoration(dec: CachedDecoration): void {
+  if ("graphic" === dec.type)
+    dec.graphicOwner.disposeGraphic();
 }
 
 /** @see [[ChangeFlags]]
@@ -818,6 +851,8 @@ export abstract class Viewport implements IDisposable {
   private _redrawPending = false;
   private _analysisFractionValid = false;
   private _timePointValid = false;
+  /** @internal */
+  private readonly _decorationCache: Map<ViewportDecorator, CachedDecoration[]> = new Map<ViewportDecorator, CachedDecoration[]>();
 
   /** Mark the current set of decorations invalid, so that they will be recreated on the next render frame.
    * This can be useful, for example, if an external event causes one or more current decorations to become invalid and you wish to force
@@ -834,6 +869,7 @@ export abstract class Viewport implements IDisposable {
     this._sceneValid = false;
     this._timePointValid = false;
     this.invalidateDecorations();
+    this._disposeDecorationCache(); // When the scene is invalidated, remove all cached decorations so they get regenerated.
   }
   /** @internal */
   public invalidateRenderPlan(): void {
@@ -1469,8 +1505,38 @@ export abstract class Viewport implements IDisposable {
     IModelApp.tileAdmin.registerViewport(this);
   }
 
+  /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.
+   * This will force those decorations to be regenerated.
+   * @see [[ViewportDecorator.useCachedDecorations]].
+   * @beta
+   */
+  public invalidateCachedDecorations(decorator: ViewportDecorator) {
+    assert(true === decorator.useCachedDecorations, "Cannot invalidate cached decorations on a decorator which does not support cached decorations.");
+    if (true !== decorator.useCachedDecorations)
+      return;
+
+    const decorations = this._decorationCache.get(decorator);
+    if (decorations) {
+      decorations.forEach((decoration) => disposeCachedDecoration(decoration));
+      this._decorationCache.delete(decorator);
+    }
+
+    // Always invalidate decorations. Decorator may have no cached decorations currently, but wants them created.
+    this.invalidateDecorations();
+  }
+
+  /** Disposes of the entire decoration cache for this viewport. */
+  private _disposeDecorationCache() {
+    this._decorationCache.forEach((decorations: CachedDecoration[]) => {
+      decorations.forEach((decoration) => disposeCachedDecoration(decoration));
+    });
+
+    this._decorationCache.clear();
+  }
+
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
+    this._disposeDecorationCache();
     this._target = dispose(this._target);
     this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
@@ -2589,6 +2655,23 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   protected addDecorations(_decorations: Decorations): void { }
 
+  /** @internal */
+  public getCachedDecorations(decorator: ViewportDecorator): CachedDecoration[] | undefined {
+    return this._decorationCache.get(decorator);
+  }
+
+  /** @internal */
+  public addCachedDecoration(decorator: ViewportDecorator, decoration: CachedDecoration): void {
+    assert(true === decorator.useCachedDecorations);
+    let list = this._decorationCache.get(decorator);
+    if (!list) {
+      list = [];
+      this._decorationCache.set(decorator, list);
+    }
+
+    list.push(decoration);
+  }
+
   /** Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
@@ -3114,11 +3197,11 @@ export class ScreenViewport extends Viewport {
   protected addDecorations(decorations: Decorations): void {
     ScreenViewport.removeAllChildren(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
-    this.view.decorate(context);
-    this.forEachTiledGraphicsProviderTree((ref) => ref.decorate(context));
+    context.addFromDecorator(this.view);
+    this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
     for (const decorator of IModelApp.viewManager.decorators)
-      decorator.decorate(context);
+      context.addFromDecorator(decorator);
   }
 
   /** Change the cursor for this Viewport */

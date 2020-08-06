@@ -30,13 +30,14 @@ export class ProjectExtentsDecoration {
         this._removeDecorationListener();
         this._removeDecorationListener = undefined;
       }
-      IModelApp.viewManager.invalidateDecorationsAllViews();
     } else if (add) {
       if (!this._removeDecorationListener)
         this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
-      IModelApp.viewManager.invalidateDecorationsAllViews();
     }
   }
+
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;

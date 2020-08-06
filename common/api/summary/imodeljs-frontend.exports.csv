@@ -57,6 +57,7 @@ internal;BingMapsImageryLayerProvider
 beta;BlankConnection 
 beta;BlankConnectionProps
 public;class BriefcaseConnection 
+internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
@@ -89,7 +90,7 @@ internal;CurrentState
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
-public;Decorator
+public;Decorator 
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
@@ -511,6 +512,7 @@ internal;class ViewingToolHandle
 public;ViewManager
 public;class ViewManip 
 public;class Viewport 
+public;ViewportDecorator
 public;class ViewPose
 internal;ViewPose2d 
 internal;ViewPose3d 

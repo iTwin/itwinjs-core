@@ -1442,6 +1442,20 @@ export abstract class BriefcaseConnection extends IModelConnection {
     protected _isClosed?: boolean;
 }
 
+// @internal (undocumented)
+export type CachedDecoration = {
+    type: "graphic";
+    graphicType: GraphicType;
+    graphicOwner: RenderGraphicOwner;
+} | {
+    type: "canvas";
+    canvasDecoration: CanvasDecoration;
+    atFront: boolean;
+} | {
+    type: "html";
+    htmlElement: HTMLElement;
+};
+
 // @internal
 export interface CachedIModelCoordinatesResponseProps {
     missing?: XYZProps[];
@@ -1818,6 +1832,8 @@ export class DecorateContext extends RenderContext {
     addCanvasDecoration(decoration: CanvasDecoration, atFront?: boolean): void;
     addDecoration(type: GraphicType, decoration: RenderGraphic): void;
     addDecorationFromBuilder(builder: GraphicBuilder): void;
+    // @internal (undocumented)
+    addFromDecorator(decorator: ViewportDecorator): void;
     addHtmlDecoration(decoration: HTMLElement): void;
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     // @internal (undocumented)
@@ -1848,8 +1864,7 @@ export class Decorations implements IDisposable {
     }
 
 // @public
-export interface Decorator {
-    decorate(context: DecorateContext): void;
+export interface Decorator extends ViewportDecorator {
     getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined;
     getDecorationToolTip?(hit: HitDetail): Promise<HTMLElement | string>;
     onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
@@ -7513,7 +7528,7 @@ export class ScreenViewport extends Viewport {
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
-    pickCanvasDecoration(pt: XAndY): import("./imodeljs-frontend").CanvasDecoration | undefined;
+    pickCanvasDecoration(pt: XAndY): CanvasDecoration | undefined;
     // @alpha
     pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): {
         plane: Plane3dByOriginAndUnitNormal;
@@ -10476,6 +10491,8 @@ export class ViewManager {
     get grabCursor(): string;
     // (undocumented)
     inDynamicsMode: boolean;
+    // @beta
+    invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void;
     invalidateDecorationsAllViews(): void;
     // @internal (undocumented)
     invalidateScenes(): void;
@@ -10650,6 +10667,8 @@ export abstract class Viewport implements IDisposable {
     // @internal
     protected constructor(target: RenderTarget);
     // @internal (undocumented)
+    addCachedDecoration(decorator: ViewportDecorator, decoration: CachedDecoration): void;
+    // @internal (undocumented)
     protected addDecorations(_decorations: Decorations): void;
     addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     // @internal (undocumented)
@@ -10749,6 +10768,8 @@ export abstract class Viewport implements IDisposable {
     getAuxCoordOrigin(result?: Point3d): Point3d;
     // (undocumented)
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
+    // @internal (undocumented)
+    getCachedDecorations(decorator: ViewportDecorator): CachedDecoration[] | undefined;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @beta
@@ -10773,6 +10794,8 @@ export abstract class Viewport implements IDisposable {
     // @beta
     get insideClipColor(): ColorDef | undefined;
     set insideClipColor(color: ColorDef | undefined);
+    // @beta
+    invalidateCachedDecorations(decorator: ViewportDecorator): void;
     // @internal (undocumented)
     invalidateController(): void;
     invalidateDecorations(): void;
@@ -10946,6 +10969,12 @@ export abstract class Viewport implements IDisposable {
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions): void;
+}
+
+// @public
+export interface ViewportDecorator {
+    decorate(context: DecorateContext): void;
+    readonly useCachedDecorations?: true;
 }
 
 // @public

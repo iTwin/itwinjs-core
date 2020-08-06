@@ -26,6 +26,9 @@ class TreeDecoration {
     }
   }
 
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
+
   public decorate(context: DecorateContext): void {
     context.viewport.forEachTileTreeRef((ref) => this.drawBoundingBox(ref, context));
   }

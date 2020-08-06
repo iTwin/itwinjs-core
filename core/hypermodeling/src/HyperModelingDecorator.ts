@@ -114,7 +114,7 @@ export class HyperModelingDecorator implements Decorator {
    * @see [[HyperModeling.replaceConfiguration]] to replace the global configuration.
    */
   public replaceConfiguration(config?: SectionMarkerConfig): void {
-    this._config = config ? { ...config } : { };
+    this._config = config ? { ...config } : {};
     this.requestSync();
   }
 
@@ -163,6 +163,9 @@ export class HyperModelingDecorator implements Decorator {
     this.requestSync();
     return true;
   }
+
+  /** @internal */
+  public readonly useCachedDecorations = true;
 
   /** @internal */
   public decorate(context: DecorateContext): void {
@@ -388,7 +391,7 @@ export class HyperModelingDecorator implements Decorator {
     this._needSync = false;
     if (this.viewport.view.is3d() && this.updateMarkerVisibility()) {
       this.markers.markDirty();
-      this.viewport.invalidateDecorations();
+      this.viewport.invalidateCachedDecorations(this);
     }
   }
 
