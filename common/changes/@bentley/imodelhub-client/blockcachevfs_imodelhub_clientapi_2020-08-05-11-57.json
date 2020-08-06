@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "Added iModelHub ClientAPIs for BlockCacheVfs checkpoints",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client",
+  "email": "Eligijus.Mauragas@bentley.com"
+}

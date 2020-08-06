@@ -13,7 +13,7 @@ import {
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
-import { addSelectApplicationData, addSelectFileAccessKey } from "./HubQuery";
+import { addSelectApplicationData, addSelectBCVAccessKey, addSelectFileAccessKey } from "./HubQuery";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
@@ -91,6 +91,22 @@ export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
 
+  /** BCV AccessKey account name of the storage that can be used to download the checkpoint blocks from iModelHub. See [[BriefcaseQuery.selectBCVAccessKey]]. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[BCVAccessKey].properties.Account")
+  public bcvAccessKeyAccount?: string;
+
+  /** BCV AccessKey container name of the storage that can be used to download the checkpoint blocks from iModelHub. See [[BriefcaseQuery.selectBCVAccessKey]]. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[BCVAccessKey].properties.Container")
+  public bcvAccessKeyContainer?: string;
+
+  /** BCV AccessKey SAS token of the storage that can be used to download the checkpoint blocks from iModelHub. See [[BriefcaseQuery.selectBCVAccessKey]]. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[BCVAccessKey].properties.SAS")
+  public bcvAccessKeySAS?: string;
+
+  /** BCV AccessKey database name of the storage that can be used to download the checkpoint blocks from iModelHub. See [[BriefcaseQuery.selectBCVAccessKey]]. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[BCVAccessKey].properties.DbName")
+  public bcvAccessKeyDbName?: string;
+
   /** Id of the application that created this Briefcase. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[CreatedByApplication].relatedInstance[Application].properties.Id")
   public applicationId?: string;
@@ -145,6 +161,14 @@ export class BriefcaseQuery extends WsgQuery {
    */
   public selectDownloadUrl(): this {
     addSelectFileAccessKey(this._query);
+    return this;
+  }
+
+  /** Query will additionally select [[Briefcase]] container read BCVAccessKey to download [[Briefcase]] blocks.
+   * @returns This query.
+   */
+  public selectBCVAccessKey(): this {
+    addSelectBCVAccessKey(this._query);
     return this;
   }
 

@@ -22,7 +22,7 @@ function mockGetBriefcaseById(imodelId: GuidString, briefcase: Briefcase) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockGetBriefcaseRequest(imodelId: GuidString, briefcase: Briefcase, selectDownloadUrl: boolean, selectApplicationData: boolean) {
+function mockGetBriefcaseRequest(imodelId: GuidString, briefcase: Briefcase, selectDownloadUrl: boolean, selectApplicationData: boolean, selectBCVAccessKey: boolean = false) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -31,10 +31,20 @@ function mockGetBriefcaseRequest(imodelId: GuidString, briefcase: Briefcase, sel
     getRequestUrl += `,FileAccessKey-forward-AccessKey.DownloadURL`;
   if (selectApplicationData)
     getRequestUrl += `,CreatedByApplication-forward-Application.*`;
+  if (selectBCVAccessKey)
+    getRequestUrl += `,FileAccessKey-forward-BCVAccessKey.*`;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", getRequestUrl);
   if (selectDownloadUrl) {
     briefcase.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
+    briefcase.fileName = "TestModel.bim";
+    briefcase.fileSize = utils.getMockFileSize();
+  }
+  if (selectBCVAccessKey) {
+    briefcase.bcvAccessKeyAccount = "imodelhubdevsatest";
+    briefcase.bcvAccessKeyContainer = "imodelblocks-3101cca9-707c-4c82-8ef4-7afccfbd2421";
+    briefcase.bcvAccessKeySAS = "?sv=2018-03-28&sr=....";
+    briefcase.bcvAccessKeyDbName = "a016840dd72272624a3b2afb56e5bc51b8874584.bim";
     briefcase.fileName = "TestModel.bim";
     briefcase.fileSize = utils.getMockFileSize();
   }
@@ -191,6 +201,22 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
     chai.assert(briefcase.downloadUrl);
     utils.expectMatchesExpectedUrlScheme(briefcase.downloadUrl);
+  });
+
+  it("should retrieve BlockCacheVfs AccessKey for a Briefcase", async () => {
+    mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), false, false, true);
+    const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectBCVAccessKey()))[0];
+    chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
+    chai.assert(briefcase.fileName);
+    chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
+    chai.assert(briefcase.bcvAccessKeyAccount);
+    chai.expect(briefcase.bcvAccessKeyAccount!.length).to.be.greaterThan(0);
+    chai.assert(briefcase.bcvAccessKeyContainer);
+    chai.assert(briefcase.bcvAccessKeyContainer!.startsWith("imodelblocks-"));
+    chai.assert(briefcase.bcvAccessKeySAS);
+    chai.assert(briefcase.bcvAccessKeySAS!.startsWith("?sv="));
+    chai.assert(briefcase.bcvAccessKeyDbName);
+    chai.assert(briefcase.bcvAccessKeyDbName!.endsWith(".bim"));
   });
 
   it("should get the application data for a Briefcase", async () => {

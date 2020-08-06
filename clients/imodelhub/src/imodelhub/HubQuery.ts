@@ -87,6 +87,18 @@ export function addSelectFileAccessKey(query: RequestQueryOptions) {
 }
 
 /**
+ * Add select for the BCVAccessKey to the query that allows
+ * to read/download iModel in blocks incrementally.
+ * @internal
+ */
+export function addSelectBCVAccessKey(query: RequestQueryOptions) {
+  if (!query.$select)
+    query.$select = "*";
+
+  query.$select += ",FileAccessKey-forward-BCVAccessKey.*";
+}
+
+/**
  * Add select for the application data to the query.
  * @internal
  */

@@ -37,6 +37,9 @@ import { WsgRequestOptions } from '@bentley/itwin-client';
 export function addSelectApplicationData(query: RequestQueryOptions): void;
 
 // @internal
+export function addSelectBCVAccessKey(query: RequestQueryOptions): void;
+
+// @internal
 export function addSelectFileAccessKey(query: RequestQueryOptions): void;
 
 // @internal
@@ -76,6 +79,10 @@ export class Briefcase extends WsgInstance {
     acquiredDate?: string;
     applicationId?: string;
     applicationName?: string;
+    bcvAccessKeyAccount?: string;
+    bcvAccessKeyContainer?: string;
+    bcvAccessKeyDbName?: string;
+    bcvAccessKeySAS?: string;
     briefcaseId?: number;
     changeSetIdOnDevice?: string;
     deviceName?: string;
@@ -131,6 +138,7 @@ export class BriefcaseQuery extends WsgQuery {
     getId(): number | undefined;
     ownedByMe(): this;
     selectApplicationData(): this;
+    selectBCVAccessKey(): this;
     selectDownloadUrl(): this;
 }
 
@@ -226,6 +234,10 @@ export enum ChangesType {
 
 // @alpha
 export class Checkpoint extends WsgInstance {
+    bcvAccessKeyAccount?: string;
+    bcvAccessKeyContainer?: string;
+    bcvAccessKeyDbName?: string;
+    bcvAccessKeySAS?: string;
     createdDate?: string;
     downloadUrl?: string;
     fileDescription?: string;
@@ -248,6 +260,7 @@ export class CheckpointQuery extends WsgQuery {
     byChangeSetId(changeSetId: string): this;
     nearestCheckpoint(targetChangeSetId: string): this;
     precedingCheckpoint(targetChangeSetId: string): this;
+    selectBCVAccessKey(): this;
     selectDownloadUrl(): this;
 }
 
