@@ -4045,6 +4045,10 @@ export abstract class IModelConnection extends IModel {
     isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
+    // @internal
+    get isStandalone(): boolean;
+    // @internal
+    isStandaloneConnection(): this is StandaloneConnection;
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal
@@ -8178,6 +8182,14 @@ export class SpriteLocation implements CanvasDecoration {
     get isActive(): boolean;
     readonly position: Point3d;
     }
+
+// @internal
+export class StandaloneConnection extends IModelConnection {
+    close(): Promise<void>;
+    get iModelId(): GuidString;
+    get isClosed(): boolean;
+    static openFile(filePath: string, openMode?: OpenMode): Promise<StandaloneConnection>;
+}
 
 // @public
 export class StandardView {

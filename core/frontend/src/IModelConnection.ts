@@ -6,9 +6,19 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import {
+  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+} from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, BentleyStatus, BriefcaseProps, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface } from "@bentley/imodeljs-common";
+import {
+  AxisAlignedBox3d, BentleyStatus, BriefcaseProps, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
+  FontMap, FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
+  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
+  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
+  SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams,
+  WipRpcInterface,
+} from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
 import { EntityState } from "./EntityState";
@@ -17,12 +27,12 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
+import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
-import { IModelRoutingContext } from "./IModelRoutingContext";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -122,6 +132,10 @@ export abstract class IModelConnection extends IModel {
 
   /** Type guard for instanceof [[SnapshotConnection]] */
   public isSnapshotConnection(): this is SnapshotConnection { return this instanceof SnapshotConnection; }
+  /** Type guard for instanceof [[StandaloneConnection]]
+   * @internal
+   */
+  public isStandaloneConnection(): this is StandaloneConnection { return this instanceof StandaloneConnection; }
   /** Type guard for instanceof [[BlankConnection]]
    * @beta
    */
@@ -133,6 +147,10 @@ export abstract class IModelConnection extends IModel {
    * @see [[SnapshotConnection.openSnapshot]]
    */
   public get isSnapshot(): boolean { return this.isSnapshotConnection(); }
+  /** True if this is a [[StandaloneConnection]].
+   * @internal
+   */
+  public get isStandalone(): boolean { return this.isStandaloneConnection(); }
   /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).
    * @beta
    */
@@ -897,6 +915,45 @@ export class SnapshotConnection extends IModelConnection {
       if (!this.isRemote) {
         await SnapshotIModelRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps());
       }
+    } finally {
+      this._isClosed = true;
+      this.subcategories.onIModelConnectionClose();
+    }
+  }
+}
+
+/** A connection to a [StandaloneDb]($backend) hosted on the backend.
+ * @internal
+ */
+export class StandaloneConnection extends IModelConnection {
+  /** The Guid that identifies this iModel. */
+  public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for StandaloneConnection
+
+  /** Returns `true` if [[close]] has already been called. */
+  public get isClosed(): boolean { return this._isClosed ? true : false; }
+  private _isClosed?: boolean;
+
+  /** Open an IModelConnection to a standalone iModel.
+   * @note This method is intended for desktop or mobile applications and should not be used for web applications.
+   */
+  public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<StandaloneConnection> {
+    const openResponse = await StandaloneIModelRpcInterface.getClient().openFile(filePath, openMode);
+    Logger.logTrace(loggerCategory, "StandaloneConnection.openFile", () => ({ filePath }));
+    const connection = new StandaloneConnection(openResponse);
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
+  /** Close this StandaloneConnection and the underlying [StandaloneDb]($backend) database file.
+   * @see [[openFile]]
+   */
+  public async close(): Promise<void> {
+    if (this.isClosed) {
+      return;
+    }
+    this.beforeClose();
+    try {
+      await StandaloneIModelRpcInterface.getClient().close(this.getRpcProps());
     } finally {
       this._isClosed = true;
       this.subcategories.onIModelConnectionClose();

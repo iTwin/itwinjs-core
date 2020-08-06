@@ -441,6 +441,7 @@ public;SolarShadowSettings
 public;SolarShadowSettingsProps
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
+internal;class StandaloneIModelRpcInterface 
 internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance

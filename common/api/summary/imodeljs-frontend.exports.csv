@@ -409,6 +409,7 @@ internal;SpatialModelTileTrees
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
+internal;StandaloneConnection 
 public;StandardView
 public;StandardViewId
 public;StandardViewTool 

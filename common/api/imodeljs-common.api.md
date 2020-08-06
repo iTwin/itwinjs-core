@@ -6025,6 +6025,17 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 }
 
 // @internal
+export abstract class StandaloneIModelRpcInterface extends RpcInterface {
+    // (undocumented)
+    close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
+    static getClient(): StandaloneIModelRpcInterface;
+    static readonly interfaceName = "StandaloneIModelRpcInterface";
+    static interfaceVersion: string;
+    // (undocumented)
+    openFile(_filePath: string, _openMode: OpenMode): Promise<IModelConnectionProps>;
+}
+
+// @internal
 export type StorageValue = string | number | boolean | null | Uint8Array;
 
 // @public
