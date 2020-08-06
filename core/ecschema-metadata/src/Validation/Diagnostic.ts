@@ -290,6 +290,7 @@ export function createClassDiagnosticClass<ARGS extends any[]>(code: string, mes
 export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
   return class extends PropertyDiagnostic<ARGS> {
+    public static code = code;
     public get code(): string { return code; }
     public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };

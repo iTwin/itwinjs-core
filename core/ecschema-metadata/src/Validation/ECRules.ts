@@ -7,15 +7,15 @@
  */
 
 import { ECStringConstants } from "../Constants";
-import { ECClassModifier, PrimitiveType, primitiveTypeToString, SchemaItemType, schemaItemTypeToString } from "../ECObjects";
+import { ECClassModifier, PrimitiveType, primitiveTypeToString, SchemaItemType, schemaItemTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { AnyClass } from "../Interfaces";
 import { ECClass } from "../Metadata/Class";
 import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 import { EntityClass } from "../Metadata/EntityClass";
 import { Enumeration } from "../Metadata/Enumeration";
 import { Mixin } from "../Metadata/Mixin";
-import { AnyProperty, PrimitiveProperty, Property } from "../Metadata/Property";
-import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
+import { AnyProperty, NavigationProperty, PrimitiveProperty, Property } from "../Metadata/Property";
+import { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../Metadata/RelationshipClass";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,
@@ -190,6 +190,34 @@ export const Diagnostics = {
     "The ECProperty '{0}.{1}' has a base property '{2}.{1}' with KindOfQuantity '{3}' with persistence unit '{4}' which is not the same as the persistence unit '{5}' of the provided KindOfQuantity '{6}'."),
 
   /**
+   * EC-1303
+   * Required message parameters: property.fullName, navigation relationship.fullName
+   */
+  NavigationRelationshipMustBeRoot: createPropertyDiagnosticClass<[string, string]>(getCode(1303),
+    "The referenced relationship '{1}', used in NavigationProperty '{0}' is not the root relationship."),
+
+  /**
+   * EC-1304
+   * Required message parameters: property.fullName, navigation relationship.fullName
+   */
+  NavigationTargetMustHaveSingularMultiplicity: createPropertyDiagnosticClass<[string, string, string]>(getCode(1304),
+    "NavigationProperty '{0}' uses the relationship '{1}' that cannot be traversed in the '{2}' direction due to a max multiplicity greater than 1."),
+
+  /**
+   * EC-1305
+   * Required message parameters: property.fullName, navigation relationship.fullName
+   */
+  NavigationRelationshipAbstractConstraintEntityOrMixin: createPropertyDiagnosticClass<[string, string]>(getCode(1305),
+    "The NavigationProperty '{0}', using the relationship '{1}', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin."),
+
+  /**
+   * EC-1306
+   * Required message parameters: class name, property name, navigation relationship.fullName
+   */
+  NavigationClassMustBeAConstraintClassOfRelationship: createPropertyDiagnosticClass<[string, string, string, string]>(getCode(1306),
+    "The class '{0}' of NavigationProperty '{1}' is not supported by the {3} constraint of the referenced relationship '{2}'."),
+
+  /**
    * EC-1500
    * Required message parameters: abstract constraint class name, relationship end (source/target), relationship name, base relationship name
    */
@@ -243,6 +271,7 @@ export const ECRuleSet: IRuleSet = { // tslint:disable-line:variable-name
     incompatibleValueTypePropertyOverride,
     incompatibleTypePropertyOverride,
     incompatibleUnitPropertyOverride,
+    validateNavigationProperty,
   ],
   relationshipRules: [
     abstractConstraintMustNarrowBaseConstraints,
@@ -431,6 +460,54 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
     if (result)
       yield result;
   }
+}
+
+/** Validates Navigation Properties. EC Rules: 1303, 1304 */
+export async function* validateNavigationProperty(property: AnyProperty): AsyncIterable<PropertyDiagnostic<any[]>> {
+  if (!property.isNavigation())
+    return;
+
+  const navProp = property as NavigationProperty;
+  const relationship = await navProp.relationshipClass;
+
+  if (relationship.baseClass)
+    yield new Diagnostics.NavigationRelationshipMustBeRoot(property, [property.fullName, relationship.fullName]);
+
+  let thisConstraint: RelationshipConstraint;
+  let thatConstraint: RelationshipConstraint;
+  let navigationClassSide: string;
+  if (navProp.direction === StrengthDirection.Forward) {
+    thisConstraint = relationship.source;
+    thatConstraint = relationship.target;
+    navigationClassSide = "source";
+  } else {
+    thisConstraint = relationship.target;
+    thatConstraint = relationship.source;
+    navigationClassSide = "target";
+  }
+
+  const thatAbstractConstraint = await thatConstraint.abstractConstraint;
+  if (thatAbstractConstraint && thatAbstractConstraint instanceof RelationshipClass) {
+    yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(property, [property.fullName, relationship.fullName]);
+  }
+
+  let concreteClass = false;
+  if (thisConstraint.constraintClasses) {
+    for (const constraintClass of thisConstraint.constraintClasses) {
+      if (constraintClass.fullName === property.class.fullName)
+        concreteClass = true;
+    }
+  }
+
+  if (!concreteClass)
+    yield new Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship(property, [property.class.name, property.name, relationship.fullName, navigationClassSide]);
+
+  if (thatConstraint.multiplicity === RelationshipMultiplicity.oneMany || thatConstraint.multiplicity === RelationshipMultiplicity.zeroMany) {
+    const direction = strengthDirectionToString(navProp.direction);
+    yield new Diagnostics.NavigationTargetMustHaveSingularMultiplicity(property, [property.fullName, relationship.fullName, direction]);
+  }
+
+  return;
 }
 
 /** EC Rule: When overriding a RelationshipClass, the derived abstract constraint must narrow the base constraint classes. */

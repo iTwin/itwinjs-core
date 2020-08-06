@@ -241,6 +241,7 @@ export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, 
         messageArgs?: ARGS | undefined;
         category: DiagnosticCategory;
     };
+    code: string;
 };
 
 // @beta
@@ -586,6 +587,7 @@ export const Diagnostics: {
             messageArgs?: [string, string, string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
+        code: string;
     };
     IncompatibleTypePropertyOverride: {
         new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
@@ -597,6 +599,7 @@ export const Diagnostics: {
             messageArgs?: [string, string, string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
+        code: string;
     };
     IncompatibleUnitPropertyOverride: {
         new (property: AnyProperty, messageArgs?: [string, string, string, string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
@@ -608,6 +611,55 @@ export const Diagnostics: {
             messageArgs?: [string, string, string, string, string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
+        code: string;
+    };
+    NavigationRelationshipMustBeRoot: {
+        new (property: AnyProperty, messageArgs?: [string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: AnyProperty;
+            messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+        code: string;
+    };
+    NavigationTargetMustHaveSingularMultiplicity: {
+        new (property: AnyProperty, messageArgs?: [string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: AnyProperty;
+            messageArgs?: [string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+        code: string;
+    };
+    NavigationRelationshipAbstractConstraintEntityOrMixin: {
+        new (property: AnyProperty, messageArgs?: [string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: AnyProperty;
+            messageArgs?: [string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+        code: string;
+    };
+    NavigationClassMustBeAConstraintClassOfRelationship: {
+        new (property: AnyProperty, messageArgs?: [string, string, string, string] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: AnyProperty;
+            messageArgs?: [string, string, string, string] | undefined;
+            category: import("./Diagnostic").DiagnosticCategory;
+        };
+        code: string;
     };
     AbstractConstraintMustNarrowBaseConstraints: {
         new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -2856,6 +2908,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
+        code: string;
     };
     PropertyMissing: {
         new (property: import("../ecschema-metadata").AnyProperty, messageArgs?: [] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
@@ -2867,6 +2920,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
+        code: string;
     };
     EntityMixinMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [Mixin], category?: import("./Diagnostic").DiagnosticCategory): {
