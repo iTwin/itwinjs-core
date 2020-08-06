@@ -9,6 +9,7 @@
 import "./SignIn.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 
@@ -77,8 +78,8 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
     const key = event.key;
 
     switch (key) {
-      case "Enter":
-      case " ":
+      case SpecialKey.Enter:
+      case SpecialKey.Space:
         onActivate && onActivate();
         break;
     }

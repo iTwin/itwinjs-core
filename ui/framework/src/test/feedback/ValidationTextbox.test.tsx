@@ -79,12 +79,12 @@ describe("ValidationTextbox", () => {
   });
 
   it("should manage escape press", () => {
-    input.simulate("keyUp", { key: "Esc", keyCode: 27 });
+    input.simulate("keyUp", { key: "Escape" });
     expect(onEscPressed.called).to.be.true;
   });
 
   it("should manage enter press", () => {
-    input.simulate("keyUp", { key: "Enter", keyCode: 13 });
+    input.simulate("keyUp", { key: "Enter" });
     expect(onEnterPressed.called).to.be.true;
   });
 });

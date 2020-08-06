@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../ui-components/toolbar/ToolbarWithOverflow";
 import { Direction } from "../../ui-components/toolbar/utilities/Direction";
@@ -367,7 +367,7 @@ describe("<ToolbarWithOverflow />", () => {
       // Also make sure the popup panel can inform user when key down is pressed
       const popupPanel = renderedComponent.queryByTestId("popup-panel");
       expect(popupPanel).not.to.be.null;
-      popupPanel!.dispatchEvent(createBubbledEvent("keydown", { keyCode: 27 /* <Esc> */ }));
+      popupPanel!.dispatchEvent(createBubbledEvent("keydown", { key: SpecialKey.Escape /* <Esc> */ }));
       onKeyDownSpy.calledOnce.should.true;
     });
 
@@ -1137,7 +1137,7 @@ describe("<ToolbarWithOverflow />", () => {
       const actionButton = renderedComponent.queryByTitle("Entry1");
       expect(actionButton).not.to.be.null;
       fireEvent.click(actionButton!);
-      actionButton!.dispatchEvent(createBubbledEvent("keydown", { keyCode: 27 /* <Esc> */ }));
+      actionButton!.dispatchEvent(createBubbledEvent("keydown", { key: SpecialKey.Escape /* <Esc> */ }));
       onKeyDownSpy.calledOnce.should.true;
     });
 

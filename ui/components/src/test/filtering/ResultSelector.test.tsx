@@ -6,6 +6,7 @@ import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
 import { ResultSelector } from "../../ui-components/filtering/ResultSelector";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("ResultSelector", () => {
   it("content is '0 of 0' and buttons are disabled when result count is 0", () => {
@@ -67,7 +68,7 @@ describe("ResultSelector", () => {
     inputElement = resultSelector.find("input[type=\"number\"]").first();
     expect(inputElement.exists()).to.be.true;
 
-    inputElement.simulate("keyDown", { keyCode: 13 });
+    inputElement.simulate("keyDown", { key: SpecialKey.Enter });
     inputElement = resultSelector.find("input[type=\"number\"]").first();
     expect(inputElement.exists()).to.be.false;
   });

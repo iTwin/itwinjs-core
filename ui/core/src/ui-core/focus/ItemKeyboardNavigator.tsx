@@ -6,6 +6,7 @@
  * @module Focus
  */
 
+import { SpecialKey } from "@bentley/ui-abstract";
 import { Orientation } from "../enums/Orientation";
 
 /** Keyboard Navigator for parent components
@@ -17,10 +18,10 @@ export class ItemKeyboardNavigator {
   private _orientation = Orientation.Horizontal;
 
   constructor(public onFocusItem: (index: number) => void, public onActivateItem: (index: number) => void) {
-    this._direction.set("ArrowLeft", -1);
-    this._direction.set("ArrowUp", -1);
-    this._direction.set("ArrowRight", 1);
-    this._direction.set("ArrowDown", 1);
+    this._direction.set(SpecialKey.ArrowLeft, -1);
+    this._direction.set(SpecialKey.ArrowUp, -1);
+    this._direction.set(SpecialKey.ArrowRight, 1);
+    this._direction.set(SpecialKey.ArrowDown, 1);
   }
 
   /** Set the item count */
@@ -34,12 +35,12 @@ export class ItemKeyboardNavigator {
     const key = event.key;
 
     switch (key) {
-      case "Home":
+      case SpecialKey.Home:
         event.preventDefault();
         // Activate first item
         this.focusFirstItem();
         break;
-      case "End":
+      case SpecialKey.End:
         event.preventDefault();
         // Activate last item
         this.focusLastItem();
@@ -47,8 +48,8 @@ export class ItemKeyboardNavigator {
 
       // Up and down are in keydown
       // because we need to prevent page scroll >:)
-      case "ArrowUp":
-      case "ArrowDown":
+      case SpecialKey.ArrowUp:
+      case SpecialKey.ArrowDown:
         this.determineOrientation(event, index);
         break;
     }
@@ -59,11 +60,11 @@ export class ItemKeyboardNavigator {
     const key = event.key;
 
     switch (key) {
-      case "ArrowLeft":
-      case "ArrowRight":
+      case SpecialKey.ArrowLeft:
+      case SpecialKey.ArrowRight:
         this.determineOrientation(event, index);
         break;
-      case "Enter":
+      case SpecialKey.Enter:
       case " ":
         this.activateItem(index);
         break;
@@ -89,12 +90,12 @@ export class ItemKeyboardNavigator {
     let proceed = false;
 
     if (vertical) {
-      if (key === "ArrowUp" || key === "ArrowDown") {
+      if (key === SpecialKey.ArrowUp || key === SpecialKey.ArrowDown) {
         event.preventDefault();
         proceed = true;
       }
     } else {
-      if (key === "ArrowLeft" || key === "ArrowRight") {
+      if (key === SpecialKey.ArrowLeft || key === SpecialKey.ArrowRight) {
         proceed = true;
       }
     }
@@ -117,7 +118,7 @@ export class ItemKeyboardNavigator {
 
       if (0 <= newIndex && newIndex < this._itemCount) {
         this.onFocusItem(newIndex);
-      } else if (pressed === "ArrowLeft" || pressed === "ArrowUp") {
+      } else if (pressed === SpecialKey.ArrowLeft || pressed === SpecialKey.ArrowUp) {
         this.focusLastItem();
       } else {
         this.focusFirstItem();

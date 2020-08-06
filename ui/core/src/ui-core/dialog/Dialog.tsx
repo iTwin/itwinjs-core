@@ -10,6 +10,7 @@ import "./Dialog.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 import { UiCore } from "../UiCore";
 import { CommonProps } from "../utils/Props";
@@ -422,7 +423,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   }
 
   private _handleKeyUp = (event: KeyboardEvent) => {
-    if (event.key === "Escape" && this.props.opened && this.props.onEscape) {
+    if (event.key === SpecialKey.Escape && this.props.opened && this.props.onEscape) {
       this.props.onEscape();
     }
   }

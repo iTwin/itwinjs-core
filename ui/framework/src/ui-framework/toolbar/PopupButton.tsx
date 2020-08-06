@@ -10,7 +10,7 @@ import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel
 import "./PopupButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -146,7 +146,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore next
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       this.minimize();
       KeyboardShortcutManager.setFocusToHome();
     }

@@ -15,6 +15,7 @@ import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
  * @public
@@ -124,7 +125,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       KeyboardShortcutManager.setFocusToHome();
     }
   }

@@ -71,7 +71,7 @@ describe("GroupButtonItem", () => {
       const wrapper = mount(<GroupButtonItem item={group1} />);
       const element = wrapper.find(".nz-toolbar-item-item");
       element.simulate("focus");
-      element.simulate("keyDown", { key: "Escape", keyCode: 27 });
+      element.simulate("keyDown", { key: "Escape" });
       expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
       wrapper.unmount();
     });

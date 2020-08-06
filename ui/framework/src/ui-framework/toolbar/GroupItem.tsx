@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, StringGetter } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
   Direction, ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
@@ -349,7 +349,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       this.closeGroupButton();
       KeyboardShortcutManager.setFocusToHome();
     }

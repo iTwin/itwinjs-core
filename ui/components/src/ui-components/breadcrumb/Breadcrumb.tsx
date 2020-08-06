@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as _ from "lodash";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
 import {
   CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, MessageSeverity, SplitButton, withOnOutsideClick,
 } from "@bentley/ui-core";
@@ -612,7 +612,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     return undefined;
   }
 
-  private _handleClick = (event: any): void => {
+  private _handleClick = (event: MouseEvent): void => {
     // istanbul ignore else
     if (this._autocomplete) {
       // istanbul ignore else
@@ -623,22 +623,22 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     }
   }
 
-  private _handleKeyDown = (event: any) => {
-    switch (event.keyCode) {
-      case 38: /*<Up>*/
-      case 40: /*<Down>*/
+  private _handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (event.key) {
+      case SpecialKey.ArrowUp:
+      case SpecialKey.ArrowDown:
         event.preventDefault();
     }
   }
-  private _handleKeyUp = async (event: any) => {
-    switch (event.keyCode) {
-      case 27: /*<Esc>*/
+  private _handleKeyUp = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (event.key) {
+      case SpecialKey.Escape:
         // istanbul ignore else
         if (this._mounted)
           this.setState({ autocompleting: false });
         break;
-      case 38: /*<Up>*/
-      case 40: /*<Down>*/
+      case SpecialKey.ArrowUp:
+      case SpecialKey.ArrowDown:
         event.preventDefault();
         // istanbul ignore else
         if (this._autocomplete && this.state.autocompleteList.length > 0) {
@@ -648,7 +648,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
             this.setState({ autocompleting: true });
         }
         break;
-      case 13: /*<Return>*/
+      case SpecialKey.Enter:
         // istanbul ignore else
         if (this._inputElement) {
           const path = this._inputElement.value;

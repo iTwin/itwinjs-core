@@ -21,6 +21,7 @@ import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
 import { Outline } from "../Outline";
 import { ToolUiManager } from "../toolsettings/ToolUiManager";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 // cSpell:ignore safearea
 
@@ -140,7 +141,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       KeyboardShortcutManager.setFocusToHome();
     }
   }

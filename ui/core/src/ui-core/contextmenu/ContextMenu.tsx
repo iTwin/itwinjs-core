@@ -10,7 +10,7 @@ import "./ContextMenu.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType, SpecialKey } from "@bentley/ui-abstract";
 import { BadgeUtilities } from "../badge/BadgeUtilities";
 import { CommonProps } from "../utils/Props";
 import { Omit } from "../utils/typeUtils";
@@ -379,7 +379,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       }
     }
 
-    if (event.keyCode === 37) /*<Left>*/ {
+    if (event.key === SpecialKey.ArrowLeft) {
       event.stopPropagation();
       if (this.props.parentMenu && this.props.parentSubmenu) {
         this.props.parentSubmenu.close();
@@ -389,17 +389,17 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         this.props.onEsc(event);
     }
 
-    if (event.keyCode === 27/*<Esc>*/) {
+    if (event.key === SpecialKey.Escape) {
       // istanbul ignore else
       if (this.props.onEsc)
         this.props.onEsc(event);
     }
 
-    if ((event.keyCode === 13 /*<Return>*/ || event.keyCode === 39 /*<Right>*/) && this._selectedElement) {
+    if ((event.key === SpecialKey.Enter || event.key === SpecialKey.ArrowRight) && this._selectedElement) {
       event.stopPropagation();
 
       // istanbul ignore else
-      if (event.keyCode === 13 || /* istanbul ignore next */ this._selectedElement instanceof ContextSubMenu) {
+      if (event.key === SpecialKey.Enter || /* istanbul ignore next */ this._selectedElement instanceof ContextSubMenu) {
         // istanbul ignore else
         if (this._selectedElement.select)
           this._selectedElement.select();
@@ -407,18 +407,18 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     }
 
     let { selectedIndex } = this.state;
-    if (event.keyCode === 38 /*<Up>*/ || event.keyCode === 40/*<Down>*/) {
+    if (event.key === SpecialKey.ArrowUp || event.key === SpecialKey.ArrowDown) {
       event.stopPropagation();
       if (selectedIndex === -1) {
         selectedIndex = 0;
       } else {
-        if (event.keyCode === 38) /*<Up>*/ {
+        if (event.key === SpecialKey.ArrowUp) {
           if (this.state.selectedIndex === 0)
             selectedIndex = this._length - 1;
           else
             selectedIndex--;
         }
-        if (event.keyCode === 40) /*<Down>*/ {
+        if (event.key === SpecialKey.ArrowDown) {
           if (this.state.selectedIndex === this._length - 1)
             selectedIndex = 0;
           else
@@ -646,7 +646,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   }
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.keyCode === 13 && this.props.onSelect !== undefined) {
+    if (event.key === SpecialKey.Enter && this.props.onSelect !== undefined) {
       this.props.onSelect(event);
     }
   }

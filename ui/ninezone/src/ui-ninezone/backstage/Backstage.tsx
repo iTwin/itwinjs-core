@@ -9,6 +9,7 @@
 import "./Backstage.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 
@@ -90,7 +91,7 @@ export class Backstage extends React.PureComponent<BackstageProps> {
   }
 
   private _onEsc = (event: KeyboardEvent): void => {
-    if (this.props.isOpen && event.key === "Escape") {
+    if (this.props.isOpen && event.key === SpecialKey.Escape) {
       this._onClose();
     }
   }

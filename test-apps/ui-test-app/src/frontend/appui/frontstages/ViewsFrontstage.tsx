@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, StageUsage, ToolbarItemUtilities, WidgetState,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StagePanelLocation, StageUsage, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
@@ -431,32 +431,32 @@ class AdditionalTools {
     document.addEventListener("mousemove", this._handleTool4MouseMove);
   }
 
-  private _handleTool4Keypress = (event: any) => {
+  private _handleTool4Keypress = (event: KeyboardEvent) => {
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", this._tool4Detailed);
     let changed = false;
 
-    switch (event.keyCode) {
-      case 37:
+    switch (event.key) {
+      case SpecialKey.ArrowLeft:
         details.briefMessage = "Left pressed";
         this._toolRelativePosition = RelativePosition.Left;
         changed = true;
         break;
-      case 38:
+      case SpecialKey.ArrowUp:
         details.briefMessage = "Up pressed";
         this._toolRelativePosition = RelativePosition.Top;
         changed = true;
         break;
-      case 39:
+      case SpecialKey.ArrowRight:
         details.briefMessage = "Right pressed";
         this._toolRelativePosition = RelativePosition.Right;
         changed = true;
         break;
-      case 40:
+      case SpecialKey.ArrowDown:
         details.briefMessage = "Down pressed";
         this._toolRelativePosition = RelativePosition.Bottom;
         changed = true;
         break;
-      case 27:  // Escape
+      case SpecialKey.Escape:
         this._handleTool4Dismiss();
         break;
     }
@@ -651,9 +651,9 @@ class AdditionalTools {
     CursorPopupManager.updatePosition(args.newPt);
   }
 
-  private _handleCursorPopupKeypress = (event: any) => {
-    switch (event.keyCode) {
-      case 27:  // Escape
+  private _handleCursorPopupKeypress = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case SpecialKey.Escape:
         this._closeCursorPopup();
         break;
     }

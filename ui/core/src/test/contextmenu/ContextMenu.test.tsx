@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { mount } from "enzyme";
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType, SpecialKey } from "@bentley/ui-abstract";
 import { cleanup, render } from "@testing-library/react";
 import { ContextMenu, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
 import { ContextMenuDirection, TildeFinder } from "../../ui-core/contextmenu/ContextMenu";
@@ -108,7 +108,7 @@ describe("ContextMenu", () => {
         const component = render(
           <ContextMenu opened={true} onEsc={handleEsc} />);
         const root = component.getByTestId("core-context-menu-root");
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 27 /* <Esc> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Escape /* <Esc> */ }));
         expect(handleEsc).to.be.calledOnce;
       });
       it("should handle one-level Left press", () => {
@@ -116,7 +116,7 @@ describe("ContextMenu", () => {
         const component = render(
           <ContextMenu opened={true} onEsc={handleEsc} />);
         const root = component.getByTestId("core-context-menu-root");
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 37 /* <Left> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowLeft /* <Left> */ }));
         expect(handleEsc).to.be.calledOnce;
       });
       it("should handle one-level select", () => {
@@ -126,8 +126,8 @@ describe("ContextMenu", () => {
             <ContextMenuItem>Item 1</ContextMenuItem>
           </ContextMenu>);
         const root = component.getByTestId("core-context-menu-root");
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowDown /* <Down> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
         expect(handleSelect).to.be.calledOnce;
       });
       it("should handle one-level down arrow select", () => {
@@ -138,10 +138,10 @@ describe("ContextMenu", () => {
             <ContextMenuItem>Item 2</ContextMenuItem>
           </ContextMenu>);
         const root = component.getByTestId("core-context-menu-root");
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowDown /* <Down> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowDown /* <Down> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowDown /* <Down> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
         expect(handleSelect).to.be.calledOnce;
       });
       it("should handle one-level up arrow select", () => {
@@ -152,10 +152,10 @@ describe("ContextMenu", () => {
             <ContextMenuItem>Item 2</ContextMenuItem>
           </ContextMenu>);
         const root = component.getByTestId("core-context-menu-root");
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 38 /* <Up> */ }));
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 38 /* <Up> */ }));
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 38 /* <Up> */ }));
-        root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowUp /* <Up> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowUp /* <Up> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowUp /* <Up> */ }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
         expect(handleSelect).to.be.calledOnce;
       });
       it("should handle multi-level right arrow then enter select", () => {
@@ -169,9 +169,9 @@ describe("ContextMenu", () => {
           </ContextMenu>);
         const root1 = component.getAllByTestId("core-context-menu-root")[0];
         const root2 = component.getAllByTestId("core-context-menu-root")[1];
-        root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 39 /* <Right> */ }));
-        root2.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
-        root2.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
+        root1.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowRight /* <Right> */ }));
+        root2.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowDown /* <Down> */ }));
+        root2.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
         expect(handleSelect).to.be.calledOnce;
       });
       it("should handle multi-level left arrow select", () => {
@@ -186,11 +186,11 @@ describe("ContextMenu", () => {
           </ContextMenu>);
         const root1 = component.getAllByTestId("core-context-menu-root")[0];
         const root2 = component.getAllByTestId("core-context-menu-root")[1];
-        root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 39 /* <Right> */ }));
-        root2.dispatchEvent(createBubbledEvent("keyup", { keyCode: 37 /* <Left> */ }));
-        root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
-        root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
-        root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
+        root1.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowRight /* <Right> */ }));
+        root2.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowLeft /* <Left> */ }));
+        root1.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowDown /* <Down> */ }));
+        root1.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.ArrowDown /* <Down> */ }));
+        root1.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
         expect(handleSelect).to.be.calledOnce;
       });
       it("should select list item of hotkey", () => {
@@ -420,14 +420,14 @@ describe("ContextMenu", () => {
       const handleSelect = sinon.fake();
       const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
       const item = component.getByTestId("core-context-menu-item");
-      item.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
+      item.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
       handleSelect.should.have.been.calledOnce;
     });
     it("onSelect not called on Escape", () => {
       const handleSelect = sinon.fake();
       const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
       const item = component.getByTestId("core-context-menu-item");
-      item.dispatchEvent(createBubbledEvent("keyup", { keyCode: 27 /* <Esc> */ }));
+      item.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Escape /* <Esc> */ }));
       handleSelect.should.not.have.been.called;
     });
   });

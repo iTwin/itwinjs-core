@@ -12,6 +12,7 @@ import * as React from "react";
 import { ContextMenu } from "../contextmenu/ContextMenu";
 import { Icon, IconSpec } from "../icons/IconComponent";
 import { CommonProps } from "../utils/Props";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 // TODO: implement
 /** @internal */
@@ -111,9 +112,9 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   }
 
   private _handleKeyUp = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === SpecialKey.Enter) {
       this.props.onExecute && this.props.onExecute();
-    } else if (event.key === "ArrowDown" && !this.state.expanded) {
+    } else if (event.key === SpecialKey.ArrowDown && !this.state.expanded) {
       this._closing = false;
       this._open();
     } else {

@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, Popup } from "@bentley/ui-core";
 import { LineWeightSwatch } from "./Swatch";
 
@@ -121,7 +121,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
   }
 
   private _handleKeyDown = (event: React.KeyboardEvent<any>) => {
-    if (event.key === "Enter") {
+    if (event.key === SpecialKey.Enter) {
       event.preventDefault();
       event.stopPropagation();
       const weightButton = document.activeElement as HTMLElement;
@@ -143,9 +143,9 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
       }
       this._closePopup();
     } else {
-      if (event.key === "ArrowDown")
+      if (event.key === SpecialKey.ArrowDown)
         this.moveFocusInPopup(false, event);
-      else if (event.key === "ArrowUp")
+      else if (event.key === SpecialKey.ArrowUp)
         this.moveFocusInPopup(true, event);
     }
   }

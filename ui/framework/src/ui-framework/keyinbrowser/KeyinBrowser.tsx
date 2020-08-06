@@ -12,6 +12,7 @@ import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
 import { AutoSuggest, AutoSuggestData, Button, CommonProps, InputLabel, LabeledInput } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Data for each key-in.
  */
@@ -209,14 +210,14 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
   }
 
   private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-    if ("Enter" === event.key) {
+    if (SpecialKey.Enter === event.key) {
       event.stopPropagation();
       this._execute();
       return;
     }
 
     // istanbul ignore else
-    if ("Escape" === event.key) {
+    if (SpecialKey.Escape === event.key) {
       // istanbul ignore else
       if (this.props.onCancel)
         this.props.onCancel();

@@ -12,6 +12,7 @@ import * as React from "react";
 import { ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
   hsv: HSVColor, container: HTMLDivElement): HSVColor | undefined {
@@ -154,23 +155,23 @@ export function SaturationPicker({ onSaturationChange, hsv, className, style }: 
   const onKeyDown = React.useCallback((evt: React.KeyboardEvent<HTMLDivElement>) => {
     const h = hsv.h;
     let { s, v } = { ...hsv };
-    if (evt.key === "ArrowLeft") {
+    if (evt.key === SpecialKey.ArrowLeft) {
       s -= (evt.ctrlKey ? 10 : 1);
-    } else if (evt.key === "ArrowDown") {
+    } else if (evt.key === SpecialKey.ArrowDown) {
       v -= (evt.ctrlKey ? 10 : 1);
-    } else if (evt.key === "ArrowRight") {
+    } else if (evt.key === SpecialKey.ArrowRight) {
       s += (evt.ctrlKey ? 10 : 1);
-    } else if (evt.key === "ArrowUp") {
+    } else if (evt.key === SpecialKey.ArrowUp) {
       v += (evt.ctrlKey ? 10 : 1);
-    } else if (evt.key === "PageDown") {
+    } else if (evt.key === SpecialKey.PageDown) {
       v = 0;
-    } else if (evt.key === "PageUp") {
+    } else if (evt.key === SpecialKey.PageUp) {
       v = 100;
-    } else if (evt.key === "Home") {
+    } else if (evt.key === SpecialKey.Home) {
       s = 0;
     } else {
       // istanbul ignore else
-      if (evt.key === "End") {
+      if (evt.key === SpecialKey.End) {
         s = 100;
       }
     }

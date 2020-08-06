@@ -9,7 +9,7 @@
 import "./EditorContainer.scss";
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
-import { PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
+import { isArrowKey, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
@@ -129,19 +129,19 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
   private _handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
-      case "Escape":
+      case SpecialKey.Escape:
         this.onPressEscape(e);
         break;
-      case "Enter":
+      case SpecialKey.Enter:
         this.onPressEnter(e);
         break;
-      case "Tab":
+      case SpecialKey.Tab:
         this.onPressTab(e);
         break;
     }
 
     // Prevent the arrow keys from bubbling up to the ReactDataGrid
-    if (e.keyCode >= 37 && e.keyCode <= 40)
+    if (isArrowKey(e.key))
       e.stopPropagation();
   }
 

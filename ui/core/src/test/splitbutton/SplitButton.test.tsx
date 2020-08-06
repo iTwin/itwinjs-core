@@ -7,6 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
 import { SplitButton } from "../../ui-core";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("<SplitButton />", () => {
   it("should render", () => {
@@ -27,7 +28,7 @@ describe("<SplitButton />", () => {
 
   it("handles keydown/up correctly", () => {
     const wrapper = mount<SplitButton>(<SplitButton label="test" />);
-    wrapper.find(".core-split-button").at(0).simulate("keyup", { key: "ArrowDown" });
+    wrapper.find(".core-split-button").at(0).simulate("keyup", { key: SpecialKey.ArrowDown });
     expect(wrapper.state().expanded).to.be.true;
 
     wrapper.find(".core-split-button").at(0).simulate("keyup", { keyCode: 0 });
@@ -36,7 +37,7 @@ describe("<SplitButton />", () => {
   it("calls onExecute on Enter keyup", () => {
     const spyMethod = sinon.spy();
     const wrapper = mount(<SplitButton label="test" onExecute={spyMethod} />);
-    wrapper.find(".core-split-button").at(0).simulate("keyup", { key: "Enter" });
+    wrapper.find(".core-split-button").at(0).simulate("keyup", { key: SpecialKey.Enter });
     spyMethod.calledOnce.should.true;
   });
 

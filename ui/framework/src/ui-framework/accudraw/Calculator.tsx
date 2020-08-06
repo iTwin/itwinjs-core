@@ -9,7 +9,7 @@
 import "./Calculator.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
+import { OnCancelFunc, OnNumberCommitFunc, SpecialKey } from "@bentley/ui-abstract";
 import { Button, ButtonType, CommonProps, Icon, IconInput, Input, Omit, SvgSprite } from "@bentley/ui-core";
 import backspaceIcon from "./backspace.svg?sprite";
 import { CalculatorEngine, CalculatorOperator } from "./CalculatorEngine";
@@ -179,39 +179,39 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
         break;
       case "c":
       case "C":
-      case "Clear":
+      case SpecialKey.Clear:
         this._onOperatorButtonClick(CalculatorOperator.Clear);
         break;
-      case "Escape":
+      case SpecialKey.Escape:
         this._cancel();
         break;
-      case "Backspace":
+      case SpecialKey.Backspace:
         this._onOperatorButtonClick(CalculatorOperator.Backspace);
         break;
       case "/":
-      case "Divide":
+      case SpecialKey.Divide:
         this._onOperatorButtonClick(CalculatorOperator.Divide);
         break;
       case "*":
-      case "Multiply":
+      case SpecialKey.Multiply:
         this._onOperatorButtonClick(CalculatorOperator.Multiply);
         break;
       case "-":
-      case "Subtract":
+      case SpecialKey.Subtract:
         this._onOperatorButtonClick(CalculatorOperator.Subtract);
         break;
       case "+":
-      case "Add":
+      case SpecialKey.Add:
         this._onOperatorButtonClick(CalculatorOperator.Add);
         break;
       case ".":
-      case "Decimal":
+      case SpecialKey.Decimal:
         this._onOperatorButtonClick(CalculatorOperator.Decimal);
         break;
       case "=":
         this._onOperatorButtonClick(CalculatorOperator.Equals);
         break;
-      case "Enter":
+      case SpecialKey.Enter:
         if (!this._equalsClicked)
           this._onOperatorButtonClick(CalculatorOperator.Equals);
         this._ok();

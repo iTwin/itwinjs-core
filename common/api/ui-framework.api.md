@@ -51,6 +51,7 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
+import { FunctionKey as FunctionKey_2 } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -119,6 +120,7 @@ import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
 import { SolarDataProvider } from '@bentley/ui-components';
+import { SpecialKey as SpecialKey_2 } from '@bentley/ui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
 import { StagePanelType } from '@bentley/ui-ninezone';
@@ -2401,7 +2403,7 @@ export interface FrontstageRuntimeProps {
     zoneDefProvider: ZoneDefProvider;
 }
 
-// @public
+// @public @deprecated
 export enum FunctionKey {
     // (undocumented)
     F1 = "F1",
@@ -3057,7 +3059,7 @@ export interface KeyboardShortcutProps extends ItemProps {
     isCtrlKeyRequired?: boolean;
     isShiftKeyRequired?: boolean;
     item?: ActionButtonItemDef;
-    key: string | FunctionKey | SpecialKey;
+    key: string | FunctionKey_2 | SpecialKey_2;
     shortcuts?: KeyboardShortcutProps[];
 }
 
@@ -4839,7 +4841,7 @@ export interface SpatialContainmentTreeProps {
     iModel: IModelConnection;
 }
 
-// @public
+// @public @deprecated
 export enum SpecialKey {
     // (undocumented)
     ArrowDown = "ArrowDown",

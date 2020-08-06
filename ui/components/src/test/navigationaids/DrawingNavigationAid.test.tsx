@@ -224,7 +224,7 @@ describe("DrawingNavigationAid", () => {
 
       expect(navAid.style.width).to.equal("350px");
       expect(navAid.style.height).to.equal("300px");
-      drawingContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Esc" }));
+      drawingContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
 
       await waitForSpy(animationEnd, { timeout: 1000 });
 

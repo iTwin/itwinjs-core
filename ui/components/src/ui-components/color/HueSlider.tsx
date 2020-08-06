@@ -12,6 +12,7 @@ import * as React from "react";
 import { HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 // hue is a value from 0 to 360
 function calculateHue(currentPos: number, high: number, isVertical: boolean) {
@@ -157,19 +158,19 @@ export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: 
   const onKeyDown = React.useCallback((evt: React.KeyboardEvent<HTMLDivElement>) => {
     let newHue: number | undefined;
     const hueValue = hsv.h;
-    if (evt.key === "ArrowLeft" || evt.key === "ArrowDown") {
+    if (evt.key === SpecialKey.ArrowLeft || evt.key === SpecialKey.ArrowDown) {
       newHue = hueValue - (evt.ctrlKey ? 10 : 1);
-    } else if (evt.key === "ArrowRight" || evt.key === "ArrowUp") {
+    } else if (evt.key === SpecialKey.ArrowRight || evt.key === SpecialKey.ArrowUp) {
       newHue = hueValue + (evt.ctrlKey ? 10 : 1);
-    } else if (evt.key === "PageDown") {
+    } else if (evt.key === SpecialKey.PageDown) {
       newHue = hueValue - (evt.ctrlKey ? 180 : 60);
-    } else if (evt.key === "PageUp") {
+    } else if (evt.key === SpecialKey.PageUp) {
       newHue = hueValue + (evt.ctrlKey ? 180 : 60);
-    } else if (evt.key === "Home") {
+    } else if (evt.key === SpecialKey.Home) {
       newHue = 0;
     } else {
       // istanbul ignore else
-      if (evt.key === "End") {
+      if (evt.key === SpecialKey.End) {
         newHue = 359;
       }
     }

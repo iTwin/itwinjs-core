@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
+  ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, SpecialKey, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
@@ -184,7 +184,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       this.closeGroupButton();
       KeyboardShortcutManager.setFocusToHome();
     }

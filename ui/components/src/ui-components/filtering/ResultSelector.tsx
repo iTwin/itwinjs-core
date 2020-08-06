@@ -9,6 +9,7 @@
 import "./ResultSelector.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 
@@ -100,7 +101,7 @@ export class ResultSelector extends React.PureComponent<ResultSelectorProps, Res
   }
 
   private _onSelectedResultKeyDown = (event: React.KeyboardEvent) => {
-    if (event.keyCode === 13)
+    if (event.key === SpecialKey.Enter)
       this._onSelectedResultConfirmed();
   }
 

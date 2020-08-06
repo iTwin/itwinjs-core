@@ -15,6 +15,7 @@ import { IModelApp, IModelConnection, ScreenViewport, ViewManager, Viewport, Vie
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 // cSpell:ignore Quaternion Quaternions unrotate
 /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -418,7 +419,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
 
   private _handleKeyUp = (event: React.KeyboardEvent) => {
     // istanbul ignore else
-    if ((event.key === "Escape" || event.key === "Esc") && this.state.mode === MapMode.Opened) {
+    if (event.key === SpecialKey.Escape && this.state.mode === MapMode.Opened) {
       this._closeLargeMap();
     }
   }

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { DialogItemsManager, DialogPropertySyncItem, OnCancelFunc, RelativePosition, UiDataProvider } from "@bentley/ui-abstract";
+import { DialogItemsManager, DialogPropertySyncItem, OnCancelFunc, RelativePosition, SpecialKey, UiDataProvider } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
@@ -60,7 +60,7 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
 
   private _handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
-      case "Escape":
+      case SpecialKey.Escape:
         // istanbul ignore else
         if (this.props.onCancel)
           this.props.onCancel();

@@ -16,7 +16,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
   CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
-  PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
+  PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
@@ -219,14 +219,14 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
   private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       e.preventDefault();
       e.stopPropagation();
       this._resetToOriginalValue();
     }
 
     // istanbul ignore else
-    if (e.key !== "Enter") {
+    if (e.key !== SpecialKey.Enter) {
       // istanbul ignore next
       if (IModelApp.notifications)
         IModelApp.notifications.closeInputFieldMessage();

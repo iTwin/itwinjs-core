@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
 import {
-  CommandItemDef, ConfigurableUiManager, FunctionKey, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
-  SpecialKey,
+  CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
 } from "../../ui-framework";
 import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
 import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 import TestUtils from "../TestUtils";
+import { FunctionKey, SpecialKey } from "@bentley/ui-abstract";
 
 describe("KeyboardShortcut", () => {
 

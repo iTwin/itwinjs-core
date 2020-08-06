@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
+import { ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon } from "@bentley/ui-core";
 import { getToolbarItemProps, Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -105,7 +105,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       KeyboardShortcutManager.setFocusToHome();
     }
   }

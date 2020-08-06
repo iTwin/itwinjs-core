@@ -45,6 +45,7 @@ beta;DialogRow
 beta;EditorPosition
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
+public;FunctionKey
 internal;getClassName: (obj: any) => string
 beta;GroupButton 
 beta;IconDefinition
@@ -57,6 +58,7 @@ beta;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is Abstr
 beta;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
 beta;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
 beta;isActionItem: (item: BackstageItem) => item is BackstageActionItem
+public;isArrowKey(key: string): boolean
 beta;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
 beta;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
 beta;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
@@ -86,6 +88,7 @@ beta;ProvidedItem
 beta;RangeEditorParams 
 public;RelativePosition
 beta;SliderEditorParams 
+public;SpecialKey
 beta;StagePanelLocation
 beta;StagePanelSection
 beta;StageUsage

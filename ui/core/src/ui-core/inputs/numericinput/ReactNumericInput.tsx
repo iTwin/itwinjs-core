@@ -14,11 +14,10 @@
 import * as React from "react";
 import { CommonProps } from "../../utils/Props";
 import { Omit } from "../../utils/typeUtils";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 // cSpell:ignore nostyle
 
-const KEYCODE_UP = 38;
-const KEYCODE_DOWN = 40;
 const IS_BROWSER = typeof document !== "undefined";
 const RE_NUMBER = /^[+-]?((\.\d+)|(\d+(\.\d+)?))$/;
 const RE_INCOMPLETE_NUMBER = /^([+-]0?|[0-9]*\.0*|[+-][0-9]+\.0*|[+-]?\d+\.)?$/;
@@ -678,15 +677,15 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     this._invokeEventCallback("onKeyDown", ...args);
     const e = args[0];
     if (!e.isDefaultPrevented()) {
-      if (e.keyCode === KEYCODE_UP) {
+      if (e.key === SpecialKey.ArrowUp) {
         e.preventDefault();
         this._step(e.ctrlKey || e.metaKey ? 0.1 : e.shiftKey ? 10 : 1);
-      } else if (e.keyCode === KEYCODE_DOWN) {
+      } else if (e.key === SpecialKey.ArrowDown) {
         e.preventDefault();
         this._step(e.ctrlKey || e.metaKey ? -0.1 : e.shiftKey ? -10 : -1);
       } else if (this.refsInput) {
         const value = this.refsInput.value, length = value.length;
-        if (e.keyCode === 8) { // backspace
+        if (e.key === SpecialKey.Backspace) {
           if (this.refsInput.selectionStart === this.refsInput.selectionEnd &&
             this.refsInput.selectionEnd && this.refsInput.selectionEnd > 0 &&
             value.length &&
@@ -694,7 +693,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
             e.preventDefault();
             this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd - 1;
           }
-        } else if (e.keyCode === 46) { // delete
+        } else if (e.key === SpecialKey.Delete) {
           if (this.refsInput.selectionStart === this.refsInput.selectionEnd &&
             this.refsInput.selectionEnd && this.refsInput.selectionEnd < length + 1 &&
             value.length &&
