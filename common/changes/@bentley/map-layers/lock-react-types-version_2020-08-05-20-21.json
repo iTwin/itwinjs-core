@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/map-layers",
+      "comment": "lock down @types/react version at 16.9.43 to prevent build error from csstype dependency",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/map-layers",
+  "email": "evan.preslar@bentley.com"
+}

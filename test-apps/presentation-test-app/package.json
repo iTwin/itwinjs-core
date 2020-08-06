@@ -56,7 +56,7 @@
     "@bentley/build-tools": "2.5.0-dev.7",
     "@bentley/react-scripts": "3.4.1",
     "@types/bunyan": "^1.8.4",
-    "@types/react": "^16.8.0",
+    "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
     "@types/react-select": "^3.0.4",
     "autoprefixer": "^8.6.5",
