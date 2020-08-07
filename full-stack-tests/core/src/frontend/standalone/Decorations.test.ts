@@ -71,6 +71,8 @@ describe("Cached decorations", () => {
   }
 
   async function testCachedDecorations(vp: ScreenTestViewport, type: "graphic" | "html" | "canvas") {
+    await vp.waitForAllTilesToRender();
+
     const cache = (vp as any)._decorationCache as Map<ViewportDecorator, CachedDecoration[]>;
 
     // Add no decorators and ensure no decorations have been cached.
