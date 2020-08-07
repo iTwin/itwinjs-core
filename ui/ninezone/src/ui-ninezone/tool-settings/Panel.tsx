@@ -37,7 +37,7 @@ export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps)
       offset={0}
       onClose={props.onClose}
       style={props.style}
-      showShadow={false}
+      showShadow={true}
       target={props.target}
     >
       {props.children}

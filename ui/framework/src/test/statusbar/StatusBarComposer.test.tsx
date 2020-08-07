@@ -415,7 +415,7 @@ describe("StatusBarComposer", () => {
       expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(3);
     });
 
-    it("will render 1 item with overflow", async () => {
+    it("will render 1 item with overflow - 4 in overflow panel", async () => {
       // tslint:disable-next-line: only-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
@@ -438,15 +438,16 @@ describe("StatusBarComposer", () => {
       ];
 
       const renderedComponent = render(<StatusBarComposer items={items} mainClassName="main-test" leftClassName="left-test" centerClassName="center-test" rightClassName="right-test" />);
-
       expect(renderedComponent).not.to.be.undefined;
+      // renderedComponent.debug();
       expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(1);
       const overflow = renderedComponent.container.querySelector(".uifw-statusbar-overflow") as HTMLDivElement;
       expect(overflow).not.to.be.null;
       fireEvent.click(overflow);
       await TestUtils.flushAsyncOperations();
       // renderedComponent.debug();
-      expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(5);
+      const containerInPortal = renderedComponent.getByTestId("uifw-statusbar-overflow-items-container");
+      expect(containerInPortal.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(4);
       fireEvent.click(overflow);
       await TestUtils.flushAsyncOperations();
       // renderedComponent.debug();

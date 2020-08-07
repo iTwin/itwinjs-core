@@ -9,7 +9,7 @@
 import "./Docked.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefs, useRefState, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
@@ -77,7 +77,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
   const handleOnClose = React.useCallback(() => {
     setOpen(false);
   }, []);
-  const [targetRef, target] = useRefState<HTMLDivElement>();
+  const targetRef = React.useRef<HTMLDivElement>(null);
   const refs = useRefs(ref, resizeObserverRef);
   const children = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
   const dockedChildren = children.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
@@ -121,28 +121,32 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
         );
       })}
       {(!overflown || overflown.length > 0) && (
-        <DockedToolSettingsOverflow
-          onClick={onOverflowClick}
-          onResize={handleOverflowResize}
-          ref={targetRef}
-        />
+        <>
+          <DockedToolSettingsOverflow
+            onClick={onOverflowClick}
+            onResize={handleOverflowResize}
+            ref={targetRef}
+          />
+          {overflownChildren.length > 0 && open && targetRef.current &&
+            <ToolSettingsOverflowPanel
+              onClose={handleOnClose}
+              open={true}
+              target={targetRef.current}
+            >
+              <PanelContainer>
+                {overflownChildren.map(([key, child]) => {
+                  return (
+                    <OverflowLabelAndEditor
+                      key={key}
+                      wrapper={child}
+                    />
+                  );
+                })}
+              </PanelContainer>
+            </ToolSettingsOverflowPanel>
+          }
+        </>
       )}
-      <ToolSettingsOverflowPanel
-        onClose={handleOnClose}
-        open={overflownChildren.length > 0 && open}
-        target={target}
-      >
-        <PanelContainer>
-          {overflownChildren.map(([key, child]) => {
-            return (
-              <OverflowLabelAndEditor
-                key={key}
-                wrapper={child}
-              />
-            );
-          })}
-        </PanelContainer>
-      </ToolSettingsOverflowPanel>
     </div>
   );
 }

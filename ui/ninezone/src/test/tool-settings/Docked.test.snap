@@ -197,7 +197,7 @@ exports[`DockedToolSettings should render overflown entries 1`] = `
 exports[`DockedToolSettings should render panel container 1`] = `
 <div
   aria-modal="true"
-  class="core-popup core-popup-bottom nz-toolSettings-panel"
+  class="core-popup core-popup-bottom core-popup-shadow nz-toolSettings-panel"
   data-testid="core-popup"
   role="dialog"
   style="top: 0px; left: 0px;"

@@ -9,7 +9,7 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { Ellipsis } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 
@@ -26,26 +26,31 @@ export interface StatusBarOverflowProps extends CommonProps {
 /** Entry point to overflow status bar items of [[StatusBarComposer]] component.
  * @internal
  */
-export const StatusBarOverflow = React.memo(function StatusBarOverflow(props: StatusBarOverflowProps) { // tslint:disable-line: variable-name no-shadowed-variable
-  const ref = useResizeObserver<HTMLDivElement>(props.onResize);
-  const className = classnames(
-    "uifw-statusbar-overflow",
-    props.className,
-  );
-  const title = React.useRef(UiFramework.translate("statusBar.overflow"));
+export const StatusBarOverflow = React.memo( // tslint:disable-line: variable-name
+  React.forwardRef<HTMLDivElement, StatusBarOverflowProps>(
+    function StatusBarOverflow(props, ref) {  // tslint:disable-line: no-shadowed-variable
+      const roRef = useResizeObserver<HTMLDivElement>(props.onResize);
+      const refs = useRefs(roRef, ref);
+      const className = classnames(
+        "uifw-statusbar-overflow",
+        props.className,
+      );
+      const title = React.useRef(UiFramework.translate("statusBar.overflow"));
 
-  return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
-    <div
-      className={className}
-      onClick={props.onClick}
-      ref={ref}
-      style={props.style}
-      role="button"
-      tabIndex={-1}
-      title={title.current}
-    >
-      <Ellipsis />
-    </div>
-  );
-});
+      return (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+        <div
+          className={className}
+          onClick={props.onClick}
+          ref={refs}
+          style={props.style}
+          role="button"
+          tabIndex={-1}
+          title={title.current}
+        >
+          <Ellipsis />
+        </div>
+      );
+    },
+  ),
+);
