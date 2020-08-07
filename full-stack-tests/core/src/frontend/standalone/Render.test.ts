@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
+  ColorDef, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
@@ -883,7 +883,7 @@ describe("Render mirukuru", () => {
 
       // Override System.createGraphicBranch to use an AppearanceProvider that always overrides color to red.
       const overrideColor = (color: ColorDef) => () => FeatureSymbology.Appearance.fromRgb(color);
-      const appearanceProvider: FeatureSymbology.AppearanceProvider = { getFeatureAppearance: overrideColor(ColorDef.red) };
+      const appearanceProvider: FeatureAppearanceProvider = { getFeatureAppearance: overrideColor(ColorDef.red) };
       const createGraphicBranch = IModelApp.renderSystem.createGraphicBranch;
       IModelApp.renderSystem.createGraphicBranch = (branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) => {
         options = options ?? { };

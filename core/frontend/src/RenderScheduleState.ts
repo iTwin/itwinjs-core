@@ -11,7 +11,7 @@ import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform,
   UnionOfConvexClipPlaneSets, Vector3d,
 } from "@bentley/geometry-core";
-import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
+import { FeatureAppearance, RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelApp } from "./IModelApp";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -314,9 +314,9 @@ export namespace RenderScheduleState {
       if (colorOverride || transparencyOverride) {
         if (0 === batchId) {
           for (const elementId of elementIds)
-            overrides.overrideElement(elementId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+            overrides.overrideElement(elementId, FeatureAppearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
         } else {
-          overrides.overrideAnimationNode(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+          overrides.overrideAnimationNode(batchId, FeatureAppearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
         }
       }
     }
@@ -397,7 +397,7 @@ export namespace RenderScheduleState {
 
       if (colorOverride || transparencyOverride) {
         console.log("Model Transparency: " + transparencyOverride);   // tslint:disable-line
-        overrides.overrideModel(this.modelId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+        overrides.overrideModel(this.modelId, FeatureAppearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
       }
 
       this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, entry.batchId, entry.elementIds));

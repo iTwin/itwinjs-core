@@ -75,9 +75,13 @@ import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
 import { ExtensionProps } from '@bentley/extension-client';
 import { Feature } from '@bentley/imodeljs-common';
+import { FeatureAppearance } from '@bentley/imodeljs-common';
+import { FeatureAppearanceProps } from '@bentley/imodeljs-common';
+import { FeatureAppearanceProvider } from '@bentley/imodeljs-common';
 import { FeatureIndex } from '@bentley/imodeljs-common';
 import { FeatureIndexType } from '@bentley/imodeljs-common';
 import { FeatureLogEntry } from '@bentley/usage-logging-client';
+import { FeatureOverrides } from '@bentley/imodeljs-common';
 import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
@@ -206,7 +210,6 @@ import { RenderTexture } from '@bentley/imodeljs-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RgbColor } from '@bentley/imodeljs-common';
-import { RgbColorProps } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
@@ -2467,13 +2470,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     clearNeverDrawnElements(vp: Viewport): boolean;
     clearOverriddenElements(vp: Viewport, key?: number): boolean;
     // @internal (undocumented)
-    protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance;
-    createDefaultAppearance(): FeatureSymbology.Appearance;
+    protected createAppearanceFromKey(key: number): FeatureAppearance;
+    createDefaultAppearance(): FeatureAppearance;
     createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
-    get defaultAppearance(): FeatureSymbology.Appearance | undefined;
-    set defaultAppearance(appearance: FeatureSymbology.Appearance | undefined);
-    emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean): boolean;
-    emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean, clearSelection?: boolean): boolean;
+    get defaultAppearance(): FeatureAppearance | undefined;
+    set defaultAppearance(appearance: FeatureAppearance | undefined);
+    emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean): boolean;
+    emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean, clearSelection?: boolean): boolean;
     fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean;
     static get(vp: Viewport): EmphasizeElements | undefined;
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
@@ -2515,7 +2518,7 @@ export interface EmphasizeElementsProps {
     // (undocumented)
     appearanceOverride?: AppearanceOverrideProps[];
     // (undocumented)
-    defaultAppearance?: FeatureSymbology.AppearanceProps;
+    defaultAppearance?: FeatureAppearanceProps;
     // (undocumented)
     isAlwaysDrawnExclusive?: boolean;
     // (undocumented)
@@ -2751,138 +2754,18 @@ export enum FeatureOverrideType {
 
 // @public
 export namespace FeatureSymbology {
-    export class Appearance implements AppearanceProps {
-        static readonly defaults: Appearance;
-        readonly emphasized?: true | undefined;
-        // (undocumented)
-        equals(other: Appearance): boolean;
-        extendAppearance(base: Appearance): Appearance;
-        // (undocumented)
-        static fromJSON(props?: AppearanceProps): Appearance;
-        static fromRgb(color: ColorDef): Appearance;
-        static fromRgba(color: ColorDef): Appearance;
-        static fromSubCategoryOverride(ovr: SubCategoryOverride): Appearance;
-        static fromTransparency(transparencyValue: number): Appearance;
-        readonly ignoresMaterial?: true | undefined;
-        // (undocumented)
-        get isFullyTransparent(): boolean;
-        readonly linePixels?: LinePixels;
-        readonly nonLocatable?: true | undefined;
-        // (undocumented)
-        get overridesLinePixels(): boolean;
-        // (undocumented)
-        get overridesRgb(): boolean;
-        // (undocumented)
-        get overridesSymbology(): boolean;
-        // (undocumented)
-        get overridesTransparency(): boolean;
-        // (undocumented)
-        get overridesWeight(): boolean;
-        readonly rgb?: RgbColor;
-        // (undocumented)
-        toJSON(): AppearanceProps;
-        readonly transparency?: number;
-        readonly weight?: number;
+    // @deprecated (undocumented)
+    export class Appearance extends FeatureAppearance {
     }
-    export interface AppearanceProps {
-        emphasized?: true | undefined;
-        ignoresMaterial?: true | undefined;
-        linePixels?: LinePixels;
-        nonLocatable?: true | undefined;
-        rgb?: RgbColorProps;
-        transparency?: number;
-        weight?: number;
+    // @deprecated (undocumented)
+    export interface AppearanceProps extends FeatureAppearanceProps {
     }
-    // @alpha
-    export interface AppearanceProvider {
-        getFeatureAppearance(overrides: Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
-    }
-    export class Overrides {
+    export class Overrides extends FeatureOverrides {
         constructor(view?: ViewState | Viewport);
-        // @internal (undocumented)
-        get alwaysDrawn(): Id64.Uint32Set;
-        // @internal
-        protected readonly _alwaysDrawn: Id64.Uint32Set;
-        // @beta
-        alwaysDrawnIgnoresSubCategory: boolean;
-        // @internal
-        readonly animationNodeOverrides: Map<number, Appearance>;
-        // @internal
-        protected _constructions: boolean;
-        get defaultOverrides(): Appearance;
-        // @internal
-        protected _defaultOverrides: Appearance;
-        // @internal
-        protected _dimensions: boolean;
-        // @internal
-        protected readonly _elementOverrides: Id64.Uint32Map<Appearance>;
-        // @alpha
-        getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
-        // @internal
-        protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): Appearance | undefined;
-        // @internal (undocumented)
-        protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): Appearance | undefined;
-        getElementOverridesById(id: Id64String): Appearance | undefined;
-        getFeatureAppearance(feature: Feature, modelId: Id64String, type?: BatchType): Appearance | undefined;
-        // @internal (undocumented)
-        protected getModelOverrides(idLo: number, idHi: number): Appearance | undefined;
-        getModelOverridesById(id: Id64String): Appearance | undefined;
-        // @internal (undocumented)
-        protected getSubCategoryOverrides(idLo: number, idHi: number): Appearance | undefined;
-        getSubCategoryOverridesById(id: Id64String): Appearance | undefined;
-        // @internal
-        getSubCategoryPriority(idLo: number, idHi: number): number;
-        // @internal
-        ignoreSubCategory: boolean;
         // @internal
         initFromView(view: ViewState): void;
         // @internal
         initFromViewport(viewport: Viewport): void;
-        // @internal (undocumented)
-        protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
-        isAlwaysDrawnExclusive: boolean;
-        // @internal (undocumented)
-        isClassVisible(geomClass: GeometryClass): boolean;
-        isFeatureVisible(feature: Feature): boolean;
-        // @internal (undocumented)
-        protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean;
-        isSubCategoryIdVisible(id: Id64String): boolean;
-        // @internal
-        isSubCategoryVisible(idLo: number, idHi: number): boolean;
-        // @internal (undocumented)
-        isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean;
-        get lineWeights(): boolean;
-        // @internal
-        protected _lineWeights: boolean;
-        // @internal
-        protected readonly _modelOverrides: Id64.Uint32Map<Appearance>;
-        // @internal
-        protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
-        // @internal (undocumented)
-        get neverDrawn(): Id64.Uint32Set;
-        // @internal
-        protected readonly _neverDrawn: Id64.Uint32Set;
-        // @internal
-        readonly neverDrawnAnimationNodes: Set<number>;
-        overrideAnimationNode(id: number, app: Appearance): void;
-        overrideElement(id: Id64String, app: Appearance, replaceExisting?: boolean): void;
-        overrideModel(id: Id64String, app: Appearance, replaceExisting?: boolean): void;
-        overrideSubCategory(id: Id64String, app: Appearance, replaceExisting?: boolean): void;
-        // @internal
-        protected _patterns: boolean;
-        setAlwaysDrawn(id: Id64String): void;
-        setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory?: boolean): void;
-        setAnimationNodeNeverDrawn(id: number): void;
-        setDefaultOverrides(appearance: Appearance, replaceExisting?: boolean): void;
-        setNeverDrawn(id: Id64String): void;
-        setNeverDrawnSet(ids: Id64Set): void;
-        setVisibleSubCategory(id: Id64String): void;
-        // @internal
-        protected readonly _subCategoryOverrides: Id64.Uint32Map<Appearance>;
-        // @internal
-        protected readonly _subCategoryPriorities: Id64.Uint32Map<number>;
-        // @internal
-        protected readonly _visibleSubCategories: Id64.Uint32Set;
         }
 }
 
@@ -3417,7 +3300,7 @@ export interface GraphicBranchFrustum {
 // @internal
 export interface GraphicBranchOptions {
     // (undocumented)
-    appearanceProvider?: FeatureSymbology.AppearanceProvider;
+    appearanceProvider?: FeatureAppearanceProvider;
     // (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     // (undocumented)

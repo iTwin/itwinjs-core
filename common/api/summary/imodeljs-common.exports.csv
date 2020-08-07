@@ -22,7 +22,7 @@ public;BackgroundMapSettings
 public;BackgroundMapType
 alpha;BaseLayerProps = MapLayerProps | ColorDefProps
 alpha;BaseLayerSettings = MapLayerSettings | ColorDef
-beta;BatchType
+public;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
 public;BentleyCloudRpcParams
@@ -132,9 +132,13 @@ public;EnvironmentProps
 internal;Events
 public;ExternalSourceAspectProps 
 public;Feature
+public;FeatureAppearance 
+public;FeatureAppearanceProps
+beta;FeatureAppearanceProvider
 internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
+public;FeatureOverrides
 beta;FeatureTable 
 internal;FeatureTableHeader
 public;FilePropertyProps

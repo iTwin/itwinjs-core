@@ -20,6 +20,7 @@ export * from "./ElementProps";
 export * from "./EntityProps";
 export * from "./FeatureGates";
 export * from "./FeatureIndex";
+export * from "./FeatureSymbology";
 export * from "./FeatureTable";
 export * from "./Fonts";
 export * from "./Frustum";

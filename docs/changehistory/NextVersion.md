@@ -3,7 +3,7 @@ publish: false
 ---
 # NextVersion
 
-## Cached Decorations
+## Cached decorations
 
 A [Decorator]($frontend)'s `decorate` method is invoked to create new [Decorations]($frontend) whenever a viewport's decorations are invalidated. Decorations are invalidated quite frequently - for example, every time the view frustum or scene changes, and even on every mouse motion. Most decorators' decorations only actually change when the scene changes. Having to regenerate them every time the mouse moves is quite wasteful and - for all but the most trivial decorations - can negatively impact framerate. Here's an example of a decorator that draws some complicated shape in a specified color:
 
@@ -53,6 +53,14 @@ class FancyDecorator {
 ```
 
 [ViewManager.invalidateCachedDecorationsAllViews]($frontend) (and [Viewport.invalidateCachedDecorations]($frontend)) give the decorator much tighter control over when its decorations are regenerated, potentially resulting in significantly improved performance.
+
+## FeatureSymbology namespace
+
+Types related to overriding feature symbology - previously defined in `imodeljs-frontend`'s [FeatureSymbology]($frontend) namespace - are now also available in the `imodeljs-common` package.
+
+- [FeatureSymbology.Appearance]($frontend) and [FeatureSymbology.AppearanceProps]($frontend) are now deprecated in favor of [FeatureAppearance]($common) and [FeatureAppearanceProps]($common).
+- [FeatureAppearanceProvider]($common) replaces the `beta` `FeatureSymbology.AppearanceProvider` interface.
+- [FeatureOverrides]($common) now serves as a base class for [FeatureSymbology.Overrides]($frontend). Only the latter can be constructed from a [Viewport]($frontend) or [ViewState]($frontend).
 
 ## ui-components
 

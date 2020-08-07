@@ -8,7 +8,7 @@
 
 import { dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { BatchType, GeometryClass, HiddenLine, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { ViewClipSettings } from "../ViewClipSettings";
@@ -40,7 +40,7 @@ export interface BranchStateOptions {
    */
   is3d: boolean;
   frustumScale?: { x: number; y: number; };
-  readonly appearanceProvider?: FeatureSymbology.AppearanceProvider;
+  readonly appearanceProvider?: FeatureAppearanceProvider;
 }
 
 /**
@@ -112,7 +112,7 @@ export class BranchState {
     return new BranchState({ viewFlags, transform, symbologyOverrides, clipVolume, planarClassifier, textureDrape, edgeSettings, iModel, is3d, frustumScale, appearanceProvider });
   }
 
-  public getFeatureAppearance(overrides: FeatureSymbology.Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureSymbology.Appearance | undefined {
+  public getFeatureAppearance(overrides: FeatureSymbology.Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
     if (this._opts.appearanceProvider)
       return this._opts.appearanceProvider.getFeatureAppearance(overrides, elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
 

@@ -72,7 +72,7 @@ export interface PackedFeature {
 /** Describes the type of a 'batch' of graphics representing multiple [[Feature]]s.
  * The most commonly-encountered batches are Tiles, which can be of either Primary or
  * Classifier type.
- * @beta
+ * @public
  */
 export enum BatchType {
   /** This batch contains graphics derived from a model's visible geometry. */

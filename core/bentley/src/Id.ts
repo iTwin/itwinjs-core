@@ -254,7 +254,9 @@ export namespace Id64 {
     return String.fromCharCode(..._scratchCharCodes);
   }
 
-  /** @internal */
+  /** Returns true if the inputs represent two halves of a valid 64-bit Id.
+   * @see [[Id64.Uint32Pair]].
+   */
   export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean {
     // Detect local ID of zero
     return 0 !== lowBytes || 0 !== (highBytes & 0x000000ff);
@@ -262,6 +264,7 @@ export namespace Id64 {
 
   /** Represents an unsigned 64-bit integer as a pair of unsigned 32-bit integers.
    * @see [[Id64.getUint32Pair]]
+   * @see [[Id64.isValidUint32Pair]]
    */
   export interface Uint32Pair {
     /** The lower 4 bytes of the 64-bit integer. */

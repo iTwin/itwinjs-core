@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Move types from FeatureSymbology namespace from imodeljs-frontend to imodeljs-common.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Paul.Connelly@bentley.com"
+}

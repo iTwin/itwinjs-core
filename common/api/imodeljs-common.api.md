@@ -28,6 +28,7 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64 } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
+import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelClient } from '@bentley/imodelhub-client';
@@ -388,7 +389,7 @@ export type BaseLayerProps = MapLayerProps | ColorDefProps;
 // @alpha
 export type BaseLayerSettings = MapLayerSettings | ColorDef;
 
-// @beta
+// @public
 export enum BatchType {
     PlanarClassifier = 2,
     Primary = 0,
@@ -2055,6 +2056,65 @@ export class Feature {
     readonly subCategoryId: string;
 }
 
+// @public
+export class FeatureAppearance implements FeatureAppearanceProps {
+    protected constructor(props: FeatureAppearanceProps);
+    static readonly defaults: FeatureAppearance;
+    // (undocumented)
+    readonly emphasized?: true | undefined;
+    // (undocumented)
+    equals(other: FeatureAppearance): boolean;
+    extendAppearance(base: FeatureAppearance): FeatureAppearance;
+    // (undocumented)
+    static fromJSON(props?: FeatureAppearanceProps): FeatureAppearance;
+    static fromRgb(color: ColorDef): FeatureAppearance;
+    static fromRgba(color: ColorDef): FeatureAppearance;
+    static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
+    static fromTransparency(transparencyValue: number): FeatureAppearance;
+    // (undocumented)
+    readonly ignoresMaterial?: true | undefined;
+    // (undocumented)
+    get isFullyTransparent(): boolean;
+    // (undocumented)
+    readonly linePixels?: LinePixels;
+    // (undocumented)
+    readonly nonLocatable?: true | undefined;
+    // (undocumented)
+    get overridesLinePixels(): boolean;
+    // (undocumented)
+    get overridesRgb(): boolean;
+    // (undocumented)
+    get overridesSymbology(): boolean;
+    // (undocumented)
+    get overridesTransparency(): boolean;
+    // (undocumented)
+    get overridesWeight(): boolean;
+    // (undocumented)
+    readonly rgb?: RgbColor;
+    // (undocumented)
+    toJSON(): FeatureAppearanceProps;
+    // (undocumented)
+    readonly transparency?: number;
+    // (undocumented)
+    readonly weight?: number;
+}
+
+// @public
+export interface FeatureAppearanceProps {
+    emphasized?: true | undefined;
+    ignoresMaterial?: true | undefined;
+    linePixels?: LinePixels;
+    nonLocatable?: true | undefined;
+    rgb?: RgbColorProps;
+    transparency?: number;
+    weight?: number;
+}
+
+// @beta
+export interface FeatureAppearanceProvider {
+    getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+}
+
 // @internal
 export class FeatureGates {
     addMonitor(feature: string, monitor: (val: GateValue) => void): () => void;
@@ -2090,6 +2150,91 @@ export enum FeatureIndexType {
     // (undocumented)
     Uniform = 1
 }
+
+// @public
+export class FeatureOverrides {
+    constructor();
+    // @internal (undocumented)
+    get alwaysDrawn(): Id64.Uint32Set;
+    // @internal
+    protected readonly _alwaysDrawn: Id64.Uint32Set;
+    // @beta
+    alwaysDrawnIgnoresSubCategory: boolean;
+    // @internal
+    readonly animationNodeOverrides: Map<number, FeatureAppearance>;
+    // @internal
+    protected _constructions: boolean;
+    get defaultOverrides(): FeatureAppearance;
+    // @internal
+    protected _defaultOverrides: FeatureAppearance;
+    // @internal
+    protected _dimensions: boolean;
+    // @internal
+    protected readonly _elementOverrides: Id64.Uint32Map<FeatureAppearance>;
+    // @alpha
+    getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+    // @internal
+    protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): FeatureAppearance | undefined;
+    // @internal (undocumented)
+    protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined;
+    getElementOverridesById(id: Id64String): FeatureAppearance | undefined;
+    getFeatureAppearance(feature: Feature, modelId: Id64String, type?: BatchType): FeatureAppearance | undefined;
+    // @internal (undocumented)
+    protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined;
+    getModelOverridesById(id: Id64String): FeatureAppearance | undefined;
+    // @internal (undocumented)
+    protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined;
+    getSubCategoryOverridesById(id: Id64String): FeatureAppearance | undefined;
+    // @internal
+    getSubCategoryPriority(idLo: number, idHi: number): number;
+    // @internal
+    ignoreSubCategory: boolean;
+    // @internal (undocumented)
+    protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
+    isAlwaysDrawnExclusive: boolean;
+    // @internal (undocumented)
+    isClassVisible(geomClass: GeometryClass): boolean;
+    isFeatureVisible(feature: Feature): boolean;
+    // @internal (undocumented)
+    protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean;
+    isSubCategoryIdVisible(id: Id64String): boolean;
+    // @internal
+    isSubCategoryVisible(idLo: number, idHi: number): boolean;
+    // @internal (undocumented)
+    isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean;
+    get lineWeights(): boolean;
+    // @internal
+    protected _lineWeights: boolean;
+    // @internal
+    protected readonly _modelOverrides: Id64.Uint32Map<FeatureAppearance>;
+    // @internal
+    protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
+    // @internal (undocumented)
+    get neverDrawn(): Id64.Uint32Set;
+    // @internal
+    protected readonly _neverDrawn: Id64.Uint32Set;
+    // @internal
+    readonly neverDrawnAnimationNodes: Set<number>;
+    overrideAnimationNode(id: number, app: FeatureAppearance): void;
+    overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @internal
+    protected _patterns: boolean;
+    setAlwaysDrawn(id: Id64String): void;
+    setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory?: boolean): void;
+    setAnimationNodeNeverDrawn(id: number): void;
+    setDefaultOverrides(appearance: FeatureAppearance, replaceExisting?: boolean): void;
+    setNeverDrawn(id: Id64String): void;
+    setNeverDrawnSet(ids: Id64Set): void;
+    setVisibleSubCategory(id: Id64String): void;
+    // @internal
+    protected readonly _subCategoryOverrides: Id64.Uint32Map<FeatureAppearance>;
+    // @internal
+    protected readonly _subCategoryPriorities: Id64.Uint32Map<number>;
+    // @internal
+    protected readonly _visibleSubCategories: Id64.Uint32Set;
+    }
 
 // @beta
 export class FeatureTable extends IndexMap<Feature> {
