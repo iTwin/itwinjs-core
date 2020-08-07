@@ -26,18 +26,21 @@ export class EnvironmentEditor {
   private readonly _eeSkyExponent: Slider;
   private readonly _eeGroundExponent: Slider;
   private readonly _eeBackgroundColor: ColorInput;
+  private _id = 0;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
 
-    const nestedMenu = createNestedMenu({
+    const envMenu = createNestedMenu({
       id: "ee_menu",
       label: "Environment",
       parent,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
       expand: expandEnvironmentEditor,
-      handler: (expanded) => expandEnvironmentEditor = expanded,
-    }).body;
+      handler: (expanded) => { expandEnvironmentEditor = expanded; envMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
+    });
+    (envMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
+    const nestedMenu = envMenu.body;
     const is3d = this._vp.view.is3d();
 
     const lightingDiv = document.createElement("div");
@@ -207,10 +210,14 @@ export class EnvironmentEditor {
       }
 
       showSkyboxControls(skyboxEnabled);
-      this.updateEnvironmentEditorUI(view);
+      envMenu.label.style.fontWeight = expandEnvironmentEditor ? "bold" : "500";
     });
 
     this.addEnvAttribute(nestedMenu, "Ground Plane", "ground");
+
+    const hr = document.createElement("hr");
+    hr.style.borderColor = "grey";
+    nestedMenu.appendChild(hr);
   }
 
   public update(view: ViewState): void {
@@ -275,7 +282,7 @@ export class EnvironmentEditor {
       if (undefined !== updateHandler)
         updateHandler(enabled);
       this.sync();
-    }, parent, "ee_checkbox");
+    }, parent, this._nextId);
 
     const update = (view: ViewState) => {
       const visible = view.is3d();
@@ -301,5 +308,9 @@ export class EnvironmentEditor {
       id,
       handler: (cb) => handler(cb.checked),
     });
+  }
+
+  private get _nextId(): string {
+    return "ee_checkbox_" + ++this._id;
   }
 }

@@ -27,7 +27,6 @@ export class AmbientOcclusionEditor {
     const isAOEnabled = (view: ViewState) => view.viewFlags.ambientOcclusion;
 
     const div = document.createElement("div");
-    div.appendChild(document.createElement("hr")!);
 
     const slidersDiv = document.createElement("div")!;
 
@@ -44,12 +43,14 @@ export class AmbientOcclusionEditor {
       this.sync();
     };
 
-    const checkbox = createCheckBox({
+    const checkboxInterface = createCheckBox({
       parent: div,
       handler: (cb) => enableAO(cb.checked),
       name: "Ambient Occlusion",
       id: "cbx_AO",
-    }).checkbox;
+    });
+    const checkbox = checkboxInterface.checkbox;
+    const checkboxLabel = checkboxInterface.label;
 
     this._aoBias = createSlider({
       parent: slidersDiv,
@@ -170,12 +171,17 @@ export class AmbientOcclusionEditor {
         return;
 
       checkbox.checked = isAOEnabled(view);
+      checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showHideDropDowns(checkbox.checked);
 
       this.updateAmbientOcclusionUI(view);
     };
 
     div.appendChild(slidersDiv);
+
+    const hr = document.createElement("hr");
+    hr.style.borderColor = "grey";
+    div.appendChild(hr);
 
     parent.appendChild(div);
   }
