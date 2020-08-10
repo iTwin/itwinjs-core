@@ -12,7 +12,6 @@ import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOp
 import { IModelProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOptions, RequestBriefcaseProps } from "../BriefcaseTypes";
 
 /**
  * Type of value for storage values
