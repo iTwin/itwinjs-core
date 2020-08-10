@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { Feature, GeometryClass } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Viewport, ViewRect } from "@bentley/imodeljs-frontend";
+import { ColorDef, Feature, GeometryClass } from "@bentley/imodeljs-common";
+import {
+  IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
+} from "@bentley/imodeljs-frontend";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   if (undefined === lhs && undefined === rhs)
@@ -86,6 +88,11 @@ export class Color {
   public compare(rhs: Color): number {
     return this.v - rhs.v;
   }
+
+  public equalsColorDef(def: ColorDef): boolean {
+    const colors = def.colors;
+    return colors.r === this.r && colors.g === this.g && colors.b === this.b && colors.t === 0xff - this.a;
+  }
 }
 
 export class ColorSet extends SortedArray<Color> {
@@ -115,6 +122,12 @@ function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocata
   return set;
 }
 
+function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
+  const pixels = readUniquePixelData(vp, new ViewRect(x, y, x + 1, y + 1), excludeNonLocatable);
+  expect(pixels.length).to.equal(1);
+  return pixels.array[0];
+}
+
 // Read colors for each pixel; return the unique ones.
 function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
@@ -134,8 +147,33 @@ function readColor(vp: Viewport, x: number, y: number): Color {
   return colors.array[0];
 }
 
+function areAllChildTilesLoaded(parent?: Tile): boolean {
+  if (!parent)
+    return true;
+  else if (TileTreeLoadStatus.Loading === (parent as any)._childrenLoadStatus)
+    return false;
+
+  const kids = parent.children;
+  if (!kids)
+    return true;
+
+  for (const kid of kids)
+    if (!areAllChildTilesLoaded(kid))
+      return false;
+
+  return true;
+}
+
 function areAllTilesLoaded(vp: Viewport): boolean {
-  return vp.view.areAllTileTreesLoaded && vp.numRequestedTiles === 0;
+  if (vp.numRequestedTiles > 0)
+    return false;
+
+  let allLoaded = true;
+  vp.view.forEachTileTreeRef((ref) => {
+    allLoaded = allLoaded && ref.isLoadingComplete && areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
+  });
+
+  return allLoaded;
 }
 
 // Utility functions added to Viewport by TestViewport.
@@ -150,6 +188,8 @@ export interface TestableViewport {
   readUniqueColors(readRect?: ViewRect): ColorSet;
   // Return the color of the pixel at (x, y).
   readColor(x: number, y: number): Color;
+  // Return the pixel at (x, y).
+  readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data;
   // True if all tiles appropriate for rendering the current view have been loaded.
   areAllTilesLoaded: boolean;
 }
@@ -158,6 +198,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
   public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
   public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
   public readColor(x: number, y: number): Color { return readColor(this, x, y); }
+  public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data { return readPixel(this, x, y, excludeNonLocatable); }
   public get areAllTilesLoaded(): boolean { return areAllTilesLoaded(this); }
 
   public async waitForAllTilesToRender(): Promise<void> {
@@ -198,6 +239,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
   public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
   public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
   public readColor(x: number, y: number): Color { return readColor(this, x, y); }
+  public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data { return readPixel(this, x, y, excludeNonLocatable); }
   public get areAllTilesLoaded(): boolean { return areAllTilesLoaded(this); }
 
   private async waitForRenderFrame(): Promise<void> {

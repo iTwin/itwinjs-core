@@ -385,9 +385,6 @@ const checkForEarlySurfaceDiscard = `
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
 
-  if (kRenderOrder_Background == u_renderOrder && depthAndOrder.x > 0.0)
-    return true;
-
   float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
   term += float(depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5);
   return factor * term > 0.0;
@@ -395,15 +392,11 @@ const checkForEarlySurfaceDiscard = `
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
   // No normals => unlt => reality model => no edges.
-  bool isBackgroundMap = kRenderOrder_Background == u_renderOrder;
-  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || (!isBackgroundMap && !u_surfaceFlags[kSurfaceBitIndex_HasNormals]))
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || !u_surfaceFlags[kSurfaceBitIndex_HasNormals])
     return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
-
-  if (isBackgroundMap && depthAndOrder.x > 0.0)
-    return true;
 
   if (depthAndOrder.x <= u_renderOrder)
     return false;
