@@ -282,9 +282,10 @@ export class PresentationManager {
 
   // tslint:disable-next-line: naming-convention
   private onIModelOpened = (requestContext: ClientRequestContext, imodel: BriefcaseDb) => {
+    requestContext.enter();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     // tslint:disable-next-line:no-floating-promises
-    this.getNativePlatform().forceLoadSchemas(requestContext, imodelAddon);
+    this.getNativePlatform().forceLoadSchemas(imodelAddon);
   }
 
   /** @internal */
@@ -749,7 +750,7 @@ export class PresentationManager {
         ...strippedParams,
       },
     };
-    const serializedResponse = await this.getNativePlatform().handleRequest(requestContext, imodelAddon, JSON.stringify(nativeRequestParams));
+    const serializedResponse = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
     requestContext.enter();
     if (!serializedResponse)
       throw new PresentationError(PresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
@@ -772,26 +773,26 @@ export class PresentationManager {
     if (!requestContextOrOptions.prev.rulesetOrId && !requestContextOrOptions.prev.rulesetVariables)
       return [];
 
-    const { strippedOptions: { imodel, requestContext, ...options } } = this.registerRuleset(requestContextOrOptions);
+    const { strippedOptions: { prev, rulesetVariables, ...options } } = this.registerRuleset(requestContextOrOptions);
 
     const currRulesetId = this.getRulesetIdObject(requestContextOrOptions.rulesetOrId);
-    const prevRulesetId = options.prev.rulesetOrId ? this.getRulesetIdObject(options.prev.rulesetOrId) : currRulesetId;
+    const prevRulesetId = prev.rulesetOrId ? this.getRulesetIdObject(prev.rulesetOrId) : currRulesetId;
     if (prevRulesetId.parts.id !== currRulesetId.parts.id)
       throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
 
-    const currRulesetVariables = options.rulesetVariables ?? [];
-    const prevRulesetVariables = options.prev.rulesetVariables ?? currRulesetVariables;
+    const currRulesetVariables = rulesetVariables ?? [];
+    const prevRulesetVariables = prev.rulesetVariables ?? currRulesetVariables;
 
-    const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const modificationJsons = await this.getNativePlatform().compareHierarchies(requestContext, imodelAddon, {
+    const params = {
+      requestId: NativePlatformRequestTypes.CompareHierarchies,
+      ...options,
       prevRulesetId: prevRulesetId.uniqueId,
       currRulesetId: currRulesetId.uniqueId,
       prevRulesetVariables: JSON.stringify(prevRulesetVariables),
       currRulesetVariables: JSON.stringify(currRulesetVariables),
       expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
-      locale: normalizeLocale(options.locale ?? this.activeLocale) ?? "",
-    });
-    return modificationJsons.map(PartialHierarchyModification.fromJSON);
+    };
+    return this.request(params, (key: string, value: any) => ((key === "") ? value.map(PartialHierarchyModification.fromJSON) : value));
   }
 }
 

@@ -2000,8 +2000,19 @@ export class BriefcaseDb extends IModelDb {
   public get eventSink(): EventSink | undefined { return this._eventSink; }
   private _eventSink?: EventSink;
 
-  private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
-  private initializeEventSink() { if (this._fileKey !== "") { this._eventSink = EventSinkManager.get(this._fileKey); } }
+  private clearEventSink() {
+    if (this._eventSink) {
+      EventSinkManager.delete(this._eventSink.id);
+      this._eventSink = undefined;
+    }
+  }
+
+  private initializeEventSink() {
+    if (this._fileKey !== "") {
+      this._eventSink = EventSinkManager.get(this._fileKey);
+      this.nativeDb.setEventSink(this._eventSink);
+    }
+  }
 
   private constructor(briefcaseEntry: BriefcaseEntry) {
     super(briefcaseEntry.nativeDb, briefcaseEntry.getIModelRpcProps(), briefcaseEntry.openMode);
@@ -2190,8 +2201,8 @@ export class BriefcaseDb extends IModelDb {
     } catch (error) {
       throw error;
     } finally {
-      this.clearBriefcaseEntry();
       this.clearEventSink();
+      this.clearBriefcaseEntry();
     }
   }
 

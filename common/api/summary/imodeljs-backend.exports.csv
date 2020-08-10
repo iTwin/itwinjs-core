@@ -114,8 +114,6 @@ public;ElementRefersToElements
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
-internal;EmitOptions
-internal;EmitStrategy
 public;Entity 
 internal;EventSink
 internal;EventSinkManager
