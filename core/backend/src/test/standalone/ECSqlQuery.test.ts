@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { DbResult, Id64 } from "@bentley/bentleyjs-core";
 import { IModelDb, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -52,6 +52,41 @@ describe("ECSql Query", () => {
 
     rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
+  });
+
+  it("Restart query", async () => {
+    let cancelled = 0;
+    let successful = 0;
+    let rowCount = 0;
+    const cb = async () => {
+      return new Promise(async (resolve, reject) => {
+        try {
+          for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element")) {
+            rowCount++;
+          }
+          successful++;
+          resolve();
+        } catch (err) {
+          // we expect query to be cancelled
+          if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
+            cancelled++;
+            resolve();
+          } else {
+            reject();
+          }
+        }
+      });
+    };
+
+    const queries = [];
+    for (let i = 0; i < 20; i++) {
+      queries.push(cb());
+    }
+    await Promise.all(queries);
+    // We expect at least one query to be cancelled
+    assert.isAtLeast(cancelled, 1);
+    assert.isAtLeast(successful, 1);
+    assert.isAtLeast(rowCount, 1);
   });
 
   it("Paging Results", async () => {

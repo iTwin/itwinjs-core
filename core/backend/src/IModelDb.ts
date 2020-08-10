@@ -134,6 +134,7 @@ export abstract class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
+  protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
 
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
@@ -158,6 +159,15 @@ export abstract class IModelDb extends IModel {
     this._nativeDb = nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
+  }
+  /**
+   * Called by derived classes before closing the connection
+   * @internal
+   */
+  protected beforeClose() {
+    this.clearSqliteStatementCache();
+    this.clearStatementCache();
+    this._concurrentQueryStats.dispose();
   }
 
   /** @internal */
@@ -297,13 +307,62 @@ export abstract class IModelDb extends IModel {
    * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
    * @param priority Specify non binding priority for the query. It can help user to adjust
    * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @param restartToken when provide cancel the previous query with same token in same session.
    * @returns Returns structure containing rows and status.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @internal
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
+  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
+    const stats = this._concurrentQueryStats;
+    const config = IModelHost.configuration!.concurrentQuery!;
+    stats.lastActivityTime = Date.now();
     if (!this._concurrentQueryInitialized) {
-      this._concurrentQueryInitialized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQuery);
+      // Initialize concurrent query and setup statistics reset timer
+      this._concurrentQueryInitialized = this.nativeDb.concurrentQueryInit(config);
+      stats.dispose = () => {
+        if (stats.logTimerHandle) {
+          clearInterval(stats.logTimerHandle);
+          stats.logTimerHandle = null;
+        }
+        if (stats.resetTimerHandle) {
+          clearInterval(stats.resetTimerHandle);
+          stats.resetTimerHandle = null;
+        }
+      };
+      // Concurrent query will reset and log statistics every 'resetStatisticsInterval'
+      const resetIntervalMs = 1000 * 60 * Math.max(config.resetStatisticsInterval ? config.resetStatisticsInterval : 60, 10);
+      stats.resetTimerHandle = setInterval(() => {
+        if (this.isOpen && this._concurrentQueryInitialized) {
+          try {
+            const timeElapsedSinceLastActivity = Date.now() - stats.lastActivityTime;
+            if (timeElapsedSinceLastActivity < resetIntervalMs) {
+              const statistics = JSON.parse(this.nativeDb.captureConcurrentQueryStats(true));
+              Logger.logInfo(loggerCategory, "Resetting concurrent query statistics", () => statistics);
+            }
+          } catch { }
+        } else {
+          clearInterval(stats.resetTimerHandle);
+          stats.resetTimerHandle = null;
+        }
+      }, resetIntervalMs);
+      (stats.resetTimerHandle as NodeJS.Timeout).unref();
+      // Concurrent query will log statistics every 'logStatisticsInterval'
+      const logIntervalMs = 1000 * 60 * Math.max(config.logStatisticsInterval ? config.logStatisticsInterval : 5, 5);
+      stats.logTimerHandle = setInterval(() => {
+        if (this.isOpen && this._concurrentQueryInitialized) {
+          try {
+            const timeElapsedSinceLastActivity = Date.now() - stats.lastActivityTime;
+            if (timeElapsedSinceLastActivity < logIntervalMs) {
+              const statistics = JSON.parse(this.nativeDb.captureConcurrentQueryStats(false));
+              Logger.logInfo(loggerCategory, "Concurrent query statistics", () => statistics);
+            }
+          } catch { }
+        } else {
+          clearInterval(stats.logTimerHandle);
+          stats.logTimerHandle = null;
+        }
+      }, logIntervalMs);
+      (stats.logTimerHandle as NodeJS.Timeout).unref();
     }
     if (!bindings) bindings = [];
     if (!limit) limit = {};
@@ -333,30 +392,39 @@ export abstract class IModelDb extends IModel {
       if (!this.isOpen) {
         resolve({ status: QueryResponseStatus.Done, rows: [] });
       } else {
-        const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
-        if (postrc.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
+        let sessionRestartToken = restartToken ? restartToken.trim() : "";
+        if (sessionRestartToken !== "")
+          sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
+
+        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken);
+        if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
           resolve({ status: QueryResponseStatus.PostError, rows: [] });
+
         const poll = () => {
-          if (!this.isOpen) {
+          if (!this.nativeDb || !this.nativeDb.isOpen()) {
             resolve({ status: QueryResponseStatus.Done, rows: [] });
           } else {
-            const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
-            if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Done)
-              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
-            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial)
-              resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
-            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
+            const pollResult = this.nativeDb.pollConcurrentQuery(postResult.taskId);
+            if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Done) {
+              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, reviver) });
+            } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial) {
+              const returnBeforeStep = pollResult.result.length === 0;
+              resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, reviver) });
+            } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
               resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
-              setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+            else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
+              setTimeout(() => { poll(); }, config.pollInterval);
+            else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Cancelled)
+              resolve({ status: QueryResponseStatus.Cancelled, rows: [pollResult.result] });
             else
-              resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
+              resolve({ status: QueryResponseStatus.Error, rows: [pollResult.result] });
           }
         };
-        setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+        setTimeout(() => { poll(); }, config.pollInterval);
       }
     });
   }
+
   /** Execute a query and stream its results
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
@@ -391,6 +459,61 @@ export abstract class IModelDb extends IModel {
       }
 
       if (result.status === QueryResponseStatus.Error) {
+        if (result.rows[0] === undefined) {
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
+        } else {
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
+        }
+      }
+
+      if (rowsToGet > 0) {
+        rowsToGet -= result.rows.length;
+      }
+      offset += result.rows.length;
+
+      for (const row of result.rows)
+        yield row;
+
+    } while (result.status !== QueryResponseStatus.Done);
+  }
+
+  /** Execute a query and stream its results
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
+   * exception which user code must handle.
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrained by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [[IModelError]] If there was any error while submitting, preparing or stepping into query
+   */
+  public async * restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+    let result: QueryResponse;
+    let offset: number = 0;
+    let rowsToGet = limitRows ? limitRows : -1;
+    do {
+      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
+      while (result.status === QueryResponseStatus.Timeout) {
+        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
+      }
+      if (result.status === QueryResponseStatus.Cancelled) {
+        throw new IModelError(DbResult.BE_SQLITE_INTERRUPT, `Query cancelled`);
+      } else if (result.status === QueryResponseStatus.Error) {
         if (result.rows[0] === undefined) {
           throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
         } else {
@@ -2195,6 +2318,7 @@ export class BriefcaseDb extends IModelDb {
    */
   public close() {
     try {
+      this.beforeClose();
       if (this.isPushEnabled)
         this.concurrencyControl.onClose();
       BriefcaseManager.close(this.briefcase);
@@ -2496,8 +2620,7 @@ export class SnapshotDb extends IModelDb {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views", Logger.logError, loggerCategory);
       }
     }
-    this.clearStatementCache(); // clear cache held in JavaScript
-    this.clearSqliteStatementCache(); // clear cache held in JavaScript
+    this.beforeClose();
     SnapshotDb._openDbs.delete(this.filePath);
     this.nativeDb.closeIModel();
     (this as any)._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
@@ -2597,8 +2720,7 @@ export class StandaloneDb extends IModelDb {
     if (!this.isOpen) {
       return; // don't continue if already closed
     }
-    this.clearStatementCache(); // clear cache held in JavaScript
-    this.clearSqliteStatementCache(); // clear cache held in JavaScript
+    this.beforeClose();
     StandaloneDb._openDbs.delete(this.filePath);
     this.nativeDb.closeIModel();
     (this as any)._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel

@@ -10,7 +10,6 @@ export class KnownTestLocations {
 
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */
   public static get assetsDir(): string {
-    // Assume that we are running in nodejs
     return path.join(__dirname, "assets");
   }
 
@@ -23,5 +22,4 @@ export class KnownTestLocations {
     // Assume that we are running in nodejs
     return path.join(__dirname, "output");
   }
-
 }

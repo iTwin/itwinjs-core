@@ -28,4 +28,8 @@ export interface Config {
   useSharedCache?: boolean;
   /** Read uncommitted read for better performance */
   useUncommittedRead?: boolean;
+  /** Reset statistics after query manager is not used for following amount of time in minutes. Cannot be less then 10 minutes */
+  resetStatisticsInterval?: number;
+  /** Log statistics interval in minutes. Cannot be less then 5 minutes */
+  logStatisticsInterval?: number;
 }
