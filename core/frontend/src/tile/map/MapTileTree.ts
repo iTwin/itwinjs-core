@@ -386,16 +386,19 @@ class MapTreeSupplier implements TileTreeSupplier {
             if (0 === cmp) {
               cmp = compareBooleans(lhs.baseTransparent, rhs.baseTransparent);
               if (0 === cmp) {
-                cmp = compareBooleans(lhs.applyTerrain, rhs.applyTerrain);
+                cmp = compareBooleans(lhs.mapTransparent, rhs.mapTransparent);
                 if (0 === cmp) {
-                  if (lhs.applyTerrain) {
-                    cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
-                    if (0 === cmp) {
-                      cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
+                  cmp = compareBooleans(lhs.applyTerrain, rhs.applyTerrain);
+                  if (0 === cmp) {
+                    if (lhs.applyTerrain) {
+                      cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
                       if (0 === cmp) {
-                        cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
-                        if (0 === cmp)
-                          cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
+                        cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
+                        if (0 === cmp) {
+                          cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
+                          if (0 === cmp)
+                            cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
+                        }
                       }
                     }
                   } else {
@@ -545,7 +548,7 @@ export class MapTileTreeReference extends TileTreeReference {
     this.clearLayers();
   }
 
-  private clearLayers() {
+  public clearLayers() {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (undefined !== tree)
       tree.clearLayers();

@@ -97,3 +97,14 @@ export interface SerializedClientRequestContext {
   authorization?: string;
   userId?: string;
 }
+
+/** Used by Logger to set ClientRequestContext metadata
+ * @internal
+ */
+export const addClientRequestContext = (metaData: any) => {
+  const requestContext = ClientRequestContext.current;
+  metaData.ActivityId = requestContext.activityId;
+  metaData.SessionId = requestContext.sessionId;
+  metaData.ApplicationId = requestContext.applicationId;
+  metaData.ApplicationVersion = requestContext.applicationVersion;
+};

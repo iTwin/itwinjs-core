@@ -126,6 +126,17 @@ describe("Logger", () => {
     assert.isFalse(Logger.isEnabled("test", LogLevel.Trace));
   });
 
+  it("call metadata source functions without initializing", () => {
+    const newMetaDataSource = (metaData: any) => {
+      metaData.prop1 = "test1";
+      metaData.prop2 = "test2";
+      metaData.prop3 = "test3";
+    };
+    assert.isTrue(Logger.registerMetaDataSource(newMetaDataSource)); // Try to register source before initializing logger
+    const mdnew = Logger.makeMetaData(() => { });
+    assert.include(mdnew, { prop1: "test1", prop2: "test2", prop3: "test3" });
+  });
+
   it("levels", () => {
 
     Logger.initialize(
@@ -506,6 +517,45 @@ describe("Logger", () => {
     } catch (_err) {
     }
     checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ActivityId: lctx2.activityId, ExceptionType: "BentleyError" }], [], [], []);
+  });
+
+  it("register and remove metadata source", () => {
+    Logger.initialize(
+      (c, m, d) => outerr = [c, m, d],
+      (c, m, d) => outwarn = [c, m, d],
+      (c, m, d) => outinfo = [c, m, d],
+      (c, m, d) => outtrace = [c, m, d]);
+
+    const lctx1 = new ClientRequestContext("activity1").enter();
+    const md = Logger.makeMetaData(() => { });
+    assert.include(md, {
+      ActivityId: lctx1.activityId,
+      ApplicationId: "",
+      ApplicationVersion: "",
+      SessionId: "00000000-0000-0000-0000-000000000000",
+    });
+
+    const newMetaDataSource = (metaData: any) => {
+      metaData.prop1 = "test1";
+      metaData.prop2 = "test2";
+      metaData.prop3 = "test3";
+    };
+    assert.isTrue(Logger.registerMetaDataSource(newMetaDataSource));
+    assert.isFalse(Logger.registerMetaDataSource(newMetaDataSource)); // Try to register the same source twice
+    const md2 = Logger.makeMetaData(() => { });
+    assert.include(md2, {
+      prop1: "test1",
+      prop2: "test2",
+      prop3: "test3",
+    });
+
+    assert.isTrue(Logger.removeMetaDataSource(newMetaDataSource), "metadata source successfully removed");
+    const md3 = Logger.makeMetaData(() => { });
+    assert.notInclude(md3, {
+      prop1: "test1",
+      prop2: "test2",
+      prop3: "test3",
+    });
   });
 
 });

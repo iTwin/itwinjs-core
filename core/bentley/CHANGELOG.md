@@ -1,6 +1,13 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Tue, 28 Jul 2020 16:26:23 GMT and should not be manually modified.
+This log was last generated on Fri, 07 Aug 2020 19:57:43 GMT and should not be manually modified.
+
+## 2.4.1
+Fri, 07 Aug 2020 19:57:43 GMT
+
+### Updates
+
+- Added metadata sources functions to Logger
 
 ## 2.4.0
 Tue, 28 Jul 2020 16:26:23 GMT

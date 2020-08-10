@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+This log was last generated on Fri, 07 Aug 2020 19:57:43 GMT and should not be manually modified.
+
+## 2.4.1
+Fri, 07 Aug 2020 19:57:43 GMT
+
+### Updates
+
+- add missing rbac-client dep
+- Fixes for map transparency.  Do not set base layer transparency when overall transparency is modified.  Keep layers in synch when settings change.
 
 ## 2.4.0
 Tue, 28 Jul 2020 16:26:24 GMT

@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.4.1",
+      "tag": "@bentley/imodeljs-backend_v2.4.1",
+      "date": "Fri, 07 Aug 2020 19:57:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.4.3"
+          },
+          {
+            "comment": "add missing rbac-client dep"
+          },
+          {
+            "comment": "Removed unnecessary binary decode from IModelSchemaLoader"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.0",
       "tag": "@bentley/imodeljs-backend_v2.4.0",
       "date": "Tue, 28 Jul 2020 16:26:24 GMT",

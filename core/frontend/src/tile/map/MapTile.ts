@@ -330,8 +330,7 @@ export class MapTile extends RealityTile {
       }
       resolveChildren(children);
     };
-    assert(columnCount === 2);
-    assert(rowCount === 2);
+
     mapTree.getPlanarChildCorners(this, columnCount, rowCount, resolvePlanarChildren);
   }
 

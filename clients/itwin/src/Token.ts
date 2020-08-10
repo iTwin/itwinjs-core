@@ -136,10 +136,10 @@ export class AccessToken {
    * @beta
    */
   public static fromJson(jsonObj: any): AccessToken {
-    if (!jsonObj || !jsonObj._jwt) {
-      throw new BentleyError(AuthStatus.Error, "Expected JSON representing the token to contain the _jwt field", Logger.logError, loggerCategory, () => jsonObj);
+    if (!jsonObj || !jsonObj._tokenString) {
+      throw new BentleyError(AuthStatus.Error, "Expected JSON representing the token to contain the _tokenString field", Logger.logError, loggerCategory, () => jsonObj);
     }
-    const jwt = jsonObj._jwt;
+    const jwt = jsonObj._tokenString;
     const startsAt = jsonObj._startsAt !== undefined ? new Date(jsonObj._startsAt) : undefined;
     const expiresAt = jsonObj._expiresAt !== undefined ? new Date(jsonObj._expiresAt) : undefined;
     const userInfo = UserInfo.fromJson(jsonObj._userInfo);
