@@ -64,6 +64,7 @@ import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
+import { EmitOptions } from '@bentley/imodeljs-native';
 import { EntityMetaData } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
@@ -1800,22 +1801,6 @@ export class ElevationCallout extends Callout {
 export class EmbeddedFileLink extends LinkElement {
     // @internal (undocumented)
     static get className(): string;
-}
-
-// @internal
-export interface EmitOptions {
-    // (undocumented)
-    strategy: EmitStrategy;
-}
-
-// @internal
-export enum EmitStrategy {
-    // (undocumented)
-    NoDuplicateEvents = 2,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    PurgeOlderEvents = 1
 }
 
 // @public

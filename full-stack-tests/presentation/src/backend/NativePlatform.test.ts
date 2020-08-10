@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { SnapshotDb } from "@bentley/imodeljs-backend";
 import { PresentationManagerMode } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
@@ -54,19 +53,19 @@ describe("NativePlatform", () => {
   it("throws on empty options", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
     // tslint:disable-next-line:await-promise
-    await expect(nativePlatform.handleRequest(ClientRequestContext.current, db, "")).to.eventually.be.rejectedWith(PresentationError, "request");
+    await expect(nativePlatform.handleRequest(db, "")).to.eventually.be.rejectedWith(PresentationError, "request");
   });
 
   it("throws on empty request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
     // tslint:disable-next-line:await-promise
-    await expect(nativePlatform.handleRequest(ClientRequestContext.current, db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
+    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 
   it("throws on not handled request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
     // tslint:disable-next-line:await-promise
-    await expect(nativePlatform.handleRequest(ClientRequestContext.current, db, JSON.stringify({ requestId: "Unknown" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
+    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "Unknown" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 
 });

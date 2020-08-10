@@ -9,23 +9,10 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
+import { EmitOptions, EmitStrategy } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
-/** EmitStrategy determine how events are added to queue
- * @internal
- */
-export enum EmitStrategy {
-  None,
-  PurgeOlderEvents, // this compare namespace and eventName
-  NoDuplicateEvents, // this compare namespace, eventName and its args
-}
-/** EmitOptions provided when emitting a event.
- * @internal
- */
-export interface EmitOptions {
-  strategy: EmitStrategy;
-}
 const loggingCategory: string = BackendLoggerCategory.EventSink;
 /** Maintains a queue of events to be sent to the frontend.
  * @internal
@@ -120,6 +107,9 @@ export class EventSinkManager {
     if (!this._global) {
       this._global = new EventSink(this.GLOBAL);
       this._sinks.set(this.GLOBAL, this._global);
+      // ###TODO - currently no global native events.
+      // TypeError: Cannot read property 'setGlobalEventSink' of undefined
+      // IModelJsNative.setGlobalEventSink(this._global);
     }
 
     return this._global;
