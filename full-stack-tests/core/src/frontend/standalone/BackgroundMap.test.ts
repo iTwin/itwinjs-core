@@ -138,12 +138,12 @@ describe("Background map", () => {
     const tests: Test[] = [
       [ undefined, "model", "bg", "model", "bg" ],
 
-      [ { groundBias: 10, terrainSettings: { nonLocatable: true } }, "model", "map", "model", "bg" ],
-      [ { groundBias: -10, terrainSettings: { nonLocatable: true } }, "model", "map", "model", "bg" ],
-      [ { useDepthBuffer: true, groundBias: 10, terrainSettings: { nonLocatable: true } }, "map", "map", "model", "bg" ],
-      [ { useDepthBuffer: true, groundBias: -10, terrainSettings: { nonLocatable: true } }, "model", "map", "model", "bg" ],
+      [ { groundBias: 10, nonLocatable: true }, "model", "map", "model", "bg" ],
+      [ { groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg" ],
+      [ { useDepthBuffer: true, groundBias: 10, nonLocatable: true }, "map", "map", "model", "bg" ],
+      [ { useDepthBuffer: true, groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg" ],
 
-      [ { terrainSettings: { nonLocatable: true } }, "model", "map", "model", "bg" ],
+      [ { nonLocatable: true }, "model", "map", "model", "bg" ],
       [ { }, "model", "map", "model", "map" ],
 
       [ { groundBias: 10 }, "model", "map", "model", "map" ],

@@ -80,7 +80,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const style3d = view.is3d() ? view.getDisplayStyle3d() : undefined;
   if (style3d) {
     terrainTransparency = style3d.backgroundMapSettings.transparency || 0;
-    locatableTerrain = style3d.backgroundMapSettings.terrainSettings.locatable;
+    locatableTerrain = style3d.backgroundMapSettings.locatable;
   }
 
   const globalViewTransition = view.is3d() ? view.globalViewTransition() : 0.0;

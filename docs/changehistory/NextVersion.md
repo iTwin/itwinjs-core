@@ -62,6 +62,12 @@ Types related to overriding feature symbology - previously defined in `imodeljs-
 - [FeatureAppearanceProvider]($common) replaces the `beta` `FeatureSymbology.AppearanceProvider` interface.
 - [FeatureOverrides]($common) now serves as a base class for [FeatureSymbology.Overrides]($frontend). Only the latter can be constructed from a [Viewport]($frontend) or [ViewState]($frontend).
 
+## Locatable flag for background map
+
+Previously, [TerrainSettings.locatable]($common) and [TerrainProps.nonLocatable]($common) could be used to control whether or not tools could locate and interact with the background map while terrain was enabled - but there was no way to similarly control locatability of the map when terrain was disabled. Now, these two properties are deprecated in favor of [BackgroundMapSettings.locatable]($common) and [BackgroundMapProps.nonLocatable]($common). The new properties control locatability of the map regardless of whether or not terrain is enabled. To retain backwards compatibility with the deprecated properties:
+- If `TerrainProps.nonLocatable` is `true`, then the terrain will be non-locatable.
+- Otherwise, the terrain will be locatable if and only if the background map is locatable.
+
 ## ui-components
 
 Breaking change to the `beta` interface [ColorPickerProps]($ui-components). The `activeColor` property has been renamed to `initialColor`. The modified props are used by the   [ColorPickerButton]($ui-components) React component.

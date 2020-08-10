@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Deprecate TerrainProps.nonLocatable and TerrainSettings.locatable in favor of corresponding properties on BackgroundMapProps and BackgroundMapSettings.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Paul.Connelly@bentley.com"
+}

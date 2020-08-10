@@ -341,6 +341,7 @@ export interface BackgroundMapProps {
     applyTerrain?: boolean;
     globeMode?: GlobeMode;
     groundBias?: number;
+    nonLocatable?: boolean;
     providerData?: {
         mapType?: BackgroundMapType;
     };
@@ -363,6 +364,7 @@ export class BackgroundMapSettings {
     static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings;
     readonly globeMode: GlobeMode;
     readonly groundBias: number;
+    get locatable(): boolean;
     readonly mapType: BackgroundMapType;
     readonly providerName: BackgroundMapProviderName;
     readonly terrainSettings: TerrainSettings;
@@ -6295,6 +6297,7 @@ export interface TerrainProps {
     exaggeration?: number;
     heightOrigin?: number;
     heightOriginMode?: TerrainHeightOriginMode;
+    // @deprecated (undocumented)
     nonLocatable?: boolean;
     providerName?: string;
 }
@@ -6315,6 +6318,7 @@ export class TerrainSettings {
     static fromJSON(json?: TerrainProps): TerrainSettings;
     readonly heightOrigin: number;
     readonly heightOriginMode: TerrainHeightOriginMode;
+    // @deprecated (undocumented)
     readonly locatable: boolean;
     readonly providerName: TerrainProviderName;
     // (undocumented)

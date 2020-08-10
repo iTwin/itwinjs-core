@@ -530,6 +530,7 @@ export class ViewAttributes {
 
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
+    const locatable = this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
     backgroundSettingsDiv.appendChild(document.createElement("hr")!);
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
@@ -549,10 +550,13 @@ export class ViewAttributes {
       types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
       transCheckbox.checked = false !== map.transparency;
+      locatable.checked = map.locatable;
       globeModes.value = map.globeMode.toString();
+
       if (map.applyTerrain !== terrainCheckbox.checked)
         enableTerrain(terrainCheckbox.checked);
     });
+
     div.appendChild(backgroundSettingsDiv);
     const hr = document.createElement("hr");
     hr.style.borderColor = "grey";
@@ -583,8 +587,8 @@ export class ViewAttributes {
       const map = this.getBackgroundMap(view);
       groundBias.value = map.groundBias.toString();
       depthCheckbox.checked = map.useDepthBuffer;
-
     });
+
     return mapSettingsDiv;
   }
 
@@ -642,15 +646,12 @@ export class ViewAttributes {
     exaggerationDiv.style.textAlign = "left";
     settingsDiv.appendChild(exaggerationDiv);
 
-    const locatable = this.addCheckbox("Locatable", (enabled) => updateTerrainSettings({ nonLocatable: !enabled }), exaggerationDiv);
-
     this._updates.push((view) => {
       const map = view.displayStyle.settings.backgroundMap;
       const terrainSettings = map.terrainSettings;
       heightOriginMode.value = terrainSettings.heightOriginMode.toString();
       heightOrigin.value = terrainSettings.heightOrigin.toString();
       exaggeration.value = terrainSettings.exaggeration.toString();
-      locatable.checkbox.checked = terrainSettings.locatable;
     });
 
     return settingsDiv;

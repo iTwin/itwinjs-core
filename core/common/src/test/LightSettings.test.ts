@@ -1,0 +1,76 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+import { Vector3d } from "@bentley/geometry-core";
+import { expect } from "chai";
+import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
+import { LightSettings, LightSettingsProps } from "../LightSettings";
+import { RgbColor } from "../RgbColor";
+
+describe("LightSettings", () => {
+  it("round-trips through JSON", () => {
+    const roundTrip = (input: LightSettingsProps | undefined, expected: LightSettingsProps | "input" | undefined) => {
+      const settings = LightSettings.fromJSON(input);
+
+      if ("input" === expected) {
+        expected = input;
+      } else {
+        const expectedSettings = LightSettings.fromJSON(expected);
+        expect(settings.equals(expectedSettings)).to.be.true;
+      }
+
+      const output = settings.toJSON();
+      expect(output).to.deep.equal(expected);
+    };
+
+    roundTrip(undefined, undefined);
+    roundTrip({}, undefined);
+
+    roundTrip({ numCels: 0 }, undefined);
+    roundTrip({ numCels: 1 }, "input");
+
+    roundTrip({ specularIntensity: 1 }, undefined);
+    roundTrip({ specularIntensity: 0.5 }, "input");
+    roundTrip({ specularIntensity: 5.1 }, { specularIntensity: 5.0 });
+    roundTrip({ specularIntensity: -0.1 }, { specularIntensity: 0.0 });
+
+    roundTrip({ portrait: { intensity: 0.3 } }, undefined);
+    roundTrip({ portrait: { intensity: 2.0 } }, "input");
+    roundTrip({ portrait: { intensity: 5.1 } }, { portrait: { intensity: 5.0 } });
+    roundTrip({ portrait: { intensity: -0.1 } }, { portrait: { intensity: 0.0 } });
+
+    roundTrip({ solar: { direction: Vector3d.create(0.272166, 0.680414, 0.680414).toJSON(), intensity: 1, alwaysEnabled: false } }, undefined);
+    roundTrip({ solar: { direction: Vector3d.create(-1, -1, -1).toJSON() } }, "input");
+    roundTrip({ solar: { intensity: 4.9 } }, "input");
+    roundTrip({ solar: { intensity: 5.1 } }, { solar: { intensity: 5.0 } });
+    roundTrip({ solar: { intensity: -0.1 } }, { solar: { intensity: 0.0 } });
+    roundTrip({ solar: { alwaysEnabled: true } }, "input");
+
+    roundTrip({ ambient: { color: new RgbColor(0, 0, 0).toJSON(), intensity: 0.2 } }, undefined);
+    roundTrip({ ambient: { color: new RgbColor(1, 127, 255).toJSON() } }, "input");
+    roundTrip({ ambient: { intensity: 0.1 } }, "input");
+    roundTrip({ ambient: { intensity: -0.1 } }, { ambient: { intensity: 0.0 } });
+    roundTrip({ ambient: { intensity: 5.1 } }, { ambient: { intensity: 5.0 } });
+
+    roundTrip({ hemisphere: { lowerColor: new RgbColor(120, 143, 125).toJSON(), upperColor: new RgbColor(143, 205, 255), intensity: 0 } }, undefined);
+    roundTrip({ hemisphere: { lowerColor: new RgbColor(0, 1, 2).toJSON() } }, "input");
+    roundTrip({ hemisphere: { upperColor: new RgbColor(254, 254, 255).toJSON() } }, "input");
+    roundTrip({ hemisphere: { intensity: 2.5 } }, "input");
+    roundTrip({ hemisphere: { intensity: -0.1 } }, undefined);
+    roundTrip({ hemisphere: { intensity: 5.1 } }, { hemisphere: { intensity: 5.0 } });
+  });
+
+  it("should preserve sun direction", () => {
+    const sunDir = Vector3d.create(0, 0.5, 1.0);
+    const props = {
+      styles: {
+        sceneLights: { sunDir: sunDir.toJSON() },
+      },
+    };
+
+    const style = new DisplayStyle3dSettings(props);
+    expect(style.lights.solar.direction.isAlmostEqual(sunDir)).to.be.true;
+  });
+});

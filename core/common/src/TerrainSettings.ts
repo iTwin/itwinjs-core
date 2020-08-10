@@ -30,9 +30,7 @@ export interface TerrainProps {
   heightOrigin?: number;
   /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Geodetic */
   heightOriginMode?: TerrainHeightOriginMode;
-  /** If true, terrain will be treated as non-locatable - i.e., tools will not interact with it. This is useful when transparent terrain is displayed to allow
-   * the user to interact with elements behind the terrain.
-   */
+  /** @deprecated use [[BackgroundMapProps.nonLocatable]] */
   nonLocatable?: boolean;
 }
 
@@ -63,13 +61,13 @@ export class TerrainSettings {
   public readonly heightOrigin: number;
   /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Geodetic */
   public readonly heightOriginMode: TerrainHeightOriginMode;
-  /** Controls whether tools will interact with terrain. If false, tools will be able to interact with elements underneath the terrain. This is useful when the terrain is transparent. */
+  /** @deprecated use [[BackgroundMapSettings.locatable]] */
   public readonly locatable: boolean;
 
   constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic, locatable = true) {
     this.providerName = providerName;
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
-    this.locatable = locatable;
+    this.locatable = locatable; // tslint:disable-line:deprecation
     this.applyLighting = applyLighting;
     this.heightOrigin = heightOrigin;
     switch (heightOriginMode) {
@@ -88,7 +86,7 @@ export class TerrainSettings {
       return new TerrainSettings();
 
     const providerName = "CesiumWorldTerrain";    // This is only terrain provider currently supported.
-    return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode, true !== json.nonLocatable);
+    return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode, true !== json.nonLocatable); // tslint:disable-line:deprecation
   }
 
   public toJSON(): TerrainProps {
@@ -97,8 +95,8 @@ export class TerrainSettings {
       props.providerName = this.providerName;
     if (1 !== this.exaggeration)
       props.exaggeration = this.exaggeration;
-    if (!this.locatable)
-      props.nonLocatable = true;
+    if (!this.locatable) // tslint:disable-line:deprecation
+      props.nonLocatable = true; // tslint:disable-line:deprecation
     if (this.applyLighting)
       props.applyLighting = true;
     if (0 !== this.heightOrigin)
@@ -108,7 +106,8 @@ export class TerrainSettings {
   }
 
   public equals(other: TerrainSettings): boolean {
-    return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode && this.locatable === other.locatable;
+    return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting
+      && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode && this.locatable === other.locatable; // tslint:disable-line:deprecation
   }
 
   /** Returns true if these settings are equivalent to the supplied JSON settings. */
@@ -127,7 +126,7 @@ export class TerrainSettings {
     const props = {
       providerName: changedProps.providerName ?? this.providerName,
       exaggeration: changedProps.exaggeration ?? this.exaggeration,
-      nonLocatable: changedProps.nonLocatable ?? !this.locatable,
+      nonLocatable: changedProps.nonLocatable ?? !this.locatable, // tslint:disable-line:deprecation
       applyLighting: changedProps.applyLighting ?? this.applyLighting,
       heightOrigin: changedProps.heightOrigin ?? this.heightOrigin,
       heightOriginMode: changedProps.heightOriginMode ?? this.heightOriginMode,
