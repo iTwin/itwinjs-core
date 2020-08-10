@@ -20,7 +20,7 @@ import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDis
 import { UiFramework } from "../UiFramework";
 import { GroupItemDef } from "./GroupItem";
 
-/** Properties of [[Toolbar]] component.
+/** Properties of [[Toolbar]] component. An ancestor of this toolbar must provide the WidgetOpacityContext.
  * @internal
  */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {

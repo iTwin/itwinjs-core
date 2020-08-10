@@ -11,6 +11,7 @@ import { cleanup, fireEvent, render } from "@testing-library/react";
 import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../ui-components/toolbar/ToolbarWithOverflow";
 import { Direction } from "../../ui-components/toolbar/utilities/Direction";
 import { createDOMRect } from "../Utils";
+import TestUtils from "../TestUtils";
 
 // cSpell:ignore testid
 
@@ -22,6 +23,14 @@ function createBubbledEvent(type: string, props = {}) {
 
 describe("<ToolbarWithOverflow />", () => {
   const sandbox = sinon.createSandbox();
+
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
 
   afterEach(() => {
     sandbox.restore();

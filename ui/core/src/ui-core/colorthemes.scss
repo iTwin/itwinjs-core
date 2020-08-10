@@ -42,6 +42,7 @@ html[data-theme="light"] {
 
   --buic-inputs-border:               rgba(128, 133, 136, 0.85);
   --buic-inputs-boxshadow:            rgba(000, 000, 000, 0.075);
+  --buic-popup-boxshadow:             rgba(000, 000, 000, 0.075);
 
   --buic-button-gradient1:            rgba(255, 255, 255, 0.65);
   --buic-button-gradient2:            rgba(255, 255, 255, 0.00);
@@ -78,6 +79,7 @@ html[data-theme="dark"] {
 
   --buic-inputs-border:               rgba(199, 204, 209, 0.85);
   --buic-inputs-boxshadow:            rgba(199, 204, 209, 0.075);
+  --buic-popup-boxshadow:             rgba(199, 204, 209, 0.075);
 
   --buic-button-gradient1:            rgba(0, 0, 0, 0.00);
   --buic-button-gradient2:            rgba(0, 0, 0, 0.25);
