@@ -79,7 +79,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingProjects: false,
       currentProject: project,
     });
-    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 40, 0);
+    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 80, 0);
     // tslint:disable-next-line:no-console
     // console.log(JSON.stringify(iModelInfos));
     this.setState({
