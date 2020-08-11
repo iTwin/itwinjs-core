@@ -115,6 +115,22 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async op16(_token: IModelRpcProps, _values: TokenValues): Promise<boolean> {
     return this.forward(arguments);
   }
+
+  public async startCSRFTest(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async stopCSRFTest(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async csrfTestEnabled(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async csrfTestDisabled(): Promise<void> {
+    return this.forward(arguments);
+  }
 }
 
 export abstract class TestRpcInterface2 extends RpcInterface {

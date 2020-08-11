@@ -2962,6 +2962,15 @@ export class FrontendRequestContext extends ClientRequestContext {
 }
 
 // @public
+export interface FrontendSecurityOptions {
+    readonly csrfProtection?: {
+        readonly enabled: boolean;
+        readonly cookieName?: string;
+        readonly headerName?: string;
+    };
+}
+
+// @public
 export namespace Frustum2d {
     const minimumZDistance = 1;
     const minimumZExtents: Readonly<Range1d>;
@@ -3828,6 +3837,7 @@ export class IModelApp {
     static get renderSystem(): RenderSystem;
     // @internal (undocumented)
     static requestNextAnimation(): void;
+    static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
     static get settings(): SettingsAdmin;
     static shutdown(): Promise<void>;
@@ -3867,6 +3877,7 @@ export interface IModelAppOptions {
     quantityFormatter?: QuantityFormatter;
     // @internal (undocumented)
     renderSys?: RenderSystem | RenderSystem.Options;
+    security?: FrontendSecurityOptions;
     // @internal (undocumented)
     sessionId?: GuidString;
     settings?: SettingsAdmin;

@@ -138,6 +138,18 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       token.changeSetId === values.changeSetId &&
       token.openMode === values.openMode;
   }
+
+  public async startCSRFTest(): Promise<void> {
+  }
+
+  public async stopCSRFTest(): Promise<void> {
+  }
+
+  public async csrfTestEnabled(): Promise<void> {
+  }
+
+  public async csrfTestDisabled(): Promise<void> {
+  }
 }
 
 export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 {

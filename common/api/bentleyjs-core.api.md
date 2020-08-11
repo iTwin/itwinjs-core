@@ -1227,6 +1227,11 @@ export interface SerializedClientRequestContext {
     // (undocumented)
     authorization?: string;
     // (undocumented)
+    csrfToken?: {
+        headerName: string;
+        headerValue: string;
+    };
+    // (undocumented)
     id: string;
     // (undocumented)
     sessionId: string;

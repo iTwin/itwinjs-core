@@ -54,7 +54,22 @@ import { MapLayerFormatRegistry } from "./tile/map/MapLayerFormatRegistry";
 // tslint:disable-next-line: no-var-requires
 require("./IModeljs-css");
 
-// cSpell:ignore noopener noreferrer gprid forin nbsp
+// cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
+
+/** Options that can be supplied with [[IModelAppOptions]] to customize frontend security.
+ * @public
+ */
+export interface FrontendSecurityOptions {
+  /** Configures protection from Cross Site Request Forgery attacks. */
+  readonly csrfProtection?: {
+    /** If enabled, IModelApp will extract the CSRF token for the current session from the document's cookies and send it with each request as a header value. */
+    readonly enabled: boolean;
+    /** Defaults to XSRF-TOKEN. */
+    readonly cookieName?: string;
+    /** Defaults to X-XSRF-TOKEN. */
+    readonly headerName?: string;
+  };
+}
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
  * @public
@@ -88,6 +103,8 @@ export interface IModelAppOptions {
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
   authorizationClient?: FrontendAuthorizationClient;
+  /** If present, supplies security options for the frontend. */
+  security?: FrontendSecurityOptions;
   /** @internal */
   sessionId?: GuidString;
   /** @internal */
@@ -188,6 +205,7 @@ export class IModelApp {
   private static _features: FeatureTrackingManager;
   private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
+  private static _securityOptions: FrontendSecurityOptions;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -256,6 +274,8 @@ export class IModelApp {
   public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
+  /** The requested security options for the frontend. */
+  public static get securityOptions() { return this._securityOptions; }
   /** The [[FeatureTrackingManager]] for this session
    * @internal
    */
@@ -328,6 +348,8 @@ export class IModelApp {
     // Setup a current context for all requests that originate from this frontend
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
+
+    this._securityOptions = opts.security || {};
 
     this._initialized = true;
 
@@ -541,7 +563,7 @@ export class IModelApp {
           // The application may go offline
         }
       }
-      return {
+      const serialized: SerializedClientRequestContext = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
@@ -549,6 +571,20 @@ export class IModelApp {
         authorization,
         userId,
       };
+
+      const csrf = IModelApp.securityOptions.csrfProtection;
+      if (csrf && csrf.enabled) {
+        const cookieName = csrf.cookieName || "XSRF-TOKEN";
+        const cookieValue = document.cookie.split("; ").find((r) => r.startsWith(`${cookieName}=`));
+
+        if (cookieValue) {
+          const headerName = csrf.headerName || "X-XSRF-TOKEN";
+          const headerValue = cookieValue.split("=")[1];
+          serialized.csrfToken = { headerName, headerValue };
+        }
+      }
+
+      return serialized;
     };
   }
 

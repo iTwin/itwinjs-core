@@ -488,6 +488,9 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (headerNames.userId && headerValues.userId)
       this.setHeader(headerNames.userId, headerValues.userId);
+
+    if (headerValues.csrfToken)
+      this.setHeader(headerValues.csrfToken.headerName, headerValues.csrfToken.headerValue);
   }
 
   private setStatus(status: RpcRequestStatus): void {
