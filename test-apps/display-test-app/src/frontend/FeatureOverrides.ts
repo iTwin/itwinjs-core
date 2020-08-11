@@ -44,18 +44,21 @@ export class Provider implements FeatureOverrideProvider {
   }
 
   public toJSON(): any[] | undefined {
-    if (0 === this._elementOvrs.size)
+    if (0 === this._elementOvrs.size && undefined === this._defaultOvrs)
       return undefined;
+
     const elementOvrs: any[] = [];
     this._elementOvrs.forEach((value, key) => {
       const elem = { id: key, fsa: JSON.stringify(value.toJSON()) };
       elementOvrs.push(elem);
     });
+
     // Put the default override into the array as well, at the end with a special ID that we can find later.
     if (undefined !== this._defaultOvrs) {
       const elem = { id: "-default-", fsa: JSON.stringify(this._defaultOvrs.toJSON()) };
       elementOvrs.push(elem);
     }
+
     return elementOvrs;
   }
 
