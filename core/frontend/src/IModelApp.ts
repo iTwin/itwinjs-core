@@ -146,6 +146,13 @@ export interface ModalReturn {
   stop: (_ev: Event) => void;
 }
 
+/** We hang the IModelApp object off the global `window` object in IModelApp.startup for debugging purposes.
+ * It's removed in IModelApp.shutdown.
+ */
+interface IModelAppForDebugger {
+  iModelAppForDebugger?: typeof IModelApp;
+}
+
 /**
  * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
@@ -324,6 +331,9 @@ export class IModelApp {
 
     this._initialized = true;
 
+    // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
+    (window as IModelAppForDebugger).iModelAppForDebugger = this;
+
     // Initialize basic application details before log messages are sent out
     this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
     this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
@@ -398,6 +408,8 @@ export class IModelApp {
   public static async shutdown() {
     if (!this._initialized)
       return;
+
+    (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
 
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
