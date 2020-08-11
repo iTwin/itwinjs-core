@@ -27,7 +27,7 @@ jobs:
           NodeVersion: 12
           OS: macOS-latest
 
-    timeoutInMinutes: 90
+    timeoutInMinutes: 120
     pool:
       vmImage: $(OS)
     steps:
