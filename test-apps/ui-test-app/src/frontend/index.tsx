@@ -266,7 +266,7 @@ export class SampleAppIModelApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
-    await MapLayersUI.initialize();
+    await MapLayersUI.initialize(true); // if false then add widget in FrontstageDef
   }
 
   // cSpell:enable

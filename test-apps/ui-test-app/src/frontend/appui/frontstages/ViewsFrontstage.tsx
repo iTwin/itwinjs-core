@@ -45,6 +45,7 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
+// import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";
@@ -254,6 +255,10 @@ export class ViewsFrontstage extends FrontstageProvider {
             defaultState={ZoneState.Minimized}
             initialWidth={400}
             widgets={[
+              // Used when using map-layers as a package and not using UiItemsProvider (compatible with V1 of framework)
+              // <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
+              //  iconSpec={MapLayersWidgetControl.iconSpec} />,
+
               // <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
               //   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}

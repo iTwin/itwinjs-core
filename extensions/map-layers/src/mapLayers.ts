@@ -4,25 +4,41 @@
 *--------------------------------------------------------------------------------------------*/
 import { Extension, IModelApp } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@bentley/ui-abstract";
+import { ConfigurableUiManager } from "@bentley/ui-framework";
 
 /**
- * MapLayersApi is use when the package is use as a dependency to another app and not used as an extension.
+ * MapLayersApi is use when the package is used as a dependency to another app and not used as an extension.
  * '''ts
- *  await MapLayersUI.initialize ();
+ *  // if registerItemsProvider is false the MapLayersWidgetControl control will be registered with ui-framework's ConfigurableUiManager
+ *  // so it can be explicitly added to a stage via a FrontstageDef.
+ *  await MapLayersUI.initialize (registerItemsProvider);
  * '''
  * @beta
  */
 export class MapLayersUI {
   private static _defaultNs = "mapLayers";
+  private static _uiItemsProvider: MapLayersUiItemsProvider;
 
-  /** Used to initialize the MapLayersAPI when used as a package. */
-  public static async initialize(): Promise<void> {
+  /** Used to initialize the MapLayersAPI when used as a package. If `registerItemsProvider` is true then the
+   * UiItemsProvider will automatically insert the UI items into the host applications UI. If it is false then
+   * explicitly add widget definition to a specific FrontStage definition using the following syntax.
+   * ``` tsx
+   * <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
+   *   iconSpec={MapLayersWidgetControl.iconSpec} />,
+   * ```
+   */
+  public static async initialize(registerItemsProvider = true): Promise<void> {
     // register namespace containing localized strings for this package
     const namespace = IModelApp.i18n.registerNamespace(MapLayersUI._defaultNs);
     await namespace.readFinished;
-    UiItemsManager.register(new MapLayersUiItemsProvider(IModelApp.i18n));
+    // _uiItemsProvider always created to provide access to i18n.
+    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(IModelApp.i18n);
+    if (registerItemsProvider)
+      UiItemsManager.register(MapLayersUI._uiItemsProvider);
+    else
+      ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);
   }
 }
 
