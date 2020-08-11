@@ -247,7 +247,7 @@ export type DrawCommands = DrawCommand[];
  * @internal
  */
 export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cmds: DrawCommands, numCmdsPerClassifier: number): DrawCommands | undefined {
-  if (!Id64.isValid(flashedId))
+  if (!Id64.isValid(flashedId) || 0 === numCmdsPerClassifier)
     return undefined;
 
   const firstPrim = (numCmdsPerClassifier - 1) / 2;
