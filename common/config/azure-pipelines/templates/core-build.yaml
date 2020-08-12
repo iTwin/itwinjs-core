@@ -61,9 +61,9 @@ steps:
   - script: node common/scripts/install-run-rush.js build -p max
     displayName: rush build everything else (test-apps and example code)
     workingDirectory: ${{ parameters.workingDir }}
-  # - script: node common/scripts/install-run-rush.js extract-api
-  #   displayName: rush extract-api
-  #   workingDirectory: ${{ parameters.workingDir }}
+  - script: node common/scripts/install-run-rush.js extract-api
+    displayName: rush extract-api
+    workingDirectory: ${{ parameters.workingDir }}
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}
