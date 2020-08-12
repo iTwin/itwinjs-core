@@ -15,6 +15,7 @@ import { FileHandler } from '@bentley/itwin-client';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
+import { HttpRequestOptions } from '@bentley/itwin-client';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
@@ -564,6 +565,8 @@ export class IModelBaseHandler extends WsgClient {
     // (undocumented)
     protected _agent: any;
     // (undocumented)
+    applicationVersion?: string;
+    // (undocumented)
     static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
     delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
     deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
@@ -575,16 +578,17 @@ export class IModelBaseHandler extends WsgClient {
     getCustomRequestOptions(): CustomRequestOptions;
     // (undocumented)
     getFileHandler(): FileHandler | undefined;
-    getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
-    getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]>;
+    getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     protected getRelyingPartyUrl(): string;
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     protected getUrlSearchKey(): string;
-    postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;
-    postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]>;
-    postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]>;
+    postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
+    postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     // (undocumented)
     static readonly searchKey: string;
+    protected setupHttpOptions(options?: HttpRequestOptions): HttpRequestOptions;
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
@@ -592,7 +596,7 @@ export class IModelBaseHandler extends WsgClient {
 
 // @beta
 export abstract class IModelClient {
-    constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler);
+    constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler, applicationVersion?: string);
     // @internal
     get briefcases(): BriefcaseHandler;
     get changeSets(): ChangeSetHandler;
@@ -614,6 +618,7 @@ export abstract class IModelClient {
     get permissions(): PermissionHandler | undefined;
     // @internal
     get requestOptions(): CustomRequestOptions;
+    setApplicationVersion(applicationVersion: string): void;
     setFileHandler(fileHandler: FileHandler): void;
     // @alpha
     get thumbnails(): ThumbnailHandler;
@@ -681,7 +686,7 @@ export class IModelHandler {
 
 // @beta
 export class IModelHubClient extends IModelClient {
-    constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler);
+    constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler, applicationVersion?: string);
     // @internal
     get permissions(): PermissionHandler;
 }

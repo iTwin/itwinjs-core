@@ -21,9 +21,10 @@ export class IModelHubClient extends IModelClient {
    * Create an instance of IModelHubClient.
    * @param fileHandler File handler to handle file upload/download and file system operations.
    * @param iModelBaseHandler WSG Client for the iModelHub operations.
+   * @param applicationVersion Version of the current application.
    */
-  public constructor(fileHandler?: FileHandler, iModelBaseHandler: IModelBaseHandler = new IModelBaseHandler()) {
-    super(iModelBaseHandler, fileHandler);
+  public constructor(fileHandler?: FileHandler, iModelBaseHandler: IModelBaseHandler = new IModelBaseHandler(), applicationVersion?: string) {
+    super(iModelBaseHandler, fileHandler, applicationVersion);
   }
 
   /**

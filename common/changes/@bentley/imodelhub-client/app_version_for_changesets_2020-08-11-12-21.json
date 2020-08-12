@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "Added applicationVersion parameter to iModelHubClient constructor that will be used in all requests.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client",
+  "email": "Vilius.Kazlauskas@bentley.com"
+}

@@ -32,8 +32,9 @@ export abstract class IModelClient {
    * Creates an instance of [[IModelClient]].
    * @param fileHandler File handler to handle file upload/download and file system operations.
    */
-  public constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler) {
+  public constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler, applicationVersion?: string) {
     this._handler = baseHandler;
+    this._handler.applicationVersion = applicationVersion;
     this._fileHandler = fileHandler || this._handler.getFileHandler();
     if (this._fileHandler)
       this._fileHandler.agent = this._handler.getAgent();
@@ -164,5 +165,13 @@ export abstract class IModelClient {
    */
   public get requestOptions(): CustomRequestOptions {
     return this._handler.getCustomRequestOptions();
+  }
+
+  /**
+   * Sets application version to use in requests.
+   * @param applicationVersion Application version to use in requests.
+   */
+  public setApplicationVersion(applicationVersion: string) {
+    this._handler.applicationVersion = applicationVersion;
   }
 }
