@@ -63,10 +63,18 @@ _BIS naming convention is deliberately more restrictive than EC naming: All BIS 
 
 ## Relationship
 
+Relationship naming rules are difficult because of competing concerns.
+It is important for relationship class names to be clear and unambiguous so that the purpose and constraints of the relationship can be understood.
+However, it is also important to be cognizant of the number of characters in the relationship class name since that is what a developer or power user will have to type in when using ECSQL.
+Names that are too long are frustrating, but vague names are also frustrating.
+The rules and recommendations below try to balance these concerns:
+
 |   | Description | Note |
 |---|-------------|------|
-| Rule | Use Source-Verb-Target | E.g. `ParentHasChild`, `OrganizationSellsProduct`<br><br>In most cases, the "source/target" will simply be the name of the object. In those cases, the addition of an adjective can be helpful: `Child` in `ElementHasChildElement` |
-| Rule | (Picking up on the previous rule)<br>_Don't use conjunctions.  Do not use a singular noun or verb, even if it clearly defines a relationship.<br>Always use noun-verb-noun | E.g. Don't use `Marriage` or `ManAndWoman`; use `PersonIsMarriedToPerson` |
-| Rule | The relationship name should indicate the cardinality. |The source is always singular and the target indicates multiplicity.<br><br>E.g. `ElementOwnsChildElement` (1:N), `ElementHasLinks` (N:N), `PhysicalElementIsOfType` (N:1) |
-| Rec. | Use the full class names for source. For the target, use the 'role' within the relationship. | E.g. `PhysicalElementIsOfType` |
-| Rec. | Use verbs that imply relationship "strength" with care | Especially with regard to EC where:<br>- `Owns` or `Contains` implies embedding<br>- `Shares` implies holding<br><br>_See [list of relationship strengths](./standard-relationship-strengths-names.md)_ |
+| Rule | **Use Source-Verb-Target** | E.g. `ElementOwnsUniqueAspects`, `OrganizationSellsProducts`<br><br>In most cases, the "source/target" will simply be the name of the object. In those cases, the addition of an adjective can be helpful: `Child` in `ElementOwnsChildElements` |
+| Rule | **Fully specify the source constraint**<br>In general, use the full class name of the source constraint for the *source* portion of the relationship name. In some cases, the suffix of the source constraint class name can be dropped if it doesn't help with understanding the purpose of the relationship. | E.g. "`PhysicalElement`IsOfType", "`PhysicalSystem`ServicesElements" |
+| Rule | **Try to use a specific action-oriented verb**<br>Verbs like *aggregates*, *holds*, *groups*, *represents*, *services* are more action-oriented while verbs like *has* or *relates to* are more passive and don't identify the purpose of the relationship. | E.g. "DrawingGraphic`Represents`Element", "PhysicalElement`Services`Elements" |
+| Rule | **Use verbs that are consistent with relationship strength** | - `Owns`, `Contains`, or `Aggregates` implies *embedding*<br>- `Represents` or `Groups` implies *referencing*<br><br>See list of [relationship strengths](./standard-relationship-strengths-names.md) |
+| Rule | **Shorten the target portion if possible**<br>Use the *role* within the relationship or a shortened form of the target constraint class. | E.g. "PhysicalElementIsOf`Type`"<br><br>In this case, fully specifying the target constraint of `PhysicalType` would make the relationship class name longer without adding much clarity since the source constraint gives a strong hint as to the target constraint. |
+| Rule | **The relationship name should indicate the multiplicity**<br>The source is always singular and the target indicates multiplicity. | E.g. `ElementOwnsChildElements` (1:N), `ElementHasLinks` (N:N), `PhysicalElementIsOfType` (N:1) |
+| Rule | **Don't use conjunctions**<br>  Do not use a singular noun or verb, even if it clearly defines a relationship. Always use noun-verb-noun | E.g. Don't use `Marriage` or `ManAndWoman`; use `PersonIsMarriedToPerson` |
