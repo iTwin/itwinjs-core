@@ -160,6 +160,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
+public;FrontendSecurityOptions
 public;Frustum2d
 public;FuzzySearch
 public;FuzzySearchResult

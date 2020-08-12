@@ -114,6 +114,9 @@ public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
 alpha;class Editor3dRpcInterface 
+alpha;Editor3dRpcInterfaceWriteOptions
+alpha;Editor3dRpcInterfaceWriteReturnPropsOptions
+alpha;Editor3dRpcInterfaceWriteReturnType
 beta;class ElectronRpcConfiguration 
 beta;ElectronRpcManager 
 beta;ElectronRpcParams

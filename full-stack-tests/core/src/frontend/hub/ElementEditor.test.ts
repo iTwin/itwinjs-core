@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodelhub-client";
-import { Code } from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, CodeProps } from "@bentley/imodeljs-common";
 import {
   BeButtonEvent, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, RemoteBriefcaseConnection, Viewport,
 } from "@bentley/imodeljs-frontend";
@@ -19,6 +19,49 @@ const testIModelName = "elementEditorTest";
 
 function makeLine(p1?: Point3d, p2?: Point3d): LineSegment3d {
   return LineSegment3d.create(p1 || new Point3d(0, 0, 0), p2 || new Point3d(0, 0, 0));
+}
+
+async function createLine(editor: ElementEditor3d, model: Id64String, category: Id64String, line: LineSegment3d, parentId?: string, code?: CodeProps): Promise<void> {
+  const geomprops = IModelJson.Writer.toIModelJson(line);
+  const origin = line.point0Ref;
+  const angles = new YawPitchRollAngles();
+  if (code === undefined)
+    code = Code.createEmpty();
+  const props3d = { classFullName: "Generic:PhysicalObject", model, category, code };
+  if (parentId !== undefined)
+    (props3d as any).parent = { id: parentId, relClassName: "bis.ElementOwnsChildElements" };
+  return editor.createElement(props3d, origin, angles, geomprops);
+}
+
+async function createAssembly(editor: ElementEditor3d, model: Id64String, category: Id64String, parentCode: CodeProps): Promise<Id64String> {
+  await createLine(editor, model, category, makeLine(), undefined, parentCode);
+  const parentProps = await editor.writeReturningProps();
+  assert.isArray(parentProps);
+  assert.equal(parentProps.length, 1);
+  assert.isTrue(Code.equalCodes(parentProps[0].code, parentCode));
+  assert.equal(parentProps[0].category, category);
+  const parentId = parentProps[0].id;
+
+  assert.isTrue(parentId !== undefined);
+
+  await createLine(editor, model, category, makeLine(), parentId);  // add two children
+  await createLine(editor, model, category, makeLine(), parentId);
+
+  await editor.write();
+
+  return parentId!;
+}
+
+async function checkAssembly(iModel: IModelConnection, parentId: Id64String, nExpected: number[]): Promise<Id64Array> {
+  await iModel.saveChanges(""); // TODO: Move this after select statement when we fix the problem with querying uncommitted changes
+
+  const nParentQres = await iModel.queryRows("select count(*) as n from bis.GeometricElement3d where ecinstanceid=?", [parentId]);
+  assert.equal(nParentQres.rows[0].n, nExpected[0]);
+
+  const childrenQres = await iModel.queryRows("select ecinstanceid as id from bis.GeometricElement3d where parent.id=?", [parentId]);
+  assert.equal(childrenQres.rows.length, nExpected[1]);
+
+  return childrenQres.rows.map((row) => row.id);
 }
 
 async function countElementsInModel(iModel: IModelConnection, modelId: Id64String): Promise<number> {
@@ -70,12 +113,7 @@ describe("Element editor tests (#integration)", async () => {
     const dictionaryModelId = await iModel.models.getDictionaryModel();
     const category = await iModel.editing.categories.createAndInsertSpatialCategory(dictionaryModelId, "TestCategory1", { color: 0 });
 
-    const line = makeLine();
-    const geomprops = IModelJson.Writer.toIModelJson(line);
-    const origin = line.point0Ref;
-    const angles = new YawPitchRollAngles();
-    const props3d = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };
-    await editor.createElement(props3d, origin, angles, geomprops);
+    await createLine(editor, model, category, makeLine());
 
     await editor.write();
 
@@ -83,23 +121,64 @@ describe("Element editor tests (#integration)", async () => {
 
     assert(await iModel.editing.hasUnsavedChanges());
 
-    await iModel.saveChanges("create element test");
+    await iModel.saveChanges("create element test"); // TODO: Move this after select statement when we fix the problem with querying uncommitted changes
+
+    const qres = await iModel.queryRows("select count(*) as n from bis.GeometricElement3d");
+    assert.equal(qres.rows[0].n, 1);
 
     assert.isTrue(await iModel.editing.hasPendingTxns());
     assert.isFalse(await iModel.editing.hasUnsavedChanges());
 
   });
 
-  it("should run TestPrimitiveTool", async () => {
-    // ------------- Set up test environment, including iModel, a model, and a (fake) Viewport ------------------
+  it("ElementEditor3d test create and delete assembly", async () => {
+    const editor = await ElementEditor3d.start(iModel);
 
-    // Create a model to work with
+    const modelCode = await iModel.editing.codes.makeModelCode(iModel.models.repositoryModelId, "TestAssembly");
+    const model = await iModel.editing.models.createAndInsertPhysicalModel(modelCode);
+
+    const dictionaryModelId = await iModel.models.getDictionaryModel();
+    const category = await iModel.editing.categories.createAndInsertSpatialCategory(dictionaryModelId, "TestAssembly", { color: 0 });
+
+    const parentCode = await iModel.editing.codes.makeCode(BisCodeSpec.nullCodeSpec, iModel.elements.rootSubjectId, "assembly-parent");
+    let parentId = await createAssembly(editor, model, category, parentCode);
+    await checkAssembly(iModel, parentId, [1, 2]);
+    await iModel.editing.concurrencyControl.pullMergePush(""); // (release locks)
+
+    // Now delete the assembly. Specify only the parent. The children should be deleted as a side-effect of that.
+    // The editing API should take care of obtaining all needed locks.
+    await iModel.editing.deleteElements([parentId]);
+    await iModel.saveChanges(); // TODO: remove this when we fix the problem with querying uncommitted changes
+    await checkAssembly(iModel, parentId, [0, 0]);
+    await iModel.editing.concurrencyControl.pullMergePush(""); // (release locks)
+
+    // Create another assembly.
+    // This time, delete the parent and both children explicitly. That should be tolerated and not throw an error, even
+    // though deleting the parent automatically deletes the children.
+    const parentCode2 = await iModel.editing.codes.makeCode(BisCodeSpec.nullCodeSpec, iModel.elements.rootSubjectId, "assembly-parent2");
+    parentId = await createAssembly(editor, model, category, parentCode2);
+    let childIds = await checkAssembly(iModel, parentId, [1, 2]);
+    await iModel.editing.deleteElements([parentId, ...childIds]);
+    await iModel.saveChanges(); // TODO: remove this when we fix the problem with querying uncommitted changes
+    await checkAssembly(iModel, parentId, [0, 0]);
+    await iModel.editing.concurrencyControl.pullMergePush(""); // (release locks)
+
+    // Create another assembly.
+    // This time, delete the one of the children explicitly and not the parent. That should
+    // leave the rest of the assy intact.
+    const parentCode3 = await iModel.editing.codes.makeCode(BisCodeSpec.nullCodeSpec, iModel.elements.rootSubjectId, "assembly-parent3");
+    parentId = await createAssembly(editor, model, category, parentCode3);
+    childIds = await checkAssembly(iModel, parentId, [1, 2]);
+    await iModel.editing.deleteElements([childIds[0]]);
+    await iModel.saveChanges(); // TODO: remove this when we fix the problem with querying uncommitted changes
+    await checkAssembly(iModel, parentId, [1, 1]);
+    await iModel.editing.concurrencyControl.pullMergePush(""); // (release locks)
+  });
+
+  it("should run TestPrimitiveTool", async () => {
     const modelCode = await iModel.editing.codes.makeModelCode(iModel.models.repositoryModelId, "TestModel");
     const newModelId = await iModel.editing.models.createAndInsertPhysicalModel(modelCode);
     assert.isTrue(newModelId !== undefined);
-
-    // mock a viewport ... just enough to make the Tool function
-    const vp: Viewport = { view: { iModel } } as Viewport;
 
     const dictionaryModelId = await iModel.models.getDictionaryModel();
     const category = await iModel.editing.categories.createAndInsertSpatialCategory(dictionaryModelId, "TestPrimitiveToolCategory", { color: 0 });
@@ -110,7 +189,7 @@ describe("Element editor tests (#integration)", async () => {
 
     await iModel.editing.concurrencyControl.pullMergePush("create element test - model and category");
 
-    // ------------- Set up and run the tool, as if a user executed the tool from a tool palette  ------------------
+    // ------------- Set up and run the tool, as if a user executed it from a tool palette  ------------------
 
     //  --- Register
     const testNamespace = IModelApp.i18n.registerNamespace("TestApp");
@@ -121,14 +200,13 @@ describe("Element editor tests (#integration)", async () => {
     assert.isTrue(IModelApp.toolAdmin.currentTool instanceof PlacementTestTool);
     const tool = IModelApp.toolAdmin.currentTool as PlacementTestTool;
 
-    //  --- Auto-lock onto view and model
+    // Pretend user has picked a target view, model, and Category
     assert.isUndefined(tool.targetModelId);
     tool.targetModelId = newModelId;
 
     assert.isUndefined(tool.targetView);
-    tool.targetView = vp;
+    tool.targetView = { view: { iModel } } as Viewport; // mock a viewport, just enough to make the Tool function
 
-    //  -- Pretend user has picked a Category in ToolSettings or somewhere like that.
     IModelApp.toolAdmin.activeSettings.category = category;
 
     //  --- Simulate datapoints, reset, etc.

@@ -66,6 +66,7 @@ import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
+import { Editor3dRpcInterfaceWriteOptions } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
@@ -2352,7 +2353,9 @@ export class ElementEditor3d {
     restart(): Promise<void>;
     static start(iModelConnection: IModelConnection): Promise<ElementEditor3d>;
     startModifyingElements(elementIds: Id64Array): Promise<void>;
-    write(): Promise<void>;
+    write(opts?: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
+    writeReturningIds(): Promise<Id64Array>;
+    writeReturningProps(wantGeom?: boolean): Promise<GeometricElement3dProps[]>;
 }
 
 // @public (undocumented)

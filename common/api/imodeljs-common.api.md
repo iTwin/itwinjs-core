@@ -1864,7 +1864,25 @@ export abstract class Editor3dRpcInterface extends RpcInterface {
     // (undocumented)
     startModifyingElements(_tokenProps: IModelRpcProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void>;
     // (undocumented)
-    writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
+    writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString, _opts: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
+}
+
+// @alpha (undocumented)
+export interface Editor3dRpcInterfaceWriteOptions {
+    returnPropsOptions?: Editor3dRpcInterfaceWriteReturnPropsOptions;
+    returnType?: Editor3dRpcInterfaceWriteReturnType;
+}
+
+// @alpha (undocumented)
+export interface Editor3dRpcInterfaceWriteReturnPropsOptions {
+    geometry?: boolean;
+}
+
+// @alpha (undocumented)
+export enum Editor3dRpcInterfaceWriteReturnType {
+    Ids = 1,
+    None = 0,
+    Props = 2
 }
 
 // @beta

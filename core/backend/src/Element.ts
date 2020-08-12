@@ -93,11 +93,18 @@ export class Element extends Entity implements ElementProps {
         break;
       }
       case DbOpcode.Delete: {
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id!, LockLevel.Exclusive)]);
+        assert(props.id !== undefined);
+        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockLevel.Exclusive)]);
+
+        // Elements.deleteElement will automatically delete children, so we must automatically request the necessary resources for the children.
+        iModel.elements.queryChildren(props.id).forEach((childId) => {
+          this.populateRequest(req, {...props, id: childId } as ElementProps, iModel, opcode, original); // (Rather than load the child's props, just fake it. We know that only the id property is needed. Likewise, pass anything for "original", since it's not used in the delete case. )
+        });
         break;
       }
       case DbOpcode.Update: {
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id!, LockLevel.Exclusive)]);
+        assert(props.id !== undefined);
+        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockLevel.Exclusive)]);
 
         assert(original !== undefined && original.id === props.id);
         if (original !== undefined) {

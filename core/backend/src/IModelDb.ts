@@ -1513,7 +1513,9 @@ export namespace IModelDb {
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
-        const props = this.getElementProps(id);
+        const props = this.tryGetElementProps(id);
+        if (props === undefined) // this may be a child element which was deleted earlier as a consequence of deleting its parent.
+          return;
         const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
         jsClass.onDelete(props, iModel);
 

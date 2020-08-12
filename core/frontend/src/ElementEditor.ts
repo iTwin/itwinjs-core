@@ -8,7 +8,7 @@
 
 import { Guid, GuidString, Id64Array, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Editor3dRpcInterface, GeometricElement3dProps, IModelError } from "@bentley/imodeljs-common";
+import { Editor3dRpcInterface, Editor3dRpcInterfaceWriteOptions, Editor3dRpcInterfaceWriteReturnType, GeometricElement3dProps, IModelError } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelConnection } from "./IModelConnection";
 
@@ -117,11 +117,33 @@ export class ElementEditor3d {
   }
 
   /**
-   * Write all modifications and inserts to the local briefcase.
+   * Write all queued modifications and inserts to the local briefcase.
+   * @param opts  Optional. Allows you to specified what information, if any, about the elements as written you want to get back in the return value. The default is nothing (void).
    * @alpha
    */
-  public async write(): Promise<void> {
+  public async write(opts?: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void> {
     this._mustBeOpen();
-    return this._rpc.writeAllChangesToBriefcase(this.iModelConnection.getRpcProps(), this._guid);
+    return this._rpc.writeAllChangesToBriefcase(this.iModelConnection.getRpcProps(), this._guid, opts || {});
+  }
+
+  /**
+   * Write all queued modifications and inserts to the local briefcase and return the GeometricElement3dProps for the written elements.
+   * @param wantGeom   Optional. Do you want to returned props to include the elements' geometry? The default is to omit the geometry (which can require a lot of memory).
+   * @alpha
+   */
+  public async writeReturningProps(wantGeom?: boolean): Promise<GeometricElement3dProps[]> {
+    this._mustBeOpen();
+    const opts: Editor3dRpcInterfaceWriteOptions = { returnType: Editor3dRpcInterfaceWriteReturnType.Props, returnPropsOptions: { geometry: wantGeom } };
+    return this.write(opts) as Promise<GeometricElement3dProps[]>;
+  }
+
+  /**
+   * Write all queued modifications and inserts to the local briefcase and return the ElementIds for the written elements.
+   * @alpha
+   */
+  public async writeReturningIds(): Promise<Id64Array> {
+    this._mustBeOpen();
+    const opts: Editor3dRpcInterfaceWriteOptions = { returnType: Editor3dRpcInterfaceWriteReturnType.Ids };
+    return this.write(opts) as Promise<Id64Array>;
   }
 }

@@ -13,6 +13,30 @@ import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 
+/** @alpha */
+export enum Editor3dRpcInterfaceWriteReturnType {
+  /** don't return anything from write */
+  None,
+  /** return the ECInstanceIds of the elements written */
+  Ids,
+  /** return the GeometricElement3dProps of the elements written */
+  Props,
+}
+
+/** @alpha */
+export interface Editor3dRpcInterfaceWriteReturnPropsOptions {
+  /** The returned GeometricElement3dProps should contain geometry. */
+  geometry?: boolean;
+}
+
+/** @alpha */
+export interface Editor3dRpcInterfaceWriteOptions {
+  /** Specifies what, if anything, the write method should return. By default, write returns void. */
+  returnType?: Editor3dRpcInterfaceWriteReturnType;
+  /** If props are to be returned, what should be included? By default, geometry is not returned in the props. All other properties are included. */
+  returnPropsOptions?: Editor3dRpcInterfaceWriteReturnPropsOptions;
+}
+
 /** The RPC interface for editing Spatial and other 3D elements and Models in an iModel.
  * All operations require read+write access.
  * @alpha
@@ -33,7 +57,7 @@ export abstract class Editor3dRpcInterface extends RpcInterface {
   ===========================================================================================*/
   public async start(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void> { return this.forward(arguments); }
   public async end(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void> { return this.forward(arguments); }
-  public async writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void> { return this.forward(arguments); }
+  public async writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString, _opts: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void> { return this.forward(arguments); }
   public async startModifyingElements(_tokenProps: IModelRpcProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void> { return this.forward(arguments); }
   public async createElement(_tokenProps: IModelRpcProps, _editorId: GuidString, _props: GeometricElement3dProps, _origin?: Point3d, _angles?: YawPitchRollAngles, _geometry?: any): Promise<void> { return this.forward(arguments); }
   public async applyTransform(_tokenProps: IModelRpcProps, _editorId: GuidString, _tprops: TransformProps) { return this.forward(arguments); }
