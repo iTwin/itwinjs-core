@@ -7395,7 +7395,9 @@ export class WebAppRpcRequest extends RpcRequest {
     protected send(): Promise<number>;
     static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
     protected setHeader(name: string, value: string): void;
-    }
+    protected supplyFetch(): typeof fetch;
+    protected supplyRequest(): typeof Request;
+}
 
 // @internal
 export abstract class WipRpcInterface extends RpcInterface {

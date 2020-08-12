@@ -184,6 +184,16 @@ export class WebAppRpcRequest extends RpcRequest {
     });
   }
 
+  /** Override to supply an alternate fetch function. */
+  protected supplyFetch(): typeof fetch {
+    return fetch;
+  }
+
+  /** Override to supply an alternate Request function. */
+  protected supplyRequest(): typeof Request {
+    return Request;
+  }
+
   private static configureResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const success = protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;
 
@@ -248,15 +258,18 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private async performFetch(): Promise<number> {
-    const path = new URL(this.path, location.origin);
+    const requestClass = this.supplyRequest();
+    const fetchFunction = this.supplyFetch();
+
+    const path = new URL(this.path, typeof (location) !== "undefined" ? location.origin : undefined);
     if (this._pathSuffix) {
       const params = new URLSearchParams();
       params.set("parameters", this._pathSuffix);
       path.search = `?${params.toString()}`;
     }
 
-    const request = new Request(path.toString(), this._request);
-    const response = await fetch(request);
+    const request = new requestClass(path.toString(), this._request);
+    const response = await fetchFunction(request);
     this._response = response;
     this.metadata.status = response.status;
     return response.status;
