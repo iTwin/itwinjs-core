@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools-core",
+      "comment": "Add 'react-redux' to list of 3rd party shared libraries for the IModelJsLibrary Exports and Imports plugins",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools-core",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

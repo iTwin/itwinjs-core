@@ -5,18 +5,15 @@
 
 import { Compiler } from "webpack";
 import { ConcatSource } from "webpack-sources";
-
-const IMJS_GLOBAL_OBJECT = "__IMODELJS_INTERNALS_DO_NOT_USE";
-const IMJS_GLOBAL_LIBS = `${IMJS_GLOBAL_OBJECT}.SHARED_LIBS`;
-const IMJS_GLOBAL_LIBS_VERS = `${IMJS_GLOBAL_LIBS}_VERS`;
+import * as utils from "./IModeljsLibraryUtils";
 
 function getLoaderString(pkgName: string, pkgVersion: string) {
   return `  module.exports = (() => {
-    if (!window.${IMJS_GLOBAL_OBJECT} || !window.${IMJS_GLOBAL_LIBS_VERS} || !window.${IMJS_GLOBAL_LIBS})
+    if (!window.${utils.IMJS_GLOBAL_OBJECT} || !window.${utils.IMJS_GLOBAL_LIBS_VERS} || !window.${utils.IMJS_GLOBAL_LIBS})
       throw new Error("Expected globals are missing!");
-    if (window.${IMJS_GLOBAL_LIBS_VERS}[${pkgName}] >= ${pkgVersion})
-      return window.${IMJS_GLOBAL_LIBS}[${pkgName}];
-    if (window.${IMJS_GLOBAL_LIBS}[${pkgName}])
+    if (window.${utils.IMJS_GLOBAL_LIBS_VERS}[${pkgName}] >= ${pkgVersion})
+      return window.${utils.IMJS_GLOBAL_LIBS}[${pkgName}];
+    if (window.${utils.IMJS_GLOBAL_LIBS}[${pkgName}])
       throw new Error("iModel.js Shared Library " + ${pkgName} + " is loaded, but is an incompatible version." )
     throw new Error("iModel.js Shared Library " + ${pkgName} + " is not yet loaded." )
   })();`;
@@ -29,7 +26,7 @@ export class IModeljsLibraryImportsPlugin {
     compiler.hooks.normalModuleFactory.tap("IModeljsLibraryImportsPlugin", (normalModuleFactory) => {
       normalModuleFactory.hooks.module.tap("IModeljsLibraryImportsPlugin", (mod, info) => {
         const pkgJson = info.resourceResolveData.descriptionFileData;
-        if ((pkgJson.name === info.rawRequest && pkgJson.imodeljsSharedLibrary) || pkgJson.name === "react" || pkgJson.name === "react-dom") {
+        if ((pkgJson.name === info.rawRequest && pkgJson.imodeljsSharedLibrary) || utils.ADDITIONAL_SHARED_LIBRARIES.includes(pkgJson.name)) {
           mod.___IS_BENTLEY = true;
           mod.___IMJS_VER = pkgJson.version;
           mod.___IMJS_NAME = pkgJson.name;
