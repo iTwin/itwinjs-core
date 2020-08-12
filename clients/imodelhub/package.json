@@ -47,6 +47,7 @@
     "@bentley/build-tools": "2.5.0-dev.11",
     "@bentley/frontend-authorization-client": "2.5.0-dev.11",
     "@bentley/itwin-client": "2.5.0-dev.11",
+    "@bentley/rbac-client": "2.5.0-dev.11",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
     "@types/node": "10.14.1",
