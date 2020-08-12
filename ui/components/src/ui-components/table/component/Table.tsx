@@ -13,8 +13,10 @@ import { memoize } from "lodash";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { PrimitiveValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { CommonProps, Dialog, LocalUiSettings, SortDirection, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
+import { isArrowKey, PrimitiveValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
+import {
+  CommonProps, Dialog, ItemKeyboardNavigator, LocalUiSettings, Orientation, SortDirection, UiSettings, UiSettingsStatus,
+} from "@bentley/ui-core";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
 } from "../../common/selection/SelectionHandler";
@@ -1159,6 +1161,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _onMouseDown = () => {
     document.addEventListener("mouseup", this._onMouseUp, { capture: true, once: true });
   }
+
   private _onHeaderDrop = (source: string, target: string) => {
     const cols = [...this.state.columns];
     const columnSourceIndex = this.state.columns.findIndex((i) => i.key === source);
@@ -1396,6 +1399,29 @@ export class Table extends React.Component<TableProps, TableState> {
       this.props.onScrollToRow(scrollData.rowVisibleStartIdx);
   }
 
+  private _onKeyboardEvent = (e: React.KeyboardEvent, keyDown: boolean) => {
+    if (isArrowKey(e.key) || SpecialKey.Home === e.key || SpecialKey.End === e.key) {
+      const handleKeyboardSelectItem = (index: number) => {
+        const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(index));
+        selectionFunction(e.shiftKey, e.ctrlKey);
+      };
+      const handleKeyboardActivateItem = (_index: number) => { };
+
+      const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
+      itemKeyboardNavigator.orientation = Orientation.Vertical;
+      itemKeyboardNavigator.allowWrap = false;
+      itemKeyboardNavigator.itemCount = this.state.rowsCount;
+
+      const processedRow = this._rowSelectionHandler.processedItem ?? 0;
+      keyDown ?
+        itemKeyboardNavigator.handleKeyDownEvent(e, processedRow) :
+        itemKeyboardNavigator.handleKeyUpEvent(e, processedRow);
+    }
+  }
+
+  private _onKeyDown = (e: React.KeyboardEvent) => this._onKeyboardEvent(e, true);
+  private _onKeyUp = (e: React.KeyboardEvent) => this._onKeyboardEvent(e, false);
+
   /** @internal */
   public render() {
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
@@ -1417,6 +1443,8 @@ export class Table extends React.Component<TableProps, TableState> {
         <div className={tableClassName} style={this.props.style}
           onMouseDown={this._onMouseDown}
           onContextMenu={this.props.showHideColumns ? this._handleShowHideContextMenu : undefined}
+          onKeyDown={this._onKeyDown}
+          onKeyUp={this._onKeyUp}
           role="presentation"
         >
           {this.props.showHideColumns &&

@@ -75,6 +75,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     const email = (this._userInfo && this._userInfo.email && typeof this._userInfo.email.id === "string") ? this._userInfo.email.id : /* istanbul ignore next */ "";
     const organization = (this._userInfo && this._userInfo.organization) ? this._userInfo.organization.name : /* istanbul ignore next */ "";
     const color = getUserColor(email);
+
     return (
       <div className="uifw-user-profile">
         <div className="profile-info">

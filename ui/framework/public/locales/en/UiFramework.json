@@ -261,5 +261,11 @@
   },
   "statusBar": {
     "overflow": "More status fields"
+  },
+  "modalFrontstage": {
+    "backButtonTitle": "Return to previous stage"
+  },
+  "standardRotationNavigationAid": {
+    "title": "Standard Rotations"
   }
 }

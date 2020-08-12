@@ -6,6 +6,8 @@ import "./MobxDemoView.scss";
 import * as React from "react";
 import { Button, Input, NumericInput } from "@bentley/ui-core";
 
+// cspell:ignore mobx
+
 interface MobxDemoViewProps {
   birds: string[];
   birdCount: number;
@@ -35,11 +37,11 @@ export class MobxDemoView extends React.Component<MobxDemoViewProps> {
           <table>
             <tbody>
               <tr>
-                <td><Input placeholder="Enter bird" value={birdName} onChange={setBirdName} className="bird-name" /></td>
+                <td><Input placeholder="Enter bird" aria-label="Bird name" value={birdName} onChange={setBirdName} className="bird-name" /></td>
                 <td><Button disabled={shouldDisableSubmit}>Add bird</Button></td>
               </tr>
               <tr>
-                <td><NumericInput className="numeric-input" min={-100} max={100} strict placeholder="Enter numeric value" /></td>
+                <td><NumericInput className="numeric-input" min={-100} max={100} strict placeholder="Enter number" aria-label="Numeric demo" /></td>
                 <td>&nbsp;</td>
               </tr>
             </tbody>

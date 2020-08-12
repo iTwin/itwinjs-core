@@ -16,6 +16,7 @@ export class ItemKeyboardNavigator {
   private _direction = new Map<string, number>();
   private _itemCount = 0;
   private _orientation = Orientation.Horizontal;
+  private _allowWrap = true;
 
   constructor(public onFocusItem: (index: number) => void, public onActivateItem: (index: number) => void) {
     this._direction.set(SpecialKey.ArrowLeft, -1);
@@ -24,14 +25,20 @@ export class ItemKeyboardNavigator {
     this._direction.set(SpecialKey.ArrowDown, 1);
   }
 
-  /** Set the item count */
+  /** The item count */
+  public get itemCount(): number { return this._itemCount; }
   public set itemCount(count: number) { this._itemCount = count; }
 
-  /** Set the orientation */
+  /** The primary orientation */
+  public get orientation(): Orientation { return this._orientation; }
   public set orientation(orientation: Orientation) { this._orientation = orientation; }
 
-  /** Handle keydown on items */
-  public handleKeydownEvent(event: React.KeyboardEvent, index: number) {
+  /** The allow wrap property controls whether the movement will stop at the first and last items or wrap  */
+  public get allowWrap(): boolean { return this._allowWrap; }
+  public set allowWrap(v: boolean) { this._allowWrap = v; }
+
+  /** Handle KeyDown on items */
+  public handleKeyDownEvent(event: React.KeyboardEvent, index: number) {
     const key = event.key;
 
     switch (key) {
@@ -55,8 +62,8 @@ export class ItemKeyboardNavigator {
     }
   }
 
-  /** Handle keyup on items */
-  public handleKeyupEvent(event: React.KeyboardEvent, index: number) {
+  /** Handle KeyUp on items */
+  public handleKeyUpEvent(event: React.KeyboardEvent, index: number) {
     const key = event.key;
 
     switch (key) {
@@ -118,10 +125,15 @@ export class ItemKeyboardNavigator {
 
       if (0 <= newIndex && newIndex < this._itemCount) {
         this.onFocusItem(newIndex);
-      } else if (pressed === SpecialKey.ArrowLeft || pressed === SpecialKey.ArrowUp) {
-        this.focusLastItem();
       } else {
-        this.focusFirstItem();
+        // istanbul ignore else
+        if (this._allowWrap) {
+          if (pressed === SpecialKey.ArrowLeft || pressed === SpecialKey.ArrowUp) {
+            this.focusLastItem();
+          } else {
+            this.focusFirstItem();
+          }
+        }
       }
     }
   }

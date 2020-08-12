@@ -31,7 +31,7 @@ export interface ToolAssistanceProps extends FooterIndicatorProps {
  */
 export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
   public render() {
-    const { children, className, icons, indicatorRef, onClick, ...props } = this.props;
+    const { children, className, icons, indicatorRef, onClick, title, ...props } = this.props;
     return (
       <FooterIndicator
         className={classnames("nz-footer-toolAssistance-indicator", className)}
@@ -44,6 +44,7 @@ export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
           ref={indicatorRef}
           role="button"
           tabIndex={-1}
+          title={title}
         >
           <div className="nz-icons">
             {icons}

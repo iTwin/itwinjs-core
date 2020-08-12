@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { BackButton } from "@bentley/ui-ninezone";
+import { UiFramework } from "../UiFramework";
 
 /**
  * Properties for the [[ModalFrontstage]] React component
@@ -34,6 +35,8 @@ export interface ModalFrontstageProps extends CommonProps {
  * @public
  */
 export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
+  private _backButtonTitle = UiFramework.translate("modalFrontstage.backButtonTitle");
+
   constructor(props: ModalFrontstageProps) {
     super(props);
   }
@@ -60,6 +63,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
               icon={
                 <i className="icon icon-progress-backward" />
               }
+              title={this._backButtonTitle}
             />
             <span className="uicore-text-headline">{this.props.title}</span>
             {this.props.appBarRight &&

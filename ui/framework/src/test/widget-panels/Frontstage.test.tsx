@@ -74,6 +74,14 @@ describe("WidgetPanelsFrontstage", () => {
 describe("ModalFrontstageComposer", () => {
   const sandbox = sinon.createSandbox();
 
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   afterEach(() => {
     sandbox.restore();
   });

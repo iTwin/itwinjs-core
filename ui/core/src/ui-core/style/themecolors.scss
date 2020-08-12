@@ -35,6 +35,7 @@ $buic-background-divider:                 var(--buic-background-divider);
 $buic-background-widget-element-stroke:   var(--buic-background-widget-element-stroke);
 $buic-background-control-disabled:        var(--buic-background-control-disabled);
 $buic-background-table-header:            var(--buic-background-table-header);
+$buic-background-control-stroke-disabled: var(--buic-background-control-stroke-disabled);
 
 $buic-background-tab-inactive:            var(--buic-background-tab-inactive);
 $buic-background-toolbutton-inactive:     var(--buic-background-toolbutton-inactive);
@@ -65,11 +66,13 @@ $buic-foreground-body:                    var(--buic-foreground-body);
 $buic-foreground-body-reverse:            var(--buic-foreground-body-reverse);
 $buic-foreground-disabled:                var(--buic-foreground-disabled);
 $buic-foreground-muted:                   var(--buic-foreground-muted);
+$buic-foreground-subdued:                 var(--buic-foreground-subdued);
 $buic-foreground-activehover:             var(--buic-foreground-activehover);
 
 $buic-text-color:                         var(--buic-foreground-body);          // 0.85 opacity
 $buic-text-color-disabled:                var(--buic-foreground-disabled);      // 0.45 opacity (Note: 0.25 is too much)
 $buic-text-color-muted:                   var(--buic-foreground-muted);         // 0.65 opacity
+$buic-text-color-subdued:                 var(--buic-foreground-subdued);       // 0.75 opacity (Note: 0.65 is too much for color contrast checking)
 $buic-text-color-reverse:                 var(--buic-foreground-body-reverse);  // 0.85 opacity
 $buic-text-color-hover:                   var(--buic-foreground-activehover);   // 1.00 opacity
 

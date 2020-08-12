@@ -639,6 +639,7 @@ export class FooterIndicator extends React.PureComponent<FooterIndicatorProps> {
 export interface FooterIndicatorProps extends CommonProps {
     children?: React.ReactNode;
     isInFooterMode?: boolean;
+    title?: string;
 }
 
 // @beta

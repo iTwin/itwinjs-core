@@ -8,6 +8,7 @@ import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
+import * as CSS from 'csstype';
 import { FocusEventHandler } from 'react-select/src/types';
 import { formatGroupLabel } from 'react-select/src/builtins';
 import { getOptionLabel } from 'react-select/src/builtins';
@@ -17,6 +18,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { InputActionMeta } from 'react-select/src/types';
 import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
@@ -819,6 +821,9 @@ export interface FormProps {
 export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
 // @internal
+export function getBestBWContrastColor(hexColor: string): "black" | "white";
+
+// @internal
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
 
 // @internal
@@ -985,6 +990,23 @@ export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown>;
 
 // @internal
 export const isReactMessage: (message: MessageType) => message is ReactMessage;
+
+// @internal
+export class ItemKeyboardNavigator {
+    constructor(onFocusItem: (index: number) => void, onActivateItem: (index: number) => void);
+    get allowWrap(): boolean;
+    set allowWrap(v: boolean);
+    handleKeyDownEvent(event: React_2.KeyboardEvent, index: number): void;
+    handleKeyUpEvent(event: React_2.KeyboardEvent, index: number): void;
+    get itemCount(): number;
+    set itemCount(count: number);
+    // (undocumented)
+    onActivateItem: (index: number) => void;
+    // (undocumented)
+    onFocusItem: (index: number) => void;
+    get orientation(): Orientation;
+    set orientation(orientation: Orientation);
+    }
 
 // @public
 export interface LabeledComponentProps {
@@ -1876,7 +1898,7 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
     componentDidUpdate(prevProps: MainTabsProps): void;
     // @internal (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {

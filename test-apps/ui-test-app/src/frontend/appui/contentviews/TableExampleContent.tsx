@@ -165,7 +165,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     editorParams.push(rangeParams);
 
     const rows = new Array<RowItem>();
-    for (let i = 1; i <= 100000; i++) {
+    for (let i = 1; i <= 1000 /*00*/; i++) {
       const row: RowItem = { key: i.toString(), cells: [] };
       row.cells.push({
         key: this._columns[0].key,

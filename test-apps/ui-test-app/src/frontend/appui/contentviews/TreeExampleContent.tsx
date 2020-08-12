@@ -75,7 +75,7 @@ function TreeExampleContent() {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
       <div style={{ marginBottom: "4px" }}>
-        <select onChange={onChangeSelectionMode} value={selectionMode}>
+        <select onChange={onChangeSelectionMode} value={selectionMode} title="Selection Mode">
           <option value={SelectionMode.Single}> Single </option>
           <option value={SelectionMode.SingleAllowDeselect}> SingleAllowDeselect </option>
           <option value={SelectionMode.Multiple}> Multiple </option>

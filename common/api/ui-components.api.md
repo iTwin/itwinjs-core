@@ -2973,6 +2973,7 @@ export class SelectionHandler<Item> {
     onItemsDeselectedCallback?: OnItemsDeselectedCallback<Item>;
     // (undocumented)
     onItemsSelectedCallback?: OnItemsSelectedCallback<Item>;
+    get processedItem(): Item | undefined;
     selectionMode: SelectionMode;
     updateDragAction(latestItem: Item): void;
 }

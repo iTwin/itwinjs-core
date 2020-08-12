@@ -11,7 +11,7 @@ import TestBackend from "react-dnd-test-backend";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
 import { HorizontalAlignment, LocalUiSettings } from "@bentley/ui-core";
 import {
   CellItem, ColumnDescription, EditorContainer, PropertyUpdatedArgs, RowItem, SelectionMode, Table, TableDataChangeEvent, TableDataChangesListener,
@@ -418,6 +418,21 @@ describe("Table", () => {
           expect(table.find(selectedRowClassName).length).to.be.equal(1);
         });
 
+        it("selects a row with keys", async () => {
+          table.update();
+          const row = table.find(rowClassName).first();
+          row.simulate("click");
+          await verifyRowIterator(["0"], selectedRowsIterator);
+
+          const t = table.find(tableWrapper);
+          t.simulate("keyDown", { key: SpecialKey.ArrowDown });
+          t.simulate("keyUp", { key: SpecialKey.ArrowDown });
+          await verifyRowIterator(["1"], selectedRowsIterator);
+
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+          expect(table.find(selectedRowClassName).length).to.be.equal(1);
+        });
+
         it.skip("deselects other rows when selects a row", async () => {
           const isRowSelected = () => true;
           table.setProps({ isRowSelected });
@@ -450,6 +465,23 @@ describe("Table", () => {
           await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
 
           onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+          expect(table.find(selectedRowClassName).length).to.be.equal(3);
+        });
+
+        it("shift select rows from top to bottom with keys", async () => {
+          const rows = table.find(rowClassName);
+          const row0 = rows.at(0);
+          row0.simulate("click");
+          await verifyRowIterator(["0"], selectedRowsIterator);
+
+          const t = table.find(tableWrapper);
+          t.simulate("keyDown", { key: SpecialKey.ArrowDown, shiftKey: true });
+          t.simulate("keyUp", { key: SpecialKey.ArrowDown, shiftKey: true });
+          t.simulate("keyDown", { key: SpecialKey.ArrowDown, shiftKey: true });
+          t.simulate("keyUp", { key: SpecialKey.ArrowDown, shiftKey: true });
+          await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
+
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(3));
           expect(table.find(selectedRowClassName).length).to.be.equal(3);
         });
 

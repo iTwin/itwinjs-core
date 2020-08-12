@@ -11,7 +11,8 @@
   "button": {
     "label": {
       "search": "Search",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "settings": "Settings"
     }
   },
   "breadcrumb": {
@@ -53,7 +54,12 @@
     "repeat": "Repeat",
     "slow": "Speed: slow",
     "medium": "Speed: medium",
-    "fast": "Speed: fast"
+    "fast": "Speed: fast",
+    "play": "Play",
+    "pause": "Pause",
+    "backward": "Backward",
+    "forward": "Forward",
+    "step": "Step"
   },
   "month": {
     "long": {

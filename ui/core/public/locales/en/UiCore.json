@@ -22,5 +22,8 @@
   "tree": {
     "expand": "Expand",
     "collapse": "Collapse"
+  },
+  "elementSeparator": {
+    "label": "Resizer"
   }
 }

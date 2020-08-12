@@ -122,13 +122,13 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   }
 
   /** Handle keydown on tabs */
-  private _handleKeydownEvent(event: React.KeyboardEvent, index: number) {
-    this._itemKeyboardNavigator.handleKeydownEvent(event, index);
+  private _handleKeyDownEvent(event: React.KeyboardEvent, index: number) {
+    this._itemKeyboardNavigator.handleKeyDownEvent(event, index);
   }
 
   /** Handle keyup on tabs */
-  private _handleKeyupEvent(event: React.KeyboardEvent, index: number) {
-    this._itemKeyboardNavigator.handleKeyupEvent(event, index);
+  private _handleKeyUpEvent(event: React.KeyboardEvent, index: number) {
+    this._itemKeyboardNavigator.handleKeyUpEvent(event, index);
   }
 
   private _activateTab = (index: number) => {
@@ -160,8 +160,8 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
             <a ref={this._anchorRefs[index]}
               tabIndex={index === this.state.activeIndex ? 0 : -1}
               onClick={() => this._handleTabClick(index)}
-              onKeyDown={(event) => this._handleKeydownEvent(event, index)}
-              onKeyUp={(event) => this._handleKeyupEvent(event, index)}
+              onKeyDown={(event) => this._handleKeyDownEvent(event, index)}
+              onKeyUp={(event) => this._handleKeyUpEvent(event, index)}
               role="button"
             >
               {label}

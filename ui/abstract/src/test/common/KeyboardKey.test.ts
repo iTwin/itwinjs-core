@@ -19,7 +19,7 @@ describe("isArrowKey", () => {
   });
 
   it("should return true if Right key", () => {
-    isArrowKey(SpecialKey.ArrowLeft).should.true;
+    isArrowKey(SpecialKey.ArrowRight).should.true;
   });
 
   it("should return false if Enter key", () => {

@@ -91,7 +91,7 @@ $uicore-slider-minmax-margin:   6px;
       outline: none;
       padding: 0;
 
-      &:hover:not([disabled]) {
+      &:hover:not(.core-disabled) {
         border-color: $buic-foreground-focus;
       }
 
@@ -119,7 +119,6 @@ $uicore-slider-minmax-margin:   6px;
 
   &.core-disabled {
     cursor: not-allowed;
-    opacity: $uicore-opacity-disabled;
 
     .core-slider {
       .core-slider-rail {
@@ -136,7 +135,12 @@ $uicore-slider-minmax-margin:   6px;
 
       .core-slider-handle {
         background: $buic-background-control-disabled;
+        border-color: $buic-background-control-stroke-disabled;
         cursor: not-allowed;
+      }
+
+      .core-slider-tick-mark {
+        opacity: $uicore-opacity-disabled;
       }
 
       .core-slider-tick-label {

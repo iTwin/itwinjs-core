@@ -15,6 +15,10 @@ describe("<UserProfile />", () => {
     shallow(<UserProfile />).should.matchSnapshot();
   });
 
+  it("renders correctly with given color", () => {
+    shallow(<UserProfile color="#6ab9ec" />).should.matchSnapshot();
+  });
+
   it("renders safe area aware correctly", () => {
     shallow(<UserProfile safeAreaInsets={SafeAreaInsets.All} />).should.matchSnapshot();
   });

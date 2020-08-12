@@ -39,36 +39,36 @@ class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
               <td>{this.props.iModelConnection ? this.props.iModelConnection.name : ""}</td>
             </tr>
             <tr>
-              <td>{IModelApp.i18n.translate("SampleApp:zone6.month")}</td>
-              <td> <input type="month" /> </td>
+              <td><label htmlFor="demo-month">{IModelApp.i18n.translate("SampleApp:zone6.month")}</label></td>
+              <td> <input type="month" id="demo-month" /> </td>
             </tr>
             <tr>
-              <td>{IModelApp.i18n.translate("SampleApp:zone6.number")}</td>
-              <td> <input type="number" min="10" max="20" /> </td>
+              <td><label htmlFor="demo-number">{IModelApp.i18n.translate("SampleApp:zone6.number")}</label></td>
+              <td> <input type="number" id="demo-number" min="10" max="20" /> </td>
             </tr>
             <tr>
-              <td>{IModelApp.i18n.translate("SampleApp:zone6.password")}</td>
-              <td> <input type="password" /> </td>
+              <td><label htmlFor="demo-password">{IModelApp.i18n.translate("SampleApp:zone6.password")}</label></td>
+              <td> <input type="password" id="demo-password" /> </td>
             </tr>
             <tr>
-              <td>{IModelApp.i18n.translate("SampleApp:zone6.radio")}</td>
-              <td> <input type="radio" /> </td>
+              <td><label htmlFor="demo-radio">{IModelApp.i18n.translate("SampleApp:zone6.radio")}</label></td>
+              <td> <input type="radio" id="demo-radio" /> </td>
             </tr>
             <tr>
-              <td>{IModelApp.i18n.translate("SampleApp:zone6.range")}</td>
-              <td> <input type="range" /> </td>
+              <td><label htmlFor="demo-range">{IModelApp.i18n.translate("SampleApp:zone6.range")}</label></td>
+              <td> <input type="range" id="demo-range" /> </td>
             </tr>
             <tr>
-              <td>{IModelApp.i18n.translate("SampleApp:zone6.search")}</td>
-              <td> <input type="search" /> </td>
+              <td><label htmlFor="demo-search">{IModelApp.i18n.translate("SampleApp:zone6.search")}</label></td>
+              <td> <input type="search" id="demo-search" /> </td>
             </tr>
             <tr>
-              <td>{IModelApp.i18n.translate("SampleApp:zone6.Tel")}</td>
-              <td> <input type="tel" /> </td>
+              <td><label htmlFor="demo-tel">{IModelApp.i18n.translate("SampleApp:zone6.Tel")}</label></td>
+              <td> <input type="tel" id="demo-tel" /> </td>
             </tr>
             <tr>
-              <td>{IModelApp.i18n.translate("SampleApp:zone6.Text")}</td>
-              <td> <input type="text" /> </td>
+              <td><label htmlFor="demo-text">{IModelApp.i18n.translate("SampleApp:zone6.Text")}</label></td>
+              <td> <input type="text" id="demo-text" /> </td>
             </tr>
           </tbody>
         </table>

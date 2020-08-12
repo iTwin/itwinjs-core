@@ -219,6 +219,7 @@ export class SelectionHandler<Item> {
 
   private _currentOperation?: BatchSelectionOperation<Item>;
   private _lastItem?: Item; // keeps track of last item interacted with for shift selection
+  private _processedItem?: Item; // last item interacted with
   private _dragAction?: DragAction<Item>;
   private _componentSelectionHandler?: MultiSelectionHandler<Item>; // needed for drag selection
 
@@ -228,9 +229,14 @@ export class SelectionHandler<Item> {
     this.onItemsDeselectedCallback = onItemsDeselectedCallback;
   }
 
+  /** Get the onSelectionChange processed item */
+  public get processedItem(): Item | undefined { return this._processedItem; }
+
   /** Creates a function that should be called when selection changes. */
   public createSelectionFunction(componentHandler: MultiSelectionHandler<Item>, itemHandler: SingleSelectionHandler<Item>): OnSelectionChanged {
     const onSelectionChange: OnSelectionChanged = (shiftDown, ctrlDown) => {
+      this._processedItem = itemHandler.item();
+
       if (this.selectionMode === SelectionMode.None) {
         return;
       }

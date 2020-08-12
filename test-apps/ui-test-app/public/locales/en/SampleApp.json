@@ -319,7 +319,8 @@
     "TreeDemo": "Tree Demo",
     "FeedbackDemo": "Feedback Demo",
     "ActiveSettings": "Active Settings",
-    "ModelCreation": "Create Models"
+    "ModelCreation": "Create Models",
+    "MobxDemoWidget": "Mobx Demo"
   },
   "localFileStage": {
     "localFile": "Local File",

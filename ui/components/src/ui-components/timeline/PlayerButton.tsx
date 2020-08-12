@@ -6,6 +6,7 @@ import "./PlayerButton.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
 
 /** Player button used by buttons on timeline control
  * @internal
@@ -18,9 +19,9 @@ export class PlayerButton extends React.PureComponent<any> {
   }
 
   public render() {
-    const { icon } = this.props;
+    const { icon, title } = this.props;
     return (
-      <button data-testid={this.props.className} className={classnames("player-button", this.props.className)} onClick={this._onClick}>
+      <button data-testid={this.props.className} className={classnames("player-button", this.props.className)} onClick={this._onClick} title={title}>
         <span className={classnames("icon", !!icon)}></span>
       </button>
     );
@@ -78,8 +79,13 @@ export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonSta
   public render() {
     const { tooltip } = this.props;
     const iconClassName = this.state.isPlaying ? "icon icon-media-controls-pause" : "icon icon-media-controls-play";
+    let title = tooltip;
+
+    if (!title)
+      title = UiComponents.translate(this.state.isPlaying ? "timeline.pause" : "timeline.play");
+
     return (
-      <button data-testid={this.props.className} title={tooltip} className={classnames("player-button", this.props.className)} onClick={this._onClick}>
+      <button data-testid={this.props.className} title={title} className={classnames("player-button", this.props.className)} onClick={this._onClick}>
         <span className={iconClassName}></span>
       </button>
     );

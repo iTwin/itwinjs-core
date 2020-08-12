@@ -815,7 +815,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     const {
       // These are ignored in rendering
       step, min, max, precision, parse, format, snap, componentClass,
-      value, type, style, defaultValue, onInvalid, onValid, strict,
+      value, type, style, defaultValue, onInvalid, onValid, strict, setFocus,
 
       // The rest are passed to the input
       ...rest

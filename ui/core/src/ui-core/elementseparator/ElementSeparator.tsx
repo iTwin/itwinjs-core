@@ -13,6 +13,7 @@ import classnames from "classnames";
 import { Orientation } from "../enums/Orientation";
 import { CommonProps } from "../utils/Props";
 import { useThrottledFn } from "../utils/hooks/useThrottledFn";
+import { UiCore } from "../UiCore";
 
 /**
  * Results returned by onRatioChanged callback for determining new ratio and whether the ratio was updated.
@@ -194,6 +195,7 @@ function getStyle(orientation: Orientation, separatorSize?: number): React.CSSPr
  */
 // tslint:disable-next-line: variable-name
 export const ElementSeparator = (props: ElementSeparatorProps) => {
+  const label = useRef(UiCore.translate("elementSeparator.label"));
   const [hasHoverHappened, setHasHoverHappened] = useState(false);
   const { isDragged, isHovered, onPointerDown, onPointerOver, onPointerOut } = useElementSeparatorPointerHandler(props);
 
@@ -226,6 +228,7 @@ export const ElementSeparator = (props: ElementSeparatorProps) => {
       onPointerDown={onPointerDown}
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
+      aria-label={label.current}
     />
   );
 };
