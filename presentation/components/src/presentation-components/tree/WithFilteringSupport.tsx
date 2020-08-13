@@ -44,10 +44,10 @@ export interface TreeWithFilteringSupportProps {
  * @public
  * @deprecated Use `useControlledTreeFiltering` instead. Will be removed in iModel.js 3.0
  */
-// tslint:disable-next-line: variable-name naming-convention deprecation
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps> {
 
-  type CombinedProps = P & TreeWithFilteringSupportProps; // tslint:disable-line:deprecation
+  type CombinedProps = P & TreeWithFilteringSupportProps; // eslint-disable-line deprecation/deprecation
 
   interface FilterKey {
     imodel: IModelConnection;
@@ -99,7 +99,7 @@ export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeCom
       const candidateFilter = createFilterKey(this.props.dataProvider, this.props.filter);
       if (!isEqual(currFilter, candidateFilter)) {
         this.setState({ inProgress: candidateFilter }, () => {
-          // tslint:disable-next-line:no-floating-promises
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.loadDataProvider(candidateFilter.filter);
         });
       }
@@ -111,7 +111,7 @@ export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeCom
         this.setState(
           (_prevState, props) => ({ inProgress: createFilterKey(props.dataProvider, filter) }),
           () => {
-            // tslint:disable-next-line:no-floating-promises
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.loadDataProvider(filter);
           });
       }
@@ -158,6 +158,7 @@ export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeCom
 
     public render() {
       const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         filter, dataProvider, onFilterApplied, onMatchesCounted, activeMatchIndex,
         ...props
       } = this.props as any;

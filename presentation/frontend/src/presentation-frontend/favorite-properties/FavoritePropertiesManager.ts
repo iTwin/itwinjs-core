@@ -271,18 +271,18 @@ export class FavoritePropertiesManager implements IDisposable {
     const workingScopes: Array<{ properties: Set<PropertyFullName>, save: (properties: Set<PropertyFullName>) => Promise<void> }> = [];
     workingScopes.push({
       properties: this._globalProperties!,
-      save: (properties) => this._storage.saveProperties(properties),
+      save: async (properties) => this._storage.saveProperties(properties),
     });
     if (scope === FavoritePropertiesScope.Project || scope === FavoritePropertiesScope.IModel) {
       workingScopes.push({
         properties: this._projectProperties.get(projectId)!,
-        save: (properties) => this._storage.saveProperties(properties, projectId),
+        save: async (properties) => this._storage.saveProperties(properties, projectId),
       });
     }
     if (scope === FavoritePropertiesScope.IModel) {
       workingScopes.push({
         properties: this._imodelProperties.get(getiModelInfo(projectId, imodelId))!,
-        save: (properties) => this._storage.saveProperties(properties, projectId, imodelId),
+        save: async (properties) => this._storage.saveProperties(properties, projectId, imodelId),
       });
     }
 
@@ -314,18 +314,18 @@ export class FavoritePropertiesManager implements IDisposable {
     const scopes: Array<{ properties: Set<PropertyFullName>, save: (properties: Set<PropertyFullName>) => Promise<void> }> = [];
     scopes.push({
       properties: this._globalProperties!,
-      save: (properties) => this._storage.saveProperties(properties),
+      save: async (properties) => this._storage.saveProperties(properties),
     });
     if (projectId !== undefined) {
       scopes.push({
         properties: this._projectProperties.get(projectId)!,
-        save: (properties) => this._storage.saveProperties(properties, projectId),
+        save: async (properties) => this._storage.saveProperties(properties, projectId),
       });
     }
     if (imodelId !== undefined) {
       scopes.push({
         properties: this._imodelProperties.get(getiModelInfo(projectId!, imodelId))!,
-        save: (properties) => this._storage.saveProperties(properties, projectId, imodelId),
+        save: async (properties) => this._storage.saveProperties(properties, projectId, imodelId),
       });
     }
 

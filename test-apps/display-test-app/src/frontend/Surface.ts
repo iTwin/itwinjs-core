@@ -53,7 +53,7 @@ export class Surface {
       historyLength: 50,
     });
     this.keyinField.textBox.textbox.addEventListener("keydown", (e) => {
-      if (27 === e.keyCode || "`" === e.key) {
+      if ("Escape" === e.key || "`" === e.key) {
         this.keyinField.loseFocus();
         e.preventDefault();
         e.stopPropagation();
@@ -115,7 +115,7 @@ export class Surface {
       iconUnicode: "\ue9cc", // "briefcases"
       tooltip: "Open iModel from disk",
       click: () => {
-        this.openIModel(); // tslint:disable-line:no-floating-promises
+        this.openIModel(); // eslint-disable-line @typescript-eslint/no-floating-promises
       },
     }));
 
@@ -123,7 +123,7 @@ export class Surface {
       iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Open Blank Connection",
       click: () => {
-        this.openBlankConnection(); // tslint:disable-line:no-floating-promises
+        this.openBlankConnection(); // eslint-disable-line @typescript-eslint/no-floating-promises
       },
     }));
 
@@ -568,7 +568,7 @@ export class OpenIModelTool extends Tool {
   public static get maxArgs() { return 1; }
 
   public run(filename?: string): boolean {
-    Surface.instance.openFile(filename); // tslint:disable-line:no-floating-promises
+    Surface.instance.openFile(filename); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 
@@ -592,7 +592,7 @@ export class ReopenIModelTool extends Tool {
   public run(): boolean {
     const viewer = Surface.instance.firstViewer;
     if (undefined !== viewer)
-      viewer.openFile(viewer.viewport.iModel.getRpcProps().key); // tslint:disable-line:no-floating-promises
+      viewer.openFile(viewer.viewport.iModel.getRpcProps().key); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }

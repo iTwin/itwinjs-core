@@ -23,7 +23,7 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class Format extends SchemaItem {
-  public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.Format; // eslint-disable-line
   protected _roundFactor: number;
   protected _type: FormatType; // required; options are decimal, fractional, scientific, station
   protected _precision: number; // required

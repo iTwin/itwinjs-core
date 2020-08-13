@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/usage-logging-client"
+    }
+  ],
+  "packageName": "@bentley/usage-logging-client",
+  "email": "paulius.valiunas@bentley.com"
+}

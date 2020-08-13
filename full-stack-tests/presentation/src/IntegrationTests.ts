@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable:no-direct-imports
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
@@ -106,7 +105,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   await initializeTesting(presentationTestingInitProps);
-  console.log(`Backend PID: ${process.pid}`); // tslint:disable-line: no-console
+  console.log(`Backend PID: ${process.pid}`); // eslint-disable-line no-console
 };
 
 export const initialize = async (backendTimeout: number = 0) => {

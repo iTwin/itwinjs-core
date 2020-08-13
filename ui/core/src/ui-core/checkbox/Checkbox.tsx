@@ -77,8 +77,8 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
   }
 
   public render() {
-    const { status, disabled, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle,
-      onClick, onBlur, setFocus, ...inputProps } = this.props;
+    const { status, disabled, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle, // eslint-disable-line @typescript-eslint/no-unused-vars
+      onClick, onBlur, setFocus, ...inputProps } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const checkBoxClass = classnames("core-checkbox",
       disabled && "core-disabled",
       !label && "core-checkbox-no-label",

@@ -52,8 +52,8 @@ export abstract class Editor3dRpcInterface extends RpcInterface {
   public static interfaceVersion = "0.0.2";
 
   /*===========================================================================================
-      NOTE: Any add/remove/change to the methods below requires an update of the interface version.
-      NOTE: Please consult the README in this folder for the semantic versioning rules.
+    NOTE: Any add/remove/change to the methods below requires an update of the interface version.
+    NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
   public async start(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void> { return this.forward(arguments); }
   public async end(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void> { return this.forward(arguments); }

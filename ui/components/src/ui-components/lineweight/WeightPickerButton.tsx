@@ -89,7 +89,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
   }
 
   public componentDidMount() {
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     // console.log(`WeightPickerButton.componentDidMount focusRef=${this._focusTarget && this._focusTarget.current ? "set" : "unset"}`);
   }
 

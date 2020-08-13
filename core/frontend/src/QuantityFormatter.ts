@@ -87,7 +87,7 @@ export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong 
 // units that are available from the registered units provider.
 const defaultsFormats = {
   metric: [{
-    type: 1/*Length*/, format: {
+    type: 1 /* Length */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -103,7 +103,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 2/*Angle*/, format: {
+    type: 2 /* Angle */, format: {
       composite: {
         includeZero: true,
         spacer: "",
@@ -120,7 +120,7 @@ const defaultsFormats = {
       uomSeparator: "",
     },
   }, {
-    type: 3/*Area*/, format: {
+    type: 3 /* Area */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -136,7 +136,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 4/*Volume*/, format: {
+    type: 4 /* Volume */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -152,7 +152,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 5/*LatLong*/, format: {
+    type: 5 /* LatLong */, format: {
       composite: {
         includeZero: true,
         spacer: "",
@@ -169,7 +169,7 @@ const defaultsFormats = {
       uomSeparator: "",
     },
   }, {
-    type: 6/*Coordinate*/, format: {
+    type: 6 /* Coordinate */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -185,7 +185,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 7/*Stationing*/, format: {
+    type: 7 /* Stationing */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -202,7 +202,7 @@ const defaultsFormats = {
       type: "Station",
     },
   }, {
-    type: 8/*LengthSurvey*/, format: {
+    type: 8 /* LengthSurvey */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -218,7 +218,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 9/*LengthEngineering*/, format: {
+    type: 9 /* LengthEngineering */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -236,7 +236,7 @@ const defaultsFormats = {
   },
   ],
   imperial: [{
-    type: 1/*Length*/, format: {
+    type: 1 /* Length */, format: {
       composite: {
         includeZero: true,
         spacer: "-",
@@ -248,7 +248,7 @@ const defaultsFormats = {
       uomSeparator: "",
     },
   }, {
-    type: 2/*Angle*/, format: {
+    type: 2 /* Angle */, format: {
       composite: {
         includeZero: true,
         spacer: "",
@@ -273,7 +273,7 @@ const defaultsFormats = {
       uomSeparator: "",
     },
   }, {
-    type: 3/*Area*/, format: {
+    type: 3 /* Area */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -289,7 +289,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 4/*Volume*/, format: {
+    type: 4 /* Volume */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -305,7 +305,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 5/*LatLong*/, format: {
+    type: 5 /* LatLong */, format: {
       composite: {
         includeZero: true,
         spacer: "",
@@ -330,7 +330,7 @@ const defaultsFormats = {
       uomSeparator: "",
     },
   }, {
-    type: 6/*Coordinate*/, format: {
+    type: 6 /* Coordinate */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -346,7 +346,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 7/*Stationing*/, format: {
+    type: 7 /* Stationing */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -363,7 +363,7 @@ const defaultsFormats = {
       type: "Station",
     },
   }, {
-    type: 8/*LengthSurvey*/, format: {
+    type: 8 /* LengthSurvey */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -379,7 +379,7 @@ const defaultsFormats = {
       type: "Decimal",
     },
   }, {
-    type: 9/*LengthEngineering*/, format: {
+    type: 9 /* LengthEngineering */, format: {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -413,7 +413,7 @@ export class QuantityFormatter implements UnitsProvider {
 
   public onInitialized() {
     // initialize default format and parsing specs
-    this.loadFormatAndParsingMaps(this._activeSystemIsImperial); // tslint:disable-line:no-floating-promises
+    this.loadFormatAndParsingMaps(this._activeSystemIsImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** Find a unit given the unitLabel. */
@@ -618,7 +618,7 @@ export class QuantityFormatter implements UnitsProvider {
     const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     if (activeMap.size === 0) {
       // trigger a load so it will become available
-      this.loadFormatSpecsForQuantityTypes(useImperial); // tslint:disable-line:no-floating-promises
+      this.loadFormatSpecsForQuantityTypes(useImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
       return undefined;
     }
 
@@ -653,7 +653,7 @@ export class QuantityFormatter implements UnitsProvider {
     const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricUnitParserSpecsByType;
     if (activeMap.size === 0) {
       // trigger a load so it will become available
-      this.loadParsingSpecsForQuantityTypes(useImperial); // tslint:disable-line:no-floating-promises
+      this.loadParsingSpecsForQuantityTypes(useImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
       return undefined;
     }
     return activeMap.get(type);
@@ -712,6 +712,6 @@ export class QuantityFormatter implements UnitsProvider {
 
     IModelApp.toolAdmin.startDefaultTool();
     this._activeSystemIsImperial = useImperial;
-    this.loadFormatAndParsingMaps(useImperial); // tslint:disable-line:no-floating-promises
+    this.loadFormatAndParsingMaps(useImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }

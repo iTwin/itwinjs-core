@@ -19,6 +19,8 @@ import { UiFramework } from "../../ui-framework/UiFramework";
 import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
 import TestUtils from "../TestUtils";
 
+/* eslint-disable react/jsx-key */
+
 describe("StagePanel", () => {
   class TestWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {

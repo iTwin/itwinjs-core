@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { Newton1dUnbounded, NewtonEvaluatorRtoRD } from "../../numerics/Newton";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 // cspell:word currentdFdX
 export class HornerEvaluator extends NewtonEvaluatorRtoRD {
   private _coefficients: number[];

@@ -164,7 +164,7 @@ export class TileRequest {
 }
 
 /** @beta */
-export namespace TileRequest {
+export namespace TileRequest { // eslint-disable-line no-redeclare
   /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type.
    * @see [[Tile.requestContent]]
    * @beta

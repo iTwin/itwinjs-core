@@ -132,7 +132,7 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   }
 
   private _activateTab = (index: number) => {
-    this.props.onClickLabel && this.props.onClickLabel(index);  // tslint:disable-line: deprecation
+    this.props.onClickLabel && this.props.onClickLabel(index);  // eslint-disable-line deprecation/deprecation
     this.props.onActivateTab && this.props.onActivateTab(index);
     this.setState({ activeIndex: index });
   }

@@ -40,4 +40,4 @@ export interface NoChildrenProps {
 /** Omit children property from T.
  * @public
  */
-export type OmitChildrenProp<T extends { children?: React.ReactNode; }> = Omit<T, "children">;
+export type OmitChildrenProp<T extends { children?: React.ReactNode }> = Omit<T, "children">;

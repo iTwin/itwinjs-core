@@ -143,12 +143,12 @@ export class SheetViewState extends ViewState2d {
     if (categories instanceof SheetViewState) {
       // we are coming from clone...
       this.sheetSize = categories.sheetSize.clone();
-      this.attachmentIds = [ ...categories.attachmentIds ];
+      this.attachmentIds = [...categories.attachmentIds];
       this._attachments = categories._attachments?.clone(this);
       this._viewedExtents = categories._viewedExtents.clone();
     } else {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
-      this.attachmentIds = [ ...attachments ];
+      this.attachmentIds = [...attachments];
       this._attachments = undefined;
 
       const extents = new Range3d(0, 0, 0, this.sheetSize.x, this.sheetSize.y, 0);
@@ -337,7 +337,7 @@ class OrthographicAttachment {
   private readonly _clipVolume?: RenderClipVolume;
   private readonly _hiddenLineSettings?: HiddenLine.Settings;
   private readonly _originalView: ViewState;
-  private readonly _scale: { x: number; y: number; };
+  private readonly _scale: { x: number, y: number };
   private _debugFeatureTable?: PackedFeatureTable;
   public scene?: Scene;
   public symbologyOverrides: FeatureSymbology.Overrides;

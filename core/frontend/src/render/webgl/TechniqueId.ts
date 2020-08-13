@@ -9,7 +9,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { CompositeFlags } from "./RenderFlags";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** Technique enumeration
  * @internal

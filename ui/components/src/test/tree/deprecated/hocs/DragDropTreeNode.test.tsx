@@ -8,9 +8,9 @@ import { cleanup, render } from "@testing-library/react";
 import { DragSourceProps, DropTargetProps } from "../../../../ui-components/dragdrop/DragDropDef";
 import { DragDropTreeNode, DragDropTreeNodeComponent } from "../../../../ui-components/tree/deprecated/hocs/DragDropTreeNode";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("DragDropTreeNode", () => {
 
@@ -31,7 +31,7 @@ describe("DragDropTreeNode", () => {
     interface DragDropObject {
       test: boolean;
     }
-    const DragDropObjectRow = DragDropTreeNode<DragDropObject>(); // tslint:disable-line:variable-name
+    const DragDropObjectRow = DragDropTreeNode<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
     it("should render with drag drop props", () => {
       const dragProps: DragSourceProps = {
         onDragSourceBegin: (args: any) => args,

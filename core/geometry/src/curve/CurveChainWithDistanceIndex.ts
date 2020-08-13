@@ -205,7 +205,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public cloneTransformed(transform: Transform): CurvePrimitive | undefined {
     const c = this._path.clone();
     if (c !== undefined && c instanceof CurveChain && c.tryTransformInPlace(transform))
-      return CurveChainWithDistanceIndex.createCapture(c as CurveChain);
+      return CurveChainWithDistanceIndex.createCapture(c);
     return undefined;
   }
   /** Reference to the contained path.
@@ -217,7 +217,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public clone(): CurvePrimitive | undefined {
     const c = this._path.clone();
     if (c !== undefined && c instanceof CurveChain)
-      return CurveChainWithDistanceIndex.createCapture(c as CurveChain);
+      return CurveChainWithDistanceIndex.createCapture(c);
     return undefined;
   }
   /** Ask if the curve is within tolerance of a plane.
@@ -338,7 +338,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    */
   protected chainDistanceToFragment(distance: number, allowExtrapolation: boolean = false): PathFragment | undefined {
     const numFragments = this._fragments.length;
-    const fragments = this._fragments!;
+    const fragments = this._fragments;
     if (numFragments > 0) {
       if (distance < 0.0)
         return allowExtrapolation ? fragments[0] : undefined;
@@ -363,7 +363,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    */
   protected curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined {
     const numFragments = this._fragments.length;
-    const fragments = this._fragments!;
+    const fragments = this._fragments;
     if (numFragments > 0) {
       // humbug, linear search
       for (const fragment of fragments) {
@@ -541,7 +541,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
         const detailA = child.closestPoint(spacePoint, childIndex === 0 ? extend0 : childIndex + 1 === numChildren ? extend1 : false);
         if (detailA && detailA.a < aMin) {
           aMin = detailA.a;
-          childDetail = CurveLocationDetail.createCurveFractionPoint(detailA.curve!, detailA.fraction, detailA.point, childDetail)!;
+          childDetail = CurveLocationDetail.createCurveFractionPoint(detailA.curve, detailA.fraction, detailA.point, childDetail)!;
           childDetail.a = detailA.a;
         }
       }

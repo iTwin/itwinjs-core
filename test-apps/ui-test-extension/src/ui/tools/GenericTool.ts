@@ -89,7 +89,7 @@ export class GenericTool extends PrimitiveTool {
 
     if (iModelConnection.selectionSet.size === 1) {
       // Process and exit tool
-      iModelConnection.selectionSet.elements.forEach((elementId: string, _val: string, _set: Set<string>) => { this.process(elementId); }); // tslint:disable-line:no-floating-promises
+      iModelConnection.selectionSet.elements.forEach((elementId: string, _val: string, _set: Set<string>) => { this.process(elementId); }); // eslint-disable-line @typescript-eslint/no-floating-promises
       IModelApp.toolAdmin.startDefaultTool();
     } else {
       // Empty all before starting tool

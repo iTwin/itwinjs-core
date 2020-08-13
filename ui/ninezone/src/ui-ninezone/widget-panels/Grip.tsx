@@ -19,7 +19,7 @@ import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 /** Resize grip of [[WidgetPanel]] component.
  * @internal
  */
-export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panel = React.useContext(PanelStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   assert(panel);

@@ -20,13 +20,13 @@ import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 // cspell:ignore safearea
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public
  */
-export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler { // tslint:disable-line:deprecation
+export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler { // eslint-disable-line deprecation/deprecation
   /** Unique Id for this backstage item. */
   commandId: string;
 }
@@ -34,10 +34,10 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
 /** Backstage item that launches a Command
  * @public
  */
-export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> { // tslint:disable-line:deprecation
+export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
 
   /** @internal */
-  public readonly state: Readonly<BackstageItemState>; // tslint:disable-line:deprecation
+  public readonly state: Readonly<BackstageItemState>; // eslint-disable-line deprecation/deprecation
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
 
@@ -80,7 +80,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   }
 
   public execute = (): void => {
-    Backstage.hide(); // tslint:disable-line:deprecation
+    Backstage.hide(); // eslint-disable-line deprecation/deprecation
 
     if (this.props.execute) {
       if (this.props.getCommandArgs)

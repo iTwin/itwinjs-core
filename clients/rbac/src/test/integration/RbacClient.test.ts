@@ -49,7 +49,7 @@ describe("RbacClient (#integration)", () => {
 
     const project: Project = await contextRegistry.getProject(requestContext, queryOptions);
     expect(!!project);
-    // tslint:disable:deprecation
+    /* eslint-disable deprecation/deprecation */
     const permissions: IModelHubPermission = await rbacClient.getIModelHubPermissions(requestContext, project.wsgId);
 
     expect(permissions & IModelHubPermission.Create);
@@ -58,7 +58,7 @@ describe("RbacClient (#integration)", () => {
     expect(permissions & IModelHubPermission.Delete);
     expect(permissions & IModelHubPermission.ManageResources);
     expect(permissions & IModelHubPermission.ManageVersions);
-    // tslint:enable:deprecation
+    /* eslint-enable deprecation/deprecation */
   });
 
   it("should get the object type relevant to iModelHub for the specified project (#integration)", async () => {

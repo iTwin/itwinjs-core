@@ -12,6 +12,8 @@ import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
+/* eslint-disable react/jsx-key */
+
 export class NestedFrontstage1 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

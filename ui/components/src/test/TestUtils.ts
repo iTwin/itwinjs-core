@@ -13,7 +13,6 @@ import { TableFilterDescriptorCollection } from "../ui-components/table/columnfi
 
 // cSpell:ignore buttongroup
 
-// tslint:disable: completed-docs
 
 export class TestUtils {
   private static _i18n?: I18N;
@@ -31,7 +30,7 @@ export class TestUtils {
   public static async initializeUiComponents() {
     if (!TestUtils._uiComponentsInitialized) {
       // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
+      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
       await UiComponents.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;
@@ -421,4 +420,4 @@ export class TestFilterableTable implements FilterableTable {
   }
 }
 
-export default TestUtils;   // tslint:disable-line: no-default-export
+export default TestUtils;   // eslint-disable-line: no-default-export

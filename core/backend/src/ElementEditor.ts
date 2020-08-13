@@ -186,7 +186,7 @@ export class GeometricElement3dEditor implements IElementEditor {
 }
 
 /** @internal */
-export namespace GeometricElement3dEditor {
+export namespace GeometricElement3dEditor { // eslint-disable-line no-redeclare
 
   /** @internal */
   export class Target {

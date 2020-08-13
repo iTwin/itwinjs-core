@@ -53,6 +53,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     if (!candidates || candidates.length === 0)
       return undefined;
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
@@ -83,6 +84,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     if (!candidates || candidates.length === 0)
       return undefined;
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 

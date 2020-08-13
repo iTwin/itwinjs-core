@@ -13,7 +13,7 @@ import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Degree2PowerPolynomial } from "../../numerics/Polynomials";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("Geometry", () => {
   it("simple 2d and 3d point and constructions", () => {
@@ -215,7 +215,7 @@ describe("GeometryA", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-// cspell:word kahan
+  // cspell:word kahan
   it("ErrorChecks", () => {
     const ck = new Checker();
     for (const multiplier of [0.5, 0.999999999]) { // multipliers are all LESS THAN 1

@@ -84,7 +84,7 @@ export class I3dmReader extends GltfReader {
     if (this._idMap !== undefined && this._batchTableJson !== undefined) {
       for (let i = 0; i < this._instanceCount; i++) {
         const feature: any = {};
-        for (const key in this._batchTableJson)
+        for (const key in this._batchTableJson) // eslint-disable-line guard-for-in
           feature[key] = this._batchTableJson[key][i];
 
         this._featureTable.insert(new Feature(this._idMap.getBatchId(feature)));

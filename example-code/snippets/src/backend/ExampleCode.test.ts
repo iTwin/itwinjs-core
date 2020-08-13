@@ -87,7 +87,7 @@ describe("Example Code", () => {
 
   it("should handle ClientRequestContext in async callbacks", async () => {
     await asyncFunctionCallsAsync(new ClientRequestContext("abc"));
-    await synchronousFunctionCallsAsync(); // tslint:disable-line:await-promise
+    await synchronousFunctionCallsAsync(); // eslint-disable-line @typescript-eslint/await-thenable
     await asyncMethodExample(new ClientRequestContext("abc"));
   });
 

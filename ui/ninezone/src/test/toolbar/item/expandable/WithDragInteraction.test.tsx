@@ -10,7 +10,9 @@ import { withDragInteraction } from "../../../../ui-ninezone";
 import { getDragDistance } from "../../../../ui-ninezone/toolbar/item/expandable/WithDragInteraction";
 import { Direction } from "../../../../ui-ninezone/utilities/Direction";
 
-// tslint:disable-next-line:variable-name
+/* eslint-disable @typescript-eslint/unbound-method */
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const WithDragInteraction = withDragInteraction(() => <div></div>);
 
 describe("<WithDragInteraction />", () => {

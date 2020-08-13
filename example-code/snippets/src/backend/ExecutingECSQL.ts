@@ -6,7 +6,7 @@ import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
 import { NavigationValue } from "@bentley/imodeljs-common";
 
-// tslint:disable:no-console
+/* eslint-disable no-console, @typescript-eslint/naming-convention */
 
 function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_ByParameter_Positional

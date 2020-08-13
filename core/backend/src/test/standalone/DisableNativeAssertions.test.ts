@@ -11,10 +11,10 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
 describe("DisableNativeAssertions", () => {
-  const _outDir = KnownTestLocations.outputDir;
+  const outDir = KnownTestLocations.outputDir;
 
   it("Prepare invalid SQLite statement with native assertions turned on", () => {
-    using(ECDbTestHelper.createECDb(_outDir, "create.ecdb"), (ecdb: ECDb) => {
+    using(ECDbTestHelper.createECDb(outDir, "create.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
       let hasThrown: boolean = false;
@@ -40,7 +40,7 @@ describe("DisableNativeAssertions", () => {
   });
 
   it("Prepare invalid SQLite statement with native assertions turned off", () => {
-    using(ECDbTestHelper.createECDb(_outDir, "create.ecdb"), (ecdb: ECDb) => {
+    using(ECDbTestHelper.createECDb(outDir, "create.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
       using(new DisableNativeAssertions(), (_r) => {

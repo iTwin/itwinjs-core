@@ -14,7 +14,7 @@ import { waitForUpdate } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import { mockInterfaceTreeDataProvider, mockRawTreeDataProvider } from "../mockTreeDataProvider";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("BreadcrumbDetails", () => {
   let renderSpy: sinon.SinonSpy;

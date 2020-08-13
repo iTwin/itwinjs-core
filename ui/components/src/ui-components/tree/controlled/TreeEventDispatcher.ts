@@ -23,7 +23,7 @@ import { publishReplay } from "rxjs/internal/operators/publishReplay";
 import { refCount } from "rxjs/internal/operators/refCount";
 import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
 import { toArray } from "rxjs/internal/operators/toArray";
-import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
+import { asapScheduler } from "rxjs/internal/scheduler/asap";
 import { CheckBoxState } from "@bentley/ui-core";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import { TreeNodeItem } from "../TreeDataProvider";

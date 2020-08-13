@@ -12,7 +12,7 @@ interface AttachmentProps {
   viewId: Id64String;
   categoryId: Id64String;
   priority: number;
-  origin: { x: number; y: number; };
+  origin: { x: number, y: number };
   rotation: number;
   sizeRatio: number;
   drawAsRaster: boolean;
@@ -76,7 +76,7 @@ async function attachView(opts: AttachmentProps): Promise<void> {
     view: { id: viewId },
   };
 
-  await vp.view.attachViews([ props ]);
+  await vp.view.attachViews([props]);
   vp.invalidateController();
 }
 
@@ -99,7 +99,7 @@ export class AttachViewTool extends Tool {
 
   public run(opts?: AttachmentProps): boolean {
     if (opts && opts.viewId)
-      attachView(opts); // tslint:disable-line:no-floating-promises
+      attachView(opts); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }

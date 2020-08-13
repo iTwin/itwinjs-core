@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
+import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
 import { act, fireEvent, queryByText, render } from "@testing-library/react";
 import {
   DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
@@ -44,7 +44,7 @@ describe("DockedToolSettings", () => {
   });
 
   it("should render overflow button", () => {
-    // tslint:disable-next-line: only-arrow-functions
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
@@ -67,7 +67,7 @@ describe("DockedToolSettings", () => {
   });
 
   it("should render overflown entries", () => {
-    // tslint:disable-next-line: only-arrow-functions
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
@@ -94,7 +94,7 @@ describe("DockedToolSettings", () => {
   });
 
   it("should render panel container", () => {
-    // tslint:disable-next-line: only-arrow-functions
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
@@ -124,7 +124,7 @@ describe("DockedToolSettings", () => {
   });
 
   it("should close overflow panel on outside click", () => {
-    // tslint:disable-next-line: only-arrow-functions
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
@@ -160,7 +160,7 @@ describe("DockedToolSettings", () => {
 
   it("should recalculate overflow on resize", () => {
     let width = 100;
-    // tslint:disable-next-line: only-arrow-functions
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width });
@@ -206,7 +206,7 @@ describe("DockedToolSettings", () => {
 
   it("should recalculate overflow on entry resize", () => {
     let width = 50;
-    // tslint:disable-next-line: only-arrow-functions
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });

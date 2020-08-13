@@ -11,7 +11,7 @@ import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
 import { ConditionalField } from "./ConditionalField";
 import { StatusFieldProps } from "./StatusFieldProps";
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ConditionalFieldWithProps = withStatusFieldProps(ConditionalField);
 
 /** Properties for a FooterModeField component

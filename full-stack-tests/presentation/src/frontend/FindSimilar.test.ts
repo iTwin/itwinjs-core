@@ -9,7 +9,7 @@ import { InstanceKey, KeySet } from "@bentley/presentation-common";
 import {
   DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, PresentationPropertyDataProvider,
 } from "@bentley/presentation-components";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData, RowItem } from "@bentley/ui-components";
 import { initialize, terminate } from "../IntegrationTests";

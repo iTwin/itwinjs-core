@@ -14,20 +14,20 @@ import { Matrix4 } from "./Matrix";
 import { desync, sync } from "./Sync";
 
 /** @internal */
-export const enum FrustumUniformType { // tslint:disable-line:no-const-enum
+export const enum FrustumUniformType { // eslint-disable-line no-restricted-syntax
   TwoDee,
   Orthographic,
   Perspective,
 }
 
-const enum Plane {
+const enum Plane { // eslint-disable-line no-restricted-syntax
   kTop,
   kBottom,
   kLeft,
   kRight,
 }
 
-const enum FrustumData {
+const enum FrustumData { // eslint-disable-line no-restricted-syntax
   kNear,
   kFar,
   kType,

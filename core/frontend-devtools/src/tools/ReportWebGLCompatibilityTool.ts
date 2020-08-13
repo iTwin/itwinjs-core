@@ -25,7 +25,7 @@ export class ReportWebGLCompatibilityTool extends Tool {
     html.style.whiteSpace = "pre-wrap";
     html.appendChild(document.createTextNode(msg));
 
-    IModelApp.notifications.openMessageBox(MessageBoxType.Ok, html, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
+    IModelApp.notifications.openMessageBox(MessageBoxType.Ok, html, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 }

@@ -79,7 +79,7 @@ export const tweakRuleset = <T extends { [key: string]: any } | any[]>(src: T, o
       });
     }
   } catch (e) {
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     console.log(`Source: \r\n${JSON.stringify(src)} \r\nTarget: \r\n${JSON.stringify(out)}`);
     throw e;
   }

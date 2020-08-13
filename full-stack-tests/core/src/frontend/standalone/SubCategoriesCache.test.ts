@@ -291,7 +291,7 @@ describe("SubCategoriesCache", () => {
     let promiseFulfilled = false;
 
     // I'm going to handle it further down the function, geez...
-    promise!.then(() => promiseFulfilled = true); // tslint:disable-line:no-floating-promises
+    promise!.then(() => promiseFulfilled = true); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     q.expectMembers(true, false, true);
     q.dispose();

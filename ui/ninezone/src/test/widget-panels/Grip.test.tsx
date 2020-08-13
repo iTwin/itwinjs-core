@@ -181,7 +181,7 @@ describe("useResizeGrip", () => {
     const dragManager = React.createRef<DragManager>();
     const spy = sinon.stub<NonNullable<Parameters<typeof useResizeGrip>[1]>>();
     renderHook(() => useResizeGrip("bottom", spy), {
-      wrapper: (props) => (<NineZoneProvider
+      wrapper: (props) => (<NineZoneProvider // eslint-disable-line react/display-name
         dragManagerRef={dragManager}
         {...props}
       />),

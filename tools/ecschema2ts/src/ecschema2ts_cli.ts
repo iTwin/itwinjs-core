@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable
+/* eslint-disable no-console */
 import * as path from "path";
 import * as commander from "commander";
 import * as chalk from "chalk";
@@ -51,7 +51,7 @@ if (undefined !== program.references) {
   }
 }
 
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   // convert schema file to typescript
   let createdFiles;
   try {
@@ -64,4 +64,4 @@ if (undefined !== program.references) {
 
   // output result
   console.log(chalk.green(`${createdFiles}`));
-})(); // tslint:disable-line:no-floating-promises
+})();

@@ -23,7 +23,7 @@ import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 
-/* tslint:disable:variable-name no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 /**
  * A LineSegment3d is:
  *
@@ -271,7 +271,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   /** Near equality test with `other`. */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof LineSegment3d) {
-      const ls = other as LineSegment3d;
+      const ls = other;
       return this._point0.isAlmostEqual(ls._point0) && this._point1.isAlmostEqual(ls._point1);
     }
     return false;

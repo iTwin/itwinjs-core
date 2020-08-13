@@ -15,7 +15,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=imodelhub-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
     "test:integration": "",
     "cover": ""
@@ -52,7 +52,11 @@
     "@types/js-base64": "^2.3.1",
     "@types/node": "10.14.1",
     "rimraf": "^3.0.2",
+    "eslint": "^6.8.0",
     "tslint": "^5.11.0",
     "typescript": "~3.7.4"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

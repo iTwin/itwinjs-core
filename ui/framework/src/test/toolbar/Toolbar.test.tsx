@@ -11,7 +11,7 @@ import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton
 import { ItemList } from "../../ui-framework/shared/ItemMap";
 import TestUtils from "../TestUtils";
 
-// tslint:disable: deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("<Toolbar  />", async () => {
 
@@ -183,13 +183,13 @@ describe("<Toolbar  />", async () => {
       />);
     expect(renderedComponent).not.to.be.undefined;
 
-    expect(tool1.isEnabled).to.be.false; // tslint:disable-line:deprecation
-    expect(tool2.isEnabled).to.be.true; // tslint:disable-line:deprecation
+    expect(tool1.isEnabled).to.be.false;
+    expect(tool2.isEnabled).to.be.true;
 
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
 
-    expect(tool1.isEnabled).to.be.false; // tslint:disable-line:deprecation
-    expect(tool2.isEnabled).to.be.true; // tslint:disable-line:deprecation
+    expect(tool1.isEnabled).to.be.false;
+    expect(tool2.isEnabled).to.be.true;
   });
 
   it("sync event should refresh updated items", () => {
@@ -206,21 +206,21 @@ describe("<Toolbar  />", async () => {
       />);
     expect(renderedComponent).not.to.be.undefined;
 
-    expect(tool1b.isEnabled).to.be.false; // tslint:disable-line:deprecation
-    expect(tool2b.isEnabled).to.be.true; // tslint:disable-line:deprecation
+    expect(tool1b.isEnabled).to.be.false;
+    expect(tool2b.isEnabled).to.be.true;
 
-    expect(group2.isEnabled).to.be.false; // tslint:disable-line:deprecation
-    expect(tool1c.isEnabled).to.be.false; // tslint:disable-line:deprecation
-    expect(tool1d.isEnabled).to.be.false; // tslint:disable-line:deprecation
+    expect(group2.isEnabled).to.be.false;
+    expect(tool1c.isEnabled).to.be.false;
+    expect(tool1d.isEnabled).to.be.false;
 
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
 
-    expect(tool1b.isEnabled).to.be.false; // tslint:disable-line:deprecation
-    expect(tool2b.isEnabled).to.be.true; // tslint:disable-line:deprecation
+    expect(tool1b.isEnabled).to.be.false;
+    expect(tool2b.isEnabled).to.be.true;
 
-    expect(group2.isEnabled).to.be.true; // tslint:disable-line:deprecation
-    expect(tool1c.isEnabled).to.be.true; // tslint:disable-line:deprecation
-    expect(tool1d.isEnabled).to.be.true; // tslint:disable-line:deprecation
+    expect(group2.isEnabled).to.be.true;
+    expect(tool1c.isEnabled).to.be.true;
+    expect(tool1d.isEnabled).to.be.true;
   });
 
 });

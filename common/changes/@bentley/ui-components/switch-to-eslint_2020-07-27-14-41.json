@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/ui-components"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "paulius.valiunas@bentley.com"
+}

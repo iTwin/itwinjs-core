@@ -16,7 +16,7 @@
     "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
-    "lint": "tslint --project . 1>&2"
+    "lint": "eslint ./src/**/*.ts 1>&2"
   },
   "repository": {
     "type": "git",
@@ -41,13 +41,12 @@
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "debug": "^2.6.9",
+    "eslint": "^6.8.0",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
     "semver": "^5.5.0",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
   "dependencies": {},
@@ -58,5 +57,8 @@
     "functions": 85,
     "branches": 70,
     "lines": 85
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

@@ -67,7 +67,7 @@ export enum RuleTypes {
 
   // content rules
   Content = "Content",
-  ContentModifier = "ContentModifier",
+  ContentModifier = "ContentModifier", // eslint-disable-line no-shadow
 
   // customization rules
   Grouping = "Grouping",

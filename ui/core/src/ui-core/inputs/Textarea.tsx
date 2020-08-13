@@ -38,7 +38,7 @@ export class Textarea extends React.PureComponent<TextareaProps> {
   }
 
   public render(): JSX.Element {
-    const { className, style, rows, setFocus, ...props } = this.props;
+    const { className, style, rows, setFocus, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     return (
       <textarea {...props}

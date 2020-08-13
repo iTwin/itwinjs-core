@@ -302,7 +302,7 @@ export class ContentDataProvider implements IContentDataProvider {
     };
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private getDefaultContentDescriptor = memoize(async (): Promise<Descriptor | undefined> => {
     // istanbul ignore if
     if (this.keys.size > DEFAULT_KEYS_BATCH_SIZE) {
@@ -404,19 +404,19 @@ export class ContentDataProvider implements IContentDataProvider {
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onIModelContentChanged = (args: { ruleset: Ruleset }) => {
     if (args.ruleset.id === this.rulesetId)
       this.onContentUpdate();
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onRulesetModified = (curr: RegisteredRuleset) => {
     if (curr.id === this.rulesetId)
       this.onContentUpdate();
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onRulesetVariableChanged = () => {
     this.onContentUpdate();
   }

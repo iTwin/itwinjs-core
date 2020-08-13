@@ -11,10 +11,10 @@ import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
 /** @public */
-export interface LatAndLong { longitude: number; latitude: number; }
+export interface LatAndLong { longitude: number, latitude: number }
 
 /** @public */
-export interface LatLongAndHeight extends LatAndLong { height: number; }
+export interface LatLongAndHeight extends LatAndLong { height: number }
 
 /** A position on the earth defined by longitude, latitude, and height above the [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid.
  * @public

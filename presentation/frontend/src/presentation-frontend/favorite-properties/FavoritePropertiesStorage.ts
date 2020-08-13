@@ -131,7 +131,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     this._unsubscribeFromConnectivityStatusChangedEvent();
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onConnectivityStatusChanged = (args: { status: InternetConnectivityStatus }) => {
     // istanbul ignore else
     if (args.status === InternetConnectivityStatus.Online) {
@@ -140,11 +140,11 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
 
       const propertiesCache = new Array<{ properties: Set<PropertyFullName>, projectId?: string, imodelId?: string }>();
       this._propertiesOfflineCache.forEach((key, value) => propertiesCache.push({ properties: value, projectId: key[0], imodelId: key[1] }));
-      propertiesCache.forEach((cached) => this.saveProperties(cached.properties, cached.projectId, cached.imodelId));
+      propertiesCache.forEach(async (cached) => this.saveProperties(cached.properties, cached.projectId, cached.imodelId));
 
       const ordersCache = new Array<{ order: FavoritePropertiesOrderInfo[], projectId?: string, imodelId: string }>();
       this._propertiesOrderOfflineCache.forEach((key, value) => ordersCache.push({ order: value, projectId: key[0], imodelId: key[1]! }));
-      ordersCache.forEach((cached) => this.savePropertiesOrder(cached.order, cached.projectId, cached.imodelId));
+      ordersCache.forEach(async (cached) => this.savePropertiesOrder(cached.order, cached.projectId, cached.imodelId));
     }
   }
 

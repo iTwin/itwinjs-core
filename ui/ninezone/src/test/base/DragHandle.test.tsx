@@ -52,7 +52,7 @@ describe("<DragHandle />", () => {
 
     const spy = sinon.spy();
     const target = document.createElement("div");
-    target.releasePointerCapture = () => spy;
+    target.releasePointerCapture = () => spy; // eslint-disable-line @typescript-eslint/unbound-method
 
     const pointerDown = createPointerEvent({
       target,

@@ -33,7 +33,7 @@ export interface WidgetTabProps {
 /** Component that displays a tab in a side panel widget.
  * @internal
  */
-export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const { tab } = props;
   const { id } = tab;
   const widgetTabsEntryContext = React.useContext(WidgetTabsEntryContext);

@@ -7,7 +7,7 @@
  */
 
 // import { Point2d } from "../Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
@@ -191,7 +191,7 @@ export class KnotVector {
   public static createUniformWrapped(numInterval: number, degree: number, a0: number, a1: number): KnotVector {
     const knots = new KnotVector(numInterval + 2 * degree - 1, degree);
     const du = 1.0 / numInterval;
-    for (let i = 1 - degree, k = 0; i < numInterval + degree; i++ , k++) {
+    for (let i = 1 - degree, k = 0; i < numInterval + degree; i++, k++) {
       knots.knots[k] = Geometry.interpolate(a0, i * du, a1);
     }
     knots.setupFixedValues();

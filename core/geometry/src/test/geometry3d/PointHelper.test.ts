@@ -33,8 +33,8 @@ import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
-/* tslint:disable:deprecation */
+/* eslint-disable no-console */
+/* eslint-disable deprecation/deprecation */
 /**
  * Return the radius of a circle with area matching centroidData.a
  * @param centroidData result of centroid calculation, with "a" property.

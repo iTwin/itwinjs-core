@@ -661,7 +661,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (this._json3d.lights) {
       this._lights = LightSettings.fromJSON(this._json3d.lights);
     } else {
-      const sunDir = this._json3d.sceneLights?.sunDir; // tslint:disable-line:deprecation
+      const sunDir = this._json3d.sceneLights?.sunDir; // eslint-disable-line deprecation/deprecation
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 

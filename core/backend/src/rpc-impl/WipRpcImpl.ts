@@ -7,7 +7,7 @@
  */
 
 import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
-import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
+import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface";
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { BriefcaseDb } from "../IModelDb";

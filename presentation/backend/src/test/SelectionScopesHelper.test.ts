@@ -18,7 +18,7 @@ describe("SelectionScopesHelper", () => {
 
     it("returns expected selection scopes", async () => {
       const result = SelectionScopesHelper.getSelectionScopes();
-      expect(result.map((s) => s.id)).to.deep.eq(["element", "assembly", "top-assembly" /*, "category", "model"*/]);
+      expect(result.map((s) => s.id)).to.deep.eq(["element", "assembly", "top-assembly" /* , "category", "model" */]);
     });
 
   });

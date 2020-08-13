@@ -24,7 +24,7 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { Logger } from "@bentley/bentleyjs-core";
 
-// tslint:disable: no-console
+/* eslint-disable no-console */
 
 export function ColorPickerToggle() {
   const [colorDialogTitle] = React.useState("Select Color");
@@ -266,6 +266,7 @@ export class ComponentExamplesProvider {
       title: "SearchBox",
       examples: [
         createComponentExample("SearchBox", undefined,
+          // eslint-disable-next-line no-console
           <SearchBox placeholder="Search" onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
       ],
     };
@@ -414,13 +415,13 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Normal Tile", undefined,
           <Tile title="Normal Tile" icon="icon-placeholder">
-            <a>Link 1</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
-            <a>Link 2</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
+            <a>Link 1</a>
+            <a>Link 2</a>
           </Tile>),
         createComponentExample("Featured Tile", undefined,
           <FeaturedTile title="Featured Tile" icon="icon-placeholder">
-            <a>Link 1</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
-            <a>Link 2</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
+            <a>Link 1</a>
+            <a>Link 2</a>
           </FeaturedTile>),
         createComponentExample("Minimal Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),
         createComponentExample("Featured Minimal Tile", undefined, <MinimalFeaturedTile title="Minimal Featured Tile" icon="icon-placeholder" />),

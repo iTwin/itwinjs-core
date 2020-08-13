@@ -64,7 +64,7 @@ describe("RulesEmbedding", () => {
 
   before(async () => {
     await initialize();
-    const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
+    const TNativePlatform = createDefaultNativePlatform({ // eslint-disable-line @typescript-eslint/naming-convention
       id: "",
       localeDirectories: [],
       taskAllocationsMap: {},

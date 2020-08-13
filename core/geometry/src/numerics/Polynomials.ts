@@ -23,7 +23,7 @@ import { Point4d } from "../geometry4d/Point4d";
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
-/* tslint:disable:variable-name*/
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * degree 2 (quadratic) polynomial in for y = c0 + c1*x + c2*x^2
  * @internal
@@ -333,7 +333,7 @@ export class TorusImplicit {
       phi = Math.atan2(xyz.z, dRho);
       safePhi = true;
     }
-    return { theta: (theta), phi: (phi), distance: (distance), rho: (rho), safePhi: safeMajor && safePhi };
+    return { theta, phi, distance, rho, safePhi: safeMajor && safePhi };
   }
   /*
     public minorCircle(theta: Angle): Arc3d {
@@ -405,7 +405,7 @@ export class SphereImplicit {
         valid = false;
       }
     }
-    return { thetaRadians: (theta), phiRadians: (phi), r: (r), valid: (valid) };
+    return { thetaRadians: (theta), phiRadians: (phi), r, valid };
   }
   /** Return the range of a uv-aligned patch of the sphere. */
   public static patchRangeStartEndRadians(center: Point3d, radius: number, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d {
@@ -840,14 +840,9 @@ export class AnalyticRoots {
    */
   /*
   private static _appendCubicRootsUnsorted(c: Float64Array | number[], results: GrowableFloat64Array) {
-    let A: number;
-    let B: number;
-    let C: number;
     let sq_A: number;
     let p: number;
     let q: number;
-    let cb_p: number;
-    let D: number;
 
     // normal form: x^3 + Ax^2 + Bx + C = 0
 
@@ -857,9 +852,9 @@ export class AnalyticRoots {
       return;
     }
     // It is a real cubic.  There MUST be at least one real solution . . .
-    A = c[2] * scaleFactor;
-    B = c[1] * scaleFactor;
-    C = c[0] * scaleFactor;
+    const A: number = c[2] * scaleFactor;
+    const B: number = c[1] * scaleFactor;
+    const C: number = c[0] * scaleFactor;
 
     //  substitute x = y - A/3 to eliminate quadric term:
     //    f = y^3 +3py + 2q = 0
@@ -871,8 +866,8 @@ export class AnalyticRoots {
     q = 1.0 / 2 * (2.0 / 27 * A * sq_A - 1.0 / 3 * A * B + C);
 
     // Use Cardano formula
-    cb_p = p * p * p;
-    D = q * q + cb_p;
+    const cb_p: number = p * p * p;
+    const D: number = q * q + cb_p;
     const origin = A / (-3.0);
     if (D >= 0.0 && this.isZero(D)) {
       if (this.isZero(q)) {
@@ -935,14 +930,6 @@ export class AnalyticRoots {
     const coffs = new Float64Array(4); // at various times .. coefficients of quadratic an cubic intermediates.
     let u: number;
     let v: number;
-    let A: number;
-    let B: number;
-    let C: number;
-    let D: number;
-    let sq_A: number;
-    let p: number;
-    let q: number;
-    let r: number;
 
     // normal form: x^4 + Ax^3 + Bx^2 + Cx + D = 0
 
@@ -951,17 +938,17 @@ export class AnalyticRoots {
       this.appendCubicRoots(c, results);
       return;
     }
-    A = c[3] * coffScale[0];
-    B = c[2] * coffScale[0];
-    C = c[1] * coffScale[0];
-    D = c[0] * coffScale[0];
+    const A: number = c[3] * coffScale[0];
+    const B: number = c[2] * coffScale[0];
+    const C: number = c[1] * coffScale[0];
+    const D: number = c[0] * coffScale[0];
     const origin = -0.25 * A;
     /*  substitute x = y - A/4 to eliminate cubic term:
         x^4 + px^2 + qx + r = 0 */
-    sq_A = A * A;
-    p = -3.0 / 8 * sq_A + B;
-    q = 0.125 * sq_A * A - 0.5 * A * B + C;
-    r = -3.0 / 256 * sq_A * sq_A + 1.0 / 16 * sq_A * B - 1.0 / 4 * A * C + D;
+    const sq_A: number = A * A;
+    const p: number = -3.0 / 8 * sq_A + B;
+    const q: number = 0.125 * sq_A * A - 0.5 * A * B + C;
+    const r: number = -3.0 / 256 * sq_A * sq_A + 1.0 / 16 * sq_A * B - 1.0 / 4 * A * C + D;
 
     const tempStack = new GrowableFloat64Array();
 

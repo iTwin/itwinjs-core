@@ -13,4 +13,4 @@ import { CommonDivProps } from "../utils/Props";
 /** Div element with Outside Click behavior
  * @public
  */
-export const DivWithOutsideClick = withOnOutsideClick((props: CommonDivProps) => (<div {...props} />)); // tslint:disable-line:variable-name
+export const DivWithOutsideClick = withOnOutsideClick((props: CommonDivProps) => (<div {...props} />)); // eslint-disable-line @typescript-eslint/naming-convention

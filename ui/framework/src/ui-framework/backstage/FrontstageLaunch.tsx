@@ -20,13 +20,13 @@ import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 // cspell:ignore safearea
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
  * @public
  */
-export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps { // tslint:disable-line:deprecation
+export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps { // eslint-disable-line deprecation/deprecation
   /** id of the frontstage */
   frontstageId: string;
 }
@@ -34,9 +34,9 @@ export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
 /** Backstage item that activates a Frontstage
  * @public
  */
-export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> { // tslint:disable-line:deprecation
+export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
   /** @internal */
-  public readonly state: Readonly<BackstageItemState>; // tslint:disable-line:deprecation
+  public readonly state: Readonly<BackstageItemState>; // eslint-disable-line deprecation/deprecation
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
 
@@ -85,11 +85,11 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
   }
 
   public execute = (): void => {
-    Backstage.hide(); // tslint:disable-line:deprecation
+    Backstage.hide(); // eslint-disable-line deprecation/deprecation
 
     const frontstageDef = FrontstageManager.findFrontstageDef(this.props.frontstageId);
     if (frontstageDef)
-      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
     else
       Logger.logError(UiFramework.loggerCategory(this), `Frontstage with id '${this.props.frontstageId}' not found`);
   }

@@ -54,6 +54,7 @@ export class NumericInput extends React.Component<NumericInputProps> {
   }
 
   public render() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { step, ...props } = this.props;
     return (
       <span className={classnames("core-numeric-input", this.props.className)} style={this.props.style} data-testid="core-numeric-input" >

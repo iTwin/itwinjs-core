@@ -19,6 +19,8 @@ import {
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 describe("PropertyGrid", () => {
 
   const categories: PropertyCategory[] = [
@@ -150,7 +152,7 @@ describe("PropertyGrid", () => {
       const testMatcher = (_displayValue: string) => [];
       const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
       const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      // tslint:disable-next-line: object-literal-key-quotes
+      // eslint-disable-next-line quote-props
       const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
       const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
       testNestedRecord1.links = {
@@ -189,7 +191,7 @@ describe("PropertyGrid", () => {
       const testMatcher = (_displayValue: string) => [];
       const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
       const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      // tslint:disable-next-line: object-literal-key-quotes
+      // eslint-disable-next-line quote-props
       const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
       const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
       testNestedRecord1.links = {

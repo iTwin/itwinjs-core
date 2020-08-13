@@ -22,7 +22,7 @@ import { Complex } from "../numerics/Complex";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
 
-/* tslint:disable:variable-name no-console*/
+/* eslint-disable no-console */
 
 export class Checker {
   private _savedErrors: number;

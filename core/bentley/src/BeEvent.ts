@@ -143,7 +143,7 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
  * @beta Is this class used?
  */
 export class BeEventList<T extends Listener> {
-  private _events: { [name: string]: BeEvent<T> | undefined; } = {};
+  private _events: { [name: string]: BeEvent<T> | undefined } = {};
 
   /**
    * Gets the BeEvent associated with a name.

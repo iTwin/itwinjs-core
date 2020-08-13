@@ -30,7 +30,7 @@ export interface ViewWithUnifiedSelectionProps {
  *
  * @public
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps> {
 
   type CombinedProps = P & ViewWithUnifiedSelectionProps;
@@ -70,8 +70,10 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
     public render() {
       const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ruleset, selectionHandler, // do not bleed our props
-        ...props /* tslint:disable-line: trailing-comma */ // pass-through props
+        // eslint-disable-next-line comma-dangle
+        ...props  // pass-through props
       } = this.props as any;
       return (
         <ViewportComponent {...props} />
@@ -175,7 +177,7 @@ export class ViewportSelectionHandler implements IDisposable {
     }
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onUnifiedSelectionChanged = async (args: SelectionChangeEventArgs, provider: ISelectionProvider): Promise<void> => {
     // this component only cares about its own imodel
     if (args.imodel !== this._imodel)

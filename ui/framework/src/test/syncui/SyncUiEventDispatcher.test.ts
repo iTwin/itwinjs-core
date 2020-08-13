@@ -8,7 +8,6 @@ import * as moq from "typemoq";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@bentley/imodeljs-frontend";
 import { InstanceKey, RpcRequestsHandler } from "@bentley/presentation-common";
-// tslint:disable-next-line: no-direct-imports
 import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import {
@@ -81,7 +80,7 @@ describe("SyncUiEventDispatcher", () => {
     const handleSyncUiEvent1 = (args: SyncUiEventArgs): void => {
       callback1Called = true;
       callback1HasExpectedEventId = args.eventIds.has("event1");
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(`handleSyncUiEvent1 ${[...args.eventIds]}`);
     };
 
@@ -90,7 +89,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(callback1Called).to.be.false;
 
     await TestUtils.tick(timeToWaitForUiSyncCallback);
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     // console.log(`test1 - just waited ${timeToWaitForUiSyncCallback}ms`);
 
     expect(callback1Called).to.be.true;
@@ -105,7 +104,7 @@ describe("SyncUiEventDispatcher", () => {
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       callbackCalled = true;
       callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2");
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(`handleSyncUiEvent-2 ${[...args.eventIds]}`);
     };
 
@@ -116,7 +115,7 @@ describe("SyncUiEventDispatcher", () => {
 
     // need to wait until callbacks fire.
     await TestUtils.tick(timeToWaitForUiSyncCallback);
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     // console.log(`test2 - just waited ${timeToWaitForUiSyncCallback}ms`);
 
     expect(callbackCalled).to.be.true;
@@ -131,7 +130,7 @@ describe("SyncUiEventDispatcher", () => {
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       callbackCalled = true;
       callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2") && args.eventIds.has("event3");
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(`handleSyncUiEvent-3 ${[...args.eventIds]}`);
     };
 
@@ -143,7 +142,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(callbackCalled).to.be.false;
 
     await TestUtils.tick(timeToWaitForUiSyncCallback);
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     // console.log(`test3 - just waited ${timeToWaitForUiSyncCallback}ms`);
 
     expect(callbackCalled).to.be.true;
@@ -199,7 +198,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    Backstage.onBackstageEvent.emit({} as BackstageEventArgs); // tslint:disable-line:deprecation
+    Backstage.onBackstageEvent.emit({} as BackstageEventArgs); // eslint-disable-line deprecation/deprecation
     await TestUtils.tick(timeToWaitForUiSyncCallback);
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 

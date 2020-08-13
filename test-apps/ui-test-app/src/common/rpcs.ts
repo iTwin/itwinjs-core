@@ -15,7 +15,7 @@ import { Config } from "@bentley/bentleyjs-core";
 export default function getSupportedRpcs(): RpcInterfaceDefinition[] {
 
   if (Config.App.has("imjs_TESTAPP_ALLOW_WRITE") && (Config.App.get("imjs_TESTAPP_ALLOW_WRITE") === "1")) {
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     console.log("Using ReadWrite RPC Interfaces");
     return [
       IModelReadRpcInterface,
@@ -28,7 +28,7 @@ export default function getSupportedRpcs(): RpcInterfaceDefinition[] {
     ];
   }
 
-  // tslint:disable-next-line: no-console
+  // eslint-disable-next-line no-console
   console.log("Using Readonly RPC Interfaces");
 
   return [

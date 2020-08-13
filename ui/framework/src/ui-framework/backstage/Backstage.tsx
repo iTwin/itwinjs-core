@@ -27,7 +27,7 @@ export interface BackstageEventArgs {
 /** Backstage Event class.
  * @public
  */
-export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // tslint:disable-line:deprecation
+export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // eslint-disable-line deprecation/deprecation
 
 /** Properties for the [[Backstage]] React component.
  * @public @deprecated use BackstageComposer.
@@ -50,7 +50,7 @@ interface BackstageState {
 /** Backstage React component.
  * @public @deprecated use BackstageComposer.
  */
-export class Backstage extends React.Component<BackstageProps, BackstageState> { // tslint:disable-line:deprecation
+export class Backstage extends React.Component<BackstageProps, BackstageState> { // eslint-disable-line deprecation/deprecation
 
   public static readonly onBackstageEvent = new BackstageEvent();
   public static isBackstageVisible: boolean;
@@ -78,7 +78,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   /** @internal */
   public readonly state: BackstageState;
 
-  constructor(props: BackstageProps) { // tslint:disable-line:deprecation
+  constructor(props: BackstageProps) { // eslint-disable-line deprecation/deprecation
     super(props);
 
     this.setIsOpen(!!this.props.isVisible);
@@ -88,18 +88,18 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   }
 
   public componentDidMount() {
-    Backstage.onBackstageEvent.addListener(this._handleBackstageEvent); // tslint:disable-line:deprecation
+    Backstage.onBackstageEvent.addListener(this._handleBackstageEvent); // eslint-disable-line deprecation/deprecation
   }
 
   public componentWillUnmount() {
-    Backstage.onBackstageEvent.removeListener(this._handleBackstageEvent); // tslint:disable-line:deprecation
+    Backstage.onBackstageEvent.removeListener(this._handleBackstageEvent); // eslint-disable-line deprecation/deprecation
   }
 
-  private _handleBackstageEvent = (args: BackstageEventArgs) => { // tslint:disable-line:deprecation
+  private _handleBackstageEvent = (args: BackstageEventArgs) => { // eslint-disable-line deprecation/deprecation
     this.setState({ isVisible: args.isVisible });
   }
 
-  public componentDidUpdate(prevProps: BackstageProps) { // tslint:disable-line:deprecation
+  public componentDidUpdate(prevProps: BackstageProps) { // eslint-disable-line deprecation/deprecation
     if (this.props.isVisible !== prevProps.isVisible)
       this.setIsOpen(!!this.props.isVisible);
   }
@@ -113,7 +113,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   }
 
   private _onClose = () => {
-    Backstage.hide(); // tslint:disable-line:deprecation
+    Backstage.hide(); // eslint-disable-line deprecation/deprecation
 
     /* istanbul ignore else */
     if (this.props.onClose)
@@ -121,7 +121,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
   }
 
   public render(): React.ReactNode {
-    Backstage.isBackstageVisible = this.state.isVisible; // tslint:disable-line:deprecation
+    Backstage.isBackstageVisible = this.state.isVisible; // eslint-disable-line deprecation/deprecation
 
     let header: React.ReactNode = null;
 

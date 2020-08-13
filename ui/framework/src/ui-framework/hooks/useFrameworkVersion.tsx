@@ -18,7 +18,7 @@ export function useFrameworkVersion(): FrameworkVersion {
 export type FrameworkVersion = "1" | "2";
 
 /** @internal */
-export const FrameworkVersionContext = React.createContext<FrameworkVersion>("1"); // tslint:disable-line: variable-name
+export const FrameworkVersionContext = React.createContext<FrameworkVersion>("1"); // eslint-disable-line @typescript-eslint/naming-convention
 
 /** @alpha */
 export interface FrameworkVersionProps {
@@ -42,7 +42,7 @@ export function FrameworkVersion(props: FrameworkVersionProps) {
 
   return (
     <FrameworkVersionContext.Provider
-      children={props.children}
+      children={props.children} // eslint-disable-line react/no-children-prop
       value={props.version}
     />
   );

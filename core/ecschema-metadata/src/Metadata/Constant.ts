@@ -22,7 +22,7 @@ import { SchemaItem } from "./SchemaItem";
  * @beta
  */
 export class Constant extends SchemaItem {
-  public readonly schemaItemType!: SchemaItemType.Constant; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.Constant; // eslint-disable-line
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _definition: string;
   protected _numerator: number;

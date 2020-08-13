@@ -132,8 +132,8 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     if (typeof this.props.options === "function")
       return this.props.options(value);
 
-    if (this.props.getSuggestions)              // tslint:disable-line: deprecation
-      return this.props.getSuggestions(value);  // tslint:disable-line: deprecation
+    if (this.props.getSuggestions)              // eslint-disable-line deprecation/deprecation
+      return this.props.getSuggestions(value);  // eslint-disable-line deprecation/deprecation
 
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
@@ -208,9 +208,9 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
   public render(): JSX.Element {
     const { inputValue, suggestions } = this.state;
-    const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions,
-      onPressEnter, onPressEscape, onPressTab, onInputFocus, getLabel,
-      getSuggestions, // tslint:disable-line: deprecation
+    const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions, // eslint-disable-line @typescript-eslint/no-unused-vars
+      onPressEnter, onPressEscape, onPressTab, onInputFocus, getLabel, // eslint-disable-line @typescript-eslint/no-unused-vars
+      getSuggestions, // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-unused-vars
       ...props } = this.props;
     const inputPlaceholder = (!inputValue) ? placeholder : undefined;
 

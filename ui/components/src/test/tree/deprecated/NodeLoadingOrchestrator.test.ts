@@ -18,9 +18,9 @@ import { ResolvablePromise } from "../../test-helpers/misc";
 import { extractSequence, waitForUnsubscription } from "../ObservableTestHelpers";
 import { initializeTree, TestTreeDataProvider } from "../TestDataFactories";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("NodeLoadingOrchestrator", () => {
   const onLoadProgress = sinon.stub();

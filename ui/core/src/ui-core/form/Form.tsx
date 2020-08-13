@@ -68,7 +68,7 @@ export interface FormContextState extends FormState {
 /** React context used by Form as a Provider and by the Fields as Consumers and updaters.
  * @beta
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const FormContext = React.createContext<FormContextState | undefined>(undefined);
 FormContext.displayName = "ui-core:FormContext";
 

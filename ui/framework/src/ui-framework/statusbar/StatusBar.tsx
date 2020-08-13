@@ -356,7 +356,7 @@ export function StatusBarRightSection(props: CommonDivProps) {
 /** Context providing values for StatusFieldProps and MessageCenterFieldProps
  *  @internal
  */
-export const StatusBarContext = React.createContext<StatusBarWidgetControlArgs>({ // tslint:disable-line: variable-name
+export const StatusBarContext = React.createContext<StatusBarWidgetControlArgs>({ // eslint-disable-line @typescript-eslint/naming-convention
   isInFooterMode: true,
   onOpenWidget: /* istanbul ignore next */ () => { },
   openWidget: "",

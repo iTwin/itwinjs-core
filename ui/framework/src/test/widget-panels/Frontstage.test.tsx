@@ -21,6 +21,8 @@ import {
 } from "../../ui-framework";
 import TestUtils, { UiSettingsStub } from "../TestUtils";
 
+/* eslint-disable @typescript-eslint/no-floating-promises, react/display-name */
+
 function createSavedNineZoneState(args?: Partial<NineZoneState>) {
   return {
     ...createNineZoneState(args),

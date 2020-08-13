@@ -47,6 +47,7 @@ export class CurveFactory {
         path.tryAddChild(LineSegment3d.create(pointA.interpolate(fraction0, pointB), pointA.interpolate(fraction1, pointB)));
     }
   }
+
   /**
    * Create a circular arc from start point, tangent at start, and another point (endpoint) on the arc.
    * @param pointA
@@ -76,6 +77,7 @@ export class CurveFactory {
     }
     return undefined;
   }
+
   /**
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
    *  * If the radius parameter is a number, that radius is used throughout.
@@ -132,7 +134,7 @@ export class CurveFactory {
           blendArray[i].arc = undefined;
         }
       }
-      /*  The "1-b" logic above prevents this loop from ever doing anything.
+      /* The "1-b" logic above prevents this loop from ever doing anything.
       // on edge with conflict, suppress the arc with larger fraction
       for (let i = 1; i < n; i++) {
         const b0 = blendArray[i - 1];
@@ -143,7 +145,7 @@ export class CurveFactory {
           b.fraction12 = 0.0;
           blendArray[i].arc = undefined;
         }
-      }*/
+      } */
     }
     const path = Path.create();
     this.addPartialSegment(path, allowBackupAlongEdge, blendArray[0].point, blendArray[1].point, blendArray[0].fraction12, 1.0 - blendArray[1].fraction10);
@@ -156,6 +158,7 @@ export class CurveFactory {
     }
     return path;
   }
+
   /** Create a `Loop` with given xy corners and fixed z. */
   public static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z: number = 0, filletRadius?: number): Loop {
     if (filletRadius === undefined)
@@ -183,6 +186,7 @@ export class CurveFactory {
       return loop;
     }
   }
+
   /**
    * If `arcB` is a continuation of `arcA`, extend `arcA` (in place) to include the range of `arcB`
    * * This only succeeds if the two arcs are part of identical complete arcs and end of `arcA` matches the beginning of `arcB`.
@@ -217,6 +221,7 @@ export class CurveFactory {
     }
     return false;
   }
+
   /**
    * Return a `Path` containing arcs are on the surface of an ellipsoid and pass through a sequence of points.
    * * Each arc passes through the two given endpoints and in the plane containing the true surface normal at given `fractionForIntermediateNormal`
@@ -235,6 +240,7 @@ export class CurveFactory {
     }
     return arcPath;
   }
+
   private static appendGeometryQueryArray(candidate: GeometryQuery | GeometryQuery[] | undefined, result: GeometryQuery[]) {
     if (candidate instanceof GeometryQuery)
       result.push(candidate);
@@ -244,6 +250,7 @@ export class CurveFactory {
     }
 
   }
+
   /**
    * Create solid primitives for pipe segments (e.g. Cone or TorusPipe) around line and arc primitives.
    * @param centerline centerline geometry/
@@ -268,6 +275,7 @@ export class CurveFactory {
     }
     return undefined;
   }
+
   /**
    * * Create section arcs for mitered pipe.
    * * At each end of each pipe, the pipe is cut by the plane that bisects the angle between successive pipe centerlines.
@@ -316,6 +324,7 @@ export class CurveFactory {
     }
     return arcs;
   }
+
   /**
    * Create a circular arc from start point, tangent at start, radius, optional plane normal, arc sweep
    * * The vector from start point to center is in the direction of upVector crossed with tangentA.
@@ -349,12 +358,11 @@ export class CurveFactory {
    * @param shoulder point target point for (both) spiral-to-line tangencies
    * @return array with the computed spirals, or undefined if failure.
    */
-  public static createLineSpiralSpiralLine
-    (
-      spiralType: IntegratedSpiralTypeName,
-      startPoint: Point3d,
-      shoulderPoint: Point3d,
-      targetPoint: Point3d,
+  public static createLineSpiralSpiralLine(
+    spiralType: IntegratedSpiralTypeName,
+    startPoint: Point3d,
+    shoulderPoint: Point3d,
+    targetPoint: Point3d,
   ): GeometryQuery[] | undefined {
     const vectorAB = Vector3d.createStartEnd(startPoint, shoulderPoint);
     const vectorBC0 = Vector3d.createStartEnd(shoulderPoint, targetPoint);
@@ -389,6 +397,7 @@ export class CurveFactory {
     }
     return undefined;
   }
+
   /**
    * Compute 2 spirals (all in XY) for a symmetric line-to-line transition.
    * * Spiral length is given.
@@ -399,13 +408,12 @@ export class CurveFactory {
    * @param spiralLength for each part of the spiral pair.
    * @return array with the computed spirals, or undefined if failure.
    */
-  public static createLineSpiralSpiralLineWithSpiralLength
-    (
-      spiralType: IntegratedSpiralTypeName,
-      pointA: Point3d,
-      pointB: Point3d,
-      pointC: Point3d,
-      spiralLength: number,
+  public static createLineSpiralSpiralLineWithSpiralLength(
+    spiralType: IntegratedSpiralTypeName,
+    pointA: Point3d,
+    pointB: Point3d,
+    pointC: Point3d,
+    spiralLength: number,
   ): GeometryQuery[] | undefined {
     const vectorAB = Vector3d.createStartEnd(pointA, pointB);
     const vectorBC = Vector3d.createStartEnd(pointB, pointC);
@@ -452,15 +460,14 @@ export class CurveFactory {
    * @param lengthB outbound spiral length
    * @return array with the computed spirals, or undefined if failure.
    */
-  public static createLineSpiralArcSpiralLine
-    (
-      spiralType: IntegratedSpiralTypeName,
-      pointA: Point3d,
-      pointB: Point3d,
-      pointC: Point3d,
-      lengthA: number,
-      lengthB: number,
-      arcRadius: number,
+  public static createLineSpiralArcSpiralLine(
+    spiralType: IntegratedSpiralTypeName,
+    pointA: Point3d,
+    pointB: Point3d,
+    pointC: Point3d,
+    lengthA: number,
+    lengthB: number,
+    arcRadius: number,
   ): GeometryQuery[] | undefined {
     const vectorAB = Vector3d.createStartEnd(pointA, pointB); vectorAB.z = 0;
     const vectorCB = Vector3d.createStartEnd(pointC, pointB); vectorCB.z = 0;
@@ -514,6 +521,7 @@ export class CurveFactory {
     return undefined;
   }
 }
+
 /**
  * Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal
  */

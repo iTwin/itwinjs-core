@@ -12,21 +12,16 @@ import {
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 
-// tslint:disable-next-line: variable-name
+/* eslint-disable @typescript-eslint/naming-convention */
 const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
-// tslint:disable-next-line: variable-name
 const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
-// tslint:disable-next-line: variable-name
 const Sections = withStatusFieldProps(SectionsStatusField);
-// tslint:disable-next-line: variable-name
 const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);
-// tslint:disable-next-line: variable-name
 const SelectionScope = withStatusFieldProps(SelectionScopeField);
-// tslint:disable-next-line: variable-name
 const SelectionInfo = withStatusFieldProps(SelectionInfoField);
 
-// tslint:disable-next-line: variable-name
 const FooterOnlyDisplay = withStatusFieldProps(FooterModeField);
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export class ExtensionStatusBarWidgetControl extends StatusBarWidgetControl {
   private _statusBarItems?: StatusBarItem[];

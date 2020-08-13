@@ -31,7 +31,7 @@ export interface SourceMapContextProps {
 }
 
 /** @internal */
-export const SourceMapContext = React.createContext<SourceMapContextProps>({ // tslint:disable-line: variable-name
+export const SourceMapContext = React.createContext<SourceMapContextProps>({ // eslint-disable-line @typescript-eslint/naming-convention
   sources: [],
   bases: [],
   refreshFromStyle: () => { },
@@ -78,7 +78,7 @@ function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeVie
       }
       setHasRangeData(hasRange);
     }
-    fetchRangeData(); // tslint:disable-line: no-floating-promises
+    fetchRangeData(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [activeViewport, mapLayerSettings]);
 
   const onSettingsClick = React.useCallback(() => {
@@ -223,7 +223,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       });
       setBaseSources(bases);
     }
-    fetchWmsMapData(); // tslint:disable-line: no-floating-promises
+    fetchWmsMapData(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [setMapSources]);
 
   // update when a different display style is loaded.

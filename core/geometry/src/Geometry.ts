@@ -9,7 +9,7 @@
 
 // import { Point2d } from "./Geometry2d";
 import { AngleSweep } from "./geometry3d/AngleSweep";
-/* tslint:disable:variable-name jsdoc-format no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Point2d, Vector2d, XY } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
 import { XAndY } from "./geometry3d/XYZProps";
@@ -20,7 +20,7 @@ import { Point4d } from "./geometry4d/Point4d";
  */
 export enum AxisOrder {
   /** Right handed system, X then Y then Z */
-  XYZ = 0,
+  XYZ = 0, // eslint-disable-line no-shadow
   /** Right handed system, Y then Z then X */
   YZX = 1,
   /** Right handed system, Z then X then Y */

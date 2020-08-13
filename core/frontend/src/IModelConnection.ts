@@ -456,7 +456,7 @@ export abstract class IModelConnection extends IModel {
     return this.editing.saveChanges(description);
   }
 
-  private _snapRpc = new OneAtATimeAction<SnapResponseProps>((props: SnapRequestProps) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props));
+  private _snapRpc = new OneAtATimeAction<SnapResponseProps>(async (props: SnapRequestProps) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props));
   /** Request a snap from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
    */
@@ -464,7 +464,7 @@ export abstract class IModelConnection extends IModel {
     return this.isOpen ? this._snapRpc.request(props) : { status: 2 };
   }
 
-  private _toolTipRpc = new OneAtATimeAction<string[]>((id: string) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id));
+  private _toolTipRpc = new OneAtATimeAction<string[]>(async (id: string) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id));
   /** Request a tooltip from the backend.
    * @note If another call to this method occurs before preceding call(s) return, all preceding calls will be abandoned - only the most recent will resolve. Therefore callers must gracefully handle Promise rejected with AbandonedError.
    */
@@ -1019,7 +1019,7 @@ export class StandaloneConnection extends IModelConnection {
 }
 
 /** @public */
-export namespace IModelConnection {
+export namespace IModelConnection { // eslint-disable-line no-redeclare
 
   /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
   export interface ViewSpec {

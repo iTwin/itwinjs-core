@@ -9,7 +9,6 @@
 import "./ActionButtonList.scss";
 import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
-// tslint:disable-next-line: no-duplicate-imports
 import { Orientation } from "@bentley/ui-core";
 import { ActionButtonRenderer, ActionButtonRendererProps } from "./ActionButtonRenderer";
 

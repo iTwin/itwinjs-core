@@ -507,7 +507,7 @@ describe("Schema", () => {
         testSchema = await Schema.fromJson(schemaJson, context);
         const entityClassJson = testSchema.toJSON();
         assert.isDefined(entityClassJson);
-        // tslint:disable-next-line: no-string-literal
+        // eslint-disable-next-line dot-notation
         assert.isDefined(entityClassJson.items!["testClass"]);
         assert.strictEqual(entityClassJson.items!.testClass.schemaItemType, "EntityClass");
         assert.strictEqual(entityClassJson.items!.testClass.label, "ExampleEntity");

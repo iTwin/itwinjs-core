@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/projectshare-client"
+    }
+  ],
+  "packageName": "@bentley/projectshare-client",
+  "email": "paulius.valiunas@bentley.com"
+}

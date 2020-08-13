@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable: no-direct-imports
 import { expect } from "chai";
 import * as path from "path";
 import * as React from "react";
@@ -265,7 +264,7 @@ describe("ModelsTree", () => {
         const node = createModelNode();
         setupDataProvider([node]);
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
-        visibilityHandlerMock.setup((x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => { }).verifiable();
+        visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => { }).verifiable();
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -1204,7 +1203,7 @@ describe("ModelsTree", () => {
           };
 
           const vpMock = mockViewport();
-          vpMock.setup((x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
+          vpMock.setup(async (x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
 
           await using(createHandler({ viewport: vpMock.object }), async (handler) => {
             await handler.changeVisibility(node, node.__key, true);
@@ -1221,7 +1220,7 @@ describe("ModelsTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => false);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
+            vpMock.setup(async (x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
@@ -1240,7 +1239,7 @@ describe("ModelsTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.addViewedModels(subjectModelIds)).verifiable();
+            vpMock.setup(async (x) => x.addViewedModels(subjectModelIds)).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
@@ -1281,7 +1280,7 @@ describe("ModelsTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => false);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
+            vpMock.setup(async (x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               await handler.changeVisibility(node, node.__key, true);
@@ -1297,7 +1296,7 @@ describe("ModelsTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.addViewedModels([key.id])).verifiable();
+            vpMock.setup(async (x) => x.addViewedModels([key.id])).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               await handler.changeVisibility(node, node.__key, true);

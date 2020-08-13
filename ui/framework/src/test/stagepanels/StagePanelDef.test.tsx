@@ -89,7 +89,7 @@ describe("StagePanelZonesDef", () => {
 describe("StagePanelZoneDef", () => {
   it("should initialize stable widgets", () => {
     const sut = new StagePanelZoneDef();
-    sut.initializeFromProps({ widgets: [<Widget />] }, StagePanelLocation.Left, "start");
+    sut.initializeFromProps({ widgets: [<Widget />] }, StagePanelLocation.Left, "start"); // eslint-disable-line react/jsx-key
     expect(sut.widgetCount).to.eq(1);
     expect(sut.widgetDefs[0].id).to.eq("uifw-spz-Left-start-0");
   });

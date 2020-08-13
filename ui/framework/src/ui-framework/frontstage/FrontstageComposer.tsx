@@ -814,4 +814,4 @@ export const isCollapsedToPanelState = (isCollapsed: boolean) => {
 };
 
 /** @internal */
-export const ToolGroupPanelContext = React.createContext(false); // tslint:disable-line: variable-name
+export const ToolGroupPanelContext = React.createContext(false); // eslint-disable-line @typescript-eslint/naming-convention

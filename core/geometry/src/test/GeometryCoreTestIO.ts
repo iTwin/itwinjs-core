@@ -22,7 +22,7 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
@@ -271,7 +271,7 @@ export class GeometryCoreTestIO {
     } else if (data instanceof CurveLocationDetail) {
       if (data.hasFraction1) {
         if (data.curve) {
-          const partialCurve = data.curve!.clonePartialCurve(data.fraction, data.fraction1!);
+          const partialCurve = data.curve.clonePartialCurve(data.fraction, data.fraction1!);
           if (partialCurve) {
             const curveB = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(partialCurve, 0.6 * markerSize);
             this.captureGeometry(collection, curveB, dx, dy, dz);

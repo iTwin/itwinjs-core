@@ -11,7 +11,7 @@ import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@b
 import { ContextMenuItemInfo } from "./UnifiedSelectionPropertyGridWidget";
 
 // create a HOC property grid component that supports unified selection
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const UnifiedSelectionTable = tableWithUnifiedSelection(Table);
 
 export class UnifiedSelectionTableWidgetControl extends WidgetControl {

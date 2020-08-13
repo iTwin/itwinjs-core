@@ -17,7 +17,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;
   ck.testCoordinate(expectedValue, s, "basis sum");
@@ -198,11 +198,11 @@ describe("BSplineSurface", () => {
       Point3d.create(0, 0, 0),
       Point3d.create(0, 0, 1),
       4.0, 1.0, 2),
-      Sample.createConeBsplineSurface(
-        Point3d.create(0, 0, 0),
-        Point3d.create(1, 3, 1),
-        4.0, 1.0,
-        3)]) {
+    Sample.createConeBsplineSurface(
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 3, 1),
+      4.0, 1.0,
+      3)]) {
       if (ck.testPointer(bsurf) && bsurf) {
         bsurf.tryTranslateInPlace(dx, dy);
         allGeometry.push(bsurf);

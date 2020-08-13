@@ -34,7 +34,7 @@ const imageLoader = new TreeImageLoader();
  * @alpha
  */
 export const createVisibilityTreeNodeRenderer = (iconsEnabled: boolean, descriptionEnabled: boolean) => {
-  return (props: TreeNodeRendererProps) => (
+  return (props: TreeNodeRendererProps) => ( // eslint-disable-line react/display-name
     <TreeNodeRenderer
       {...props}
       checkboxRenderer={visibilityTreeNodeCheckboxRenderer}

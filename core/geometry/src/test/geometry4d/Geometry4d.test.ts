@@ -21,7 +21,7 @@ import * as bsiChecker from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* tslint:disable:no-console variable-name */
+/* eslint-disable no-console, @typescript-eslint/naming-convention */
 
 /**
  *

@@ -39,8 +39,8 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
  * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
  * @beta
  */
-export const ColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerPopupProps>( // tslint:disable-line: variable-name
-  function ColorPickerPopup(props, ref) { // tslint:disable-line: no-shadowed-variable
+export const ColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerPopupProps>(
+  function ColorPickerPopup(props, ref) {
     const target = React.useRef<HTMLButtonElement>(null);
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);

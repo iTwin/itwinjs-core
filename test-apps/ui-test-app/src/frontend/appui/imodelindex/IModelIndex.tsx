@@ -78,13 +78,13 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   }
 
   /* register a category (tab) */
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public static RegisterCategory(_label: string, _render: () => JSX.Element | undefined) {
     IModelIndex._categories.push({ label: _label, render: _render });
   }
 
   /* unregister a category (tab) */
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public static UnregisterCategory(_label: string) {
     IModelIndex._categories = IModelIndex._categories.filter((_category: Category) => _category.label !== _label);
   }

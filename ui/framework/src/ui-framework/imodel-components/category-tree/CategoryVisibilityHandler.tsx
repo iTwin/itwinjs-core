@@ -18,7 +18,7 @@ import { IVisibilityHandler, VisibilityStatus } from "../VisibilityTreeEventHand
  */
 export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport) {
   const currentView = view || viewManager.getFirstOpenView();
-  const categoriesPromise = React.useMemo(() => loadCategoriesFromViewport(imodel, currentView), [imodel, currentView]);
+  const categoriesPromise = React.useMemo(async () => loadCategoriesFromViewport(imodel, currentView), [imodel, currentView]);
   return useAsyncValue(categoriesPromise) ?? [];
 }
 
@@ -152,12 +152,12 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     return undefined;
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onDisplayStyleChanged = () => {
     this.onVisibilityChangeInternal();
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onViewedCategoriesChanged = () => {
     this.onVisibilityChangeInternal();
   }

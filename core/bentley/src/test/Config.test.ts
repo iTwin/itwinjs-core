@@ -5,6 +5,8 @@
 import { assert } from "chai";
 import { Config } from "../Config";
 
+/* eslint-disable no-template-curly-in-string */
+
 describe("Config", () => {
 
   it("should set primitive values", () => {

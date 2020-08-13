@@ -19,7 +19,7 @@ export interface TabState {
 }
 
 /** @internal future */
-export interface TabsState { readonly [id: string]: TabState; }
+export interface TabsState { readonly [id: string]: TabState }
 
 /** @internal future */
 export interface WidgetState {
@@ -51,7 +51,7 @@ export interface DraggedTabState {
 }
 
 /** @internal future */
-export interface WidgetsState { readonly [id: string]: WidgetState; }
+export interface WidgetsState { readonly [id: string]: WidgetState }
 
 /** @internal future */
 export interface FloatingWidgetsState {
@@ -321,7 +321,7 @@ export type NineZoneActionTypes =
 export const toolSettingsTabId = "nz-tool-settings-tab";
 
 /** @internal future */
-export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneActionTypes) => NineZoneState = produce(( // tslint:disable-line: variable-name
+export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneActionTypes) => NineZoneState = produce(( // eslint-disable-line @typescript-eslint/naming-convention
   state: Draft<NineZoneState>,
   action: NineZoneActionTypes,
 ) => {

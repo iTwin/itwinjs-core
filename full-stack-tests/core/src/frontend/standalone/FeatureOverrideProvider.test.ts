@@ -8,6 +8,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport } from "../TestViewport";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("FeatureOverrideProvider", () => {
   let imodel: IModelConnection;
 

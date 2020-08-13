@@ -98,7 +98,7 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     );
   }
 
-  get days() {
+  public get days() {
     const { month, year } = this.state;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const days = [];
@@ -114,7 +114,7 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     return days;
   }
 
-  get weeks() {
+  public get weeks() {
     const days = this.days;
     const weeks = [];
     const weekCount = Math.ceil(days.length / 7);

@@ -36,9 +36,9 @@ describe("Backstage", () => {
     it("FrontstageLaunchBackstageItem should render & execute", async () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
-      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // tslint:disable-line:deprecation
+      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // eslint-disable-line deprecation/deprecation
         stateFuncRun = true;
-        return { ...state, isActive: true } as BackstageItemState; // tslint:disable-line:deprecation
+        return { ...state, isActive: true } as BackstageItemState; // eslint-disable-line deprecation/deprecation
       };
 
       class Frontstage1 extends FrontstageProvider {

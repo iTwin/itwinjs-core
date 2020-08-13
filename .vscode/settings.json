@@ -1,6 +1,7 @@
 // Place your settings in this file to overwrite default and user settings.
 {
   "editor.tabSize": 2,
+  "editor.insertSpaces": true,
   "editor.formatOnSave": true,
   "search.exclude": {
     "**/node_modules": true,
@@ -73,16 +74,16 @@
     "typescriptreact",
   ],
   "eslint.workingDirectories": [
-    "./presentation/common",
-    "./presentation/backend",
-    "./presentation/frontend",
-    "./presentation/components",
-    "./presentation/testing",
-    "./ui/components",
-    "./ui/core",
-    "./ui/framework",
-    "./ui/ninezone"
+    {
+      "pattern": "./**/*"
+    }
   ],
+  "eslint.options": {
+    "configFile": "./package.json",
+    "useEslintrc": false,
+    "resolvePluginsRelativeTo": "./node_modules/@bentley/build-tools"
+  },
+  "eslint.lintTask.enable": false,
   "importSorter.importStringConfiguration.quoteMark": "double",
   "importSorter.generalConfiguration.sortImportsInDirectory": false,
   "importSorter.importStringConfiguration.trailingComma": "multiLine",

@@ -84,7 +84,7 @@ describe("ModelSelector", () => {
     afterEach(cleanup);
 
     it("should render", async () => {
-      const component = render(<ModelSelectorWidget iModelConnection={imodel} />); // tslint:disable-line:deprecation
+      const component = render(<ModelSelectorWidget iModelConnection={imodel} />); // eslint-disable-line deprecation/deprecation
       const widget = component.getByTestId("model-selector-widget");
       expect(widget).to.exist;
     });
@@ -113,12 +113,12 @@ describe("ModelSelector", () => {
 
       // const paths =
       await dataProvider.getFilteredNodePaths("");
-      // console.log("Paths: " + paths); // tslint:disable-line: no-console
-      // console.log("======="); // tslint:disable-line: no-console
+      // console.log("Paths: " + paths); // eslint-disable-line no-console
+      // console.log("======="); // eslint-disable-line no-console
 
       // const nodes =
       await dataProvider.getNodes();
-      // console.log("Nodes: " + nodes); // tslint:disable-line: no-console
+      // console.log("Nodes: " + nodes); // eslint-disable-line no-console
     });
   });
 

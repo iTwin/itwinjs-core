@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/linear-referencing-backend"
+    }
+  ],
+  "packageName": "@bentley/linear-referencing-backend",
+  "email": "paulius.valiunas@bentley.com"
+}

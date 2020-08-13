@@ -12,7 +12,7 @@ import {
   StandardNodeTypes,
 } from "@bentley/presentation-common";
 import { PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
-import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils"; // tslint:disable-line: no-direct-imports
+import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils";
 import { Presentation } from "@bentley/presentation-frontend";
 import { AbstractTreeNodeLoader, DelayLoadedTreeNodeItem, from, Subscription, TreeModelNode, TreeModelRootNode } from "@bentley/ui-components";
 import { renderHook } from "@testing-library/react-hooks";

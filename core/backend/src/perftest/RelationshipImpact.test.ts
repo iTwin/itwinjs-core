@@ -5,8 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
 import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import {
@@ -138,7 +137,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     });
   }
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json"));
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     seedCount = configData.relation.seedCount;
     opCount = configData.relation.operationsCount;
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))

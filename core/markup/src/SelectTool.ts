@@ -233,11 +233,11 @@ class MoveHandle extends ModifyHandle {
   }
   public onClick(_ev: BeButtonEvent) {
     const el = this.handles.el;
-    // tslint:disable-next-line:deprecation
+    // eslint-disable-next-line deprecation/deprecation
     if (el instanceof MarkupText || (el instanceof G && el.node.className.baseVal === MarkupApp.boxedTextClass)) // if they click on the move handle of a text element, start the text editor
       new EditTextTool(el).run();
   }
-  /*** draw the outline of the element's bbox (in viewbox coordinates) */
+  /** draw the outline of the element's bbox (in viewbox coordinates) */
   public setPosition() {
     if (undefined !== this._outline) {
       const pts = [new Point2d(0, 0), new Point2d(0, 1), new Point2d(1, 1), new Point2d(1, 0)];

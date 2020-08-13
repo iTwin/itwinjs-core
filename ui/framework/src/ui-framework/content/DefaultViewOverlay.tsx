@@ -55,7 +55,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
           this.props.viewport.analysisFraction = 0;
         }
       }
-      // tslint:disable-next-line: no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._setTimelineDataProvider(this.props.viewport as ScreenViewport);
     });
   }
@@ -65,7 +65,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
     this._removeListener = this.props.viewport.onDisplayStyleChanged.addListener(this._handleDisplayStyleChange, this);
     this._componentMounted = true;
     setImmediate(() => {
-      // tslint:disable-next-line: no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._setTimelineDataProvider(this.props.viewport);
     });
   }
@@ -85,7 +85,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
         : "";
     if (vp.view.id !== viewId) {
       setImmediate(() => {
-        // tslint:disable-next-line: no-floating-promises
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._setTimelineDataProvider(vp as ScreenViewport);
       });
     } else {
@@ -167,13 +167,11 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
 
   private _getSolarDataProvider(viewport: ScreenViewport): SolarDataProvider | undefined {
     if (IModelApp.renderSystem.options.displaySolarShadows) {
-      let solarDataProvider: SolarDataProvider;
-
-      solarDataProvider = new SolarTimelineDataProvider(viewport.view, viewport);
+      const solarDataProvider: SolarDataProvider = new SolarTimelineDataProvider(viewport.view, viewport);
       if (solarDataProvider.supportsTimelineAnimation) {
         viewport.onViewChanged.removeListener(this._onHandleViewChanged);
         viewport.onViewChanged.addListener(this._onHandleViewChanged);
-        return solarDataProvider as SolarDataProvider;
+        return solarDataProvider;
       }
     }
 

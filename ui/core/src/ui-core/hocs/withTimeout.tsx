@@ -23,7 +23,7 @@ export interface WithTimeoutProps {
  * @public
  */
 export const withTimeout = <ComponentProps extends {}>(
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
 ) => {
   return class WithTimeout extends React.PureComponent<ComponentProps & WithTimeoutProps> {
@@ -43,7 +43,7 @@ export const withTimeout = <ComponentProps extends {}>(
     }
 
     public render() {
-      const { timeout, onTimeout, ...props } = this.props;
+      const { timeout, onTimeout, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <Component {...props as ComponentProps} {...this.state} />
       );

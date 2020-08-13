@@ -21,9 +21,9 @@ import { CellEditingEngine } from "../CellEditingEngine";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeContent } from "./NodeContent";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Properties for Checkbox in [[TreeNode]]

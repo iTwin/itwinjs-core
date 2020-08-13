@@ -60,13 +60,13 @@ export namespace Value {
  * A map of raw values
  * @public
  */
-export interface ValuesMap extends ValuesDictionary<Value> { }
+export interface ValuesMap extends ValuesDictionary<Value> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * An array of raw values
  * @public
  */
-export interface ValuesArray extends Array<Value> { }
+export interface ValuesArray extends Array<Value> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * Display value type.
@@ -112,13 +112,13 @@ export namespace DisplayValue {
  * A map of display values
  * @public
  */
-export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> { }
+export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * An array of display values
  * @public
  */
-export interface DisplayValuesArray extends Array<DisplayValue> { }
+export interface DisplayValuesArray extends Array<DisplayValue> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * Data structure that describes nested content value.
@@ -168,13 +168,13 @@ export type ValueJSON = string | number | boolean | null | ValuesMapJSON | Value
  * JSON representation of [[ValuesMap]]
  * @public
  */
-export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> { }
+export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * JSON representation of [[ValuesArray]]
  * @public
  */
-export interface ValuesArrayJSON extends Array<ValueJSON> { }
+export interface ValuesArrayJSON extends Array<ValueJSON> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * JSON representation of [[DisplayValue]]
@@ -186,13 +186,13 @@ export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayVal
  * JSON representation of [[DisplayValuesMap]]
  * @public
  */
-export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> { }
+export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * JSON representation of [[DisplayValuesArray]]
  * @public
  */
-export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> { }
+export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * JSON representation of [[NestedContentValue]]

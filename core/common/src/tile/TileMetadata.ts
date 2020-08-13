@@ -84,7 +84,7 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 /** Flags controlling the structure of a tile tree. The flags are part of the tile tree's Id.
  * @internal
  */
-const enum TreeFlags {
+const enum TreeFlags { // eslint-disable-line no-restricted-syntax
   None = 0,
   UseProjectExtents = 1 << 0, // Use project extents as the basis of the tile tree's range.
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
@@ -177,7 +177,7 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
 /** Flags controlling how tile content is produced. The flags are part of the ContentId.
  * @internal
  */
-const enum ContentFlags {
+const enum ContentFlags { // eslint-disable-line no-restricted-syntax
   None = 0,
   AllowInstancing = 1 << 0,
   ImprovedElision = 1 << 1,

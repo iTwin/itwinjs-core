@@ -164,7 +164,7 @@ function interpolateQPoint2d(p0: QPoint2d, p1: QPoint2d, fraction: number): QPoi
 
 export namespace TerrainMesh {
   export interface Props {
-    /*** Mesh range -- used for quantization */
+    /** Mesh range -- used for quantization */
     readonly range: Range3d;
 
   }

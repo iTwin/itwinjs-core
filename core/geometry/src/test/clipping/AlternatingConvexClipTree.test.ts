@@ -24,7 +24,7 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 
 // Globals
 let clipEvalCount = 0;

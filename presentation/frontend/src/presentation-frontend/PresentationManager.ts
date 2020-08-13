@@ -129,9 +129,9 @@ export class PresentationManager implements IDisposable {
     await this.onNewiModelConnection(imodel);
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onUpdate = (report: UpdateInfoJSON) => {
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(UpdateInfo.fromJSON(report));
   }
 
@@ -143,7 +143,7 @@ export class PresentationManager implements IDisposable {
       if (report.hasOwnProperty(rulesetId))
         rulesetIds.push(rulesetId);
     }
-    const rulesets = (await Promise.all(rulesetIds.map((id) => this._rulesets.get(id))))
+    const rulesets = (await Promise.all(rulesetIds.map(async (id) => this._rulesets.get(id))))
       .filter<RegisteredRuleset>((ruleset): ruleset is RegisteredRuleset => !!ruleset);
     rulesets.forEach((ruleset: Ruleset) => {
       const updateInfo = report[ruleset.id];
@@ -243,14 +243,14 @@ export class PresentationManager implements IDisposable {
    * Retrieves nodes
    * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
-  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<Node[]>; // tslint:disable-line:unified-signatures
+  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<Node[]>; // eslint-disable-line @typescript-eslint/unified-signatures
   /** Retrieves nodes */
   public async getNodes(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>): Promise<Node[]>;
   public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>, parentKey?: NodeKey): Promise<Node[]> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(isExtendedHierarchyRequestOptions(options) ? options.parentKey : parentKey) });
-    const result = await buildPagedResponse(options.paging, (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
+    const result = await buildPagedResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
     return this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON));
   }
 
@@ -258,7 +258,7 @@ export class PresentationManager implements IDisposable {
    * Retrieves nodes count.
    * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
-  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: NodeKey | undefined): Promise<number>; // tslint:disable-line:unified-signatures
+  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: NodeKey | undefined): Promise<number>; // eslint-disable-line @typescript-eslint/unified-signatures
   /** Retrieves nodes count. */
   public async getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>): Promise<number>;
   public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>, parentKey?: NodeKey): Promise<number> {
@@ -272,14 +272,14 @@ export class PresentationManager implements IDisposable {
    * Retrieves total nodes count and a single page of nodes.
    * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
-  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<{ count: number, nodes: Node[] }>; // tslint:disable-line:unified-signatures
+  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<{ count: number, nodes: Node[] }>; // eslint-disable-line @typescript-eslint/unified-signatures
   /** Retrieves total nodes count and a single page of nodes. */
   public async getNodesAndCount(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>): Promise<{ count: number, nodes: Node[] }>;
   public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>, parentKey?: NodeKey): Promise<{ count: number, nodes: Node[] }> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(isExtendedHierarchyRequestOptions(options) ? options.parentKey : parentKey) });
-    const result = await buildPagedResponse(options.paging, (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
+    const result = await buildPagedResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
     return {
       count: result.total,
       nodes: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
@@ -384,7 +384,7 @@ export class PresentationManager implements IDisposable {
   public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>, argsDescriptor?: Descriptor | DescriptorOverrides, argsKeys?: KeySet): Promise<Content | undefined> {
     return (await (isExtendedContentRequestOptions(requestOptions)
       ? this.getContentAndSize(requestOptions)
-      : this.getContentAndSize(requestOptions, argsDescriptor!, argsKeys!)) // tslint:disable-line:deprecation
+      : this.getContentAndSize(requestOptions, argsDescriptor!, argsKeys!)) // eslint-disable-line deprecation/deprecation
     )?.content;
   }
 
@@ -455,7 +455,7 @@ export class PresentationManager implements IDisposable {
       descriptor: options.descriptor.createStrippedDescriptor(),
       keys: options.keys.toJSON(),
     };
-    const result = await buildPagedResponse(requestOptions.paging, (partialPageOptions) => this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }));
+    const result = await buildPagedResponse(requestOptions.paging, async (partialPageOptions) => this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }));
     return {
       ...result,
       items: result.items.map(DisplayValueGroup.fromJSON),
@@ -485,7 +485,7 @@ export class PresentationManager implements IDisposable {
   public async getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection> | DisplayLabelsRequestOptions<IModelConnection, InstanceKey>, keys?: InstanceKey[]): Promise<LabelDefinition[]> {
     await this.onConnection(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, keys: (isDisplayLabelsRequestOptions(requestOptions) ? requestOptions.keys : keys!).map(InstanceKey.toJSON) });
-    const result = await buildPagedResponse(undefined, (partialPageOptions) => {
+    const result = await buildPagedResponse(undefined, async (partialPageOptions) => {
       const partialKeys = (!partialPageOptions.start) ? rpcOptions.keys : rpcOptions.keys.slice(partialPageOptions.start);
       return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
     });

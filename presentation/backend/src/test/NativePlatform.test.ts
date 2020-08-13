@@ -31,7 +31,7 @@ describe("default NativePlatform", () => {
         throw e; // re-throw if startup() failed to set up NativePlatform
     }
     addonMock.reset();
-    // tslint:disable-next-line:variable-name naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
       localeDirectories: [],
@@ -70,7 +70,7 @@ describe("default NativePlatform", () => {
       .setup((x) => x.forceLoadSchemas(moq.It.isAny(), moq.It.isAny()))
       .callback((_db, cb) => { cb(IModelJsNative.ECPresentationStatus.Error); })
       .verifiable();
-    expect(nativePlatform.forceLoadSchemas(undefined)).to.be.rejected;
+    await expect(nativePlatform.forceLoadSchemas(undefined)).to.be.rejected;
     addonMock.verifyAll();
   });
 

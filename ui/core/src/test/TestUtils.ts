@@ -5,7 +5,6 @@
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UiCore } from "../ui-core/UiCore";
 
-// tslint:disable: completed-docs
 
 export class TestUtils {
   private static _i18n?: I18N;
@@ -23,7 +22,7 @@ export class TestUtils {
   public static async initializeUiCore() {
     if (!TestUtils._uiCoreInitialized) {
       // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
+      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiCoreInitialized = true;
@@ -85,4 +84,4 @@ export const storageMock = () => {
   };
 };
 
-export default TestUtils;   // tslint:disable-line: no-default-export
+export default TestUtils;   // eslint-disable-line: no-default-export

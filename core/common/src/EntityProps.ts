@@ -51,8 +51,8 @@ export enum PrimitiveTypeCode {
   Double = 0x401,
   Integer = 0x501,
   Long = 0x601,
-  Point2d = 0x701,
-  Point3d = 0x801,
+  Point2d = 0x701, // eslint-disable-line no-shadow
+  Point3d = 0x801, // eslint-disable-line no-shadow
   String = 0x901,
 }
 
@@ -226,7 +226,7 @@ export class EntityMetaData implements EntityMetaDataProps {
     this.customAttributes = jsonObj.customAttributes;
     this.properties = {};
 
-    for (const propName in jsonObj.properties) { // tslint:disable-line: forin
+    for (const propName in jsonObj.properties) { // eslint-disable-line guard-for-in
       this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
     }
   }

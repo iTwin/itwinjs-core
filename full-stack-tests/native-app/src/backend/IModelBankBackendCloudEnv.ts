@@ -64,6 +64,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     fsextra.removeSync(bankFsRoot);
   fsextra.mkdirpSync(bankFsRoot);
 
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const cfg = require(path.resolve(__dirname, "../assets/local_orchestrator.config.json"));
   cfg.baseUrl = "https://localhost";
   cfg.port = 4000;
@@ -85,7 +86,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     backendRegistryFile,
   ];
 
-  const proc = child_process.spawn("node", cmdargs, { stdio: "inherit" });
+  const proc = child_process.spawn("node", cmdargs, { stdio: "inherit" }); // eslint-disable-line @typescript-eslint/naming-convention
 
   async function pingServer(url: string, maxConnectAttempts: number, pauseBeforePingMillis: number): Promise<void> {
     let attempt = 1;

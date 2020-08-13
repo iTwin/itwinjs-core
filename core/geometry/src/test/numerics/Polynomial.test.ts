@@ -21,7 +21,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import {
   AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, SmallSystem, SphereImplicit, TorusImplicit, TrigPolynomial,
@@ -274,8 +274,8 @@ describe("ImplicitSurface", () => {
     ck.testCoordinate(0, sphere.evaluateImplicitFunction(0, 0, r), "evaluate sphere");
 
     for (const xyz of [Point3d.create(1, 2, 4),
-      Point3d.create(0, 0, 0),
-      Point3d.create(r, 0, 0)]) {
+    Point3d.create(0, 0, 0),
+    Point3d.create(r, 0, 0)]) {
       const w = 4.2;
       ck.testCoordinate(
         sphere.evaluateImplicitFunction(xyz.x, xyz.y, xyz.z) * w * w,
@@ -323,8 +323,8 @@ describe("ImplicitSurface", () => {
     ck.testCoordinate(0, torus.evaluateImplicitFunctionXYZ(rA, 0, -rB), "evaluate torus");
 
     for (const xyz of [Point3d.create(1, 2, 4),
-      Point3d.create(0, 0, 9),
-      Point3d.create(rA, 0, 0)]) {
+    Point3d.create(0, 0, 9),
+    Point3d.create(rA, 0, 0)]) {
       const w = 2.0;
       const fOfX = torus.evaluateImplicitFunctionXYZ(xyz.x, xyz.y, xyz.z);
       const f = torus.evaluateImplicitFunctionPoint(xyz);
@@ -632,9 +632,9 @@ describe("LinearSystems", () => {
       y0 = 0;
       const sphere = Sphere.createCenterRadius(center, radius);
       for (const ray0 of [Ray3d.createXAxis(),
-        Ray3d.create(center, Vector3d.create(1, 2, 3)),
-        Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
-        Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
+      Ray3d.create(center, Vector3d.create(1, 2, 3)),
+      Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
+      Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphere, x0, y0);
         ray0.tryNormalizeInPlaceWithAreaWeight(1);
         const frame = Transform.createOriginAndMatrix(ray0.origin, Matrix3d.createRigidHeadsUp(ray0.direction));

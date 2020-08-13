@@ -871,10 +871,10 @@ class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
     this._nodeC = this._graph.createEdgeXYZXYZ(x0, y0, z0, this._id, x1, y1, z1, this._id);
     if (this._baseNode === undefined) {
       this._baseNode = this._nodeC;
-      this._nodeB = this._baseNode!.faceSuccessor;
+      this._nodeB = this._baseNode.faceSuccessor;
     } else {
       HalfEdge.pinch(this._nodeB!, this._nodeC);
-      this._nodeB = this._nodeC!.faceSuccessor;
+      this._nodeB = this._nodeC.faceSuccessor;
     }
   }
   public endChain(chainData: MultiLineStringDataVariant, isLeaf: boolean): void {

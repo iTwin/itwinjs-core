@@ -14,7 +14,7 @@ import { TabState, toolSettingsTabId } from "../base/NineZoneState";
 import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
 
 /** @internal */
-export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const widgetContent = React.useContext(WidgetContentNodeContext);
   const toolSettingsContent = React.useContext(ToolSettingsNodeContext);
   const widgetContentContainers = React.useContext(WidgetContentContainersContext);
@@ -26,7 +26,7 @@ export const WidgetContentRenderers = React.memo(function WidgetContentRenderers
         const container = widgetContentContainers[tab.id];
         const children = tab.id === toolSettingsTabId ? toolSettingsContent : widgetContent;
         return <WidgetContentRenderer
-          children={children}
+          children={children} // eslint-disable-line react/no-children-prop
           key={tab.id}
           renderTo={container}
           tabId={tab.id}
@@ -43,7 +43,7 @@ interface WidgetContentRendererProps {
 }
 
 /** @internal */
-export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(props: WidgetContentRendererProps) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(props: WidgetContentRendererProps) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   const container = React.useRef<HTMLDivElement>(undefined!);
   if (!container.current) {
@@ -70,7 +70,7 @@ export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(p
 });
 
 /** @internal */
-export const TabIdContext = React.createContext<TabState["id"]>(""); // tslint:disable-line: variable-name
+export const TabIdContext = React.createContext<TabState["id"]>(""); // eslint-disable-line @typescript-eslint/naming-convention
 TabIdContext.displayName = "nz:TabIdContext";
 
 /** @internal */

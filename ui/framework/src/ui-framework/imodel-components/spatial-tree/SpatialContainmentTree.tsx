@@ -19,9 +19,9 @@ import { ClassGroupingOption } from "../Common";
 const PAGING_SIZE = 20;
 
 /** @internal */
-export const RULESET_SPATIAL_BREAKDOWN: Ruleset = require("./SpatialBreakdown.json"); // tslint:disable-line: no-var-requires
+export const RULESET_SPATIAL_BREAKDOWN: Ruleset = require("./SpatialBreakdown.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 /** @internal */
-export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset = require("./SpatialBreakdown.GroupedByClass.json"); // tslint:disable-line: no-var-requires
+export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset = require("./SpatialBreakdown.GroupedByClass.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /**
  * Properties for the [[SpatialContainmentTree]] component
@@ -82,4 +82,4 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
  * application must set up the Redux store and include the FrameworkReducer.
  * @beta
  */
-export const IModelConnectedSpatialContainmentTree = connectIModelConnection(null, null)(SpatialContainmentTree); // tslint:disable-line:variable-name
+export const IModelConnectedSpatialContainmentTree = connectIModelConnection(null, null)(SpatialContainmentTree); // eslint-disable-line @typescript-eslint/naming-convention

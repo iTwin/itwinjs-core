@@ -237,7 +237,7 @@ class XMLHttpRequestProxy {
     if (this._nativeXhr) {
       return this._nativeXhr.send(xhrBody);
     }
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._fetchPromise = fetch(this._xhrUrl!, {
       body: xhrBody,
       method: this._xhrMethod,

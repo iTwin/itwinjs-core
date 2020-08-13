@@ -67,7 +67,7 @@ export class TerrainSettings {
   constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic, locatable = true) {
     this.providerName = providerName;
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
-    this.locatable = locatable; // tslint:disable-line:deprecation
+    this.locatable = locatable; // eslint-disable-line deprecation/deprecation
     this.applyLighting = applyLighting;
     this.heightOrigin = heightOrigin;
     switch (heightOriginMode) {
@@ -86,7 +86,7 @@ export class TerrainSettings {
       return new TerrainSettings();
 
     const providerName = "CesiumWorldTerrain";    // This is only terrain provider currently supported.
-    return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode, true !== json.nonLocatable); // tslint:disable-line:deprecation
+    return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode, true !== json.nonLocatable); // eslint-disable-line deprecation/deprecation
   }
 
   public toJSON(): TerrainProps {
@@ -95,8 +95,8 @@ export class TerrainSettings {
       props.providerName = this.providerName;
     if (1 !== this.exaggeration)
       props.exaggeration = this.exaggeration;
-    if (!this.locatable) // tslint:disable-line:deprecation
-      props.nonLocatable = true; // tslint:disable-line:deprecation
+    if (!this.locatable) // eslint-disable-line deprecation/deprecation
+      props.nonLocatable = true; // eslint-disable-line deprecation/deprecation
     if (this.applyLighting)
       props.applyLighting = true;
     if (0 !== this.heightOrigin)
@@ -107,7 +107,7 @@ export class TerrainSettings {
 
   public equals(other: TerrainSettings): boolean {
     return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting
-      && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode && this.locatable === other.locatable; // tslint:disable-line:deprecation
+      && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode && this.locatable === other.locatable; // eslint-disable-line deprecation/deprecation
   }
 
   /** Returns true if these settings are equivalent to the supplied JSON settings. */
@@ -126,7 +126,7 @@ export class TerrainSettings {
     const props = {
       providerName: changedProps.providerName ?? this.providerName,
       exaggeration: changedProps.exaggeration ?? this.exaggeration,
-      nonLocatable: changedProps.nonLocatable ?? !this.locatable, // tslint:disable-line:deprecation
+      nonLocatable: changedProps.nonLocatable ?? !this.locatable, // eslint-disable-line deprecation/deprecation
       applyLighting: changedProps.applyLighting ?? this.applyLighting,
       heightOrigin: changedProps.heightOrigin ?? this.heightOrigin,
       heightOriginMode: changedProps.heightOriginMode ?? this.heightOriginMode,

@@ -21,7 +21,7 @@ export interface FrameworkState {
 /** Framework reducer that combines the [[ConfigurableUiReducer]] and [[SessionStateReducer]].
  * @beta
  */
-export const FrameworkReducer = combineReducers({ // tslint:disable-line:variable-name
+export const FrameworkReducer = combineReducers({ // eslint-disable-line @typescript-eslint/naming-convention
   configurableUiState: ConfigurableUiReducer,
   sessionState: SessionStateReducer,
 });

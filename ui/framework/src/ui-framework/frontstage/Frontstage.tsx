@@ -468,8 +468,8 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       <div style={ninezoneStyle} id="uifw-ninezone-area" className={this.props.className}>
         <NZ_Zones style={runtimeProps.nineZone.zones.isInFooterMode ? this._zonesFooterModeStyle : this._zonesStyle} >
           <StagePanels
-            bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomMostPanel, runtimeProps)}
-            topPanel={this.cloneStagePanelElement(frontstageDef.topMostPanel, runtimeProps)}
+            bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomMostPanel, runtimeProps)} // eslint-disable-line deprecation/deprecation
+            topPanel={this.cloneStagePanelElement(frontstageDef.topMostPanel, runtimeProps)} // eslint-disable-line deprecation/deprecation
           >
             <StagePanels
               bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomPanel, runtimeProps)}

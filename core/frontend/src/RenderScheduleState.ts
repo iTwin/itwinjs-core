@@ -396,7 +396,7 @@ export namespace RenderScheduleState {
       const colorOverride = this.getColorOverride(time, interval);
 
       if (colorOverride || transparencyOverride) {
-        console.log("Model Transparency: " + transparencyOverride);   // tslint:disable-line
+        console.log("Model Transparency: " + transparencyOverride);   // eslint-disable-line no-console
         overrides.overrideModel(this.modelId, FeatureAppearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
       }
 

@@ -97,12 +97,11 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       style: this.props.style,
     };
 
-    let editorNode: React.ReactNode;
     const propDescription = this.props.propertyRecord.property;
 
     const editorName = propDescription.editor !== undefined ? propDescription.editor.name : undefined;
     this._propertyEditor = PropertyEditorManager.createEditor(propDescription.typename, editorName, propDescription.dataController);
-    editorNode = this._propertyEditor.reactNode;
+    const editorNode: React.ReactNode = this._propertyEditor.reactNode;
 
     let clonedNode: React.ReactNode = null;
     // istanbul ignore else
@@ -116,7 +115,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   private _handleEditorBlur = (_e: React.FocusEvent) => {
     // istanbul ignore else
     if (!this.props.ignoreEditorBlur)
-      this._commit();   // tslint:disable-line: no-floating-promises
+      this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _handleContainerBlur = (e: React.FocusEvent) => {
@@ -160,12 +159,12 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     // istanbul ignore next
     if (this._editorRef && this._editorRef === document.activeElement)
       e.stopPropagation();
-    this._commit();   // tslint:disable-line: no-floating-promises
+    this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private onPressTab(e: React.KeyboardEvent): void {
     e.stopPropagation();
-    this._commit();   // tslint:disable-line: no-floating-promises
+    this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private async isNewValueValid(value: PropertyValue): Promise<boolean> {

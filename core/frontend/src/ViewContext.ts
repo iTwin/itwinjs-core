@@ -17,7 +17,7 @@ import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { GraphicList, RenderGraphic, RenderGraphicOwner } from "./render/RenderGraphic";
+import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";

@@ -7,7 +7,6 @@ import { from } from "rxjs/internal/observable/from";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { ObservableInput } from "rxjs/internal/types";
 import sinon from "sinon";
-/* tslint:disable:no-direct-imports */
 import * as moq from "typemoq";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -32,7 +31,7 @@ import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
 
 const awaitableObservable = <T extends unknown>(input: ObservableInput<T>) => {
   const promise = new ResolvablePromise<void>();
-  const observable = from(input).pipe(finalize(() => promise.resolve()));
+  const observable = from(input).pipe(finalize(async () => promise.resolve()));
   return { observable, waitForCompletion: async () => promise };
 };
 

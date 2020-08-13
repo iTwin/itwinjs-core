@@ -55,7 +55,7 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
  * Default component for rendering tree node.
  * @beta
  */
-export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps) => { // tslint:disable-line: variable-name
+export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps) => { // eslint-disable-line @typescript-eslint/naming-convention
   const label = (
     <TreeNodeContent
       key={props.node.id}

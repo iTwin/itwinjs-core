@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/webgl-compatibility"
+    }
+  ],
+  "packageName": "@bentley/webgl-compatibility",
+  "email": "paulius.valiunas@bentley.com"
+}

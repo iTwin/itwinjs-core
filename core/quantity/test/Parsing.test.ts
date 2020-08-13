@@ -97,7 +97,7 @@ describe("Parsing tests:", () => {
       const tokens = Parser.parseQuantitySpecification(strVal, format);
       assert.isTrue(tokens.length === expectedTokens[i].length);
 
-      // tslint:disable-next-line:prefer-for-of
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let j = 0; j < tokens.length; j++) {
         assert.isTrue(tokens[j].value === expectedTokens[i][j].value);
       }
@@ -429,7 +429,7 @@ describe("Synchronous Parsing tests:", async () => {
 
     if (logTestOutput) {
       for (const spec of meterConversionSpecs) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
       }
     }
@@ -437,7 +437,7 @@ describe("Synchronous Parsing tests:", async () => {
     for (const testEntry of testData) {
       const parseResult = Parser.parseIntoQuantityValue(testEntry.value, format, meterConversionSpecs);
       if (logTestOutput) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`input=${testEntry.value} output=${parseResult.value}`);
       }
       assert.isTrue(QuantityStatus.Success === parseResult.status);
@@ -473,7 +473,7 @@ describe("Synchronous Parsing tests:", async () => {
 
     if (logTestOutput) {
       for (const spec of parserSpec.unitConversions) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
       }
     }
@@ -481,7 +481,7 @@ describe("Synchronous Parsing tests:", async () => {
     for (const testEntry of testData) {
       const parseResult = Parser.parseQuantityString(testEntry.value, parserSpec);
       if (logTestOutput) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`input=${testEntry.value} output=${parseResult.value!}`);
       }
       assert.isTrue(QuantityStatus.Success === parseResult.status);
@@ -489,7 +489,7 @@ describe("Synchronous Parsing tests:", async () => {
       const formattedValue = Formatter.formatQuantity(parseResult.value!, formatSpec);
 
       if (logTestOutput) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`    formatted value=${formattedValue}`);
       }
     }
@@ -504,7 +504,7 @@ describe("Synchronous Parsing tests:", async () => {
 
     if (logTestOutput) {
       for (const spec of angleParserSpec.unitConversions) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
       }
     }
@@ -512,7 +512,7 @@ describe("Synchronous Parsing tests:", async () => {
     for (const testEntry of testData) {
       const parseResult = Parser.parseQuantityString(testEntry.value, angleParserSpec);
       if (logTestOutput) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`input=${testEntry.value} output=${parseResult.value!}`);
       }
       assert.isTrue(QuantityStatus.Success === parseResult.status);
@@ -520,7 +520,7 @@ describe("Synchronous Parsing tests:", async () => {
       const formattedValue = Formatter.formatQuantity(parseResult.value!, angleFormatSpec);
 
       if (logTestOutput) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`    formatted value=${formattedValue}`);
       }
     }

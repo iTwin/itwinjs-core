@@ -35,7 +35,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 let outputFolderPath = "./src/test/output";
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(outputFolderPath))

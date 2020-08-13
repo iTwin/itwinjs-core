@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/imodelhub-client"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client",
+  "email": "paulius.valiunas@bentley.com"
+}

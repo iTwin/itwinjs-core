@@ -12,7 +12,7 @@
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-orbitgt/file.json --tsIndexFile=./imodeljs-orbitgt.ts --onlyJson",
     "extract-api": "betools extract-api --entry=imodeljs-orbitgt",
-    "lint": "tslint --project . 1>&2",
+    "lint": "",
     "test": "betools test",
     "cover": ""
   },
@@ -45,6 +45,7 @@
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
     "debug": "^2.6.9",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
@@ -55,5 +56,8 @@
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+  }
 }

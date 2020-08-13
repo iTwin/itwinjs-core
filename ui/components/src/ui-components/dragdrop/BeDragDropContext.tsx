@@ -29,4 +29,4 @@ export class BeDragDropContextComponent extends React.PureComponent {
  * Context component for DragDrop API. All DragSources and DropTargets used in the application must be contained in this component.
  * @beta
  */
-export const BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent<any> = DragDropContext(HTML5Backend)(BeDragDropContextComponent); // tslint:disable-line:variable-name
+export const BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent<any> = DragDropContext(HTML5Backend)(BeDragDropContextComponent); // eslint-disable-line @typescript-eslint/naming-convention

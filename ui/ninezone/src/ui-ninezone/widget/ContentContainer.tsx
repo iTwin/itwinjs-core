@@ -14,7 +14,7 @@ import { WidgetContentManagerContext } from "./ContentManager";
 import { WidgetStateContext } from "./Widget";
 
 /** @internal */
-export const WidgetContentContainer = React.memo(function WidgetContentContainer() { // tslint:disable-line: no-shadowed-variable variable-name
+export const WidgetContentContainer = React.memo(function WidgetContentContainer() { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
   const widget = React.useContext(WidgetStateContext);
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   assert(widget);

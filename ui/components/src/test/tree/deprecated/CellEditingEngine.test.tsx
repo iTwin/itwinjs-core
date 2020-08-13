@@ -11,9 +11,9 @@ import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/de
 import { DEPRECATED_Tree as Tree } from "../../../ui-components/tree/deprecated/component/Tree";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("CellEditingEngine", () => {
   const setStateSpy = sinon.spy();
@@ -158,7 +158,7 @@ describe("CellEditingEngine", () => {
 
     it("does not change editor state if engine is not subscribed to", () => {
       const setDirtySpy = sinon.spy();
-      node.setDirty = setDirtySpy;
+      node.setDirty = setDirtySpy; // eslint-disable-line @typescript-eslint/unbound-method
 
       const engine = new CellEditingEngine(props);
 
@@ -183,7 +183,7 @@ describe("CellEditingEngine", () => {
     it("calls activateEditor when node is selected, clicked, has a payload and is editable", () => {
       const setStateWithArgs = sinon.spy();
 
-      node.selected = () => true;
+      node.selected = () => true; // eslint-disable-line @typescript-eslint/unbound-method
       node.payload = { id: "a", label: PropertyRecord.fromString("b"), isEditable: true };
 
       const engine = new CellEditingEngine(props);
@@ -197,7 +197,7 @@ describe("CellEditingEngine", () => {
     it("calls deactivateEditor when node is not selected", () => {
       const setStateWithArgs = sinon.spy();
 
-      node.selected = () => false;
+      node.selected = () => false; // eslint-disable-line @typescript-eslint/unbound-method
       node.payload = { id: "a", label: PropertyRecord.fromString("b"), isEditable: true };
 
       const engine = new CellEditingEngine(props);

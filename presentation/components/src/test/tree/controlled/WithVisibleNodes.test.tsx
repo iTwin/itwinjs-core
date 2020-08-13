@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import { mount } from "enzyme";
 import * as React from "react";
@@ -17,9 +16,9 @@ import {
 } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
 import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable-next-line:variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const PresentationTree = controlledTreeWithVisibleNodes(ControlledTree);
 
 describe("Tree withModelSource", () => {

@@ -14,12 +14,12 @@ export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
 /** The properties of a Font. This includes a iModel local id, the font type, and the font name.
  * @public
  */
-export interface FontProps { id: number; type: FontType; name: string; }
+export interface FontProps { id: number, type: FontType, name: string }
 
 /** The properties of a FontMap
  * @public
  */
-export interface FontMapProps { fonts: FontProps[]; }
+export interface FontMapProps { fonts: FontProps[] }
 
 /** A FontMap holds the table of known fonts available in an iModel.
  * A font is referenced by an "id" that is local to the iModel. This table maps those local ids to a FontProps.

@@ -137,7 +137,7 @@ export namespace Id64 {
   }
 
   // Used when constructing local ID portion of Id64String. Performance optimization.
-  const _localIdPrefixByLocalIdLength = [
+  const _localIdPrefixByLocalIdLength = [ // eslint-disable-line @typescript-eslint/naming-convention
     "0000000000",
     "000000000",
     "00000000",
@@ -172,7 +172,7 @@ export namespace Id64 {
   }
 
   // Used as a buffer when converting a pair of 32-bit integers to an Id64String. Significant performance optimization.
-  const _scratchCharCodes = [
+  const _scratchCharCodes = [ // eslint-disable-line @typescript-eslint/naming-convention
     0x30, // "0"
     0x78, // "x"
     0x30, // "0"

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable:no-duplicate-imports
+/* eslint-disable no-duplicate-imports */
 import * as geometry from "../../geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -19,7 +19,7 @@ import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 // import { AngleSweep } from "../Geometry";
 // import { Loop, Path, ParityRegion } from "../curve/CurveChain";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 const emitToConsole = false;
 // In geometry source tests, convert to string and emit to console.
 // In browser or other playpen, implement this function appropriately.

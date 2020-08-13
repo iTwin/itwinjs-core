@@ -8,7 +8,7 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {
   const savedFlag = Matrix3d.useCachedInverse;
@@ -61,7 +61,7 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
       name = "Math_HypotenuseXY";
       console.time(name);
       for (let i = 0; i < numTest; i++) {
-        // tslint:disable-next-line:ban
+        // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5);
       }
       console.timeEnd(name);
@@ -81,7 +81,7 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
       name = "Math_HypotenuseXYZ";
       console.time(name);
       for (let i = 0; i < numTest; i++) {
-        // tslint:disable-next-line:ban
+        // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5, 2);
       }
       console.timeEnd(name);
@@ -101,7 +101,7 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
       name = "Math_HypotenuseXYZW";
       console.time(name);
       for (let i = 0; i < numTest; i++) {
-        // tslint:disable-next-line:ban
+        // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5, 2, 7);
       }
       console.timeEnd(name);

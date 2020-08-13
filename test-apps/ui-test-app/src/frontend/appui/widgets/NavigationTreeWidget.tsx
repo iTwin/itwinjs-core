@@ -89,7 +89,7 @@ interface NavigationTreeProps {
   rulesetId: string;
 }
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProps) => {
   const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModelConnection,

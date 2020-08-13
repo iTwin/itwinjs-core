@@ -554,7 +554,7 @@ export enum TileBoundingBoxes {
 }
 
 // TileLoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.
-const enum TileState {
+const enum TileState {// eslint-disable-line no-restricted-syntax
   NotReady = TileLoadStatus.NotLoaded, // Tile requires loading, but no request has yet completed.
   Ready = TileLoadStatus.Ready, // request completed successfully, or no loading was required.
   NotFound = TileLoadStatus.NotFound, // request failed.

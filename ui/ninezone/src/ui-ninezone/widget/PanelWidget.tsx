@@ -23,7 +23,7 @@ export interface PanelWidgetProps {
 }
 
 /** @internal */
-export const PanelWidget = React.memo<PanelWidgetProps>(function PanelWidget(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const PanelWidget = React.memo<PanelWidgetProps>(function PanelWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const side = React.useContext(PanelSideContext);
   const widgets = React.useContext(WidgetsStateContext);
   const widget = widgets[props.widgetId];
@@ -46,7 +46,7 @@ export const PanelWidget = React.memo<PanelWidgetProps>(function PanelWidget(pro
   );
 });
 
-const PanelWidgetComponent = React.memo<CommonProps>(function PanelWidgetComponent(props) { // tslint:disable-line: no-shadowed-variable variable-name
+const PanelWidgetComponent = React.memo<CommonProps>(function PanelWidgetComponent(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
   return (
     <Widget
       className={props.className}

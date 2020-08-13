@@ -33,9 +33,7 @@
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-frontend",
-    "lint": "npm run tslint && npm run eslint",
-    "eslint": "eslint src --ext .ts,.js",
-    "tslint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha -r jsdom-global/register --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
@@ -70,15 +68,13 @@
     "@types/node": "10.14.1",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
-    "@typescript-eslint/parser": "2.22.0",
     "cross-env": "^5.1.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "cpx": "^1.5.0",
     "deep-equal": "^1",
-    "eslint": "^6.7.2",
-    "eslint-plugin-react-hooks": "^3.0.0",
+    "eslint": "^6.8.0",
     "faker": "^4.1.0",
     "jsdom-global": "3.0.2",
     "mocha": "^5.2.0",
@@ -86,8 +82,6 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
     "typescript": "~3.7.4",
     "xmlhttprequest": "^1.8.0"
@@ -102,5 +96,8 @@
     "require": [
       "jsdom-global/register"
     ]
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

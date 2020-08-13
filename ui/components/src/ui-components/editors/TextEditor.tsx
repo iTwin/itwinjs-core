@@ -62,7 +62,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
-    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
@@ -73,7 +73,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
-      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+      this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 

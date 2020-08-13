@@ -18,8 +18,8 @@ import { PointerCaptor } from "../../base/PointerCaptor";
 export enum ResizeDirection {
   EastWest,
   NorthSouth,
-  NorthEast_SouthWest,
-  NorthWest_SouthEast,
+  NorthEast_SouthWest, // eslint-disable-line @typescript-eslint/naming-convention
+  NorthWest_SouthEast, // eslint-disable-line @typescript-eslint/naming-convention
 }
 
 /** Helpers for [[ResizeDirection]].

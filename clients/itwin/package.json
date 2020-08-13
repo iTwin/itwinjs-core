@@ -11,7 +11,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=itwin-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "betools test --offline=\"mock\"",
     "test:integration": "",
@@ -52,6 +52,7 @@
     "@types/superagent": "^4.1.7",
     "@types/xmldom": "^0.1.29",
     "chai": "^4.1.2",
+    "eslint": "^6.8.0",
     "mocha": "^5.2.0",
     "nock": "^9.2.3",
     "nyc": "^14.0.0",
@@ -73,5 +74,8 @@
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

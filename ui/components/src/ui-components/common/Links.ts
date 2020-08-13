@@ -63,7 +63,7 @@ linkify
 /** Returns a list of links from a text
  * @public
  */
-export const matchLinks = (text: string): Array<{ index: number; lastIndex: number; schema: string; url: string }> => {
+export const matchLinks = (text: string): Array<{ index: number, lastIndex: number, schema: string, url: string }> => {
   const matches = linkify.match(text);
-  return matches ? matches as Array<{ index: number; lastIndex: number; schema: string; url: string }> : [];
+  return matches ? matches as Array<{ index: number, lastIndex: number, schema: string, url: string }> : [];
 };

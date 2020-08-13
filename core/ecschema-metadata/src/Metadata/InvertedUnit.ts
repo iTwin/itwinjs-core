@@ -23,7 +23,7 @@ import { UnitSystem } from "./UnitSystem";
  * @beta
  */
 export class InvertedUnit extends SchemaItem {
-  public readonly schemaItemType!: SchemaItemType.InvertedUnit; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.InvertedUnit; // eslint-disable-line
   protected _invertsUnit?: LazyLoadedUnit; // required
   protected _unitSystem?: LazyLoadedUnitSystem; // required
 

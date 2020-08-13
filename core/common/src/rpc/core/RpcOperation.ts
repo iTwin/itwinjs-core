@@ -112,7 +112,7 @@ export class RpcOperation {
 export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
 /** @public */
-export namespace RpcOperation {
+export namespace RpcOperation { // eslint-disable-line no-redeclare
   function obtainInstance(obj: RpcOperationPolicy | RpcOperationPolicyProps) {
     if (obj instanceof RpcOperationPolicy) {
       return obj;

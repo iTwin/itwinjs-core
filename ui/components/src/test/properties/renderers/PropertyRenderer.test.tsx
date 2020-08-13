@@ -270,7 +270,7 @@ describe("PropertyRenderer", () => {
 
     const myCustomRenderer = {
       canRender: () => true,
-      render: () => <div>My value</div>,
+      render: () => <div>My value</div>, // eslint-disable-line react/display-name
     };
 
     PropertyValueRendererManager.defaultManager.registerRenderer("mycustom", myCustomRenderer);

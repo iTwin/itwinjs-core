@@ -15,7 +15,7 @@ import { TextureHandle } from "./Texture";
 
 /** @internal */
 export type DepthBuffer = RenderBuffer | RenderBufferMultiSample | TextureHandle;
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** @internal */
 export const enum FrameBufferBindState {

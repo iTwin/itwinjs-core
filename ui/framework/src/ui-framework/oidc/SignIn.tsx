@@ -72,7 +72,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   private _onStartSignin = async () => {
     // istanbul ignore next
     if (this._oidcClient)
-      this._oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+      this._oidcClient.signIn(new ClientRequestContext()); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // istanbul ignore else
     if (this.props.onStartSignIn)

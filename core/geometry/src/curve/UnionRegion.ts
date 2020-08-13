@@ -22,7 +22,7 @@ import { StrokeOptions } from "./StrokeOptions";
  * @public
  */
 export class UnionRegion extends CurveCollection {
-   /** String name for schema properties */
+  /** String name for schema properties */
   public readonly curveCollectionType = "unionRegion";
 
   /** test if `other` is a `UnionRegion` */

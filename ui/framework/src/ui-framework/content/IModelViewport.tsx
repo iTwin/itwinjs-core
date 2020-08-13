@@ -24,13 +24,13 @@ import { StandardRotationNavigationAidControl } from "../navigationaids/Standard
 import { UiError } from "@bentley/ui-abstract";
 
 // create a HOC viewport component that supports unified selection
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
 /** Viewport that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
  * @beta
  */
-export const IModelConnectedViewport = connectIModelConnectionAndViewState(null, null)(UnifiedSelectionViewport); // tslint:disable-line:variable-name
+export const IModelConnectedViewport = connectIModelConnectionAndViewState(null, null)(UnifiedSelectionViewport); // eslint-disable-line @typescript-eslint/naming-convention
 
 /** [[IModelViewportControl]] options. These options are set in the applicationData property of the [[ContentProps]].
  * @beta

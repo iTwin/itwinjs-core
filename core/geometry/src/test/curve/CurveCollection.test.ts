@@ -24,7 +24,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 const consolidateAdjacentPath = "./src/test/testInputs/curve/";
 /**
@@ -260,11 +260,11 @@ describe("ConsolidateAdjacentPrimitives", () => {
               const range = g.range();
               const dx = 2.0 * range.xLength();
               const dy = 1.1 * range.yLength();
-              const lengthA = g1.sumLengths ();
+              const lengthA = g1.sumLengths();
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0);
               RegionOps.consolidateAdjacentPrimitives(g1);
-              const lengthB = g1.sumLengths ();
-              ck.testCoordinate (lengthA, lengthB, "consolidateAdjacentPrimitives should not change length");
+              const lengthB = g1.sumLengths();
+              ck.testCoordinate(lengthA, lengthB, "consolidateAdjacentPrimitives should not change length");
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0 + dy);
               x0 += dx;
             }

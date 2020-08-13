@@ -7,7 +7,6 @@ import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
 import { getDefaultWidgetManagerProps } from "../../../ui-ninezone/zones/manager/Widget";
 import { WidgetZoneId } from "../../../ui-ninezone/zones/manager/Zones";
 
-// tslint:disable: completed-docs
 export namespace TestProps {
   export const defaultProps = getDefaultZonesManagerProps();
 

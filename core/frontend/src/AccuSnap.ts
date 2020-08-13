@@ -108,7 +108,7 @@ export class TouchCursor implements CanvasDecoration {
     if (!this._isDragging || !this.setPosition(ev.viewport, ev.point))
       return false;
     ev.viewPoint = this._offsetPosition;
-    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 
@@ -137,7 +137,7 @@ export class TouchCursor implements CanvasDecoration {
       if (!this.setPosition(ev.viewport, ev.point))
         return false;
       ev.viewPoint = this._offsetPosition;
-      IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+      IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
       return false;
     }
     ev.viewPoint = this._offsetPosition;
@@ -154,7 +154,7 @@ export class TouchCursor implements CanvasDecoration {
     if (!touchCursor.setPosition(ev.viewport, ev.point) && !touchCursor.setPosition(ev.viewport, ev.viewport.view.getCenter()))
       return undefined;
     ev.viewPoint = touchCursor._offsetPosition;
-    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
     return touchCursor;
   }
 }
@@ -1066,7 +1066,7 @@ export class TentativeOrAccuSnap {
 }
 
 /** @public */
-export namespace AccuSnap {
+export namespace AccuSnap { // eslint-disable-line no-redeclare
   export class ToolState {
     public enabled = false;
     public locate = false;

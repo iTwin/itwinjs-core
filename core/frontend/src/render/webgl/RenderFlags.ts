@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module WebGL
  */
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** Ordered list of render passes which produce a rendered frame.
  * @internal

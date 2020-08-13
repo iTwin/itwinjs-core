@@ -68,6 +68,7 @@ export class RulesetManagerImpl implements RulesetManager {
    * Register the supplied ruleset
    */
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     const registered = new RegisteredRuleset(ruleset, Guid.createValue(), (r: RegisteredRuleset) => this.remove(r));
     if (!this._clientRulesets.has(ruleset.id))
       this._clientRulesets.set(ruleset.id, []);

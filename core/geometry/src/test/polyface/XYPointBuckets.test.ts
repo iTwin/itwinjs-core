@@ -13,7 +13,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("XYPointBuckets", () => {
 

@@ -60,7 +60,7 @@ export function Toolbar(props: ToolbarProps) {
     setImmediate(() => {
       setPopupPanelCount((prev) => {
         const nextCount = isOpening ? (prev + 1) : (prev - 1);
-        // tslint:disable-next-line: no-console
+        // eslint-disable-next-line no-console
         // console.log(`new popup count = ${nextCount}`);
         return nextCount < 0 ? 0 : nextCount;
       });

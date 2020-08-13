@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, FeatureAppearance } from "@bentley/imodeljs-common";
 import { FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { AnimationType, IoTDeviceType } from "./IoTDefinitions";
 import { ColorValue, IoTAnimation, IoTDemoExtension } from "./iotDemo";
@@ -130,7 +130,7 @@ export class IoTMonitor implements FeatureOverrideProvider {
 
     for (const [elementId, color] of this._overrideMap) {
       const colorDef = ColorDef.from(color.red, color.green, color.blue, 14);
-      const appearance = FeatureSymbology.Appearance.fromRgba(colorDef);
+      const appearance = FeatureAppearance.fromRgba(colorDef);
       overrides.overrideElement(elementId, appearance);
     }
   }
@@ -139,11 +139,11 @@ export class IoTMonitor implements FeatureOverrideProvider {
     if ((undefined === this._overrideMap) || (undefined === this._animationView) || (undefined === this._animation))
       return undefined;
 
-    const currentReading: { readingTime: number, readings: any[] } = await this._animation!.getLatestTimeAndReading();
+    const currentReading: { readingTime: number, readings: any[] } = await this._animation.getLatestTimeAndReading();
 
     // we expect the readings to be either of the type we requested, or alarms.
     for (const thisReading of currentReading.readings) {
-      const idString: Id64String | undefined = await this._animation!.getElementIdFromDeviceId(thisReading.id);
+      const idString: Id64String | undefined = await this._animation.getElementIdFromDeviceId(thisReading.id);
       if ((undefined === idString) || (idString !== hit.sourceId))
         continue;
 
@@ -151,7 +151,7 @@ export class IoTMonitor implements FeatureOverrideProvider {
         return this._animation.toolTipFromReading(thisReading);
       } else {
         // it may be an alarm.
-        return [thisReading.ty + " Alarm!"];
+        return [`${thisReading.ty} Alarm!`];
       }
     }
     return undefined;

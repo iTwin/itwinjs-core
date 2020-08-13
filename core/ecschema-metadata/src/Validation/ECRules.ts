@@ -60,7 +60,7 @@ function getCode(code: number): string {
  * - UnitSystem:                1900-1999
  * @beta
  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const DiagnosticCodes = {
   // Class Rule Codes (100-199)
   BaseClassIsSealed: getCode(100),
@@ -96,7 +96,7 @@ export const DiagnosticCodes = {
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
  * @beta
  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const Diagnostics = {
   /**
    * EC-001
@@ -257,7 +257,7 @@ export const Diagnostics = {
  * All schema validation rules that fall under the category of ECObjects.
  * @beta
  */
-export const ECRuleSet: IRuleSet = { // tslint:disable-line:variable-name
+export const ECRuleSet: IRuleSet = { // eslint-disable-line @typescript-eslint/naming-convention
   name: ruleSetName,
 
   schemaRules: [
@@ -564,7 +564,7 @@ export async function* abstractConstraintMustExistWithMultipleConstraints(constr
     return;
   }
 
-  const abstractConstraint = getAbstractConstraint(constraint);
+  const abstractConstraint = await getAbstractConstraint(constraint);
   if (abstractConstraint)
     return;
 

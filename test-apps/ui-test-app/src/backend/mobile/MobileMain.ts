@@ -13,17 +13,17 @@ import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 
-(async () => { // tslint:disable-line:no-floating-promises
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
     // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
-      require("dotenv-expand")(
-        require("dotenv").config(),
+      require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
+        require("dotenv").config(), // eslint-disable-line @typescript-eslint/no-var-requires
       );
     }
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Trace);
-    IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
+    IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
     // initialize imodeljs-backend
     await NativeAppBackend.startup();

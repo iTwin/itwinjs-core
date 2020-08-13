@@ -163,7 +163,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     options?: StrokeOptions): LineString3d {
     let strokeCount = 16;
     if (fixedStrokeCount !== undefined && Number.isFinite(fixedStrokeCount)) {
-      strokeCount = fixedStrokeCount as number;
+      strokeCount = fixedStrokeCount;
     } else if (options instanceof StrokeOptions) {
       strokeCount = options.applyTolerancesToArc(Geometry.maxXY(this._localToWorld.matrix.columnXMagnitude(), this._localToWorld.matrix.columnYMagnitude()));
     }
@@ -229,7 +229,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const center = transform.multiplyXYZ(0, 0, s1);
     const vector0 = transform.matrix.multiplyXYZ(c1, 0, 0);
     const vector90 = transform.matrix.multiplyXYZ(0, c1, 0);
-    return Loop.create(Arc3d.create(center, vector0, vector90) as Arc3d);
+    return Loop.create(Arc3d.create(center, vector0, vector90));
   }
   /** Extend a range to contain this sphere. */
   public extendRange(range: Range3d, transform?: Transform): void {

@@ -28,7 +28,7 @@ export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldRea
 }
 // __PUBLISH_EXTRACT_END__
 
-// tslint:disable:no-duplicate-imports - Disable this because it is intentionally separated.
+/* eslint-disable no-duplicate-imports */ // Disable this because it is intentionally separated.
 import { Angle, AngleProps, Point3d, XYZProps } from "@bentley/geometry-core";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 

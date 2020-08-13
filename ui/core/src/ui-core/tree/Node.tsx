@@ -20,8 +20,8 @@ import { ExpansionToggle } from "./ExpansionToggle";
  * @beta
  */
 export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"> & {
-  onChange: (checked: boolean) => void,
-  onClick: (e: React.MouseEvent) => void,
+  onChange: (checked: boolean) => void;
+  onClick: (e: React.MouseEvent) => void;
 };
 
 /** Type for node Checkbox renderer

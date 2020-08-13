@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
 import { expect } from "chai";
@@ -36,7 +36,9 @@ import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHe
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
 
-const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
+/* eslint-disable @typescript-eslint/promise-function-async */
+
+const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 describe("PresentationManager", () => {
 
   beforeEach(async () => {
@@ -525,7 +527,7 @@ describe("PresentationManager", () => {
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
-        const result = await manager.getNodes(ClientRequestContext.current, options, NodeKey.fromJSON(parentNodeKeyJSON)); // tslint:disable-line:deprecation
+        const result = await manager.getNodes(ClientRequestContext.current, options, NodeKey.fromJSON(parentNodeKeyJSON)); // eslint-disable-line deprecation/deprecation
         verifyWithSnapshot(result, expectedParams);
       });
 
@@ -792,7 +794,7 @@ describe("PresentationManager", () => {
           rulesetOrId: testData.rulesetOrId,
           paging: pageOptions,
         };
-        const result = await manager.getNodesAndCount(ClientRequestContext.current, options); // tslint:disable-line:deprecation
+        const result = await manager.getNodesAndCount(ClientRequestContext.current, options); // eslint-disable-line deprecation/deprecation
 
         verifyWithSnapshot(result.nodes, expectedGetRootNodesParams);
         verifyWithExpectedResult(result.count, addonGetRootNodesCountResponse, expectedGetRootNodesCountParams);
@@ -845,7 +847,7 @@ describe("PresentationManager", () => {
           rulesetOrId: testData.rulesetOrId,
           paging: pageOptions,
         };
-        const result = await manager.getNodesAndCount(ClientRequestContext.current, options, NodeKey.fromJSON(parentNodeKeyJSON)); // tslint:disable-line:deprecation
+        const result = await manager.getNodesAndCount(ClientRequestContext.current, options, NodeKey.fromJSON(parentNodeKeyJSON)); // eslint-disable-line deprecation/deprecation
 
         verifyWithSnapshot(result.nodes, expectedGetChildNodesParams);
         verifyWithExpectedResult(result.count, addonGetChildNodeCountResponse, expectedGetChildNodeCountParams);

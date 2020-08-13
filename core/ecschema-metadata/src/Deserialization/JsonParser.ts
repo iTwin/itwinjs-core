@@ -15,7 +15,7 @@ import {
   StructPropertyProps, UnitProps, UnitSystemProps,
 } from "./JsonProps";
 
-interface UnknownObject { readonly [name: string]: unknown; }
+interface UnknownObject { readonly [name: string]: unknown }
 function isObject(x: unknown): x is UnknownObject {
   return typeof (x) === "object";
 }
@@ -106,7 +106,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       if (!isObject(items) || Array.isArray(items))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'items' attribute. It should be of type 'object'.`);
 
-      // tslint:disable-next-line:forin
+      // eslint-disable-next-line guard-for-in
       for (const itemName in items) {
         const item = items[itemName];
         if (!isObject(item))

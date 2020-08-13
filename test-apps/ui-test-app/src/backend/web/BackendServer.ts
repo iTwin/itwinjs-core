@@ -17,7 +17,7 @@ const defaultConfigValues = {
 
 /** Initializes logging based on the configuration json file */
 export function initializeLogging() {
-  const config: any = require("./BackendServer.config.json");
+  const config: any = require("./BackendServer.config.json"); // eslint-disable-line @typescript-eslint/no-var-requires
   EnvMacroSubst.replaceInProperties(config, true, defaultConfigValues);
 
   if ("seq" in config) {

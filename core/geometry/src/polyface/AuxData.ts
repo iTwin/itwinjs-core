@@ -8,7 +8,7 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { NumberArray } from "../geometry3d/PointHelpers";
 // import { Geometry } from "./Geometry";
 import { Range1d } from "../geometry3d/Range";
@@ -96,13 +96,13 @@ export class AuxChannel {
     return true;
   }
   /** return true if the data for this channel is of scalar type (single data entry per value) */
-  get isScalar(): boolean { return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar; }
+  public get isScalar(): boolean { return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar; }
   /** return the number of data values per entry (1 for scalar, 3 for point or vector */
-  get entriesPerValue(): number { return this.isScalar ? 1 : 3; }
+  public get entriesPerValue(): number { return this.isScalar ? 1 : 3; }
   /** return value count */
-  get valueCount(): number { return 0 === this.data.length ? 0 : this.data[0].values.length / this.entriesPerValue; }
+  public get valueCount(): number { return 0 === this.data.length ? 0 : this.data[0].values.length / this.entriesPerValue; }
   /** return the range of the scalar data. (undefined if not scalar) */
-  get scalarRange(): Range1d | undefined {
+  public get scalarRange(): Range1d | undefined {
     if (!this.isScalar) return undefined;
     const range = Range1d.createNull();
     for (const data of this.data) {

@@ -60,8 +60,7 @@ class MobileDeviceRpcImpl {
 
 export class MobileDevice {
   private get impl(): MobileDeviceRpcImpl {
-    // tslint:disable-next-line: no-string-literal
-    const client = (global as any)["MobileDeviceRpcImpl"] as MobileDeviceRpcImpl;
+    const client = (global as any).MobileDeviceRpcImpl as MobileDeviceRpcImpl;
     if (!client) {
       throw new Error("MobileDeviceRpcImpl is not registered.");
     }
@@ -136,7 +135,7 @@ export class MobileDevice {
     });
   }
   public async signIn(ctx: ClientRequestContext): Promise<void> {
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     console.log("signIn() ", JSON.stringify(ctx));
     if (!this.hasAuthClient) {
       throw new Error("App did not registered any native auth client or implement all required functions");
@@ -185,9 +184,7 @@ export class MobileDevice {
 }
 
 export function initialize() {
-  // tslint:disable-next-line: no-string-literal
-  if ((global as any)["MobileDeviceRpcImpl"] instanceof MobileDeviceRpcImpl)
+  if ((global as any).MobileDeviceRpcImpl instanceof MobileDeviceRpcImpl)
     return;
-  // tslint:disable-next-line: no-string-literal
-  (global as any)["MobileDeviceRpcImpl"] = new MobileDeviceRpcImpl();
+  (global as any).MobileDeviceRpcImpl = new MobileDeviceRpcImpl();
 }

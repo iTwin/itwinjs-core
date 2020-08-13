@@ -27,7 +27,7 @@ const argv: yargs.Arguments<{}> = yargs
   .demandOption(["accountName", "sasToken", "blobFileName", "output"])
   .argv;
 
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
   Logger.initializeToConsole();
 
@@ -47,4 +47,4 @@ const argv: yargs.Arguments<{}> = yargs
     process.stdout.write("Error occurred creating IModel\n");
     await IModelHost.shutdown();
   }
-})(); // tslint:disable-line:no-floating-promises
+})();

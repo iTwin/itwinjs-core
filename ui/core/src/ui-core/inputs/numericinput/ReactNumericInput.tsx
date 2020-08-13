@@ -88,10 +88,7 @@ export type ReactStepFunctionProp = number | ((component: ReactNumericInput, dir
 /** Base properties for the [[NumericInput]] component
  * @beta
  */
-export interface ReactNumericInputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">,
-  CommonProps {
+export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
   componentClass?: string;
   defaultValue?: number | string;
   format?: ((value: number | null, strValue: string) => string);
@@ -132,7 +129,7 @@ interface ReactNumericInputState {
   value?: number | null;
   stringValue?: string;
 }
-/*eslint-enable*/
+/* eslint-enable */
 
 /** @internal */
 // istanbul ignore next
@@ -500,7 +497,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
 
     let valid, validationError = "";
 
-    const supportsValidation = !!this.refsInput.checkValidity;
+    const supportsValidation = !!this.refsInput.checkValidity; // eslint-disable-line @typescript-eslint/unbound-method
 
     // noValidate
     const noValidate = !!(
@@ -809,13 +806,13 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     const state = this.state;
     const css: { [key: string]: any } = {};
 
-    // tslint:disable-next-line: prefer-const
+    // eslint-disable-next-line prefer-const
     let { mobile, noStyle, ...props } = this.props;
 
     const {
       // These are ignored in rendering
-      step, min, max, precision, parse, format, snap, componentClass,
-      value, type, style, defaultValue, onInvalid, onValid, strict, setFocus,
+      step, min, max, precision, parse, format, snap, componentClass, // eslint-disable-line @typescript-eslint/no-unused-vars
+      value, type, style, defaultValue, onInvalid, onValid, strict, setFocus, // eslint-disable-line @typescript-eslint/no-unused-vars
 
       // The rest are passed to the input
       ...rest
@@ -824,7 +821,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     noStyle = noStyle || style === false;
 
     // Build the styles
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const x in ReactNumericInput._style) {
       css[x] = Object.assign(
         {},
@@ -1087,7 +1084,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       }
     }
 
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const InputTag = componentClass || "input";
 
     if (mobile) {

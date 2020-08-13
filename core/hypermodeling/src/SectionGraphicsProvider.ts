@@ -136,7 +136,7 @@ class ProxyTreeReference extends TileTreeReference {
       ref.discloseTileTrees(trees);
   }
 
-  public getToolTip(hit: HitDetail) {
+  public async getToolTip(hit: HitDetail) {
     const ref = this._proxiedRef;
     return undefined !== ref ? ref.getToolTip(hit) : super.getToolTip(hit);
   }
@@ -244,7 +244,7 @@ class DrawingProxyTree extends ProxyTree {
 
 class SheetProxyTree extends ProxyTree {
   public constructor(params: ProxyTreeParams) {
-    const { state, attachment } = {...params };
+    const { state, attachment } = { ...params };
     assert(undefined !== state.viewAttachment);
     assert(undefined !== attachment);
     const location = state.viewAttachment.transformToSpatial.clone();

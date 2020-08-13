@@ -7,7 +7,7 @@ import * as path from "path";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ImportIMJS } from "./ImportIMJS";
 
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
 interface Args {
   input: string;
@@ -25,35 +25,36 @@ const argv: yargs.Arguments<Args> = yargs
   .demandOption(["input", "output"])
   .argv;
 
-IModelHost.startup();
-console.log("start ..");
-const directoryTail = argv.input;
-const outputFileName = argv.output;
-console.log("input from" + directoryTail);
-if (directoryTail) {
-  const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : "d:\\bfiles\\importIMJS\\" + directoryTail + ".bim";
-  const importer = ImportIMJS.create(fullBimName,
-    "testSubject");
+IModelHost.startup().then(async () => {
+  console.log("start ..");
+  const directoryTail = argv.input;
+  const outputFileName = argv.output;
+  console.log("input from" + directoryTail);
+  if (directoryTail) {
+    const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : "d:\\bfiles\\importIMJS\\" + directoryTail + ".bim";
+    const importer = ImportIMJS.create(fullBimName,
+      "testSubject");
 
-  if (!importer) {
-    console.log("Failed to create bim file");
-  } else {
-    const inputDirName = path.isAbsolute(directoryTail) ? directoryTail : "..\\..\\core\\geometry\\src\\test\\output\\" + directoryTail + "\\";
-    const modelGroups = importer.importFilesFromDirectory(inputDirName);
-    let numModel = 0;
-    for (const group of modelGroups) {
-      numModel += group.modelNames.length;
-    }
-    console.log({ directoryName: directoryTail, models: numModel });
-    for (const group of modelGroups) {
-      if (group.modelNames.length > 0) {
-        console.log({
-          groupName: group.groupName, numModel: group.modelNames.length,
-          range: Math.floor(0.999999 + group.range.maxAbs()),
-        });
+    if (!importer) {
+      console.log("Failed to create bim file");
+    } else {
+      const inputDirName = path.isAbsolute(directoryTail) ? directoryTail : "..\\..\\core\\geometry\\src\\test\\output\\" + directoryTail + "\\";
+      const modelGroups = importer.importFilesFromDirectory(inputDirName);
+      let numModel = 0;
+      for (const group of modelGroups) {
+        numModel += group.modelNames.length;
+      }
+      console.log({ directoryName: directoryTail, models: numModel });
+      for (const group of modelGroups) {
+        if (group.modelNames.length > 0) {
+          console.log({
+            groupName: group.groupName, numModel: group.modelNames.length,
+            range: Math.floor(0.999999 + group.range.maxAbs()),
+          });
+        }
       }
     }
   }
-}
-IModelHost.shutdown();
-console.log("goodbye");
+  await IModelHost.shutdown();
+  console.log("goodbye");
+}).catch(() => { });

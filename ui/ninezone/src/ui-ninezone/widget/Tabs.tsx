@@ -19,7 +19,7 @@ import { WidgetTabTarget } from "./TabTarget";
 import { WidgetStateContext } from "./Widget";
 
 /** @internal */
-export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const tabs = React.useContext(TabsStateContext);
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
@@ -77,7 +77,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-l
       {tabChildren.map(([key, child], index, array) => {
         return (
           <WidgetTabsEntryProvider
-            children={child}
+            children={child} // eslint-disable-line react/no-children-prop
             key={key}
             id={key}
             lastNotOverflown={index === array.length - 1 && panelChildren.length > 0}
@@ -109,7 +109,7 @@ interface WidgetTabsEntryContextArgs {
 }
 
 /** @internal */
-export const WidgetTabsEntryContext = React.createContext<WidgetTabsEntryContextArgs | undefined>(undefined); // tslint:disable-line: variable-name
+export const WidgetTabsEntryContext = React.createContext<WidgetTabsEntryContextArgs | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetTabsEntryContext.displayName = "nz:WidgetTabsEntryContext";
 
 /** @internal */
@@ -121,7 +121,7 @@ export interface WidgetTabsEntryContextProviderProps {
 }
 
 /** @internal */
-export const WidgetTabsEntryProvider = React.memo<WidgetTabsEntryContextProviderProps>(function WidgetTabsEntryProvider(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetTabsEntryProvider = React.memo<WidgetTabsEntryContextProviderProps>(function WidgetTabsEntryProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   return (
     <WidgetTabsEntryContext.Provider value={{
       lastNotOverflown: props.lastNotOverflown,

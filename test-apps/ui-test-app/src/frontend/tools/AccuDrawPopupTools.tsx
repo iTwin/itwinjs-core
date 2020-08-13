@@ -159,6 +159,7 @@ export class AccuDrawPopupTools {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private static _HTMLElementOnCancel = () => {
     AccuDrawPopupTools._closeHTMLElement();
   }

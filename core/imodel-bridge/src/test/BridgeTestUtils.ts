@@ -35,16 +35,16 @@ export class TestIModelInfo {
     this._changeSets = [];
   }
 
-  get name(): string { return this._name; }
-  set name(name: string) { this._name = name; }
-  get id(): string { return this._id; }
-  set id(id: string) { this._id = id; }
-  get localReadonlyPath(): string { return this._localReadonlyPath; }
-  set localReadonlyPath(localReadonlyPath: string) { this._localReadonlyPath = localReadonlyPath; }
-  get localReadWritePath(): string { return this._localReadWritePath; }
-  set localReadWritePath(localReadWritePath: string) { this._localReadWritePath = localReadWritePath; }
-  get changeSets(): ChangeSet[] { return this._changeSets; }
-  set changeSets(changeSets: ChangeSet[]) { this._changeSets = changeSets; }
+  public get name(): string { return this._name; }
+  public set name(name: string) { this._name = name; }
+  public get id(): string { return this._id; }
+  public set id(id: string) { this._id = id; }
+  public get localReadonlyPath(): string { return this._localReadonlyPath; }
+  public set localReadonlyPath(localReadonlyPath: string) { this._localReadonlyPath = localReadonlyPath; }
+  public get localReadWritePath(): string { return this._localReadWritePath; }
+  public set localReadWritePath(localReadWritePath: string) { this._localReadWritePath = localReadWritePath; }
+  public get changeSets(): ChangeSet[] { return this._changeSets; }
+  public set changeSets(changeSets: ChangeSet[]) { this._changeSets = changeSets; }
 }
 
 function getCount(imodel: IModelDb, className: string) {
@@ -63,15 +63,15 @@ export class BridgeTestUtils {
     Logger.setLevelDefault(LogLevel.Error);
 
     if (process.env.imjs_test_logging_config === undefined) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log(`You can set the environment variable imjs_test_logging_config to point to a logging configuration json file.`);
     }
     const loggingConfigFile: string = process.env.imjs_test_logging_config || path.join(__dirname, "logging.config.json");
 
     if (IModelJsFs.existsSync(loggingConfigFile)) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log(`Setting up logging levels from ${loggingConfigFile}`);
-      // tslint:disable-next-line:no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       Logger.configureLevels(require(loggingConfigFile));
     }
   }

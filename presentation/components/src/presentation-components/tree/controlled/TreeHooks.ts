@@ -158,11 +158,12 @@ function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentati
   if (props.dataProvider) {
     dataProvider = props.dataProvider;
   } else {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { preloadingEnabled, dataProvider: testDataProvider, ...providerProps } = props;
     dataProvider = new PresentationTreeDataProvider(providerProps);
   }
   if (props.preloadingEnabled && dataProvider.loadHierarchy) {
-    dataProvider.loadHierarchy(); // tslint:disable-line:no-floating-promises
+    dataProvider.loadHierarchy(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
   return dataProvider;
 }

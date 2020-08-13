@@ -73,7 +73,7 @@ export class RotationalSweep extends SolidPrimitive {
   public getSweepContourRef(): SweepContour { return this._contour; }
   /** Return the sweep angle. */
   public getSweep(): Angle { return this._sweepAngle.clone(); }
-/** Test if `other` is a `RotationalSweep` */
+  /** Test if `other` is a `RotationalSweep` */
   public isSameGeometryClass(other: any): boolean { return other instanceof RotationalSweep; }
   /** Test for same axis, capping, and swept geometry. */
   public isAlmostEqual(other: GeometryQuery): boolean {
@@ -84,7 +84,7 @@ export class RotationalSweep extends SolidPrimitive {
     }
     return false;
   }
-/** return a deep clone */
+  /** return a deep clone */
   public clone(): RotationalSweep {
     return new RotationalSweep(this._contour.clone(), this._normalizedAxis.clone(), this._sweepAngle.clone(), this.capped);
   }
@@ -103,11 +103,11 @@ export class RotationalSweep extends SolidPrimitive {
     result.tryTransformInPlace(transform);
     return result;
   }
-/** Dispatch to strongly typed handler  `handler.handleRotationalSweep(this)` */
+  /** Dispatch to strongly typed handler  `handler.handleRotationalSweep(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleRotationalSweep(this);
   }
-/** Return a transform that rotates around the rotational axis by a fraction of the total sweep. */
+  /** Return a transform that rotates around the rotational axis by a fraction of the total sweep. */
   public getFractionalRotationTransform(vFraction: number, result?: Transform): Transform {
     const radians = this._sweepAngle.radians * vFraction;
     const rotation = Transform.createFixedPointAndMatrix(this._normalizedAxis.origin,
@@ -126,7 +126,7 @@ export class RotationalSweep extends SolidPrimitive {
     }
     return section;
   }
-/** Extend range using sampled points on the surface. */
+  /** Extend range using sampled points on the surface. */
   public extendRange(range: Range3d, transform?: Transform) {
     const degreeStep = 360 / 32;
     const options = StrokeOptions.createForCurves();

@@ -67,13 +67,13 @@ describe("FrontstageDef", () => {
   it("setActiveFrontstage should throw Error on invalid content layout", () => {
     const frontstageProvider = new BadLayoutFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    expect(FrontstageManager.setActiveFrontstage("BadLayout")).to.be.rejectedWith(Error);
+    expect(FrontstageManager.setActiveFrontstage("BadLayout")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
   });
 
   it("setActiveFrontstage should throw Error on invalid content group", () => {
     const frontstageProvider = new BadGroupFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    expect(FrontstageManager.setActiveFrontstage("BadGroup")).to.be.rejectedWith(Error);
+    expect(FrontstageManager.setActiveFrontstage("BadGroup")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
   });
 
   describe("restoreLayout", () => {

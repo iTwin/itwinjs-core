@@ -114,21 +114,21 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonPr
  * @internal
  */
 interface NavigationWidgetState {
-  navigationWidgetDef: NavigationWidgetDef; // tslint:disable-line:deprecation
+  navigationWidgetDef: NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
 }
 
 /** Navigation Widget React component.
  *  @public @deprecated use NavigationWidgetComposer instead
  */
-export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // tslint:disable-line:deprecation
+export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // eslint-disable-line deprecation/deprecation
 
   /** @internal */
   public readonly state: Readonly<NavigationWidgetState>;
 
-  constructor(props: NavigationWidgetPropsEx) { // tslint:disable-line:deprecation
+  constructor(props: NavigationWidgetPropsEx) { // eslint-disable-line deprecation/deprecation
     super(props);
 
-    this.state = { navigationWidgetDef: new NavigationWidgetDef(props) }; // tslint:disable-line:deprecation
+    this.state = { navigationWidgetDef: new NavigationWidgetDef(props) }; // eslint-disable-line deprecation/deprecation
   }
 
   /** Adds listeners */
@@ -162,9 +162,9 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
     });
   }
 
-  public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) { // tslint:disable-line:deprecation
+  public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) { // eslint-disable-line deprecation/deprecation
     if (this.props !== prevProps) {
-      this.setState((_, props) => ({ navigationWidgetDef: new NavigationWidgetDef(props) })); // tslint:disable-line:deprecation
+      this.setState((_, props) => ({ navigationWidgetDef: new NavigationWidgetDef(props) })); // eslint-disable-line deprecation/deprecation
     }
   }
 
@@ -184,7 +184,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 /** Properties for the [[NavigationWidgetWithDef]] component.
  */
 interface Props extends CommonProps {
-  navigationWidgetDef: NavigationWidgetDef; // tslint:disable-line:deprecation
+  navigationWidgetDef: NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
 }

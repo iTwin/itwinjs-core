@@ -18,14 +18,14 @@ import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
 import { UiFramework } from "../UiFramework";
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
 
 /** Enum for the list picker item type
  * @beta
  */
 export enum ListItemType {
-  Item = 0,
+  Item = 0, // eslint-disable-line no-shadow
   Separator = 1,
   Container = 2,
 }

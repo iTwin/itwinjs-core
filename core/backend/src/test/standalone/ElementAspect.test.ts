@@ -133,7 +133,7 @@ describe("ElementAspect", () => {
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
-    interface Props extends ElementAspectProps { testMultiAspectProperty: string; }
+    interface Props extends ElementAspectProps { testMultiAspectProperty: string }
     const aspectProps: Props = {
       classFullName: "DgnPlatformTest:TestMultiAspectNoHandler",
       element: { id: element.id },

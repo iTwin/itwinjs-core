@@ -77,7 +77,7 @@ function useLongPress(args: UseLongPressArgs) {
  * @beta
  */
 export const withDragInteraction = <P extends {}, C>(
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.JSXElementConstructor<P> & C,
 ) => {
   type Props = JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>;

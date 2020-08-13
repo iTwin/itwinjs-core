@@ -404,12 +404,12 @@ export class KeySet {
    * @public
    */
   public toJSON(): KeySetJSON {
-    const instanceKeys = new Array();
+    const instanceKeys: [string, string[]][] = [];
     for (const entry of this._instanceKeys.entries()) {
       if (entry["1"].size > 0)
         instanceKeys.push([entry["0"], [...entry["1"]]]);
     }
-    const nodeKeys = new Array<NodeKeyJSON>();
+    const nodeKeys: NodeKeyJSON[] = [];
     for (const serializedKey of this._nodeKeys.values())
       nodeKeys.push(JSON.parse(serializedKey));
     return {

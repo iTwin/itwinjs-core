@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
     "test:integration": "",
     "docs": "",
@@ -60,8 +60,13 @@
     "@types/semver": "^5.5.0",
     "mocha": "^5.2.0",
     "chai": "^4.1.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
+    "eslint": "^6.8.0",
     "typescript": "~3.7.4"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js",
+    "rules": {
+      "id-blacklist": "off"
+    }
   }
 }

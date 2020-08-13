@@ -19,7 +19,7 @@ import { TreeNodeItem } from "../../TreeDataProvider";
 import { CellEditingEngine } from "../CellEditingEngine";
 import { BeInspireTreeNode } from "./BeInspireTree";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /** Properties for [[TreeNodeContent]] component
  * @internal @deprecated

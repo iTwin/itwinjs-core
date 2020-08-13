@@ -39,7 +39,7 @@ describe("getBestBWContrastColor", () => {
       const color = COLORS[index];
       const contrast = getBestBWContrastColor(color);
       if (contrast !== CONTRAST[index])
-        console.log(`getBestBWContrastColor failed on ${color}`); // tslint:disable-line: no-console
+        console.log(`getBestBWContrastColor failed on ${color}`); // eslint-disable-line no-console
       expect(contrast).to.eq(CONTRAST[index]);
     });
   });

@@ -125,7 +125,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       parent: buttonDiv,
       id: "btn_createSavedView",
       value: "Create",
-      handler: () => this.saveView(),
+      handler: () => this.saveView(), // eslint-disable-line @typescript-eslint/promise-function-async
       tooltip: "Create new saved view",
       inline: true,
     }).button;
@@ -134,7 +134,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       parent: buttonDiv,
       id: "btn_recallSavedView",
       value: "Recall",
-      handler: () => this.recallView(),
+      handler: () => this.recallView(), // eslint-disable-line @typescript-eslint/promise-function-async
       tooltip: "Recall selected view",
       inline: true,
     }).button;
@@ -143,7 +143,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       parent: buttonDiv,
       id: "btn_deleteSavedView",
       value: "Delete",
-      handler: () => this.deleteView(),
+      handler: () => this.deleteView(), // eslint-disable-line @typescript-eslint/promise-function-async
       tooltip: "Delete selected view",
       inline: true,
     }).button;

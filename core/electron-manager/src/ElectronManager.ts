@@ -20,7 +20,7 @@ export abstract class StandardElectronManager {
   private openMainWindow(options: BrowserWindowConstructorOptions) {
     this._mainWindow = new BrowserWindow({ ...this._defaultWindowOptions, ...options });
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
-    this._mainWindow.loadURL(this.frontendURL); // tslint:disable-line:no-floating-promises
+    this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** The URL the main BrowserWindow should load on application initialization. */
@@ -101,7 +101,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
     try {
       assetPath = fs.realpathSync(assetPath);
     } catch (error) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
     return assetPath;

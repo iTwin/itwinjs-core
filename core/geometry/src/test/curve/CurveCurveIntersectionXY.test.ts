@@ -43,7 +43,7 @@ function captureEyeStroke(allGeometry: GeometryQuery[], map: Map4d, pointA: Poin
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(point0, point1), dx, dy);
   }
 }
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 function testIntersectionsXY(
   ck: Checker,
   worldToLocal: Matrix4d | undefined,
@@ -106,7 +106,7 @@ function verifyLocalPointXY(ck: Checker, pointAWorld: Point3d | undefined, point
   }
 }
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 function testIntersectionPairsXY(
   ck: Checker,
   worldToLocal: Matrix4d | undefined,
@@ -205,7 +205,7 @@ describe("CurveCurveXY", () => {
     const df1 = 0.06;
     const pointsB = [];
     // make another linestring that has two points defined at varying fractions on each segment of the sawtooth
-    for (let segment = 0; segment + 1 < linestring.length; segment++ , f0 += df0, f1 += df1) {
+    for (let segment = 0; segment + 1 < linestring.length; segment++, f0 += df0, f1 += df1) {
       pointsB.push(pointsA[segment].interpolate(f0, pointsA[segment + 1]));
       pointsB.push(pointsA[segment].interpolate(f1, pointsA[segment + 1]));
     }
@@ -218,7 +218,7 @@ describe("CurveCurveXY", () => {
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveXY", "LineStringLineStringCoincident");
 
-    for (let segmentIndex = 0; segmentIndex + 1 < linestring.length; segmentIndex++ , f0 += df0, f1 += df1) {
+    for (let segmentIndex = 0; segmentIndex + 1 < linestring.length; segmentIndex++, f0 += df0, f1 += df1) {
       const lineSegment = linestringA.getIndexedSegment(segmentIndex);
       if (lineSegment) {
         const intersections = CurveCurve.intersectionXYPairs(lineSegment, false, linestringA, false);

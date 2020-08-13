@@ -108,7 +108,7 @@ describe("BackstageComposer", () => {
     await TestUtils.flushAsyncOperations();
     wrapper.update();
 
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     // console.log(wrapper.debug());
 
     addonItem = wrapper.find("i.icon-addon");
@@ -146,7 +146,7 @@ describe("BackstageComposer", () => {
     await TestUtils.flushAsyncOperations();
     wrapper.update();
 
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     // console.log(wrapper.debug());
 
     addonItem = wrapper.find("i.icon-addon");
@@ -167,7 +167,7 @@ describe("BackstageComposer", () => {
       renderItems: (items: ReturnType<typeof useGroupedItems>) => void;
     }
 
-    // tslint:disable-next-line:variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const TestHook = (props: TestHookProps) => {
       const items = useGroupedItems(itemsManager.items);
       props.renderItems(items);

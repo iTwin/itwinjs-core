@@ -59,6 +59,7 @@ export namespace EditManipulator {
     protected _removeSelectionListener?: () => void;
     protected _removeDecorationListener?: () => void;
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     public constructor(public iModel: IModelConnection) { this._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener(this.onManipulatorToolEvent, this); }
 
     protected stop(): void {
@@ -78,7 +79,7 @@ export namespace EditManipulator {
         case ManipulatorToolEvent.Start: {
           if (this._removeSelectionListener)
             break;
-          this._removeSelectionListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
+          this._removeSelectionListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this); // eslint-disable-line @typescript-eslint/unbound-method
           if (this.iModel.selectionSet.isActive)
             this.onManipulatorEvent(EventType.Synch); // Give opportunity to add controls when tool is started with an existing selection...
           break;
@@ -134,7 +135,7 @@ export namespace EditManipulator {
     /** run tool to handle interactive drag/click modification. */
     protected abstract modifyControls(_hit: HitDetail, _ev: BeButtonEvent): boolean;
 
-    public onManipulatorEvent(_eventType: EventType): void { this.updateControls(); } // tslint:disable-line:no-floating-promises
+    public onManipulatorEvent(_eventType: EventType): void { this.updateControls(); } // eslint-disable-line @typescript-eslint/no-floating-promises
     protected async onDoubleClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
     protected async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
     protected async onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.Yes; }

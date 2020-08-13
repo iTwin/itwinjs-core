@@ -238,7 +238,7 @@ export class MeshBuilder {
 }
 
 /** @internal */
-export namespace MeshBuilder {
+export namespace MeshBuilder { // eslint-disable-line no-redeclare
   export interface Props extends Mesh.Props {
     tolerance: number;
     areaTolerance: number;
@@ -268,7 +268,7 @@ export class MeshEdgeCreationOptions {
 }
 
 /** @internal */
-export namespace MeshEdgeCreationOptions {
+export namespace MeshEdgeCreationOptions { // eslint-disable-line no-redeclare
   export enum Type {
     NoEdges = 0x0000,
     SheetEdges = 0x0001 << 0,

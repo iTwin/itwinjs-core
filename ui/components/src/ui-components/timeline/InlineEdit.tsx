@@ -31,7 +31,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState) {    // tslint:disable-line: naming-convention
+  public componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState) { // eslint-disable-line @typescript-eslint/naming-convention
     if (prevProps.defaultValue !== this.props.defaultValue) {
       this.setState((_, props) => {
         return { value: props.defaultValue, originalValue: props.defaultValue };

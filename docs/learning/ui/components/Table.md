@@ -120,7 +120,7 @@ import { Table } from "@bentley/ui-components";
 import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
 
 // create a HOC table component that supports unified selection
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SimpleTable = tableWithUnifiedSelection(Table);
 
 /** React properties for the table component */

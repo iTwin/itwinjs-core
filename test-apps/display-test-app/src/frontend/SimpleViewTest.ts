@@ -152,7 +152,7 @@ class FakeTileCache extends CloudStorageTileCache {
 async function main() {
   // retrieve, set, and output the global configuration variable
   await retrieveConfiguration(); // (does a fetch)
-  console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
+  console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
 
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   const renderSystemOptions: RenderSystem.Options = {
@@ -293,7 +293,7 @@ async function initView(iModel: IModelConnection | undefined) {
 
 // Set up the HTML UI elements and wire them to our functions
 async function displayUi() {
-  return new Promise(async (resolve) => {
+  return new Promise(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
     showSpinner();
     resolve();
   });
@@ -311,4 +311,4 @@ function hideSpinner() {
 }
 
 // Entry point - run the main function
-main(); // tslint:disable-line:no-floating-promises
+main(); // eslint-disable-line @typescript-eslint/no-floating-promises

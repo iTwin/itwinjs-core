@@ -315,7 +315,7 @@ export class OrbitGtTileTree extends TileTree {
       args.graphics.add(debugBuilder.finish());
 
     if (doLogging) {
-      console.log(`Total OrbitGtTiles: ${tileCount} MinLevel: ${minLevel} MaxLevel: ${maxLevel} Total Points: ${totalPointCount}`);   // tslint:disable-line
+      console.log(`Total OrbitGtTiles: ${tileCount} MinLevel: ${minLevel} MaxLevel: ${maxLevel} Total Points: ${totalPointCount}`);   // eslint-disable-line
     }
 
     args.drawGraphics();
@@ -326,7 +326,7 @@ export class OrbitGtTileTree extends TileTree {
 }
 
 /** @internal */
-export namespace OrbitGtTileTree {
+export namespace OrbitGtTileTree { // eslint-disable-line no-redeclare
   export interface ReferenceProps {
     orbitGtBlob: OrbitGtBlobProps;
     iModel: IModelConnection;
@@ -350,8 +350,8 @@ export namespace OrbitGtTileTree {
     if (accountName.length > 0) blobFileURL = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
     const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
     const cacheKilobytes = 128;
-    const cachedBlobFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, cacheKilobytes * 1024 /*pageSize*/, 128/*maxPageCount*/);
-    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobFileURL, true/*lazyLoading*/);
+    const cachedBlobFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, cacheKilobytes * 1024 /* pageSize */, 128 /* maxPageCount */);
+    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobFileURL, true /* lazyLoading */);
     let pointCloudCRS = pointCloudReader.getFileCRS();
     if (pointCloudCRS == null)
       pointCloudCRS = "";
@@ -387,7 +387,7 @@ export namespace OrbitGtTileTree {
  */
 class OrbitGtTreeReference extends OrbitGtTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
-  private readonly _name: string; // tslint:disable-line
+  private readonly _name: string; // eslint-disable-line
   private readonly _classifier?: SpatialClassifierTileTreeReference;
   private _mapDrapeTree?: TileTreeReference;
   public get castsShadows() { return false; }

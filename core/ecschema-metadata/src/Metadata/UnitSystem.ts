@@ -14,7 +14,7 @@ import { SchemaItem } from "./SchemaItem";
  * @beta
  */
 export class UnitSystem extends SchemaItem {
-  public readonly schemaItemType!: SchemaItemType.UnitSystem; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.UnitSystem; // eslint-disable-line
 
   constructor(schema: Schema, name: string) {
     super(schema, name);

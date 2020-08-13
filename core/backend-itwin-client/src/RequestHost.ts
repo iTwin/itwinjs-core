@@ -30,7 +30,7 @@ export class RequestHost {
     const isProxyReachable = await RequestHost.isHostReachable(proxyUrl);
     if (!isProxyReachable) {
       if (errorIfUnreachable)
-        console.log(`Unable to reach proxy server defined by HTTPS_PROXY: ${process.env.HTTPS_PROXY}. Proxy server not setup!`); // tslint:disable-line:no-console
+        console.log(`Unable to reach proxy server defined by HTTPS_PROXY: ${process.env.HTTPS_PROXY}. Proxy server not setup!`); // eslint-disable-line no-console
       return false;
     }
 
@@ -38,7 +38,7 @@ export class RequestHost {
     const protocol = RequestHost.getProtocol(proxyUrl);
     if (protocol === "http")
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-    console.log(`Routing requests through HTTPS_PROXY: ${proxyUrl}`); // tslint:disable-line:no-console
+    console.log(`Routing requests through HTTPS_PROXY: ${proxyUrl}`); // eslint-disable-line no-console
     return true;
   }
 

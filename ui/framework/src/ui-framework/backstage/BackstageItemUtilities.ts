@@ -26,7 +26,7 @@ export enum BackstageItemType {
  * @beta @deprecated Use BackstageActionItem in bentley/ui-abstract instead
  */
 export interface BackstageActionItem extends UIA_BackstageActionItem {
-  readonly type: BackstageItemType.ActionItem; // tslint:disable-line:deprecation
+  readonly type: BackstageItemType.ActionItem; // eslint-disable-line deprecation/deprecation
 }
 
 /** Describes the data needed to insert an action button into the backstage menu.
@@ -34,7 +34,7 @@ export interface BackstageActionItem extends UIA_BackstageActionItem {
  * @beta @deprecated Use BackstageStageLauncher in bentley/ui-abstract instead
  */
 export interface BackstageStageLauncher extends UIA_BackstageStageLauncher {
-  readonly type: BackstageItemType.StageLauncher; // tslint:disable-line:deprecation
+  readonly type: BackstageItemType.StageLauncher; // eslint-disable-line deprecation/deprecation
 }
 
 /** Utilities for creating and maintaining backstage items
@@ -44,12 +44,12 @@ export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item
    * @beta @deprecated Use BackstageItemUtilities.createStageLauncher in bentley/ui-abstract instead
    */
-  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({ // tslint:disable-line:deprecation
+  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({ // eslint-disable-line deprecation/deprecation
     groupPriority,
     icon: iconSpec,
     id: frontstageId,
     itemPriority,
-    type: BackstageItemType.StageLauncher, // tslint:disable-line:deprecation
+    type: BackstageItemType.StageLauncher, // eslint-disable-line deprecation/deprecation
     label,
     stageId: frontstageId,
     subtitle,
@@ -59,20 +59,20 @@ export class BackstageItemUtilities {
   /** Creates an action backstage item
    * @beta @deprecated Use BackstageItemUtilities.createActionItem in bentley/ui-abstract instead
    */
-  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageActionItem>): BackstageActionItem => ({ // tslint:disable-line:deprecation
+  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageActionItem>): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
     execute,
     groupPriority,
     icon: iconSpec,
     id: itemId,
     itemPriority,
-    type: BackstageItemType.ActionItem, // tslint:disable-line:deprecation
+    type: BackstageItemType.ActionItem, // eslint-disable-line deprecation/deprecation
     label,
     subtitle,
     ...overrides,
   })
 
   /** Helper method to set backstage item state from props */
-  public static getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => { // tslint:disable-line:deprecation
+  public static getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => { // eslint-disable-line deprecation/deprecation
     const labelSpec = PropsHelper.getStringSpec(props.label, props.labelKey);
     const subtitleSpec = PropsHelper.getStringSpec(props.description, props.descriptionKey);
     const tooltipSpec = PropsHelper.getStringSpec(props.tooltip, props.tooltipKey);

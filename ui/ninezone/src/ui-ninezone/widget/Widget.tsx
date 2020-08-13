@@ -24,7 +24,7 @@ export interface WidgetProviderProps {
 }
 
 /** @internal */
-export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetProvider(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   return (
     <WidgetStateContext.Provider value={props.widget}>
       <WidgetIdContext.Provider value={props.widget.id}>
@@ -42,7 +42,7 @@ export interface WidgetProps extends CommonProps {
 }
 
 /** @internal */
-export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const Widget = React.memo<WidgetProps>(function Widget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const dispatch = React.useContext(NineZoneDispatchContext);
   const side = React.useContext(PanelSideContext);
   const id = React.useContext(WidgetIdContext);
@@ -126,15 +126,15 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
 });
 
 /** @internal */
-export const WidgetIdContext = React.createContext<WidgetState["id"]>(null!); // tslint:disable-line: variable-name
+export const WidgetIdContext = React.createContext<WidgetState["id"]>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetIdContext.displayName = "nz:WidgetIdContext";
 
 /** @internal */
-export const WidgetStateContext = React.createContext<WidgetState | undefined>(undefined); // tslint:disable-line: variable-name
+export const WidgetStateContext = React.createContext<WidgetState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetStateContext.displayName = "nz:WidgetStateContext";
 
 /** @internal */
-export const ActiveTabIdContext = React.createContext<WidgetState["activeTabId"]>(undefined); // tslint:disable-line: variable-name
+export const ActiveTabIdContext = React.createContext<WidgetState["activeTabId"]>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 ActiveTabIdContext.displayName = "nz:ActiveTabIdContext";
 
 /** @internal */
@@ -143,7 +143,7 @@ export interface WidgetContextArgs {
 }
 
 /** @internal */
-export const WidgetContext = React.createContext<WidgetContextArgs>(null!); // tslint:disable-line: variable-name
+export const WidgetContext = React.createContext<WidgetContextArgs>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetContext.displayName = "nz:WidgetContext";
 
 const minWidth = 200;

@@ -96,7 +96,7 @@ describe("ToolSettingsZone", () => {
             topCenter={
               <Zone
                 widgets={[
-                  <Widget isToolSettings={true} />,
+                  <Widget isToolSettings={true} />, // eslint-disable-line react/jsx-key
                 ]}
               />
             }
@@ -117,7 +117,7 @@ describe("ToolSettingsZone", () => {
             topCenter={
               <Zone
                 widgets={[
-                  <Widget isToolSettings={true} defaultState={WidgetState.Closed} />,
+                  <Widget isToolSettings={true} defaultState={WidgetState.Closed} />, // eslint-disable-line react/jsx-key
                 ]}
               />
             }

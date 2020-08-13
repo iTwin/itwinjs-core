@@ -40,7 +40,7 @@ function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalPropertie
   ck.testFalse(data1.isAlmostEqual(data));
 
 }
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 describe("TransitionSpiral3d", () => {
   it("HelloWorldConditionalProperties", () => {
     const ck = new Checker();

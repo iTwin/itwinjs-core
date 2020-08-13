@@ -357,7 +357,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     }
   }
   public get requestOptions(): RequestOptions {
-    return { method: "GET", responseType: "arraybuffer", headers: { authorization: "Bearer " + this._accessToken }, accept: "application/vnd.quantized-mesh;" /*extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01" };
+    return { method: "GET", responseType: "arraybuffer", headers: { authorization: "Bearer " + this._accessToken }, accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01" };
   }
 
   public constructUrl(row: number, column: number, zoomLevel: number): string {

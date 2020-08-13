@@ -12,6 +12,8 @@ import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
+/* eslint-disable react/jsx-key */
+
 export function MyCustomViewOverlay() {
   const [syncIdsOfInterest] = React.useState([SampleAppUiActionId.setTestProperty]);
   const [showOverlay, setShowOverlay] = React.useState(SampleAppIModelApp.getTestProperty() !== "HIDE");

@@ -92,7 +92,7 @@ export enum InitializationState {
  */
 export enum IModelType {
   /** iModel has no type. */
-  Undefined = 0,
+  Undefined = 0, // eslint-disable-line id-blacklist
   /** iModel contains metadata used for other iModel creation. */
   Library = 1,
 }

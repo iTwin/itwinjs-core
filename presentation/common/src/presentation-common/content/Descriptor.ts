@@ -242,7 +242,7 @@ export class Descriptor implements DescriptorSource {
 
   private static fromJSONWithoutCategories(json: DescriptorJSON & { categories: undefined }): Descriptor {
     const descriptor = Object.create(Descriptor.prototype);
-    const fields = this.getFieldsFromJSON(json.fields, /* tslint:disable-line:deprecation */ Field.fromJSON);
+    const fields = this.getFieldsFromJSON(json.fields, /* eslint-disable-line deprecation/deprecation */ Field.fromJSON);
     return Object.assign(descriptor, json, {
       selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
       categories: this.getCategoriesFromFields(fields),

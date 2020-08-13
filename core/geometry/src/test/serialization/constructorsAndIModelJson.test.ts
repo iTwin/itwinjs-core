@@ -26,7 +26,7 @@ import { RotationalSweep } from "../../solid/RotationalSweep";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 // This file emits (to console.log) text suitable for use as markdown content for examples of construtor call and json of results
 // The output is suppressed by emitToLog.
 

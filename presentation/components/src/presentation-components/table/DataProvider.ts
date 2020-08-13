@@ -40,7 +40,7 @@ export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
  */
 export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider & {
   /** Get key of ECInstance that's represented by the supplied row */
-  getRowKey: (row: RowItem) => InstanceKey,
+  getRowKey: (row: RowItem) => InstanceKey;
 };
 
 /**

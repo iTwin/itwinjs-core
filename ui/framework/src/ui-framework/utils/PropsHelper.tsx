@@ -40,7 +40,7 @@ export class PropsHelper {
   }
 
   /** Get JSX element that defines an icon. If iconSpec is a string, then a web-font icon class is used otherwise a ReactNode holding an SVG icon is assumed.  */
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined {
     if (iconSpec instanceof ConditionalStringValue)
       return <Icon iconSpec={iconSpec.value} />;

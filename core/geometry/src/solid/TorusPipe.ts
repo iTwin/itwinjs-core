@@ -124,7 +124,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     return TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped);
   }
   /** Create a TorusPipe from its primary arc and minor radius */
-  public static createAlongArc (arc: Arc3d, minorRadius: number, capped: boolean) {
+  public static createAlongArc(arc: Arc3d, minorRadius: number, capped: boolean) {
     if (!Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, arc.sweep.startRadians))
       arc = arc.cloneInRotatedBasis(arc.sweep.startAngle);
     const sweepRadians = arc.sweep.sweepRadians;
@@ -192,7 +192,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const center = this._localToWorld.multiplyXYZ(majorRadius * c0, majorRadius * s0, 0);
     const vector0 = this._localToWorld.multiplyVectorXYZ(minorRadius * c0, minorRadius * s0, 0);
     const vector90 = this._localToWorld.multiplyVectorXYZ(0, 0, minorRadius);
-    return Loop.create(Arc3d.create(center, vector0, vector90) as Arc3d);
+    return Loop.create(Arc3d.create(center, vector0, vector90));
   }
   /** Return an arc at constant u, and arc sweep  matching this TorusPipe sweep. */
   public constantUSection(uFraction: number): CurveCollection | undefined {
@@ -207,7 +207,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const rxy = majorRadius + minorRadius * Math.cos(phiRadians);
     const vector0 = axes.multiplyXYZ(rxy, 0, 0);
     const vector90 = axes.multiplyXYZ(0, rxy, 0);
-    return Path.create(Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, theta1Radians)) as Arc3d);
+    return Path.create(Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, theta1Radians)));
   }
   /** extend `rangeToExtend` to include this `TorusPipe` */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {

@@ -6,7 +6,7 @@ import * as React from "react";
 import { ImageCheckBox, ImageCheckBoxProps } from "@bentley/ui-core";
 
 /** Sample component using ImageCheckBox with a checked state  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleImageCheckBox: React.FC<ImageCheckBoxProps> = (props: ImageCheckBoxProps) => {
   const [checked, setChecked] = React.useState(false);
 

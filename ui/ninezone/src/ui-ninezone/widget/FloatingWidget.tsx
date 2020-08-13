@@ -33,7 +33,7 @@ export interface FloatingWidgetProps {
 }
 
 /** @internal */
-export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const { id, bounds } = props.floatingWidget;
   const { minimized } = props.widget;
   const style = React.useMemo(() => {
@@ -66,14 +66,14 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
 });
 
 /** @internal */
-export const FloatingWidgetIdContext = React.createContext<FloatingWidgetState["id"] | undefined>(undefined); // tslint:disable-line: variable-name
+export const FloatingWidgetIdContext = React.createContext<FloatingWidgetState["id"] | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
 
 /** @internal */
-export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // tslint:disable-line: variable-name
+export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 
-const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // tslint:disable-line: no-shadowed-variable variable-name
+const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   assert(floatingWidgetId);
   const item = React.useMemo(() => ({
@@ -109,7 +109,7 @@ interface FloatingWidgetHandleProps {
   handle: FloatingWidgetResizeHandle;
 }
 
-const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // tslint:disable-line: no-shadowed-variable variable-name
+const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
   const id = React.useContext(FloatingWidgetIdContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const { handle } = props;

@@ -61,7 +61,7 @@ interface SpeedProps extends CommonProps {
 /** Speed Timeline used in Solar Timeline component
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function SpeedTimeline(props: SpeedProps) {
   // istanbul ignore next - WIP
   const onChange = (values: ReadonlyArray<number>) => {

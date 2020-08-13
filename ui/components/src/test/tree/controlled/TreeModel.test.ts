@@ -331,8 +331,7 @@ describe("MutableTreeModel", () => {
 
       it("getAtIndex with string index", () => {
         const visibleNodes = treeModel.computeVisibleNodes();
-        // @ts-ignore
-        expect(visibleNodes.getAtIndex(rootNode.id)).to.deep.eq(rootNode);
+        expect(visibleNodes.getAtIndex(rootNode.id as any)).to.deep.eq(rootNode);
       });
 
       it("getModel", () => {

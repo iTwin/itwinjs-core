@@ -434,7 +434,7 @@ export interface DragProviderProps {
 }
 
 /** @internal */
-export const DragProvider = React.memo<DragProviderProps>(function DragProvider(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const DragProvider = React.memo<DragProviderProps>(function DragProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const dragManager = React.useRef(new DragManager());
   React.useEffect(() => {
     const mouseMove = (e: MouseEvent) => {
@@ -641,17 +641,17 @@ export class DragManager {
 }
 
 /** @internal */
-export const DragManagerContext = React.createContext<DragManager>(null!); // tslint:disable-line: completed-docs variable-name
+export const DragManagerContext = React.createContext<DragManager>(null!); // eslint-disable-line: completed-docs @typescript-eslint/naming-convention
 DragManagerContext.displayName = "nz:DragManagerContext";
 
 /** @internal */
-export const DraggedWidgetIdContext = React.createContext<WidgetState["id"] | undefined>(undefined); // tslint:disable-line: variable-name
+export const DraggedWidgetIdContext = React.createContext<WidgetState["id"] | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 DraggedWidgetIdContext.displayName = "nz:DraggedWidgetIdContext";
 
 /** @internal */
-export const DraggedPanelSideContext = React.createContext<PanelSide | undefined>(undefined); // tslint:disable-line: variable-name
+export const DraggedPanelSideContext = React.createContext<PanelSide | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 DraggedPanelSideContext.displayName = "nz:DraggedPanelSideContext";
 
 /** @internal */
-export const DraggedResizeHandleContext = React.createContext<FloatingWidgetResizeHandle | undefined>(undefined); // tslint:disable-line: variable-name
+export const DraggedResizeHandleContext = React.createContext<FloatingWidgetResizeHandle | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 DraggedResizeHandleContext.displayName = "nz:DraggedResizeHandleContext";

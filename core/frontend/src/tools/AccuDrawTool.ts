@@ -1249,7 +1249,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
   }
 
   public decorate(context: DecorateContext): void {
-    const vp = context.viewport!;
+    const vp = context.viewport;
     if (!this._acs)
       this._acs = vp.view.auxiliaryCoordinateSystem.clone();
     this._acs.setOrigin(this._origin);
@@ -1315,7 +1315,7 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
     tmpPoints.push(ev.point);
 
-    const vp = context.viewport!;
+    const vp = context.viewport;
     if (!this._acs)
       this._acs = vp.view.auxiliaryCoordinateSystem.clone();
 

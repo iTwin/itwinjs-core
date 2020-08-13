@@ -20,7 +20,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 /* Create an XYZ triad with arcs to clarify XY and XYZ planes
  */
 function MakeViewableGeometry(): GeometryQuery[] {
@@ -30,18 +30,18 @@ function MakeViewableGeometry(): GeometryQuery[] {
   geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1.5)));
   geometry.push(LineString3d.create(
     [Point3d.create(-1, -1, -1),
-      Point3d.create(1, -1, -1),
-      Point3d.create(1, -1, 1),
-      Point3d.create(-1, -1, 1),
-      Point3d.create(-1, -1, -1),
-      Point3d.create(-1, -1, -1)]));
+    Point3d.create(1, -1, -1),
+    Point3d.create(1, -1, 1),
+    Point3d.create(-1, -1, 1),
+    Point3d.create(-1, -1, -1),
+    Point3d.create(-1, -1, -1)]));
   geometry.push(LineString3d.create(
     [Point3d.create(-1, 1, -1),
-      Point3d.create(1, 1, -1),
-      Point3d.create(1, 1, 1),
-      Point3d.create(-1, 1, 1),
-      Point3d.create(-1, 1, -1),
-      Point3d.create(-1, 1, -1)]));
+    Point3d.create(1, 1, -1),
+    Point3d.create(1, 1, 1),
+    Point3d.create(-1, 1, 1),
+    Point3d.create(-1, 1, -1),
+    Point3d.create(-1, 1, -1)]));
 
   geometry.push(LineSegment3d.createXYZXYZ(1, -1, -1, 1, 1, -1));
   geometry.push(LineSegment3d.createXYZXYZ(1, -1, 1, 1, 1, 1));

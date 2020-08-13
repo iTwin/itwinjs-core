@@ -20,7 +20,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { prettyPrint } from "../testFunctions";
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 /** point whose coordinates are a function of i only. */
 function testPointI(i: number): Point3d {
   return Point3d.create(i, 2 * i + 1, i * i * 3 + i * 2 - 4);
@@ -83,7 +83,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
 
     const n = data.length;
     // tedious reverse to use methods ...
-    for (let i = 0, j = n - 1; i < j; i++ , j--) {
+    for (let i = 0, j = n - 1; i < j; i++, j--) {
       // swap odd i by logic at this level.  others swap with single method call .swap
       if ((i % 2) === 1) {
         const a = data.atUncheckedIndex(i);
@@ -303,11 +303,11 @@ describe("GrowablePoint3dArray", () => {
         ck.testTrue(pointA.compareLexicalBlock(a, b) < 0, " confirm lexical sort order");
         ck.testTrue(pointA.component(a, 0) <= pointA.component(b, 0), "confirm sort order x");
       }
-      ck.testUndefined (pointA.distanceIndexIndex (0, 1000));
-      ck.testUndefined (pointA.distanceIndexIndex (-1, 0));
+      ck.testUndefined(pointA.distanceIndexIndex(0, 1000));
+      ck.testUndefined(pointA.distanceIndexIndex(-1, 0));
 
-      ck.testUndefined (pointA.distanceSquaredIndexIndex (0, 1000));
-      ck.testUndefined (pointA.distanceSquaredIndexIndex (-1, 0));
+      ck.testUndefined(pointA.distanceSquaredIndexIndex(0, 1000));
+      ck.testUndefined(pointA.distanceSquaredIndexIndex(-1, 0));
     }
     ck.checkpoint("GrowablePoint3dArray.HelloWorld");
     expect(ck.getNumErrors()).equals(0);

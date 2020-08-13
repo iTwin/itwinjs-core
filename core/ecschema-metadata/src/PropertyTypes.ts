@@ -10,7 +10,7 @@ import { PrimitiveType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 /** @beta */
-const enum PropertyFlags {
+const enum PropertyFlags { // eslint-disable-line no-restricted-syntax
   Primitive = 0x01,
   Struct = 0x02,
   Array = 0x04,

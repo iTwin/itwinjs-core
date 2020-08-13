@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
     "test:integration": "betools test",
     "docs": "",
@@ -46,14 +46,16 @@
     "@types/puppeteer": "2.0.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
+    "eslint": "^6.8.0",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

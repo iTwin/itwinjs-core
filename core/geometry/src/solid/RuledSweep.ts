@@ -40,7 +40,7 @@ export class RuledSweep extends SolidPrimitive {
   }
   /**
    * Create a ruled sweep from an array of contours.
-   *  * the contours are CAPTURED (not cloned)
+   * * the contours are CAPTURED (not cloned)
    */
   public static create(contours: CurveCollection[], capped: boolean): RuledSweep | undefined {
     const sweepContours = [];
@@ -158,8 +158,8 @@ export class RuledSweep extends SolidPrimitive {
     if (!collectionA.isSameGeometryClass(collectionB))
       return undefined;
     if (collectionA instanceof CurveChain && collectionB instanceof CurveChain) {
-      const chainA = collectionA as CurveChain;
-      const chainB = collectionB as CurveChain;
+      const chainA = collectionA;
+      const chainB = collectionB;
       const chainC = chainA.cloneEmptyPeer() as CurveChain;
       const childrenA = chainA.children;
       const childrenB = chainB.children;

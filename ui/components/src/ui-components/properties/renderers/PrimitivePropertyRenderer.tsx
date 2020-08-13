@@ -6,7 +6,6 @@
  * @module Properties
  */
 
-import _ from "lodash";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
@@ -33,7 +32,7 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
 
   /** @internal */
   public render() {
-    const { children, indentation, ...props } = this.props;
+    const { children, indentation, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const offset = PropertyRenderer.getLabelOffset(indentation, props.orientation, props.width, props.columnRatio, props.columnInfo?.minLabelWidth);
 
     return (

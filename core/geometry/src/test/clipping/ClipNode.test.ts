@@ -25,7 +25,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 
-/* tslint:disable:no-console variable-name */
+/* eslint-disable no-console, @typescript-eslint/naming-convention */
 /**
  *
  * @param origin

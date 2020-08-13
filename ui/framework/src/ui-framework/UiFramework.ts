@@ -189,7 +189,7 @@ export class UiFramework {
    * @beta
    */
   public static get frameworkState(): FrameworkState | undefined {
-    // tslint:disable-next-line:no-string-literal
+    // eslint-disable-next-line dot-notation
     return UiFramework.store.getState()[UiFramework.frameworkStateKey];
   }
 
@@ -422,7 +422,7 @@ export class UiFramework {
   }
 
   /** @public */
-  public static isMobile() {  // tslint:disable-line: prefer-get
+  public static isMobile() {  // eslint-disable-line rulesdir/prefer-get
     let mobile = false;
     // istanbul ignore if
     if ((/Mobi|Android/i.test(navigator.userAgent))) {

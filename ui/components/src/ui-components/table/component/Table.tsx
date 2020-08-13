@@ -262,13 +262,13 @@ class TableRowRenderer extends React.Component<TableRowRendererProps> {
   }
 }
 
-const enum TableUpdate {
+const enum TableUpdate { // eslint-disable-line no-restricted-syntax
   None = 0,
   Rows = 1,
   Complete = 2,
 }
 
-const enum UpdateStatus {
+const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
   Continue,
   Abort,
 }
@@ -317,7 +317,7 @@ export class Table extends React.Component<TableProps, TableState> {
     this._cellSelectionHandler.onItemsDeselectedCallback = this._onCellsDeselected;
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get rowItemSelectionHandlers(): Array<SingleSelectionHandler<number>> {
     // istanbul ignore else
     if (!this._rowItemSelectionHandlers) {
@@ -328,7 +328,7 @@ export class Table extends React.Component<TableProps, TableState> {
     return this._rowItemSelectionHandlers;
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get cellItemSelectionHandlers(): Array<Array<SingleSelectionHandler<CellKey>>> {
     // istanbul ignore else
     if (!this._cellItemSelectionHandlers) {
@@ -357,22 +357,22 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _onRowsSelected: OnItemsSelectedCallback<number> = (rowIndices: number[], replace: boolean) => {
     if (this.props.onRowsSelected)
-      this.props.onRowsSelected(this.createRowIterator(rowIndices), replace); // tslint:disable-line:no-floating-promises
+      this.props.onRowsSelected(this.createRowIterator(rowIndices), replace); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _onRowsDeselected: OnItemsDeselectedCallback<number> = (rowIndices: number[]) => {
     if (this.props.onRowsDeselected)
-      this.props.onRowsDeselected(this.createRowIterator(rowIndices)); // tslint:disable-line:no-floating-promises
+      this.props.onRowsDeselected(this.createRowIterator(rowIndices)); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _onCellsSelected: OnItemsSelectedCallback<CellKey> = (cellKeys: CellKey[], replace: boolean) => {
     if (this.props.onCellsSelected)
-      this.props.onCellsSelected(this.createCellIterator(cellKeys), replace); // tslint:disable-line:no-floating-promises
+      this.props.onCellsSelected(this.createCellIterator(cellKeys), replace); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _onCellsDeselected: OnItemsDeselectedCallback<CellKey> = (cellKeys: CellKey[]) => {
     if (this.props.onCellsDeselected)
-      this.props.onCellsDeselected(this.createCellIterator(cellKeys)); // tslint:disable-line:no-floating-promises
+      this.props.onCellsDeselected(this.createCellIterator(cellKeys)); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private get _tableSelectionTarget(): TableSelectionTarget {
@@ -391,7 +391,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
 
     if (this.props.dataProvider !== previousProps.dataProvider) {
-      // tslint:disable-next-line:no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.update();
       return;
     }
@@ -418,7 +418,7 @@ export class Table extends React.Component<TableProps, TableState> {
   public componentDidMount() {
     this._isMounted = true;
 
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.update();
   }
 
@@ -545,7 +545,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this._rowGetterAsync.cache.clear!();
     this.setState({ rowsCount, rows: [] });
-    this._rowGetterAsync(0, true); // tslint:disable-line:no-floating-promises
+    this._rowGetterAsync(0, true); // eslint-disable-line @typescript-eslint/no-floating-promises
     return UpdateStatus.Continue;
   }
 
@@ -814,7 +814,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // get another page of rows
     // note: always start loading at the beginning of a page to avoid
     // requesting duplicate data (e.g. a page that starts at 0, at 1, at 2, ...)
-    this._rowGetterAsync(i - (i % this._pageAmount), false); // tslint:disable-line:no-floating-promises
+    this._rowGetterAsync(i - (i % this._pageAmount), false); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Return placeholder object
     return { item: { key: "", cells: [] }, index: i, cells: {} };
@@ -879,17 +879,17 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   private async getCellDisplayValue(cellItem: CellItem): Promise<string> {
-    if (!cellItem.record || cellItem.record!.value.valueFormat !== PropertyValueFormat.Primitive)
+    if (!cellItem.record || cellItem.record.value.valueFormat !== PropertyValueFormat.Primitive)
       return "";
 
-    const value = (cellItem.record!.value as PrimitiveValue).value;
+    const value = (cellItem.record.value as PrimitiveValue).value;
 
     if (value === undefined)
       return "";
 
     const displayValue = await TypeConverterManager
-      .getConverter(cellItem.record!.property.typename)
-      .convertPropertyToString(cellItem.record!.property, value);
+      .getConverter(cellItem.record.property.typename)
+      .convertPropertyToString(cellItem.record.property, value);
 
     return displayValue ? displayValue : "";
   }
@@ -972,7 +972,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
 
     // Sort the column
-    this.gridSortAsync(columnKey, directionEnum); // tslint:disable-line:no-floating-promises
+    this.gridSortAsync(columnKey, directionEnum); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private getColumnIndexFromKey(columnKey: string): number {
@@ -991,7 +991,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
-    this.updateRows(); // tslint:disable-line:no-floating-promises
+    this.updateRows(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private createRowCells(rowProps: RowProps, isSelected: boolean): { [columnKey: string]: React.ReactNode } {
@@ -1004,7 +1004,7 @@ export class Table extends React.Component<TableProps, TableState> {
       if (!cellProps) {
         continue;
       }
-      // tslint:disable-next-line:variable-name
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const CellContent = cellProps.render;
       const isEditorCell =
         this.state.cellEditorState.active
@@ -1146,7 +1146,7 @@ export class Table extends React.Component<TableProps, TableState> {
     };
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private renderRow = (item: RowItem, props: TableRowProps): React.ReactNode => {
     return <TableRow key={item.key} {...props} />;
   }
@@ -1171,7 +1171,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
       const keys = cols.map((col) => col.key);
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // tslint:disable-line: no-floating-promises
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     this.setState({ columns: [] }, () => { // fix react-data-grid update issues
       this.setState({ columns: cols });
@@ -1295,7 +1295,7 @@ export class Table extends React.Component<TableProps, TableState> {
     this.setState({ hiddenColumns: cols });
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // tslint:disable-line: no-floating-promises
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     return true;
   }
@@ -1366,7 +1366,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _handleOnClearFilters = () => {
     this.filterDescriptors.clear();
 
-    this._applyFilter();  // tslint:disable-line:no-floating-promises
+    this._applyFilter();  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _applyFilter = async (): Promise<void> => {
@@ -1475,7 +1475,7 @@ export class Table extends React.Component<TableProps, TableState> {
                 onGridSort={this._handleGridSort}
                 enableRowSelect={null}  // Prevent deprecation warning
                 onAddFilter={this._handleFilterChange}
-                onClearFilters={this._handleOnClearFilters}
+                onClearFilters={this._handleOnClearFilters} // eslint-disable-line @typescript-eslint/unbound-method
                 headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
                 getValidFilterValues={this._getValidFilterValues}
                 onScroll={this._onScroll}

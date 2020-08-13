@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-declare module 'draco3d' {
+declare module "draco3d" {
 
   export function createDecoderModule(DracoDecoderModule: any, ...args: any[]): any;
 

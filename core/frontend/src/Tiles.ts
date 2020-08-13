@@ -30,7 +30,7 @@ class TreeOwner implements TileTreeOwner {
   }
 
   public load(): TileTree | undefined {
-    this._load(); // tslint:disable-line no-floating-promises
+    this._load(); // eslint-disable-line @typescript-eslint/no-floating-promises
     return this.tileTree;
   }
 

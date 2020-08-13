@@ -101,7 +101,7 @@ function createSampleUndulatingSurface(numX: number, numY: number): IndexedPolyf
   }
   return mesh;
 }
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 describe("CutFill", () => {
   it("RangeBoxClipA", () => {
     const ck = new Checker();

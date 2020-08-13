@@ -148,7 +148,7 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
     return index;
   }
   public deleteRow = (rowItem: RowItem): void => {
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this._data.length; i++) {
       if (this._data[i].id === rowItem.key) {
         this._data.splice(i, 1);
@@ -158,7 +158,7 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
     }
   }
   public moveRow = (rowItem: RowItem, newIndex: number): number => {
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this._data.length; i++) {
       const row = this._data[i];
       if (row.id === rowItem.key) {
@@ -205,10 +205,10 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: label,
             }, {
-              name: "label",
-              displayLabel: "label",
-              typename: "text",
-            }),
+            name: "label",
+            displayLabel: "label",
+            typename: "text",
+          }),
         },
         {
           key: "type", record: new PropertyRecord(
@@ -217,10 +217,10 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: type,
             }, {
-              name: "type",
-              displayLabel: "type",
-              typename: "text",
-            }),
+            name: "type",
+            displayLabel: "type",
+            typename: "text",
+          }),
         },
         {
           key: "description", record: new PropertyRecord({

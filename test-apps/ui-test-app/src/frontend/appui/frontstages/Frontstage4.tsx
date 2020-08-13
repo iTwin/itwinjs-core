@@ -26,6 +26,8 @@ import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
 
+/* eslint-disable react/jsx-key */
+
 export class Frontstage4 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

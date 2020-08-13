@@ -16,7 +16,7 @@ describe("<Placeholder />", () => {
   it("should set left padding based on level", () => {
     const wrapper = shallow(<TreeNodePlaceholder level={9} />);
     const style: CSSStyleDeclaration = wrapper.prop("style");
-    const padding = parseInt(style.paddingLeft!.match(/(\d+)\s*(px)?/)![1], 10);
+    const padding = parseInt(style.paddingLeft.match(/(\d+)\s*(px)?/)![1], 10);
     padding.should.eq(9 * LEVEL_OFFSET);
   });
 
@@ -25,7 +25,7 @@ describe("<Placeholder />", () => {
     while (repeats--) {
       const wrapper = shallow(<TreeNodePlaceholder data-testid="ph" level={0} minWidth={10} maxWidth={100} />);
       const style: CSSStyleDeclaration = wrapper.find({ className: "contents" }).prop("style");
-      const width = parseInt(style.width!.match(/(\d+)\s*px/)![1], 10);
+      const width = parseInt(style.width.match(/(\d+)\s*px/)![1], 10);
       width.should.be.gte(10).and.lte(100);
     }
   });

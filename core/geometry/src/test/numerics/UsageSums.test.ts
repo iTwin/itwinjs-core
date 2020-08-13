@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { UsageSums } from "../../numerics/UsageSums";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("UsageSums", () => {
   it("HelloWorld", () => {

@@ -73,13 +73,13 @@ export class PromiseMemoizer<T> {
     qp = new QueryablePromise<T>(p);
     this._cachedPromises.set(key, qp);
     return qp;
-  }
+  };
 
   /** Delete the memoized function */
   public deleteMemoized = (...args: any[]) => {
     const key: string = this._generateKeyFn(...args);
     this._cachedPromises.delete(key);
-  }
+  };
 
   /** Purge any entries that have been resolved - this is especially useful when there are orphaned
    * responses that were never retrieved by the frontend, and therefore never deleted.
@@ -90,10 +90,10 @@ export class PromiseMemoizer<T> {
       if (qp.isFulfilled || qp.isRejected)
         this._cachedPromises.delete(key);
     }
-  }
+  };
 
   /** Clear all entries in the memoizer cache */
   public clearCache = () => {
     this._cachedPromises.clear();
-  }
+  };
 }

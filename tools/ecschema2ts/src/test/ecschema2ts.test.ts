@@ -26,8 +26,7 @@ describe("Convert schema xml string to typescript string", () => {
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
       </ECSchema>`;
 
-    const expectedSchemaTsString = utils.dedent
-      `import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
+    const expectedSchemaTsString = utils.dedent`import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
       import * as elementsModule from "./TestSchemaElements";
 
       export class TestSchema extends Schema {
@@ -74,8 +73,7 @@ describe("Convert schema xml string to typescript string", () => {
         </ECStructClass>
       </ECSchema>`;
 
-    const expectedSchemaTsString = utils.dedent
-      `import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
+    const expectedSchemaTsString = utils.dedent`import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
       import * as elementsModule from "./TestSchemaElements";
 
       export class TestSchema extends Schema {
@@ -104,8 +102,7 @@ describe("Convert schema xml string to typescript string", () => {
         }
       }\n\n`;
 
-    const expectedPropTsString = utils.dedent
-      `import { EntityProps } from "@bentley/imodeljs-common";
+    const expectedPropTsString = utils.dedent`import { EntityProps } from "@bentley/imodeljs-common";
       import { Point2d, Point3d } from "@bentley/geometry-core";
 
       export interface TestEntityProps extends EntityProps {

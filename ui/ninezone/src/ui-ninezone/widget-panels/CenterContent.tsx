@@ -13,12 +13,12 @@ import { CenterContentNodeContext } from "./Panels";
 /** Component that displays center content (i.e. toolbars). Content is allways bound by widget panels (panel pinned setting is ignored).
  * @internal
  */
-export const CenterContent = React.memo(function CenterContent() { // tslint:disable-line: variable-name no-shadowed-variable
+export const CenterContent = React.memo(function CenterContent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const content = React.useContext(CenterContentNodeContext);
   const ref = React.useRef<HTMLDivElement>(null);
   return (
     <WidgetPanelsContent
-      children={content}
+      children={content} // eslint-disable-line react/no-children-prop
       ref={ref}
       pinnedLeft
       pinnedRight

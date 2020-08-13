@@ -30,7 +30,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "../topology/Graph.test";
 import { Sample } from "../../serialization/GeometrySamples";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("RegionBoolean", () => {
   it("SimpleSplits", () => {

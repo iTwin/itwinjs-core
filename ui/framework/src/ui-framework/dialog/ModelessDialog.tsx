@@ -26,7 +26,7 @@ export class ModelessDialog extends React.Component<ModelessDialogProps> {
   }
 
   public render(): JSX.Element {
-    const { dialogId, style, modal, modelessId, onModelessPointerDown, ...props } = this.props;
+    const { dialogId, style, modal, modelessId, onModelessPointerDown, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     return (
       <Dialog

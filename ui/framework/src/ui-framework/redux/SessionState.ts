@@ -105,7 +105,7 @@ export interface SessionStateActionsProps {
 /** An object with a function that creates each SessionStateReducer that can be handled by our reducer.
  * @beta
  */
-export const SessionStateActions = {  // tslint:disable-line:variable-name
+export const SessionStateActions = {  // eslint-disable-line @typescript-eslint/naming-convention
   setUserInfo:
     // istanbul ignore next
     (userInfo: UserInfo) => createAction(SessionStateActionId.SetUserInfo, userInfo),

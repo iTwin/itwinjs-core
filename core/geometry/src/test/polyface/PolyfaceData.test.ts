@@ -8,7 +8,7 @@ import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceData } from "../../polyface/PolyfaceData";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("PolyfaceData", () => {
 

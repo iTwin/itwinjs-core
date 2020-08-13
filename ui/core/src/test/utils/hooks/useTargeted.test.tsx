@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { useTargeted } from "../../../ui-core/utils/hooks/useTargeted";
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const Targeted = (props: { children?: (targeted: boolean) => React.ReactNode }) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const targeted = useTargeted(ref);

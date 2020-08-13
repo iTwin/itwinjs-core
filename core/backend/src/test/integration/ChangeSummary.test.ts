@@ -595,7 +595,7 @@ describe("ChangeSummary (#integration)", () => {
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
       const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryIds[0]);
-      // console.log(JSON.stringify(changeSummaryJson, undefined, 2)); // tslint:disable-line
+      // console.log(JSON.stringify(changeSummaryJson, undefined, 2));
 
       assert.strictEqual(changeSummaryJson.instanceChanges.length, 3);
 
@@ -651,7 +651,7 @@ describe("ChangeSummary (#integration)", () => {
 
     const changeSummaryId = changeSummariesIds[0];
     // const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryId);
-    // console.log(JSON.stringify(changeSummaryJson, undefined, 2)); // tslint:disable-line
+    // console.log(JSON.stringify(changeSummaryJson, undefined, 2)); // eslint-disable-line
 
     iModel.withPreparedStatement(
       "SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId",

@@ -48,6 +48,7 @@ before(async () => {
     case "electron": return ElectronRpcManager.initializeClient({}, rpcInterfaces);
     case "direct": {
       // (global as any).window = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { commonSetup } = require("../backend/CommonBackendSetup");
       await commonSetup();
       const config = RpcConfiguration.obtain(RpcDefaultConfiguration);
@@ -55,6 +56,4 @@ before(async () => {
       return RpcConfiguration.initializeInterfaces(config);
     }
   }
-
-  throw new Error(`Invalid test environment: "${currentEnvironment}"`);
 });

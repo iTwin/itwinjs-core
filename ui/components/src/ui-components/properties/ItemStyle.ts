@@ -71,7 +71,7 @@ function getForegroundColor(isSelected: boolean, colorOverrides?: ItemColorOverr
  * Style provider for stylable items like [[CellItem]] and [[TreeNodeItem]]
  * @public
  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ItemStyleProvider = {
   /**
    * Create CSS style from [[ItemStyle]]
@@ -89,7 +89,7 @@ export const ItemStyleProvider = {
  * Style provider for table rows
  * @public
  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const TableRowStyleProvider = {
   /**
    * Create CSS style from [[ItemStyle]]

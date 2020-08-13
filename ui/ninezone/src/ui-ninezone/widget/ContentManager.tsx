@@ -16,7 +16,7 @@ export interface WidgetContentManagerProps {
 }
 
 /** @internal */
-export const WidgetContentManager = React.memo<WidgetContentManagerProps>(function WidgetContentManager(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetContentManager = React.memo<WidgetContentManagerProps>(function WidgetContentManager(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const [containers, setContainers] = React.useState<WidgetContentContainers>({});
   const saveTransientStateRef = React.useRef(new EventEmitter<(tabId: TabState["id"]) => void>());
   const restoreTransientStateRef = React.useRef(new EventEmitter<(tabId: TabState["id"]) => void>());
@@ -49,7 +49,7 @@ export const WidgetContentManager = React.memo<WidgetContentManagerProps>(functi
 type WidgetContentContainers = { readonly [id in TabState["id"]]: Element | null | undefined };
 
 /** @internal */
-export const WidgetContentContainersContext = React.createContext<WidgetContentContainers>(null!); // tslint:disable-line: variable-name
+export const WidgetContentContainersContext = React.createContext<WidgetContentContainers>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetContentContainersContext.displayName = "nz:WidgetContentContainersContext";
 
 /** @internal */
@@ -60,5 +60,5 @@ export interface WidgetContentManagerContextArgs {
 }
 
 /** @internal */
-export const WidgetContentManagerContext = React.createContext<WidgetContentManagerContextArgs>(null!); // tslint:disable-line: variable-name
+export const WidgetContentManagerContext = React.createContext<WidgetContentManagerContextArgs>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetContentManagerContext.displayName = "nz:WidgetContentManagerContext";

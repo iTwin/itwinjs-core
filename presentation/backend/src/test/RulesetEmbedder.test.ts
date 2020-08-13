@@ -91,9 +91,11 @@ describe("RulesetEmbedder", () => {
   }
 
   function initializeCodeSpecs() {
+    /* eslint-disable deprecation/deprecation */
     rulesetCodeSpec = new CodeSpec(imodelMock.object, rulesetCodeSpecId, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model);
     subjectCodeSpec = new CodeSpec(imodelMock.object, faker.random.uuid(), BisCodeSpec.subject, CodeScopeSpec.Type.ParentElement);
     informationPartitionCodeSpec = new CodeSpec(imodelMock.object, faker.random.uuid(), BisCodeSpec.informationPartitionElement, CodeScopeSpec.Type.ParentElement);
+    /* eslint-enable deprecation/deprecation */
   }
 
   function setupRootSubjectMock() {
@@ -263,7 +265,7 @@ describe("RulesetEmbedder", () => {
       expect(rulesetId).to.be.equal(insertId);
 
       // Assert pre
-      imodelMock.verify((x) => x.importSchemas(moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+      imodelMock.verify(async (x) => x.importSchemas(moq.It.isAny(), moq.It.isAny()), moq.Times.once());
       codeSpecsMock.verify((x) => x.insert(rulesetCodeSpec), moq.Times.once());
       modelsMock.verify((x) => x.insertModel(moq.It.isAny()), moq.Times.once());
       imodelMock.verify((x) => x.saveChanges(), moq.Times.once());

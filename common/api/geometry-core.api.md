@@ -1609,13 +1609,13 @@ export class DeepCompare {
         [key: string]: any;
     };
     typeCounts: {
-        "numbers": number;
-        "arrays": number;
-        "functions": number;
-        "objects": number;
-        "strings": number;
-        "booleans": number;
-        "undefined": number;
+        numbers: number;
+        arrays: number;
+        functions: number;
+        objects: number;
+        strings: number;
+        booleans: number;
+        undefined: number;
     };
 }
 

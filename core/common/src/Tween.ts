@@ -18,9 +18,9 @@
  */
 
 // cSpell:ignore tweens yoyo catmull
-// tslint:disable: forin
-// tslint:disable: prefer-for-of
-// tslint:disable: variable-name
+/* eslint-disable guard-for-in */
+/* eslint-disable @typescript-eslint/prefer-for-of */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 /** A group of `Tween`s. This class is called `Group` in the tween.js library.
  * @note Unlike tween.js, we do NOT create any global instances of this class
@@ -69,13 +69,13 @@ export class Tweens {
     while (tweenIds.length > 0) {
       this._tweensAddedDuringUpdate = {};
 
-      for (let i = 0; i < tweenIds.length; i++) {
-        const tween = this._tweens[tweenIds[i]];
+      for (const tweenId of tweenIds) {
+        const tween = this._tweens[tweenId];
         if (tween && tween.update(time) === false) {
           tween._isPlaying = false;
 
           if (!preserve) {
-            delete this._tweens[tweenIds[i]];
+            delete this._tweens[tweenId];
           }
         }
       }
@@ -88,14 +88,14 @@ export class Tweens {
 
   /** Create a new Tween owned by this Group. Equivalent to `new TWEEN.Tween` in tween.js library. */
   public create(from: any, opts?: {
-    to: any,
-    duration: number
-    onUpdate: UpdateCallback,
-    onComplete?: TweenCallback
-    delay?: number,
-    start?: boolean,
-    easing?: EasingFunction,
-    interpolation?: InterpolationFunction,
+    to: any;
+    duration: number;
+    onUpdate: UpdateCallback;
+    onComplete?: TweenCallback;
+    delay?: number;
+    start?: boolean;
+    easing?: EasingFunction;
+    interpolation?: InterpolationFunction;
   }) {
     const t = new Tween(this, from);
     if (opts) {

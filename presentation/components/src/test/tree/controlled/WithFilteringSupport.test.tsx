@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
 import { mount } from "enzyme";
@@ -26,9 +25,7 @@ import {
 } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
 import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
 
-// tslint:disable:deprecation
-
-// tslint:disable-next-line:variable-name naming-convention
+// eslint-disable-next-line deprecation/deprecation
 const PresentationTree = controlledTreeWithFilteringSupport(controlledTreeWithVisibleNodes(ControlledTree));
 
 describe("ControlledTree withFilteringSupport", () => {
@@ -64,7 +61,7 @@ describe("ControlledTree withFilteringSupport", () => {
     nodeLoaderMock.setup((x) => x.modelSource).returns(() => modelSourceMock.object);
     dataProviderMock.setup((x) => x.imodel).returns(() => imodelMock.object);
     dataProviderMock.setup((x) => x.rulesetId).returns(() => "TestRuleset");
-    dataProviderMock.setup((x) => x.getFilteredNodePaths(moq.It.isAny())).returns(async () => filteredPathsPromise);
+    dataProviderMock.setup(async (x) => x.getFilteredNodePaths(moq.It.isAny())).returns(async () => filteredPathsPromise);
   });
 
   it("mounts without filter", () => {

@@ -60,5 +60,5 @@ export function startDebugger(port: number) {
   inspector.open(port, undefined, true);
   // NB: VS Code expects the app to break as soon as it attaches – this gives it a chance to resolve sourcemaps and
   // attach breakpoints. It will continue as soon as that's done though – users shouldn't actually "hit" this breakpoint.
-  debugger; // tslint:disable-line:no-debugger
+  debugger; // eslint-disable-line no-debugger
 }

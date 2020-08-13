@@ -72,7 +72,7 @@ export async function testit() {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.create.example-code
-  const deleteCallback = await imodelHubClient.globalEvents // tslint:disable-line:await-promise
+  const deleteCallback = await imodelHubClient.globalEvents // eslint-disable-line @typescript-eslint/await-thenable
     .createListener(authorizedRequestContext, authenticate, subscription.wsgId, processGlobalEvent);
   // __PUBLISH_EXTRACT_END__
 

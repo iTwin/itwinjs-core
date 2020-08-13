@@ -18,7 +18,7 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { Range1d, Range3d } from "../geometry3d/Range";
@@ -362,11 +362,11 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     }
     return curve;
   }
-/**
- *
- * @param points pass-through points.
- * @param order bspline order (1 more than degree)
- */
+  /**
+   *
+   * @param points pass-through points.
+   * @param order bspline order (1 more than degree)
+   */
   public static createThroughPoints(points: IndexedXYZCollection, order: number): BSplineCurve3d | undefined {
     const numPoints = points.length;
     if (order > numPoints || order < 2)

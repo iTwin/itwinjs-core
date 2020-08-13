@@ -5,8 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
 import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import {
@@ -14,6 +13,8 @@ import {
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 const values: any = {
   baseStr: "PerfElement - InitValue", baseStr2: "PerfElement - InitValue2", sub1Str: "PerfElementSub1 - InitValue",
@@ -163,7 +164,7 @@ describe("PerformanceElementsTests", () => {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + name + "_" + size + ".bim");
         for (const opCount of crudConfig.opSizes) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`Executing Element Insert for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Insert_" + name + "_" + opCount + ".bim");
@@ -198,7 +199,7 @@ describe("PerformanceElementsTests", () => {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + name + "_" + size + ".bim");
         for (const opCount of crudConfig.opSizes) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`Executing Element Delete for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Delete_" + name + "_" + opCount + ".bim");
@@ -230,7 +231,7 @@ describe("PerformanceElementsTests", () => {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + name + "_" + size + ".bim");
         for (const opCount of crudConfig.opSizes) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Read_" + name + "_" + opCount + ".bim");
@@ -267,7 +268,7 @@ describe("PerformanceElementsTests", () => {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + name + "_" + size + ".bim");
         for (const opCount of crudConfig.opSizes) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`Executing Element Update for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Update_" + name + "_" + opCount + ".bim");
@@ -374,7 +375,7 @@ describe("PerformanceElementsTests2d", () => {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", "Performance2d_seed_" + name + "_" + size + ".bim");
         for (const opCount of crudConfig.opSizes) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`Executing Element Insert for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", "IModelPerformance2d_Insert_" + name + "_" + opCount + ".bim");
@@ -411,7 +412,7 @@ describe("PerformanceElementsTests2d", () => {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", "Performance2d_seed_" + name + "_" + size + ".bim");
         for (const opCount of crudConfig.opSizes) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`Executing Element Delete for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", "IModelPerformance2d_Delete_" + name + "_" + opCount + ".bim");
@@ -443,7 +444,7 @@ describe("PerformanceElementsTests2d", () => {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", "Performance2d_seed_" + name + "_" + size + ".bim");
         for (const opCount of crudConfig.opSizes) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", "IModelPerformance2d_Read_" + name + "_" + opCount + ".bim");
@@ -480,7 +481,7 @@ describe("PerformanceElementsTests2d", () => {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", "Performance2d_seed_" + name + "_" + size + ".bim");
         for (const opCount of crudConfig.opSizes) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`Executing Element Update for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", "IModelPerformance2d_Update_" + name + "_" + opCount + ".bim");

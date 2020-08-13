@@ -305,7 +305,7 @@ export class ClipShape extends ClipPrimitive {
     this._clipPlanes = UnionOfConvexClipPlaneSets.createEmpty();
     this.parseClipPlanes(this._clipPlanes);
     if (this._transformFromClip)
-      this._clipPlanes!.transformInPlace(this._transformFromClip!);
+      this._clipPlanes.transformInPlace(this._transformFromClip);
   }
   /**
    * Initialize the members of the ClipShape class that may at times be undefined.
@@ -584,10 +584,10 @@ export class ClipShape extends ClipPrimitive {
       return true;
     super.transformInPlace(transform);
     if (this._transformFromClip)
-      transform.multiplyTransformTransform(this._transformFromClip!, this._transformFromClip);
+      transform.multiplyTransformTransform(this._transformFromClip, this._transformFromClip);
     else
       this._transformFromClip = transform.clone();
-    this._transformToClip = this._transformFromClip!.inverse(); // could be undefined
+    this._transformToClip = this._transformFromClip.inverse(); // could be undefined
     return true;
   }
   /** Return true if

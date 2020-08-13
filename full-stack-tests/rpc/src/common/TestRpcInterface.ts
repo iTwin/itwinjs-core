@@ -42,7 +42,7 @@ export abstract class ZeroMajorRpcInterface extends RpcInterface {
   }
 }
 
-// tslint:disable-next-line:no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TokenValues extends IModelRpcProps { }
 
 export abstract class TestRpcInterface extends RpcInterface {
@@ -80,7 +80,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async op8(_x: number, _y: number): Promise<{ initializer: number; sum: number }> {
+  public async op8(_x: number, _y: number): Promise<{ initializer: number, sum: number }> {
     return this.forward(arguments);
   }
 

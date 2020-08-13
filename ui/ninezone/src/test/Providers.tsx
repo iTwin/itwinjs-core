@@ -13,7 +13,6 @@ import {
 import { Point, Rectangle, Size } from "@bentley/ui-core";
 import { DragManager } from "../ui-ninezone/base/DragManager";
 
-// tslint:disable: completed-docs
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 

@@ -19,7 +19,7 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueFlags } from "./TechniqueFlags";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** Flags which control some conditional branches in shader code
  * @internal

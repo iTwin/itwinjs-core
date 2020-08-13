@@ -10,7 +10,7 @@ import { BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface,
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
 export function getRpcInterfaces() {
   return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
@@ -40,7 +40,7 @@ function startWebServer() {
   DisplayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
 }
 
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   // Initialize the webserver
   startWebServer();
 
@@ -97,9 +97,9 @@ function startWebServer() {
   // Start the browser, if given a specific one
   // ---------------------------------------------
   if (browser === "chrome")
-    chromeLauncher.launch({ startingUrl: "http://localhost:3000" }).then((val) => { DisplayPerfRpcInterface.chrome = val; }); // tslint:disable-line:no-floating-promises
+    chromeLauncher.launch({ startingUrl: "http://localhost:3000" }).then((val) => { DisplayPerfRpcInterface.chrome = val; }); // eslint-disable-line @typescript-eslint/no-floating-promises
   else if (browser === "firefox")
     child_process.execSync("start firefox http://localhost:3000");
   else if (browser === "edge")
     child_process.execSync("start microsoft-edge:http://localhost:3000");
-})(); // tslint:disable-line:no-floating-promises
+})();

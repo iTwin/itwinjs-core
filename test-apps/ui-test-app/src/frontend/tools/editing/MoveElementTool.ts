@@ -97,7 +97,7 @@ export class MoveElementTool extends PrimitiveToolEx {
     if (this.shouldRestart()) {
       const wasEndPoint = this._endPoint;
       this._endPoint = undefined;
-      this.onStartPoint(wasEndPoint); // tslint:disable-line:no-floating-promises
+      this.onStartPoint(wasEndPoint); // eslint-disable-line @typescript-eslint/no-floating-promises
     } else {
       this.onReinitialize();
     }

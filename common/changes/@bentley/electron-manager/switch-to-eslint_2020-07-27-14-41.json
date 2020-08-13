@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/electron-manager"
+    }
+  ],
+  "packageName": "@bentley/electron-manager",
+  "email": "paulius.valiunas@bentley.com"
+}

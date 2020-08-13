@@ -27,7 +27,7 @@ describe("NativePlatform", () => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = SnapshotDb.openFile(testIModelName);
     expect(imodel).is.not.null;
-    const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
+    const TNativePlatform = createDefaultNativePlatform({ // eslint-disable-line @typescript-eslint/naming-convention
       id: "",
       localeDirectories: [],
       taskAllocationsMap: {},
@@ -52,19 +52,16 @@ describe("NativePlatform", () => {
 
   it("throws on empty options", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    // tslint:disable-next-line:await-promise
     await expect(nativePlatform.handleRequest(db, "")).to.eventually.be.rejectedWith(PresentationError, "request");
   });
 
   it("throws on empty request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    // tslint:disable-next-line:await-promise
     await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 
   it("throws on not handled request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    // tslint:disable-next-line:await-promise
     await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "Unknown" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 

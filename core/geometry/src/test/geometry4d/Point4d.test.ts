@@ -7,7 +7,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console variable-name */
+/* eslint-disable no-console, @typescript-eslint/naming-convention */
 
 function testExactPoint4dXYZW(ck: Checker, point: Point4d, x: number, y: number, z: number, w: number) {
   ck.testExactNumber(x, point.x);
@@ -135,7 +135,7 @@ describe("Point4d", () => {
     const planeC = Point4d.create(4, 2, 1, 0).toPlane3dByOriginAndUnitNormal();
     ck.testDefined(planeC, "plane through origin");
     const planeD = Point4d.create(0, 0, 0, 1).toPlane3dByOriginAndUnitNormal();
-    ck.testUndefined (planeD, "plane with undefined normal");
+    ck.testUndefined(planeD, "plane with undefined normal");
     expect(ck.getNumErrors()).equals(0);
   });
 

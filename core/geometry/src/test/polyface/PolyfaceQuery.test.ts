@@ -23,7 +23,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 /** Functions useful for modifying test data. */
 export class RFunctions {
   /** Return cos(theta), where theta is 0 at x0, 2Pi at x2Pi.

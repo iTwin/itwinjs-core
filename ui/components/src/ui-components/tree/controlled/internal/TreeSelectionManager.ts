@@ -212,7 +212,7 @@ class ItemHandler implements SingleSelectionHandler<string> {
   /* istanbul ignore next: noop */
   public deselect() { }
 
-  // tslint:disable-next-line: prefer-get
+  // eslint-disable-next-line rulesdir/prefer-get
   public isSelected(): boolean {
     return this._node.isSelected;
   }

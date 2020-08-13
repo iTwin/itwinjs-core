@@ -57,7 +57,7 @@ export interface ListboxContextProps {
  * @alpha
  */
 // istanbul ignore next
-export const ListboxContext = React.createContext<ListboxContextProps>({ onListboxValueChange: (_newValue: ListboxValue | undefined) => { } }); // tslint:disable-line: variable-name
+export const ListboxContext = React.createContext<ListboxContextProps>({ onListboxValueChange: (_newValue: ListboxValue | undefined) => { } }); // eslint-disable-line @typescript-eslint/naming-convention
 
 function makeId(...args: Array<string | number | null | undefined>) {
   return args.filter((val) => val != null).join("--");

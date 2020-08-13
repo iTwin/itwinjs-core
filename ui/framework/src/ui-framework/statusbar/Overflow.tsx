@@ -26,9 +26,10 @@ export interface StatusBarOverflowProps extends CommonProps {
 /** Entry point to overflow status bar items of [[StatusBarComposer]] component.
  * @internal
  */
-export const StatusBarOverflow = React.memo( // tslint:disable-line: variable-name
+// eslint-disable-next-line react/display-name, @typescript-eslint/naming-convention
+export const StatusBarOverflow = React.memo(
   React.forwardRef<HTMLDivElement, StatusBarOverflowProps>(
-    function StatusBarOverflow(props, ref) {  // tslint:disable-line: no-shadowed-variable
+    function StatusBarOverflow(props, ref) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
       const roRef = useResizeObserver<HTMLDivElement>(props.onResize);
       const refs = useRefs(roRef, ref);
       const className = classnames(

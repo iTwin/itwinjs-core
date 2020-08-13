@@ -39,7 +39,7 @@ export interface BranchStateOptions {
    * in 3d we use the pick buffers.
    */
   is3d: boolean;
-  frustumScale?: { x: number; y: number; };
+  frustumScale?: { x: number, y: number };
   readonly appearanceProvider?: FeatureAppearanceProvider;
 }
 

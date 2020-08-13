@@ -167,8 +167,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   public render(): JSX.Element {
     const {
-      opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect,
-      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ...props } = this.props;
+      opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, // eslint-disable-line @typescript-eslint/no-unused-vars
+      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const renderDirection = parentMenu === undefined ? this.state.direction : direction;
 
     if (this._lastChildren !== children || this._lastDirection !== renderDirection || this._lastSelectedIndex !== this.state.selectedIndex) {
@@ -496,13 +496,13 @@ export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProp
   }
 
   public render(): React.ReactNode {
-    const { x, y, identifier, contextMenuComponent, ...props } = this.props;
+    const { x, y, identifier, contextMenuComponent, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const positioningStyle: React.CSSProperties = {
       left: x,
       top: y,
     };
 
-    const CtxMenu = contextMenuComponent || ContextMenu; // tslint:disable-line:variable-name
+    const CtxMenu = contextMenuComponent || ContextMenu; // eslint-disable-line @typescript-eslint/naming-convention
 
     return ReactDOM.createPortal(
       <div className="core-context-menu-global" style={positioningStyle}>
@@ -558,6 +558,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   /** @internal */
   public readonly state: Readonly<ContextMenuItemState> = {};
   public render(): JSX.Element {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, onHotKeyParsed, badgeType, ...props } = this.props;
     const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
 
@@ -716,9 +717,9 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   public render(): JSX.Element {
     const {
       label,
-      opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu,
-      onSelect, icon, disabled, onHover, isSelected, onHotKeyParsed,
-      children, onClick, className, badgeType, ...props } = this.props;
+      opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu, // eslint-disable-line @typescript-eslint/no-unused-vars
+      onSelect, icon, disabled, onHover, isSelected, onHotKeyParsed, // eslint-disable-line @typescript-eslint/no-unused-vars
+      children, onClick, className, badgeType, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
     const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
     const renderDirection = this.state.direction;

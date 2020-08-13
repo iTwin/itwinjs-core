@@ -402,7 +402,7 @@ export class ECSchemaToTs {
       case PrimitiveType.Integer:
         return "number";
       case PrimitiveType.Long:
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log("Primitive type Long is not currently supported during conversion. It will be treated as type 'any'");
         return "any";
       case PrimitiveType.String:
@@ -412,11 +412,11 @@ export class ECSchemaToTs {
       case PrimitiveType.Point3d:
         return this.addImportClass(classNameToModule, tsBentleyModules.tsGeometryCore.moduleName, "Point3d");
       case PrimitiveType.IGeometry:
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log("Primitive type IGeometry is not currently supported during conversion. It will be treated as type 'any'");
         return "any";
       default:
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log("Unknown primitive type during conversion. It will be treated as type 'any'");
         return "any";
     }

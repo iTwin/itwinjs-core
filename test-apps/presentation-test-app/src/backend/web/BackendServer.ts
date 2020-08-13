@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelJsExpressServer } from "@bentley/express-server";
-// tslint:disable:no-console
+/* eslint-disable no-console */
 import { BentleyCloudRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 /**

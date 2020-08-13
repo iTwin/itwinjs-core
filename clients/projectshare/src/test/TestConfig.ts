@@ -12,7 +12,7 @@ import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bent
 // especially when diagnosing CI job failures.
 const loggingConfigFile: string | undefined = process.env.imjs_test_logging_config;
 if (!!loggingConfigFile) {
-  // tslint:disable-next-line:no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
 }
 

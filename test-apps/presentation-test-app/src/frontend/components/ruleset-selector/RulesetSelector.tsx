@@ -21,7 +21,7 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
     this.state = {};
   }
   public componentDidMount() {
-    // tslint:disable-next-line:no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.initAvailableRulesets();
   }
   private async initAvailableRulesets() {
@@ -33,7 +33,7 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
     if (this.props.onRulesetSelected && this.state.activeRulesetId !== prevState.activeRulesetId)
       this.props.onRulesetSelected(this.state.activeRulesetId);
   }
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onSelectedRulesetIdChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
     this.setState({ activeRulesetId: e.target.value });
   }

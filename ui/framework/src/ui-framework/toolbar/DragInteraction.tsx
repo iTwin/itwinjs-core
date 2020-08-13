@@ -11,4 +11,4 @@ import * as React from "react";
 /** Context used to enable toolbar drag interaction.
  * @beta
  */
-export const ToolbarDragInteractionContext = React.createContext(false); // tslint:disable-line: variable-name
+export const ToolbarDragInteractionContext = React.createContext(false); // eslint-disable-line @typescript-eslint/naming-convention

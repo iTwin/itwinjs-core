@@ -20,7 +20,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 class AngleTests {
   constructor(public noisy: boolean = false) { }
   public testAlmostEqual(ck: Checker) {
@@ -591,7 +591,7 @@ describe("OrderedRotationAngles", () => {
   });
   it("OrderedRotationAngles.fromMatrix3d", () => {
     const ck = new Checker();
-    const /*x = .0192, y = .7564,*/ z = Math.PI / 2;
+    const /* x = .0192, y = .7564, */ z = Math.PI / 2;
 
     // No Rotation
     const matrix = Matrix3d.createIdentity();

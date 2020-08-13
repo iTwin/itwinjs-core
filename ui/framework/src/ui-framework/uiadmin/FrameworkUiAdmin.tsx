@@ -82,8 +82,8 @@ export class FrameworkUiAdmin extends UiAdmin {
    */
   public showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY,
     onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc,
-    relativePosition?: RelativePosition, htmlElement?: HTMLElement)
-    : boolean {
+    relativePosition?: RelativePosition, htmlElement?: HTMLElement
+  ): boolean {
     const { position, el } = this.resolveHtmlElement(location, htmlElement);
 
     if (relativePosition === undefined)

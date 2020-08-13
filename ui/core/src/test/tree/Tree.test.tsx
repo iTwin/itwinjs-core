@@ -8,6 +8,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Tree } from "../../ui-core/tree/Tree";
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 // Note: Cannot instantiate DOMRect yet since it's experimental and not available in all browsers (Nov. 2019)
 class Rect {
   public constructor(public left: number, public top: number, public right: number, public bottom: number) { }

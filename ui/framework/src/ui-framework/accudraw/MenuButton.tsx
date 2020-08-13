@@ -37,7 +37,7 @@ export class MenuButton extends React.PureComponent<MenuButtonProps, MenuButtonS
   }
 
   public render() {
-    const { point, className, style, onSizeKnown, ...buttonProps } = this.props;
+    const { point, className, style, onSizeKnown, ...buttonProps } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const divStyle: React.CSSProperties = {
       top: point.y,

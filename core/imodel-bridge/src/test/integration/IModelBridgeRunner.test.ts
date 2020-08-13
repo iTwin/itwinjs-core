@@ -34,7 +34,7 @@ describe("IModelBridgeFwk (#integration)", () => {
     try {
       requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     } catch (error) {
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       Logger.logError("Error", `Failed with error: ${error}`);
     }
 
@@ -59,8 +59,8 @@ describe("IModelBridgeFwk (#integration)", () => {
     const briefcases = BriefcaseManager.getBriefcases();
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcases[0].key);
     expect(briefcaseEntry !== undefined);
-    let imodel: BriefcaseDb;
-    imodel = await BriefcaseDb.open(new ClientRequestContext(), briefcases[0].key, { openAsReadOnly: true });
+
+    const imodel: BriefcaseDb = await BriefcaseDb.open(new ClientRequestContext(), briefcases[0].key, { openAsReadOnly: true });
     BridgeTestUtils.verifyIModel(imodel, bridgeJobDef, isUpdate);
     briefcaseEntry!.openMode = OpenMode.ReadWrite;
     imodel.close();

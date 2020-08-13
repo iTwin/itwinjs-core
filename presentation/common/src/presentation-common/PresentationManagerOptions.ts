@@ -70,7 +70,7 @@ export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIMod
  * Base request type for hierarchy requests
  * @public
  */
-export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> { // eslint-disable-line @typescript-eslint/no-empty-interface
 }
 
 /**
@@ -153,7 +153,7 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet> ext
  * Request type for label requests
  * @public
  */
-export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> { }
+export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * Request type for label requests
@@ -185,7 +185,7 @@ export const isDisplayLabelsRequestOptions = <TIModel, TInstanceKey>(opts: Label
  * Request options used for selection scope related requests
  * @public
  */
-export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { }
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * Data structure for comparing presentation data after ruleset or ruleset variable changes.

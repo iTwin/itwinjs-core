@@ -82,7 +82,7 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
   /** @internal */
   public render() {
     const ratio = this.props.columnRatio ? this.props.columnRatio : 0.25;
-    // tslint:disable-next-line: deprecation
+    // eslint-disable-next-line deprecation/deprecation
     const needElementSeparator = this.props.orientation === Orientation.Horizontal && !!this.props.onColumnRatioChanged;
     const needActionButtons = !!this.props.actionButtonRenderers;
     const columnsStyleProvider = new PropertyGridColumnStyleProvider(this.props.columnInfo);
@@ -101,7 +101,7 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
         {needElementSeparator
           ? <ElementSeparator
             movableArea={this.props.width}
-            // tslint:disable-next-line: deprecation
+            // eslint-disable-next-line deprecation/deprecation
             onRatioChanged={this.props.onColumnRatioChanged}
             ratio={ratio}
             orientation={this.props.orientation}

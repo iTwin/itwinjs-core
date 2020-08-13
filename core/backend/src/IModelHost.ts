@@ -288,7 +288,7 @@ export class IModelHost {
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
     if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
-      console.log("Bypassing version checks for development build"); // tslint:disable-line:no-console
+      console.log("Bypassing version checks for development build"); // eslint-disable-line no-console
       return;
     }
     this._platform = undefined;
@@ -396,7 +396,7 @@ export class IModelHost {
       if (configuration.crashReportingConfig.enableNodeReport) {
         try {
           // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
-          const nodereport = require("node-report/api");
+          const nodereport = require("node-report/api"); // eslint-disable-line @typescript-eslint/no-var-requires
           nodereport.setEvents("exception+fatalerror+apicall");
           nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
           nodereport.setVerbose("yes");
@@ -471,8 +471,8 @@ export class IModelHost {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
 
     // Setup the briefcaseCacheDir, defaulting to the the legacy/deprecated value
-    if (configuration.briefcaseCacheDir) // tslint:disable-line:deprecation
-      this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // tslint:disable-line:deprecation
+    if (configuration.briefcaseCacheDir) // eslint-disable-line deprecation/deprecation
+      this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // eslint-disable-line deprecation/deprecation
     else
       this._briefcaseCacheDir = path.join(this._cacheDir, "bc");
   }
@@ -591,7 +591,7 @@ export class Platform {
     if ((typeof (process) !== "undefined") && ("electron" in process.versions)) {
       // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
       try {
-        return require("electron"); // tslint:disable-line:no-var-requires
+        return require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
       } catch (error) { }
     }
     return undefined;

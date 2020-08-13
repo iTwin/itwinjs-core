@@ -24,7 +24,7 @@ export interface CategoryTreeWithSearchBoxProps extends CategoryTreeProps {
 /**
  * @internal @deprecated for backwards compatibility with visibility widget
  */
-export function CategoryTreeWithSearchBox(props: CategoryTreeWithSearchBoxProps) { // tslint:disable-line: deprecation
+export function CategoryTreeWithSearchBox(props: CategoryTreeWithSearchBoxProps) { // eslint-disable-line deprecation/deprecation
   const { showSearchBox, showAll, hideAll, ...strippedProps } = props;
   const [filter, setFilter] = React.useState("");
   const [activeMatchIndex, setActiveMatchIndex] = React.useState<number>();
@@ -51,11 +51,11 @@ export function CategoryTreeWithSearchBox(props: CategoryTreeWithSearchBoxProps)
   // istanbul ignore next
   const activeView = strippedProps.activeView ?? viewManager.getFirstOpenView();
   React.useEffect(
-    () => showAll?.addListener(() => toggleAllCategories(viewManager, strippedProps.iModel, true, activeView, true, filteredProvider)),
+    () => showAll?.addListener(async () => toggleAllCategories(viewManager, strippedProps.iModel, true, activeView, true, filteredProvider)),
     [showAll, viewManager, strippedProps.iModel, activeView, filteredProvider],
   );
   React.useEffect(
-    () => hideAll?.addListener(() => toggleAllCategories(viewManager, strippedProps.iModel, false, activeView, true, filteredProvider)),
+    () => hideAll?.addListener(async () => toggleAllCategories(viewManager, strippedProps.iModel, false, activeView, true, filteredProvider)),
     [hideAll, viewManager, strippedProps.iModel, activeView, filteredProvider],
   );
 

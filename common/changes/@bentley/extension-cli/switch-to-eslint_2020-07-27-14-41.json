@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/extension-cli"
+    }
+  ],
+  "packageName": "@bentley/extension-cli",
+  "email": "paulius.valiunas@bentley.com"
+}

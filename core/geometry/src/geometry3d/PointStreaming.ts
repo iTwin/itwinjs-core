@@ -10,7 +10,7 @@
 import { LineStringDataVariant, MultiLineStringDataVariant } from "../topology/Triangulation";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
-/* tslint:disable:variable-name jsdoc-format no-empty */
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Point3d } from "./Point3dVector3d";
 import { Range3d } from "./Range";
 
@@ -42,7 +42,7 @@ export class PointStreamXYZXYZHandlerBase extends PointStreamXYZHandlerBase {
   private _z0?: number;
   public handleXYZ(x: number, y: number, z: number): void {
     if (this._x0 !== undefined)
-      this.handleXYZXYZ(this._x0!, this._y0!, this._z0!, x, y, z);
+      this.handleXYZXYZ(this._x0, this._y0!, this._z0!, x, y, z);
     this._x0 = x;
     this._y0 = y;
     this._z0 = z;
@@ -124,7 +124,7 @@ export class PointStringDeepXYZArrayCollector {
     this._xyzFunction = xyzFunction;
     this._resultStack = [];
     // create the [0] placeholder.
-    this._resultStack.push ([]);
+    this._resultStack.push([]);
   }
 
   public startChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {

@@ -14,6 +14,8 @@ import { initialize, terminate } from "../IntegrationTests";
 
 import sinon = require("sinon");
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Content", () => {
 
   let imodel: IModelConnection;

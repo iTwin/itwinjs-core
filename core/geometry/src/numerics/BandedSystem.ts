@@ -11,26 +11,25 @@ import { Geometry } from "../Geometry";
  */
 export class BandedSystem {
   /** apply LU decomposition to a banded system */
-  public static decomposeLU
-    (
-      numRow: number,
-      bw: number,   /* band width */
-      data: Float64Array,
+  public static decomposeLU(
+    numRow: number,
+    bw: number,   /* band width */
+    data: Float64Array,
   ): boolean {
     const n = numRow - 1;
     const sbw = Math.floor(bw / 2); // ASSUMES bw is odd?
     let sum;
-// Phase 1:
-//   [A b C]
-//   [d q f]
-//   [G h I]
-// q is a diagonal (pivot
-// d, f are row vectors
-// A,C,I are blocks
-// b,h are column vectors.
-// Phase 1:  [q,f] -= d * [b,C]
-// Phase 2: h = (h- G*b)/q
-// This is standard gaussian elimination, but in row-think rather than the usual column-think
+    // Phase 1:
+    //   [A b C]
+    //   [d q f]
+    //   [G h I]
+    // q is a diagonal (pivot
+    // d, f are row vectors
+    // A,C,I are blocks
+    // b,h are column vectors.
+    // Phase 1:  [q,f] -= d * [b,C]
+    // Phase 2: h = (h- G*b)/q
+    // This is standard gaussian elimination, but in row-think rather than the usual column-think
     for (let i = 0; i <= n; i++) {
       const jh = Math.min(n, i + sbw);
       for (let j = i; j <= jh; j++) {
@@ -101,13 +100,12 @@ export class BandedSystem {
    * @param numRHS the number of right hand sides.
    * @param rhs the right hand sides
    */
-  public static solveBandedSystemMultipleRHS
-    (
-      numRow: number,
-      bw: number,   /* band width */
-      matrix: Float64Array,
-      numRHS: number, // number of components in each RHS row.
-      rhs: Float64Array, // RHS data, packed, overwritten by solution
+  public static solveBandedSystemMultipleRHS(
+    numRow: number,
+    bw: number,   /* band width */
+    matrix: Float64Array,
+    numRHS: number, // number of components in each RHS row.
+    rhs: Float64Array, // RHS data, packed, overwritten by solution
   ): Float64Array | undefined {
     if (!this.decomposeLU(numRow, bw, matrix))
       return undefined;

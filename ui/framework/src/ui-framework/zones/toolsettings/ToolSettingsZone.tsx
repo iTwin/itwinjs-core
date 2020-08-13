@@ -29,7 +29,7 @@ import { SpecialKey } from "@bentley/ui-abstract";
  */
 enum ToolSettingsZoneContent {
   Closed,
-  ToolSettings,
+  ToolSettings, // eslint-disable-line no-shadow
 }
 
 /** State for the [[ToolSettingsZone]].

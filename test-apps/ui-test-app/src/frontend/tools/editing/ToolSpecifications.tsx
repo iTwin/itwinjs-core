@@ -85,6 +85,7 @@ export class EditTools {
 
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {
+    // eslint-disable-next-line deprecation/deprecation
     return Backstage.backstageToggleCommand;
   }
 
@@ -262,7 +263,7 @@ export class EditTools {
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: () => {
-        // tslint:disable-next-line:no-floating-promises
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         IModelApp.notifications.openMessageBox(MessageBoxType.Ok,
           message,
           MessageBoxIconType.Information)

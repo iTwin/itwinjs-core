@@ -83,13 +83,13 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
   /** @internal */
   public componentDidMount() {
-    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
-      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+      this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 

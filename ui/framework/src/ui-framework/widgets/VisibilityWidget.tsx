@@ -163,7 +163,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   private _renderCategoriesTree() {
     const { iModelConnection } = this.props;
     const { viewport, showSearchBox, showAll, hideAll } = this.state;
-    return <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+    return <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
       iModel={iModelConnection}
       activeView={viewport}
       showSearchBox={showSearchBox}
@@ -220,7 +220,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
 /** VisibilityComponent that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
  * @beta
  */
-export const IModelConnectedVisibilityComponent = connectIModelConnection(null, null)(VisibilityComponent); // tslint:disable-line:variable-name
+export const IModelConnectedVisibilityComponent = connectIModelConnection(null, null)(VisibilityComponent); // eslint-disable-line @typescript-eslint/naming-convention
 
 /** VisibilityWidget React component.
  * @beta

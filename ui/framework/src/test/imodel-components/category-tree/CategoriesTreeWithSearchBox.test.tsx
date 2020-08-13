@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable: no-direct-imports
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
@@ -119,7 +118,7 @@ describe("CategoryTreeWithSearchBox", () => {
     it("should match snapshot", async () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const result = render(
-        <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+        <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
@@ -131,7 +130,7 @@ describe("CategoryTreeWithSearchBox", () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const showAll = new BeUiEvent<void>();
       const result = render(
-        <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+        <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showAll={showAll}
         />,
       );
@@ -146,7 +145,7 @@ describe("CategoryTreeWithSearchBox", () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const hideAll = new BeUiEvent<void>();
       const result = render(
-        <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+        <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} hideAll={hideAll}
         />,
       );
@@ -182,7 +181,7 @@ describe("CategoryTreeWithSearchBox", () => {
 
       it("filters tree", async () => {
         const result = render(
-          <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+          <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true}
           />,
         );
@@ -194,7 +193,7 @@ describe("CategoryTreeWithSearchBox", () => {
       it("enables all filtered categories", async () => {
         const showAll = new BeUiEvent<void>();
         const result = render(
-          <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+          <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true} showAll={showAll}
           />,
         );

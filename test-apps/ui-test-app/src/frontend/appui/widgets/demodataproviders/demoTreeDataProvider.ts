@@ -27,7 +27,7 @@ export interface DemoDragDropObject {
 
 export type DemoTreeDragDropType = DelayLoadedTreeNodeItem | TreeDataProvider | DemoDragDropObject;
 
-export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [
+export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [ // eslint-disable-line prefer-const
   {
     label: PropertyRecord.fromString("Root 1"), id: "66640415289992", description: "First root node", icon: "icon-placeholder", hasChildren: true,
     extendedData: {
@@ -220,7 +220,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       if (!parent.extendedData || !parent.extendedData.children) return -1;
       nodes = parent.extendedData.children;
     }
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].id === node.id) {
         return i;

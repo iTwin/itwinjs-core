@@ -34,7 +34,8 @@ export class ModelSelectorWidgetControl extends WidgetControl {
     super(info, options);
 
     this.reactNode = (
-      <ModelSelectorWidget iModelConnection={options.iModelConnection} /> // tslint:disable-line:deprecation
+      // eslint-disable-next-line deprecation/deprecation
+      <ModelSelectorWidget iModelConnection={options.iModelConnection} />
     );
   }
 }
@@ -92,7 +93,7 @@ export class ModelSelectorWidget extends React.Component<
 
   /** Initializes state to default values */
   private _initState = () => {
-    this.state = {
+    this.state = { // eslint-disable-line react/no-direct-mutation-state
       activeView: (this.props.activeView ||
         IModelApp.viewManager.getFirstOpenView())!,
     };
@@ -102,23 +103,23 @@ export class ModelSelectorWidget extends React.Component<
   private _initModelState = async () => {
     const ruleset = await Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Models.json"));
+      .add(require("../../../../rulesets/Models.json")); // eslint-disable-line @typescript-eslint/no-var-requires
 
     this._modelRuleset = ruleset;
 
     await this._setViewType(ruleset);
-    this._updateModelsWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
+    this._updateModelsWithViewport(this.state.activeView); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** Initialize categories */
   private _initCategoryState = async () => {
     const ruleset = await Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Categories.json"));
+      .add(require("../../../../rulesets/Categories.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     this._categoryRuleset = ruleset;
 
     await this._setViewType(ruleset);
-    this._updateCategoriesWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
+    this._updateCategoriesWithViewport(this.state.activeView); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /**
@@ -132,7 +133,7 @@ export class ModelSelectorWidget extends React.Component<
     const viewType = view.is3d() ? "3d" : "2d";
     await Presentation.presentation
       .vars(ruleset.id)
-      .setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
+      .setString("ViewType", viewType); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /**
@@ -199,7 +200,7 @@ export class ModelSelectorWidget extends React.Component<
       });
 
       if (checked) {
-        vp.addViewedModels(modelIds); // tslint:disable-line:no-floating-promises
+        vp.addViewedModels(modelIds); // eslint-disable-line @typescript-eslint/no-floating-promises
       } else {
         vp.changeModelDisplay(modelIds, checked);
       }
@@ -252,7 +253,7 @@ export class ModelSelectorWidget extends React.Component<
       updateViewport(IModelApp.viewManager.selectedView);
     }
 
-    // this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // tslint:disable-line:no-floating-promises
+    // this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private async _updateCategoriesWithViewport(vp?: Viewport) {
@@ -347,7 +348,7 @@ export class ModelSelectorWidget extends React.Component<
 
   private _getTabContent = () => {
     return (
-      <CategoryModelTree // tslint:disable-line:deprecation
+      <CategoryModelTree // eslint-disable-line deprecation/deprecation
         key={this.state.activeGroup!.id}
         iModelConnection={this.props.iModelConnection}
         activeGroup={this.state.activeGroup!}

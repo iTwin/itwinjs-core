@@ -23,7 +23,7 @@ export class Debug {
    */
   public static print(message: () => string): void {
     if (this.printEnabled)
-      console.log(message()); // tslint:disable-line:no-console
+      console.log(message()); // eslint-disable-line no-console
   }
 
   /** If [[Debug.evaluate]] is true, executes the supplied function and returns its result; otherwise returns the supplied default value.

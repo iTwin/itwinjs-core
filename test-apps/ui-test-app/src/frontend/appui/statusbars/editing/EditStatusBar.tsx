@@ -14,31 +14,31 @@ import { FooterSeparator } from "@bentley/ui-ninezone";
 import { DisplayStyleField } from "../../statusfields/DisplayStyleField";
 import { PushPullStatusField } from "../../statusfields/editing/PushPullStatusField";
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SnapMode = withMessageCenterFieldProps(SnapModeField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const DisplayStyle = withStatusFieldProps(DisplayStyleField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ActivityCenter = withStatusFieldProps(ActivityCenterField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ViewAttributes = withStatusFieldProps(ViewAttributesStatusField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const Sections = withStatusFieldProps(SectionsStatusField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SelectionInfo = withStatusFieldProps(SelectionInfoField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SelectionScope = withStatusFieldProps(SelectionScopeField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ClearEmphasis = withStatusFieldProps(ClearEmphasisStatusField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const FooterMode = withStatusFieldProps(FooterModeField);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const PushPull = withStatusFieldProps(PushPullStatusField);
 
 export class EditStatusBarWidgetControl extends StatusBarWidgetControl {

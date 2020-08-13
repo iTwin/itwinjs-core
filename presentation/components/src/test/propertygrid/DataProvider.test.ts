@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
@@ -294,20 +293,20 @@ describe("PropertyDataProvider", () => {
 
     it("registers default ruleset once if `rulesetId` not specified when creating the provider", async () => {
       provider = new Provider({ imodel: imodelMock.object });
-      rulesetsManagerMock.setup((x) => x.add(moq.It.isAny())).returns(async (x) => new RegisteredRuleset(x, Guid.createValue(), () => { }));
+      rulesetsManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (x) => new RegisteredRuleset(x, Guid.createValue(), () => { }));
 
       // verify ruleset is registered on first call
       await provider.getData();
-      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
+      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
 
       // verify ruleset is not registered on subsequent calls on the same provider
       await provider.getData();
-      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
+      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
 
       // verify ruleset is not registered on subsequent calls on different providers
       const provider2 = new Provider({ imodel: imodelMock.object });
       await provider2.getData();
-      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
+      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
     });
 
     it("returns empty data object when receives undefined content", async () => {
@@ -613,6 +612,7 @@ describe("PropertyDataProvider", () => {
 
           it("returns favorite nested content in a separate category when it's categorized", async () => {
             field1.nestedFields[0].category = createRandomCategory("custom");
+            // eslint-disable-next-line deprecation/deprecation
             favoritePropertiesManagerMock.setup((x) => x.has(field1.nestedFields[0], moq.It.isAny(), moq.It.isAny())).returns(() => true);
             const values = {
               [field1.name]: [{
@@ -878,6 +878,7 @@ describe("PropertyDataProvider", () => {
               nestedContentField.rebuildParentship();
               descriptor.fields = [nestedContentField];
 
+              // eslint-disable-next-line deprecation/deprecation
               favoritePropertiesManagerMock.setup((x) => x.has(propertiesField, moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
               const propertyValue: string = faker.random.words(2);
@@ -920,6 +921,7 @@ describe("PropertyDataProvider", () => {
               nestedContentField.rebuildParentship();
               descriptor.fields = [nestedContentField];
 
+              // eslint-disable-next-line deprecation/deprecation
               favoritePropertiesManagerMock.setup((x) => x.has(propertiesField, moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
               const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
@@ -953,7 +955,9 @@ describe("PropertyDataProvider", () => {
               nestedContentField.rebuildParentship();
               descriptor.fields = [nestedContentField];
 
+              // eslint-disable-next-line deprecation/deprecation
               favoritePropertiesManagerMock.setup((x) => x.has(propertiesField1, moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              // eslint-disable-next-line deprecation/deprecation
               favoritePropertiesManagerMock.setup((x) => x.has(propertiesField2, moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
               const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
@@ -985,6 +989,7 @@ describe("PropertyDataProvider", () => {
               const nestedContentField = createRandomNestedContentField([propertiesField1, propertiesField2], category);
               descriptor.fields = [nestedContentField];
 
+              // eslint-disable-next-line deprecation/deprecation
               favoritePropertiesManagerMock.setup((x) => x.has(nestedContentField.nestedFields[0], moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
               const values = {

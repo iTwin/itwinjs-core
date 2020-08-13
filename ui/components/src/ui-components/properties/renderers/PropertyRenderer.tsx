@@ -6,7 +6,6 @@
  * @module Properties
  */
 
-import _ from "lodash";
 import * as React from "react";
 import { ArrayValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
@@ -177,7 +176,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** @internal */
   public render() {
-    const { children, propertyValueRendererManager, isEditing, onEditCommit, onEditCancel, ...props } = this.props;
+    const { children, propertyValueRendererManager, isEditing, onEditCommit, onEditCancel, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const primitiveRendererProps: PrimitiveRendererProps = {
       ...props,
       valueElement: this.state.displayValue,
@@ -196,7 +195,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
           return (
             <PrimitivePropertyRenderer {...primitiveRendererProps} />
           );
-      // tslint:disable-next-line:no-switch-case-fall-through
+      // eslint-disable-next-line no-fallthrough
       case PropertyValueFormat.Struct:
         return (
           <NonPrimitivePropertyRenderer

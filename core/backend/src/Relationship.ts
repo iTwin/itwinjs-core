@@ -77,7 +77,7 @@ export class Relationship extends Entity implements RelationshipProps {
   }
 }
 
-/**A Relationship where one Element refers to another Element
+/** A Relationship where one Element refers to another Element
  * @public
  */
 export class ElementRefersToElements extends Relationship {

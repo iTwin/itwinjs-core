@@ -19,13 +19,13 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
  *
  * @public
  */
-export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew; // tslint:disable-line:deprecation
+export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew; // eslint-disable-line deprecation/deprecation
 
 /**
  * @public
  * @deprecated Use `RelatedInstanceNodesSpecificationNew`. Will be removed in iModel.js 3.0
  */
-export interface DEPRECATED_RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // tslint:disable-line: naming-convention class-name
+export interface DEPRECATED_RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // eslint-disable-line @typescript-eslint/naming-convention
   /** Used for serializing to JSON. */
   specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
 

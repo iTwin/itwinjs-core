@@ -29,15 +29,15 @@ export const interop = (() => {
   return electron;
 })();
 
-interface PartialPayload { id: string; index: number; data: Uint8Array; }
+interface PartialPayload { id: string, index: number, data: Uint8Array }
 
 /** @internal */
-export interface IpcTransportMessage { id: string; parameters?: RpcSerializedValue; result?: RpcSerializedValue; }
+export interface IpcTransportMessage { id: string, parameters?: RpcSerializedValue, result?: RpcSerializedValue }
 
 /** @internal */
 export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = IpcTransportMessage, TOut extends IpcTransportMessage = IpcTransportMessage> {
   private _ipc: any;
-  private _partials: Map<string, { message: TIn; received: number; } | PartialPayload[]>;
+  private _partials: Map<string, { message: TIn, received: number } | PartialPayload[]>;
   protected _protocol: ElectronRpcProtocol;
 
   public sendRequest(request: SerializedRpcRequest) {

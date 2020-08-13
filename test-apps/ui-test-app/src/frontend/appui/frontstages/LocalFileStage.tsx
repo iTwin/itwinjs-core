@@ -61,7 +61,7 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
         contentManipulationTools={
           <Zone
             widgets={[
-              <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
+              <Widget isFreeform={true} element={<FrontstageToolWidget />} />, // eslint-disable-line react/jsx-key
             ]}
           />
         }

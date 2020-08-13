@@ -413,9 +413,9 @@ export class TreeDataSource implements IDisposable {
   constructor(dataProvider: TreeDataProvider) {
     this._dataProvider = dataProvider;
 
-    // tslint:disable-next-line:deprecation
+    // eslint-disable-next-line deprecation/deprecation
     if (isTreeDataProviderInterface(this._dataProvider) && this._dataProvider.onTreeNodeChanged) {
-      // tslint:disable-next-line:deprecation
+      // eslint-disable-next-line deprecation/deprecation
       this._disposeTreeNodesChangedListener = this._dataProvider.onTreeNodeChanged!.addListener(
         (changedItems) => this.onItemsChanged.raiseEvent(changedItems),
       );

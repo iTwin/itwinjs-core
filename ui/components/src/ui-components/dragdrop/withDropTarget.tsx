@@ -38,7 +38,7 @@ export interface WithDropTargetProps<DragDropObject = any> {
  * @beta
  */
 export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
 ): DndComponentClass<ComponentProps & WithDropTargetProps<DragDropObject>> => {
   type Props = ComponentProps & WithDropTargetProps<DragDropObject>;
@@ -139,10 +139,10 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
     public rootElement: HTMLDivElement | null = null;
     public render() {
       const {
-        dropProps, shallow,
+        dropProps, shallow, // eslint-disable-line @typescript-eslint/no-unused-vars
         connectDropTarget,
         isOver, canDrop, item, type,
-        dropStyle,
+        dropStyle, // eslint-disable-line @typescript-eslint/no-unused-vars
         ...props } = this.props as WithDropTargetProps<DragDropObject>;
 
       const p = {
@@ -153,7 +153,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
       };
       return connectDropTarget!(
         <div className="drop-target-wrapper" data-testid="drop-target-wrapper" ref={(el) => { this.rootElement = el; }} style={this.props.dropStyle}>
-        <Component {...props} {...(p as any)} />
+          <Component {...props} {...(p as any)} />
         </div>,
       );
     }

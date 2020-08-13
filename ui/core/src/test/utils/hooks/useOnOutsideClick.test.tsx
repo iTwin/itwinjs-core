@@ -7,6 +7,8 @@ import { fireEvent } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import { useOnOutsideClick } from "../../../ui-core";
 
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 function setRefValue<T>(ref: React.Ref<T>, value: T) {
   if (typeof ref === "function") {
     ref(value);

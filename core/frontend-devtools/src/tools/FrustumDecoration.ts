@@ -259,7 +259,7 @@ class SelectedViewFrustumDecoration {
   public constructor(vp: Viewport, private _options?: FrustumDecorationOptions) {
     this._targetVp = vp;
     this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
-    this._removeViewChangedListener = vp.onViewChanged.addListener(this.onViewChanged, this);
+    this._removeViewChangedListener = vp.onViewChanged.addListener(this.onViewChanged, this); // eslint-disable-line @typescript-eslint/unbound-method
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 

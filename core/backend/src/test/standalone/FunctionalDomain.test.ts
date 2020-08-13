@@ -29,7 +29,7 @@ describe("Functional Domain", () => {
     // Import the Functional schema
     FunctionalSchema.registerSchema();
     Schemas.registerSchema(testSchema);
-    await FunctionalSchema.importSchema(requestContext, iModelDb); // tslint:disable-line:deprecation
+    await FunctionalSchema.importSchema(requestContext, iModelDb); // eslint-disable-line deprecation/deprecation
 
     let commits = 0;
     let committed = 0;

@@ -12,7 +12,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import * as bsiChecker from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 describe("YPR", () => {
   it("hello", () => {
     const ck = new bsiChecker.Checker();

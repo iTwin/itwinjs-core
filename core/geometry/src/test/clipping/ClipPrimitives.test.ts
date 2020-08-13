@@ -20,7 +20,7 @@ import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { prettyPrint } from "../testFunctions";
 
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
 /** EXPENSIVE -- Returns true if two convex sets are equal, allowing reordering of arrays */
 function convexSetsAreEqual(convexSet0: ConvexClipPlaneSet, convexSet1: ConvexClipPlaneSet): boolean {
@@ -532,7 +532,7 @@ describe("ClipPrimitive", () => {
     for (const polygon of clippedPolygons) {
       if (polygon.length <= 3) {
         if (polygon.length === 3)
-          clippedPolygonArea += Math.abs (polygon.crossProductIndexIndexIndex(0, 1, 2)!.z * 0.5);
+          clippedPolygonArea += Math.abs(polygon.crossProductIndexIndexIndex(0, 1, 2)!.z * 0.5);
         continue;
       }
 

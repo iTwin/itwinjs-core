@@ -399,7 +399,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
   }
 }
 
-/**An abstract base class for 2d Geometric Elements that are used to convey information within graphical presentations (like drawings).
+/** An abstract base class for 2d Geometric Elements that are used to convey information within graphical presentations (like drawings).
  * @public
  */
 export abstract class GraphicalElement2d extends GeometricElement2d {
@@ -505,7 +505,7 @@ export class VolumeElement extends SpatialLocationElement {
  * @alpha
  * @deprecated use [[SectionDrawingLocation]].
  */
-export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
+export class SectionLocation extends SpatialLocationElement implements SectionLocationProps { // eslint-disable-line deprecation/deprecation
   /** Section type */
   public sectionType: SectionType;
 
@@ -513,13 +513,13 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
   public static get className(): string { return "SectionLocation"; }
 
   /** @internal */
-  public constructor(props: SectionLocationProps, iModel: IModelDb) {
+  public constructor(props: SectionLocationProps, iModel: IModelDb) { // eslint-disable-line deprecation/deprecation
     super(props, iModel);
     this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
   }
 
   /** @internal */
-  public toJSON(): SectionLocationProps {
+  public toJSON(): SectionLocationProps { // eslint-disable-line deprecation/deprecation
     return {
       ...super.toJSON(),
       sectionType: this.sectionType,
@@ -803,7 +803,7 @@ export abstract class InformationCarrierElement extends Element {
  * @note This TypeScript class should not be removed until the (deprecated) DocumentCarrier class is removed from the BisCore schema.
  * @internal
  */
-export abstract class DocumentCarrier extends InformationCarrierElement {  // tslint:disable-line: deprecation
+export abstract class DocumentCarrier extends InformationCarrierElement {  // eslint-disable-line deprecation/deprecation
   /** @internal */
   public static get className(): string { return "DocumentCarrier"; }
   /** @internal */

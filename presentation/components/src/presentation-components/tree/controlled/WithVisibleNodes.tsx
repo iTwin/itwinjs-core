@@ -27,13 +27,13 @@ export interface ControlledTreeWithVisibleNodesProps extends Omit<ControlledTree
  * @beta
  * @deprecated Use hooks. Will be removed in iModel.js 3.0
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>) {
 
-  type CombinedProps = P & ControlledTreeWithVisibleNodesProps; // tslint:disable-line:deprecation
+  type CombinedProps = P & ControlledTreeWithVisibleNodesProps; // eslint-disable-line deprecation/deprecation
   type TreeWithVisibleNodesProps = Omit<CombinedProps, "visibleNodes">;
 
-  // tslint:disable-next-line: variable-name naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const TreeWithModelSource: React.FC<TreeWithVisibleNodesProps> = (props: TreeWithVisibleNodesProps) => {
     const visibleNodes = useVisibleTreeNodes(props.nodeLoader.modelSource);
     return (

@@ -179,7 +179,7 @@ describe("usePagedTreeNodeLoader", () => {
     const firstNodeLoader = result.current;
     rerender({ dataProvider: dataProviderMock, pageSize: 20, modelSource: modelSourceMock.object });
 
-    expect(result.current).to.not.be.deep.eq(firstNodeLoader!);
+    expect(result.current).to.not.be.deep.eq(firstNodeLoader);
   });
 
 });

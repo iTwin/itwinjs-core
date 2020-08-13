@@ -107,7 +107,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const localToWorld = Transform.createOriginAndMatrixColumns(centerA, vectorX, vectorY, vectorZ);
     return new Cone(localToWorld, radiusA, radiusB, capped);
   }
-/** (Property accessor) Return the center point at the base plane */
+  /** (Property accessor) Return the center point at the base plane */
   public getCenterA(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
   /** (Property accessor) */
   public getCenterB(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 1); }
@@ -135,7 +135,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     }
     return false;
   }
-/** Second step of double dispatch:   call `handler.handleCone(this)` */
+  /** Second step of double dispatch:   call `handler.handleCone(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleCone(this);
   }
@@ -217,7 +217,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const center = transform.multiplyXYZ(0, 0, vFraction);
     const vector0 = transform.matrix.multiplyXYZ(r, 0, 0);
     const vector90 = transform.matrix.multiplyXYZ(0, r, 0);
-    return Loop.create(Arc3d.create(center, vector0, vector90) as Arc3d);
+    return Loop.create(Arc3d.create(center, vector0, vector90));
   }
   /** Extend `rangeToExtend` so it includes this `Cone` instance. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
@@ -226,11 +226,11 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     arc0.extendRange(rangeToExtend, transform);
     arc1.extendRange(rangeToExtend, transform);
   }
-/** Evaluate a point on the Cone surfaces, with
- * * v = 0 is the base plane.
- * * v = 1 is the top plane
- * * u = 0 to u = 1 wraps the angular range.
- */
+  /** Evaluate a point on the Cone surfaces, with
+   * * v = 0 is the base plane.
+   * * v = 1 is the top plane
+   * * u = 0 to u = 1 wraps the angular range.
+   */
   public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
@@ -238,11 +238,11 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const sinTheta = Math.sin(theta);
     return this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
   }
-/** Evaluate a point tangent plane on the Cone surfaces, with
- * * v = 0 is the base plane.
- * * v = 1 is the top plane
- * * u = 0 to u = 1 wraps the angular range.
- */
+  /** Evaluate a point tangent plane on the Cone surfaces, with
+   * * v = 0 is the base plane.
+   * * v = 1 is the top plane
+   * * u = 0 to u = 1 wraps the angular range.
+   */
   public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);

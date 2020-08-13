@@ -193,10 +193,10 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
   public render(): JSX.Element {
     const {
-      opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick,
+      opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick, // eslint-disable-line @typescript-eslint/no-unused-vars
       minWidth, minHeight, x, y, width, height, maxHeight, maxWidth,
       backgroundStyle, titleStyle, footerStyle, style, contentStyle, contentClassName,
-      modal, resizable, movable, className, alignment, inset, trapFocus, modelessId, onModelessPointerDown,
+      modal, resizable, movable, className, alignment, inset, trapFocus, modelessId, onModelessPointerDown, // eslint-disable-line @typescript-eslint/no-unused-vars
       hideHeader, header, ...props } = this.props;
 
     const containerStyle: React.CSSProperties = {
@@ -247,9 +247,12 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     };
 
     const headerElement = header || (
-      <div className={classnames(
-        "core-dialog-head",
-        { "core-dialog-movable": movable })}
+      <div
+        className={
+          classnames(
+            "core-dialog-head",
+            { "core-dialog-movable": movable })
+        }
         data-testid="core-dialog-head"
         onPointerDown={this._handleStartMove}>
         <div className={"core-dialog-title"} data-testid="core-dialog-title" style={titleStyle}>{title}</div>
@@ -564,7 +567,7 @@ export class GlobalDialog extends React.Component<GlobalDialogProps> {
     }
   }
   public render(): React.ReactNode {
-    const { identifier, ...props } = this.props;
+    const { identifier, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return ReactDOM.createPortal(
       <Dialog {...props} />
       , this._container);

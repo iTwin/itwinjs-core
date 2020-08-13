@@ -218,7 +218,7 @@ export class Marker implements CanvasDecoration {
         const target = err.target as any;
         const msg = "Could not load image " + (target && target.src ? target.src : "unknown");
         Logger.logError(FrontendLoggerCategory.Package + ".markers", msg);
-        console.log(msg); // tslint:disable-line: no-console
+        console.log(msg); // eslint-disable-line no-console
       });
     } else
       this.image = image;

@@ -16,7 +16,7 @@ describe("withDragSource", () => {
   /**
    * Wraps a component into a DragDropContext that uses the TestBackend.
    */
-  function wrapInTestContext(DecoratedComponent: React.ComponentType<any>) {// tslint:disable-line:variable-name
+  function wrapInTestContext(DecoratedComponent: React.ComponentType<any>) {// eslint-disable-line @typescript-eslint/naming-convention
     class TestContextContainer extends React.Component {
       public render() {
         return <DecoratedComponent {...this.props} />;
@@ -35,15 +35,15 @@ describe("withDragSource", () => {
 
   describe("Wrapped component", () => {
     const testDragSource = withDragSource(TestComponent);
-    const BaseComponent = testDragSource.DecoratedComponent; // tslint:disable-line:variable-name
+    const BaseComponent = testDragSource.DecoratedComponent; // eslint-disable-line @typescript-eslint/naming-convention
     it("mounts wrapped component", () => {
       render(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e} />);
     });
   });
   describe("Drop functionality", () => {
     const testDropTarget = withDropTarget(TestComponent);
-    const TestDragSource = withDragSource(testDropTarget); // tslint:disable-line:variable-name
-    const ContextTestDragSource = wrapInTestContext(TestDragSource) as any; // tslint:disable-line:variable-name
+    const TestDragSource = withDragSource(testDropTarget); // eslint-disable-line @typescript-eslint/naming-convention
+    const ContextTestDragSource = wrapInTestContext(TestDragSource) as any; // eslint-disable-line @typescript-eslint/naming-convention
     const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => {
       args.dataObject = { test: true };
       return args;

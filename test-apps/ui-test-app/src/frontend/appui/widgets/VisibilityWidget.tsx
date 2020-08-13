@@ -28,10 +28,10 @@ interface VisibilityTreeComponentProps {
     modelsTree: {
       selectionMode?: SelectionMode;
       selectionPredicate?: ModelsTreeSelectionPredicate;
-    },
+    };
     categoriesTree: {
       allViewports?: boolean;
-    },
+    };
   };
 }
 

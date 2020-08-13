@@ -30,7 +30,7 @@ export interface WidgetPanelsProps extends CommonProps {
 /** Component that displays widget panels.
  * @internal
  */
-export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   return (
     <ContentNodeContext.Provider value={props.children}>
       <CenterContentNodeContext.Provider value={props.centerContent}>
@@ -44,7 +44,7 @@ export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(
 });
 
 /** @internal */
-const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsComponent(props) { // tslint:disable-line: variable-name no-shadowed-variable
+const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsComponent(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panels = React.useContext(PanelsStateContext);
   useCursor();
   const className = classnames(
@@ -75,9 +75,9 @@ const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsCompo
 });
 
 /** @internal */
-export const ContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+export const ContentNodeContext = React.createContext<React.ReactNode>(null); // eslint-disable-line @typescript-eslint/naming-convention
 ContentNodeContext.displayName = "nz:ContentNodeContext";
 
 /** @internal */
-export const CenterContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+export const CenterContentNodeContext = React.createContext<React.ReactNode>(null); // eslint-disable-line @typescript-eslint/naming-convention
 CenterContentNodeContext.displayName = "nz:CenterContentNodeContext";

@@ -137,7 +137,7 @@ export class RegionOps {
           this.addLoopsToGraph(graph, points, announceIsolatedLoop);
       }
     } else if (data instanceof IndexedXYZCollection) {
-      const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, data as IndexedXYZCollection);
+      const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
       if (loopSeed !== undefined)
         announceIsolatedLoop(graph, loopSeed);
     } else if (Array.isArray(data)) {

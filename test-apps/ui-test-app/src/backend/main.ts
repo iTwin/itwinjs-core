@@ -13,16 +13,16 @@ import { Presentation } from "@bentley/presentation-backend";
 import getSupportedRpcs from "../common/rpcs";
 import { initializeLogging } from "./web/BackendServer";
 
-(async () => { // tslint:disable-line:no-floating-promises
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
     // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
-      require("dotenv-expand")(
+      require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
         require("dotenv").config(),
       );
     }
 
-    IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
+    IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
     if (!electron) {
       initializeLogging();

@@ -8,7 +8,7 @@
 
 // import { Point2d } from "./Geometry2d";
 import { GeometryQuery } from "../curve/GeometryQuery";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { AxisOrder, Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
@@ -437,7 +437,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
       // reverse within rows.
       for (let j = 0; j < numV; j++) {
         const rowStart = j * numU * m;
-        for (let i0 = 0, i1 = numU - 1; i0 < i1; i0++ , i1--) {
+        for (let i0 = 0, i1 = numU - 1; i0 < i1; i0++, i1--) {
           this.swapBlocks(rowStart + i0 * m, rowStart + i1 * m, m);
         }
       }

@@ -26,11 +26,11 @@ import { ToolbarHelper } from "./ToolbarHelper";
 
 import classnames = require("classnames");
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, false);
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ItemWithDragInteraction = withDragInteraction(Item);
 
 // -----------------------------------------------------------------------------
@@ -203,7 +203,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     const classNames = classnames(
       className,
     );
-    const badge = BadgeUtilities.getComponentForBadgeType(groupItem.badgeType);  // tslint:disable-line: deprecation
+    const badge = BadgeUtilities.getComponentForBadgeType(groupItem.badgeType);  // eslint-disable-line deprecation/deprecation
 
     return (
       <ToolbarDirectionContext.Consumer>

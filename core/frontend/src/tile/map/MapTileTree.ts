@@ -21,7 +21,6 @@ import { ScreenViewport } from "../../Viewport";
 import { BingElevationProvider, createDefaultViewFlagOverrides, EllipsoidTerrainProvider, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme } from "../internal";
 import { TileTreeLoadStatus } from "../TileTree";
 
-// tslint:disable-next-line:prefer-const
 const scratchPoint = Point3d.create();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const scratchCorner = Point3d.createZero();
@@ -47,7 +46,6 @@ export class MapTileTree extends RealityTileTree {
 
   constructor(params: RealityTileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, public geodeticOffset: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, id: MapTreeId) {
     super(params);
-    // tslint:disable-next-line:no-console
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel, id.applyTerrain);
     const quadId = new QuadId(0, 0, 0);

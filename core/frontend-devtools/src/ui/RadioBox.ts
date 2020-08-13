@@ -58,8 +58,7 @@ export function createRadioBox(props: RadioBoxProps): RadioBox {
 
     input.value = (undefined !== entry.value) ? entry.value.toString() : "";
 
-    let inputLabel: HTMLLabelElement;
-    inputLabel = document.createElement("label") as HTMLLabelElement;
+    const inputLabel: HTMLLabelElement = document.createElement("label") as HTMLLabelElement;
     inputLabel.innerText = entry.label;
 
     inputLabel.onclick = () => {

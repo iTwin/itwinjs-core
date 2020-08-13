@@ -10,7 +10,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
     "docs": "",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "npm run test:chrome && npm run test:electron",
     "test:chrome": "certa -r chrome --grep \"#integration\" --invert",
     "test:electron": "certa -r electron --grep \"#integration\" --invert",
@@ -58,6 +58,7 @@
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
+    "eslint": "^6.8.0",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
@@ -65,5 +66,8 @@
     "webpack": "4.42.0",
     "webpack-core": "0.6.9",
     "serve-handler": "^6.1.2"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

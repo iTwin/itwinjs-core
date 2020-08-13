@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-/* tslint:disable:no-console trailing-comma object-literal-key-quotes*/
+/* eslint-disable no-console, comma-dangle, quote-props */
 // Requires for grabbing json object from external file
 import * as fs from "fs";
 import { DeepCompare } from "../../serialization/DeepCompare";

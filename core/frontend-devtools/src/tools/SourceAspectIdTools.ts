@@ -24,7 +24,7 @@ export abstract class SourceAspectIdTool extends Tool {
 
   public run(idToQuery?: string, copyToClipboard?: boolean): boolean {
     if (typeof idToQuery === "string")
-      this.doQuery(idToQuery, true === copyToClipboard); // tslint:disable-line:no-floating-promises
+      this.doQuery(idToQuery, true === copyToClipboard); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }

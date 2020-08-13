@@ -10,14 +10,14 @@ import { withOnOutsideClick } from "../../ui-core";
 
 describe("WithOnOutsideClick", () => {
 
-  const WithOnOutsideClickDiv = withOnOutsideClick((props) => (<div {...props} />), undefined, true, false); // tslint:disable-line:variable-name
+  const WithOnOutsideClickDiv = withOnOutsideClick((props) => (<div {...props} />), undefined, true, false); // eslint-disable-line @typescript-eslint/naming-convention
 
   const defaultOnClose = sinon.spy();
-  const WithOnOutsideClickAndDefaultDiv = withOnOutsideClick((props) => (<div {...props} />), defaultOnClose, true, false); // tslint:disable-line:variable-name
+  const WithOnOutsideClickAndDefaultDiv = withOnOutsideClick((props) => (<div {...props} />), defaultOnClose, true, false); // eslint-disable-line @typescript-eslint/naming-convention
 
-  const WithOnOutsidePointerDiv = withOnOutsideClick((props) => (<div {...props} />), undefined, true); // tslint:disable-line:variable-name
+  const WithOnOutsidePointerDiv = withOnOutsideClick((props) => (<div {...props} />), undefined, true); // eslint-disable-line @typescript-eslint/naming-convention
 
-  const WithOnOutsidePointerAndDefaultDiv = withOnOutsideClick((props) => (<div {...props} />), defaultOnClose, true, true); // tslint:disable-line:variable-name
+  const WithOnOutsidePointerAndDefaultDiv = withOnOutsideClick((props) => (<div {...props} />), defaultOnClose, true, true); // eslint-disable-line @typescript-eslint/naming-convention
 
   it("should render", () => {
     const wrapper = mount(<WithOnOutsideClickDiv />);

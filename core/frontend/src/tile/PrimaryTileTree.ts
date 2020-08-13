@@ -178,7 +178,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const args = super.createDrawArgs(context);
     if (undefined !== args && this._id.treeId.enforceDisplayPriority) {
-      args.drawGraphics = () => {
+      args.drawGraphics = () => { // eslint-disable-line @typescript-eslint/unbound-method
         const graphics = args.produceGraphics();
         if (undefined !== graphics) {
           const settings = this.getSettings();

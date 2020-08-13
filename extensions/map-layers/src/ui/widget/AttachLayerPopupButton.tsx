@@ -76,7 +76,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     }
 
     if (layerNameToAdd) {
-      attemptToAddLayer(layerNameToAdd); // tslint:disable-line: no-floating-promises
+      attemptToAddLayer(layerNameToAdd); // eslint-disable-line @typescript-eslint/no-floating-promises
       setLayerNameToAdd(undefined);
     }
   }, [setLayerNameToAdd, layerNameToAdd, activeViewport, sources, backgroundLayers, isOverlay, overlayLayers, onLayerAttached]);

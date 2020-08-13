@@ -10,6 +10,8 @@ import { PointerCaptor, usePointerCaptor } from "../../ui-ninezone";
 import { fireEvent } from "@testing-library/react";
 import { DragManagerProvider } from "../Providers";
 
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 describe("<PointerCaptor />", () => {
   it("should render", () => {
     mount(<PointerCaptor isPointerDown={false} />);

@@ -78,7 +78,7 @@ export class SampleApp {
   public static get ready(): Promise<void> { return this._ready; }
 }
 
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await SampleApp.startup();
 
   await SampleApp.ready;
@@ -86,4 +86,4 @@ export class SampleApp {
     <App />,
     document.getElementById("root") as HTMLElement,
   );
-})(); // tslint:disable-line:no-floating-promises
+})();

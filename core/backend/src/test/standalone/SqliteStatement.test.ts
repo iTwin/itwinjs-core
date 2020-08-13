@@ -11,14 +11,14 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
 describe("SqliteStatement", () => {
-  const _outDir = KnownTestLocations.outputDir;
+  const outDir = KnownTestLocations.outputDir;
   const stringVal: string = "Hello world";
   const intVal: number = 12345;
   const doubleVal: number = -2.5;
   const blobVal = new Uint8Array(new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer);
 
   it("Create Table, Insert, Select with ECDb", () => {
-    using(ECDbTestHelper.createECDb(_outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
+    using(ECDbTestHelper.createECDb(outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)", (stmt: SqliteStatement) => {
@@ -157,7 +157,7 @@ describe("SqliteStatement", () => {
   });
 
   it("Null values", () => {
-    using(ECDbTestHelper.createECDb(_outDir, "bindnull.ecdb"), (ecdb: ECDb) => {
+    using(ECDbTestHelper.createECDb(outDir, "bindnull.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)", (stmt: SqliteStatement) => {
@@ -233,7 +233,7 @@ describe("SqliteStatement", () => {
   });
 
   it("Ids and Guids", () => {
-    using(ECDbTestHelper.createECDb(_outDir, "idsandguids.ecdb"), (ecdb: ECDb) => {
+    using(ECDbTestHelper.createECDb(outDir, "idsandguids.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
       ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, guid BLOB)", (stmt: SqliteStatement) => {
@@ -304,8 +304,8 @@ describe("SqliteStatement", () => {
 
   it("Run plain SQL against readonly connection", () => {
     const fileName = "sqlitesqlagainstreadonlyconnection.ecdb";
-    const ecdbPath: string = path.join(_outDir, fileName);
-    using(ECDbTestHelper.createECDb(_outDir, fileName), (ecdb: ECDb) => {
+    const ecdbPath: string = path.join(outDir, fileName);
+    using(ECDbTestHelper.createECDb(outDir, fileName), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
     });
 

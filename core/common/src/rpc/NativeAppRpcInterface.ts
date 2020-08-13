@@ -107,8 +107,8 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static interfaceVersion = "0.3.0";
 
   /*===========================================================================================
-      NOTE: Any add/remove/change to the methods below requires an update of the interface version.
-      NOTE: Please consult the README in this folder for the semantic versioning rules.
+    NOTE: Any add/remove/change to the methods below requires an update of the interface version.
+    NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
   /** Send frontend log to backend.
    * @param _level Specify log level.

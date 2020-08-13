@@ -20,11 +20,11 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
 
   let x: number | undefined;
   if ("pageX" in e) {
-    x = (e as React.MouseEvent<HTMLDivElement>).pageX;
+      x = e.pageX;
   } else {
     // istanbul ignore if
     if (undefined !== e.touches && e.touches.length)
-      x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
+      x = e.touches[0].pageX;
   }
   // istanbul ignore if
   if (undefined === x)
@@ -32,11 +32,11 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
 
   let y = 0;
   if ("pageY" in e) {
-    y = (e as React.MouseEvent<HTMLDivElement>).pageY;
+      y = e.pageY;
   } else {
     // istanbul ignore if
     if (undefined !== e.touches && e.touches.length)
-      y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
+      y = e.touches[0].pageY;
   }
   // istanbul ignore if
   if (undefined === y)

@@ -18,13 +18,14 @@ describe("useTransientState", () => {
     };
     const onSave = sinon.stub<NonNullable<Parameters<typeof useTransientState>[0]>>();
     renderHook(() => useTransientState(onSave), {
+      // eslint-disable-next-line react/display-name
       wrapper: (props: { children?: React.ReactNode }) => <WidgetContentManagerContext.Provider value={widgetContentManager}>
         <TabIdContext.Provider value="t1">
           {props.children}
         </TabIdContext.Provider>
       </WidgetContentManagerContext.Provider>,
     });
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       onSaveTransientState.emit("t1");
     });
     onSave.calledOnceWithExactly().should.true;
@@ -39,13 +40,14 @@ describe("useTransientState", () => {
     };
     const onRestore = sinon.stub<NonNullable<Parameters<typeof useTransientState>[1]>>();
     renderHook(() => useTransientState(undefined, onRestore), {
+      // eslint-disable-next-line react/display-name
       wrapper: (props: { children?: React.ReactNode }) => <WidgetContentManagerContext.Provider value={widgetContentManager}>
         <TabIdContext.Provider value="t1">
           {props.children}
         </TabIdContext.Provider>
       </WidgetContentManagerContext.Provider>,
     });
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       onRestoreTransientState.emit("t1");
     });
     onRestore.calledOnceWithExactly().should.true;

@@ -20,7 +20,7 @@ import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SweepContour } from "../../solid/SweepContour";
-import { HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
@@ -35,7 +35,7 @@ function rotateArray(data: Point3d[], index0: number) {
   return out;
 }
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 describe("Triangulation", () => {
   it("NullTriangulations", () => {
     const ck = new Checker();
@@ -745,7 +745,7 @@ describe("Triangulation", () => {
     // multiple pinch points:
     const x0 = 960;
     const y0 = 3616;
-    for (const touchAllPointsOnReturn  of [true, false]) {
+    for (const touchAllPointsOnReturn of [true, false]) {
       for (const numPinch of [2, 3, 5]) {
         const points = [];
         points.push({ x: x0, y: y0 });

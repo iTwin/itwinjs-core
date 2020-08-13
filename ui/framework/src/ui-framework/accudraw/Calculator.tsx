@@ -120,7 +120,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
   }
 
   public render() {
-    const { className, resultIcon, onOk, onCancel, initialValue, ...props } = this.props;
+    const { className, resultIcon, onOk, onCancel, initialValue, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const classNames = classnames(
       "uifw-calculator",
@@ -288,7 +288,7 @@ class ValueButton extends React.PureComponent<ValueButtonProps> {
   }
 
   public render() {
-    const { className, keyChar, onClick, ...props } = this.props;
+    const { className, keyChar, onClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const itemClassNames = classnames(
       "uifw-calculator-item",
@@ -317,7 +317,7 @@ class OperatorButton extends React.PureComponent<OperatorButtonProps> {
   }
 
   public render() {
-    const { className, children, operator, onClick, ...props } = this.props;
+    const { className, children, operator, onClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const itemClassNames = classnames(
       "uifw-calculator-item",

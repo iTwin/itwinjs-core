@@ -8,7 +8,7 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+/* eslint-disable @typescript-eslint/naming-convention */
 
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
@@ -141,12 +141,12 @@ export class MomentData {
     const points = [
       axes.indexedColumnWithWeight(0, moments.x),
       axes.indexedColumnWithWeight(1, moments.y),
-      axes.indexedColumnWithWeight(2, moments.z)].sort(
-        (dataA: Point4d, dataB: Point4d): number => {
-          if (dataA.w < dataB.w) return -1;
-          if (dataA.w > dataB.w) return 1;
-          return 0;
-        });
+      axes.indexedColumnWithWeight(2, moments.z),
+    ].sort((dataA: Point4d, dataB: Point4d): number => {
+      if (dataA.w < dataB.w) return -1;
+      if (dataA.w > dataB.w) return 1;
+      return 0;
+    });
     axes.setColumnsPoint4dXYZ(points[0], points[1], points[2]);
     if (axes.determinant() < 0)
       axes.scaleColumnsInPlace(-1.0, -1.0, -1.0);
@@ -201,7 +201,7 @@ export class MomentData {
     moments.radiusOfGyration.set(
       Math.sqrt(Math.abs(moment2.x)), Math.sqrt(Math.abs(moment2.y)), Math.sqrt(Math.abs(moment2.z)));
     moments.radiusOfGyration.scaleInPlace(1.0 / Math.sqrt(Math.abs(w)));
-    moments.absoluteQuantity = Math.abs (w);
+    moments.absoluteQuantity = Math.abs(w);
     return moments;
   }
   /**

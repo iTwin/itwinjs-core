@@ -122,11 +122,10 @@ export default function createTerrainMeshBuilder(_classified: IsClassified, _fea
   const applyTextureStrings = [];
   const textureCount = System.instance.maxTerrainImageryLayers;
 
-  let computeBaseColor;
   for (let i = 0; i < textureCount; i++)
     applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texTransform${i})) doDiscard = false; `);
 
-  computeBaseColor = `
+  const computeBaseColor = `
       if (!u_texturesPresent)
         return u_terrainColor;
 

@@ -187,7 +187,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
-      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => { // tslint:disable-line:no-floating-promises
+      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
         if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
       });
     } catch (error) {

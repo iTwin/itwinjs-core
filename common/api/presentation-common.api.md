@@ -115,8 +115,8 @@ export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
 }
 
 // @public
-export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // tslint:disable-line:deprecation
-DEPRECATED_AllRelatedInstanceNodesSpecification | // tslint:disable-line:deprecation
+export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
+DEPRECATED_AllRelatedInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
 CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;
 
 // @public

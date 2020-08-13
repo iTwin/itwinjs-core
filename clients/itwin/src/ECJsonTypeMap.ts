@@ -510,8 +510,7 @@ export class ECJsonTypeMap {
           if (ecNameSubParts.length > 2) {
             const relationshipDescriptor: string[] | null = ecNameSubParts[2].match(this._relationshipDescriptorPairsInParanthesis);
             if (relationshipDescriptor && relationshipDescriptor.length === 1) {
-              let parsedRelationshipDescriptors: Map<string, string> | undefined;
-              parsedRelationshipDescriptors = this.getRelationshipDesciptors(relationshipDescriptor[0].slice(1, -1));
+              const parsedRelationshipDescriptors: Map<string, string> = this.getRelationshipDesciptors(relationshipDescriptor[0].slice(1, -1));
               const existingRelationshipDescriptors = relationshipClassToDescriptor.get(expectedclassName);
               if (existingRelationshipDescriptors === undefined) {
                 relationshipClassToDescriptor.set(expectedclassName, parsedRelationshipDescriptors);

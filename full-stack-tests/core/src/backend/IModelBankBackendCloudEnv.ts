@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import * as child_process from "child_process";
 import * as fs from "fs";
 import * as fsextra from "fs-extra";
@@ -64,6 +66,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     fsextra.removeSync(bankFsRoot);
   fsextra.mkdirpSync(bankFsRoot);
 
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const cfg = require(path.resolve(__dirname, "../assets/local_orchestrator.config.json"));
   cfg.baseUrl = "https://localhost";
   cfg.port = 4000;

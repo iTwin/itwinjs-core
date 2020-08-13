@@ -28,10 +28,10 @@ describe("DrawingNavigationAidControl", () => {
 
   it("DrawingNavigationAidControl creates DrawingNavigationAid", () => {
 
-    const widgetDef = new NavigationWidgetDef(widgetProps); // tslint:disable-line:deprecation
-    expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // tslint:disable-line:deprecation
+    const widgetDef = new NavigationWidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
+    expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // eslint-disable-line deprecation/deprecation
 
-    const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
+    const navigationWidgetDef = widgetDef as NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
 
     const reactNode = navigationWidgetDef.reactNode;
     expect(reactNode).to.not.be.undefined;

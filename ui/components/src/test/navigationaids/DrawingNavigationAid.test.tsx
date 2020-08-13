@@ -404,7 +404,7 @@ describe("DrawingNavigationAid", () => {
       drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
 
       drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
-      const mat = drawingWindow.style.transform!.match(/matrix3d\(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ([-\d\.]+), ([-\d\.]+), 0, 1\)/);
+      const mat = drawingWindow.style.transform.match(/matrix3d\(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ([-\d\.]+), ([-\d\.]+), 0, 1\)/);
       const x = parseFloat(mat![1]);
       const y = parseFloat(mat![2]);
       expect(x).to.be.lessThan(47.5);
@@ -429,7 +429,7 @@ describe("DrawingNavigationAid", () => {
       drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
       await new Promise((r) => { setTimeout(r, 40); });
       drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
-      const mat = drawingWindow.style.transform!.match(/matrix3d\(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ([-\d\.]+), ([-\d\.]+), 0, 1\)/);
+      const mat = drawingWindow.style.transform.match(/matrix3d\(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ([-\d\.]+), ([-\d\.]+), 0, 1\)/);
       const x = parseFloat(mat![1]);
       const y = parseFloat(mat![2]);
       expect(x).to.be.lessThan(47.5);

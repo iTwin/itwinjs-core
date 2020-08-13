@@ -61,7 +61,7 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
       const modelId = await iModel.editing.models.createAndInsertPhysicalModel(modelCode);
       await iModel.editing.saveChanges("");
 
-      viewport.addViewedModels([modelId]);
+      await viewport.addViewedModels([modelId]);
       ActiveSettingsManager.onModelCreated(modelId, modelName, true);
 
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, modelName + " created."));

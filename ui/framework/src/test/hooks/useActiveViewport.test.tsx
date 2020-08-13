@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { IModelApp, NoRenderApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { useActiveViewport } from "../../ui-framework/hooks/useActiveViewport";
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ActiveViewport = (props: { children?: (activeViewport: ReturnType<typeof useActiveViewport>) => React.ReactNode }) => {
   const activeViewport = useActiveViewport();
   return (
@@ -59,7 +59,7 @@ describe("useActiveViewport", () => {
 
   it("should update active viewport", () => {
     const spy = sandbox.stub<NonNullable<Parameters<typeof ActiveViewport>[0]["children"]>>();
-    mount(<ActiveViewport children={spy} />);
+    mount(<ActiveViewport children={spy} />); // eslint-disable-line react/no-children-prop
     spy.resetHistory();
 
     const newViewport: ScreenViewport = {} as any;

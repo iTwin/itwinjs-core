@@ -63,5 +63,5 @@ function mapStateToProps(state: any) {
  * This React component is Redux connected.
  * @public
  * @deprecated Use ToolAssistanceField instead
- */ // tslint:disable-next-line:variable-name
+ */ // eslint-disable-next-line @typescript-eslint/naming-convention
 export const PromptField = connect(mapStateToProps)(PromptFieldComponent);

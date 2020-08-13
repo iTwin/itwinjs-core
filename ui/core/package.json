@@ -17,9 +17,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core/file.json --tsIndexFile=./ui-core.ts --onlyJson",
-    "lint": "npm run tslint && npm run eslint",
-    "eslint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "tslint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.{ts,tsx} 1>&2",
     "extract-api": "betools extract-api --entry=ui-core",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
@@ -70,7 +68,6 @@
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "@types/testing-library__react-hooks": "^3.1.0",
-    "@typescript-eslint/parser": "2.22.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
@@ -79,9 +76,8 @@
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "1.12.1",
     "enzyme-to-json": "^3.3.4",
-    "eslint": "^6.7.2",
+    "eslint": "^6.8.0",
     "eslint-plugin-jsx-a11y": "^6.3.1",
-    "eslint-plugin-react-hooks": "^3.0.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
@@ -95,8 +91,6 @@
     "typescript": "~3.7.4",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "xmlhttprequest": "^1.8.0"
   },
   "//dependencies": [
@@ -126,5 +120,14 @@
     "branches": 100,
     "functions": 100,
     "lines": 100
+  },
+  "eslintConfig": {
+    "plugins": [
+      "jsx-a11y"
+    ],
+    "extends": [
+      "./node_modules/@bentley/build-tools/.eslintrc.js",
+      "plugin:jsx-a11y/recommended"
+    ]
   }
 }

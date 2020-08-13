@@ -49,8 +49,10 @@ export function ColorSwatch(props: ColorSwatchProps) {
   );
 
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onColorPick, colorDef, round, // do not pass on color swatch specific props
-    ...otherProps /* tslint:disable-line: trailing-comma */ // pass-through props
+    // eslint-disable-next-line comma-dangle
+    ...otherProps // pass-through props
   } = props as any;
 
   return <button {...otherProps} style={colorStyle} className={classes} onClick={handleClick} />;

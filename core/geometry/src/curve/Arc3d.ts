@@ -30,7 +30,7 @@ import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 
-/* tslint:disable:variable-name no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 /**
  * Compact vector form of an elliptic arc defined by center, vectors for angle coordinates 0 and 90 degrees, and sweep.
  * * See `Arc3d` for further details of the parameterization and meaning of the vectors.
@@ -837,7 +837,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public isAlmostEqual(otherGeometry: GeometryQuery): boolean {
     if (otherGeometry instanceof Arc3d) {
-      const other = otherGeometry as Arc3d;
+      const other = otherGeometry;
       return this._center.isAlmostEqual(other._center)
         && this._matrix.isAlmostEqual(other._matrix)
         && this._sweep.isAlmostEqualAllowPeriodShift(other._sweep);

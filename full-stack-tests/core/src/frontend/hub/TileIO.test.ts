@@ -826,7 +826,7 @@ describe("TileAdmin", () => {
     public static async start(props: TileAdmin.Props): Promise<IModelConnection> {
       await cleanup();
 
-      super.startup({
+      await super.startup({
         tileAdmin: TileAdmin.create(props),
       });
 

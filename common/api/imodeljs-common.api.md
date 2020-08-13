@@ -5336,9 +5336,7 @@ export abstract class RpcConfiguration {
     // @alpha (undocumented)
     allowAttachedInterfaces: boolean;
     static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void;
-    static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: {
-        new (): RpcConfiguration;
-    }): void;
+    static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: new () => RpcConfiguration): void;
     // @alpha (undocumented)
     attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     // @internal (undocumented)
@@ -5351,9 +5349,7 @@ export abstract class RpcConfiguration {
     static disableRoutingValidation: boolean;
     static initializeInterfaces(configuration: RpcConfiguration): void;
     abstract readonly interfaces: () => RpcInterfaceDefinition[];
-    static obtain<T extends RpcConfiguration>(configurationConstructor: {
-        new (): T;
-    }): T;
+    static obtain<T extends RpcConfiguration>(configurationConstructor: new () => T): T;
     // @internal (undocumented)
     onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void;
     // @internal (undocumented)

@@ -15,7 +15,7 @@ import { CheckBoxInfo, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
 import { PageOptions } from "../../../common/PageOptions";
 import { UiComponents } from "../../../UiComponents";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Enum containing all events that may be emitted by [[BeInspireTree]]
@@ -355,7 +355,7 @@ export class BeInspireTree<TNodePayload> {
     return new EventsMuteContext(events, this.doMute, this.doUnmute);
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private doMute = (events: BeInspireTreeEvent[]) => {
     events.forEach((ev) => {
       if (!this._eventMutes.has(ev))
@@ -369,7 +369,7 @@ export class BeInspireTree<TNodePayload> {
       this._tree.mute(events);
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private doUnmute = (events: BeInspireTreeEvent[]) => {
     const eventsToUnmute = events.filter((ev) => {
       let mutesCount = this._eventMutes.get(ev);
@@ -382,7 +382,7 @@ export class BeInspireTree<TNodePayload> {
     return (eventsToUnmute.length > 0);
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private doEmit = (events: BeInspireTreeEvent[]) => {
     events.forEach((e) => this._tree.emit(e));
   }
@@ -864,7 +864,7 @@ const wrapDataProvider = <TPayload>(tree: BeInspireTree<TPayload>, provider: BeI
     // method data provider
     return ((parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any, _reject: (err: Error) => any) => {
       const payload = nodeToPayload(parent);
-      // tslint:disable-next-line: no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       provider(payload).then(remapper.remapMany).then((nodes) => {
         onNodesDelayLoaded(parent, nodes);
         resolve(nodes, nodes.length);
@@ -1024,12 +1024,12 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
   }
 
   /** Called by inspire-tree through CallableInstance */
-  // tslint:disable-next-line:no-unused-variable
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private inspireLoad(parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any) {
     if (!this._paginationHelper) {
       // pagination is disabled - just load all nodes for the parent
       const payload = parent ? parent.payload : undefined;
-      // tslint:disable-next-line:no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._provider.getNodes(payload).then((payloads) => {
         const nodes = this._nodesRemapper.remapMany(payloads);
         onNodesDelayLoaded(parent, nodes);
@@ -1061,14 +1061,14 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
     if (!this._paginationHelper.hasOrWillHaveLoadedPages(parentId)) {
       // parent has no children yet - initiate a request and wait
       this._initialRequests.add(parentId);
-      this.requestNodeLoad(parent, 0).then(complete); // tslint:disable-line: no-floating-promises
+      this.requestNodeLoad(parent, 0).then(complete); // eslint-disable-line @typescript-eslint/no-floating-promises
     } else {
       complete();
     }
   }
 }
 interface WrappedInterfaceProvider<TPayload> {
-  // tslint:disable-next-line:callable-types
+  // eslint-disable-next-line @typescript-eslint/prefer-function-type
   (parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any): void;
 }
 

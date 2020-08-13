@@ -13,7 +13,7 @@ import { ParityRegion } from "./ParityRegion";
 import { Path } from "./Path";
 import { UnionRegion } from "./UnionRegion";
 
-/* tslint:disable:variable-name no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
 /** base class for detailed traversal of curve artifacts.
  * * This recurses to children in the quickest way (no records of path)

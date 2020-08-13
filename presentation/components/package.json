@@ -35,9 +35,7 @@
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-components/file.json --tsIndexFile=presentation-components.ts --onlyJson --excludeGlob=**/presentation-components.ts",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-components",
-    "lint": "npm run tslint && npm run eslint",
-    "eslint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "tslint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.{ts,tsx} 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
@@ -83,7 +81,6 @@
     "@types/testing-library__react-hooks": "^3.1.0",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
-    "@typescript-eslint/parser": "2.22.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
@@ -92,7 +89,7 @@
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "1.12.1",
     "enzyme-to-json": "^3.3.4",
-    "eslint": "^6.7.2",
+    "eslint": "^6.8.0",
     "eslint-plugin-react-hooks": "^3.0.0",
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
@@ -105,8 +102,6 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
     "typescript": "~3.7.4",
     "xmlhttprequest": "^1.8.0"
@@ -124,5 +119,8 @@
       "ignore-styles",
       "jsdom-global/register"
     ]
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

@@ -379,7 +379,7 @@ export class SkyBoxGeometryParams implements WebGLDisposable {
 }
 
 /** @internal */
-namespace SkyBoxQuads {
+namespace SkyBoxQuads { // eslint-disable-line no-redeclare
   let _skyBoxQuads: SkyBoxQuads | undefined;
 
   export function getInstance(): SkyBoxQuads {
@@ -470,7 +470,7 @@ class ViewportQuad {
 }
 
 /** @internal */
-namespace ViewportQuad {
+namespace ViewportQuad { // eslint-disable-line no-redeclare
   let _viewportQuad: ViewportQuad | undefined;
 
   export function getInstance(): ViewportQuad {

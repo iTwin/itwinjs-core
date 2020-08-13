@@ -19,7 +19,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 function makeLoop(range: Range2d, close: boolean, ySign: number = 1): GrowableXYZArray {
   const loop = new GrowableXYZArray();

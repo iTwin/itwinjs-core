@@ -11,6 +11,8 @@ import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bent
 import { AccessToken, IncludePrefix, SamlAccessToken } from "@bentley/itwin-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Configuration for [[OidcDelegationClient]]
  * @deprecated Use [[DelegationAuthorizationClientConfiguration]] instead
@@ -46,7 +48,7 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     requestContext.enter();
 
     const grantParams: GrantBody = {
-      grant_type: grantType,
+      grant_type: grantType, // eslint-disable-line @typescript-eslint/naming-convention
       scope: this._configuration.scope,
       assertion: accessToken.toTokenString(IncludePrefix.No),
     };
@@ -79,7 +81,7 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 
     const grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
     const params: GrantBody = {
-      grant_type: grantType,
+      grant_type: grantType, // eslint-disable-line @typescript-eslint/naming-convention
       scope: this._configuration.scope,
       assertion: accessToken.toTokenString(IncludePrefix.No),
     };

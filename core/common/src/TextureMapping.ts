@@ -31,7 +31,7 @@ export class TextureMapping {
 }
 
 /** @beta */
-export namespace TextureMapping {
+export namespace TextureMapping { // eslint-disable-line no-redeclare
   /** Enumerates the possible texture mapping modes. */
   export enum Mode {
     None = -1,

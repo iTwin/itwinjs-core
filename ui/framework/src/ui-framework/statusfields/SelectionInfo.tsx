@@ -61,5 +61,5 @@ function mapStateToProps(state: any) {
  * It is used to display the number of selected items based on the Presentation Rules Selection Manager.
  * This React component is Redux connected.
  * @public
- */ // tslint:disable-next-line:variable-name
+ */ // eslint-disable-next-line @typescript-eslint/naming-convention
 export const SelectionInfoField = connect(mapStateToProps)(SelectionInfoFieldComponent);

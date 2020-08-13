@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import "./_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
@@ -42,7 +41,7 @@ describe("Presentation", () => {
 
     it("throws when initialized before IModelApp.startup()", async () => {
       await shutdownIModelApp();
-      expect(Presentation.initialize()).to.be.rejectedWith(PresentationError, "IModelApp.startup");
+      expect(Presentation.initialize()).to.be.rejectedWith(PresentationError, "IModelApp.startup"); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
 
     it("creates manager instances", async () => {

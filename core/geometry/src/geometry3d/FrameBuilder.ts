@@ -14,7 +14,7 @@ import { CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
-/* tslint:disable:variable-name jsdoc-format no-empty */
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { AxisOrder, AxisScaleSelect, Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Matrix3d } from "./Matrix3d";
@@ -84,7 +84,7 @@ export class FrameBuilder {
     }
     return undefined;
   }
-  /**If vector0 is known but vector1 is not, make vector1 the cross of the up-vector and vector0 */
+  /** If vector0 is known but vector1 is not, make vector1 the cross of the up-vector and vector0 */
   public applyDefaultUpVector(vector?: Vector3d) {
     if (vector && this._vector0 && !this._vector1 && !vector.isParallelTo(this._vector0)) {
       this._vector1 = vector.crossProduct(this._vector0);

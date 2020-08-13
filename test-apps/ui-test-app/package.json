@@ -8,10 +8,10 @@
   "scripts": {
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
-    "build:frontend": "npm run pseudolocalize && cross-env GENERATE_SOURCEMAP=false react-scripts build",
+    "build:frontend": "npm run pseudolocalize && cross-env GENERATE_SOURCEMAP=false EXTEND_ESLINT=true react-scripts build",
     "clean": "rimraf lib build .rush/temp/package-deps*.json",
     "copy:assets": "cpx ./src/backend/web/BackendServer.config.json ./lib/backend/web",
-    "lint": "tslint -p . 1>&2",
+    "lint": "eslint --config package.json --no-eslintrc ./src/**/*.{ts,tsx} 1>&2",
     "start": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",
     "start:electron:prod": "cross-env NODE_ENV=production electron ./lib/backend/main.js",
@@ -62,12 +62,11 @@
     "dotenv": "^8.2.0",
     "dotenv-expand": "^5.1.0",
     "electron": "^8.2.1",
+    "eslint": "^6.8.0",
     "internal-tools": "0.0.0",
     "npm-run-all": "^4.1.5",
     "react-axe": "^3.5.3",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "fs-extra": "^8.1.0",
     "webpack": "4.42.0",
@@ -128,5 +127,14 @@
     "last 4 edge version",
     "not dead",
     "not <0.2%"
-  ]
+  ],
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js",
+    "parserOptions": {
+      "project": [
+        "tsconfig.json",
+        "tsconfig.backend.json"
+      ]
+    }
+  }
 }

@@ -19,7 +19,7 @@ import { TableDistinctValue } from "../../TableDataProvider";
 
 /** @internal */
 export interface AutoCompleteFilterProps {
-  onChange: (args: { filterTerm: any; column: ReactDataGridColumn; }) => void;
+  onChange: (args: { filterTerm: any, column: ReactDataGridColumn }) => void;
   column: ReactDataGridColumn;
   getValidFilterValues: (key: string) => any[];
   multiSelection?: boolean;

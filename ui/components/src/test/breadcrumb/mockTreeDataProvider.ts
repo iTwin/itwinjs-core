@@ -9,7 +9,6 @@ import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem,
 } from "../../ui-components";
 
-// tslint:disable: completed-docs
 
 export enum TreeDragTypes {
   Root = "root",
@@ -26,7 +25,7 @@ export interface DemoDragDropObject {
   parentId: string;
 }
 
-export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [
+export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [ // eslint-disable-line prefer-const
   {
     label: PropertyRecord.fromString("Interface Node 1"), id: "1", description: "First root node", icon: "icon-clipboard-cut", hasChildren: true,
     extendedData: {
@@ -207,7 +206,7 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
       if (!parent.extendedData || !parent.extendedData.children) return -1;
       nodes = parent.extendedData.children;
     }
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].id === node.id) {
         return i;

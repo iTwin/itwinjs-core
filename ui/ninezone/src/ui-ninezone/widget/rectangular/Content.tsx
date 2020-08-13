@@ -15,7 +15,7 @@ import { HorizontalAnchor, HorizontalAnchorHelpers } from "../Stacked";
 /** Properties of [[WidgetContent]] component.
  * @alpha
  */
-export interface WidgetContentProps extends CommonProps, NoChildrenProps { // tslint:disable-line: class-name
+export interface WidgetContentProps extends CommonProps, NoChildrenProps { // eslint-disable-line @typescript-eslint/naming-convention
   /** Describes to which side the widget of this content is anchored. */
   anchor: HorizontalAnchor;
   /** Content container ref. */

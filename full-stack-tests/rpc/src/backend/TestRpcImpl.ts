@@ -68,7 +68,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return val;
   }
 
-  public async op8(x: number, y: number): Promise<{ initializer: number; sum: number }> {
+  public async op8(x: number, y: number): Promise<{ initializer: number, sum: number }> {
     if (!op8Initializer) {
       op8Initializer = TestRpcInterface.OP8_INITIALIZER;
       throw new RpcPendingResponse(TestRpcInterface.OP8_PENDING_MESSAGE);

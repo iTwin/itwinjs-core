@@ -194,7 +194,7 @@ export class EventListener {
       existingSubscription = subscription;
       existingSubscription.listeners = new BeEvent<(event: IModelHubBaseEvent) => void>();
       deleteListener = subscription.listeners.addListener(listener);
-      this.getEvents(subscription); // tslint:disable-line:no-floating-promises
+      this.getEvents(subscription); // eslint-disable-line @typescript-eslint/no-floating-promises
     } else {
       deleteListener = subscription.listeners.addListener(listener);
     }

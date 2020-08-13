@@ -14,7 +14,7 @@ import { FloatingWidgetContext } from "./FloatingWidget";
 import { assert } from "../base/assert";
 
 /** @internal */
-export const SendBack = React.memo(function SendBack() { // tslint:disable-line: variable-name no-shadowed-variable
+export const SendBack = React.memo(function SendBack() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const floatingWidget = React.useContext(FloatingWidgetContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const title = useLabel("sendWidgetHomeTitle");

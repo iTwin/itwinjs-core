@@ -18,7 +18,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("ConvexClipPlaneSet", () => {
   it("HelloWorld", () => {

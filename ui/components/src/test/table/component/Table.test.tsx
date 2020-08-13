@@ -1235,7 +1235,7 @@ describe("Table", () => {
   describe("column drag and drop", async () => {
 
     beforeEach(async () => {
-      const DragDropTable = DragDropContext(TestBackend)(Table); // tslint:disable-line:variable-name
+      const DragDropTable = DragDropContext(TestBackend)(Table); // eslint-disable-line @typescript-eslint/naming-convention
       table = enzyme.mount(<DragDropTable
         dataProvider={dataProviderMock.object}
         onRowsLoaded={onRowsLoaded}

@@ -36,7 +36,7 @@ export enum ACSDisplayOptions {
   Dynamics = (1 << 4),
 }
 
-const enum ACSDisplaySizes {
+const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
   TriadSizeInches = 0.6,
   ArrowBaseStart = 0.3,
   ArrowBaseWidth = 0.2,

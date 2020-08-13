@@ -118,7 +118,7 @@ export enum ChangeFlag {
   DisplayStyle = 1 << 4,
   FeatureOverrideProvider = 1 << 5,
   ViewedCategoriesPerModel = 1 << 6,
-  ViewState = 1 << 7,
+  ViewState = 1 << 7, // eslint-disable-line no-shadow
   All = 0x0fffffff,
   Overrides = ChangeFlag.All & ~(ChangeFlag.ViewedModels | ChangeFlag.ViewState),
   Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
@@ -178,7 +178,7 @@ export class ChangeFlags {
 /** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
-  Geometry,
+  Geometry, // eslint-disable-line no-shadow
   /** Depth point from reality model within specified radius of pick point */
   Model,
   /** Depth point from ray projection to background map plane */
@@ -1730,7 +1730,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
-    if (this.featureOverrideProvider === provider) // tslint:disable-line:deprecation
+    if (this.featureOverrideProvider === provider) // eslint-disable-line deprecation/deprecation
       return;
 
     if (undefined === provider) {

@@ -10,3 +10,4 @@
 !tslint.json
 !tslint-docs.json
 !.nycrc
+!.eslintrc.js

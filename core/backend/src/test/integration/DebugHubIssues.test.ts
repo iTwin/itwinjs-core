@@ -14,6 +14,8 @@ import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSetToken, Phys
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
+/* eslint-disable no-console */
+
 // Useful utilities to download/upload test cases from/to iModelHub
 describe.skip("DebugHubIssues (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
@@ -56,7 +58,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelDir = path.join(iModelRootDir, iModelName);
     const changeSetsDbPathname = path.join(iModelRootDir, iModelName, `changeSets.db`);
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
-    HubUtility.dumpChangeSetsToDb(changeSetsDbPathname, changeSets, false /*=dumpColumns*/);
+    HubUtility.dumpChangeSetsToDb(changeSetsDbPathname, changeSets, false /* =dumpColumns */);
   }).timeout(100000000);
 
   it.skip("should be able to dump a specific change set to a Db", async () => {
@@ -68,7 +70,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     changeSets.forEach((changeSet) => {
       if (changeSet.index === changeSetIndex) {
         Logger.logInfo(HubUtility.logCategory, `Dumping change set`, () => ({ ...changeSet }));
-        HubUtility.dumpChangeSetToDb(changeSet.pathname, changeSetsDbPathname, true /*=dumpColumns*/);
+        HubUtility.dumpChangeSetToDb(changeSet.pathname, changeSetsDbPathname, true /* =dumpColumns */);
       }
     });
   }).timeout(100000000);
@@ -83,7 +85,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectName = "Brisbane Cross River Rail";
     const iModelName = "H366888";
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir, false /*=reDownload*/);
+    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir, false /* =reDownload */);
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
@@ -109,7 +111,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
       const version = versions[versions.length - 1];
       const changeSetId = version.changeSetId;
       const link = `${urlPrefix}?projectId=${projectId}&iModelId=${iModel.id}&ChangeSetId=${changeSetId}${urlSuffix}`;
-      console.log(`${iModel.name};${version.name};${link}`); // tslint:disable-line:no-console
+      console.log(`${iModel.name};${version.name};${link}`); // eslint-disable-line no-console
     }
   });
 
@@ -135,7 +137,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
     const link = `https://connect-imodelweb.bentley.com/imodeljs/?projectId=${myProjectId}&iModelId=${myIModelId}`;
-    console.log(`ProjectName: ${projectName}, iModelName: ${iModelName}, URL Link: ${link}`); // tslint:disable-line:no-console
+    console.log(`ProjectName: ${projectName}, iModelName: ${iModelName}, URL Link: ${link}`); // eslint-disable-line no-console
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.validateAllChangeSetOperations(requestContext, myProjectId, myIModelId, iModelDir);
@@ -172,14 +174,14 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
     const uploadedIModelName = destIModelName || srcIModelName;
     if (await iModelExists(projectId, uploadedIModelName)) {
-      console.log(`Found test iModel ${uploadedIModelName}. Not uploading it again.`); // tslint:disable-line:no-console
+      console.log(`Found test iModel ${uploadedIModelName}. Not uploading it again.`); // eslint-disable-line no-console
       return;
     }
 
     const iModelDir = path.join(iModelRootDir, srcIModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, uploadedIModelName);
-    console.log(`Uploaded test iModel ${srcIModelName} to ${uploadedIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    console.log(`Uploaded test iModel ${srcIModelName} to ${uploadedIModelName}: ${iModelId}`); // eslint-disable-line no-console
   };
 
   it.skip("should be able to upload required test files to the Hub", async () => {
@@ -194,9 +196,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
     for (const testIModel of testIModels) {
       const iModelName = testIModel.dest || testIModel.src;
       const iModelDir = path.join(iModelRootDir, iModelName);
-      console.log(`Downloading test iModel ${iModelName} to ${iModelDir}`); // tslint:disable-line:no-console
-      await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir, true /*=reDownload*/);
-      console.log(`Download of test iModel ${iModelName} complete`); // tslint:disable-line:no-console
+      console.log(`Downloading test iModel ${iModelName} to ${iModelDir}`); // eslint-disable-line no-console
+      await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir, true /* =reDownload */);
+      console.log(`Download of test iModel ${iModelName} complete`); // eslint-disable-line no-console
     }
   });
 
@@ -266,19 +268,19 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
     const users: HubUserInfo[] = await BriefcaseManager.imodelClient.users.get(requestContext, myIModelId, new UserInfoQuery().select("*"));
     for (const user of users) {
-      console.log(`iModel ${projectName}:${iModelName} (${myIModelId}) was accessed by these users:`); // tslint:disable-line
-      console.log(`${user.email}: ${user.id}`); // tslint:disable-line
+      console.log(`iModel ${projectName}:${iModelName} (${myIModelId}) was accessed by these users:`); // eslint-disable-line
+      console.log(`${user.email}: ${user.id}`); // eslint-disable-line
     }
   });
 
   it.skip("display all test user ids", async () => {
     let token = await TestUtility.getAccessToken(TestUsers.regular);
-    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // eslint-disable-line
     token = await TestUtility.getAccessToken(TestUsers.manager);
-    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // eslint-disable-line
     token = await TestUtility.getAccessToken(TestUsers.super);
-    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // eslint-disable-line
     token = await TestUtility.getAccessToken(TestUsers.superManager);
-    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // eslint-disable-line
   });
 });

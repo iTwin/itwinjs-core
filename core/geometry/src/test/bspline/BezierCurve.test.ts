@@ -30,7 +30,7 @@ function exercise1dNdBase(ck: Checker, curve: Bezier1dNd) {
   const pointB = curve.getPolygonPoint(1, pointA);
   ck.testTrue(pointA === pointB, "reuse buffer");
 }
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 describe("BsplineCurve", () => {
 
   it("PoleQueries", () => {

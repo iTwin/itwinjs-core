@@ -146,7 +146,7 @@ describe("RulesetTesting", () => {
   });
 
   // VSTS#156270
-  // tslint:disable-next-line:only-arrow-functions
+  // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
   it.skip("generates correct content", async function () {
     const ruleset: Ruleset = {
       id: "test",

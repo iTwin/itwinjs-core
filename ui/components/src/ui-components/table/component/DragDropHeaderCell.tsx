@@ -16,7 +16,7 @@ import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSour
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 import { ColumnDragLayer } from "./ColumnDragLayer";
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const HeaderCell = (RDG && (RDG as any).HeaderCell); // react-data-grid @types does not support the HeaderCell export, but it is exported in the js-only library.
 
 /** @internal */
@@ -36,7 +36,7 @@ interface HeaderWrapperProps extends CommonProps {
 
 class HeaderWrapper extends React.Component<HeaderWrapperProps> {
   public render(): React.ReactNode {
-    const { type, item, isOver, isDragging, canDrag, canDrop, ...props } = this.props as HeaderWrapperProps;
+    const { type, item, isOver, isDragging, canDrag, canDrop, ...props } = this.props as HeaderWrapperProps; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     let mode = 0;
     if (item && item.clientOffset && item.initialClientOffset) {
@@ -64,7 +64,7 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
 }
 
 /** @internal */
-export const DragDropHeaderWrapper: DndComponentClass<HeaderWrapperProps & WithDropTargetProps<any> & WithDragSourceProps<any>> = withDragSource(withDropTarget(HeaderWrapper)); // tslint:disable-line:variable-name
+export const DragDropHeaderWrapper: DndComponentClass<HeaderWrapperProps & WithDropTargetProps<any> & WithDragSourceProps<any>> = withDragSource(withDropTarget(HeaderWrapper)); // eslint-disable-line @typescript-eslint/naming-convention
 
 // Used only internally in ./Table.tsx
 /** @internal */

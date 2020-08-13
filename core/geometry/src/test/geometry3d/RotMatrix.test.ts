@@ -14,7 +14,7 @@ import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 // cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT
 
 function verifyInverseGo(ck: Checker, matrixA: Matrix3d) {

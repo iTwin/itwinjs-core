@@ -9,7 +9,7 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { Settings } from "../common/Settings";
 import { exposeBackendCallbacks } from "../common/SideChannels";
 
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
 module.exports = (async () => {
   IModelJsConfig.init(true, true, Config.App);

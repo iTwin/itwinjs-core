@@ -111,7 +111,7 @@ export interface ToolbarOverflowContextProps {
  * Context used by Toolbar component to provide Direction to child components.
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ToolbarWithOverflowDirectionContext = React.createContext<ToolbarOverflowContextProps>({
   expandsTo: Direction.Bottom,
   direction: OrthogonalDirection.Horizontal,
@@ -280,7 +280,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
         return;
       setPopupPanelCount((prev) => {
         const nextCount = isOpening ? (prev + 1) : (prev - 1);
-        // tslint:disable-next-line: no-console
+        // eslint-disable-next-line no-console
         // console.log(`new popup count = ${nextCount}`);
         return nextCount < 0 ? 0 : nextCount;
       });
@@ -579,7 +579,7 @@ export interface ToolbarItemContextArgs {
 /** Interface toolbars use to define context for its items.
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ToolbarItemContext = React.createContext<ToolbarItemContextArgs>(null!);
 
 /** @internal */

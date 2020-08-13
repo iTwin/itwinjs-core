@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/express-server"
+    }
+  ],
+  "packageName": "@bentley/express-server",
+  "email": "paulius.valiunas@bentley.com"
+}

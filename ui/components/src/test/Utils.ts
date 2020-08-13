@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 
-// tslint:disable: completed-docs
 
 export const createRect = (left: number, top: number, right: number, bottom: number): ClientRect => ({
   left,
@@ -54,7 +53,7 @@ export const createDOMRect = (args?: { width?: number, height?: number }): DOMRe
   };
 };
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class ResizeObserverMock implements ResizeObserver {
   public constructor(public readonly callback: ResizeObserverCallback) {
   }
@@ -71,7 +70,7 @@ export class ResizeObserverMock implements ResizeObserver {
 
 declare module "sinon" {
   interface SinonStubStatic {
-    // tslint:disable-next-line: callable-types
+    // eslint-disable-next-line @typescript-eslint/prefer-function-type
     <T extends (...args: any) => any>(): sinon.SinonStub<Parameters<T>, ReturnType<T>>;
   }
 }

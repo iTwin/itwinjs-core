@@ -17,7 +17,7 @@ import { SpecialKey } from "@bentley/ui-abstract";
 // TODO: implement
 /** @internal */
 export enum SplitButtonActionType {
-  ContextMenu,
+  ContextMenu, // eslint-disable-line no-shadow
   List,
 }
 

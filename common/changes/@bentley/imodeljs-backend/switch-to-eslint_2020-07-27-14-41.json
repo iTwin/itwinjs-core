@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/imodeljs-backend"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "paulius.valiunas@bentley.com"
+}

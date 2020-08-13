@@ -149,7 +149,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
           {!this.state.showDetails && this.renderThumbnails(filteredIModels)}
           {this.state.showDetails && this.renderList(filteredIModels)}
           {filteredIModels.length === 0 &&
-            <span className="cards-noresults fade-in-fast">No matches found for '{this.state.filter}'.</span>
+            <span className="cards-noresults fade-in-fast">No matches found for &apos;{this.state.filter}&apos;.</span>
           }
         </div>
       );

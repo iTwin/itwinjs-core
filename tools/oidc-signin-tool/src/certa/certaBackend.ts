@@ -13,7 +13,7 @@ import { getTokenCallbackName, serializeToken } from "./certaCommon";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in.
 
-// tslint:disable no-console
+/* eslint-disable no-console */
 
 IModelJsConfig.init(true, true, Config.App);
 

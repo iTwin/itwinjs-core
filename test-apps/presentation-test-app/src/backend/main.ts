@@ -13,10 +13,10 @@ import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-comm
 import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
 import rpcs from "../common/Rpcs";
 // __PUBLISH_EXTRACT_END__
-import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend"; // tslint:disable-line:no-duplicate-imports
+import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend"; // eslint-disable-line no-duplicate-imports
 
-(async () => { // tslint:disable-line:no-floating-promises
-  IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+  IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
   // initialize logging
   Logger.initializeToConsole();
@@ -49,5 +49,5 @@ import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCateg
   // do initialize
   init(rpcs);
 
-  console.log(`Process ID: ${process.pid}`);
+  console.log(`Process ID: ${process.pid}`); // eslint-disable-line no-console
 })();

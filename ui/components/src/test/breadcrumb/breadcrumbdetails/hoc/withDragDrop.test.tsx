@@ -17,7 +17,7 @@ import { mockRawTreeDataProvider } from "../../mockTreeDataProvider";
 
 describe("Breadcrumb Details withDragDrop HOC", () => {
 
-  const DragDropBreadcrumbDetails = withBreadcrumbDetailsDragDrop(BreadcrumbDetails); // tslint:disable-line:variable-name
+  const DragDropBreadcrumbDetails = withBreadcrumbDetailsDragDrop(BreadcrumbDetails); // eslint-disable-line @typescript-eslint/naming-convention
 
   afterEach(cleanup);
 

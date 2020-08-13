@@ -35,9 +35,7 @@
     "ruleset-json-schema": "npm run ruleset-json-schema:generate && npm run ruleset-json-schema:post-process",
     "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks --include ./src/presentation-common/rules/**/*.ts --include ./src/presentation-common/rules/*.ts -- ./tsconfig.json Ruleset > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
-    "lint": "npm run tslint && npm run eslint",
-    "eslint": "eslint src --ext .ts,.js",
-    "tslint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/assets/locales/en-PSEUDO",
     "pseudolocalize:public": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
@@ -60,14 +58,13 @@
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "@types/source-map-support": "^0.4.0",
-    "@typescript-eslint/parser": "2.22.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "cpx": "^1.5.0",
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
-    "eslint": "^6.7.2",
+    "eslint": "^6.8.0",
     "eslint-plugin-react-hooks": "^3.0.0",
     "faker": "^4.1.0",
     "json-schema-faker": "0.5.0-rc16",
@@ -76,9 +73,6 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
-    "tslint": "^5.11.0",
-    "tslint-consistent-codestyle": "^1.11.0",
-    "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
     "typescript": "~3.7.4",
     "typescript-json-schema": "^0.28.0",
@@ -91,5 +85,8 @@
     "functions": 100,
     "branches": 100,
     "lines": 100
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

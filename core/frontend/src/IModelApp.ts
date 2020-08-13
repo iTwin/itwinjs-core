@@ -51,7 +51,7 @@ import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 import { MapLayerFormatRegistry } from "./tile/map/MapLayerFormatRegistry";
 
-// tslint:disable-next-line: no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("./IModeljs-css");
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
@@ -293,7 +293,7 @@ export class IModelApp {
    * @internal
    */
   public static registerModuleEntities(moduleObj: any) {
-    for (const thisMember in moduleObj) { // tslint:disable-line: forin
+    for (const thisMember in moduleObj) { // eslint-disable-line guard-for-in
       const thisEntityState = moduleObj[thisMember];
       if (thisEntityState.prototype instanceof EntityState) {
         this.registerEntityState(thisEntityState.classFullName, thisEntityState);
@@ -512,11 +512,11 @@ export class IModelApp {
       return;
 
     try {
-      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+      IModelApp.toolAdmin.processEvent(); // eslint-disable-line @typescript-eslint/no-floating-promises
       IModelApp.viewManager.renderLoop();
       IModelApp.tileAdmin.process();
     } catch (exception) {
-      ToolAdmin.exceptionHandler(exception); // tslint:disable-line:no-floating-promises
+      ToolAdmin.exceptionHandler(exception); // eslint-disable-line @typescript-eslint/no-floating-promises
 
       IModelApp._wantEventLoop = false;
       IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.
@@ -600,15 +600,15 @@ export class IModelApp {
    */
   public static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
     /** The parent for the new HTMLElement */
-    parent?: HTMLElement,
+    parent?: HTMLElement;
     /** The className for the new HTMLElement */
-    className?: string,
+    className?: string;
     /** The Id for the new HTMLElement */
-    id?: string,
+    id?: string;
     /** innerHTML for the new HTMLElement */
-    innerHTML?: string,
+    innerHTML?: string;
     /** innerText for the new HTMLElement */
-    innerText?: string,
+    innerText?: string;
   }) {
     const el = document.createElement(type);
     if (undefined !== opt) {
@@ -678,13 +678,13 @@ export class IModelApp {
   public static makeLogoCard(
     opts: {
       /** The heading to be put at the top of this logo card inside an <h2>. May include HTML. */
-      heading: string | HTMLElement,
+      heading: string | HTMLElement;
       /** The URL or HTMLImageElement for the icon on this logo card. */
       iconSrc?: string | HTMLImageElement;
       /** The width of the icon, if `iconSrc` is a string. Default is 64. */
       iconWidth?: number;
       /** A *notice* string to be shown on the logo card. May include HTML.  */
-      notice?: string | HTMLElement
+      notice?: string | HTMLElement;
     }): HTMLTableRowElement {
     const card = IModelApp.makeHTMLElement("tr");
     const iconCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-logo" });

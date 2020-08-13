@@ -73,7 +73,7 @@ export class RpcPendingQueue {
         continue;
       }
 
-      request.submit(); // tslint:disable-line:no-floating-promises
+      request.submit(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
 
     --this._pendingLock;

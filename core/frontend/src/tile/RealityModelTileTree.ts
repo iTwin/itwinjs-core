@@ -82,7 +82,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
     else if (undefined === rhs.transform)
       return 1;
 
-    const l = lhs.transform!, r = rhs.transform!;
+    const l = lhs.transform, r = rhs.transform;
     cmp = compareOrigins(l.origin, r.origin);
     return 0 !== cmp ? cmp : compareMatrices(l.matrix, r.matrix);
   }
@@ -346,7 +346,7 @@ export class RealityModelTileTree extends RealityTileTree {
 }
 
 /** @internal */
-export namespace RealityModelTileTree {
+export namespace RealityModelTileTree { // eslint-disable-line no-redeclare
   export interface ReferenceProps {
     url: string;
     iModel: IModelConnection;
@@ -532,7 +532,7 @@ export class RealityModelTileClient {
   constructor(url: string, accessToken?: AccessToken, contextId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (contextId && this.rdsProps)
-      this.rdsProps!.projectId = contextId;
+      this.rdsProps.projectId = contextId;
     this._token = accessToken;
   }
 
@@ -547,7 +547,7 @@ export class RealityModelTileClient {
         requestContext.enter();
 
         // A reality data that has not root document set should not be considered.
-        const rootDocument: string = (this._realityData!.rootDocument ? this._realityData!.rootDocument as string : "");
+        const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument as string : "");
         this.setBaseUrl(rootDocument);
       }
     }
@@ -601,7 +601,7 @@ export class RealityModelTileClient {
       await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
       authRequestContext.enter();
 
-      return this._realityData!.getRootDocumentJson(authRequestContext);
+      return this._realityData!.getRootDocumentJson(authRequestContext); // _realityData can't be undefined after initializeRDSRealityData
     }
 
     // The following is only if the reality data is not stored on PW Context Share.
@@ -624,7 +624,7 @@ export class RealityModelTileClient {
 
     const tileUrl = this._baseUrl + url;
     if (undefined !== this.rdsProps && undefined !== this._token)
-      return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl);
+      return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl); // _realityData can't be undefined after initializeRDSRealityData
 
     return getArrayBuffer(requestContext, tileUrl);
   }
@@ -644,7 +644,7 @@ export class RealityModelTileClient {
     const tileUrl = this._baseUrl + url;
 
     if (undefined !== this.rdsProps && undefined !== this._token)
-      return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
+      return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl); // _realityData can't be undefined after initializeRDSRealityData
 
     return getJson(requestContext, tileUrl);
   }

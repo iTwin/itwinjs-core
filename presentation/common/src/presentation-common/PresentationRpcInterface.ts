@@ -129,7 +129,7 @@ export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<Pr
  */
 export class PresentationRpcInterface extends RpcInterface {
   /** The immutable name of the interface. */
-  public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
+  public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 
   /** The semantic version of the interface. */
   public static interfaceVersion = "2.5.0";

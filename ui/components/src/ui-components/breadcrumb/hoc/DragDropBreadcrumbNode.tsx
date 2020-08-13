@@ -13,7 +13,7 @@ import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSour
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /** @internal */
 export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTMLSpanElement> {
@@ -27,7 +27,7 @@ export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTM
 /** @internal */
 export class DragDropBreadcrumbNodeComponent extends React.Component<DragDropBreadcrumbNodeProps> {
   public render() {
-    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropBreadcrumbNodeProps;
+    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropBreadcrumbNodeProps; // eslint-disable-line @typescript-eslint/no-unused-vars
     const classes = classnames(
       "components-breadcrumb-drop-target",
       {

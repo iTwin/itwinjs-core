@@ -264,7 +264,7 @@ export abstract class TileAdmin {
 }
 
 /** @alpha */
-export namespace TileAdmin {
+export namespace TileAdmin { // eslint-disable-line no-redeclare
   /** Statistics regarding the current and cumulative state of the [[TileAdmin]]. Useful for monitoring performance and diagnosing problems.
    * @alpha
    */
@@ -785,6 +785,7 @@ class Admin extends TileAdmin {
           this._totalAbortedRequests += contentIds.length;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.getRpcProps(), treeContentIds);
       }
 

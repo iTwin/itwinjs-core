@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
@@ -22,7 +21,7 @@ import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } f
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 
-// tslint:disable-next-line:variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const PresentationTable = tableWithUnifiedSelection(Table);
 
 describe("Table withUnifiedSelection", () => {
@@ -34,8 +33,8 @@ describe("Table withUnifiedSelection", () => {
 
   before(() => {
     // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
-    // tslint:disable-next-line:no-string-literal
-    if (Symbol["asyncIterator"] === undefined) ((Symbol as any)["asyncIterator"]) = Symbol.for("asyncIterator");
+    // eslint-disable-next-line dot-notation
+    if (Symbol.asyncIterator === undefined) ((Symbol as any).asyncIterator) = Symbol.for("asyncIterator");
   });
 
   beforeEach(() => {
@@ -120,7 +119,7 @@ describe("Table withUnifiedSelection", () => {
 
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
     presentationManagerMock
-      .setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny()))
+      .setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny())) // eslint-disable-line deprecation/deprecation
       .returns(async () => undefined);
     Presentation.setPresentationManager(presentationManagerMock.object);
 
@@ -261,7 +260,7 @@ describe("Table withUnifiedSelection", () => {
           isRowSelected={callback.object}
         />);
 
-        const propCallback = table.find(Table).prop("isRowSelected") as ((row: RowItem) => boolean);
+        const propCallback = table.find(Table).prop("isRowSelected") as ((node: RowItem) => boolean);
         const actualResult = propCallback(row);
 
         callback.verifyAll();
@@ -279,7 +278,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={selectionLevel}
         />, { disableLifecycleMethods: true });
 
-        const propCallback = component.find(Table).prop("isRowSelected") as ((row: RowItem) => boolean);
+        const propCallback = component.find(Table).prop("isRowSelected") as ((node: RowItem) => boolean);
         const result = propCallback(row);
         expect(result).to.be.false;
       });
@@ -297,7 +296,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={selectionLevel}
         />);
 
-        const propCallback = component.find(Table).prop("isRowSelected") as ((row: RowItem) => boolean);
+        const propCallback = component.find(Table).prop("isRowSelected") as ((node: RowItem) => boolean);
         const result = propCallback(row);
         expect(result).to.be.true;
       });

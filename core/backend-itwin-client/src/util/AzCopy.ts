@@ -11,6 +11,8 @@ import { EventEmitter } from "events";
 import * as fs from "fs";
 import * as semver from "semver";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /** Integerity check constraint
  * @internal
  */

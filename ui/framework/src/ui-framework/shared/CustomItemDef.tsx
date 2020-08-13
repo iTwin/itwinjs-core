@@ -47,7 +47,7 @@ export class CustomItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    if (!this.isVisible || ConditionalBooleanValue.getValue(this.isHidden)) // tslint:disable-line:deprecation
+    if (!this.isVisible || ConditionalBooleanValue.getValue(this.isHidden)) // eslint-disable-line deprecation/deprecation
       return null;
 
     let clone: React.ReactNode;

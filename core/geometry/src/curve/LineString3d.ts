@@ -30,7 +30,7 @@ import { LineSegment3d } from "./LineSegment3d";
 import { StrokeCountMap } from "./Query/StrokeCountMap";
 import { StrokeOptions } from "./StrokeOptions";
 
-/* tslint:disable:variable-name no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
 /* Starting with baseIndex and moving index by stepDirection:
 If the vector from baseIndex to baseIndex +1 crossed with vectorA can be normalized, accumulate it (scaled) to normal.
@@ -591,7 +591,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
 
     if (n === 2)
       return Transform.createRefs(
-        this._points.interpolate(0, fraction, 1)!,
+        this._points.interpolate(0, fraction, 1),
         Matrix3d.createRigidHeadsUp(this._points.vectorIndexIndex(0, 1)!, AxisOrder.XYZ));
 
     /** 3 or more points. */
@@ -1218,7 +1218,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       points.getPoint3dAtUncheckedPointIndex(0, pointA);
       for (let k = 0; k + 1 < numParentPoint; k++, pointA.setFromPoint3d(pointB)) {
         points.getPoint3dAtUncheckedPointIndex(k + 1, pointB);
-        const segmentMap = map.componentData![k];
+        const segmentMap = map.componentData[k];
         const m = segmentMap.numStroke;
         const vectorAB = pointA.vectorTo(pointB);
         vectorAB.scale(m);

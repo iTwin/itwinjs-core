@@ -12,7 +12,7 @@
     "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/locales/**/*\" ./lib/extension/locales/",
     "cover": "",
     "docs": "",
-    "lint": "tslint -p . 1>&2",
+    "lint": "eslint ./src/**/*.{ts,tsx} 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
     "test": ""
   },
@@ -36,6 +36,7 @@
     "@types/react-beautiful-dnd": "^12.1.2",
     "cpx": "^1.5.0",
     "rimraf": "^3.0.2",
+    "eslint": "^6.8.0",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
@@ -59,5 +60,8 @@
     "react-dom": "^16.8.0",
     "react-beautiful-dnd": "^13.0.0",
     "react-select": "^3.0.4"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

@@ -111,7 +111,7 @@ export class RulesetEmbedder {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();
         const rulesetElement = this._imodel.elements.getElement({ id: row.id }) as RulesetElements.Ruleset;
-        const ruleset = rulesetElement.jsonProperties.jsonProperties as Ruleset;
+        const ruleset = rulesetElement.jsonProperties.jsonProperties;
         rulesetList.push(ruleset);
       }
     });
@@ -185,7 +185,7 @@ export class RulesetEmbedder {
       classFullName: DefinitionPartition.classFullName,
     };
     const id = this._imodel.elements.insertElement(definitionPartitionProps);
-    return this._imodel.elements.getElement(id) as DefinitionPartition;
+    return this._imodel.elements.getElement(id);
   }
 
   private insertSubject(): Subject {
@@ -206,7 +206,7 @@ export class RulesetEmbedder {
       code: subjectCode,
     };
     const id = this._imodel.elements.insertElement(subjectProps);
-    return this._imodel.elements.getElement(id) as Subject;
+    return this._imodel.elements.getElement(id);
   }
 
   private insertCodeSpecs(): void {

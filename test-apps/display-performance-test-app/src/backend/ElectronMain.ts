@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as electron from "electron";
 import * as path from "path";
-import { IModelJsElectronManager, StandardElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
+import { IModelJsElectronManager } from "@bentley/electron-manager";
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { getRpcInterfaces, initializeBackend } from "./backend";
 
-(async () => { // tslint:disable-line:no-floating-promises
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   // --------------------------------------------------------------------------------------
   // ------- Initialization and setup of host and tools before starting app ---------------
 

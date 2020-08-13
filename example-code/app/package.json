@@ -11,7 +11,7 @@
     "copy:test-backend-assets": "cpx \"./src/backend/test/assets/**/*\" ./lib/backend/test/assets",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "npm run extract && npm run extract-assets",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && betools test --defineWindow --testDir=\"./lib/backend/test\"",
     "cover": "npm test"
   },
@@ -55,11 +55,13 @@
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
     "mocha": "^5.2.0",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "xmlhttprequest": "^1.8.0"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

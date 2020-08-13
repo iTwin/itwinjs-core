@@ -21,7 +21,7 @@ const argv: yargs.Arguments<{}> = yargs
   .demandOption(["input", "output"])
   .argv;
 
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
   Logger.initializeToConsole();
 
@@ -34,4 +34,4 @@ const argv: yargs.Arguments<{}> = yargs
   }
 
   await IModelHost.shutdown();
-})(); // tslint:disable-line:no-floating-promises
+})();

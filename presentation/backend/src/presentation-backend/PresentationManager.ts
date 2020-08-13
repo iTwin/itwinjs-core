@@ -280,11 +280,11 @@ export class PresentationManager {
     return new RulesetVariablesManagerImpl(this.getNativePlatform, rulesetId);
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onIModelOpened = (requestContext: ClientRequestContext, imodel: BriefcaseDb) => {
     requestContext.enter();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    // tslint:disable-next-line:no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getNativePlatform().forceLoadSchemas(imodelAddon);
   }
 
@@ -579,8 +579,8 @@ export class PresentationManager {
    */
   public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
     const [size, content] = await Promise.all<number, Content | undefined>([
-      this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys), // tslint:disable-line:deprecation
-      this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys), // tslint:disable-line:deprecation
+      this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys), // eslint-disable-line deprecation/deprecation
+      this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys), // eslint-disable-line deprecation/deprecation
     ]);
     return { content, size };
   }
@@ -735,7 +735,7 @@ export class PresentationManager {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.computeSelection({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, ids: deprecatedIds!, scopeId: deprecatedScopeId! });
     }
-    const { requestContext, ids, scopeId, ...requestOptions } = requestContextOrOptions;
+    const { requestContext, ids, scopeId, ...requestOptions } = requestContextOrOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
     return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId);
   }
 

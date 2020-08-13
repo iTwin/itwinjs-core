@@ -33,13 +33,13 @@ export interface ContentModifiersList {
    * Specifications for customizing property display by hiding / showing them
    * @deprecated Use `propertyOverrides` attribute instead. Will be removed in iModel.js 3.0
    */
-  propertiesDisplay?: DEPRECATED_PropertiesDisplaySpecification[]; // tslint:disable-line:deprecation
+  propertiesDisplay?: DEPRECATED_PropertiesDisplaySpecification[]; // eslint-disable-line deprecation/deprecation
 
   /**
    * Specifications for assigning property editors
    * @deprecated Use `propertyOverrides` attribute instead. Will be removed in iModel.js 3.0
    */
-  propertyEditors?: DEPRECATED_PropertyEditorsSpecification[]; // tslint:disable-line:deprecation
+  propertyEditors?: DEPRECATED_PropertyEditorsSpecification[]; // eslint-disable-line deprecation/deprecation
 
   /**
    * Specifications for custom categories. Simply defining the categories does

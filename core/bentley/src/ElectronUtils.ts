@@ -17,7 +17,7 @@ function electronRendererFn() {
   if (isElectronRenderer) {
     // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
     try {
-      return require("electron"); // tslint:disable-line:no-var-requires
+      return require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
     } catch (error) { }
   }
   return undefined;

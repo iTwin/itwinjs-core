@@ -86,7 +86,7 @@ export class PlaneByOriginAndVectors4d {
   public fractionToPoint(u: number, v: number, result?: Point4d): Point4d {
     return this.origin.plus2Scaled(this.vectorU, u, this.vectorV, v, result);
   }
-/** create a new plane which maps to the cartesian xy plane. */
+  /** create a new plane which maps to the cartesian xy plane. */
   public static createXYPlane(result?: PlaneByOriginAndVectors4d): PlaneByOriginAndVectors4d {
     return PlaneByOriginAndVectors4d.createOriginAndVectorsXYZW(0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, result);
   }

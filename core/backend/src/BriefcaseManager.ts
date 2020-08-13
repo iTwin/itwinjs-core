@@ -13,7 +13,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import {
-  Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, ConflictingCodesError, HubCode,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, ConflictingCodesError, Briefcase as HubBriefcase, HubCode,
   HubIModel, IModelBankClient, IModelClient, IModelHubClient, IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
@@ -90,7 +90,7 @@ export class BriefcaseEntry {
     this.pathname = pathname;
     this.syncMode = syncMode;
     this.openMode = openMode;
-    this.openParams = new OpenParams(openMode, syncMode); // tslint:disable-line:deprecation
+    this.openParams = new OpenParams(openMode, syncMode); // eslint-disable-line deprecation/deprecation
     this.briefcaseId = briefcaseId;
   }
 
@@ -134,7 +134,7 @@ export class BriefcaseEntry {
   public openMode: OpenMode;
 
   /** Params used to open the briefcase */
-  public openParams: OpenParams; // tslint:disable-line:deprecation
+  public openParams: OpenParams; // eslint-disable-line deprecation/deprecation
 
   /** Id of the last change set that was applied to the briefcase after it was reversed.
    * Undefined if no change sets have been reversed.

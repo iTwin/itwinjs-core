@@ -316,7 +316,7 @@ export class ModelPicker extends IdPicker {
   protected get _showIn2d() { return false; }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) {
     if (enabled)
-      this._vp.addViewedModels(ids); // tslint:disable-line no-floating-promises
+      this._vp.addViewedModels(ids); // eslint-disable-line @typescript-eslint/no-floating-promises
     else
       this._vp.changeModelDisplay(ids, enabled);
   }

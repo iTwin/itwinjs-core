@@ -31,6 +31,8 @@ import { RulesetManager } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
 
+/* eslint-disable @typescript-eslint/promise-function-async */
+
 describe("PresentationRpcImpl", () => {
 
   afterEach(() => {
@@ -62,7 +64,7 @@ describe("PresentationRpcImpl", () => {
     let testData: any;
     let defaultRpcParams: { clientId: string };
     let impl: PresentationRpcImpl;
-    let stub_IModelDb_findByKey: sinon.SinonStub<[string], IModelDb>; // tslint:disable-line: variable-name
+    let stub_IModelDb_findByKey: sinon.SinonStub<[string], IModelDb>; // eslint-disable-line @typescript-eslint/naming-convention
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
     const rulesetsMock = moq.Mock.ofType<RulesetManager>();
     const variablesMock = moq.Mock.ofType<RulesetVariablesManager>();

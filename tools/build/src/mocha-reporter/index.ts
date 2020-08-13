@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable:variable-name
-// tslint:disable:no-var-requires
-// tslint:disable:no-console
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable no-console */
 import * as path from "path";
 
 const fs = require("fs-extra")

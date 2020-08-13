@@ -117,7 +117,7 @@ export class TestBridgePhysicalElement extends PhysicalElement implements TestBr
 
 }
 
-export namespace TestBridgePhysicalElement {
+export namespace TestBridgePhysicalElement { // eslint-disable-line no-redeclare
   export enum CasingMaterialType {
     Invalid,
     RedPlastic,

@@ -613,7 +613,7 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
 export class FaceCell extends React.Component<FaceCellProps> {
   private _startMouse: Point2d | undefined;
   public render(): React.ReactNode {
-    const { center, children, onFaceCellClick, onFaceCellHoverChange, hoverMap, face, vector, ...props } = this.props;
+    const { center, children, onFaceCellClick, onFaceCellHoverChange, hoverMap, face, vector, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const { x, y, z } = vector;
     const n = `${x}-${y}-${z}`;
     const hover = hoverMap[n] === CubeHover.Hover;
@@ -717,7 +717,7 @@ interface PointerProps extends React.AllHTMLAttributes<HTMLDivElement> {
 
 class PointerButton extends React.Component<PointerProps> {
   public render(): React.ReactNode {
-    const { visible, pointerType, onArrowClick, title, ...props } = this.props;
+    const { visible, pointerType, onArrowClick, title, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const classes = classnames(
       "cube-pointer", "icon",
       pointerClass[pointerType],

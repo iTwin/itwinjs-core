@@ -22,7 +22,7 @@ export interface WithIsPressedProps {
  * @public
  */
 export const withIsPressed = <ComponentProps extends {}>(
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
 ) => {
   return class WithIsPressed extends React.PureComponent<ComponentProps & WithIsPressedProps> {
@@ -46,6 +46,7 @@ export const withIsPressed = <ComponentProps extends {}>(
     }
 
     public render() {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { isPressed, onIsPressedChange, ...props } = this.props; // todo: better solution to rest object of intersected type
       return (
         // eslint-disable-next-line jsx-a11y/no-static-element-interactions

@@ -172,6 +172,7 @@ describe("ContentBuilder", () => {
       rulesetManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (ruleset) => new RegisteredRuleset(ruleset, Guid.createValue(), () => { }));
       presentationManagerMock.reset();
       presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManagerMock.object);
+      // eslint-disable-next-line deprecation/deprecation
       presentationManagerMock.setup(async (manager) => manager.getContent(moq.It.isAny())).returns(getEmptyContent);
       presentationManagerMock.setup((x) => x.onIModelContentChanged).returns(() => new BeEvent());
       Presentation.setPresentationManager(presentationManagerMock.object);

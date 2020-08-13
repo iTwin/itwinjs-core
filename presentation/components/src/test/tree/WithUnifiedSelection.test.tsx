@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
@@ -28,9 +27,9 @@ import {
 } from "../../presentation-components/tree/WithUnifiedSelection";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable-next-line:variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const PresentationTree = treeWithUnifiedSelection(Tree);
 
 describe("Tree withUnifiedSelection", () => {
@@ -75,8 +74,8 @@ describe("Tree withUnifiedSelection", () => {
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
     providerMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => (n as any)[PRESENTATION_TREE_NODE_KEY]);
-    providerMock.setup((x) => x.getNodes(moq.It.isAny())).returns(async (p) => p ? childNodes!(p) : rootNodes!());
-    providerMock.setup((x) => x.getNodesCount(moq.It.isAny())).returns(async (p) => (p ? childNodes!(p) : rootNodes!()).length);
+    providerMock.setup(async (x) => x.getNodes(moq.It.isAny())).returns(async (p) => p ? childNodes!(p) : rootNodes!());
+    providerMock.setup(async (x) => x.getNodesCount(moq.It.isAny())).returns(async (p) => (p ? childNodes!(p) : rootNodes!()).length);
   };
 
   it("mounts", () => {

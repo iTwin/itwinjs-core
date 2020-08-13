@@ -18,7 +18,7 @@
     "clean": "rimraf build lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./node_modules/@bentley/icons-generic-webfont/dist/**/*\" ./build",
     "docs": "",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint --config package.json --no-eslintrc ./src/**/*.ts 1>&2",
     "start": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/ElectronMain.js",
     "start:webserver": "cross-env BROWSER=none USE_FULL_SOURCEMAP=true react-scripts start",
@@ -68,6 +68,7 @@
     "cpx": "^1.5.0",
     "cross-env": "^5.1.4",
     "electron": "^8.2.1",
+    "eslint": "^6.8.0",
     "express": "^4.16.3",
     "fs-extra": "^8.1.0",
     "internal-tools": "0.0.0",
@@ -75,9 +76,7 @@
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "react": "^16.8.0",
-    "tslint": "^5.11.0",
     "node-sass": "4.13.1",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "webpack": "4.42.0",
     "semver": "^5.5.0"
@@ -94,6 +93,13 @@
     "not <0.2%"
   ],
   "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js",
+    "parserOptions": {
+      "project": [
+        "tsconfig.json",
+        "tsconfig.backend.json"
+      ]
+    },
     "settings": {
       "react": {
         "version": "999.999.999"

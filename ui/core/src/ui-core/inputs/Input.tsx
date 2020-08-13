@@ -32,7 +32,7 @@ export class Input extends React.PureComponent<InputProps> {
   }
 
   public render(): JSX.Element {
-    const { className, style, setFocus, ...props } = this.props;
+    const { className, style, setFocus, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
       <input ref={this._inputElement} type="text" {...props}
         className={classnames("uicore-inputs-input", className)} style={style} />

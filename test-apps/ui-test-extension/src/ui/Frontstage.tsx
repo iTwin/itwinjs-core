@@ -16,6 +16,8 @@ import { NodeKey } from "@bentley/presentation-common";
 import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar";
 import { GenericTool } from "./tools/GenericTool";
 
+/* eslint-disable react/jsx-key */
+
 export class ExtensionFrontstage extends FrontstageProvider {
   public static get id() {
     return "ui-test.SampleStage";

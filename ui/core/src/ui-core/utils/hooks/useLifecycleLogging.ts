@@ -10,11 +10,11 @@ import { useEffect, useRef } from "react";
  */
 export function useLifecycleLogging(name: string, props: Record<string, any>, context?: Record<string, any>) {
   useEffect(() => {
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     console.log(`[useLifecycleLogging]: '${name}' Component mounted.`);
 
     return () => {
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       console.log(`[useLifecycleLogging]: '${name}' Component unmounted.`);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -46,16 +46,16 @@ export function useLifecycleLogging(name: string, props: Record<string, any>, co
     const contextDiff = { from: context === undefined ? context : prevContext.current, to: context };
 
     if (Object.keys(propsDiff).length > 0 && prevContext.current !== context) {
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       console.log(`[useLifecycleLogging]: '${name}' Props and context changed: `, propsDiff, contextDiff);
     } else if (Object.keys(propsDiff).length > 0) {
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       console.log(`[useLifecycleLogging]: '${name}' Props changed: `, propsDiff);
     } else if (prevContext.current !== context) {
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       console.log(`[useLifecycleLogging]: '${name}' Context changed: `, contextDiff);
     } else {
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       console.log(`[useLifecycleLogging]: '${name}' Component re-rendered.`);
     }
 

@@ -21,7 +21,7 @@ export interface WidgetOverflowProps {
 }
 
 /** @internal */
-export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOverflow(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOverflow(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
   const [targetRef, target] = useRefState<HTMLDivElement>();
@@ -57,7 +57,7 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
         <div className="nz-icon" />
       </div>
       <WidgetMenu
-        children={props.children}
+        children={props.children} // eslint-disable-line react/no-children-prop
         open={open}
         onClose={handleClose}
         target={target}

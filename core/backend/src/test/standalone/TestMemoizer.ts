@@ -25,12 +25,12 @@ export class TestMemoizer extends PromiseMemoizer<string> {
   private _superMemoize = this.memoize;
   public memoize = (param: number, waitTime: number): QueryablePromise<string> => {
     return this._superMemoize(param, waitTime);
-  }
+  };
 
   private _superDeleteMemoized = this.deleteMemoized;
   public deleteMemoized = (param: number, waitTime: number) => {
     this._superDeleteMemoized(param, waitTime);
-  }
+  };
 
   public async callMemoizedTestFn(param: number, waitTime: number): Promise<string> {
     const { memoize: memoizeTestFn, deleteMemoized: deleteMemoizedTestFn } = this;

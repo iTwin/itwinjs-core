@@ -23,8 +23,8 @@ class TestSchemaCompareReporter implements ISchemaCompareReporter {
   public report(schemaChanges: ISchemaChanges): void {
     this.changes.push(schemaChanges as SchemaChanges);
   }
-  public get diagnostics(): AnyDiagnostic [] {
-    let diagnostics: AnyDiagnostic [] = [];
+  public get diagnostics(): AnyDiagnostic[] {
+    let diagnostics: AnyDiagnostic[] = [];
     for (const changes of this.changes) {
       diagnostics = diagnostics.concat(changes.allDiagnostics);
     }
@@ -188,8 +188,8 @@ describe("Schema comparison tests", () => {
       };
       const refSchemaA = await Schema.fromJson(aRefJson, contextA);
       const refSchemaB = await Schema.fromJson(bRefJson, contextB);
-      const aJson = {...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }]};
-      const bJson = {...schemaAJson, references: [{ name: "RefSchemaB", version: "2.0.0" }]};
+      const aJson = { ...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }] };
+      const bJson = { ...schemaAJson, references: [{ name: "RefSchemaB", version: "2.0.0" }] };
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
 
@@ -216,8 +216,8 @@ describe("Schema comparison tests", () => {
       };
       const refSchemaA = await Schema.fromJson(aRefJson, contextA);
       const refSchemaA2 = await Schema.fromJson(a2RefJson, contextB);
-      const aJson = {...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }]};
-      const a2Json = {...schemaAJson, references: [{ name: "RefSchemaA", version: "2.0.0" }]};
+      const aJson = { ...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }] };
+      const a2Json = { ...schemaAJson, references: [{ name: "RefSchemaA", version: "2.0.0" }] };
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(a2Json, contextB);
 
@@ -237,7 +237,7 @@ describe("Schema comparison tests", () => {
         alias: "rs",
       };
       const refSchemaA = await Schema.fromJson(aRefJson, contextA);
-      const aJson = {...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }]};
+      const aJson = { ...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }] };
       const bJson = schemaAJson;
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
@@ -259,8 +259,8 @@ describe("Schema comparison tests", () => {
     };
     await Schema.fromJson(aRefJson, contextA);
     await Schema.fromJson(aRefJson, contextB);
-    const aJson = {...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }]};
-    const bJson = {...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }]};
+    const aJson = { ...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }] };
+    const bJson = { ...schemaAJson, references: [{ name: "RefSchemaA", version: "1.0.0" }] };
     const schemaA = await Schema.fromJson(aJson, contextA);
     const schemaB = await Schema.fromJson(bJson, contextB);
 
@@ -610,8 +610,8 @@ describe("Schema comparison tests", () => {
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
       const itemA = await schemaA.getItem("TestClassA") as ECClass;
-      const baseClassA =  await schemaA.getItem("BaseClassA");
-      const baseClassB =  await schemaB.getItem("BaseClassB");
+      const baseClassA = await schemaA.getItem("BaseClassA");
+      const baseClassB = await schemaB.getItem("BaseClassB");
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -4414,7 +4414,7 @@ describe("Schema comparison tests", () => {
 
     it("Different phenomenon, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // tslint:disable-next-line:no-string-literal
+      // eslint-disable-next-line dot-notation
       bJson.items["UnitA"].phenomenon = "SchemaA.PhenomenonB";
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4431,7 +4431,7 @@ describe("Schema comparison tests", () => {
 
     it("Different unitSystem, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // tslint:disable-next-line:no-string-literal
+      // eslint-disable-next-line dot-notation
       bJson.items["UnitA"].unitSystem = "SchemaA.UnitSystemB";
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4448,7 +4448,7 @@ describe("Schema comparison tests", () => {
 
     it("Different definition, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // tslint:disable-next-line:no-string-literal
+      // eslint-disable-next-line dot-notation
       bJson.items["UnitA"].definition = "B";
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4465,7 +4465,7 @@ describe("Schema comparison tests", () => {
 
     it("Different numerator, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // tslint:disable-next-line:no-string-literal
+      // eslint-disable-next-line dot-notation
       bJson.items["UnitA"].numerator = 2;
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4482,7 +4482,7 @@ describe("Schema comparison tests", () => {
 
     it("Different offset, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // tslint:disable-next-line:no-string-literal
+      // eslint-disable-next-line dot-notation
       bJson.items["UnitA"].offset = 2;
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4499,7 +4499,7 @@ describe("Schema comparison tests", () => {
 
     it("Different denominator, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // tslint:disable-next-line:no-string-literal
+      // eslint-disable-next-line dot-notation
       bJson.items["UnitA"].denominator = 2;
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);

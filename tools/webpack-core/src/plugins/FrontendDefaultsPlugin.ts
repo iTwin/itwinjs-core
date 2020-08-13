@@ -5,10 +5,10 @@
 import { Compiler, DefinePlugin } from "webpack";
 import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
 
-// tslint:disable:no-var-requires variable-name
+/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
-// tslint:enable:no-var-requires variable-name
+/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 export class FrontendDefaultsPlugin {
   constructor(private _enableSourcemaps = true) { }

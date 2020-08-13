@@ -5,8 +5,7 @@
 import { assert } from "chai";
 import { BeEvent, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
+import { EventSourceManager, IModelApp } from "@bentley/imodeljs-frontend";
 import { EventsTestRpcInterface } from "../../common/RpcInterfaces";
 
 /**

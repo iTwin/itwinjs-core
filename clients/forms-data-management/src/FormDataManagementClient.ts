@@ -250,10 +250,10 @@ export class FormDataManagementClient extends WsgClient {
     const formData = new FormInstanceData();
     formData.formId = formId;
     formData.properties = properties;
-    formData.properties["_ContainerId"] = iModelId; // tslint:disable-line
-    formData.properties["_ItemId"] = elementId; // tslint:disable-line
-    formData.properties["_Classification"] = "Risk"; // tslint:disable-line
-    formData.properties["_Discipline"] = "Issue"; // tslint:disable-line
+    formData.properties["_ContainerId"] = iModelId; // eslint-disable-line
+    formData.properties["_ItemId"] = elementId; // eslint-disable-line
+    formData.properties["_Classification"] = "Risk"; // eslint-disable-line
+    formData.properties["_Discipline"] = "Issue"; // eslint-disable-line
     return this.postFormData(requestContext, formData, projectId, className, instanceId);
   }
 }

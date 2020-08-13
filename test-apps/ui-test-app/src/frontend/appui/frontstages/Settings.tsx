@@ -162,5 +162,5 @@ function mapDispatchToProps(dispatch: Dispatch) {
   };
 }
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SettingsPage = connect(mapStateToProps, mapDispatchToProps)(SettingsPageComponent);

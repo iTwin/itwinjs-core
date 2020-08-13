@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
 import { Angle, Point3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags,
+  BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FeatureAppearance, FontMap, FontType, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
   ChangeFlag, ChangeFlags, CompassMode, createRenderPlanFromViewport, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool, PerModelCategoryVisibility,
@@ -909,7 +909,7 @@ class Overrides extends FeatureSymbology.Overrides {
     }
   }
 
-  public getElementAppearance(modelId: Id64String, subcatId: Id64String, elemId: Id64String = "0xabcdef"): FeatureSymbology.Appearance | undefined {
+  public getElementAppearance(modelId: Id64String, subcatId: Id64String, elemId: Id64String = "0xabcdef"): FeatureAppearance | undefined {
     return this.getFeatureAppearance(new Feature(elemId, subcatId), modelId);
   }
 

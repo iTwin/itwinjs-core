@@ -55,7 +55,7 @@ export interface TableWithUnifiedSelectionProps {
  *
  * @public
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps> {
 
   type CombinedProps = P & TableWithUnifiedSelectionProps;
@@ -80,7 +80,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
     public get imodel() { return this.props.dataProvider.imodel; }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private get baseProps(): TableProps { return this.props; }
 
     public componentDidMount() {
@@ -155,7 +155,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       }
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onSelectionChanged = (evt: SelectionChangeEventArgs): void => {
       this.displaySelection(evt.level);
     }
@@ -167,7 +167,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return keys;
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private isRowSelected = (row: RowItem): boolean => {
       // give consumers a chance to tell if row is selected
       if (this.baseProps.isRowSelected)
@@ -180,7 +180,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return selection.has(this.props.dataProvider.getRowKey(row));
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onRowsSelected = async (rows: AsyncIterableIterator<RowItem>, replace: boolean): Promise<boolean> => {
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by
@@ -198,7 +198,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return true;
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onRowsDeselected = async (rows: AsyncIterableIterator<RowItem>): Promise<boolean> => {
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by
@@ -215,9 +215,12 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
     public render() {
       const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         selectionHandler, selectionLevel, // do not bleed our props
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         isRowSelected, onRowsSelected, onRowsDeselected, // take out the props we're overriding
-        ...props /* tslint:disable-line: trailing-comma */ // pass-through props
+        // eslint-disable-next-line comma-dangle
+        ...props // pass-through props
       } = this.props as any;
       return (
         <TableComponent ref={this._base}

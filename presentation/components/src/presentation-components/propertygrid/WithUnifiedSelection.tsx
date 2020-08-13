@@ -48,7 +48,7 @@ interface State {
  *
  * @public
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<P & PropertyGridWithUnifiedSelectionProps> {
 
   type CombinedProps = P & PropertyGridWithUnifiedSelectionProps;
@@ -71,7 +71,7 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
     /** Get imodel used by this property grid to query property data */
     public get imodel() { return this.props.dataProvider.imodel; }
 
-    // tslint:disable-next-line: naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private get requestedContentInstancesLimit() {
       if (undefined === this.props.requestedContentInstancesLimit)
         return DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT;
@@ -133,15 +133,15 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
       }
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onSelectionChanged = (evt: SelectionChangeEventArgs): void => {
       this.updateDataProviderSelection(evt.level);
     }
 
     public render() {
       const {
-        selectionHandler, // do not bleed our props
-        requestedContentInstancesLimit,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        selectionHandler, requestedContentInstancesLimit, // do not bleed our props
         ...props
       } = this.props as any;
 

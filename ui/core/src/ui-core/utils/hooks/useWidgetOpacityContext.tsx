@@ -20,7 +20,7 @@ export interface WidgetOpacityContextProps {
  * Context used by Widgets and child components to process opacity changes based on mouse proximity.
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const WidgetOpacityContext = React.createContext<WidgetOpacityContextProps>({
   onElementRef: /* istanbul ignore next */ (_elementRef: React.RefObject<Element>) => void {},
   proximityScale: 1.0,

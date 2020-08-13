@@ -16,7 +16,7 @@ import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 /**
  * create a linestring that walks around all the edges (and some decoration) for a frustum defined by corners.
  * @param corners
@@ -24,17 +24,17 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 function cornersToLineString(corners: Point3d[]): LineString3d {
   return LineString3d.create(
     [corners[0], corners[1], corners[3], corners[2], corners[0],  // back rectangle
-      corners[4],         // move to front
-      corners[5], corners[1], corners[5], // front edge plus move to same back point and double back to front
-      corners[7], corners[3], corners[7],
-      corners[6], corners[2], corners[6],
-      corners[4],
-      corners[0],
-      corners[0].interpolate(4.0, corners[4]),   // Show z direction
-      corners[0],
-      corners[0].interpolate(1.2, corners[1]), // some asymmetric decoration on xy face
-      corners[0].interpolate(0.5, corners[1]), // some asymmetric decoration on xy face
-      corners[0].interpolate(0.5, corners[2])]);
+    corners[4],         // move to front
+    corners[5], corners[1], corners[5], // front edge plus move to same back point and double back to front
+    corners[7], corners[3], corners[7],
+    corners[6], corners[2], corners[6],
+    corners[4],
+    corners[0],
+    corners[0].interpolate(4.0, corners[4]),   // Show z direction
+    corners[0],
+    corners[0].interpolate(1.2, corners[1]), // some asymmetric decoration on xy face
+    corners[0].interpolate(0.5, corners[1]), // some asymmetric decoration on xy face
+    corners[0].interpolate(0.5, corners[2])]);
 }
 /**
  * Within the given coordinate frame (usually rigid) make the 8 corners of a frustum

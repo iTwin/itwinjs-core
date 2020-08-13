@@ -69,7 +69,7 @@ class ExpandableItem extends React.Component<ToolbarItemProps<Item>> {
   }
 }
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const BadItem = () => <div></div>;
 
 class SwitchItem extends React.Component<{}, { isExpandable: boolean }> {

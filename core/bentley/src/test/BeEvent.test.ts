@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { BeEvent, BeEventList } from "../bentleyjs-core";
 
-// tslint:disable:no-empty
+/* eslint-disable no-empty */
 class Dummy {
   constructor(_name: string) { }
 }

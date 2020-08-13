@@ -22,7 +22,7 @@ export interface WidgetTargetProps {
 }
 
 /** @internal */
-export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidget = React.useContext(DraggedWidgetIdContext);

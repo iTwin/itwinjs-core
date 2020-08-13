@@ -9,7 +9,7 @@ import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
 import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 describe("Point3d", () => {
   it("zeros", () => {
     const ck = new bsiChecker.Checker();
@@ -174,8 +174,8 @@ describe("Point3d", () => {
     const vectorC = Vector3d.createFrom(new Float64Array([1]));
     ck.testVector3d(vectorC, Vector3d.create(1, 0, 0));
 
-    ck.testExactNumber(0, Point3d.createFrom(new Float64Array([])).maxAbs ());
-    ck.testExactNumber(0, Vector3d.createFrom(new Float64Array([])).maxAbs ());
+    ck.testExactNumber(0, Point3d.createFrom(new Float64Array([])).maxAbs());
+    ck.testExactNumber(0, Vector3d.createFrom(new Float64Array([])).maxAbs());
     expect(ck.getNumErrors()).equals(0);
   });
 

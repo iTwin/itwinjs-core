@@ -239,8 +239,12 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@typescript-eslint/eslint-plugin",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@typescript-eslint/parser",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "@ungap/url-search-params",
@@ -400,7 +404,31 @@
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "eslint-import-resolver-node",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-import-resolver-typescript",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-plugin-deprecation",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-plugin-import",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-plugin-prefer-arrow",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-plugin-react",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "eslint-plugin-jsx-a11y",
@@ -409,6 +437,10 @@
     {
       "name": "eslint-plugin-react-hooks",
       "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+    },
+    {
+      "name": "eslint-plugin-rulesdir",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "event-stream",

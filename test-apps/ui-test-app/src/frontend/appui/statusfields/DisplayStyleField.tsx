@@ -72,13 +72,13 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
   }
 
   private _handleContentControlActivatedEvent = (args: ContentControlActivatedEventArgs) => {
-    setImmediate(() => this.setStateFromActiveContent(args.activeContentControl));
+    setImmediate(async () => this.setStateFromActiveContent(args.activeContentControl));
   }
 
   public componentDidMount() {
     FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivatedEvent);
 
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.setStateFromActiveContent(ContentViewManager.getActiveContentControl());
   }
 

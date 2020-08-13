@@ -21,7 +21,7 @@ describe("BackstageManager", () => {
 });
 
 describe("useIsBackstageOpen", () => {
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const TestHook = (props: { onRender: () => void }) => {
     props.onRender();
     return null;

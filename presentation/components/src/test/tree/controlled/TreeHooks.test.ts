@@ -159,7 +159,7 @@ describe("usePresentationNodeLoader", () => {
 
       const currRuleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
       presentationManagerMock
-        .setup((x) => x.compareHierarchies({
+        .setup(async (x) => x.compareHierarchies({
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: currRuleset.toJSON(),
@@ -187,7 +187,7 @@ describe("usePresentationNodeLoader", () => {
       const variables = [{ id: "var-id", type: VariableValueTypes.String, value: "curr" }, { id: "other-var", type: VariableValueTypes.Int, value: 123 }];
 
       presentationManagerMock
-        .setup((x) => x.compareHierarchies({
+        .setup(async (x) => x.compareHierarchies({
           imodel: imodelMock.object,
           prev: {
             rulesetVariables: [
@@ -200,7 +200,7 @@ describe("usePresentationNodeLoader", () => {
         }))
         .returns(async () => [])
         .verifiable();
-      rulesetVariablesManagerMock.setup((x) => x.getAllVariables()).returns(async () => variables);
+      rulesetVariablesManagerMock.setup(async (x) => x.getAllVariables()).returns(async () => variables);
 
       onRulesetVariableChanged.raiseEvent("var-id", "prev", "curr");
 
@@ -238,7 +238,7 @@ describe("usePresentationNodeLoader", () => {
 
       const currRuleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
       presentationManagerMock
-        .setup((x) => x.compareHierarchies({
+        .setup(async (x) => x.compareHierarchies({
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: currRuleset.toJSON(),
@@ -262,7 +262,7 @@ describe("usePresentationNodeLoader", () => {
   });
 
   it("starts preloading hierarchy", () => {
-    presentationManagerMock.setup((x) => x.loadHierarchy(moq.It.isAny())).verifiable(moq.Times.once());
+    presentationManagerMock.setup(async (x) => x.loadHierarchy(moq.It.isAny())).verifiable(moq.Times.once());
     renderHook(
       (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
       { initialProps: { ...initialProps, preloadingEnabled: true } },

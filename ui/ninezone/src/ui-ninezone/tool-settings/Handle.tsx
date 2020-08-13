@@ -24,7 +24,7 @@ export interface DockedToolSettingsHandleProps extends CommonProps {
 /** Component that displays tool settings as a bar across the top of the content view.
  * @internal
  */
-export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) { // tslint:disable-line: variable-name no-shadowed-variable
+export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const dispatch = React.useContext(NineZoneDispatchContext);
   const resizeObserverRef = useResizeObserver<HTMLDivElement>(props.onResize);
   const newWidgetDragItemId = React.useMemo(() => getUniqueId(), []);

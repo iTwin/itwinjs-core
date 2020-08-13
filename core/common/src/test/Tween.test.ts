@@ -1024,7 +1024,7 @@ describe("Tween", () => {
 
   it("js compatible with Object.defineProperty getter / setters", () => {
 
-    const obj: any = { _x: 0 };
+    const obj: any = { _x: 0 }; // eslint-disable-line @typescript-eslint/naming-convention
 
     Object.defineProperty(obj, "x", {
       get: () => {

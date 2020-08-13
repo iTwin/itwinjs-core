@@ -9,7 +9,7 @@ import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
 
-// tslint:disable:ter-indent
+/* eslint-disable @typescript-eslint/indent */
 
 export class IModelSession {
 
@@ -47,7 +47,7 @@ export class IModelSession {
     } else
       imodelId = iModelData.id!;
 
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // tslint:disable-line
+    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line
 
     return new IModelSession(contextId, imodelId);
   }
@@ -59,7 +59,7 @@ export class IModelSession {
   public async open(): Promise<IModelConnection> {
     try {
       const env = Config.App.get("imjs_buddi_resolve_url_using_region");
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log("Environment: " + env);
       this._iModel = await RemoteBriefcaseConnection.open(this.contextId, this.iModelId);
       expect(this._iModel).to.exist;

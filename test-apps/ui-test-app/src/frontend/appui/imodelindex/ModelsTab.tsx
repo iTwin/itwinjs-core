@@ -165,18 +165,17 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     this._isMounted = false;
 
     if (this._ruleset)
-      Presentation.presentation.rulesets().remove(this._ruleset); // tslint:disable-line:no-floating-promises
+      Presentation.presentation.rulesets().remove(this._ruleset); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private async loadModelsFromPresentationRules() {
-    Presentation.presentation.rulesets().add(require("../../../assets/rulesets/Models"))
-
+    await Presentation.presentation.rulesets().add(require("../../../assets/rulesets/Models")) // eslint-disable-line @typescript-eslint/no-var-requires
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;
         this._ruleset = ruleset;
         const dataProvider = new PresentationTreeDataProvider({ imodel: this.props.iModelConnection, ruleset: this._ruleset.id });
-        this.enableCheckboxes(dataProvider); // tslint:disable-line:no-floating-promises
+        this.enableCheckboxes(dataProvider); // eslint-disable-line @typescript-eslint/no-floating-promises
         this._dataProvider = dataProvider;
       });
   }
@@ -186,7 +185,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     nodes.forEach((n: DelayLoadedTreeNodeItem) => {
       n.isCheckboxVisible = true;
       n.autoExpand = true;
-      this.enableCheckboxes(_dataProvider, n); // tslint:disable-line:no-floating-promises
+      this.enableCheckboxes(_dataProvider, n); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
   }
 
@@ -291,7 +290,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   /* update the doccodes and enable the ok button */
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private Refresh() {
     const _docCodes = this.state.docCodes!.slice();
     this.setState({ docCodes: _docCodes });
@@ -544,6 +543,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
       return (
         <div className="documentcode-container">
           {this.state.docCodes!.map((pair: DocCodeCategory) => (
+            // eslint-disable-next-line react/jsx-key
             <div className="dc-table" >
               <div className="dc-table-header">
                 <Checkbox checked={pair.checked} onClick={this._onDocCodeCheckedStatesChanged.bind(this, pair)} />

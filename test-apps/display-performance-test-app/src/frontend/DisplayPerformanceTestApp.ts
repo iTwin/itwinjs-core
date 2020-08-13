@@ -11,8 +11,8 @@ import {
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, DisplayStyleProps, ElectronRpcConfiguration,
-  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, RenderMode, RpcConfiguration,
-  SnapshotIModelRpcInterface, ViewDefinitionProps,
+  ElectronRpcManager, FeatureAppearance, FeatureAppearanceProps, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager,
+  RenderMode, RpcConfiguration, SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
@@ -55,7 +55,7 @@ async function saveCsv(outputPath: string, outputName: string, rowData: Map<stri
 const wantConsoleOutput: boolean = false;
 function debugPrint(msg: string): void {
   if (wantConsoleOutput)
-    console.log(msg); // tslint:disable-line
+    console.log(msg); // eslint-disable-line no-console
 }
 
 async function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
@@ -741,8 +741,8 @@ class SimpleViewState {
 }
 
 class FOProvider implements FeatureOverrideProvider {
-  private readonly _elementOvrs = new Map<Id64String, FeatureSymbology.Appearance>();
-  private _defaultOvrs: FeatureSymbology.Appearance | undefined;
+  private readonly _elementOvrs = new Map<Id64String, FeatureAppearance>();
+  private _defaultOvrs: FeatureAppearance | undefined;
   private readonly _vp: Viewport;
 
   public constructor(vp: Viewport) { this._vp = vp; }
@@ -755,7 +755,7 @@ class FOProvider implements FeatureOverrideProvider {
 
   public overrideElementsByArray(elementOvrs: any[]): void {
     elementOvrs.forEach((eo) => {
-      const fsa = FeatureSymbology.Appearance.fromJSON(JSON.parse(eo.fsa) as FeatureSymbology.AppearanceProps);
+      const fsa = FeatureAppearance.fromJSON(JSON.parse(eo.fsa) as FeatureAppearanceProps);
       if (eo.id === "-default-")
         this.defaults = fsa;
       else
@@ -770,7 +770,7 @@ class FOProvider implements FeatureOverrideProvider {
     this.sync();
   }
 
-  public set defaults(value: FeatureSymbology.Appearance | undefined) {
+  public set defaults(value: FeatureAppearance | undefined) {
     this._defaultOvrs = value;
     this.sync();
   }
@@ -1455,7 +1455,7 @@ async function main() {
   if (testConfig.csvFormat === undefined) testConfig.csvFormat = "original";
   await DisplayPerfRpcInterface.getClient().finishCsv(renderData, testConfig.outputPath, testConfig.outputName, testConfig.csvFormat);
 
-  DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
+  DisplayPerfRpcInterface.getClient().finishTest(); // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelApp.shutdown();
 }
 

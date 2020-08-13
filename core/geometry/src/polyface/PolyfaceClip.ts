@@ -8,7 +8,7 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
@@ -247,7 +247,7 @@ export class PolyfaceClip {
       for (visitor.reset(); visitor.moveToNextFacet();) {
         facetPoints.clear();
         facetPoints.pushFrom(visitor.point);
-        IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane!, facetPoints, workPoints);
+        IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane, facetPoints, workPoints);
         chainContext.addSegmentsOnPlane(facetPoints, true);
       }
       cache.dropToCache(facetPoints);

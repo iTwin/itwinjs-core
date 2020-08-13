@@ -48,7 +48,7 @@ export const containVertically = (componentBounds: RectangleProps, containerBoun
  * @alpha Transfer to ui-core or remove if used with popups only.
  */
 export const withContainIn = <ComponentProps extends {}>(
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
 ) => {
   return class WithContainIn extends React.PureComponent<ComponentProps & WithContainInProps> {
@@ -89,7 +89,7 @@ export const withContainIn = <ComponentProps extends {}>(
     }
 
     public render() {
-      const { containFn, container, ...props } = this.props as WithContainInProps;
+      const { containFn, container, ...props } = this.props as WithContainInProps; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <div ref={this.ref}>
           <Component

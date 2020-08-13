@@ -26,7 +26,7 @@ export interface BackTargetProps extends MergeTargetProps {
  */
 export class BackTarget extends React.PureComponent<BackTargetProps> {
   public render() {
-    const { className, ...props } = this.props;
+    const { className, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const targetClassName = classnames(
       "nz-zones-target-back",
       this.props.className);

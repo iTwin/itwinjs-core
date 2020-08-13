@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/oidc-signin-tool"
+    }
+  ],
+  "packageName": "@bentley/oidc-signin-tool",
+  "email": "paulius.valiunas@bentley.com"
+}

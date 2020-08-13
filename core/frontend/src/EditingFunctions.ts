@@ -114,7 +114,7 @@ export class EditingFunctions {
    * Query if there are local changes that have not yet been pushed to the iModel server.
    * @alpha
    */
-  // tslint:disable-next-line:prefer-get
+  // eslint-disable-next-line rulesdir/prefer-get
   public async hasPendingTxns(): Promise<boolean> {
     return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasPendingTxns(this._connection.getRpcProps());
   }
@@ -123,7 +123,7 @@ export class EditingFunctions {
    * Query if there are in-memory changes that have not yet been saved to the briefcase.
    * @alpha
    */
-  // tslint:disable-next-line:prefer-get
+  // eslint-disable-next-line rulesdir/prefer-get
   public async hasUnsavedChanges(): Promise<boolean> {
     return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasUnsavedChanges(this._connection.getRpcProps());
   }
@@ -140,7 +140,7 @@ export class EditingFunctions {
 /**
  * @alpha
  */
-export namespace EditingFunctions {
+export namespace EditingFunctions { // eslint-disable-line no-redeclare
   /**
    * Helper class for defining Codes.
    * @alpha

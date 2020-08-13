@@ -48,11 +48,11 @@ export interface TreeWithUnifiedSelectionProps {
  * @public
  * @deprecated Use `useUnifiedSelectionEventHandler` instead. Will be removed in iModel.js 3.0.
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>) {
 
   type TreeComponentInstance = InstanceType<typeof TreeComponent>;
-  type CombinedProps = P & TreeWithUnifiedSelectionProps; // tslint:disable-line:deprecation
+  type CombinedProps = P & TreeWithUnifiedSelectionProps; // eslint-disable-line deprecation/deprecation
   type CombinedPropsWithForwardedRef = CombinedProps & {
     forwardedRef: React.Ref<TreeComponentInstance>;
   };
@@ -128,7 +128,7 @@ export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeCom
       return SelectionHelper.getKeysForSelection(nodeKeys);
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onNodesSelected = (nodes: TreeNodeItem[], replace: boolean) => {
       const props: Readonly<CombinedProps> = this.props;
 
@@ -147,7 +147,7 @@ export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeCom
         this._selectionHandler.addToSelection(this.getKeys(nodes));
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onNodesDeselected = (nodes: TreeNodeItem[]) => {
       const props: Readonly<CombinedProps> = this.props;
 
@@ -163,7 +163,7 @@ export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeCom
       this._selectionHandler.removeFromSelection(this.getKeys(nodes));
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onSelectionChanged = (args: SelectionChangeEventArgs, _provider: ISelectionProvider) => {
       if (args.level === 0) {
         // note: we set the `isNodeSelected` callback to a new function which basically
@@ -176,8 +176,10 @@ export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeCom
 
     public render() {
       const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         forwardedRef, selectionHandler, // do not bleed our props
-        ...props /* tslint:disable-line: trailing-comma */ // pass-through props
+        // eslint-disable-next-line comma-dangle
+        ...props // pass-through props
       } = this.props;
       return (
         <TreeComponent

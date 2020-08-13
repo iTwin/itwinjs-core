@@ -2,8 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
-
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -38,14 +36,14 @@ describe("RulesetRegistrationHelper", () => {
     const rulesetId = "test";
     using(new RulesetRegistrationHelper(rulesetId), (registration) => {
       expect(registration.rulesetId).to.eq(rulesetId);
-      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.never());
+      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.never());
     });
   });
 
   it("registers ruleset when helper is created with ruleset object", async () => {
     const ruleset = createRuleset();
     const disposeSpy = sinon.spy();
-    rulesetsManagerMock.setup((x) => x.add(ruleset)).returns(async () => new RegisteredRuleset(ruleset, "test-hash", disposeSpy)).verifiable();
+    rulesetsManagerMock.setup(async (x) => x.add(ruleset)).returns(async () => new RegisteredRuleset(ruleset, "test-hash", disposeSpy)).verifiable();
     await using(new RulesetRegistrationHelper(ruleset), async (registration) => {
       await BeDuration.wait(0); // handle the floating promise
       expect(registration.rulesetId).to.eq(ruleset.id);
@@ -57,7 +55,7 @@ describe("RulesetRegistrationHelper", () => {
   it("registers ruleset when helper is created with RegisteredRuleset object", async () => {
     const disposeSpy = sinon.spy();
     const ruleset = new RegisteredRuleset(createRuleset(), "test-hash-1", disposeSpy);
-    rulesetsManagerMock.setup((x) => x.add(ruleset.toJSON())).returns(async () => new RegisteredRuleset(ruleset, "test-hash-2", disposeSpy)).verifiable();
+    rulesetsManagerMock.setup(async (x) => x.add(ruleset.toJSON())).returns(async () => new RegisteredRuleset(ruleset, "test-hash-2", disposeSpy)).verifiable();
     await using(new RulesetRegistrationHelper(ruleset), async (registration) => {
       await BeDuration.wait(0); // handle the floating promise
       expect(registration.rulesetId).to.eq(ruleset.id);
@@ -70,7 +68,7 @@ describe("RulesetRegistrationHelper", () => {
     const ruleset = createRuleset();
     const disposeSpy = sinon.spy();
     const result = new ResolvablePromise<RegisteredRuleset>();
-    rulesetsManagerMock.setup((x) => x.add(ruleset)).returns(async () => result).verifiable();
+    rulesetsManagerMock.setup(async (x) => x.add(ruleset)).returns(async () => result).verifiable();
     using(new RulesetRegistrationHelper(ruleset), (registration) => {
       expect(registration.rulesetId).to.eq(ruleset.id);
       rulesetsManagerMock.verifyAll();

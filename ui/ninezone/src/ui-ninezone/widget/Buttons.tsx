@@ -14,7 +14,7 @@ import { Dock } from "./Dock";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 
 /** @internal */
-export const TabBarButtons = React.memo(function TabBarButtons() { // tslint:disable-line: variable-name no-shadowed-variable
+export const TabBarButtons = React.memo(function TabBarButtons() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const isToolSettings = useIsToolSettingsTab();
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   return (

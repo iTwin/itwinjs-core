@@ -22,7 +22,7 @@ import { createLabelRecord, priorityAndNameSortFunction } from "../common/Utils"
 import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
 
 /** @internal */
-// tslint:disable-next-line: no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset = require("./DefaultPropertyGridRules.json");
 
 /** The function registers DEFAULT_PROPERTY_GRID_RULESET the first time it's called and does nothing on other calls */
@@ -169,7 +169,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   }
 
   /** Should the specified field be included in the favorites category. */
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected isFieldFavorite = (field: Field): boolean => (Presentation.favoriteProperties.has(field, this.imodel, FavoritePropertiesScope.IModel));
 
   /**
@@ -184,7 +184,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * Sorts the specified list of fields by priority. May be overriden
    * to supply a different sorting algorithm.
    */
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected sortFields = (category: CategoryDescription, fields: Field[]) => {
     if (category.name === FAVORITES_CATEGORY_NAME)
       Presentation.favoriteProperties.sortFields(this.imodel, fields);
@@ -195,7 +195,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   /**
    * Returns property data.
    */
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected getMemoizedData = memoize(async (): Promise<PropertyData> => {
     if (this._useDefaultRuleset)
       await registerDefaultRuleset();

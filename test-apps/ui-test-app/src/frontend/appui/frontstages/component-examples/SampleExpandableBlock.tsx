@@ -7,7 +7,7 @@ import { SpecialKey } from "@bentley/ui-abstract";
 import { ExpandableBlock, ExpandableBlockProps } from "@bentley/ui-core";
 
 /** Sample component using ExpandableBlock with an expanded state  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleExpandableBlock: React.FC<ExpandableBlockProps> = (props: ExpandableBlockProps) => {
   const [expanded, setExpanded] = React.useState(props.isExpanded);
 

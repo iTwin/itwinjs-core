@@ -30,7 +30,7 @@ export interface ToolbarOverflowPanelProps extends CommonProps {
 /** Displays overflown tool settings.
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line react/display-name
 export function ToolbarOverflowPanel(props: ToolbarOverflowPanelProps) {
   const { toolbarOpacitySetting, openPopupCount, overflowDisplayActive, expandsTo,
     overflowExpandsTo, overflowDirection } = useToolbarWithOverflowDirectionContext();

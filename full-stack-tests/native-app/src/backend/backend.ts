@@ -13,7 +13,7 @@ import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, R
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as path from "path";
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
 async function init() {
   IModelJsConfig.init(true, true, Config.App);

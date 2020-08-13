@@ -92,7 +92,7 @@ describe("GroupButtonItem", () => {
           const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
           groupItem.setState({ isPressed: true });
 
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           // console.log(sut.debug());
 
           const toolGroup = sut.find("WithOnOutsideClick") as ReactWrapper<WithOnOutsideClickProps>;
@@ -117,7 +117,7 @@ describe("GroupButtonItem", () => {
           buttonDiv.prop("onOpenPanel")!();
           sut.update();
 
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           // console.log(sut.debug());
 
           expect(groupItem.state().isPressed).to.be.true;
@@ -146,7 +146,7 @@ describe("GroupButtonItem", () => {
           buttonDiv.prop("onOpenPanel")!();
           sut.update();
 
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           // console.log(sut.debug());
 
           expect(groupItem.state().isPressed).to.be.true;
@@ -169,7 +169,7 @@ describe("GroupButtonItem", () => {
           buttonDiv.prop("onOpenPanel")!();
           sut.update();
 
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           // console.log(sut.debug());
 
           expect(groupItem.state().isPressed).to.be.true;
@@ -193,7 +193,7 @@ describe("GroupButtonItem", () => {
           buttonDiv.prop("onOpenPanel")!();
           sut.update();
 
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           // console.log(sut.debug());
 
           expect(groupItem.state().isPressed).to.be.true;
@@ -215,7 +215,7 @@ describe("GroupButtonItem", () => {
           buttonDiv.prop("onOpenPanel")!();
           wrapper.update();
 
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           // console.log(wrapper.debug());
 
           const expanderDiv = wrapper.find("div.nz-toolbar-item-expandable-group-tool-expander");
@@ -276,7 +276,7 @@ describe("GroupButtonItem", () => {
           const groupToolExpander = sut.find(GroupToolExpander);
           groupToolExpander.prop("onPointerUp")!();
 
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           // console.log(sut.debug());
 
           expect(groupItem.state().trayId).to.eq("tray-2");

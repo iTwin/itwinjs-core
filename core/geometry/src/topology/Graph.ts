@@ -295,11 +295,11 @@ export class HalfEdge {
   /**
    * Return the next outbound half edge around this vertex in the CCW direction
    */
-  get vertexSuccessor(): HalfEdge { return this.facePredecessor.edgeMate; }
+  public get vertexSuccessor(): HalfEdge { return this.facePredecessor.edgeMate; }
   /**
    * Return the next outbound half edge around this vertex in the CW direction
    */
-  get vertexPredecessor(): HalfEdge { return this.edgeMate.faceSuccessor; }
+  public get vertexPredecessor(): HalfEdge { return this.edgeMate.faceSuccessor; }
   /**
    * Set mask bits on this HalfEdge
    * @param mask mask to apply

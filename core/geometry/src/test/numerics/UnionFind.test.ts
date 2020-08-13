@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { UnionFindContext } from "../../numerics/UnionFind";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("UnionFind", () => {
   it("BinaryTree", () => {

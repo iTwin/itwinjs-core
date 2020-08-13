@@ -17,7 +17,7 @@ import {
   mockInterfaceTreeDataProvider, mockMutableInterfaceTreeDataProvider, mockRawTreeDataProvider, mockRawTreeDataProvider2,
 } from "./mockTreeDataProvider";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("Breadcrumb", () => {
   let renderSpy: sinon.SinonSpy;

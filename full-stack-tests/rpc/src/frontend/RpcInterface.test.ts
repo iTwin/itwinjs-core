@@ -547,7 +547,7 @@ describe("RpcInterface", () => {
     assert.equal(backend.size, 0);
     assert.equal(completed, 0);
 
-    await Promise.all(requests.map((r) => r.submit()));
+    await Promise.all(requests.map(async (r) => r.submit()));
     pending.clear();
 
     assert.equal(replaced, 1);
@@ -555,7 +555,7 @@ describe("RpcInterface", () => {
     assert.equal(backend.size, 0);
     assert.equal(completed, 0);
 
-    await Promise.all(requests.map((r) => r.submit()));
+    await Promise.all(requests.map(async (r) => r.submit()));
     pending.clear();
 
     assert.equal(replaced, 1);

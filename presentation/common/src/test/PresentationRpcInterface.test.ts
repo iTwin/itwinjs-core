@@ -65,7 +65,7 @@ describe("PresentationRpcInterface", () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
       };
-      await rpcInterface.getNodesAndCount(token, options); // tslint:disable-line:deprecation
+      await rpcInterface.getNodesAndCount(token, options); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
@@ -73,7 +73,7 @@ describe("PresentationRpcInterface", () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
       };
-      await rpcInterface.getNodes(token, options); // tslint:disable-line:deprecation
+      await rpcInterface.getNodes(token, options); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
@@ -82,7 +82,7 @@ describe("PresentationRpcInterface", () => {
         rulesetOrId: faker.random.word(),
       };
       const parentKey = createRandomECInstancesNodeKey();
-      await rpcInterface.getNodes(token, options, parentKey); // tslint:disable-line:deprecation
+      await rpcInterface.getNodes(token, options, parentKey); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
 
@@ -90,7 +90,7 @@ describe("PresentationRpcInterface", () => {
       const options: HierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
-      await rpcInterface.getNodesCount(token, options); // tslint:disable-line:deprecation
+      await rpcInterface.getNodesCount(token, options); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
@@ -107,7 +107,7 @@ describe("PresentationRpcInterface", () => {
         rulesetOrId: faker.random.word(),
       };
       const parentKey = createRandomECInstancesNodeKey();
-      await rpcInterface.getNodesCount(token, options, parentKey); // tslint:disable-line:deprecation
+      await rpcInterface.getNodesCount(token, options, parentKey); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
 
@@ -159,7 +159,7 @@ describe("PresentationRpcInterface", () => {
         rulesetOrId: faker.random.word(),
       };
       const keys = new KeySet().toJSON();
-      await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined); // tslint:disable-line:deprecation
+      await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options, "test", keys, undefined)), moq.Times.once());
     });
 
@@ -179,7 +179,7 @@ describe("PresentationRpcInterface", () => {
       };
       const descriptor = createRandomDescriptorJSON();
       const keys = new KeySet().toJSON();
-      await rpcInterface.getContentSetSize(token, options, descriptor, keys); // tslint:disable-line:deprecation
+      await rpcInterface.getContentSetSize(token, options, descriptor, keys); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
 
@@ -199,7 +199,7 @@ describe("PresentationRpcInterface", () => {
       };
       const descriptor = createRandomDescriptorJSON();
       const keys = new KeySet().toJSON();
-      await rpcInterface.getContent(token, options, descriptor, keys); // tslint:disable-line:deprecation
+      await rpcInterface.getContent(token, options, descriptor, keys); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
 
@@ -209,7 +209,7 @@ describe("PresentationRpcInterface", () => {
       };
       const descriptor = createRandomDescriptorJSON();
       const keys = new KeySet().toJSON();
-      await rpcInterface.getContentAndSize(token, options, descriptor, keys); // tslint:disable-line:deprecation
+      await rpcInterface.getContentAndSize(token, options, descriptor, keys); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
 
@@ -263,7 +263,7 @@ describe("PresentationRpcInterface", () => {
       const key = createRandomECInstanceKey();
       const options: LabelRpcRequestOptions = {
       };
-      await rpcInterface.getDisplayLabelDefinition(token, options, key); // tslint:disable-line:deprecation
+      await rpcInterface.getDisplayLabelDefinition(token, options, key); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options, key)), moq.Times.once());
     });
 
@@ -279,7 +279,7 @@ describe("PresentationRpcInterface", () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const options: LabelRpcRequestOptions = {
       };
-      await rpcInterface.getDisplayLabelDefinitions(token, options, keys); // tslint:disable-line:deprecation
+      await rpcInterface.getDisplayLabelDefinitions(token, options, keys); // eslint-disable-line deprecation/deprecation
       mock.verify(async (x) => x(toArguments(token, options, keys)), moq.Times.once());
     });
 

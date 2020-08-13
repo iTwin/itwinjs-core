@@ -159,7 +159,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
   }
 
   public render(): React.ReactNode {
-    const { applicationData, defaultState, runtimeProps, maxSize, size, ...props } = this.props;
+    const { applicationData, defaultState, runtimeProps, maxSize, size, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     if (!runtimeProps)
       return null;
 

@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { Rectangle } from "@bentley/ui-core";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
+import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
 import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, useLabel } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils";
@@ -30,7 +30,7 @@ describe("<NineZone />", () => {
   });
 
   it("should measure NineZone bounds", () => {
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention, react/display-name
     const Measurer = React.forwardRef<{ measure: () => Rectangle }>((_, ref) => {
       const measure = React.useContext(MeasureContext);
       React.useImperativeHandle(ref, () => ({
@@ -130,6 +130,7 @@ describe("useLabel", () => {
     const labels: NineZoneLabels = {
       dockToolSettingsTitle: "test",
     };
+    // eslint-disable-next-line react/display-name
     const { result } = renderHook(() => useLabel("dockToolSettingsTitle"), { wrapper: (props: {}) => <NineZoneLabelsContext.Provider value={labels} {...props} /> });
     result.current!.should.eq("test");
   });

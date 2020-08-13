@@ -111,12 +111,12 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   private setCurrentStateValues(item: ItemDefBase): boolean {
     // if a stateFunc is specified call it to get current state values
     // istanbul ignore else
-    if (item.stateFunc) { // tslint:disable-line:deprecation
-      const itemState = item.stateFunc({ // tslint:disable-line:deprecation
-        isVisible: item.isVisible, isEnabled: item.isEnabled, isPressed: item.isPressed, isActive: item.isActive, // tslint:disable-line:deprecation
+    if (item.stateFunc) { // eslint-disable-line deprecation/deprecation
+      const itemState = item.stateFunc({ // eslint-disable-line deprecation/deprecation
+        isVisible: item.isVisible, isEnabled: item.isEnabled, isPressed: item.isPressed, isActive: item.isActive, // eslint-disable-line deprecation/deprecation
       });
-      item.isVisible = !!itemState.isVisible; // tslint:disable-line:deprecation
-      item.isEnabled = !!itemState.isEnabled; // tslint:disable-line:deprecation
+      item.isVisible = !!itemState.isVisible; // eslint-disable-line deprecation/deprecation
+      item.isEnabled = !!itemState.isEnabled; // eslint-disable-line deprecation/deprecation
       item.isPressed = !!itemState.isPressed;
       item.isActive = !!itemState.isActive;
       return true;
@@ -134,8 +134,8 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
 
     // Review all the itemDefs to see if any are monitoring sync events in SyncUiEventArgs
     for (const item of itemList) {
-      if (item.stateFunc && item.stateSyncIds && item.stateSyncIds.length > 0 && // tslint:disable-line:deprecation
-        item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value))) { // tslint:disable-line:deprecation
+      if (item.stateFunc && item.stateSyncIds && item.stateSyncIds.length > 0 && // eslint-disable-line deprecation/deprecation
+        item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value))) { // eslint-disable-line deprecation/deprecation
         if (item instanceof GroupItemDef) {
           this.setCurrentStateValues(item);
           this._processSyncUiEvent(item.items, args);
@@ -177,7 +177,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     // Filter on ActionButtonItemDef
     itemList.forEach((item: ItemDefBase) => {
       // istanbul ignore else
-      if (item.isVisible) { // tslint:disable-line:deprecation
+      if (item.isVisible) { // eslint-disable-line deprecation/deprecation
         // istanbul ignore else
         if (item instanceof ActionButtonItemDef) {
           actionItems.push(item);
@@ -270,7 +270,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   private hasVisibleItems(items: ItemList) {
     for (const item of items) {
       // istanbul ignore else
-      if (item && item.isVisible) // tslint:disable-line:deprecation
+      if (item && item.isVisible) // eslint-disable-line deprecation/deprecation
         return true;
     }
     // istanbul ignore next

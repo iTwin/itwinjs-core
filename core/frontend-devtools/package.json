@@ -11,7 +11,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
     "extract-api": "betools extract-api --entry=frontend-devtools",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""
   },
@@ -46,13 +46,15 @@
     "@types/node": "10.14.1",
     "@types/file-saver": "^2.0.1",
     "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2"
+    "typescript": "~3.7.4"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
     "all": true
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

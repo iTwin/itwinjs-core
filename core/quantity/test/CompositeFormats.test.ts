@@ -47,7 +47,7 @@ describe("Composite Formats tests:", () => {
       assert.isTrue(false);
     } catch (err) {
       assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       //console.log(err.message);
     }
   });
@@ -92,7 +92,7 @@ describe("Composite Formats tests:", () => {
       assert.isTrue(false);
     } catch (err) {
       assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(err.message);
     }
   });
@@ -136,7 +136,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -185,7 +185,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -234,7 +234,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -279,7 +279,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -322,7 +322,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -365,7 +365,7 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -412,7 +412,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.isTrue(formattedValue === testEntry.result);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -459,7 +459,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -499,7 +499,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -539,7 +539,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -587,7 +587,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -636,7 +636,7 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       assert.isTrue(formattedValue.length > 0);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });

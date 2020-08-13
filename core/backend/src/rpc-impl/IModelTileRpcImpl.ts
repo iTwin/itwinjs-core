@@ -52,12 +52,12 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
   private _superMemoize = this.memoize;
   public memoize = (props: Props): QueryablePromise<Result> => {
     return this._superMemoize(props);
-  }
+  };
 
   private _superDeleteMemoized = this.deleteMemoized;
   public deleteMemoized = (props: Props) => {
     this._superDeleteMemoized(props);
-  }
+  };
 
   private log(status: string, props: Props): void {
     const descr = this._operationName + "(" + this.stringify(props) + ")";
@@ -89,7 +89,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     assert(tileQP.isRejected);
     this.log("rejected", props);
-    throw tileQP.error!;
+    throw tileQP.error!; // eslint-disable-line no-throw-literal
   }
 }
 

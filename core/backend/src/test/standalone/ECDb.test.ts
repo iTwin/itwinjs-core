@@ -10,16 +10,16 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
 describe("ECDb", () => {
-  const _outDir = KnownTestLocations.outputDir;
+  const outDir = KnownTestLocations.outputDir;
 
   it("should be able to create a new ECDb", () => {
-    using(ECDbTestHelper.createECDb(_outDir, "create.ecdb"), (ecdb: ECDb) => {
+    using(ECDbTestHelper.createECDb(outDir, "create.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
     });
   });
 
   it("should be able to close an ECDb", () => {
-    const ecdb: ECDb = ECDbTestHelper.createECDb(_outDir, "close.ecdb");
+    const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "close.ecdb");
     assert.isTrue(ecdb.isOpen);
     ecdb.closeDb();
     assert.isFalse(ecdb.isOpen);
@@ -27,8 +27,8 @@ describe("ECDb", () => {
 
   it("should be able to open an ECDb", () => {
     const fileName = "open.ecdb";
-    const ecdbPath: string = path.join(_outDir, fileName);
-    using(ECDbTestHelper.createECDb(_outDir, fileName), (testECDb: ECDb) => {
+    const ecdbPath: string = path.join(outDir, fileName);
+    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
       assert.isTrue(testECDb.isOpen);
     });
 
@@ -40,8 +40,8 @@ describe("ECDb", () => {
 
   it("Open ECDb with upgrade option", () => {
     const fileName = "open.ecdb";
-    const ecdbPath: string = path.join(_outDir, fileName);
-    using(ECDbTestHelper.createECDb(_outDir, fileName), (testECDb: ECDb) => {
+    const ecdbPath: string = path.join(outDir, fileName);
+    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
       assert.isTrue(testECDb.isOpen);
     });
 
@@ -60,9 +60,9 @@ describe("ECDb", () => {
 
   it("should be able to import a schema", () => {
     const fileName = "schemaimport.ecdb";
-    const ecdbPath: string = path.join(_outDir, fileName);
+    const ecdbPath: string = path.join(outDir, fileName);
     let id: Id64String;
-    using(ECDbTestHelper.createECDb(_outDir, fileName,
+    using(ECDbTestHelper.createECDb(outDir, fileName,
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECEntityClass typeName="Person" modifier="Sealed">
         <ECProperty propertyName="Name" typeName="string"/>
@@ -95,8 +95,8 @@ describe("ECDb", () => {
 
   it("Run plain SQL", () => {
     const fileName = "plainseql.ecdb";
-    const ecdbPath: string = path.join(_outDir, fileName);
-    using(ECDbTestHelper.createECDb(_outDir, fileName), (testECDb: ECDb) => {
+    const ecdbPath: string = path.join(outDir, fileName);
+    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
       assert.isTrue(testECDb.isOpen);
 
       testECDb.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {

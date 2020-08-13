@@ -78,7 +78,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
-    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
@@ -89,7 +89,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
-      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+      this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
@@ -102,7 +102,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
       const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
       if (typeof primitiveValue === "string") {
-        initialValue = primitiveValue as string;
+        initialValue = primitiveValue;
         valueIsNumber = false;
       } else {
         initialValue = primitiveValue as number;

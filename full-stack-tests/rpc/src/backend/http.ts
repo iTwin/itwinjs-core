@@ -23,7 +23,7 @@ async function init() {
 
   initializeAttachedInterfacesTest(rpcConfig);
 
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   console.log("Web backend for full-stack-tests listening on port " + port);
 }
 

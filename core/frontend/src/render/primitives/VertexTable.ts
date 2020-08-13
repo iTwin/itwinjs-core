@@ -244,7 +244,7 @@ export class PointStringParams {
 }
 
 /** Parameter associated with each vertex index of a tesselated polyline. */
-const enum PolylineParam {
+const enum PolylineParam { // eslint-disable-line no-restricted-syntax
   kNone = 0,
   kSquare = 1 * 3,
   kMiter = 2 * 3,

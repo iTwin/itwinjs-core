@@ -18,10 +18,10 @@ import { ViewState } from "../ViewState";
  */
 export namespace FeatureSymbology {
   /** @deprecated use [FeatureAppearanceProps]($common) */
-  export interface AppearanceProps extends FeatureAppearanceProps { } // tslint:disable-line no-empty-interface
+  export interface AppearanceProps extends FeatureAppearanceProps { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
   /** @deprecated use [FeatureAppearance]($common) */
-  export class Appearance extends FeatureAppearance { } // tslint:disable-line no-empty-interface
+  export class Appearance extends FeatureAppearance { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
   /** Allows a [[Viewport]] to customize the appearance of individual [Feature]($common)s within it.
    *

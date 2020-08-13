@@ -7,13 +7,13 @@ import { dispose, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import {
   ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
 } from "@bentley/frontend-devtools";
-import { LinePixels, RgbColor } from "@bentley/imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@bentley/imodeljs-common";
 import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 export class Provider implements FeatureOverrideProvider {
-  private readonly _elementOvrs = new Map<Id64String, FeatureSymbology.Appearance>();
-  private _defaultOvrs: FeatureSymbology.Appearance | undefined;
+  private readonly _elementOvrs = new Map<Id64String, FeatureAppearance>();
+  private _defaultOvrs: FeatureAppearance | undefined;
   private readonly _vp: Viewport;
 
   private constructor(vp: Viewport) { this._vp = vp; }
@@ -24,7 +24,7 @@ export class Provider implements FeatureOverrideProvider {
       ovrs.setDefaultOverrides(this._defaultOvrs);
   }
 
-  public overrideElements(app: FeatureSymbology.Appearance): void {
+  public overrideElements(app: FeatureAppearance): void {
     for (const id of this._vp.iModel.selectionSet.elements)
       this._elementOvrs.set(id, app);
 
@@ -33,7 +33,7 @@ export class Provider implements FeatureOverrideProvider {
 
   public overrideElementsByArray(elementOvrs: any[]): void {
     elementOvrs.forEach((eo) => {
-      const fsa = FeatureSymbology.Appearance.fromJSON(JSON.parse(eo.fsa) as FeatureSymbology.AppearanceProps);
+      const fsa = FeatureAppearance.fromJSON(JSON.parse(eo.fsa) as FeatureAppearanceProps);
       if (eo.id === "-default-")
         this.defaults = fsa;
       else
@@ -68,7 +68,7 @@ export class Provider implements FeatureOverrideProvider {
     this.sync();
   }
 
-  public set defaults(value: FeatureSymbology.Appearance | undefined) {
+  public set defaults(value: FeatureAppearance | undefined) {
     this._defaultOvrs = value;
     this.sync();
   }
@@ -97,7 +97,7 @@ export class Provider implements FeatureOverrideProvider {
 }
 
 export class Settings implements IDisposable {
-  private _appearance = FeatureSymbology.Appearance.defaults;
+  private _appearance = FeatureAppearance.defaults;
   private readonly _vp: Viewport;
   private readonly _parent: HTMLElement;
   private readonly _element: HTMLElement;
@@ -178,7 +178,7 @@ export class Settings implements IDisposable {
   private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized", value: any): void {
     const props = this._appearance.toJSON();
     props[field] = value;
-    this._appearance = FeatureSymbology.Appearance.fromJSON(props);
+    this._appearance = FeatureAppearance.fromJSON(props);
   }
 
   private updateColor(rgb: RgbColor | undefined): void { this.updateAppearance("rgb", rgb); }

@@ -47,6 +47,8 @@ import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 // import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
 
+/* eslint-disable react/jsx-key */
+
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";
   public static unifiedSelectionPropertyGridId = "UnifiedSelectionPropertyGrid";
@@ -109,7 +111,7 @@ export class ViewsFrontstage extends FrontstageProvider {
 
   private _onEmphasizeElementsChangedHandler = (args: EmphasizeElementsChangedArgs) => {
     if (FrontstageManager.activeFrontstageDef && FrontstageManager.activeFrontstageId === ViewsFrontstage.stageId)
-      this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // tslint:disable-line: no-floating-promises
+      this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {

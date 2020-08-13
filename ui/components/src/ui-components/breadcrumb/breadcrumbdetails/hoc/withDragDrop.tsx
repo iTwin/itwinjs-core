@@ -15,7 +15,7 @@ import { TableDataProvider } from "../../../table/TableDataProvider";
 import { TreeNodeItem } from "../../../tree/TreeDataProvider";
 import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Type for drag and drop,
@@ -37,12 +37,12 @@ export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
  * breadcrumb component.
  * @beta
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, DragDropObject extends BreadcrumbDetailsDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDetailsDragDropProps<DragDropObject>> {
 
   type CombinedProps = P & BreadcrumbDetailsDragDropProps<DragDropObject>;
 
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   return class WithDragAndDrop extends React.Component<CombinedProps> {
 
     public static get displayName() { return `WithDragDrop(${getDisplayName(BreadcrumbComponent)})`; }
@@ -131,9 +131,9 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
       };
       return dropProps;
     }
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private renderTable = (props: TableProps, node: TreeNodeItem, children: TreeNodeItem[]): React.ReactNode => {
-      const DDTable = withTableDragDrop<TableProps, DragDropObject>(Table); // tslint:disable-line:variable-name
+      const DDTable = withTableDragDrop<TableProps, DragDropObject>(Table); // eslint-disable-line @typescript-eslint/naming-convention
       return (
         <DDTable
           {...props}
@@ -143,7 +143,7 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
     }
 
     public render() {
-      const { dragProps, dropProps, renderContent, ...breadcrumbProps } = this.props as any;
+      const { dragProps, dropProps, renderContent, ...breadcrumbProps } = this.props as any; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <BreadcrumbComponent {...breadcrumbProps}
           renderTable={this.renderTable} />

@@ -473,9 +473,9 @@ export class ClipUtilities {
    */
   public static isClipper(obj: any): boolean {
     if (obj) {
-      if ((obj as any).isPointOnOrInside
-        && (obj as any).announceClippedSegmentIntervals
-        && (obj as any).announceClippedArcIntervals)
+      if (obj.isPointOnOrInside
+        && obj.announceClippedSegmentIntervals
+        && obj.announceClippedArcIntervals)
         return true;
     }
     return false;

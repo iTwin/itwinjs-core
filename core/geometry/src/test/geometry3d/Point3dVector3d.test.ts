@@ -12,7 +12,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 export class MatrixTests {
 
   public static testCreateProperties(ck: bsiChecker.Checker) {

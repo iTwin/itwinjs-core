@@ -55,7 +55,7 @@ import { Techniques } from "./Technique";
 import { TerrainMeshGeometry } from "./TerrainMesh";
 import { Texture, TextureHandle } from "./Texture";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** @internal */
 export const enum ContextState {
@@ -607,7 +607,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     // Make this System a subscriber to the the IModelConnection onClose event
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
-    canvas.addEventListener("webglcontextlost", () => this.handleContextLoss(), false);
+    canvas.addEventListener("webglcontextlost", async () => this.handleContextLoss(), false);
   }
 
   private async handleContextLoss(): Promise<void> {

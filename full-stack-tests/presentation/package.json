@@ -14,7 +14,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "mocha --opts ./mocha.opts ./lib/**/*.js --grep \"#with-services\" --invert",
     "test:integration": "mocha --opts ./mocha.opts ./lib/**/*.js --grep \"#with-services\"",
     "cover": "npm run test"
@@ -75,11 +75,13 @@
     "@types/testing-library__react-hooks": "^3.1.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
+    "eslint": "^6.8.0",
     "ignore-styles": "^5.0.1",
     "jsdom-global": "3.0.2",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

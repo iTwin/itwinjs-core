@@ -77,7 +77,7 @@ export class ElementEditor3d {
    */
   public async pushState(): Promise<void> {
     this._mustBeOpen();
-    this._rpc.pushState(this.iModelConnection.getRpcProps(), this._guid);
+    await this._rpc.pushState(this.iModelConnection.getRpcProps(), this._guid);
   }
 
   /**
@@ -86,7 +86,7 @@ export class ElementEditor3d {
    */
   public async popState(): Promise<void> {
     this._mustBeOpen();
-    this._rpc.popState(this.iModelConnection.getRpcProps(), this._guid);
+    await this._rpc.popState(this.iModelConnection.getRpcProps(), this._guid);
   }
 
   /**

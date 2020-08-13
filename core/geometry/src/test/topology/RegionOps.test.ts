@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 
 import { expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";

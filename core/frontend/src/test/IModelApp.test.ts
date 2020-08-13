@@ -62,6 +62,7 @@ class TestApp extends MockRender.App {
     IModelApp.toolAdmin.onInitialized();
 
     // register an anonymous class with the toolId "Null.Tool"
+    // eslint-disable-next-line @typescript-eslint/class-name-casing
     const testNull = class extends Tool { public static toolId = "Null.Tool"; public run() { testVal1 = "fromNullTool"; return true; } };
     testNull.register(this.testNamespace);
   }
@@ -71,7 +72,7 @@ class TestApp extends MockRender.App {
 
 describe("IModelApp", () => {
   before(async () => TestApp.startup());
-  after(() => TestApp.shutdown());
+  after(async () => TestApp.shutdown());
 
   it("TestApp should override correctly", () => {
     assert.instanceOf(IModelApp.accuDraw, TestAccuDraw, "accudraw override");
@@ -132,7 +133,7 @@ describe("IModelApp", () => {
     expect(IModelApp.hasRenderSystem).to.be.true;
     let canvas = document.getElementById("WebGLTestCanvas") as HTMLCanvasElement;
     if (null === canvas) {
-      canvas = document.createElement("canvas") as HTMLCanvasElement;
+      canvas = document.createElement("canvas");
       if (null !== canvas) {
         canvas.id = "WebGLTestCanvas";
         document.body.appendChild(document.createTextNode("WebGL tests"));

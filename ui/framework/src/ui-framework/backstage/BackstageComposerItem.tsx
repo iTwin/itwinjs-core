@@ -54,7 +54,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
     const frontstageDef = FrontstageManager.findFrontstageDef(item.stageId);
     if (!frontstageDef)
       return Logger.logError("BackstageComposerStageLauncher", `Frontstage with id '${item.stageId}' not found`);
-    FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+    FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [manager, item.stageId]);
   const activeFrontstageId = useActiveFrontstageId();
   return (

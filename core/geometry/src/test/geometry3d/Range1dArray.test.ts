@@ -10,7 +10,7 @@ import { compareRange1dLexicalLowHigh, Range1dArray } from "../../numerics/Range
 import { Checker } from "../Checker";
 
 // import { prettyPrint } from "./testFunctions";
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 /**
  *
  * @param numRange number of ranges
@@ -47,7 +47,7 @@ function constructGapPoints(data: GrowableFloat64Array, leftDelta: undefined | n
     if (leftDelta !== undefined)
       result.push(a + leftDelta);
     if (interiorFraction !== undefined) {
-      for (let i = 1; i < data.length; i++ , a = b) {
+      for (let i = 1; i < data.length; i++, a = b) {
         b = data.atUncheckedIndex(i);
         result.push(Geometry.interpolate(a, interiorFraction, b));
       }

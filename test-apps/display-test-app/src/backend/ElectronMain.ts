@@ -8,7 +8,7 @@ import { IModelJsElectronManager, StandardElectronManager, WebpackDevServerElect
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeBackend } from "./backend";
 
-(async () => { // tslint:disable-line:no-floating-promises
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   // Start the backend
   await initializeBackend();
 
@@ -75,7 +75,7 @@ import { getRpcInterfaces, initializeBackend } from "./backend";
   }
 
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
-  const configuration = require(configPathname); // tslint:disable-line:no-var-requires
+  const configuration = require(configPathname); // eslint-disable-line @typescript-eslint/no-var-requires
   if (configuration.useIModelBank) {
     electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)

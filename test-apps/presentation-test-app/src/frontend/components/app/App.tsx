@@ -47,12 +47,12 @@ export default class App extends React.Component<{}, State> {
     contentRatio: 0.7,
   };
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onIModelSelected = async (imodel: IModelConnection | undefined) => {
     this.setState({ imodel });
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onRulesetSelected = (rulesetId: string | undefined) => {
     if (this.state.imodel)
       Presentation.selection.clearSelection("onRulesetChanged", this.state.imodel, 0);
@@ -60,7 +60,7 @@ export default class App extends React.Component<{}, State> {
     this.setState({ currentRulesetId: rulesetId });
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onUnitSystemSelected = (unitSystem: PresentationUnitSystem | undefined) => {
     Presentation.presentation.activeUnitSystem = unitSystem;
     this.setState({ activeUnitSystem: unitSystem });
@@ -102,7 +102,7 @@ export default class App extends React.Component<{}, State> {
       await this._selectAllInstances(similarInstancesProvider);
       this.setState({ similarInstancesProvider });
     } catch (e) {
-      console.log(e); // tslint:disable-line:no-console
+      console.log(e); // eslint-disable-line no-console
       alert(`Can't find similar instances for the selected property`);
       this.setState({ similarInstancesProvider: undefined });
     }

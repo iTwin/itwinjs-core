@@ -315,6 +315,6 @@ export class RealityTileTree extends TileTree {
     }
 
     depthMap.forEach((key, value) => depthString += key + "-" + value + ", ");
-    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // tslint:disable-line
+    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // eslint-disable-line
   }
 }

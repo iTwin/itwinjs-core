@@ -60,7 +60,7 @@ const createStructValue = (description: StructTypeDescription, valueObj: ValuesD
  * @internal
  */
 export const getLinks = (value: string): Array<{ start: number, end: number }> => {
-  return matchLinks(value).map((linkInfo: { index: number; lastIndex: number }) => {
+  return matchLinks(value).map((linkInfo: { index: number, lastIndex: number }) => {
     return { start: linkInfo.index, end: linkInfo.lastIndex };
   });
 };

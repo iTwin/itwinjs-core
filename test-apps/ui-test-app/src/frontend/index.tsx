@@ -90,7 +90,7 @@ const initialState: SampleAppState = {
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
@@ -180,7 +180,7 @@ export class SampleAppIModelApp {
   public static set uiSettings(v: UiSettings) {
     SampleAppIModelApp._uiSettings = v;
 
-    SampleAppIModelApp._appUiSettings.apply(v);  // tslint:disable-line: no-floating-promises
+    SampleAppIModelApp._appUiSettings.apply(v);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
@@ -219,7 +219,7 @@ export class SampleAppIModelApp {
 
     if (SampleAppIModelApp.testAppConfiguration?.reactAxeConsole) {
       if (process.env.NODE_ENV !== "production") {
-        const axe = require("react-axe");
+        const axe = require("react-axe"); // eslint-disable-line @typescript-eslint/no-var-requires
         axe(React, ReactDOM, 1000);
       }
     }
@@ -360,7 +360,7 @@ export class SampleAppIModelApp {
     }
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
+      FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
         // Frontstage & ScreenViewports are ready
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
       });
@@ -500,7 +500,7 @@ export class SampleAppIModelApp {
 
   public static async showFrontstage(frontstageId: string) {
     const frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
-    FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+    FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }
 
@@ -528,9 +528,9 @@ function mapFrameworkVersionStateToProps(state: RootState) {
   return { frameworkVersion: state.sampleAppState.frameworkVersion };
 }
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
 class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
@@ -540,7 +540,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
     AppUi.initialize();
 
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-    this._initializeSignin(authorized); // tslint:disable-line:no-floating-promises
+    this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     this.state = {
       authorized,
@@ -556,7 +556,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
 
     this.setState({ authorized });
-    this._initializeSignin(authorized); // tslint:disable-line:no-floating-promises
+    this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private setUiSettings(authorized: boolean): void {
@@ -613,7 +613,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
 }
 
 // If we are using a browser, close the current iModel before leaving
-window.addEventListener("beforeunload", async () => {
+window.addEventListener("beforeunload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
@@ -689,7 +689,7 @@ async function main() {
       startWithSnapshots: process.env.imjs_TESTAPP_START_WITH_SNAPSHOTS,
       reactAxeConsole: process.env.imjs_TESTAPP_REACT_AXE_CONSOLE,
     } as TestAppConfiguration;
-    Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // tslint:disable-line:no-console
+    Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
   }
 
   const rpcInterfaces = getSupportedRpcs();
@@ -724,4 +724,4 @@ async function main() {
 }
 
 // Entry point - run the main function
-main(); // tslint:disable-line:no-floating-promises
+main(); // eslint-disable-line @typescript-eslint/no-floating-promises

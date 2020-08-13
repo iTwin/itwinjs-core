@@ -28,7 +28,7 @@ function renderTag(text: string, record: PropertyRecord, highlight?: (text: stri
   );
 }
 
-interface Match { start: number; end: number; }
+interface Match { start: number, end: number }
 
 function matchComparison(matchA: Match, matchB: Match) {
   if (matchA.start > matchB.start)

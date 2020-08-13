@@ -178,7 +178,7 @@ describe("StatusBarComposer", () => {
     });
 
     it("StatusBarComposer should support withStatusBarField components ", () => {
-      // tslint:disable-next-line: variable-name
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const ActivityCenter = withStatusFieldProps(ActivityCenterField);
 
       const items: StatusBarItem[] = [
@@ -196,7 +196,7 @@ describe("StatusBarComposer", () => {
     });
 
     it("StatusBarComposer should support withMessageCenter components ", () => {
-      // tslint:disable-next-line: variable-name
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
 
       const items: StatusBarItem[] = [
@@ -257,7 +257,7 @@ describe("StatusBarComposer", () => {
       const leftItems = wrapper.find("div.uifw-statusbar-left");
       expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
 
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       // console.log(wrapper.debug());
 
       const addonItem1 = wrapper.find("i.icon-visibility-hide-2");
@@ -289,7 +289,7 @@ describe("StatusBarComposer", () => {
       const leftItems = wrapper.find("div.uifw-statusbar-left");
       expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
 
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       // console.log(wrapper.debug());
 
       let addonItem1 = wrapper.find("i.icon-visibility-hide-2");
@@ -379,7 +379,7 @@ describe("StatusBarComposer", () => {
     });
 
     it("will render 4 items without overflow", () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
           return createDOMRect({ width: 168 }); // 4*42
@@ -416,7 +416,7 @@ describe("StatusBarComposer", () => {
     });
 
     it("will render 1 item with overflow - 4 in overflow panel", async () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
           return createDOMRect({ width: 84 }); // 2*42

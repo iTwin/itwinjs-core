@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
+/* eslint-disable @typescript-eslint/promise-function-async */
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
@@ -156,7 +156,7 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.setup((x) => x.getNodesCount(moq.It.isAny())).returns(async () => 0);
 
       // expect the spy to be called on first imodel use
-      await manager.getNodesCount({ // tslint:disable-line:deprecation - false positive
+      await manager.getNodesCount({ // eslint-disable-line deprecation/deprecation
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetId,
       });
@@ -164,7 +164,7 @@ describe("PresentationManager", () => {
       spy.resetHistory();
 
       // expect the spy to not be called second time
-      await manager.getNodesCount({ // tslint:disable-line:deprecation - false positive
+      await manager.getNodesCount({ // eslint-disable-line deprecation/deprecation
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetId,
       });
@@ -175,7 +175,7 @@ describe("PresentationManager", () => {
       onCloseEvent.raiseEvent();
 
       // expect the spy to be called again
-      await manager.getNodesCount({ // tslint:disable-line:deprecation - false positive
+      await manager.getNodesCount({ // eslint-disable-line deprecation/deprecation
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetId,
       });
@@ -189,7 +189,7 @@ describe("PresentationManager", () => {
     it("requests with manager's locale if not set in request options", async () => {
       const locale = faker.random.locale();
       manager.activeLocale = locale;
-      await manager.getNodesCount({  // tslint:disable-line:deprecation - false positive
+      await manager.getNodesCount({  // eslint-disable-line deprecation/deprecation
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
       });
@@ -206,7 +206,7 @@ describe("PresentationManager", () => {
       const locale = faker.random.locale();
       manager.activeLocale = faker.random.locale();
       expect(manager.activeLocale).to.not.eq(locale);
-      await manager.getNodesCount({  // tslint:disable-line:deprecation - false positive
+      await manager.getNodesCount({  // eslint-disable-line deprecation/deprecation
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
         locale,
@@ -310,7 +310,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
         .verifiable();
-      const actualResult = await manager.getNodesAndCount(options, parentNodeKey); // tslint:disable-line:deprecation
+      const actualResult = await manager.getNodesAndCount(options, parentNodeKey); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.deep.eq({ count, nodes });
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -391,7 +391,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
         .verifiable();
-      const actualResult = await manager.getNodes(options, parentNodeKey); // tslint:disable-line:deprecation
+      const actualResult = await manager.getNodes(options, parentNodeKey); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -408,7 +408,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.getPagedNodes(prepareOptions(options)))
         .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
         .verifiable();
-      const actualResult = await manager.getNodes(options); // tslint:disable-line:deprecation
+      const actualResult = await manager.getNodes(options); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -502,7 +502,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.getNodesCount(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getNodesCount(options, parentNodeKey); // tslint:disable-line:deprecation
+      const actualResult = await manager.getNodesCount(options, parentNodeKey); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -588,7 +588,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.getContentDescriptor(prepareOptions({ ...options, displayType: "test", keys: keyset.toJSON(), selection: undefined })))
         .returns(async () => result.toJSON())
         .verifiable();
-      const actualResult = await manager.getContentDescriptor(options, "test", keyset, undefined); // tslint:disable-line:deprecation
+      const actualResult = await manager.getContentDescriptor(options, "test", keyset, undefined); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.be.instanceOf(Descriptor);
       expect(actualResult!.toJSON()).to.deep.eq(result.toJSON());
       rpcRequestsHandlerMock.verifyAll();
@@ -646,7 +646,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getContentSetSize(options, descriptor, keyset); // tslint:disable-line:deprecation
+      const actualResult = await manager.getContentSetSize(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -710,7 +710,7 @@ describe("PresentationManager", () => {
         .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
-      const actualResult = await manager.getContent(options, descriptor, keyset); // tslint:disable-line:deprecation
+      const actualResult = await manager.getContent(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.be.instanceOf(Content);
       expect(actualResult!.descriptor).to.eq(descriptor);
       expect(actualResult!.contentSet).to.deep.eq(result.items);
@@ -804,7 +804,7 @@ describe("PresentationManager", () => {
         .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
-      const actualResult = await manager.getContentAndSize(options, descriptor, keyset); // tslint:disable-line:deprecation
+      const actualResult = await manager.getContentAndSize(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.deep.eq({
         size: result.total,
         content: {
@@ -1055,7 +1055,7 @@ describe("PresentationManager", () => {
         .setup(async (x) => x.getDisplayLabelDefinition(toIModelTokenOptions({ ...options, key: InstanceKey.toJSON(key) })))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getDisplayLabelDefinition(options, key); // tslint:disable-line:deprecation
+      const actualResult = await manager.getDisplayLabelDefinition(options, key); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -1089,7 +1089,7 @@ describe("PresentationManager", () => {
         .setup(async (x) => x.getPagedDisplayLabelDefinitions(toIModelTokenOptions({ ...options, keys: keys.map(InstanceKey.toJSON) })))
         .returns(async () => ({ total: 2, items: result }))
         .verifiable();
-      const actualResult = await manager.getDisplayLabelDefinitions(options, keys); // tslint:disable-line:deprecation
+      const actualResult = await manager.getDisplayLabelDefinitions(options, keys); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });

@@ -14,7 +14,7 @@ import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Ellipsoid, EllipsoidPatch, GeodesicPathPoint, GeodesicPathSolver } from "../../geometry3d/Ellipsoid";
+import { Ellipsoid, EllipsoidPatch, GeodesicPathSolver } from "../../geometry3d/Ellipsoid";
 import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -31,7 +31,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("Ellipsoid", () => {
   Checker.noisy.Ellipsoid = true;
@@ -983,7 +983,7 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       const arcB = ellipsoid.sectionArcWithIntermediateNormal(angleA, 1.0, angleB)!;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA, arcB], x0, y1);
 
-      for (const angle of [/*Angle.createDegrees(10), Angle.createDegrees(5), */ Angle.createDegrees(2)]) {
+      for (const angle of [/* Angle.createDegrees(10), Angle.createDegrees(5), */ Angle.createDegrees(2)]) {
         const path = GeodesicPathSolver.createGeodesicPath(ellipsoid, angleA, angleB, angle);
         if (path) {
           if (Checker.noisy.Ellipsoid) {

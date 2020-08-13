@@ -40,7 +40,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
@@ -166,7 +166,7 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
   }
 }
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 describe("Polyface.HelloWorld", () => {
   it("Polyface.HelloWorld", () => {
     const origin = Point3d.create(1, 2, 3);

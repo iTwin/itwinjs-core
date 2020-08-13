@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
+import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@bentley/imodeljs-common";
 import {
   EmphasizeElements, FeatureOverrideType, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
   StandardViewId,
@@ -205,7 +205,7 @@ describe("EmphasizeElements tests", () => {
     vf.weights = true;
     vp.viewFlags = vf;
 
-    const expectAppearance = (color: ColorDef, type: FeatureOverrideType, expectedAppearance: FeatureSymbology.AppearanceProps) => {
+    const expectAppearance = (color: ColorDef, type: FeatureOverrideType, expectedAppearance: FeatureAppearanceProps) => {
       const emph = EmphasizeElements.getOrCreate(vp);
       const elemId = "0x123";
       const elemIds = new Set<string>([elemId]);
@@ -245,7 +245,7 @@ describe("EmphasizeElements tests", () => {
     EmphasizeElements.clear(vp);
     const emph = EmphasizeElements.getOrCreate(vp);
 
-    interface ColorEntry { color: ColorDef; overrideType: FeatureOverrideType; }
+    interface ColorEntry { color: ColorDef, overrideType: FeatureOverrideType }
     const overrides: ColorEntry[] = [];
     overrides.push({ color: ColorDef.from(200, 150, 100, 50), overrideType: FeatureOverrideType.ColorOnly });
     overrides.push({ color: ColorDef.from(200, 150, 100, 50), overrideType: FeatureOverrideType.AlphaOnly });
@@ -343,7 +343,7 @@ describe("EmphasizeElements tests", () => {
 
     roundTrip((emph, _vp) => {
       expect(emph.defaultAppearance).to.be.undefined;
-      emph.defaultAppearance = FeatureSymbology.Appearance.fromJSON({
+      emph.defaultAppearance = FeatureAppearance.fromJSON({
         rgb: { r: 10, g: 20, b: 30 },
         weight: 4,
         transparency: 0.75,

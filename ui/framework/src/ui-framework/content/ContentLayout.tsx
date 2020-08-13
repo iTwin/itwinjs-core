@@ -21,7 +21,7 @@ import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentView
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
 // Locking into react-split-pane release 0.1.87 and using the require statement works for browser, electron and mocha test environment.
 // import SplitPane from "react-split-pane";
-const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
+const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // eslint-disable-line
 
 /** Properties for [[ContentWrapper]] */
 interface ContentWrapperProps extends CommonProps {

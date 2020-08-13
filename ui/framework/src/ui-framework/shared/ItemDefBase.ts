@@ -51,10 +51,10 @@ export abstract class ItemDefBase {
   public iconElement?: React.ReactNode;
 
   public static initializeDef(me: ItemDefBase, itemProps: ItemProps): void {
-    me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true; // tslint:disable-line:deprecation
-    me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true; // tslint:disable-line:deprecation
-    me.isHidden = (itemProps.isHidden === undefined && itemProps.isVisible !== undefined) ? !itemProps.isVisible : itemProps.isHidden; // tslint:disable-line:deprecation
-    me.isDisabled = (itemProps.isDisabled === undefined && itemProps.isEnabled !== undefined) ? !itemProps.isEnabled : itemProps.isDisabled; // tslint:disable-line:deprecation
+    me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true; // eslint-disable-line deprecation/deprecation
+    me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true; // eslint-disable-line deprecation/deprecation
+    me.isHidden = (itemProps.isHidden === undefined && itemProps.isVisible !== undefined) ? !itemProps.isVisible : itemProps.isHidden; // eslint-disable-line deprecation/deprecation
+    me.isDisabled = (itemProps.isDisabled === undefined && itemProps.isEnabled !== undefined) ? !itemProps.isEnabled : itemProps.isDisabled; // eslint-disable-line deprecation/deprecation
 
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
     me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
@@ -73,12 +73,12 @@ export abstract class ItemDefBase {
     me._description = PropsHelper.getStringSpec(itemProps.description, itemProps.descriptionKey);
 
     // deprecated
-    if (itemProps.stateFunc) // tslint:disable-line:deprecation
-      me.stateFunc = itemProps.stateFunc; // tslint:disable-line:deprecation
+    if (itemProps.stateFunc) // eslint-disable-line deprecation/deprecation
+      me.stateFunc = itemProps.stateFunc; // eslint-disable-line deprecation/deprecation
 
     // deprecated
-    if (itemProps.stateSyncIds) // tslint:disable-line:deprecation
-      me.stateSyncIds = itemProps.stateSyncIds.map((value: string) => value.toLowerCase()); // tslint:disable-line:deprecation
+    if (itemProps.stateSyncIds) // eslint-disable-line deprecation/deprecation
+      me.stateSyncIds = itemProps.stateSyncIds.map((value: string) => value.toLowerCase()); // eslint-disable-line deprecation/deprecation
   }
 
   constructor(itemProps: ItemProps) {

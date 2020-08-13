@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/orbitgt-core"
+    }
+  ],
+  "packageName": "@bentley/orbitgt-core",
+  "email": "paulius.valiunas@bentley.com"
+}

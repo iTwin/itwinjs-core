@@ -921,7 +921,7 @@ export abstract class IModelDb extends IModel {
    */
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     const meta = iModel.getMetaData(classFullName); // will load if necessary
-    for (const propName in meta.properties) {    // tslint:disable-line: forin
+    for (const propName in meta.properties) { // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
       if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
         func(propName, propMeta);
@@ -931,7 +931,7 @@ export abstract class IModelDb extends IModel {
       meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
   }
 
-  /*** @internal */
+  /** @internal */
   private loadMetaData(classFullName: string) {
     if (this.classMetaDataRegistry.find(classFullName))
       return;
@@ -1138,7 +1138,7 @@ export abstract class IModelDb extends IModel {
 }
 
 /** @public */
-export namespace IModelDb {
+export namespace IModelDb { // eslint-disable-line no-redeclare
 
   /** The collection of models in an [[IModelDb]].
    * @public

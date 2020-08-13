@@ -25,13 +25,13 @@ export default class IModelSelector extends React.Component<Props, State> {
     this.state = { availableImodels: [] };
   }
 
-  public async componentWillMount() {
+  public async componentWillMount() { // eslint-disable-line react/no-deprecated
     const imodels = await MyAppFrontend.getSampleImodels();
     imodels.splice(0, 0, "");
     this.setState({ availableImodels: imodels });
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onImodelSelected = async (e: any) => {
     const imodelPath = e.target.value;
     if (MyAppFrontend.iModel) {
@@ -45,8 +45,8 @@ export default class IModelSelector extends React.Component<Props, State> {
       try {
         imodel = await MyAppFrontend.openIModel(imodelPath);
         this.setState((prev: State) => ({ ...prev, activeImodel: imodelPath, error: undefined }));
-      } catch (e) {
-        this.setState((prev: State) => ({ ...prev, activeImodel: undefined, error: e }));
+      } catch (err) {
+        this.setState((prev: State) => ({ ...prev, activeImodel: undefined, error: err }));
       }
     }
     this.props.onIModelSelected(imodel);

@@ -8,7 +8,7 @@ import { BackstageItemUtilities } from "../../ui-framework/backstage/BackstageIt
 
 describe("BackstageItemUtilities", () => {
   it("createStageLauncher should create a valid launcher", () => {
-    const launcher = BackstageItemUtilities.createStageLauncher("Test1", 100, 10, "label", undefined, "icon-placeholder", { isDisabled: true }); // tslint:disable-line:deprecation
+    const launcher = BackstageItemUtilities.createStageLauncher("Test1", 100, 10, "label", undefined, "icon-placeholder", { isDisabled: true }); // eslint-disable-line deprecation/deprecation
     expect(launcher.groupPriority).to.eq(100);
     expect(launcher.itemPriority).to.eq(10);
     expect(launcher.label).to.eq("label");
@@ -17,7 +17,7 @@ describe("BackstageItemUtilities", () => {
   });
 
   it("createStageLauncher should create a valid launcher", () => {
-    const actionItem = BackstageItemUtilities.createActionItem("id", 200, 30, () => { }, "label", undefined, "icon-placeholder", { isDisabled: true }); // tslint:disable-line:deprecation
+    const actionItem = BackstageItemUtilities.createActionItem("id", 200, 30, () => { }, "label", undefined, "icon-placeholder", { isDisabled: true }); // eslint-disable-line deprecation/deprecation
     expect(actionItem.id).to.eq("id");
     expect(actionItem.groupPriority).to.eq(200);
     expect(actionItem.itemPriority).to.eq(30);

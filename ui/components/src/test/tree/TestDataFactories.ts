@@ -6,9 +6,9 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { BeInspireTree, DelayLoadedTreeNodeItem, DEPRECATED_Tree as Tree, ITreeDataProvider, PageOptions, TreeNodeItem } from "../../ui-components";
 import { ResolvablePromise } from "../test-helpers/misc";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /** @internal */
 export interface TestTreeHierarchyNode {
@@ -30,7 +30,7 @@ export class TestTreeDataProvider implements ITreeDataProvider {
     if (!node.delayedLoad)
       throw new Error(`Attempted to resolve a non-deferred load for node ${nodeId}`);
 
-    if (!this._delayedLoads[nodeId])
+    if (!this._delayedLoads[nodeId]) // eslint-disable-line @typescript-eslint/no-misused-promises
       throw new Error(`Deferred load for node '${nodeId}' has not been initiated`);
 
     await this._delayedLoads[nodeId].resolve(this._makeTreeNodeItem(node));
@@ -45,7 +45,7 @@ export class TestTreeDataProvider implements ITreeDataProvider {
     const children = this._getChildren(parent).slice(page.start!, page.start! + page.size!);
     const nodesToDelayLoad = children.filter((node) => node.delayedLoad);
     await Promise.all(nodesToDelayLoad.map((node) => {
-      if (!this._delayedLoads[node.id])
+      if (!this._delayedLoads[node.id]) // eslint-disable-line @typescript-eslint/no-misused-promises
         this._delayedLoads[node.id] = new ResolvablePromise<DelayLoadedTreeNodeItem>();
 
       return this._delayedLoads[node.id];

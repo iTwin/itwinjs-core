@@ -52,13 +52,13 @@ async function setupToolRegistryTests() {
 }
 
 function logResult(..._args: any[]) {
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   // console.log(..._args);
 }
 
 describe("ToolRegistry", () => {
   before(async () => setupToolRegistryTests());
-  after(() => TestCommandApp.shutdown());
+  after(async () => TestCommandApp.shutdown());
 
   it("Should find Select tool", async () => {
     const command = IModelApp.tools.findExactMatch("Select Elements");
@@ -151,7 +151,7 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
     return;
   logResult(searchResults.length, title);
 
-  // tslint:disablenext-line:prefer-for-of
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
     const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
     assert.isDefined(thisResult);
@@ -160,9 +160,9 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
     logResult(keyin);
     assert.isTrue(keyin && keyin.length > 0);
 
-    const boldMask: boolean[] | undefined = thisResult!.getBoldMask();
+    const boldMask: boolean[] = thisResult!.getBoldMask();
     assert.isTrue(boldMask && boldMask.length > 0);
-    logResult(caretStringFromBoldMask(keyin!, boldMask!));
+    logResult(caretStringFromBoldMask(keyin, boldMask));
   }
 }
 

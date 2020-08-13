@@ -20,7 +20,7 @@ export function onOverflowLabelAndEditorResize() {
 }
 
 /** This component takes a DockedToolSetting "wrapper" component and extract only the label and editor components from it */
-// tslint:disable-next-line: variable-name no-shadowed-variable
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-shadow
 const OverflowLabelAndEditor = React.memo(function OverflowLabelAndEditor({ wrapper }: { wrapper: React.ReactNode }) {
   assert(React.isValidElement(wrapper));
   const entryValue = React.useMemo<DockedToolSettingsEntryContextArgs>(() => ({
@@ -94,7 +94,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
     }
     return acc;
   }, []) : [];
-  // tslint:disable-next-line: variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const PanelContainer = props.panelContainer ? props.panelContainer : DefaultPanelContainer;
   const className = classnames(
     "nz-toolSettings-docked",
@@ -157,7 +157,7 @@ interface DockedToolSettingsEntryProps {
   getOnResize: (key: string) => (w: number) => void;
 }
 
-// tslint:disable-next-line: variable-name no-shadowed-variable
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-shadow
 const DockedToolSettingsEntry = React.memo<DockedToolSettingsEntryProps>(function DockedToolSettingsEntry({ children, entryKey, getOnResize }) {
   const onResize = React.useMemo(() => getOnResize(entryKey), [getOnResize, entryKey]);
   const entry = React.useMemo<DockedToolSettingsEntryContextArgs>(() => ({
@@ -295,7 +295,7 @@ interface DockedToolSettingsEntryContextArgs {
   readonly onResize: (w: number) => void;
 }
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const DockedToolSettingsEntryContext = React.createContext<DockedToolSettingsEntryContextArgs>(null!);
 DockedToolSettingsEntryContext.displayName = "nz:DockedToolSettingsEntryContext";
 

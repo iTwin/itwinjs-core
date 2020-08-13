@@ -8,6 +8,8 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useWidgetTarget } from "../../ui-ninezone";
 import { createDragItemInfo, createDragStartArgs, setRefValue } from "../Providers";
 
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 describe("DragManager", () => {
   describe("isDraggedType", () => {
     it("should return true", () => {
@@ -53,7 +55,7 @@ describe("useTabTarget", () => {
       tabIndex: 0,
       widgetId: "w1",
     }), {
-      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />,
+      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });
 
     const element = document.createElement("div");
@@ -85,7 +87,7 @@ describe("usePanelTarget", () => {
     const { result } = renderHook(() => usePanelTarget({
       side: "left",
     }), {
-      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />,
+      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });
 
     const element = document.createElement("div");
@@ -118,7 +120,7 @@ describe("useWidgetTarget", () => {
       side: "left",
       widgetIndex: 0,
     }), {
-      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />,
+      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });
 
     const element = document.createElement("div");
@@ -141,7 +143,7 @@ describe("useIsDraggedType", () => {
   it("should return true", () => {
     const dragManager = new DragManager();
     const { result } = renderHook(() => useIsDraggedType("tab"), {
-      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />,
+      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });
 
     act(() => {

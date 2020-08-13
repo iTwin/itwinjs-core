@@ -23,7 +23,7 @@ export class RulesetRegistrationHelper implements IDisposable {
   public constructor(ruleset: Ruleset | string) {
     this._rulesetId = (typeof ruleset === "string") ? ruleset : ruleset.id;
     if (typeof ruleset === "object") {
-      this.registerRuleset(ruleset); // tslint:disable-line: no-floating-promises
+      this.registerRuleset(ruleset); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 

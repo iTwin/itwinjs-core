@@ -7,7 +7,7 @@
  * @module Serialization
  */
 
-/* tslint:disable: object-literal-key-quotes */
+/* eslint-disable quote-props */
 
 /**
  * Utilities to compare json objects by search through properties.
@@ -16,13 +16,13 @@
 export class DeepCompare {
   /** Statistical accumulations during searchers. */
   public typeCounts = {
-    "numbers": 0,
-    "arrays": 0,
-    "functions": 0,
-    "objects": 0,
-    "strings": 0,
-    "booleans": 0,
-    "undefined": 0,
+    numbers: 0,
+    arrays: 0,
+    functions: 0,
+    objects: 0,
+    strings: 0,
+    booleans: 0,
+    undefined: 0,
   };
   /** Counts of property names encountered during various searches. */
   public propertyCounts: { [key: string]: any } = {};

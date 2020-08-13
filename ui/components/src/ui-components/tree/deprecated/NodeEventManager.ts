@@ -12,7 +12,7 @@ import { TreeNodeItem } from "../TreeDataProvider";
 import { BeInspireTreeNode } from "./component/BeInspireTree";
 import { NodeKey, NodeLoadingOrchestrator, NodeSet } from "./NodeLoadingOrchestrator";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 interface NodeEventManagerCallbacks {
   onSelectionModified: (selectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>, deselectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => void;

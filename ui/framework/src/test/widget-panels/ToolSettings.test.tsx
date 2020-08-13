@@ -132,7 +132,7 @@ describe("useHorizontalToolSettingNodes", () => {
 
   it("should return undefined if activeToolSettingsProvider is unset", () => {
     const { result } = renderHook(() => useHorizontalToolSettingNodes());
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       FrontstageManager.onToolActivatedEvent.emit({ toolId: "t1" });
     });
     (result.current === undefined).should.true;
@@ -157,7 +157,7 @@ describe("useHorizontalToolSettingNodes", () => {
     sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
     const sut = renderHook(() => useHorizontalToolSettingNodes());
 
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
       FrontstageManager.onToolActivatedEvent.emit({
         toolId: "",
@@ -196,7 +196,7 @@ describe("useToolSettingsNode", () => {
     const sut = renderHook(() => useToolSettingsNode());
 
     const node = <div>Hello World</div>;
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       sandbox.stub(activeToolSettingsProvider, "toolSettingsNode").get(() => node);
       FrontstageManager.onToolActivatedEvent.emit({
         toolId: "",
@@ -215,7 +215,7 @@ describe("useToolSettingsNode", () => {
 
   it("should return undefined if activeToolSettingsProvider is unset", () => {
     const { result } = renderHook(() => useToolSettingsNode());
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       FrontstageManager.onToolActivatedEvent.emit({ toolId: "t1" });
     });
     (result.current === undefined).should.true;

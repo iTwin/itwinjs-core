@@ -51,6 +51,6 @@ export namespace Primitives {
     parts: CompositePart[];
   }
 
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite;
 }

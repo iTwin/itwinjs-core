@@ -15,7 +15,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 function verifyCompletePolarSinglePoint(ck: Checker, partialData: PolarData, data: PolarData | PolarData[] | undefined, expectGeometry: boolean) {
   if (data === undefined) {

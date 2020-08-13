@@ -114,7 +114,7 @@ export class Workflow extends ItemDefBase {
    */
   public setActiveTask(task: Task) {
     this.activeTaskId = task.taskId;
-    task.onActivated(); // tslint:disable-line:no-floating-promises
+    task.onActivated(); // eslint-disable-line @typescript-eslint/no-floating-promises
     WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
   }
 
@@ -125,7 +125,7 @@ export class Workflow extends ItemDefBase {
     for (const key of this._tasks.keys()) {
       const task: Task | undefined = this._tasks.get(key);
       // istanbul ignore else
-      if (task && task.isVisible) // tslint:disable-line:deprecation
+      if (task && task.isVisible) // eslint-disable-line deprecation/deprecation
         sortedTasks.push(task);
     }
 

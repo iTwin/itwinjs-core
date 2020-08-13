@@ -17,7 +17,7 @@ import {
 } from "../../numerics/Polynomials";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console no-trailing-whitespace */
+/* eslint-disable no-console, no-trailing-spaces */
 
 // Toggle for printing in cubic & quartic testers
 const printAll = false;
@@ -689,7 +689,7 @@ it("NickelsA", () => {
           // Easy to confirm that the returned roots are in fact roots.
           // This does NOT confirm that all roots were found.
           for (let i = 0; i < roots.length; i++)
-            ck.testCoordinate(0, cubic.evaluate(roots.atUncheckedIndex (i)), " abcd", a, b, c, d);
+            ck.testCoordinate(0, cubic.evaluate(roots.atUncheckedIndex(i)), " abcd", a, b, c, d);
         }
       }
     }

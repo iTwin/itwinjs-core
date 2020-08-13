@@ -44,7 +44,7 @@ export class CoincidentGeometryQuery {
       detail.fraction1 = f1;
     }
     detail.point = pointA.interpolate(detail.fraction, pointB, detail.point);
-    detail.point1 = pointA.interpolate(detail.fraction1!, pointB, detail.point1);
+    detail.point1 = pointA.interpolate(detail.fraction1, pointB, detail.point1);
 
   }
 

@@ -18,8 +18,8 @@ import { publish } from "rxjs/internal/operators/publish";
 import { refCount } from "rxjs/internal/operators/refCount";
 import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
 import { switchAll } from "rxjs/internal/operators/switchAll";
-import { asap as asapScheduler } from "rxjs/internal/scheduler/asap";
-import { queue as queueScheduler } from "rxjs/internal/scheduler/queue";
+import { asapScheduler } from "rxjs/internal/scheduler/asap";
+import { queueScheduler } from "rxjs/internal/scheduler/queue";
 import { Subject } from "rxjs/internal/Subject";
 
 const MAX_CONCURRENT_SUBSCRIPTIONS = 1;

@@ -81,7 +81,7 @@ import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
 import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
-const RULESET_TREE = require("./Tree.ruleset.json"); // tslint:disable-line: no-var-requires
+const RULESET_TREE = require("./Tree.ruleset.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /** React properties for the tree component */
 export interface Props {

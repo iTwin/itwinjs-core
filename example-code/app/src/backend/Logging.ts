@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 // __PUBLISH_EXTRACT_START__ Logging-configureLoggingAndStreams.example-code
 import { BentleyError, EnvMacroSubst, IModelStatus, Logger, LoggerLevelsConfig } from "@bentley/bentleyjs-core";
 import { BunyanLoggerConfig, SeqConfig, SeqLoggerConfig } from "@bentley/logger-config";

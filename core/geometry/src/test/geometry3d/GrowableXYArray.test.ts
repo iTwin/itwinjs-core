@@ -20,7 +20,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 
 describe("GrowableXYArray", () => {
   it("PointMoments", () => {

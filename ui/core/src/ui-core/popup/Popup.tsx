@@ -283,7 +283,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const scrollX = (window.scrollX !== undefined) ? window.scrollX : /* istanbul ignore next */ window.pageXOffset;
 
     // const popupRect = this._popup.getBoundingClientRect();
-    const targetRect = target!.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
 
     const { popupWidth, popupHeight } = this._getPopupDimensions();
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
-import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { BriefcaseQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -221,7 +221,7 @@ export class HubUtility {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
-    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true/*=overwrite*/);
+    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
@@ -274,7 +274,7 @@ export class HubUtility {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
-    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, false/*=overwrite*/);
+    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, false /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
@@ -288,13 +288,11 @@ export class HubUtility {
     const lastMergedChangeSet = changeSets.find((value: ChangeSetToken) => value.id === lastAppliedChangeSetId);
     const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value: ChangeSetToken) => value.index > lastMergedChangeSet!.index) : changeSets;
 
-    let status: ChangeSetStatus;
-
     // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
+    const status: ChangeSetStatus = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
 
     nativeDb.closeIModel();
     assert(status === ChangeSetStatus.Success, "Error applying change sets");
@@ -309,7 +307,7 @@ export class HubUtility {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
-    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true/*=overwrite*/);
+    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     const result = nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
@@ -348,7 +346,7 @@ export class HubUtility {
    */
   public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, iModelDir: string) {
     Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
-    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, iModelDir, true/*=reDownload*/);
+    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, iModelDir, true /* =reDownload */);
 
     this.validateAllChangeSetOperationsOnDisk(iModelDir);
   }

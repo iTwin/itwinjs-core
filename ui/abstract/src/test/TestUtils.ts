@@ -5,7 +5,6 @@
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UiAbstract } from "../ui-abstract/UiAbstract";
 
-// tslint:disable: completed-docs
 
 export class TestUtils {
   private static _i18n?: I18N;
@@ -23,7 +22,7 @@ export class TestUtils {
   public static async initializeUiAbstract() {
     if (!TestUtils._uiAbstractInitialized) {
       // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
+      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
       await UiAbstract.initialize(TestUtils.i18n);
       TestUtils._uiAbstractInitialized = true;
@@ -64,4 +63,4 @@ export class TestUtils {
 
 }
 
-export default TestUtils;   // tslint:disable-line: no-default-export
+export default TestUtils;   // eslint-disable-line: no-default-export

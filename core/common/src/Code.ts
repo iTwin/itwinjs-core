@@ -170,14 +170,14 @@ export class CodeSpec {
    * @see [CodeSpecs.insert]($backend)
    */
   public static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec {
-    return new CodeSpec(iModel, Id64.invalid, name, scopeType, scopeReq, undefined); // tslint:disable-line:deprecation
+    return new CodeSpec(iModel, Id64.invalid, name, scopeType, scopeReq, undefined); // eslint-disable-line deprecation/deprecation
   }
 
   /** Create a new CodeSpec directly from JSON. Used internally by the CodeSpecs.load function.
    * @internal
    */
   public static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec {
-    return new CodeSpec(iModel, id, name, undefined, undefined, properties); // tslint:disable-line:deprecation
+    return new CodeSpec(iModel, id, name, undefined, undefined, properties); // eslint-disable-line deprecation/deprecation
   }
 
   /** Will be true if the id of this CodeSpec is valid. */

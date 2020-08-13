@@ -476,10 +476,10 @@ export class CodeHandler {
       requestOptions = {};
       requestOptions.CustomOptions = {};
       if (updateOptions.deniedCodes === false) {
-        requestOptions.CustomOptions.DetailedError_Codes = "false";
+        requestOptions.CustomOptions.DetailedError_Codes = "false"; // eslint-disable-line @typescript-eslint/naming-convention
       }
       if (updateOptions.unlimitedReporting) {
-        requestOptions.CustomOptions.DetailedError_MaximumInstances = "-1";
+        requestOptions.CustomOptions.DetailedError_MaximumInstances = "-1"; // eslint-disable-line @typescript-eslint/naming-convention
       }
       if (updateOptions.continueOnConflict) {
         requestOptions.CustomOptions.ConflictStrategy = "Continue";

@@ -24,7 +24,8 @@ export interface BackArrowProps extends CommonProps, NoChildrenProps {
 /** Back arrow used in [[NestedGroup]] component.
  * @internal
  */
-export const BackArrow = React.memo<React.FC<BackArrowProps>>( // tslint:disable-line: variable-name
+// eslint-disable-next-line react/display-name
+export const BackArrow = React.memo<React.FC<BackArrowProps>>(
   (props: BackArrowProps) => {
     const ref = React.useRef<HTMLDivElement>(null);
     const targeted = useTargeted(ref);

@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
 import { shallow, ShallowWrapper } from "enzyme";
@@ -21,9 +20,9 @@ import {
   DEPRECATED_treeWithFilteringSupport as treeWithFilteringSupport, TreeWithFilteringSupportProps,
 } from "../../presentation-components/tree/WithFilteringSupport";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation, @typescript-eslint/promise-function-async */
 
-// tslint:disable-next-line:variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const FilteredTree = treeWithFilteringSupport(Tree);
 interface State {
   filteredDataProvider?: FilteredPresentationTreeDataProvider;
@@ -48,8 +47,8 @@ describe("Tree withFilteringSupport", () => {
 
   const setupDataProvider = (providerMock: moq.IMock<IPresentationTreeDataProvider>, imodel: IModelConnection, rulesetId: string) => {
     providerMock.reset();
-    providerMock.setup((x) => x.imodel).returns(() => imodel!);
-    providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
+    providerMock.setup((x) => x.imodel).returns(() => imodel);
+    providerMock.setup((x) => x.rulesetId).returns(() => rulesetId);
     providerMock.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString())).returns(async () => []);
   };
 

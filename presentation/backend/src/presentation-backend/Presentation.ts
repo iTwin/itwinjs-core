@@ -60,7 +60,7 @@ export interface PresentationPropsNew extends PresentationManagerProps {
  * Properties that can be used to configure [[Presentation]] API
  * @public
  */
-export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew; // tslint:disable-line:deprecation
+export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew; // eslint-disable-line deprecation/deprecation
 
 interface ClientStoreItem {
   context: ClientRequestContext;

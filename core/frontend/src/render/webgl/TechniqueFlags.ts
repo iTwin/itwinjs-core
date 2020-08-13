@@ -10,7 +10,7 @@ import { RenderMode } from "@bentley/imodeljs-common";
 import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** Specifies how a TechniqueFlags handles feature table/overrides.
  * @internal

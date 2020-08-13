@@ -14,7 +14,7 @@ import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 
 describe("DisplayStyleSettings", () => {
-  interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps; }
+  interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }
 
   it("round-trips plan projection settings", () => {
     const roundTrip = (planProjections: SettingsMap | undefined) => {
@@ -66,7 +66,7 @@ describe("DisplayStyleSettings", () => {
       let count = 0;
       const iter = settings.planProjectionSettings;
       if (undefined !== iter)
-        for (const _entry of iter)
+        for (const _entry of iter) // eslint-disable-line @typescript-eslint/no-unused-vars
           ++count;
 
       return count;
@@ -187,7 +187,7 @@ describe("DisplayStyleSettings overrides", () => {
       terrainSettings: {
         exaggeration: 2.5,
         heightOrigin: -42,
-        nonLocatable: true, // tslint:disable-line:deprecation
+        nonLocatable: true, // eslint-disable-line deprecation/deprecation
         heightOriginMode: 0,
       },
     },

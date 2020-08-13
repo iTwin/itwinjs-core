@@ -72,11 +72,11 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     this._selectionPredicate = params.selectionPredicate;
 
     if (this._visibilityHandler) {
-      this._visibilityHandler.onVisibilityChange = () => this.updateCheckboxes();
+      this._visibilityHandler.onVisibilityChange = async () => this.updateCheckboxes();
     }
 
-    this._removeListener = this.modelSource.onModelChanged.addListener((args) => this.updateCheckboxes(args[1]));
-    this.updateCheckboxes(); // tslint:disable-line: no-floating-promises
+    this._removeListener = this.modelSource.onModelChanged.addListener(async (args) => this.updateCheckboxes(args[1]));
+    this.updateCheckboxes(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   public dispose() {
@@ -128,7 +128,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
       .subscribe({
         complete: () => {
           // needed for categories tree as it currently does no emit event when visibility changes
-          this.updateCheckboxes(); // tslint:disable-line: no-floating-promises
+          this.updateCheckboxes(); // eslint-disable-line @typescript-eslint/no-floating-promises
         },
       });
     return undefined;

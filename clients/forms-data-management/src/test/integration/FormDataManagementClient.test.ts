@@ -7,6 +7,8 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { FormDataManagementClient, FormDefinition, FormInstanceData } from "../../FormDataManagementClient";
 import { TestConfig } from "../TestConfig";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 chai.should();
 
 describe.skip("FormDataManagementClient", () => {

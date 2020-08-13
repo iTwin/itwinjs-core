@@ -15,7 +15,7 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 function verifyPatch(ck: Checker, patch: BilinearPatch) {
   const transform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 10), Matrix3d.createRotationAroundVector(Vector3d.create(1, 4, 2), Angle.createDegrees(20)));
   const patch1 = patch.cloneTransformed(transform)!;

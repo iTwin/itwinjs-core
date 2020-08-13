@@ -40,7 +40,7 @@ class MarkerToolbarProvider implements PopupToolbarProvider {
     this.marker = marker;
     this._viewport = decorator.viewport;
     this.toolbarProps = HyperModeling.markerHandler.getToolbarProps(marker, decorator);
-    this.onToolbarItemExecuted = (id) => HyperModeling.markerHandler.executeCommand(id, marker, decorator);
+    this.onToolbarItemExecuted = (id) => HyperModeling.markerHandler.executeCommand(id, marker, decorator); // eslint-disable-line @typescript-eslint/promise-function-async
   }
 
   public get overToolbarHotspot() {
@@ -187,7 +187,7 @@ export class HyperModelingDecorator implements Decorator {
 
     for (const marker of markers.markers) {
       marker.onMouseEnterEvent.addListener((mkr) => this.showToolbarAfterTimeout(mkr));
-      marker.onMouseButtonEvent.addListener((mkr) => this.toggleMarker(mkr));
+      marker.onMouseButtonEvent.addListener((mkr) => this.toggleMarker(mkr)); // eslint-disable-line @typescript-eslint/promise-function-async
     }
 
     this.updateMarkerVisibility();
@@ -206,7 +206,7 @@ export class HyperModelingDecorator implements Decorator {
     if (changeFlags.viewState) {
       // If we're looking at a different view now, and we did not initiate that, turn off the active marker.
       if (this.viewport.view !== this._appliedSpatialView)
-        this.setActiveMarker(undefined); // tslint:disable-line:no-floating-promises
+        this.setActiveMarker(undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
       else
         this._appliedSpatialView = undefined;
     }

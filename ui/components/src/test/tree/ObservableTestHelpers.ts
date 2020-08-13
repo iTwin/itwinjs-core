@@ -16,6 +16,6 @@ export async function extractSequence<T>(observable: Observable<T>): Promise<T[]
 /** Returns a promise which is resolved when the input subscription is disposed. */
 export async function waitForUnsubscription(subscription: Subscription): Promise<void> {
   const promise = new ResolvablePromise<void>();
-  subscription.add(() => promise.resolve());
+  subscription.add(async () => promise.resolve());
   return promise;
 }

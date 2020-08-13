@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switch to ESLint",
+      "type": "none",
+      "packageName": "@bentley/frontend-authorization-client"
+    }
+  ],
+  "packageName": "@bentley/frontend-authorization-client",
+  "email": "paulius.valiunas@bentley.com"
+}

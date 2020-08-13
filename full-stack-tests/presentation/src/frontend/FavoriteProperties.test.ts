@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable: no-direct-imports
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Field, KeySet } from "@bentley/presentation-common";
@@ -16,6 +15,8 @@ import {
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("Favorite properties", () => {
 

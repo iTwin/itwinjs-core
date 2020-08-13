@@ -7,7 +7,7 @@
  */
 
 import { IndexedXYCollection } from "./IndexedXYCollection";
-/* tslint:disable:variable-name jsdoc-format no-empty */
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Point2d, Vector2d, XY } from "./Point2dVector2d";
 import { XAndY } from "./XYZProps";
 
