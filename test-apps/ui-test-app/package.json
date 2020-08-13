@@ -15,7 +15,7 @@
     "start": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",
     "start:electron:prod": "cross-env NODE_ENV=production electron ./lib/backend/main.js",
-    "start:webserver": "npm run pseudolocalize && cross-env BROWSER=none react-scripts start",
+    "start:webserver": "npm run pseudolocalize && cross-env BROWSER=none EXTEND_ESLINT=true react-scripts start",
     "start:backend": "node --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./build/public/locales/en-PSEUDO",

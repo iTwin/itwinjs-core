@@ -20,7 +20,7 @@
     "lint": "eslint --config package.json --no-eslintrc ./src/**/*.ts 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
     "start": "npm run start:electron",
-    "start:webserver": "cross-env BROWSER=none react-scripts start",
+    "start:webserver": "cross-env BROWSER=none EXTEND_ESLINT=true react-scripts start",
     "start:electron": "electron ./lib/backend/ElectronMain.js",
     "start:web": "node lib/backend/WebMain.js",
     "test:chrome": "node ./lib/common/npmCommands.js chrome",
