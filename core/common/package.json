@@ -55,8 +55,6 @@
     "mocha": "^5.2.0",
     "rimraf": "^3.0.2",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
   "nyc": {
