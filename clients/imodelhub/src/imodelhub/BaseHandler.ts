@@ -28,6 +28,42 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 }
 
 /**
+ * This type allows modifying HttpRequestOptions that are sent for every request.
+ * @beta
+ */
+export type HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void;
+
+/**
+ * This function when used on IModelClient adds specified header to every request.
+ * @beta
+ */
+export function addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer {
+  return (options: HttpRequestOptions) => {
+    if (!options.headers)
+      options.headers = {};
+    options.headers[name] = valueFactory();
+  };
+}
+
+/**
+ * This function when used on IModelClient adds specified application version header to every request.
+ * @beta
+ */
+export function addApplicationVersion(version: string) {
+  return addHeader(applicationVersionHeaderName, () => version);
+}
+
+/**
+ * This function when used on IModelClient adds CSRF header to every request.
+ * @beta
+ */
+export function addCsrfHeader(headerName: string = "X-XSRF-TOKEN", cookieName: string = "XSRF-TOKEN"): HttpRequestOptionsTransformer {
+  return addHeader(headerName, () => {
+    return document.cookie.split("; ").find((r) => r.startsWith(`${cookieName}=`))!.split("=")[1];
+  });
+}
+
+/**
  * This class acts as the WsgClient for other iModelHub Handlers.
  * @beta
  */
@@ -39,7 +75,7 @@ export class IModelBaseHandler extends WsgClient {
   protected _agent: any;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
-  public applicationVersion?: string;
+  private _httpRequestOptionsTransformers: HttpRequestOptionsTransformer[] = [];
 
   /**
    * Create an instance of IModelBaseHandler.
@@ -74,10 +110,20 @@ export class IModelBaseHandler extends WsgClient {
    */
   protected setupHttpOptions(options?: HttpRequestOptions): HttpRequestOptions {
     const httpOptions: HttpRequestOptions = { ...options };
-    if (this.applicationVersion) {
-      httpOptions.headers = { ...httpOptions.headers, [applicationVersionHeaderName]: this.applicationVersion };
+
+    for (const transformer of this._httpRequestOptionsTransformers) {
+      transformer(httpOptions);
     }
+
     return httpOptions;
+  }
+
+  /**
+   * Adds a method that will be called for every request to modify HttpRequestOptions.
+   * @param func Method that will be used to modify HttpRequestOptions.
+   */
+  public use(func: HttpRequestOptionsTransformer) {
+    this._httpRequestOptionsTransformers.push(func);
   }
 
   /**

@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 import { FileHandler } from "@bentley/itwin-client";
-import { IModelBaseHandler } from "./imodelhub/BaseHandler";
+import { addApplicationVersion, HttpRequestOptionsTransformer, IModelBaseHandler } from "./imodelhub/BaseHandler";
 import { BriefcaseHandler } from "./imodelhub/Briefcases";
 import { ChangeSetHandler } from "./imodelhub/ChangeSets";
 import { CheckpointHandler } from "./imodelhub/Checkpoints";
@@ -34,7 +34,8 @@ export abstract class IModelClient {
    */
   public constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler, applicationVersion?: string) {
     this._handler = baseHandler;
-    this._handler.applicationVersion = applicationVersion;
+    if (applicationVersion)
+      this.use(addApplicationVersion(applicationVersion));
     this._fileHandler = fileHandler || this._handler.getFileHandler();
     if (this._fileHandler)
       this._fileHandler.agent = this._handler.getAgent();
@@ -168,10 +169,10 @@ export abstract class IModelClient {
   }
 
   /**
-   * Sets application version to use in requests.
-   * @param applicationVersion Application version to use in requests.
+   * Adds a method that will be called for every request to modify HttpRequestOptions.
+   * @param func Method that will be used to modify HttpRequestOptions.
    */
-  public setApplicationVersion(applicationVersion: string) {
-    this._handler.applicationVersion = applicationVersion;
+  public use(transformer: HttpRequestOptionsTransformer) {
+    this._handler.use(transformer);
   }
 }

@@ -34,6 +34,15 @@ import { WsgInstance } from '@bentley/itwin-client';
 import { WsgQuery } from '@bentley/itwin-client';
 import { WsgRequestOptions } from '@bentley/itwin-client';
 
+// @beta
+export function addApplicationVersion(version: string): HttpRequestOptionsTransformer;
+
+// @beta
+export function addCsrfHeader(headerName?: string, cookieName?: string): HttpRequestOptionsTransformer;
+
+// @beta
+export function addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer;
+
 // @internal
 export function addSelectApplicationData(query: RequestQueryOptions): void;
 
@@ -499,6 +508,9 @@ export type GlobalEventType =
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
+// @beta
+export type HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void;
+
 // @alpha
 export class HubCode extends CodeBase {
     value?: string;
@@ -565,8 +577,6 @@ export class IModelBaseHandler extends WsgClient {
     // (undocumented)
     protected _agent: any;
     // (undocumented)
-    applicationVersion?: string;
-    // (undocumented)
     static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
     delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
     deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
@@ -592,6 +602,7 @@ export class IModelBaseHandler extends WsgClient {
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
+    use(func: HttpRequestOptionsTransformer): void;
 }
 
 // @beta
@@ -618,10 +629,10 @@ export abstract class IModelClient {
     get permissions(): PermissionHandler | undefined;
     // @internal
     get requestOptions(): CustomRequestOptions;
-    setApplicationVersion(applicationVersion: string): void;
     setFileHandler(fileHandler: FileHandler): void;
     // @alpha
     get thumbnails(): ThumbnailHandler;
+    use(transformer: HttpRequestOptionsTransformer): void;
     // @alpha
     get users(): UserInfoHandler;
     get versions(): VersionHandler;

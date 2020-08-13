@@ -10,7 +10,7 @@ const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com
 
 import { BeDuration, ClientRequestContext, dispose, Guid, GuidString, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
+import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelError, IModelStatus, NativeAppRpcInterface, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
@@ -363,6 +363,13 @@ export class IModelApp {
     this.authorizationClient = opts.authorizationClient;
 
     this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
+    if (this._securityOptions.csrfProtection?.enabled) {
+      this._imodelClient.use(
+        addCsrfHeader(
+          this._securityOptions.csrfProtection.headerName,
+          this._securityOptions.csrfProtection.cookieName,
+        ));
+    }
 
     this._setupRpcRequestContext();
 
