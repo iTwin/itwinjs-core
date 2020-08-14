@@ -44,8 +44,12 @@ Object {
 exports[`NodeKey fromJSON creates ECPropertyGroupingNodeKey 1`] = `
 Object {
   "className": "Division",
-  "groupedInstancesCount": 74050,
-  "groupingValue": 77874,
+  "groupedInstancesCount": 93277,
+  "groupingValue": 79408,
+  "groupingValues": Array [
+    77874,
+    74050,
+  ],
   "pathFromRoot": Array [
     "e6a23e27-348a-47e3-9061-62dfaca34d39",
   ],
@@ -109,8 +113,12 @@ Object {
 exports[`NodeKey toJSON serializes ECPropertyGroupingNodeKey 1`] = `
 Object {
   "className": "United States of America",
-  "groupedInstancesCount": 5097,
-  "groupingValue": 752,
+  "groupedInstancesCount": 90988,
+  "groupingValue": 50454,
+  "groupingValues": Array [
+    752,
+    5097,
+  ],
   "pathFromRoot": Array [
     "c1b68531-e5c1-4481-890e-24c7709ea698",
   ],

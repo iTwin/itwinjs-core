@@ -51,6 +51,7 @@ export const createRandomECPropertyGroupingNodeKey = (groupedInstancesCount?: nu
   pathFromRoot: [faker.random.uuid()],
   className: faker.random.word(),
   propertyName: faker.random.word(),
+  groupingValues: [faker.random.number(), faker.random.number()],
   groupingValue: faker.random.number(),
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),
 });

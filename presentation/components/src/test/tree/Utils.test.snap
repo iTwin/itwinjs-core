@@ -5,7 +5,11 @@ Object {
   "__presentation-components/key": Object {
     "className": "CSS",
     "groupedInstancesCount": 999,
-    "groupingValue": 8424,
+    "groupingValue": 87543,
+    "groupingValues": Array [
+      8424,
+      36516,
+    ],
     "pathFromRoot": Array [
       "6102db55-652c-4aa1-ba19-db173124462c",
     ],

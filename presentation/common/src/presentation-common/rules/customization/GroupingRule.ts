@@ -155,7 +155,12 @@ export interface PropertyGroup extends GroupingSpecificationBase {
   /** Should the grouping node be created if there is only one item in that group */
   createGroupForSingleItem?: boolean;
 
-  /** Should a separate grouping node be created for nodes whose grouping value is not set. Defaults to `true`. */
+  /**
+   * Should a separate grouping node be created for nodes whose grouping value is not
+   * set or is an empty string.
+   *
+   * Defaults to `true`.
+   */
   createGroupForUnspecifiedValues?: boolean;
 
   /**
