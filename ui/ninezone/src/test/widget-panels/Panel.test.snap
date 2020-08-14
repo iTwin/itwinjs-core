@@ -12,8 +12,7 @@ exports[`WidgetPanel should render captured 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill"
       >
         <div
           class="nz-widget-tabBar"
@@ -77,8 +76,7 @@ exports[`WidgetPanel should render collapsed 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill"
       >
         <div
           class="nz-widget-tabBar"
@@ -143,8 +141,7 @@ exports[`WidgetPanel should render horizontal 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget nz-horizontal"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill"
       >
         <div
           class="nz-widget-tabBar"
@@ -208,8 +205,7 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill"
       >
         <div
           class="nz-widget-tabBar"
@@ -241,8 +237,7 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill"
       >
         <div
           class="nz-widget-tabBar"
@@ -306,8 +301,7 @@ exports[`WidgetPanel should render spanned 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget nz-horizontal"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill"
       >
         <div
           class="nz-widget-tabBar"
@@ -372,8 +366,7 @@ exports[`WidgetPanel should render vertical 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill"
       >
         <div
           class="nz-widget-tabBar"
@@ -437,8 +430,7 @@ exports[`WidgetPanel should render with span bottom 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill"
       >
         <div
           class="nz-widget-tabBar"
@@ -502,8 +494,7 @@ exports[`WidgetPanel should render with top spanned 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget"
-        style="flex-grow: 1;"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill"
       >
         <div
           class="nz-widget-tabBar"

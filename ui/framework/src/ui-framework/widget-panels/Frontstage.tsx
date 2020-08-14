@@ -195,6 +195,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
     const label = getWidgetLabel(widget.label);
     state = addTab(state, widgetId, widget.id, {
       label,
+      preferredPanelWidgetSize: widget.preferredPanelSize,
     });
   }
   return state;
@@ -388,7 +389,7 @@ function getPanelMaxSize(maxSizeSpec: StagePanelMaxSizeSpec, panel: PanelSide, n
   return maxSizeSpec.percentage / 100 * size;
 }
 
-const stateVersion = 6; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 7; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
@@ -431,7 +432,15 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
       frontstageDef.bottomPanel?.panelState,
       frontstageDef.bottomMostPanel?.panelState, // eslint-disable-line deprecation/deprecation
     ]);
+
+    const topCenterDef = frontstageDef.topCenter;
+    const toolSettingsWidgetDef = topCenterDef?.getSingleWidgetDef();
+    if (toolSettingsWidgetDef) {
+      const toolSettingsTab = stateDraft.tabs[toolSettingsTabId];
+      toolSettingsTab.preferredPanelWidgetSize = toolSettingsWidgetDef.preferredPanelSize;
+    }
   });
+
   return nineZone;
 }
 

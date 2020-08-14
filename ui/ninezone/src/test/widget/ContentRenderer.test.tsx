@@ -4,9 +4,42 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { TabIdContext, TabState, useTransientState, WidgetContentManagerContext, WidgetContentManagerContextArgs } from "../../ui-ninezone";
-import { EventEmitter } from "../../ui-ninezone/base/Event";
+import { EventEmitter, TabIdContext, TabState, useTransientState, WidgetContentManager, WidgetContentManagerContext, WidgetContentManagerContextArgs, WidgetContentRenderer } from "../../ui-ninezone";
+
+describe("WidgetContentRenderer", () => {
+  const wrapper = WidgetContentManager;
+
+  it("should remove existing content nodes before restoring", () => {
+    const renderTo = document.createElement("div");
+    renderTo.appendChild(document.createElement("div"));
+
+    const spy = sinon.spy(renderTo, "removeChild");
+    render(<WidgetContentRenderer
+      renderTo={renderTo}
+      tabId="t1"
+    />, { wrapper });
+
+    spy.callCount.should.eq(1);
+  });
+
+  it("should remove added content node", () => {
+    const renderTo = document.createElement("div");
+
+    const spy = sinon.spy(renderTo, "removeChild");
+    const { unmount } = render(<WidgetContentRenderer
+      renderTo={renderTo}
+      tabId="t1"
+    />, { wrapper });
+
+    renderTo.insertBefore(document.createElement("div"), renderTo.firstChild);
+    renderTo.appendChild(document.createElement("div"));
+    unmount();
+
+    spy.callCount.should.eq(1);
+  });
+});
 
 describe("useTransientState", () => {
   it("should invoke onSave", () => {

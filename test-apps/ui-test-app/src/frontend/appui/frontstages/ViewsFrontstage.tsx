@@ -222,6 +222,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                 <Widget
                   iconSpec="icon-placeholder"
                   isToolSettings={true}
+                  preferredPanelSize="fit-content"
                 />,
               ]}
           />

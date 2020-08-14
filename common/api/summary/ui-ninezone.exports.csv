@@ -407,6 +407,7 @@ internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPo
 internal;UseDragToolSettingsArgs
 internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
 internal;UseDragWidgetArgs
+internal;useForceFill(): boolean
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
@@ -415,11 +416,13 @@ internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [Rea
 internal;usePanelTarget
 internal;UsePanelTargetArgs
 internal;usePointerCaptor: 
+internal;usePreferredPanelWidgetSize(widgetId: WidgetState["id"]): "fit-content" | undefined
 internal;useResizeGrip: 
 beta;UserProfile 
 beta;UserProfileProps 
 internal;useTabTarget
 internal;UseTabTargetArgs
+internal;useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void): void
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
 internal;useTransientState(onSave?: () => void, onRestore?: () => void): void
 internal;useWidgetTarget
@@ -428,7 +431,8 @@ beta;VerticalAnchor
 internal;VerticalAnchorHelpers
 internal;VerticalPanelSide = LeftPanelSide | RightPanelSide
 internal;VerticalPanelState 
-internal;Widget: React.NamedExoticComponent
+internal;Widget: React.MemoExoticComponent
+internal;WidgetComponent
 alpha;WidgetContent 
 internal;WidgetContentContainer: React.NamedExoticComponent
 internal;WidgetContentContainersContext: React.Context

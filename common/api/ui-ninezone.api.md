@@ -2283,7 +2283,9 @@ export interface TabState {
     // (undocumented)
     readonly label: string;
     // (undocumented)
-    readonly preferredFloatingWidgetSize: SizeProps | undefined;
+    readonly preferredFloatingWidgetSize?: SizeProps;
+    // (undocumented)
+    readonly preferredPanelWidgetSize?: "fit-content";
 }
 
 // @internal
@@ -2815,6 +2817,9 @@ export interface UseDragWidgetArgs {
     widgetId: WidgetState["id"];
 }
 
+// @internal
+export function useForceFill(): boolean;
+
 // @internal (undocumented)
 export function useIsDragged(callback: () => boolean): boolean;
 
@@ -2841,6 +2846,9 @@ export interface UsePanelTargetArgs {
 
 // @internal
 export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((args: PointerCaptorArgs, e: PointerCaptorEvent) => void) | undefined, onPointerMove?: ((args: PointerCaptorArgs, e: PointerCaptorEvent) => void) | undefined, onPointerUp?: ((e: PointerCaptorEvent) => void) | undefined) => (instance: T | null) => void;
+
+// @internal (undocumented)
+export function usePreferredPanelWidgetSize(widgetId: WidgetState["id"]): "fit-content" | undefined;
 
 // @internal (undocumented)
 export const useResizeGrip: <T extends HTMLElement>(side: PanelSide, onResize?: ((resizeBy: number) => void) | undefined, onDoubleClick?: (() => void) | undefined) => [(instance: T | null) => void, boolean, boolean];
@@ -2870,6 +2878,9 @@ export interface UseTabTargetArgs {
     // (undocumented)
     widgetId: WidgetState["id"];
 }
+
+// @internal (undocumented)
+export function useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void): void;
 
 // @internal (undocumented)
 export function useToolSettingsEntry(): DockedToolSettingsEntryContextArgs;
@@ -2922,7 +2933,13 @@ export interface VerticalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
-export const Widget: React.NamedExoticComponent<WidgetProps>;
+export const Widget: React.MemoExoticComponent<React.ForwardRefExoticComponent<WidgetProps & React.RefAttributes<WidgetComponent>>>;
+
+// @internal (undocumented)
+export interface WidgetComponent {
+    // (undocumented)
+    measure: () => SizeProps;
+}
 
 // @alpha
 export class WidgetContent extends React.PureComponent<WidgetContentProps> {
@@ -3107,6 +3124,8 @@ export interface WidgetPanelsProps extends CommonProps {
 export interface WidgetProps extends CommonProps {
     // (undocumented)
     children?: React.ReactNode;
+    // (undocumented)
+    onTransitionEnd?(): void;
 }
 
 // @internal (undocumented)

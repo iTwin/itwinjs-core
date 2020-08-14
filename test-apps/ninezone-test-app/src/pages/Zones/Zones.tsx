@@ -26,6 +26,10 @@ import {
   ToolsArea,
   ScrollableWidgetContent,
   NineZoneLabels,
+  NineZoneDispatchContext,
+  PanelSide,
+  findTab,
+  NineZoneContext,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -319,8 +323,8 @@ export default function Zones() {
     initialState = addPanelWidget(initialState, "bottom", "bottomPanel1", { activeTabId: "bottomPanel1_1" });
     initialState = addPanelWidget(initialState, "bottom", "bottomPanel2", { activeTabId: "bottomPanel2_1" });
     initialState = addPanelWidget(initialState, "bottom", "bottomPanel3", { activeTabId: "bottomPanel3_1" });
-    initialState = addTab(initialState, "topLeft", "topLeft_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "topLeft", "topLeft_2", { label: "Tab 2" });
+    initialState = addTab(initialState, "topLeft", "topLeft_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
+    initialState = addTab(initialState, "topLeft", "topLeft_2", { label: "Tab 2", preferredPanelWidgetSize: "fit-content" });
     initialState = addTab(initialState, "topLeft", "topLeft_3", { label: "Tab 3" });
     initialState = addTab(initialState, "topLeft", "topLeft_4", { label: "Tab 4" });
     initialState = addTab(initialState, "bottomLeft", "bottomLeft_1", { label: "Tab 1 Of Bottom Left Widget" });
@@ -328,7 +332,7 @@ export default function Zones() {
     initialState = addTab(initialState, "topRight", "topRight_1", { label: "Tab 1" });
     initialState = addTab(initialState, "topPanel", "topPanel_1", { label: "Tab 1" });
     initialState = addTab(initialState, "bottomPanel1", "bottomPanel1_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "bottomPanel2", "bottomPanel2_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomPanel2", "bottomPanel2_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
     initialState = addTab(initialState, "bottomPanel3", "bottomPanel3_1", { label: "Tab 1" });
     return initialState;
   });
@@ -388,7 +392,9 @@ export default function Zones() {
 }
 
 export function WidgetContent() {
+  const dispatch = React.useContext(NineZoneDispatchContext);
   const tabId = React.useContext(TabIdContext);
+  const side = useWidgetSide();
   const scrollViewRef = React.useRef<HTMLDivElement>(null);
   const scrollPosition = React.useRef(new Point());
   const [state, setState] = React.useState(false);
@@ -418,22 +424,41 @@ export function WidgetContent() {
     <ScrollableWidgetContent>
       <h2>Tab={tabId}</h2>
       <button onClick={() => setState((prev) => !prev)}>state={String(state)}</button>
-      <br />
-      <br />
-      <div
-        className="nzdemo-scroll-view"
-        ref={scrollViewRef}
-      >
-        <div>Entry 1</div>
-        <div>Entry 2</div>
-        <div>Entry 3</div>
-        <div>Entry 4</div>
-        <div>Entry 5</div>
-        <div>Entry 6</div>
-        <div>Entry 7</div>
-        <div>Entry 8</div>
-        <div>Entry 9</div>
-      </div>
+      <button onClick={() => side && dispatch({ side, type: "PANEL_TOGGLE_PINNED" })}>toggle pinned</button>
+      {tabId !== "topLeft_1" && <>
+        <br />
+        <br />
+        <div
+          className="nzdemo-scroll-view"
+          ref={scrollViewRef}
+        >
+          <div>Entry 1</div>
+          <div>Entry 2</div>
+          <div>Entry 3</div>
+          <div>Entry 4</div>
+          <div>Entry 5</div>
+          <div>Entry 6</div>
+          <div>Entry 7</div>
+          <div>Entry 8</div>
+          <div>Entry 9</div>
+        </div>
+      </>}
+      {tabId === "topLeft_2" && <>
+        <h1>A</h1>
+        <h1>B</h1>
+        <h1>C</h1>
+        <h1>D</h1>
+      </>}
     </ScrollableWidgetContent>
   );
+}
+
+export function useWidgetSide(): PanelSide | undefined {
+  const tabId = React.useContext(TabIdContext);
+  const nineZone = React.useContext(NineZoneContext);
+  const tabLocation = findTab(nineZone, tabId);
+  if (tabLocation && ("side" in tabLocation)) {
+    return tabLocation.side;
+  }
+  return undefined;
 }

@@ -15,7 +15,8 @@ import { assert } from "./assert";
 export interface TabState {
   readonly id: string;
   readonly label: string;
-  readonly preferredFloatingWidgetSize: SizeProps | undefined;
+  readonly preferredFloatingWidgetSize?: SizeProps;
+  readonly preferredPanelWidgetSize?: "fit-content";
 }
 
 /** @internal future */
@@ -824,7 +825,6 @@ export function createTabState(id: TabState["id"], args?: Partial<TabState>): Ta
   return {
     id,
     label: "",
-    preferredFloatingWidgetSize: undefined,
     ...args,
   };
 }

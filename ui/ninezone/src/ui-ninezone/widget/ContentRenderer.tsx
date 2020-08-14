@@ -48,17 +48,25 @@ export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(p
   const container = React.useRef<HTMLDivElement>(undefined!);
   if (!container.current) {
     container.current = document.createElement("div");
-    container.current.className = "nz-widget-contentRenderer";
+    container.current.classList.add("nz-widget-contentRenderer");
   }
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     const parent = props.renderTo;
-    const child = container.current;
     if (parent) {
-      parent.appendChild(child);
+      while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+      }
+
+      parent.appendChild(container.current);
       widgetContentManager.onRestoreTransientState.emit(props.tabId);
     }
     return () => {
-      parent?.removeChild(child);
+      for (const child of parent?.children || []) {
+        if (child === container.current) {
+          parent!.removeChild(child);
+          return;
+        }
+      }
     };
   }, [props.renderTo, widgetContentManager, props.tabId]);
   return ReactDOM.createPortal(
@@ -74,9 +82,8 @@ export const TabIdContext = React.createContext<TabState["id"]>(""); // eslint-d
 TabIdContext.displayName = "nz:TabIdContext";
 
 /** @internal */
-export function useTransientState(onSave?: () => void, onRestore?: () => void) {
+export function useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void) {
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
-  const tabId = React.useContext(TabIdContext);
   React.useEffect(() => {
     const handleSaveTransientState = (id: TabState["id"]) => {
       tabId === id && onSave && onSave();
@@ -95,4 +102,10 @@ export function useTransientState(onSave?: () => void, onRestore?: () => void) {
       widgetContentManager.onRestoreTransientState.remove(handleRestoreTransientState);
     };
   }, [widgetContentManager, onRestore, tabId]);
+}
+
+/** @internal */
+export function useTransientState(onSave?: () => void, onRestore?: () => void) {
+  const tabId = React.useContext(TabIdContext);
+  return useTabTransientState(tabId, onSave, onRestore);
 }

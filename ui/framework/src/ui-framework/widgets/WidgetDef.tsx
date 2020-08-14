@@ -122,6 +122,7 @@ export class WidgetDef {
   private _onWidgetStateChanged?: () => void;
   private _saveTransientState?: () => void;
   private _restoreTransientState?: () => boolean;
+  private _preferredPanelSize: "fit-content" | undefined;
 
   public get state(): WidgetState { return this._state; }
   public get id(): string { return this._id; }
@@ -208,6 +209,7 @@ export class WidgetDef {
     if (widgetProps.badgeType !== undefined)
       me._badgeType = widgetProps.badgeType;
 
+    me._preferredPanelSize = widgetProps.preferredPanelSize;
     me._onWidgetStateChanged = widgetProps.onWidgetStateChanged;
     me._saveTransientState = widgetProps.saveTransientState;
     me._restoreTransientState = widgetProps.restoreTransientState;
@@ -238,6 +240,11 @@ export class WidgetDef {
         this.setWidgetState(newState);
       }
     }
+  }
+
+  /** @alpha */
+  public get preferredPanelSize() {
+    return this._preferredPanelSize;
   }
 
   /** Get the label string */

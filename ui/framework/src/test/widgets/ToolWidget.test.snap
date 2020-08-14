@@ -138,6 +138,7 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
       "_isToolSettings": false,
       "_label": "",
       "_onWidgetStateChanged": undefined,
+      "_preferredPanelSize": undefined,
       "_priority": 0,
       "_restoreTransientState": undefined,
       "_saveTransientState": undefined,

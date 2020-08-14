@@ -11,7 +11,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
-import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZoneState } from "@bentley/ui-ninezone";
+import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
 import {
   ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, FrontstageDef,
   FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
@@ -635,6 +635,19 @@ describe("initializeNineZoneState", () => {
     const frontstageDef = new FrontstageDef();
     const sut = initializeNineZoneState(frontstageDef);
     sut.size.should.eql({ width: 0, height: 0 });
+  });
+
+  it("should initialize preferredPanelWidgetSize of tool settings widget", () => {
+    const frontstageDef = new FrontstageDef();
+    const zoneDef = new ZoneDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+      preferredPanelSize: "fit-content",
+    });
+    sinon.stub(frontstageDef, "topCenter").get(() => zoneDef);
+    sinon.stub(zoneDef, "getSingleWidgetDef").returns(widgetDef);
+    const sut = initializeNineZoneState(frontstageDef);
+    sut.tabs[toolSettingsTabId].preferredPanelWidgetSize!.should.eq("fit-content");
   });
 });
 

@@ -335,6 +335,7 @@ exports[`MarkupToolDefinitions ToolWidget should render correctly with Markup To
       "_isToolSettings": false,
       "_label": "",
       "_onWidgetStateChanged": undefined,
+      "_preferredPanelSize": undefined,
       "_priority": 0,
       "_restoreTransientState": undefined,
       "_saveTransientState": undefined,
