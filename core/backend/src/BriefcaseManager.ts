@@ -229,7 +229,7 @@ export class BriefcaseEntry {
 
   /** Get the briefcase size in bytes */
   private getBriefcaseSize(): number | undefined {
-    if (this.downloadStatus !== DownloadBriefcaseStatus.Complete)
+    if (this.downloadStatus !== DownloadBriefcaseStatus.Complete || !IModelJsFs.existsSync(this.pathname))
       return undefined;
 
     try {
