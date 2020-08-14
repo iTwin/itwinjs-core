@@ -340,6 +340,7 @@ export interface BackgroundMapProps {
     applyTerrain?: boolean;
     globeMode?: GlobeMode;
     groundBias?: number;
+    nonLocatable?: boolean;
     providerData?: {
         mapType?: BackgroundMapType;
     };
@@ -362,6 +363,7 @@ export class BackgroundMapSettings {
     static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings;
     readonly globeMode: GlobeMode;
     readonly groundBias: number;
+    get locatable(): boolean;
     readonly mapType: BackgroundMapType;
     readonly providerName: BackgroundMapProviderName;
     readonly terrainSettings: TerrainSettings;
@@ -3304,7 +3306,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
-    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority): Promise<QueryResponse>;
+    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
     // @beta (undocumented)
@@ -4801,6 +4803,8 @@ export interface QueryResponse {
 // @public
 export enum QueryResponseStatus {
     // (undocumented)
+    Cancelled = 7,
+    // (undocumented)
     Done = 2,
     // (undocumented)
     Error = 5,
@@ -6127,6 +6131,7 @@ export interface TerrainProps {
     exaggeration?: number;
     heightOrigin?: number;
     heightOriginMode?: TerrainHeightOriginMode;
+    // @deprecated (undocumented)
     nonLocatable?: boolean;
     providerName?: string;
 }
@@ -6147,6 +6152,7 @@ export class TerrainSettings {
     static fromJSON(json?: TerrainProps): TerrainSettings;
     readonly heightOrigin: number;
     readonly heightOriginMode: TerrainHeightOriginMode;
+    // @deprecated (undocumented)
     readonly locatable: boolean;
     readonly providerName: TerrainProviderName;
     // (undocumented)

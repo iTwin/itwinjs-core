@@ -2,6 +2,18 @@
   "name": "@bentley/map-layers",
   "entries": [
     {
+      "version": "2.4.2",
+      "tag": "@bentley/map-layers_v2.4.2",
+      "date": "Fri, 14 Aug 2020 16:34:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add MapLayersWidgetControl that can be used to specify widget in UI 1.0 FrontstageDef."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.1",
       "tag": "@bentley/map-layers_v2.4.1",
       "date": "Fri, 07 Aug 2020 19:57:43 GMT",

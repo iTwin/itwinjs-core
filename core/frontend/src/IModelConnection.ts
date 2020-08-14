@@ -292,13 +292,14 @@ export abstract class IModelConnection extends IModel {
    * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
    * @param priority Specify non binding priority for the query. It can help user to adjust
    * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @param restartToken when provide cancel the previous query with same token in same session.
    * @returns Returns structure containing rows and status.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @internal
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
+  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
 
-    return IModelReadRpcInterface.getClient().queryRows(this.getRpcProps(), ecsql, bindings, limit, quota, priority);
+    return IModelReadRpcInterface.getClient().queryRows(this.getRpcProps(), ecsql, bindings, limit, quota, priority, restartToken);
   }
 
   /** Execute a query and stream its results
@@ -335,6 +336,62 @@ export abstract class IModelConnection extends IModel {
       }
 
       if (result.status === QueryResponseStatus.Error) {
+        if (result.rows[0] === undefined) {
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
+        } else {
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
+        }
+      }
+
+      if (rowsToGet > 0) {
+        rowsToGet -= result.rows.length;
+      }
+      offset += result.rows.length;
+
+      for (const row of result.rows)
+        yield row;
+
+    } while (result.status !== QueryResponseStatus.Done);
+  }
+
+  /** Execute a query and stream its results
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
+   * exception which user code must handle.
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrained by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @beta
+   */
+  public async * restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+    let result: QueryResponse;
+    let offset: number = 0;
+    let rowsToGet = limitRows ? limitRows : -1;
+    do {
+      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
+      while (result.status === QueryResponseStatus.Timeout) {
+        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
+      }
+      if (result.status === QueryResponseStatus.Cancelled) {
+        throw new IModelError(DbResult.BE_SQLITE_INTERRUPT, `Query cancelled`);
+      } else if (result.status === QueryResponseStatus.Error) {
         if (result.rows[0] === undefined) {
           throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
         } else {

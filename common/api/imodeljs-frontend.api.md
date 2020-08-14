@@ -4041,8 +4041,10 @@ export abstract class IModelConnection extends IModel {
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse>;
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
+    // @beta
+    restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     saveChanges(description?: string): Promise<void>;
     readonly selectionSet: SelectionSet;
     // @internal (undocumented)

@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 07 Aug 2020 19:57:43 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+
+## 2.4.2
+Fri, 14 Aug 2020 16:34:09 GMT
+
+### Updates
+
+- Deprecate TerrainProps.nonLocatable and TerrainSettings.locatable in favor of corresponding properties on BackgroundMapProps and BackgroundMapSettings.
+- Add support for restart query
 
 ## 2.4.1
 Fri, 07 Aug 2020 19:57:43 GMT

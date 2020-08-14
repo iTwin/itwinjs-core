@@ -182,15 +182,17 @@ export class IModelHostConfiguration {
    */
   public eventSinkOptions: EventSinkOptions = { maxQueueSize: 5000, maxNamespace: 255 };
   public concurrentQuery: ConcurrentQueryConfig = {
-    concurrent: (os.cpus().length - 1),
+    concurrent: os.cpus().length,
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
     minMonitorInterval: 1, // 1 seconds
     idleCleanupTime: 30 * 60, // 30 minutes
     cachedStatementsPerThread: 40,
-    maxQueueSize: (os.cpus().length - 1) * 500,
+    maxQueueSize: (os.cpus().length) * 500,
     pollInterval: 50,
     useSharedCache: false,
     useUncommittedRead: false,
+    resetStatisticsInterval: 60, // minutes
+    logStatisticsInterval: 5, // minutes
     quota: {
       maxTimeAllowed: 60, // 1 Minute
       maxMemoryAllowed: 2 * 1024 * 1024, // 2 MB

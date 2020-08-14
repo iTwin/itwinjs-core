@@ -177,7 +177,57 @@ describe("ECSqlStatement", () => {
       assert.equal(rowNo, 100); // expect all rows
     });
   });
+  it("Restart query", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "cancelquery.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+      const ROW_COUNT = 100;
+      // insert test rows
+      for (let i = 1; i <= ROW_COUNT; i++) {
+        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+          return stmt.stepForInsert();
+        });
+        assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+      }
+      ecdb.saveChanges();
+      let cancelled = 0;
+      let successful = 0;
+      let rowCount = 0;
+      const cb = async () => {
+        return new Promise(async (resolve, reject) => {
+          try {
+            for await (const _row of ecdb.restartQuery("tag", "SELECT * FROM ts.Foo")) {
+              rowCount++;
+            }
+            successful++;
+            resolve();
+          } catch (err) {
+            // we expect query to be cancelled
+            if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
+              cancelled++;
+              resolve();
+            } else {
+              reject();
+            }
+          }
+        });
+      };
 
+      const queries = [];
+      for (let i = 0; i < 20; i++) {
+        queries.push(cb());
+      }
+      await Promise.all(queries);
+      // We expect at least one query to be cancelled
+      assert.isAtLeast(cancelled, 1);
+      assert.isAtLeast(successful, 1);
+      assert.isAtLeast(rowCount, 1);
+    });
+  });
   it("Paging use cache statement query()", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">

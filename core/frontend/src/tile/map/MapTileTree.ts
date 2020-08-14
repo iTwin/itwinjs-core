@@ -391,6 +391,7 @@ class MapTreeSupplier implements TileTreeSupplier {
                   cmp = compareBooleans(lhs.applyTerrain, rhs.applyTerrain);
                   if (0 === cmp) {
                     if (lhs.applyTerrain) {
+                      // Terrain-only settings.
                       cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
                       if (0 === cmp) {
                         cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
@@ -400,11 +401,12 @@ class MapTreeSupplier implements TileTreeSupplier {
                             cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
                         }
                       }
+                    } else {
+                      // Non-Terrain (flat) settings.
+                      cmp = compareNumbers(lhs.mapGroundBias, rhs.mapGroundBias);
+                      if (0 === cmp)
+                        cmp = compareBooleans(lhs.useDepthBuffer, rhs.useDepthBuffer);
                     }
-                  } else {
-                    cmp = compareNumbers(lhs.mapGroundBias, rhs.mapGroundBias);
-                    if (0 === cmp)
-                      cmp = compareBooleans(lhs.useDepthBuffer, rhs.useDepthBuffer);
                   }
                 }
               }

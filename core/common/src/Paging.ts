@@ -44,6 +44,7 @@ export enum QueryResponseStatus {
   Error = 5, /** Error while preparing or stepping into query */
   Timeout = 4, /** Query time quota while it was in queue */
   PostError = 6, /** Submitting query task failed. May happen if queue size exceeds */
+  Cancelled = 7, /** Query cancelled */
 }
 
 /** Result of a query. Its not intended to be used directly by client

@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.4.2",
+      "tag": "@bentley/imodeljs-backend_v2.4.2",
+      "date": "Fri, 14 Aug 2020 16:34:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.4.4"
+          },
+          {
+            "comment": "Added suport for restart query"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.1",
       "tag": "@bentley/imodeljs-backend_v2.4.1",
       "date": "Fri, 07 Aug 2020 19:57:43 GMT",

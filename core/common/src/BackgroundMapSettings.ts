@@ -58,12 +58,41 @@ export interface BackgroundMapProps {
   terrainSettings?: TerrainProps;
   /** Globe Mode. Default value: GlobeMode.Ellipsoid */
   globeMode?: GlobeMode;
+  /** If true, the map will be treated as non-locatable - i.e., tools will not interact with it. This is particularly useful when the map is transparent - it
+   * allows the user to select elements that are behind the map.
+   */
+  nonLocatable?: boolean;
 }
 
 /** The current set of supported background map providers.
  * @public
  */
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+
+function normalizeMapType(props: BackgroundMapProps): BackgroundMapType {
+  switch (props.providerData?.mapType) {
+    case BackgroundMapType.Street:
+    case BackgroundMapType.Aerial:
+      return props.providerData.mapType;
+    default:
+      return BackgroundMapType.Hybrid;
+  }
+}
+
+function normalizeGlobeMode(mode?: GlobeMode): GlobeMode {
+  return GlobeMode.Plane === mode ? mode : GlobeMode.Ellipsoid;
+}
+
+function normalizeTransparency(trans?: number | false): number | false {
+  if ("number" === typeof trans)
+    return Math.min(1, Math.max(0, trans));
+
+  return false;
+}
+
+function normalizeProviderName(provider?: string): BackgroundMapProviderName {
+  return "MapBoxProvider" === provider ? provider : "BingProvider";
+}
 
 /** Normalized representation of a [[BackgroundMapProps]] for which type and provider have been validated and default values have been applied where explicit values not defined.
  * @public
@@ -85,40 +114,38 @@ export class BackgroundMapSettings {
   public readonly terrainSettings: TerrainSettings;
   /** Globe display mode. */
   public readonly globeMode: GlobeMode;
+  private readonly _locatable: boolean;
+  /** If false, the map will be treated as non-locatable - i.e., tools will not interact with it. This is particularly useful when the map is transparent - it
+   * allows the user to select elements that are behind the map.
+   */
+  public get locatable(): boolean {
+    // Handle deprecated TerrainProps.nonLocatable:
+    // - If TerrainProps.nonLocatable=true and terrain is on, terrain is not locatable.
+    // - Otherwise, use BackgroundMapProps.nonLocatable.
+    if (this.applyTerrain && !this.terrainSettings.locatable) // tslint:disable-line:deprecation
+      return false;
+
+    return this._locatable;
+  }
 
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
   public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
 
-  private constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias = 0, useDepthBuffer = false, transparency: number | false = false, applyTerrain = false, terrainSettings?: TerrainProps, globeMode = GlobeMode.Ellipsoid) {
-    this.groundBias = groundBias;
-    this.providerName = providerName;
-    this.useDepthBuffer = useDepthBuffer;
-    this.transparency = false !== transparency ? Math.min(1, Math.max(0, transparency)) : false;
-    this.applyTerrain = applyTerrain;
-
-    switch (mapType) {
-      case BackgroundMapType.Street:
-      case BackgroundMapType.Aerial:
-        this.mapType = mapType;
-        break;
-      default:
-        this.mapType = BackgroundMapType.Hybrid;
-    }
-
-    this.globeMode = GlobeMode.Plane === globeMode ? globeMode : GlobeMode.Ellipsoid;
-
-    this.terrainSettings = TerrainSettings.fromJSON(terrainSettings);
+  private constructor(props: BackgroundMapProps) {
+    this.groundBias = props.groundBias ?? 0;
+    this.providerName = normalizeProviderName(props.providerName);
+    this.mapType = normalizeMapType(props);
+    this.transparency = normalizeTransparency(props.transparency);
+    this.useDepthBuffer = props.useDepthBuffer ?? false;
+    this.applyTerrain = props.applyTerrain ?? false;
+    this.terrainSettings = TerrainSettings.fromJSON(props.terrainSettings);
+    this.globeMode = normalizeGlobeMode(props.globeMode);
+    this._locatable = true !== props.nonLocatable;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings {
-    if (undefined === json)
-      return new BackgroundMapSettings();
-
-    const providerName = ("MapBoxProvider" === json.providerName) ? "MapBoxProvider" : "BingProvider";
-    const mapType = (undefined !== json.providerData) ? json.providerData.mapType : BackgroundMapType.Hybrid;
-    const globeMode = (undefined !== json.globeMode) ? json.globeMode : GlobeMode.Ellipsoid;
-    return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.useDepthBuffer, json.transparency, json.applyTerrain, json.terrainSettings, globeMode);
+    return new BackgroundMapSettings(json ?? {});
   }
 
   public toJSON(): BackgroundMapProps {
@@ -137,6 +164,8 @@ export class BackgroundMapSettings {
       props.globeMode = this.globeMode;
     if (this.useDepthBuffer)
       props.useDepthBuffer = true;
+    if (!this._locatable)
+      props.nonLocatable = true;
 
     const terrainSettings = this.terrainSettings.toJSON();
     for (const prop of Object.values(terrainSettings)) {
@@ -156,7 +185,8 @@ export class BackgroundMapSettings {
 
   public equals(other: BackgroundMapSettings): boolean {
     return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
-      && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.globeMode === other.globeMode && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
+      && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.globeMode === other.globeMode
+        && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
@@ -173,6 +203,7 @@ export class BackgroundMapSettings {
       transparency: changedProps.transparency ?? this.transparency,
       useDepthBuffer: changedProps.useDepthBuffer ?? this.useDepthBuffer,
       globeMode: changedProps.globeMode ?? this.globeMode,
+      nonLocatable: changedProps.nonLocatable ?? !this._locatable,
       applyTerrain: changedProps.applyTerrain ?? this.applyTerrain,
       terrainSettings: changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON() : this.terrainSettings.toJSON(),
       providerData: {

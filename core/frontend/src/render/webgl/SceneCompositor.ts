@@ -1948,17 +1948,19 @@ class MRTCompositor extends Compositor {
 
     const fbStack = System.instance.frameBufferStack;
     fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, this.useMsBuffers, () => {
+      if (renderForReadPixels) {
+        // BackgroundMap pass is only used when the map is rendered without depth.
+        // When drawing to the screen we render it to the background framebuffer.
+        // For readPixels, draw it to opaque frame buffer before anything else, with depth turned off.
+        this.target.drawingBackgroundForReadPixels = true;
+        this.drawPass(commands, RenderPass.BackgroundMap, true);
+        this.target.drawingBackgroundForReadPixels = false;
+      }
+
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (needAO || renderForReadPixels) {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
-
-        if (renderForReadPixels && 0 < commands.getCommands(RenderPass.BackgroundMap).length) {
-          // Draw background map last for readPixels. Tell shader to discard surface if anything at all is already in pick buffer.
-          this.target.drawingBackgroundForReadPixels = true;
-          this.drawPass(commands, RenderPass.OpaqueGeneral, true, RenderPass.BackgroundMap);
-          this.target.drawingBackgroundForReadPixels = false;
-        }
 
         if (this.useMsBuffers) {
           const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);

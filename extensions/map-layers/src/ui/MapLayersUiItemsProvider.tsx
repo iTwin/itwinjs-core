@@ -7,6 +7,8 @@ import * as React from "react";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@bentley/ui-abstract";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
+import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";
@@ -27,5 +29,26 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
       });
     }
     return widgets;
+  }
+}
+
+/** MapLayersWidgetControl provides a widget to attach and remove maps layers from the active view's display style.
+ * ``` tsx
+ *  <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
+ *    iconSpec={MapLayersWidgetControl.iconSpec} />,
+ * ```
+ */
+export class MapLayersWidgetControl extends WidgetControl {
+  public static id = "MapLayersWidget";
+  public static iconSpec = "icon-map";
+
+  public static get label(): string {
+    return IModelApp.i18n.translate("mapLayers:Widget.Label");
+  }
+
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactNode = <MapLayersWidget />;
   }
 }
