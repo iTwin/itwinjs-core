@@ -1352,7 +1352,7 @@ export class BriefcaseManager {
     // Delete the briefcase folder itself
     const briefcaseFolderPath = path.dirname(briefcase.pathname);
     if (BriefcaseManager.deleteFolderAndContents(briefcaseFolderPath))
-      Logger.logTrace(loggerCategory, "Deleted briefcase from local disk", () => briefcase.getDebugInfo());
+      Logger.logTrace(loggerCategory, "Deleted briefcase folder from local disk", () => ({ briefcaseFolderPath }));
 
     this.deleteBriefcaseParentFolders(briefcase.iModelId, briefcase.syncMode);
   }
