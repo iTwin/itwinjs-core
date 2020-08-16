@@ -122,8 +122,13 @@ export namespace FeatureSymbology {
           }
         }
       }
-
       const style = view.displayStyle;
+      style.modelAppearanceOverrides.forEach((override, modelId) => this.overrideModel(modelId, override, false));
+      style.forEachRealityModel((realityModel) => {
+        if (realityModel.appearanceOverrides && realityModel.modelId)
+          this.overrideModel(realityModel.modelId, realityModel.appearanceOverrides);
+      });
+
       const script = style.scheduleScript;
       if (script)
         script.getSymbologyOverrides(this, style.settings.timePoint ?? 0);

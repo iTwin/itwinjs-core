@@ -124,8 +124,8 @@ export class RealityTileTree extends TileTree {
     this.loader = params.loader;
     this.yAxisUp = true === params.yAxisUp;
     this._rootTile = this.createTile(params.rootTile);
-  }
 
+  }
   public get rootTile(): RealityTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return this.loader.maxDepth; }

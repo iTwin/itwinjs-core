@@ -282,7 +282,7 @@ class ProxyTile extends Tile {
 
     const location = proxyTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
     const clipVolume = true === proxyTree.viewFlagOverrides.clipVolumeOverride ? proxyTree.clipVolume : undefined;
-    args = new TileDrawArgs(args.context, location, sectionTree, args.now, proxyTree.viewFlagOverrides, clipVolume, args.parentsAndChildrenExclusive, proxyTree.symbologyOverrides);
+    args = new TileDrawArgs({ context: args.context, location, tree: sectionTree, now: args.now, viewFlagOverrides: proxyTree.viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: args.parentsAndChildrenExclusive, symbologyOverrides: proxyTree.symbologyOverrides });
     sectionTree.draw(args);
 
     const rangeGfx = this.getRangeGraphic(args.context);

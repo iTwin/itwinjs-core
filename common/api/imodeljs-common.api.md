@@ -1378,6 +1378,8 @@ export abstract class ContentIdProvider {
 
 // @public
 export interface ContextRealityModelProps {
+    // @beta
+    appearanceOverrides?: FeatureAppearanceProps;
     // @beta (undocumented)
     classifiers?: SpatialClassificationProps.Properties[];
     // (undocumented)
@@ -1551,6 +1553,11 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
 }
 
 // @beta
+export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
+    modelId?: Id64String;
+}
+
+// @beta
 export interface DisplayStyleOverridesOptions {
     includeAll?: true;
     includeBackgroundMap?: true;
@@ -1587,23 +1594,30 @@ export class DisplayStyleSettings {
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
     dropExcludedElement(id: Id64String): void;
+    dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
+    // @internal (undocumented)
+    equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean;
     // @internal (undocumented)
     equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
     get excludedElements(): Set<Id64String>;
+    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
+    get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
     // @alpha
     get mapImagery(): MapImagerySettings;
     set mapImagery(mapImagery: MapImagerySettings);
+    get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
     get monochromeColor(): ColorDef;
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
     // @internal (undocumented)
     readonly onOverridesApplied: BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>;
+    overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
@@ -1634,6 +1648,8 @@ export interface DisplayStyleSettingsProps {
     excludedElements?: Id64String[];
     // @alpha
     mapImagery?: MapImageryProps;
+    // @beta
+    modelOvr?: DisplayStyleModelAppearanceProps[];
     monochromeColor?: ColorDefProps;
     monochromeMode?: MonochromeMode;
     // @beta
@@ -2088,6 +2104,9 @@ export class Feature {
 // @public
 export class FeatureAppearance implements FeatureAppearanceProps {
     protected constructor(props: FeatureAppearanceProps);
+    get anyOverridden(): boolean;
+    clone(changedProps: FeatureAppearanceProps): FeatureAppearance;
+    cloneProps(changedProps: FeatureAppearanceProps): FeatureAppearanceProps;
     static readonly defaults: FeatureAppearance;
     // (undocumented)
     readonly emphasized?: true | undefined;
@@ -2110,6 +2129,8 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     readonly nonLocatable?: true | undefined;
     // (undocumented)
     get overridesLinePixels(): boolean;
+    // (undocumented)
+    get overridesNonLocatable(): boolean;
     // (undocumented)
     get overridesRgb(): boolean;
     // (undocumented)

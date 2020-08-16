@@ -12,7 +12,8 @@ import {
   PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
+  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
+  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
   SpatialViewDefinitionProps, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -20,20 +21,20 @@ import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialStat
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
 import { ElementState } from "./EntityState";
+import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
-import { RenderMemory } from "./render/RenderMemory";
 import { RenderClipVolume } from "./render/RenderClipVolume";
+import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, GlobalLocation } from "./ViewGlobalLocation";
-import { Frustum2d } from "./Frustum2d";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewChangeOptions, Viewport } from "./Viewport";
 
@@ -337,6 +338,13 @@ export abstract class ViewState extends ElementState {
     return this.displayStyle.getSubCategoryOverride(id);
   }
 
+  /** Query the symbology overrides applied to a model when rendered using this ViewState.
+   * @param id The Id of the model.
+   * @return The symbology overrides applied to the model, or undefined if no such overrides exist.
+   */
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
+    return this.displayStyle.getModelAppearanceOverride(id);
+  }
   /** @internal */
   public isSubCategoryVisible(id: Id64String): boolean {
     const app = this.iModel.subcategories.getSubCategoryAppearance(id);

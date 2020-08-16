@@ -6,15 +6,15 @@
  * @module Views
  */
 
-import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch,
-} from "@bentley/bentleyjs-core";
+import { asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
   Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction, ElementProps,
+  FeatureAppearance,
+  FeatureAppearanceProps, Frustum, GlobeMode,
   GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
   PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -26,6 +26,7 @@ import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ToolTipOptions } from "./NotificationManager";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
@@ -34,6 +35,7 @@ import { GraphicList, RenderGraphicOwner } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
+import { SheetViewState } from "./Sheet";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileBoundingBoxes, TileTreeReference, TileTreeSet } from "./tile/internal";
@@ -44,8 +46,6 @@ import { areaToEyeHeight, eyeToCartographicOnGlobe, GlobalLocation, metersToRang
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewRect } from "./ViewRect";
 import { MarginPercent, ModelDisplayTransformProvider, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
-import { SheetViewState } from "./Sheet";
-import { CanvasDecoration } from "./render/CanvasDecoration";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -1220,6 +1220,53 @@ export abstract class Viewport implements IDisposable {
    * @note Because this function does not know the Id of the containing Category, it does not check if the Category is enabled for display. The caller should check that separately if he knows the Id of the Category.
    */
   public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
+
+  /** Override the appearance of a model when rendered within this viewport.
+   * @param id The Id of the model.
+   * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
+   * @see [[dropModelAppearanceOverride]]
+   */
+  public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
+    this.view.displayStyle.overrideModelAppearance(id, ovr);
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
+  /** Remove any model appearance override for the specified model.
+   * @param id The Id of the subcategory.
+   * @see [[overrideModelAppearance]]
+   */
+  public dropModelAppearanceOverride(id: Id64String): void {
+    this.view.displayStyle.dropModelAppearanceOverride(id);
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
+  /** Change the appearance overrides for a "contextual" reality model displayed by this viewport.
+   * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
+   * @param index The reality model index or -1 to apply to all models.
+   * @returns true if overrides are successfully applied.
+   * @beta
+   */
+  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean {
+    const changed = this.displayStyle.overrideRealityModelAppearance(index, overrides);
+    if (changed) {
+      this._changeFlags.setDisplayStyle();
+      this.invalidateRenderPlan();
+    }
+    return changed;
+  }
+
+  /** Drop the appearance overrides for a "contextual" reality model displayed by this viewport.
+   * @param index The reality model index or to drop overrides from or -1 to drop overrides from all reality models.
+   * @returns true if overrides are successfully dropped.
+   * @beta
+   */
+  public dropRealityModelAppearanceOverride(index: number) {
+    this.displayStyle.dropRealityModelAppearanceOverride(index);
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
 
   /** Some changes may or may not require us to invalidate the scene.
    * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:

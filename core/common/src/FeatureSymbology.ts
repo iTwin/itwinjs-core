@@ -103,7 +103,10 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   public get overridesLinePixels(): boolean { return undefined !== this.linePixels; }
   public get overridesWeight(): boolean { return undefined !== this.weight; }
   public get overridesSymbology(): boolean { return this.overridesRgb || this.overridesTransparency || this.overridesWeight || this.overridesLinePixels || !!this.ignoresMaterial; }
+  public get overridesNonLocatable(): boolean { return undefined !== this.nonLocatable; }
   public get isFullyTransparent(): boolean { return undefined !== this.transparency && this.transparency >= 1.0; }
+  /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */
+  public get anyOverridden(): boolean { return this.overridesSymbology || this.overridesNonLocatable; }
 
   public equals(other: FeatureAppearance): boolean {
     return this.rgbIsEqual(other.rgb)
@@ -125,6 +128,33 @@ export class FeatureAppearance implements FeatureAppearanceProps {
       nonLocatable: this.nonLocatable,
       emphasized: this.emphasized,
     };
+  }
+
+  /** Convert this appearance to JSON, and override any properties explicitly specified by `changedProps` in the result.
+   * Example:
+   * ```ts
+   *  const base = FeatureAppearance.fromRgba(ColorDef.white); // transparency=0, rgb=white
+   *  const clone = base.cloneProps({ transparency: undefined, weight: 5 }); // transparency=undefined, rgb=white, weight=5
+   * ```
+   * @see [[FeatureAppearance.clone]].
+   */
+  public cloneProps(changedProps: FeatureAppearanceProps): FeatureAppearanceProps {
+    return {
+      ...this.toJSON(),
+      ...changedProps,
+    };
+  }
+
+  /** Create a copy of this appearance, overriding any properties explicitly specified by `changedProps`.
+   * Example:
+   * ```ts
+   *  const base = FeatureAppearance.fromRgba(ColorDef.white); // transparency=0, rgb=white
+   *  const clone = base.clone({ transparency: undefined, weight: 5 }); // transparency=undefined, rgb=white, weight=5
+   * ```
+   * @see [[FeatureAppearance.cloneProps]].
+   */
+  public clone(changedProps: FeatureAppearanceProps): FeatureAppearance {
+    return FeatureAppearance.fromJSON(this.cloneProps(changedProps));
   }
 
   /** Produce a FeatureAppearance from the supplied appearance in which any aspect not defined by the base appearance is overridden by this appearance. */

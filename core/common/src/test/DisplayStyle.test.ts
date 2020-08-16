@@ -230,6 +230,15 @@ describe("DisplayStyleSettings overrides", () => {
       weight: 10,
       transp: 0.5,
     }],
+    modelOvr: [{
+      modelId: "0x789",
+      weight: 10,
+      linePixels: 4262526480,
+      rgb: { r: 0, g: 255, b: 0 },
+      transparency: 0.5,
+      nonLocatable: true,
+      emphasized: true,
+    }],
     excludedElements: ["0x4", "0x8", "0x10"],
     contextRealityModels: [{
       tilesetUrl: "google.com",
@@ -358,6 +367,19 @@ describe("DisplayStyleSettings overrides", () => {
         style: "0xbbb",
         weight: 20,
         transp: 0.7,
+      }],
+    });
+
+    test({
+      viewflags,
+      modelOvr: [{
+        modelId: "0x789",
+        weight: 10,
+        linePixels: 4262526480,
+        rgb: { r: 0, g: 255, b: 0 },
+        transparency: 0.5,
+        nonLocatable: true,
+        emphasized: true,
       }],
     });
 

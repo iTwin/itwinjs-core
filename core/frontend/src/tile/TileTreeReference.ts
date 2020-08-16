@@ -120,11 +120,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       return undefined;
 
     const now = BeTimePoint.now();
-    const transform = this.computeTransform(tree);
+    const location = this.computeTransform(tree);
     const clipVolume = this.getClipVolume(tree);
     const viewFlagOverrides = this.getViewFlagOverrides(tree);
 
-    return new TileDrawArgs(context, transform, tree, now, viewFlagOverrides, clipVolume, tree.parentsAndChildrenExclusive, this.getSymbologyOverrides(tree));
+    return new TileDrawArgs({ context, location, tree, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: tree.parentsAndChildrenExclusive, symbologyOverrides: this.getSymbologyOverrides(tree) });
   }
 
   /** Supply transform from this tile tree reference's location to iModel coordinate space.

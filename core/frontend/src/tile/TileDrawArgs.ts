@@ -23,6 +23,19 @@ import { Tile, TileGraphicType, TileTree } from "./internal";
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();
 
+/** Parameters used to construct [[TileDrawArgs]]
+ * @beta
+ */
+export interface TileDrawArgParams {
+  context: SceneContext;
+  location: Transform;
+  tree: TileTree;
+  now: BeTimePoint;
+  viewFlagOverrides: ViewFlagOverrides;
+  clipVolume: RenderClipVolume | undefined;
+  parentsAndChildrenExclusive: boolean;
+  symbologyOverrides: FeatureSymbology.Overrides | undefined;
+}
 /**
  * Arguments used when selecting and drawing [[Tile]]s.
  * @see [[TileTree.selectTiles]]
@@ -35,7 +48,7 @@ export class TileDrawArgs {
   /** The tile tree being drawn. */
   public readonly tree: TileTree;
   /** Optional clip volume applied to the tiles. */
-  public clipVolume?: RenderClipVolume;
+  public clipVolume: RenderClipVolume | undefined;
   /** The context in which the tiles will be drawn, exposing, e.g., the [[Viewport]] and accepting [[RenderGraphic]]s to be drawn. */
   public readonly context: SceneContext;
   /** Describes the viewed volume. */
@@ -58,6 +71,10 @@ export class TileDrawArgs {
   public readonly readyTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
   private readonly _nearViewZ?: number;
+  /** View Flag overrides */
+  public get viewFlagOverrides(): ViewFlagOverrides { return this.graphics.viewFlagOverrides; }
+  /**  Symbology overrides */
+  public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
 
   /** Compute the size of this tile on screen in pixels. */
   public getPixelSize(tile: Tile): number {
@@ -112,20 +129,21 @@ export class TileDrawArgs {
   }
 
   /** @internal */
-  public static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlagOverrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = false, symbologyOverrides?: FeatureSymbology.Overrides) {
+  public static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlagOverrides, clipVolume?: RenderClipVolume, parentsAndChildrenExclusive = false, symbologyOverrides?: FeatureSymbology.Overrides) {
     const now = BeTimePoint.now();
-    return new TileDrawArgs(context, location, tree, now, viewFlagOverrides, clip, parentsAndChildrenExclusive, symbologyOverrides);
+    return new TileDrawArgs({ context, location, tree, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive, symbologyOverrides });
   }
 
   /** Constructor */
-  public constructor(context: SceneContext, location: Transform, tree: TileTree, now: BeTimePoint, viewFlagOverrides: ViewFlagOverrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = true, symbologyOverrides?: FeatureSymbology.Overrides) {
+  public constructor(params: TileDrawArgParams) {
+    const { location, tree, context, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive, symbologyOverrides } = params;
     this.location = location;
     this.tree = tree;
     this.context = context;
     this.now = now;
 
-    if (undefined !== clip && !clip.hasOutsideClipColor)
-      this.clipVolume = clip;
+    if (undefined !== clipVolume && !clipVolume.hasOutsideClipColor)
+      this.clipVolume = clipVolume;
 
     this.graphics.setViewFlagOverrides(viewFlagOverrides);
     this.graphics.symbologyOverrides = symbologyOverrides;
@@ -138,7 +156,7 @@ export class TileDrawArgs {
     this.drape = context.getTextureDrapeForModel(tree.modelId);
 
     // NB: If the tile tree has its own clip, do not also apply the view's clip.
-    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clip)
+    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clipVolume)
       this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;

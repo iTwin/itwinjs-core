@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, ViewDefinitionProps, ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { assert, expect } from "chai";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(view?: ViewState) { super(view); }
@@ -253,5 +253,43 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setVisibleSubCategory(subCategoryId);
     assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in excludedElements and if geometryClass and subCategory are visible, feature isn't visible");
     assert.isTrue(overrides.isFeatureVisible(feature2), "if elementId is not in excludedElements and if geometryClass and subCategory are visible, feature is visible");
+  });
+
+  it("model appearance overrides work as expected", async () => {
+    const modelId1 = Id64.fromString("0x111");
+    const modelId2 = Id64.fromString("0x112");
+    const modelId3 = Id64.fromString("0x0113");
+    const elementId = Id64.fromString("0x128");
+    const subCategoryId = Id64.fromString("0x129");
+    const geometryClass = GeometryClass.Construction;
+    const feature = new Feature(elementId, subCategoryId, geometryClass);
+    const viewStateClone = viewState.clone();
+    const modelOverride1 = FeatureAppearance.fromJSON({ rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true });
+    const modelOverride2 = FeatureAppearance.fromJSON({ ...modelOverride1, transparency: 200 / 255 });
+
+    const displayStyle = viewStateClone.displayStyle;
+    displayStyle.overrideModelAppearance(modelId1, modelOverride1);
+    assert(displayStyle.hasModelAppearanceOverride);
+    assert(displayStyle.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
+
+    displayStyle.dropModelAppearanceOverride(modelId1);
+    assert(!displayStyle.hasModelAppearanceOverride);
+
+    displayStyle.overrideModelAppearance(modelId1, modelOverride1);
+    displayStyle.overrideModelAppearance(modelId2, modelOverride2);
+    assert(displayStyle.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
+    assert(displayStyle.getModelAppearanceOverride(modelId2)!.equals(modelOverride2));
+    expect(displayStyle.getModelAppearanceOverride(modelId3)).to.be.undefined;
+
+
+    const overrides = new Overrides(viewStateClone);
+    overrides.setAlwaysDrawn(elementId);
+    const appearance1 = overrides.getFeatureAppearance(feature, modelId1);
+    const appearance2 = overrides.getFeatureAppearance(feature, modelId2);
+    const appearance3 = overrides.getFeatureAppearance(feature, modelId3);
+
+    assert(appearance1!.equals(modelOverride1));
+    assert(appearance2!.equals(modelOverride2));
+    assert(!appearance3?.overridesRgb);
   });
 });

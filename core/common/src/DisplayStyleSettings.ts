@@ -15,7 +15,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
-import { SubCategoryOverride } from "./imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps, SubCategoryOverride } from "./imodeljs-common";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
@@ -34,6 +34,15 @@ import { ViewFlagProps, ViewFlags } from "./ViewFlags";
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
   /** The Id of the [[SubCategory]] whose appearance is to be overridden. */
   subCategory?: Id64String;
+}
+
+/** Describes the [[FeatureAppearance]] overrides applied to a model by a [[DisplayStyle]].
+ * @see [[DisplayStyleSettingsProps]]
+ * @beta
+ */
+export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
+  /** The Id of the model whose appearance is to be overridden. */
+  modelId?: Id64String;
 }
 
 /** JSON representation of the environment setup of a [[DisplayStyle3d]].
@@ -64,6 +73,11 @@ export interface ContextRealityModelProps {
   description?: string;
   /** @beta */
   classifiers?: SpatialClassificationProps.Properties[];
+  /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.
+   * @beta
+   *
+   */
+  appearanceOverrides?: FeatureAppearanceProps;
 }
 
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
@@ -112,6 +126,7 @@ export interface DisplayStyleSettingsProps {
   timePoint?: number;
   /** Overrides applied to the appearances of subcategories in the view. */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
+
   /** Settings controlling display of map within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
   /** Contextual Reality Models */
@@ -122,6 +137,10 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   mapImagery?: MapImageryProps;
+  /** Overrides applied to the appearance of models in the view.
+   * @beta
+   */
+  modelOvr?: DisplayStyleModelAppearanceProps[];
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -175,7 +194,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 }
 
 /** Controls which settings are serialized by [[DisplayStyleSettings.toOverrides]]. A display style includes some settings that are specific to a given iModel - for example,
- * the subcategory overrides are indexed by subcategory Ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
+ * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
  * when creating display style overrides intended for use with a specific iModel or project, but should be omitted when creating general-purpose display style overrides intended
  * for use with any iModel or project. This is the default behavior if no more specific options are provided.
  * @beta
@@ -186,6 +205,7 @@ export interface DisplayStyleOverridesOptions {
   /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all project-specific settings will be serialized too.
    * The following are iModel-specific settings:
    *  * Subcategory overrides.
+   *  * Model Appearance overrides.
    *  * Classifiers associated with context reality models.
    *  * Analysis style.
    *  * Schedule script.
@@ -218,6 +238,7 @@ export class DisplayStyleSettings {
   private _monochrome: ColorDef;
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
+  private readonly _modelAppearanceOverrides: Map<Id64String, FeatureAppearance> = new Map<Id64String, FeatureAppearance>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
@@ -247,6 +268,7 @@ export class DisplayStyleSettings {
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
     this.populateSubCategoryOverridesFromJSON();
+    this.populateModelAppearanceOverridesFromJSON();
     this.populateExcludedElementsFromJSON();
   }
 
@@ -265,6 +287,20 @@ export class DisplayStyleSettings {
     }
   }
 
+  private populateModelAppearanceOverridesFromJSON(): void {
+    this._modelAppearanceOverrides.clear();
+    const ovrsArray = JsonUtils.asArray(this._json.modelOvr);
+    if (undefined !== ovrsArray) {
+      for (const ovrJson of ovrsArray) {
+        const modelId = Id64.fromJSON(ovrJson.modelId);
+        if (Id64.isValid(modelId)) {
+          const appearance = FeatureAppearance.fromJSON(ovrJson);
+          if (appearance.anyOverridden)
+            this.changeModelAppearanceOverride(modelId, false, appearance);
+        }
+      }
+    }
+  }
   private populateExcludedElementsFromJSON(): void {
     this._excludedElements.clear();
     const exElemArray = JsonUtils.asArray(this._json.excludedElements);
@@ -390,7 +426,7 @@ export class DisplayStyleSettings {
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.overrideSubCategory]] to ensure
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideSubCategory]] to ensure
    * the changes are promptly visible on the screen.
    * @see [[dropSubCategoryOverride]]
    */
@@ -398,7 +434,7 @@ export class DisplayStyleSettings {
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.dropSubCategoryOverride]] to ensure
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropSubCategoryOverride]] to ensure
    * the changes are promptly visible on the screen.
    * @see [[overrideSubCategory]]
    */
@@ -416,6 +452,37 @@ export class DisplayStyleSettings {
 
   /** Returns true if an [[SubCategoryOverride]s are defined by this style. */
   public get hasSubCategoryOverride(): boolean { return this._subCategoryOverrides.size > 0; }
+
+  /** Customize the way a [[Model]]  is drawn by this display style.
+   * @param modelId The ID of the [[model]] whose appearance is to be overridden.
+   * @param ovr The overrides to apply to the [[Model]].
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelAppearance]] to ensure
+   * the changes are promptly visible on the screen.
+   * @see [[dropModelAppearanceOverride]]
+   */
+  public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void { this.changeModelAppearanceOverride(modelId, true, ovr); }
+
+  /** Remove any appearance overrides applied to a [[Model]] by this style.
+   * @param modelId The ID of the [[Model]].
+   * @param ovr The overrides to apply to the [[Model]].
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropModelAppearanceOverride]] to ensure
+   * the changes are promptly visible on the screen.
+   * @see [[overrideModelAppearance]]
+   */
+  public dropModelAppearanceOverride(id: Id64String): void { this.changeModelAppearanceOverride(id, true); }
+
+  /** The overrides applied by this style. */
+  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> { return this._modelAppearanceOverrides; }
+
+  /** Obtain the override applied to a [[Model]] by this style.
+   * @param id The ID of the [[Model]].
+   * @returns The corresponding FeatureAppearance, or undefined if the Model'ss appearance is not overridden.
+   * @see [[overrideModelAppearance]]
+   */
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined { return this._modelAppearanceOverrides.get(id); }
+
+  /** Returns true if model appearance overridess are defined by this style. */
+  public get hasModelAppearanceOverride(): boolean { return this._modelAppearanceOverrides.size > 0; }
 
   /** The set of elements that the display style will exclude.
    * @returns The set of excluded elements.
@@ -504,6 +571,7 @@ export class DisplayStyleSettings {
         props.scheduleScript = [...this.scheduleScriptProps];
 
       props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
+      props.modelOvr = this._json.modelOvr ? [...this._json.modelOvr] : [];
       props.excludedElements = this._json.excludedElements ? [...this._json.excludedElements] : [];
     }
 
@@ -572,6 +640,11 @@ export class DisplayStyleSettings {
       this.populateSubCategoryOverridesFromJSON();
     }
 
+    if (overrides.modelOvr) {
+      this._json.modelOvr = [...overrides.modelOvr];
+      this.populateModelAppearanceOverridesFromJSON();
+    }
+
     if (overrides.excludedElements) {
       this._json.excludedElements = [...overrides.excludedElements];
       this.populateExcludedElementsFromJSON();
@@ -624,6 +697,59 @@ export class DisplayStyleSettings {
 
     for (const [key, value] of this._subCategoryOverrides.entries()) {
       const otherValue = other._subCategoryOverrides.get(key);
+      if (undefined === otherValue || !value.equals(otherValue))
+        return false;
+    }
+
+    return true;
+  }
+
+  private findIndexOfModelAppearanceOverrideInJSON(id: Id64String, allowAppend: boolean): number {
+    const ovrsArray = JsonUtils.asArray(this._json.modelOvr);
+    if (undefined === ovrsArray) {
+      if (allowAppend) {
+        this._json.modelOvr = [];
+        return 0;
+      } else {
+        return -1;
+      }
+    } else {
+      for (let i = 0; i < ovrsArray.length; i++) {
+        if (ovrsArray[i].modelId === id)
+          return i;
+      }
+
+      return allowAppend ? ovrsArray.length : -1;
+    }
+  }
+
+  private changeModelAppearanceOverride(id: Id64String, updateJson: boolean, ovr?: FeatureAppearance): void {
+    if (undefined === ovr) {
+      // undefined => drop the override if present.
+      this._modelAppearanceOverrides.delete(id);
+      if (updateJson) {
+        const index = this.findIndexOfModelAppearanceOverrideInJSON(id, false);
+        if (-1 !== index)
+          this._json.modelOvr!.splice(index, 1);
+      }
+    } else {
+      // add override, or update if present.
+      this._modelAppearanceOverrides.set(id, ovr);
+      if (updateJson) {
+        const index = this.findIndexOfModelAppearanceOverrideInJSON(id, true);
+        this._json.modelOvr![index] = ovr.toJSON();
+        this._json.modelOvr![index].modelId = id;
+      }
+    }
+  }
+
+  /** @internal */
+  public equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean {
+    if (this._modelAppearanceOverrides.size !== other._modelAppearanceOverrides.size)
+      return false;
+
+    for (const [key, value] of this._modelAppearanceOverrides.entries()) {
+      const otherValue = other._modelAppearanceOverrides.get(key);
       if (undefined === otherValue || !value.equals(otherValue))
         return false;
     }

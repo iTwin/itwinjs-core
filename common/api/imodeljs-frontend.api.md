@@ -1634,6 +1634,9 @@ export enum ContextMode {
 export class ContextRealityModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     // (undocumented)
+    get appearanceOverrides(): FeatureAppearance | undefined;
+    set appearanceOverrides(overrides: FeatureAppearance | undefined);
+    // (undocumented)
     get classifiers(): SpatialClassifiers | undefined;
     // (undocumented)
     readonly description: string;
@@ -1644,6 +1647,8 @@ export class ContextRealityModelState {
     matches(other: ContextRealityModelState): boolean;
     // (undocumented)
     matchesNameAndUrl(name: string, url: string): boolean;
+    // (undocumented)
+    get modelId(): Id64String | undefined;
     // (undocumented)
     readonly name: string;
     // (undocumented)
@@ -1718,7 +1723,7 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
-export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference;
+export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference;
 
 // @internal (undocumented)
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference;
@@ -2056,6 +2061,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     detachRealityModelByNameAndUrl(name: string, url: string): void;
     // @internal (undocumented)
     get displayTerrain(): boolean;
+    // @beta
+    dropModelAppearanceOverride(modelId: Id64String): void;
+    // @beta
+    dropRealityModelAppearanceOverride(index: number): void;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
@@ -2076,6 +2085,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
+    // @beta
+    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     get globeMode(): GlobeMode;
@@ -2083,6 +2094,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
     // @internal (undocumented)
     hasAttachedRealityModel(name: string, url: string): boolean;
+    // @beta
+    get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     // @internal (undocumented)
@@ -2091,6 +2104,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
     // @internal (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    // @beta
+    get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
     // @internal
@@ -2106,6 +2121,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get overlayMap(): MapTileTreeReference;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
+    // @beta
+    overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
+    // @beta
+    overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
@@ -5930,11 +5949,6 @@ export namespace OrbitGtTileTree {
     // (undocumented)
     export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
     // (undocumented)
-    export abstract class Reference extends TileTreeReference {
-        // (undocumented)
-        abstract get classifiers(): SpatialClassifiers | undefined;
-    }
-    // (undocumented)
     export interface ReferenceProps {
         // (undocumented)
         classifiers?: SpatialClassifiers;
@@ -6556,6 +6570,29 @@ export interface RealityTileTreeParams extends TileTreeParams {
     // (undocumented)
     readonly yAxisUp?: boolean;
 }
+
+// @internal
+export class RealityTreeReference extends RealityModelTileTree.Reference {
+    constructor(props: RealityModelTileTree.ReferenceProps);
+    // (undocumented)
+    addToScene(context: SceneContext): void;
+    // (undocumented)
+    get castsShadows(): boolean;
+    // (undocumented)
+    get classifiers(): SpatialClassifiers | undefined;
+    // (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    discloseTileTrees(trees: TileTreeSet): void;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    // (undocumented)
+    protected get _isLoadingComplete(): boolean;
+    // (undocumented)
+    get modelId(): string;
+    // (undocumented)
+    get treeOwner(): TileTreeOwner;
+    }
 
 // @public
 export class RemoteBriefcaseConnection extends BriefcaseConnection {
@@ -8902,11 +8939,31 @@ export interface TiledGraphicsProvider {
 }
 
 // @beta
+export interface TileDrawArgParams {
+    // (undocumented)
+    clipVolume: RenderClipVolume | undefined;
+    // (undocumented)
+    context: SceneContext;
+    // (undocumented)
+    location: Transform;
+    // (undocumented)
+    now: BeTimePoint;
+    // (undocumented)
+    parentsAndChildrenExclusive: boolean;
+    // (undocumented)
+    symbologyOverrides: FeatureSymbology.Overrides | undefined;
+    // (undocumented)
+    tree: TileTree;
+    // (undocumented)
+    viewFlagOverrides: ViewFlagOverrides;
+}
+
+// @beta
 export class TileDrawArgs {
-    constructor(context: SceneContext, location: Transform, tree: TileTree, now: BeTimePoint, viewFlagOverrides: ViewFlagOverrides, clip?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides);
+    constructor(params: TileDrawArgParams);
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
-    clipVolume?: RenderClipVolume;
+    clipVolume: RenderClipVolume | undefined;
     readonly context: SceneContext;
     // @internal (undocumented)
     drape?: RenderTextureDrape;
@@ -8915,7 +8972,7 @@ export class TileDrawArgs {
     // @internal (undocumented)
     drawGraphicsWithType(graphicType: TileGraphicType, graphics: GraphicBranch): void;
     // @internal (undocumented)
-    static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlagOverrides, clip?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides): TileDrawArgs;
+    static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlagOverrides, clipVolume?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides): TileDrawArgs;
     get frustumPlanes(): FrustumPlanes;
     protected _frustumPlanes?: FrustumPlanes;
     getPixelSize(tile: Tile): number;
@@ -8942,10 +8999,12 @@ export class TileDrawArgs {
     // @internal (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     readonly readyTiles: Set<Tile>;
+    get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
     // @alpha
     get tileSizeModifier(): number;
     readonly tree: TileTree;
     readonly viewClip?: ClipVector;
+    get viewFlagOverrides(): ViewFlagOverrides;
     viewingSpace: ViewingSpace;
     // @internal (undocumented)
     get worldToViewMap(): Map4d;
@@ -10646,6 +10705,9 @@ export abstract class Viewport implements IDisposable {
     // (undocumented)
     dispose(): void;
     dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
+    dropModelAppearanceOverride(id: Id64String): void;
+    // @beta
+    dropRealityModelAppearanceOverride(index: number): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @beta
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
@@ -10769,6 +10831,9 @@ export abstract class Viewport implements IDisposable {
     set outsideClipColor(color: ColorDef | undefined);
     // @beta
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
+    overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
+    // @beta
+    overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @beta
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;
@@ -11069,6 +11134,7 @@ export abstract class ViewState extends ElementState {
     getGridSpacing(): XAndY;
     // (undocumented)
     getGridsPerRef(): number;
+    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     // @internal (undocumented)
     getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
     // @internal

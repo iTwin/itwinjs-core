@@ -33,7 +33,7 @@ function getUrl(content: any) {
 interface RealityTreeId {
   url: string;
   transform?: Transform;
-  modelId?: Id64String;
+  modelId: Id64String;
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
@@ -65,8 +65,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: RealityTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    const modelId = undefined !== treeId.modelId ? treeId.modelId : iModel.transientIds.next;
-    return RealityModelTileTree.createRealityModelTileTree(treeId.url, iModel, modelId, treeId.transform);
+    return RealityModelTileTree.createRealityModelTileTree(treeId.url, iModel, treeId.modelId, treeId.transform);
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
@@ -82,7 +81,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
     else if (undefined === rhs.transform)
       return 1;
 
-    const l = lhs.transform, r = rhs.transform;
+    const l = lhs.transform!, r = rhs.transform!;
     cmp = compareOrigins(l.origin, r.origin);
     return 0 !== cmp ? cmp : compareMatrices(l.matrix, r.matrix);
   }
@@ -346,7 +345,8 @@ export class RealityModelTileTree extends RealityTileTree {
 }
 
 /** @internal */
-export namespace RealityModelTileTree { // eslint-disable-line no-redeclare
+// eslint-disable-next-line no-redeclare
+export namespace RealityModelTileTree {
   export interface ReferenceProps {
     url: string;
     iModel: IModelConnection;
@@ -417,12 +417,15 @@ export namespace RealityModelTileTree { // eslint-disable-line no-redeclare
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
  * @internal
  */
-class RealityTreeReference extends RealityModelTileTree.Reference {
-  public readonly treeOwner: TileTreeOwner;
+export class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _name: string;
   private readonly _url: string;
   private readonly _classifier?: SpatialClassifierTileTreeReference;
   private _mapDrapeTree?: TileTreeReference;
+  private _transform?: Transform;
+  private _modelId: Id64String;
+  private _iModel: IModelConnection;
+  public get modelId() { return this._modelId; }
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super();
@@ -433,13 +436,18 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
         transform = tf;
     }
 
-    const treeId = { url: props.url, transform, modelId: props.modelId };
-    this.treeOwner = realityTreeSupplier.getOwner(treeId, props.iModel);
     this._name = undefined !== props.name ? props.name : "";
     this._url = props.url;
+    this._transform = transform;
+    this._iModel = props.iModel;
+    this._modelId = props.modelId ? props.modelId : this._iModel.transientIds.next;
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
+  }
+  public get treeOwner(): TileTreeOwner {
+    const treeId = { url: this._url, transform: this._transform, modelId: this._modelId };
+    return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 
   public get castsShadows() {
@@ -532,7 +540,7 @@ export class RealityModelTileClient {
   constructor(url: string, accessToken?: AccessToken, contextId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (contextId && this.rdsProps)
-      this.rdsProps.projectId = contextId;
+      this.rdsProps!.projectId = contextId;
     this._token = accessToken;
   }
 
@@ -547,7 +555,7 @@ export class RealityModelTileClient {
         requestContext.enter();
 
         // A reality data that has not root document set should not be considered.
-        const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument as string : "");
+        const rootDocument: string = (this._realityData!.rootDocument ? this._realityData!.rootDocument as string : "");
         this.setBaseUrl(rootDocument);
       }
     }
@@ -601,7 +609,7 @@ export class RealityModelTileClient {
       await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
       authRequestContext.enter();
 
-      return this._realityData!.getRootDocumentJson(authRequestContext); // _realityData can't be undefined after initializeRDSRealityData
+      return this._realityData!.getRootDocumentJson(authRequestContext);
     }
 
     // The following is only if the reality data is not stored on PW Context Share.
@@ -624,7 +632,7 @@ export class RealityModelTileClient {
 
     const tileUrl = this._baseUrl + url;
     if (undefined !== this.rdsProps && undefined !== this._token)
-      return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl); // _realityData can't be undefined after initializeRDSRealityData
+      return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
     return getArrayBuffer(requestContext, tileUrl);
   }
@@ -644,7 +652,7 @@ export class RealityModelTileClient {
     const tileUrl = this._baseUrl + url;
 
     if (undefined !== this.rdsProps && undefined !== this._token)
-      return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl); // _realityData can't be undefined after initializeRDSRealityData
+      return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
     return getJson(requestContext, tileUrl);
   }

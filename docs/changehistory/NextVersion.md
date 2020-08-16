@@ -104,3 +104,7 @@ Previously, [TerrainSettings.locatable]($common) and [TerrainProps.nonLocatable]
 ## ui-components
 
 Breaking change to the `beta` interface [ColorPickerProps]($ui-components). The `activeColor` property has been renamed to `initialColor`. The modified props are used by the   [ColorPickerButton]($ui-components) React component.
+
+## Model Appearance Overrides
+Appearance overrides can be applied to models in a similar manner to subcategory overries with [DisplayStyleState.overrideModelAppearance] or [Viewport.overrideModelAppearance].  Overrides can be applied to the "contextual" reality models included within display styles with  [DisplayStyleState.overrideRealityModelAppearance] or [Viewport.overrideRealityModelAppearance].  For reality models only transparency, color, emphasized and nonLocatable overrides are applicable.
+

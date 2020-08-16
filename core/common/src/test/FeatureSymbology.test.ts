@@ -45,6 +45,17 @@ describe("FeatureAppearance", () => {
     const expected = FeatureAppearance.fromJSON(expectedProps);
     assert.isTrue(expected.equals(app1));
   });
+
+  it("clones with overrides", () => {
+    const base = FeatureAppearance.fromRgba(ColorDef.white);
+    const clone = base.clone({ transparency: undefined, weight: 5 });
+    expect(clone.transparency).to.be.undefined;
+    expect(clone.weight).to.equal(5);
+    expect(clone.rgb).not.to.be.undefined;
+    expect(clone.rgb!.r).to.equal(0xff);
+    expect(clone.rgb!.g).to.equal(0xff);
+    expect(clone.rgb!.b).to.equal(0xff);
+  });
 });
 
 describe("FeatureOverrides", () => {

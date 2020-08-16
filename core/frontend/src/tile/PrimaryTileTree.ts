@@ -12,9 +12,9 @@ import { BatchType, compareIModelTileTreeIds, iModelTileTreeIdToString, PrimaryT
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
+import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SceneContext } from "../ViewContext";
 import { ViewState, ViewState3d } from "../ViewState";
-import { RenderClipVolume } from "../render/RenderClipVolume";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,

@@ -2,21 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
-import {
-  ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+import { ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags } from "@bentley/imodeljs-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
   Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, Viewport, ViewRect,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
-import {
-  Color, comparePixelData, createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports,
-} from "../TestViewport";
+import { expect } from "chai";
+import { Color, comparePixelData, createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../TestViewport";
 
 describe("Test VAO creation", () => {
   before(async () => {
@@ -211,6 +207,69 @@ describe("Render mirukuru with single clip plane", () => {
           expect(isReddish(c) || isGreenish(c)).to.be.true;
         }
       }
+    });
+  });
+});
+
+
+describe("Render mirukuru with model appearance override applied", () => {
+  let imodel: IModelConnection;
+  before(async () => {
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+  });
+
+  after(async () => {
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
+  });
+
+  function isReddish(c: Color): boolean {
+    return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+  }
+
+  const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+  function expectCorrectColors(vp: TestViewport) {
+    const colors = vp.readUniqueColors();
+    expect(colors.length === 2);
+    expect(colors.contains(bgColor)).to.be.true; // black background
+    colors.forEach((color) => expect(color === bgColor || isReddish(color)));
+  }
+  function expectAlmostTransparent(vp: TestViewport) {
+    const colors = vp.readUniqueColors();
+    expect(colors.length === 2);
+    expect(colors.contains(bgColor)).to.be.true; // black background
+    colors.forEach((color) => expect(color.r < 20 && color.b < 20 && color.g < 20));
+  }
+
+  it("should render the model with color override applied", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      expect(vp.view.is3d());
+      const colorOverride = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xff, 0, 0) });
+
+      vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      expectCorrectColors(vp);
+    });
+  });
+  it("should render the model almost transparent", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      expect(vp.view.is3d());
+      const colorOverride = FeatureAppearance.fromJSON({ transparency: .95 });
+
+      vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      expectAlmostTransparent(vp);
     });
   });
 });
