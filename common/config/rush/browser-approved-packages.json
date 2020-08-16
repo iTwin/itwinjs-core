@@ -359,10 +359,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "csstype",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "debug",
       "allowedCategories": [ "common" ]
     },
@@ -423,16 +419,16 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "eslint-plugin-jsx-a11y",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "eslint-plugin-prefer-arrow",
       "allowedCategories": [ "tools" ]
     },
     {
       "name": "eslint-plugin-react",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "eslint-plugin-jsx-a11y",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "eslint-plugin-react-hooks",
@@ -679,10 +675,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "prop-types",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "puppeteer",
       "allowedCategories": [ "integration-testing", "tools" ]
     },
@@ -912,11 +904,11 @@
     },
     {
       "name": "tslint",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tslint-consistent-codestyle",
-      "allowedCategories": [ "common", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tslint-eslint-rules",
@@ -924,7 +916,7 @@
     },
     {
       "name": "tslint-etc",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tsutils",
