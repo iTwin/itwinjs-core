@@ -439,6 +439,7 @@ internal;TileAvailability
 internal;TileBoundingBoxes
 beta;TileContent
 beta;TiledGraphicsProvider
+beta;TileDrawArgParams
 beta;TileDrawArgs
 beta;TileGraphicType
 beta;TileLoadPriority
