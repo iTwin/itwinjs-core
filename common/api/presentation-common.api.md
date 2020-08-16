@@ -605,7 +605,9 @@ export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
 // @public
 export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     className: string;
+    // @deprecated
     groupingValue: any;
+    groupingValues: any[];
     propertyName: string;
     // (undocumented)
     type: StandardNodeTypes.ECPropertyGroupingNode;

@@ -137,8 +137,13 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
   className: string;
   /** Name of the ECProperty */
   propertyName: string;
-  /** Grouping value */
+  /**
+   * Grouping value
+   * @deprecated Use [[groupingValues]] - one node might be grouping by multiple raw values.
+   */
   groupingValue: any;
+  /** Raw grouping values */
+  groupingValues: any[];
 }
 
 /**
