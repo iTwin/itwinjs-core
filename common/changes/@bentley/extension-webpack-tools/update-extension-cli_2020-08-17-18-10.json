@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-webpack-tools",
+      "comment": "Update to terser-webpack-plugin@3.0.7",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-webpack-tools",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

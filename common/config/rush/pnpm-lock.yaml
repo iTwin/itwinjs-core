@@ -323,7 +323,7 @@ dependencies:
   svg-sprite-loader: 4.2.1_webpack@4.42.0
   symlink-dir: 4.0.3
   tar: 4.4.13
-  terser-webpack-plugin: 2.2.1_webpack@4.42.0
+  terser-webpack-plugin: 3.0.7_webpack@4.42.0
   tree-kill: 1.2.2
   ts-key-enum: 2.0.3
   ts-loader: 6.2.2_typescript@3.7.5
@@ -2022,7 +2022,7 @@ packages:
       istanbul-lib-source-maps: 3.0.6
       istanbul-reports: 2.2.7
       jest-haste-map: 24.9.0
-      jest-resolve: 24.9.0
+      jest-resolve: 24.9.0_jest-resolve@24.9.0
       jest-runtime: 24.9.0
       jest-util: 24.9.0
       jest-worker: 24.9.0
@@ -4600,31 +4600,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-a0tMB40oefvuInr4Cwb3GerbL9xTj1D5yg0T5xrjGCGyfvbxseIXX7BAO/u/hIXdafzOI5JC3wDwHyf24buOAQ==
-  /cacache/13.0.1:
-    dependencies:
-      chownr: 1.1.4
-      figgy-pudding: 3.5.2
-      fs-minipass: 2.1.0
-      glob: 7.1.6
-      graceful-fs: 4.2.4
-      infer-owner: 1.0.4
-      lru-cache: 5.1.1
-      minipass: 3.1.3
-      minipass-collect: 1.0.2
-      minipass-flush: 1.0.5
-      minipass-pipeline: 1.2.4
-      mkdirp: 0.5.5
-      move-concurrently: 1.0.1
-      p-map: 3.0.0
-      promise-inflight: 1.0.1
-      rimraf: 2.7.1
-      ssri: 7.1.0
-      unique-filename: 1.1.1
-    dev: false
-    engines:
-      node: '>= 8'
-    resolution:
-      integrity: sha512-5ZvAxd05HDDU+y9BVvcqYu2LLXmPnQ0hW62h32g4xBTgL/MppR4/04NHfj/ycM2y6lmTnbw6HVi+1eN0Psba6w==
   /cacache/15.0.5:
     dependencies:
       '@npmcli/move-file': 1.0.1
@@ -9952,17 +9927,6 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-3BEYN5WbSq9wd+SyLDES7AHnjH9A/ROBwmz7l2y+ol+NtSFO8DYiEBzoO1CeFc9a8DYy10EO4dDFVv/wN3zl1w==
-  /jest-pnp-resolver/1.2.2:
-    dev: false
-    engines:
-      node: '>=6'
-    peerDependencies:
-      jest-resolve: '*'
-    peerDependenciesMeta:
-      jest-resolve:
-        optional: true
-    resolution:
-      integrity: sha512-olV41bKSMm8BdnuMsewT4jqlZ8+3TCARAXjZGT9jcoSnrfUnRCqnMoF9XEeoWjbzObpqF9dRhHQj0Xb9QdF6/w==
   /jest-pnp-resolver/1.2.2_jest-resolve@24.9.0:
     dependencies:
       jest-resolve: 24.9.0_jest-resolve@24.9.0
@@ -9992,20 +9956,6 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-Fm7b6AlWnYhT0BXy4hXpactHIqER7erNgIsIozDXWl5dVm+k8XdGVe1oTg1JyaFnOxarMEbax3wyRJqGP2Pq+g==
-  /jest-resolve/24.9.0:
-    dependencies:
-      '@jest/types': 24.9.0
-      browser-resolve: 1.11.3
-      chalk: 2.4.2
-      jest-pnp-resolver: 1.2.2
-      realpath-native: 1.1.0
-    dev: false
-    engines:
-      node: '>= 6'
-    peerDependencies:
-      jest-resolve: '*'
-    resolution:
-      integrity: sha512-TaLeLVL1l08YFZAt3zaPtjiVvyy4oSA6CRe+0AFPPVX3Q/VI0giIWWoAvoS5L96vj9Dqxj4fB5p2qrHCmTU/MQ==
   /jest-resolve/24.9.0_jest-resolve@24.9.0:
     dependencies:
       '@jest/types': 24.9.0
@@ -10035,7 +9985,7 @@ packages:
       jest-jasmine2: 24.9.0
       jest-leak-detector: 24.9.0
       jest-message-util: 24.9.0
-      jest-resolve: 24.9.0
+      jest-resolve: 24.9.0_jest-resolve@24.9.0
       jest-runtime: 24.9.0
       jest-util: 24.9.0
       jest-worker: 24.9.0
@@ -10063,7 +10013,7 @@ packages:
       jest-message-util: 24.9.0
       jest-mock: 24.9.0
       jest-regex-util: 24.9.0
-      jest-resolve: 24.9.0
+      jest-resolve: 24.9.0_jest-resolve@24.9.0
       jest-snapshot: 24.9.0
       jest-util: 24.9.0
       jest-validate: 24.9.0
@@ -10104,7 +10054,7 @@ packages:
       jest-get-type: 24.9.0
       jest-matcher-utils: 24.9.0
       jest-message-util: 24.9.0
-      jest-resolve: 24.9.0
+      jest-resolve: 24.9.0_jest-resolve@24.9.0
       mkdirp: 0.5.5
       natural-compare: 1.4.0
       pretty-format: 24.9.0
@@ -12435,14 +12385,6 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw==
-  /p-map/3.0.0:
-    dependencies:
-      aggregate-error: 3.0.1
-    dev: false
-    engines:
-      node: '>=8'
-    resolution:
-      integrity: sha512-d3qXVTF/s+W+CdJ5A29wywV2n8CQQYahlgz2bFiA+4eVNJbHJodPZ+/gXwPGh0bOqA+j8S+6+ckmvLGPk1QpxQ==
   /p-map/4.0.0:
     dependencies:
       aggregate-error: 3.0.1
@@ -15397,10 +15339,6 @@ packages:
     optional: true
     resolution:
       integrity: sha512-8I8TjW5KMOKsZQTvoxjuSIa7foAwPWGOts+6o7sgjz41/qMD9VQHEDxi6PBvK2l0MXUmqZyNpUK+T2tQaaElvw==
-  /serialize-javascript/2.1.2:
-    dev: false
-    resolution:
-      integrity: sha512-rs9OggEUF0V4jUSecXazOYsLfu7OGK2qIn3c7IPBiffz32XniEp/TX9Xmc9LQfK2nQ2QKHvZ2oygKUGU0lG4jQ==
   /serialize-javascript/4.0.0:
     dependencies:
       randombytes: 2.1.0
@@ -15879,15 +15817,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-3Wge10hNcT1Kur4PDFwEieXSCMCJs/7WvSACcrMYrNp+b8kDL1/0wJch5Ni2WrtwEa2IO8OsVfeKIciKCDx/QA==
-  /ssri/7.1.0:
-    dependencies:
-      figgy-pudding: 3.5.2
-      minipass: 3.1.3
-    dev: false
-    engines:
-      node: '>= 8'
-    resolution:
-      integrity: sha512-77/WrDZUWocK0mvA5NTRQyveUf+wsrIc6vyrxpS8tVvYBcX215QbafrJR3KtkpskIzoFLqqNuuYQvxaMjXJ/0g==
   /ssri/8.0.0:
     dependencies:
       minipass: 3.1.3
@@ -16491,24 +16420,6 @@ packages:
       webpack: ^4.0.0
     resolution:
       integrity: sha512-04Rfe496lN8EYruwi6oPQkG0vo8C+HT49X687FZnpPF0qMAIHONI6HEXYPKDOE8e5HjXTyKfqRd/agHtH0kOtw==
-  /terser-webpack-plugin/2.2.1_webpack@4.42.0:
-    dependencies:
-      cacache: 13.0.1
-      find-cache-dir: 3.3.1
-      jest-worker: 24.9.0
-      schema-utils: 2.7.0
-      serialize-javascript: 2.1.2
-      source-map: 0.6.1
-      terser: 4.8.0
-      webpack: 4.42.0_webpack@4.42.0
-      webpack-sources: 1.4.3
-    dev: false
-    engines:
-      node: '>= 8.9.0'
-    peerDependencies:
-      webpack: ^4.0.0
-    resolution:
-      integrity: sha512-jwdauV5Al7zopR6OAYvIIRcxXCSvLjZjr7uZE8l2tIWb/ryrGN48sJftqGf5k9z09tWhajx53ldp0XPI080YnA==
   /terser-webpack-plugin/3.0.7_webpack@4.42.0:
     dependencies:
       cacache: 15.0.5
@@ -18954,7 +18865,7 @@ packages:
       source-map-loader: 1.0.1_webpack@4.42.0
       style-loader: 1.2.1_webpack@4.42.0
       svg-sprite-loader: 4.2.1_webpack@4.42.0
-      terser-webpack-plugin: 2.2.1_webpack@4.42.0
+      terser-webpack-plugin: 3.0.7_webpack@4.42.0
       ts-loader: 6.2.2_typescript@3.7.5
       typescript: 3.7.5
       url-loader: 1.1.2_webpack@4.42.0
@@ -18965,7 +18876,7 @@ packages:
     dev: false
     name: '@rush-temp/extension-webpack-tools'
     resolution:
-      integrity: sha512-wcnXy4oxAW7zkmDXv6y2hhibZmS+/V6hj5yPRia3g9QpUsn8+7fI2okAnrxLToi+VBY02CsTXUqpCrZG+BMljQ==
+      integrity: sha512-y+z1QpbjnB+DrDFNP8+Y7q6WLaINzO46Z31ZSk8lD7zP+UT1Wa1GNFloWfFwxi0APxPh6OYUmwJZSwIU4qZfXA==
       tarball: 'file:projects/extension-webpack-tools.tgz'
     version: 0.0.0
   'file:projects/forms-data-management-client.tgz':
@@ -20868,7 +20779,7 @@ specifiers:
   svg-sprite-loader: 4.2.1
   symlink-dir: ~4.0.3
   tar: ^4.4.8
-  terser-webpack-plugin: 2.2.1
+  terser-webpack-plugin: 3.0.7
   tree-kill: ^1.2.0
   ts-key-enum: ^2.0.0
   ts-loader: ^6.0.4
