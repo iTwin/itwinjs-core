@@ -54,7 +54,7 @@
     "@bentley/perf-tools": "2.5.0-dev.15",
     "@bentley/config-loader": "2.5.0-dev.15",
     "@bentley/build-tools": "2.5.0-dev.15",
-    "@bentley/react-scripts": "3.4.1",
+    "@bentley/react-scripts": "3.4.2",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
     "@types/node": "10.14.1",

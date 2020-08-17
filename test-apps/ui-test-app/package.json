@@ -47,7 +47,7 @@
     "@bentley/build-tools": "2.5.0-dev.15",
     "@bentley/imodeljs-markup": "2.5.0-dev.15",
     "@bentley/frontend-devtools": "2.5.0-dev.15",
-    "@bentley/react-scripts": "3.4.1",
+    "@bentley/react-scripts": "3.4.2",
     "@types/classnames": "^2.2.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",

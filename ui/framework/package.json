@@ -76,7 +76,7 @@
     "@bentley/presentation-testing": "2.5.0-dev.15",
     "@bentley/product-settings-client": "2.5.0-dev.15",
     "@bentley/rbac-client": "2.5.0-dev.15",
-    "@bentley/react-scripts": "3.4.1",
+    "@bentley/react-scripts": "3.4.2",
     "@bentley/ui-abstract": "2.5.0-dev.15",
     "@bentley/ui-core": "2.5.0-dev.15",
     "@bentley/ui-components": "2.5.0-dev.15",
