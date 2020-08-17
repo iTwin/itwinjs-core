@@ -6,112 +6,112 @@ beta;addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTran
 internal;addSelectApplicationData(query: RequestQueryOptions): void
 internal;addSelectBCVAccessKey(query: RequestQueryOptions): void
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
-internal;AggregateResponseError
-alpha;AllCodesDeletedEvent
-alpha;AllLocksDeletedEvent
+internal;AggregateResponseError 
+alpha;AllCodesDeletedEvent 
+alpha;AllLocksDeletedEvent 
 internal;ArgumentCheck
-internal;Briefcase
+internal;Briefcase 
 internal;BriefcaseAccessMode
-internal;BriefcaseDeletedEvent
-beta;class BriefcaseEvent
+internal;BriefcaseDeletedEvent 
+beta;class BriefcaseEvent 
 internal;BriefcaseHandler
-internal;BriefcaseQuery
-beta;ChangeSet
-internal;ChangeSetCreatedEvent
+internal;BriefcaseQuery 
+beta;ChangeSet 
+internal;ChangeSetCreatedEvent 
 beta;ChangeSetHandler
-beta;ChangeSetPostPushEvent
-beta;ChangeSetPrePushEvent
-beta;ChangeSetQuery
+beta;ChangeSetPostPushEvent 
+beta;ChangeSetPrePushEvent 
+beta;ChangeSetQuery 
 beta;ChangesType
-alpha;Checkpoint
+alpha;Checkpoint 
 alpha;CheckpointHandler
-alpha;CheckpointQuery
+alpha;CheckpointQuery 
 beta;CloneIModelTemplate
-alpha;CodeBase
-alpha;CodeEvent
+alpha;CodeBase 
+alpha;CodeEvent 
 alpha;CodeHandler
-alpha;CodeQuery
-alpha;CodeSequence
+alpha;CodeQuery 
+alpha;CodeSequence 
 alpha;CodeSequenceHandler
 alpha;CodeSequenceType
 alpha;CodeState
 alpha;CodeUpdateOptions
-alpha;ConflictingCodesError
-alpha;ConflictingLocksError
+alpha;ConflictingCodesError 
+alpha;ConflictingLocksError 
 internal;ContextManagerClient
 internal;DefaultCodeUpdateOptionsProvider
 internal;DefaultIModelCreateOptionsProvider
 internal;DefaultLockUpdateOptionsProvider
 beta;EmptyIModelTemplate = "Empty"
-beta;EventHandler
-beta;EventSAS
-beta;EventSubscription
+beta;EventHandler 
+beta;EventSAS 
+beta;EventSubscription 
 beta;EventSubscriptionHandler
 beta;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent"
 internal;GetEventOperationType
-internal;GlobalEventHandler
-internal;GlobalEventSAS
-internal;GlobalEventSubscription
+internal;GlobalEventHandler 
+internal;GlobalEventSAS 
+internal;GlobalEventSubscription 
 internal;GlobalEventSubscriptionHandler
-internal;HardiModelDeleteEvent
+internal;HardiModelDeleteEvent 
 beta;HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void
-alpha;HubCode
-beta;HubIModel
-alpha;HubUserInfo
-internal;IModelBankClient
-internal;IModelBankFileSystemContextClient
-beta;IModelBankHandler
-beta;IModelBaseHandler
+alpha;HubCode 
+beta;HubIModel 
+alpha;HubUserInfo 
+internal;IModelBankClient 
+internal;IModelBankFileSystemContextClient 
+beta;IModelBankHandler 
+beta;IModelBaseHandler 
 beta;class IModelClient
 internal;IModelCloudEnvironment
-internal;IModelCreatedEvent
+internal;IModelCreatedEvent 
 beta;IModelCreateOptions
-beta;IModelDeletedEvent
+beta;IModelDeletedEvent 
 internal;IModelFileSystemContextProps
 beta;IModelHandler
-beta;IModelHubClient
-beta;IModelHubClientError
+beta;IModelHubClient 
+beta;IModelHubClientError 
 beta;IModelHubClientLoggerCategory
-beta;IModelHubError
-beta;class IModelHubEvent
+beta;IModelHubError 
+beta;class IModelHubEvent 
 beta;IModelHubEventType
-internal;class IModelHubGlobalEvent
+internal;class IModelHubGlobalEvent 
 internal;IModelHubPermission
-beta;IModelQuery
+beta;IModelQuery 
 beta;IModelsHandler
 beta;IModelType
 beta;InitializationState
-beta;InstanceIdQuery
-alpha;LargeThumbnail
-alpha;Lock
-alpha;LockBase
-alpha;LockEvent
+beta;InstanceIdQuery 
+alpha;LargeThumbnail 
+alpha;Lock 
+alpha;LockBase 
+alpha;LockEvent 
 alpha;LockHandler
 alpha;LockLevel
-alpha;LockQuery
+alpha;LockQuery 
 alpha;LockType
 alpha;LockUpdateOptions
-internal;MultiCode
-alpha;MultiLock
-internal;NamedVersionCreatedEvent
+internal;MultiCode 
+alpha;MultiLock 
+internal;NamedVersionCreatedEvent 
 internal;ParseEvent(response: Response): IModelHubEvent
 internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
 internal;PermissionHandler
-internal;SeedFile
-alpha;SmallThumbnail
-internal;SoftiModelDeleteEvent
-beta;StringIdQuery
-alpha;class Thumbnail
+internal;SeedFile 
+alpha;SmallThumbnail 
+internal;SoftiModelDeleteEvent 
+beta;StringIdQuery 
+alpha;class Thumbnail 
 alpha;ThumbnailHandler
-alpha;ThumbnailQuery
+alpha;ThumbnailQuery 
 beta;ThumbnailSize = "Small" | "Large"
 alpha;TipThumbnail
 alpha;UserInfoHandler
-alpha;UserInfoQuery
-alpha;UserStatistics
+alpha;UserInfoQuery 
+alpha;UserStatistics 
 alpha;UserStatisticsHandler
-alpha;UserStatisticsQuery
-beta;Version
-beta;VersionEvent
+alpha;UserStatisticsQuery 
+beta;Version 
+beta;VersionEvent 
 beta;VersionHandler
-beta;VersionQuery
+beta;VersionQuery 

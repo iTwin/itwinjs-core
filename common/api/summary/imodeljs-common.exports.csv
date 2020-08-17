@@ -96,6 +96,7 @@ internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
+beta;DisplayStyleModelAppearanceProps 
 beta;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
 public;DisplayStyleSettings

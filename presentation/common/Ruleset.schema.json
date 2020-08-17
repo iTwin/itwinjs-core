@@ -2217,7 +2217,7 @@
           "type": "boolean"
         },
         "createGroupForUnspecifiedValues": {
-          "description": "Should a separate grouping node be created for nodes whose grouping value is not set. Defaults to `true`.",
+          "description": "Should a separate grouping node be created for nodes whose grouping value is not\nset or is an empty string.\n\nDefaults to `true`.",
           "type": "boolean"
         },
         "groupingValue": {
