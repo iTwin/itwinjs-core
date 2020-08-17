@@ -252,7 +252,7 @@ describe("BsplineCurve", () => {
         // make sure partialClones overlap original  . . .
         const g0 = 0.2342345;
         const g1 = 0.82342367;
-        GeometryCoreTestIO.captureGeometry(geometry, bezier.clone()!, x0, y3);
+        GeometryCoreTestIO.captureGeometry(geometry, bezier.clone(), x0, y3);
 
         const bezier4 = bezier.clonePartialCurve(g0, 1.0)!;
         const bezier5 = bezier4.clonePartialCurve(0.0, (g1 - g0) / (1 - g0))!;  // Remark:  This uses the opposite left/right order of what happen in clone partial.  (Same result expected)

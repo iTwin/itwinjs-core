@@ -19,7 +19,8 @@ import { SineCosinePolynomial } from "../../numerics/Polynomials";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-
+// allow _radians and _degrees as property names
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-console */
 class AngleTests {
   constructor(public noisy: boolean = false) { }
@@ -569,7 +570,7 @@ describe("OrderedRotationAngles", () => {
           const ypr = YawPitchRollAngles.createRadians(yawAngle.radians, pitchAngle.radians, rollAngle.radians);
           const yprMatrix = ypr.toMatrix3d();
           if (!ck.testCoordinate(0, yprMatrix.maxDiff(matrixZYX))) {
-            console.log(JSON.stringify(ypr.toJSON()) + " maxDiff ypr:(Z)(-Y)(X) " + "  ,  " + yprMatrix.maxDiff(matrixZYX));
+            console.log(`${JSON.stringify(ypr.toJSON())} maxDiff ypr:(Z)(-Y)(X)   ${yprMatrix.maxDiff(matrixZYX)}`);
             console.log("ypr matrix", yprMatrix);
             console.log("matrixZYX", matrixZYX);
           }

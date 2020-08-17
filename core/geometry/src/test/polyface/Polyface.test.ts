@@ -379,11 +379,11 @@ describe("Polyface.Box", () => {
 });
 
 function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, checkClosure: boolean, options?: StrokeOptions, dx0: number = 0, dy0: number = 0) {
-  let fileName1 = fileName.slice() + ".X";
+  let fileName1 = `${fileName.slice()}.X`;
   if (options) {
-    if (options.hasMaxEdgeLength) fileName1 = fileName1 + "E";
-    if (options.needNormals) fileName1 = fileName1 + "N";
-    if (options.needParams) fileName1 = fileName1 + "P";
+    if (options.hasMaxEdgeLength) fileName1 = `{fileName1}E`;
+    if (options.needNormals) fileName1 = `{fileName1}N`;
+    if (options.needParams) fileName1 = `{fileName1}P`;
   }
 
   const allMesh = [];
@@ -441,9 +441,9 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
       }
       const isClosedSolid = g.isClosedVolume;
       if (polyface.isEmpty) {
-        console.log(fileName1, gCount + " of " + geometry.length + "is empty polyface");
+        console.log(fileName1, `${gCount}  of ${geometry.length} is empty polyface`);
       } else if (isClosedMesh !== isClosedSolid) {
-        console.log(fileName1, gCount + " of " + geometry.length, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
+        console.log(fileName1, `${gCount} of ${geometry.length}`, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
         PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface);
         const isClosedMesh1 = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
         // console.log("After Reorient " + fileName1, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
@@ -451,18 +451,18 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
           if (options.hasMaxEdgeLength) {
             // hm . we think there is a bug in edge length splits.  Let's see if we can fix it up with TVertex logic ...
             const polyface2 = PolyfaceQuery.cloneWithTVertexFixup(polyface);
-            PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface2 as IndexedPolyface);
+            PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface2);
             const isClosedMesh2 = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface2);
             polyface2.tryTranslateInPlace(0, dyLocal);
             allMesh.push(polyface2);
             if (checkClosure)
               ck.testBoolean(isClosedSolid, isClosedMesh2, "Closure after TVertex Fixup");
-            console.log("After Reorient AND T VERTEX " + fileName1,
+            console.log(`After Reorient AND T VERTEX ${fileName1}`,
               { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing2: isClosedMesh2 });
 
           } else if (checkClosure) {
             if (!ck.testBoolean(isClosedSolid, isClosedMesh1, " post-fixup solid closure"))
-              console.log("After Reorient " + fileName1,
+              console.log(`After Reorient ${fileName1}`,
                 { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
           }
         }
@@ -799,22 +799,22 @@ describe("Polyface.Faces", () => {
     const jsParamsIdx = polyface.data.paramIndex;
     const nativeParams = nativePolyface.Group.Member[0].IndexedMesh.Param;
     const nativeParamIdx = nativePolyface.Group.Member[0].IndexedMesh.ParamIndex;
-    ck.testExactNumber(jsParamsIdx!.length, nativeParamIdx!.length, "Number of params match");
+    ck.testExactNumber(jsParamsIdx!.length, nativeParamIdx.length, "Number of params match");
     for (let i = 0; i < jsParams!.length; i++) {
-      ck.testCoordinate(jsParams!.getXAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams![nativeParamIdx![i]][0]);
-      ck.testCoordinate(jsParams!.getYAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams![nativeParamIdx![i]][1]);
+      ck.testCoordinate(jsParams!.getXAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams[nativeParamIdx[i]][0]);
+      ck.testCoordinate(jsParams!.getYAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams[nativeParamIdx[i]][1]);
     }
 
     const jsNormals = polyface.data.normal!;
     const jsNormalIdx = polyface.data.normalIndex;
     const nativeNormals = nativePolyface.Group.Member[0].IndexedMesh.Normal;
     const nativeNormalIdx = nativePolyface.Group.Member[0].IndexedMesh.NormalIndex;
-    ck.testExactNumber(jsNormalIdx!.length, nativeNormalIdx!.length, "Number of params match");
-    for (let i = 0; i < jsNormals!.length; i++) {
+    ck.testExactNumber(jsNormalIdx!.length, nativeNormalIdx.length, "Number of params match");
+    for (let i = 0; i < jsNormals.length; i++) {
       const normal = jsNormals.getVector3dAtCheckedVectorIndex(i)!;
-      ck.testCoordinate(normal.x, nativeNormals![nativeNormalIdx![i]][0]);
-      ck.testCoordinate(normal.y, nativeNormals![nativeNormalIdx![i]][1]);
-      ck.testCoordinate(normal.z, nativeNormals![nativeNormalIdx![i]][2]);
+      ck.testCoordinate(normal.x, nativeNormals[nativeNormalIdx[i]][0]);
+      ck.testCoordinate(normal.y, nativeNormals[nativeNormalIdx[i]][1]);
+      ck.testCoordinate(normal.z, nativeNormals[nativeNormalIdx[i]][2]);
     }
 
     expect(ck.getNumErrors()).equals(0);
@@ -1334,7 +1334,8 @@ it("VisitorQueryFailures", () => {
   const rangeLengths = PolyfaceQuery.collectRangeLengthData(polyface);
   ck.testTrue(rangeLengths.xSums.count > 0, "rangeLengths sums exist");
 });
-
+// disable naming to allow exact names from synchro mesh
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Construct a SynchroMesh for an xy integer point grid with bilinear z
  * Convert to polyfaces with and without normals and params.
@@ -1474,7 +1475,7 @@ function createPolyfaceFromSynchro(geom: any): Polyface {
       }
     }
     if (lastJ !== -1)
-      console.log("lastJ error " + lastJ);
+      console.log(`lastJ error ${lastJ}`);
   }
   return polyface;
 }

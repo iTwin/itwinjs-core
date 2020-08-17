@@ -278,7 +278,7 @@ describe("GrowablePoint3dArray", () => {
         ck.testPoint3d(pointB[0], pointA.front() as Point3d);
       }
       for (let i = 0; i < n; i++)
-        ck.testPoint3d(pointB[i], pointA.getPoint3dAtUncheckedPointIndex(i) as Point3d);
+        ck.testPoint3d(pointB[i], pointA.getPoint3dAtUncheckedPointIndex(i));
       ck.testExactNumber(pointA.length, pointB.length, "array lengths");
 
       let lengthA = 0;

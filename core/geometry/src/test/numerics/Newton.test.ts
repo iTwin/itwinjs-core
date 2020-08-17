@@ -67,7 +67,7 @@ describe("Newton", () => {
         f.evaluate(x);
         iterator.setTarget(f.currentF);
         if (Checker.noisy.newtonRtoRD)
-          console.log({ X: x, F: f.currentF, dF: f.currentdFdX });
+          console.log({ xx: x, ff: f.currentF, dF: f.currentdFdX });
         // start iterator away from the root.
         iterator.setX(x + 1);
         if (ck.testTrue(iterator.runIterations())) {
@@ -75,7 +75,7 @@ describe("Newton", () => {
           ck.testCoordinate(x, iterator.getX(), "newton converted to correct value");
           ck.testLE(iterator.numIterations, 5, "Expect low newton iteration count for gentle function");
           if (Checker.noisy.newtonRtoRD)
-            console.log("   ", { X: x, X1: x1, n: iterator.numIterations });
+            console.log("   ", { xx: x, xx1: x1, n: iterator.numIterations });
         }
       }
     }

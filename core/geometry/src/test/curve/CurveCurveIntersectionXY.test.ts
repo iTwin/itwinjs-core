@@ -51,7 +51,7 @@ function testIntersectionsXY(
   testCoordinates: boolean = false): boolean {
   const baseErrorCount = ck.getNumErrors();
   if (!intersections) {
-    ck.testExactNumber(0, minExpected, "No intersections found but " + minExpected + " expected");
+    ck.testExactNumber(0, minExpected, `No intersections found but ${minExpected} expected`);
 
   } else {
     const n = intersections.length;
@@ -114,7 +114,7 @@ function testIntersectionPairsXY(
   testCoordinates: boolean = false): boolean {
   const baseErrorCount = ck.getNumErrors();
   if (!intersections) {
-    ck.testExactNumber(0, minExpected, "No intersections found but " + minExpected + " expected");
+    ck.testExactNumber(0, minExpected, `"No intersections found but ${minExpected}  expected`);
 
   } else {
     const n = intersections.length;

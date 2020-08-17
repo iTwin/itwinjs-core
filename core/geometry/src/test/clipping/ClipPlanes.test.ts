@@ -233,7 +233,7 @@ describe("ClipPlane", () => {
         if (Checker.noisy.clipPlane) {
           console.log("Points:");
           console.log(array);
-          console.log("Expected crossings: " + numExpectedCrossings);
+          console.log({ "expected crossings: ": numExpectedCrossings });
           console.log("Crossings:");
           console.log(crossings);
         }

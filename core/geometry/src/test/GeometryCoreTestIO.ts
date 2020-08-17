@@ -30,12 +30,12 @@ export class GeometryCoreTestIO {
   public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
     let path = GeometryCoreTestIO.outputRootDirectory;
     if (directoryName !== undefined) {
-      path += "/" + directoryName;
+      path = `${path}/${directoryName}`;
       if (!fs.existsSync(path))
         fs.mkdirSync(path);
     }
-    const fullPath = path + "/" + fileName + ".imjs";
-    console.log("saveGeometry::    " + fullPath);
+    const fullPath = `${path}/${fileName}.imjs`;
+    console.log(`saveGeometry:: ${fullPath}`);
 
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(fullPath, prettyPrint(imjs));

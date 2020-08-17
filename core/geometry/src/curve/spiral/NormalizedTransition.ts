@@ -62,7 +62,11 @@ export abstract class NormalizedTransition {
     return undefined;
   }
 }
-
+/**
+ * Transition functions for clothoid spiral.
+ * * curvature variation is linear from (0,0) to (1,1)
+ * @internal
+ */
 export class NormalizedClothoidTransition extends NormalizedTransition {
   constructor() { super(); }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
@@ -77,6 +81,11 @@ export class NormalizedClothoidTransition extends NormalizedTransition {
   }
 }
 
+/**
+ * Transition functions for bloss spiral.
+ * * curvature variation is cubic from (0,0) with slope 0 to (1,1) with slope 1
+ * @internal
+ */
 export class NormalizedBlossTransition extends NormalizedTransition {
   // bloss curve is (3 - 2x) x ^2 = 3 x^2 - 2 x^3
   //    derivative    6x (1-x)
@@ -99,17 +108,24 @@ export class NormalizedBlossTransition extends NormalizedTransition {
   }
 }
 /**
- * * For [u <= 0.5, u >= 0.5]
- *   * f(u) = [2 u^2, 1 - 2 (1-u)^2]
- *   * f'(u) = [4 u, 4 (1-u)]
- *   * If(u) = [2 u^3 / 3, 0.5 (1 -u )^3/3]
+/**
+ * Transition functions for biquadratic transition
+ * * Curvature is a pair of joining quadratics.
+ * * In lower half of the interval, the quadratic is from (0,0) to (0.5, 0.5) with zero slope at origin
+ * * In upper half of the interval, the quadratic is from (0.5,0.5) to (1,1) with zero slope at 1
+ * @internal
  */
 export class NormalizedBiQuadraticTransition extends NormalizedTransition {
   constructor() { super(); }
   private integratedBasis(u: number): number { return u * u * u * (2.0 / 3.0); }
   private basis(u: number): number { return 2 * u * u; }
   private basisDerivative(u: number): number { return 4 * u; }
-  /** At fractional position on the x axis, return the (normalized) curvature fraction. */
+  /** At fractional position on the x axis, return the (normalized) curvature fraction.
+   *  * * For [u <= 0.5, u >= 0.5]
+   *   * f(u) = [2 u^2, 1 - 2 (1-u)^2]
+   *   * f'(u) = [4 u, 4 (1-u)]
+   *   * If(u) = [2 u^3 / 3, 0.5 (1 -u )^3/3]
+   */
   public fractionToCurvatureFraction(u: number): number {
     return u <= 0.5 ? this.basis(u) : 1.0 - this.basis(1.0 - u);
   }
@@ -127,8 +143,13 @@ export class NormalizedBiQuadraticTransition extends NormalizedTransition {
     return 0.5 - v + this.integratedBasis(v);
   }
 }
+
 /**
- * curvature (itself) is a full period of a sine wave height from a straight line.
+ * Transition functions for sine transition
+ * * curvature variation is the sum of
+ *   * straight line from (0,0) to (1,1), like clothoid
+ *   * additional full period of a sine wave, producing 0 slope at both ends
+ * @internal
  */
 export class NormalizedSineTransition extends NormalizedTransition {
   constructor() { super(); }
@@ -151,7 +172,9 @@ export class NormalizedSineTransition extends NormalizedTransition {
   }
 }
 /**
- * curvature (itself) is a half period of a cosine wave.
+ * Transition functions for cosine
+ * * curvature variation is a half period of a cosine
+ * @internal
  */
 export class NormalizedCosineTransition extends NormalizedTransition {
   constructor() { super(); }

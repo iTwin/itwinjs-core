@@ -135,7 +135,7 @@ describe("Cubic.Solutions", () => {
 
 function testQuadrature(ck: Checker, xA: number, xB: number, xx: Float64Array, ww: Float64Array, n: number, maxDegree: number) {
   if (Checker.noisy.gaussQuadrature)
-    console.log(" (nGauss " + n + ") (interval " + xA + " " + xB);
+    console.log(`(nGauss ${n}) (interval ${xA} ${xB}`);
   for (let p = 0; p < maxDegree + 3; p++) {
     {
       const trueIntegral = (Math.pow(xB, p + 1) - Math.pow(xA, p + 1)) / (p + 1.0);
@@ -144,7 +144,7 @@ function testQuadrature(ck: Checker, xA: number, xB: number, xx: Float64Array, w
       const isSame = Geometry.isSameCoordinate(trueIntegral, approximateIntegral);
       if (Checker.noisy.gaussQuadrature) {
         if (p === maxDegree + 1) console.log("    ---------------  end of expected precise integrals");
-        console.log("     (p " + p + ") (absErr " + (approximateIntegral - trueIntegral) + ") (relErr " + ((approximateIntegral - trueIntegral) / trueIntegral) + ")");
+        console.log(`     (p ${p}) (absErr ${approximateIntegral - trueIntegral}) (relErr ${(approximateIntegral - trueIntegral) / trueIntegral}`);
       }
       ck.testBoolean(p <= maxDegree, isSame, "Quadrature Exactness", p, maxDegree, trueIntegral, approximateIntegral);
     }
@@ -483,7 +483,7 @@ describe("Ellipse.Perpendiculars", () => {
       for (const eccentricity of [1.0, 1.01, 1.01, 2.0, 0.5]) {
         for (const skew of [0, 0.0]) {
           // console.log("eccentricity ", eccentricity, "skew", skew);
-          const arc = Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(r0, 0, 0), Vector3d.create(skew, eccentricity * r0, 0), AngleSweep.create360()) as Arc3d;
+          const arc = Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(r0, 0, 0), Vector3d.create(skew, eccentricity * r0, 0), AngleSweep.create360());
           let angles = arc.allPerpendicularAngles(spacePoint);
           for (const theta of angles) {
             const ray = arc.angleToPointAndDerivative(Angle.createRadians(theta));

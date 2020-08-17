@@ -61,7 +61,7 @@ function testCurveOffset(allPaths: AnyCurve[],
           options.leftOffsetDistance = offsetDistance * distanceFactor;
           const stickA = RegionOps.constructCurveXYOffset(path, options);
           if (stickA)
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA!, x0, y0, 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA, x0, y0, 0);
         }
         y0 += yStep + 4 * dMax + 2;
       }
@@ -82,7 +82,7 @@ describe("CurveOffset", () => {
     ]) {
       const a = paths[0].range().xLength() * 0.02;
       const offsetDistances = [2 * a, a, -a, -2 * a];
-      testCurveOffset(paths, "SimplePaths" + counter++, offsetDistances, 1.0);
+      testCurveOffset(paths, `SimplePaths ${counter++}`, offsetDistances, 1.0);
     }
   });
 
@@ -93,7 +93,7 @@ describe("CurveOffset", () => {
     ]) {
       const a = paths[0].range().xLength() * 0.02;
       const offsetDistances = [2 * a, a, -a, -2 * a];
-      testCurveOffset(paths, "SimpleLoops" + counter++, offsetDistances, 1.0);
+      testCurveOffset(paths, `SimpleLoops ${counter++}`, offsetDistances, 1.0);
     }
   });
 
@@ -110,7 +110,7 @@ describe("CurveOffset", () => {
     const a = paths[0].range().xLength() * 0.02;
     const offsetDistances = [2 * a, a, -a, -2 * a];
     // const offsetDistances = [a];
-    testCurveOffset(paths, "SawtoothPaths" + counter++, offsetDistances, 1.0);
+    testCurveOffset(paths, `SawtoothPaths ${counter++}`, offsetDistances, 1.0);
 
   });
 
@@ -126,7 +126,7 @@ describe("CurveOffset", () => {
     const a = paths[0].range().xLength() * 0.01;
     const offsetDistances = [2 * a, a, -a, -2 * a];
     // const offsetDistances = [a];
-    testCurveOffset(paths, "FractalPaths" + counter++, offsetDistances, 1.0);
+    testCurveOffset(paths, `FractalPaths ${counter++}`, offsetDistances, 1.0);
 
   });
   // cspell:word Daumantas
@@ -142,7 +142,7 @@ describe("CurveOffset", () => {
     const a = 0.56;
     const offsetDistances = [a, -a];
     // const offsetDistances = [a];
-    testCurveOffset([path0], "Daumantas" + counter++, offsetDistances, 1.0);
+    testCurveOffset([path0], `Daumantas ${counter++}`, offsetDistances, 1.0);
 
   });
   it("OffsetGap10", () => {
@@ -151,7 +151,7 @@ describe("CurveOffset", () => {
       const path0 = Path.create(LineString3d.create([[0, 0], [10, 0], [10 + e, -1], [18, -1]]));
       const offsetDistances = [0.5, -0.5, 1.5, -1.5, 2, -2];
       // const offsetDistances = [a];
-      testCurveOffset([path0], "OffsetGap" + counter++, offsetDistances, 1.0);
+      testCurveOffset([path0], `OffsetGap ${counter++}`, offsetDistances, 1.0);
     }
 
   });

@@ -490,7 +490,7 @@ describe("ReOrientFacets", () => {
       builderC.addPolygon([xyzA, xyzB, xyzC]);
       builderC.addPolygon([xyzC, xyzB, xyzD]);
     }
-    const meshC = builderC.claimPolyface() as IndexedPolyface;
+    const meshC = builderC.claimPolyface();
     const meshA = IModelJson.Reader.parse(meshDataA) as IndexedPolyface;
     const meshB = IModelJson.Reader.parse(meshDataB) as IndexedPolyface;
     for (const mesh of [meshA.clone(), meshB.clone(), meshC.clone()]) {
@@ -546,6 +546,7 @@ describe("ReOrientFacets", () => {
     testDuplicateFacetCounts(ck, "Additional Triangle Duplicate", meshDataA, 3, 2, 1, 1);
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("XYBoundaryHoles", () => {
     const ck = new Checker();
     const y0 = 0;
@@ -556,6 +557,7 @@ describe("ReOrientFacets", () => {
     const rectangleA = Sample.createRectangle(0, 0, 10, 8, 0, true);
     const rectangleC = Sample.createRectangle(3, -1, 5, 5, 0, true);
     const rectangleD = Sample.createRectangle(10, 3, 12, 5, 0, true);
+    const rectangleE = Sample.createRectangle(6.5, -1, 9, 5, 0, true);
     const rectangleZ = Sample.createRectangle(2, 2, 6, 6, 0, true);
 
     exerciseMultiUnionDiff(ck, allGeometry, [rectangleA, rectangleC], [], x0 += 20, y0);
@@ -564,6 +566,7 @@ describe("ReOrientFacets", () => {
     exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ], rectangleD], [], x0 += 20, y0);
 
     exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ]], [rectangleC], x0 += 20, y0);
+    exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ]], [rectangleC, rectangleE], x0 += 20, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "MarkVisibility", "XYBoundaryHoles");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -571,19 +574,34 @@ describe("ReOrientFacets", () => {
 });
 
 type LoopOrParityLoops = Point3d[] | Point3d[][];
-function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[], data: LoopOrParityLoops[], dataB: LoopOrParityLoops[], x0: number, y0: number) {
+function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[],
+  data: LoopOrParityLoops[],
+  dataB: LoopOrParityLoops[],
+  x0: number, y0: number) {
+  const rangeA = RegionOps.curveArrayRange(data);
+  const dyA = -1.5 * rangeA.yLength();
   for (const g of data) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + 2 * dyA);
   }
+  for (const g of dataB) {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + dyA);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + 2 * dyA);
+  }
+  y0 += 3 * dyA;
+  GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, y0, x0 + rangeA.xLength(), y0));
   const meshB = RegionOps.polygonBooleanXYToPolyface(data, RegionBinaryOpType.AMinusB, dataB, true);
   if (ck.testDefined(meshB) && meshB) {
-    const range = meshB.range();
-    const yStep = range.yLength() * 1.2;
+    const yStep = dyA;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0 += yStep);
     const boundaryB = PolyfaceQuery.boundaryEdges(meshB);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 += yStep);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 += 2 * yStep);
     const boundaryC = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.AMinusB, dataB);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryC, x0, y0 += yStep);
+    const boundaryD = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.Union, dataB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryD, x0, y0 += yStep);
+    const boundaryE = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.Intersection, dataB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryE, x0, y0 += yStep);
   }
 }
 /**
@@ -601,17 +619,17 @@ function testDuplicateFacetCounts(ck: Checker, title: string, meshData: object, 
   const mesh = IModelJson.Reader.parse(meshData) as IndexedPolyface;
   const dupData0 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, false);
   const dupData1 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, true);
-  ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, title + "Singletons");
+  ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, `${title} Singletons`);
   ck.testExactNumber(numCluster, dupData0.length, "Clusters");
-  ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), title + "num2Cluster");
-  ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), title + "num3Cluster");
+  ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), `${title} num2Cluster`);
+  ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), `${title} num3Cluster`);
 
   const singletons = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectNone) as IndexedPolyface;
   const oneOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAny) as IndexedPolyface;
   const allOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAll) as IndexedPolyface;
-  ck.testExactNumber(numSingleton, singletons.facetCount, title + " cloned singletons");
-  ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, title + " cloned one per cluster");
-  ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, title + " cloned all in clusters");
+  ck.testExactNumber(numSingleton, singletons.facetCount, `${title} cloned singletons`);
+  ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, `${title} cloned one per cluster`);
+  ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, `${title}  cloned all in clusters`);
 }
 // return the number of arrays with target size.
 function countArraysBySize(data: number[][], target: number): number {

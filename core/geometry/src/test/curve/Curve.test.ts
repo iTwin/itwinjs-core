@@ -63,15 +63,15 @@ class StrokeCountSearch extends NullGeometryHandler {
       return this.emitPackedStrokeCountMap(g.strokeData);
     return undefined;
   }
-  public handleLineString3d(g: LineString3d) { return { LineString3d: this.emitCountData(g) }; }
-  public handleArc3d(g: Arc3d) { return { Arc3d: this.emitCountData(g) }; }
-  public handleLineSegment3d(g: LineSegment3d) { return { LineSegment3d: this.emitCountData(g) }; }
-  public handleBSplineCurve3d(g: BSplineCurve3d) { return { BSplineCurve3d: this.emitCountData(g) }; }
-  public handleBSplineCurve3dH(g: BSplineCurve3dH) { return { BSplineCurve3dH: this.emitCountData(g) }; }
-  public handleLBezierCurve3d(g: BezierCurve3d) { return { BezierCurve3d: this.emitCountData(g) }; }
-  public handleLBezierCurve3dH(g: BezierCurve3dH) { return { BezierCurve3dH: this.emitCountData(g) }; }
+  public handleLineString3d(g: LineString3d) { return { numLineString3d: this.emitCountData(g) }; }
+  public handleArc3d(g: Arc3d) { return { numArc3d: this.emitCountData(g) }; }
+  public handleLineSegment3d(g: LineSegment3d) { return { numLineSegment3d: this.emitCountData(g) }; }
+  public handleBSplineCurve3d(g: BSplineCurve3d) { return { numBSplineCurve3d: this.emitCountData(g) }; }
+  public handleBSplineCurve3dH(g: BSplineCurve3dH) { return { numBSplineCurve3dH: this.emitCountData(g) }; }
+  public handleLBezierCurve3d(g: BezierCurve3d) { return { numBezierCurve3d: this.emitCountData(g) }; }
+  public handleLBezierCurve3dH(g: BezierCurve3dH) { return { numBezierCurve3dH: this.emitCountData(g) }; }
   public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex) {
-    const data = { CurveVectorWithDistanceIndex: this.emitCountData(g) };
+    const data = { numCurveVectorWithDistanceIndex: this.emitCountData(g) };
     const children = g.children;
     if (children) {
       (data as any).childCounts = [];
@@ -174,7 +174,7 @@ class ExerciseCurve {
       if (ck.testPointer(tangentA) && tangentA) {
         const plane = Plane3dByOriginAndUnitNormal.create(tangentA.origin, tangentA.direction)!;
         const intersections: CurveLocationDetail[] = [];
-        curve.appendPlaneIntersectionPoints(plane!, intersections);
+        curve.appendPlaneIntersectionPoints(plane, intersections);
         const foundAt = intersections.filter(
           (detail: CurveLocationDetail, _index: number, _data: CurveLocationDetail[]) => {
             if (detail.curve === curve)
@@ -295,7 +295,7 @@ class ExerciseCurve {
               const magV = plane1.vectorV.magnitude();
               const magV2 = approximateDerivative2.magnitude();
               const ratio = magV / magV2;
-              console.log(" (magU " + magU + ") (magV " + magV + ") (magV2 " + magV2 + ") (magV/magV2 " + ratio + ") (L " + curve.curveLength() + ") (radians " + radians + ")");
+              console.log(` (magU  ${magU} (magV  ${magV} (magV2  ${magV2} (magV/magV2  ${ratio} (L  ${curve.curveLength()} (radians  ${radians}`);
               curve.fractionToPointAnd2Derivatives(fraction);
             }
           }
@@ -603,10 +603,10 @@ describe("Curves", () => {
     const lineSegment = LineSegment3d.createXYXY(0, 0, 1, 1);
     bag1.tryAddChild(lineSegment.clone());
     const allGeometry: GeometryQuery[] = [];
-    GeometryCoreTestIO.captureGeometry(allGeometry, pathA.clone()!, 0, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, pathB.clone()!, 0, 2, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, pathC.clone()!, 0, 4, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, pathD.clone()!, 0, 30, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, pathA.clone(), 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, pathB.clone(), 0, 2, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, pathC.clone(), 0, 4, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, pathD.clone(), 0, 30, 0);
 
     // const indexedPathA = CurveChainWithDistanceIndex.createCapture(pathA);
     // const indexedPathB = CurveChainWithDistanceIndex.createCapture(pathB);
@@ -774,7 +774,7 @@ function testSamples(_ck: Checker, samples: any[], maxEcho: number = 0) {
     const s = samples[i];
     if (i < maxEcho) {
       if (s.toJSON)
-        console.log("from toJSON(): " + JSON.stringify(s.toJSON()));
+        console.log(`from toJSON(): ${JSON.stringify(s.toJSON())}`);
       else {
         const json = IModelJson.Writer.toIModelJson(s);
         if (json)
@@ -895,9 +895,9 @@ describe("Linestring3dSpecials", () => {
       const plane = Plane3dByOriginAndUnitNormal.create(pointOnSegment.origin, pointOnSegment.direction);
       const intersections = new Array<CurveLocationDetail>();
       linestring.appendPlaneIntersectionPoints(plane!, intersections);
-      if (ck.testExactNumber(1, intersections.length, "Expect single intersection " + i)
-        && ck.testCoordinate(globalFraction, intersections[0].fraction, "intersection fraction on segment " + i)
-        && ck.testPoint3d(plane!.getOriginRef(), intersections[0].point, "intersection point on segment " + i)) {
+      if (ck.testExactNumber(1, intersections.length, `Expect single intersection ${i}`)
+        && ck.testCoordinate(globalFraction, intersections[0].fraction, `intersection fraction on segment ${i}`)
+        && ck.testPoint3d(plane!.getOriginRef(), intersections[0].point, `intersection point on segment ${i}`)) {
         // all ok!!
       } else {
         intersections.length = 0;
@@ -968,7 +968,7 @@ function compareIsomorphicCurves(ck: Checker, curveA: CurvePrimitive, curveB: Cu
   for (const fraction of fractions) {
     const pointA = curveA.fractionToPoint(fraction);
     const pointB = curveB.fractionToPoint(fraction);
-    if (!ck.testPoint3d(pointA, pointB, " compare at fraction " + fraction))
+    if (!ck.testPoint3d(pointA, pointB, ` compare at fraction ${fraction}`))
       curveB.fractionToPoint(fraction);
   }
   const intervalFractions = [0.0, 0.4, 0.2, 0.9, 1.0, 0.3];
@@ -977,7 +977,7 @@ function compareIsomorphicCurves(ck: Checker, curveA: CurvePrimitive, curveB: Cu
     const f1 = intervalFractions[i + 1];
     const lengthA = curveA.curveLengthBetweenFractions(f0, f1);
     const lengthB = curveB.curveLengthBetweenFractions(f0, f1);
-    if (!ck.testCoordinate(lengthA, lengthB, "curveLengthBetweenFractions (" + f0 + ", " + f1)) {
+    if (!ck.testCoordinate(lengthA, lengthB, `curveLengthBetweenFractions (${f0},${f1}`)) {
       curveA.curveLengthBetweenFractions(f0, f1);
       curveB.curveLengthBetweenFractions(f0, f1);
     }
@@ -1031,8 +1031,8 @@ describe("CylindricalRange", () => {
         ck.testPointer(vector1);
         const vector2 = CylindricalRangeQuery.computeMaxVectorFromRay(ray, strokes);
         ck.testPointer(vector2);
-        const d1 = vector1!.magnitude();
-        const d2 = vector2!.magnitude();
+        const d1 = vector1.magnitude();
+        const d2 = vector2.magnitude();
         // stroked range should be smaller.  But cylindricalRangeQuery uses strokes.  Be fluffy . ..
         const e = Math.abs(d1 - d2);
         ck.testLE(e, 2.0 * options.chordTol);

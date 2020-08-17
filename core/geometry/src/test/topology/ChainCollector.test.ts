@@ -37,7 +37,7 @@ describe("ChainCollector", () => {
     for (const filename of ["fillet00", "aecc_alignment", "linestring01", "boomerang.incompleteOffset", "boomerang.noOffsetsWithThisOrder",
       "boomerang", "rectangle00", "linestrings", "MBDenseCurvesToOffset"]) {
       const allGeometry: GeometryQuery[] = [];
-      const stringData = fs.readFileSync(chainCollectorInputDirectory + filename + ".imjs", "utf8");
+      const stringData = fs.readFileSync(`${chainCollectorInputDirectory}${filename}.imjs`, "utf8");
       if (stringData) {
         const jsonData = JSON.parse(stringData);
         let fragments = IModelJson.Reader.parse(jsonData);
@@ -76,7 +76,7 @@ describe("ChainCollector", () => {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.insideOffsets, x0, y0, 0.01);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.outsideOffsets, x0, y0, -0.01);
           }
-          console.log("output to " + filename);
+          console.log(`output to ${filename}`);
           GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", filename);
           xOut += 2 * range.xLength();
         }
@@ -94,7 +94,7 @@ describe("ChainCollector", () => {
     // expect a single loo input ...
     for (const filename of ["MBDenseCurvesToOffset"]) {
       const allGeometry: GeometryQuery[] = [];
-      const stringData = fs.readFileSync(chainCollectorInputDirectory + filename + ".imjs", "utf8");
+      const stringData = fs.readFileSync(`${chainCollectorInputDirectory}${filename}.imjs`, "utf8");
       if (stringData) {
         const jsonData = JSON.parse(stringData);
         const fragments = IModelJson.Reader.parse(jsonData);
@@ -142,7 +142,7 @@ describe("ChainCollector", () => {
             }
             x0 += 2.5 * range.xLength();
           }
-          console.log("output to " + filename);
+          console.log(`output to ${filename}`);
           GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetCleanup", filename);
           xOut += 2 * range.xLength();
         }

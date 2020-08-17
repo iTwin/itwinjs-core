@@ -308,12 +308,12 @@ function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], po
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, sortedLoops, x0, y0);
   y0 += 40;
   let y1 = y0 + 100;
-  if (Checker.noisy.ParityRegionAnalysis) {
+  if (Checker.noisy.parityRegionAnalysis) {
     RegionOps.setCheckPointFunction(
       (name: string, graph: HalfEdgeGraph, _properties: string, _extraData?: any) => {
         GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y1 += 15);
         const euler = graph.countVertexLoops() - graph.countNodes() / 2.0 + graph.countFaceLoops();
-        console.log(" Checkpoint " + name + "." + _properties,
+        console.log(` Checkpoint ${name}.${_properties}`,
           { v: graph.countVertexLoops(), e: graph.countNodes(), f: graph.countFaceLoops(), eulerCharacteristic: euler });
         GraphChecker.dumpGraph(graph);
       });

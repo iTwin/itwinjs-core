@@ -1667,6 +1667,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     // (undocumented)
     static createArema(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    static createAustralianRail(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     // (undocumented)
     static createChineseCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createCzechCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
@@ -1701,7 +1702,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
 }
 
 // @public
-export type DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine";
+export type DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesterAustralian" | "Czech";
 
 // @public
 export enum DuplicateFacetClusterSelector {

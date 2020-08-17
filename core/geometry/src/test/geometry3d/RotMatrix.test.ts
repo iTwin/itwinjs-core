@@ -271,7 +271,7 @@ describe("Matrix3d.Factors", () => {
         console.log("*************************************************axis ", axis);
       for (const degrees of [0.01, 10, -14, 78, 128, 0.01, 0.328]) {
         if (Checker.noisy.rotMatrixAxisAndAngle)
-          console.log("            ****degrees " + degrees);
+          console.log(` **** degrees ${degrees}`);
         const matrix1 = Matrix3d.createRotationAroundVector(axis, Angle.createDegrees(degrees))!;
         /*
         const data3 = getAxisAndAngleOfRotationByDirectFactors(matrix1);
@@ -287,7 +287,7 @@ describe("Matrix3d.Factors", () => {
         // remark: don't directly compare data.axis and axis -- they might be negated !!!
         // instead check that data generates the same matrix.
         const matrix2 = Matrix3d.createRotationAroundVector(data2.axis, data2.angle);
-        if (ck.testTrue(data2.ok, "data2 ok" + degrees)) {
+        if (ck.testTrue(data2.ok, `data2 ok ${degrees}`)) {
           if (ck.testPointer(matrix2, "good data for createRotation") && matrix2)
             ck.testMatrix3d(matrix1, matrix2, "AxisAngle2 maps to same Matrix3d");
         }
@@ -342,7 +342,7 @@ function modifyPitchAngleToPreventInversion(radians: number): number { return ra
 // matrix construction to duplicate native dgnplatform method NavigateMotion::GenerateRotationTransform
 // the matrix product expands to:
 // yawMatrix * invViewRotation * pitchMatrix * viewRotation
-function GenerateRotationTransform(eyePoint: Point3d, viewRotation: Matrix3d, yawRadiansPerTime: number, pitchRateRadiansPerTime: number, time: number): Transform {
+function generateRotationTransform(eyePoint: Point3d, viewRotation: Matrix3d, yawRadiansPerTime: number, pitchRateRadiansPerTime: number, time: number): Transform {
   const yawAngle = Angle.createRadians(yawRadiansPerTime * time);
   const pitchAngle = Angle.createRadians(modifyPitchAngleToPreventInversion(pitchRateRadiansPerTime * time));
 
@@ -408,7 +408,7 @@ describe("Matrix3d.ViewConstructions", () => {
         0.053107143509079233, 0.99828614780495017, -0.024584515636062437,
         0.004514069974036361, 0.024379010923246527, 0.99969259625080453,
       ));
-    const transform = GenerateRotationTransform(eyePoint, viewRotation, yawRateRadiansPerTime, pitchRateRadiansPerTime, time);
+    const transform = generateRotationTransform(eyePoint, viewRotation, yawRateRadiansPerTime, pitchRateRadiansPerTime, time);
     ck.testMatrix3d(nativeTransform.matrix, transform.matrix);
     ck.testXYZ(nativeTransform.origin, transform.origin);
 
@@ -487,8 +487,8 @@ describe("Matrix3d.ViewConstructions", () => {
     for (const i of [0, 1, 2]) {
       const v0 = byRow.getRow(i);
       const v1 = byRow1.getRow(i);
-      ck.testCoordinate(v1.magnitude(), 1, "normalized row" + i);
-      ck.testCoordinate(v0.magnitude(), v0.dotProduct(v1), "scaling" + i);
+      ck.testCoordinate(v1.magnitude(), 1, `normalized row ${i}`);
+      ck.testCoordinate(v0.magnitude(), v0.dotProduct(v1), `scaling ${i}`);
     }
 
     const byColumn = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
@@ -497,7 +497,7 @@ describe("Matrix3d.ViewConstructions", () => {
     for (const i of [0, 1, 2]) {
       ck.testVector3d(byColumn.getColumn(i), byRow.getRow(i), "row, column vector access");
       for (const j of [0, 1, 2]) {
-        ck.testExactNumber(byRow.at(i, j), byColumn.at(j, i), "ij" + i + " " + j);
+        ck.testExactNumber(byRow.at(i, j), byColumn.at(j, i), `ij${i} ${j}`);
         const q = byRow.at(i, j);
         qMax = Geometry.maxAbsXYZ(q, qMax, 0);
         fillByIndex.setAt(i, j, byRow.at(i, j));
@@ -844,11 +844,11 @@ function checkInverseRelationship(ck: Checker, name: string, matrix: Matrix3d | 
   if (matrix !== undefined) {
     if (Checker.noisy.matrixMultiplyAliasing) {
       console.log("-------------------------------");
-      console.log(name + "    " + matrix.coffs, " inverse state " + matrix.inverseState);
-      console.log("                                                 cached inverse    " + matrix.inverseCoffs);
+      console.log(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}`);
+      console.log(`                                                 cached inverse    ${matrix.inverseCoffs}`);
     }
     if (expectedInverseState !== undefined)
-      ck.testExactNumber(expectedInverseState, matrix.inverseState, name + "inverse state");
+      ck.testExactNumber(expectedInverseState, matrix.inverseState, `${name} inverse state`);
     if (matrix.inverseState === InverseMatrixState.inverseStored) {
       const product = Matrix3d.createScale(2, 4, 3);
       PackedMatrix3dOps.multiplyMatrixMatrix(matrix.coffs, matrix.inverseCoffs!, product.coffs);
@@ -974,7 +974,7 @@ describe("MatrixProductAliasing", () => {
     const matrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(20))!;
 
     for (const result of [undefined, Matrix3d.createIdentity()]) {
-      checkInverseRelationship(ck, "inverse", matrix.inverse(result)!, InverseMatrixState.inverseStored);
+      checkInverseRelationship(ck, "inverse", matrix.inverse(result), InverseMatrixState.inverseStored);
       if (result)
         result.setZero();
       const angle = Angle.createRadians(Math.atan2(0.027550936532400754, 0.9996204009003555));
@@ -982,17 +982,17 @@ describe("MatrixProductAliasing", () => {
       if (result)
         result.setZero();
 
-      checkInverseRelationship(ck, "zRotation", Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)!, InverseMatrixState.inverseStored);
+      checkInverseRelationship(ck, "zRotation", Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle), InverseMatrixState.inverseStored);
       if (result)
         result.setZero();
 
       checkInverseRelationship(ck, "AB", matrix.multiplyMatrixMatrix(matrixB, result), InverseMatrixState.inverseStored);
       if (result)
         result.setZero();
-      checkInverseRelationship(ck, "ABInverse", matrix.multiplyMatrixMatrixInverse(matrixB, result)!, InverseMatrixState.inverseStored);
+      checkInverseRelationship(ck, "ABInverse", matrix.multiplyMatrixMatrixInverse(matrixB, result), InverseMatrixState.inverseStored);
       if (result)
         result.setZero();
-      checkInverseRelationship(ck, "AInverseB", matrix.multiplyMatrixInverseMatrix(matrixB, result)!, InverseMatrixState.inverseStored);
+      checkInverseRelationship(ck, "AInverseB", matrix.multiplyMatrixInverseMatrix(matrixB, result), InverseMatrixState.inverseStored);
       if (result)
         result.setZero();
       checkInverseRelationship(ck, "ABTranspose", matrix.multiplyMatrixMatrixTranspose(matrixB, result), InverseMatrixState.inverseStored);

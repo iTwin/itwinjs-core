@@ -21,11 +21,11 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function logGraph(graph: HalfEdgeGraph, title: any) {
-  console.log(" ==begin== " + title);
+  console.log(` == begin == ${title}`);
   for (const he of graph.allHalfEdges) {
     console.log(HalfEdge.nodeToIdXYString(he));
   }
-  console.log(" ==end== " + title);
+  console.log(` ==end== ${title}`);
 }
 export class GraphChecker {
   public static captureAnnotatedGraph(data: GeometryQuery[], graph: HalfEdgeGraph, dx: number = 0, dy: number = 0) {
@@ -106,7 +106,7 @@ export class GraphChecker {
       faceData.push(f.collectAroundFace(HalfEdge.nodeToIdXYString));
     }
     if (this.printToConsole) {
-      console.log("**FACE LOOPS " + faces.length);
+      console.log(`"**FACE LOOPS ${faces.length}`);
       console.log(faceData);
     }
     const vData = [];
@@ -119,7 +119,7 @@ export class GraphChecker {
         vData.push([HalfEdge.nodeToIdXYString(v), v.collectAroundVertex(HalfEdge.nodeToId)]);
     }
     if (this.printToConsole) {
-      console.log("**VERTEX LOOPS " + vertices.length);
+      console.log(`"**VERTEX LOOPS ${vertices.length}`);
       console.log(vData);
     }
   }
@@ -142,7 +142,7 @@ export class GraphChecker {
     const mask2 = graph.grabMask();
     let numMask2InSet = 0;
     graph.clearMask(mask1);
-    ck.testExactNumber(0, graph.countMask(mask1), "clear mask " + mask1);
+    ck.testExactNumber(0, graph.countMask(mask1), `clear mask ${mask1}`);
     for (let i = 0; i < numNode; i += 3 + i) {
       const node = graph.allHalfEdges[i];
       ck.testFalse(node.isMaskSet(myMask), "0 mask");
@@ -207,7 +207,7 @@ export class GraphChecker {
         maskErrors++;
     }
     if (maskErrors !== 0)
-      ck.announceError("EXTERIOR_MASK inconsistent at " + maskErrors + " nodes");
+      ck.announceError(`EXTERIOR_MASK inconsistent at ${maskErrors} nodes`);
     return maskErrors === 0;
   }
   /**

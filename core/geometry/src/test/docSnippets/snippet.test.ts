@@ -46,9 +46,9 @@ function emit(...data: any[]) {
   }
 }
 // Typical snippets for sandbox windows . . . . These assume that
-// the window alwyas has
+// the window always has
 // 1) the "import * as geometry" directive
-// 2) An additional "import" directive to obtain an appropriate implemetation of "emit".
+// 2) An additional "import" directive to obtain an appropriate implementation of "emit".
 
 describe("Snippets", () => {
   it("Point3d", () => {
@@ -64,7 +64,7 @@ describe("Snippets", () => {
     emit("Here is a LineSegment3d ", mySegment);
     emit("Its quarter point is ", mySegment.fractionToPoint(0.25));
     emit("Its midpoint is ", mySegment.fractionToPoint(0.5));
-    emit("Its threequarter point is ", mySegment.fractionToPoint(0.75));
+    emit("Its three quarter point is ", mySegment.fractionToPoint(0.75));
   });
 
   it("Arc3d", () => {
@@ -89,9 +89,9 @@ describe("Snippets", () => {
     // radians or degrees:
     const angleA = geometry.Angle.createDegrees(10);
     const angleB = geometry.Angle.createRadians(0.3);
-    // subsequent accesseses specify degrees or radians :
-    emit("AngleA in degree is " + angleA.degrees + "    and in radians is " + angleA.radians);
-    emit("AngleB in degree is " + angleB.degrees + "    and in radians is " + angleB.radians);
+    // subsequent accesses specify degrees or radians :
+    emit(`AngleA in degree is ${angleA.degrees} and in radians is ${angleA.radians}`);
+    emit(`AngleB in degree is ${angleB.degrees} and in radians is ${angleB.radians}`);
   });
 
   it("YawPitchRollAngles", () => {
@@ -119,16 +119,16 @@ describe("Snippets", () => {
     emit(" ypr object (this reports degrees)", ypr);
     emit(" matrix constructed by YawPitchRollAngles object ", yprMatrix);
     emit(" matrix constructed from matrix products ", directMatrix);
-    emit(" Largest difference between matrices is " + yprMatrix.maxDiff(directMatrix));
+    emit(` Largest difference between matrices is ${yprMatrix.maxDiff(directMatrix)}`);
   });
 
   it("Ray3d", () => {
     emit(" A Ray3d is an (infinite) line in space, defined by origin and direction vector");
     emit("    Any point on the ray can be its origin.");
-    emit("    Any vector in the ray dreiction can be its direction vector.");
+    emit("    Any vector in the ray direction can be its direction vector.");
     emit("    The direction vector is NOT assumed normalized.");
     const myRay = Ray3d.create(Point3d.create(2, 1, 0), Vector3d.create(3, 2, 5));
-    emit(" Each point on the ray is reachable by mutliplying the direction vector by a number");
+    emit(" Each point on the ray is reachable by multiplying the direction vector by a number");
     emit("   Fraction 0 is at the origin.", myRay.fractionToPoint(0));
     emit("   Fraction 1 is at the end of the direction vector placed at the origin.", myRay.fractionToPoint(1.0));
     emit("   This point is beyond the end", myRay.fractionToPoint(1.25));

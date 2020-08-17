@@ -33,6 +33,9 @@ import { RuledSweep } from "../../solid/RuledSweep";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
+import { Range1d } from "../../geometry3d/Range";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { Loop } from "../../curve/Loop";
 
 /** Like  NullGeometryHandler, but allow various CurveCollections to flow to base class, where they reach handleCurveCollection. */
 export class MinimalGeometryHandler extends GeometryHandler {
@@ -138,4 +141,32 @@ describe("CylindricalRangeQuery", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("StrokeCountChainCoverage", () => {
+    const ck = new Checker();
+    // need linestring geometry with (a) a point on the rotational axis and (b) linestring buried in path or loop.
+    const linestring = LineString3d.create([0, 0, 0], [1, 0, 0], [1, 1, 0]);
+    const linestring0 = LineString3d.create();
+    const arc = Arc3d.createCenterNormalRadius(undefined, Vector3d.unitZ(), 1);
+    const chain1 = Loop.create();
+    chain1.tryAddChild(linestring);
+    const chain2 = Loop.create();
+    chain2.tryAddChild(arc);
+    const range = Range1d.createNull();
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(arc, chain1, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, arc, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(linestring, chain1, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(linestring, linestring0, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, linestring, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, chain2, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(chain1, arc, range));
+
+    const parity1 = ParityRegion.create(chain1);
+    const parity2 = ParityRegion.create(chain2);
+    const parity0 = ParityRegion.create();
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(parity1, parity2, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(parity0, parity2, range));
+    ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(parity0, chain1, range));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

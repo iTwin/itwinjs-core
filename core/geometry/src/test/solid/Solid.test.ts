@@ -40,7 +40,7 @@ let outputFolderPath = "./src/test/output";
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(outputFolderPath))
   fs.mkdirSync(outputFolderPath);
-outputFolderPath = outputFolderPath + "/";
+outputFolderPath = `${outputFolderPath}/`;
 
 function verifyUnitPerpendicularFrame(ck: Checker, frame: Transform, source: any) {
   ck.testTrue(frame.matrix.isRigid(), "perpendicular frame", source);
@@ -316,16 +316,16 @@ describe("Solids", () => {
       // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0.5 * dx, dy);
       // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, 0.5 * dy);
       // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, dy);
-      GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone()!, dx, dy);
+      GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone(), dx, dy);
       const range = s.range();
       const rangeEdges = Sample.createRangeEdges(range)!;
       GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges, dx, dy);
       for (let transformIndex = 0; transformIndex < 4; transformIndex++) {
         const transform = transforms[transformIndex];
-        GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone()!, dx, dy);
+        GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone(), dx, dy);
         const s1 = s.cloneTransformed(transform);
-        GeometryCoreTestIO.captureGeometry(allGeometry, s.clone()!, dx, dy);
-        GeometryCoreTestIO.captureGeometry(allGeometry, s1!, dx, dy);
+        GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, dy);
+        GeometryCoreTestIO.captureGeometry(allGeometry, s1, dx, dy);
         /*
         GeometryCoreTestIO.captureGeometry(allGeometry, s.clone()!, dx, dy);
         for (const vFraction of [0.25, 0.5, 0.75]) {
@@ -394,8 +394,8 @@ describe("Solids", () => {
     const contourA = SweepContour.createForLinearSweep(path)!;
     const contourB = contourA.cloneTransformed(Transform.createTranslationXYZ(5, 0, 0))!;
     const allGeometry: GeometryQuery[] = [];
-    GeometryCoreTestIO.captureGeometry(allGeometry, contourA.getCurves()!.clone()!, 0, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, contourB.getCurves()!.clone()!, 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, contourA.getCurves()!.clone(), 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, contourB.getCurves()!.clone(), 0, 0, 0);
     ck.testFalse(contourA.isAlmostEqual(contourB));
     ck.testFalse(contourA.isAlmostEqual(path));
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransformedSolids", "SweepContour");

@@ -76,7 +76,7 @@ describe("GraphMerge", () => {
       graph.transformInPlace(transform);
       const splits = HalfEdgeGraphMerge.splitIntersectingEdges(graph);
       //
-      console.log("SPLITS = " + prettyPrint(splits));
+      console.log(`SPLITS = ${prettyPrint(splits)}`);
       // There are 8 edges.  2 pairs intersect, each generating 2 individual splits, creating 4 more.  (Each split counts as )
       ck.testExactNumber(4, splits.numSplit, "splits");
       ck.testExactNumber(12, splits.numUpEdge, "up edge");

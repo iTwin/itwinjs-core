@@ -34,7 +34,7 @@ import { prettyPrint } from "../testFunctions";
 /* eslint-disable no-console */
 
 describe("Ellipsoid", () => {
-  Checker.noisy.Ellipsoid = true;
+  Checker.noisy.ellipsoid = true;
   it("patchRange", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -578,7 +578,7 @@ describe("Ellipsoid", () => {
       const patch = EllipsoidPatch.createCapture(ellipsoid,
         AngleSweep.create360(),
         AngleSweep.createStartEndDegrees(-89, 89));
-      if (Checker.noisy.Ellipsoid)
+      if (Checker.noisy.ellipsoid)
         console.log(" ELLIPSOID", prettyPrint(ellipsoid));
       GeometryCoreTestIO.captureMesh(allGeometry, patch, 48, 16, x0, y0);
       for (const localPoint of originArray) {
@@ -643,16 +643,16 @@ describe("Ellipsoid", () => {
       [tippedEarthEllipsoidMatrix(), "Tipped earth"]]) {
       const matrix = matrixNamePair[0] as Matrix3d;
       const name = matrixNamePair[1] as string;
-      if (Checker.noisy.Ellipsoid)
+      if (Checker.noisy.ellipsoid)
         console.log("Ellipsoid Paths", name);
       const y0 = 0.0;
       const dy = 2.0 * (matrix.columnXMagnitude() + matrix.columnYMagnitude());
       const dx = 3.0 * dy;
       x0 += dx;     // dx shifts both before and after, to catch larger
-      if (Checker.noisy.Ellipsoid) {
+      if (Checker.noisy.ellipsoid) {
         console.log();
         console.log("*****************************************************************");
-        console.log("  ELLIPSOID x magnitude " + matrix.columnXMagnitude());
+        console.log({ "  ELLIPSOID x magnitude ": matrix.columnXMagnitude() });
         console.log(matrix.toJSON());
       }
       const ellipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(center, matrix));
@@ -674,16 +674,16 @@ describe("Ellipsoid", () => {
         0.1, 0.2, 3.0), "3-axis Skew"]]) {
       const matrix = matrixNamePair[0] as Matrix3d;
       const name = matrixNamePair[1] as string;
-      if (Checker.noisy.Ellipsoid)
+      if (Checker.noisy.ellipsoid)
         console.log("Ellipsoid Paths", name);
       const y0 = 0.0;
       const dy = 2.0 * (matrix.columnXMagnitude() + matrix.columnYMagnitude());
       const dx = 3.0 * dy;
       x0 += dx;     // dx shifts both before and after, to catch larger
-      if (Checker.noisy.Ellipsoid) {
+      if (Checker.noisy.ellipsoid) {
         console.log();
         console.log("*****************************************************************");
-        console.log("  ELLIPSOID x magnitude " + matrix.columnXMagnitude());
+        console.log({ "  ELLIPSOID x magnitude ": matrix.columnXMagnitude() });
         console.log(matrix.toJSON());
       }
       const ellipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(center, matrix));
@@ -772,7 +772,7 @@ describe("Ellipsoid", () => {
       if (realEyePoint instanceof Point3d)
         GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, realEyePoint, x0, y0);
       for (const ellipsoid of [Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), Matrix3d.createIdentity(), 1, 1, 1),
-        /* */ Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 5, 1), Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(32))!, 1, 1.2, 2.0),
+        /* */ Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 5, 1), Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(32)), 1, 1.2, 2.0),
         /* */ Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 5, 0), Matrix3d.createRowValues(1, 0, 0.2, 0.1, 3, 0.2, -0.3, 0.1, 2), 1, 1, 1),
       ]) {
         GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0);
@@ -876,7 +876,7 @@ describe("Ellipsoid", () => {
     const y0 = 0;
     const z0 = 0.0;
     for (const ellipsoidRadius of [1.0, 2.0]) {
-      console.log("*** ellipsoid radius " + ellipsoidRadius);
+      console.log({ "*** ellipsoid radius ": ellipsoidRadius });
       for (const ellipsoid of [
         Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), undefined, ellipsoidRadius, ellipsoidRadius, ellipsoidRadius),
         Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 1, 0), undefined, ellipsoidRadius, ellipsoidRadius, 0.6 * ellipsoidRadius)]) {
@@ -986,7 +986,7 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       for (const angle of [/* Angle.createDegrees(10), Angle.createDegrees(5), */ Angle.createDegrees(2)]) {
         const path = GeodesicPathSolver.createGeodesicPath(ellipsoid, angleA, angleB, angle);
         if (path) {
-          if (Checker.noisy.Ellipsoid) {
+          if (Checker.noisy.ellipsoid) {
             const xyz = [];
             for (const p of path) {
               xyz.push(p.point);
@@ -994,12 +994,12 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
             const ls = LineString3d.create(xyz);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y1);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y0);
-            if (Checker.noisy.Ellipsoid)
+            if (Checker.noisy.ellipsoid)
               console.log({ greatArcTrueLength: arcLength, n: ls.numPoints(), l: ls.curveLength() });
           }
           const arcPath = CurveFactory.assembleArcChainOnEllipsoid(ellipsoid, path, 0.5);
           const arcPathLength = arcPath.sumLengths();
-          if (Checker.noisy.Ellipsoid) {
+          if (Checker.noisy.ellipsoid) {
             console.log("path sums ", arcPathLength);
           }
           GeometryCoreTestIO.captureGeometry(allGeometry, arcPath, x0, y0);
@@ -1011,17 +1011,20 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
         if (minLengthArcDataA !== undefined) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, minLengthArcDataA.minLengthArc, x0, y1);
           const lA = minLengthArcDataA.minLengthArc.curveLength();
-          if (Checker.noisy.Ellipsoid)
-            console.log("Approximate min section lengthA " + minLengthArcDataA.minLengthArc.curveLength(), "fraction " + minLengthArcDataA.minLengthNormalInterpolationFraction);
+          if (Checker.noisy.ellipsoid)
+            console.log({ "approximate min section lengthA ": minLengthArcDataA.minLengthArc.curveLength(), "fraction ": minLengthArcDataA.minLengthNormalInterpolationFraction });
           const minLengthArcDataB = GeodesicPathSolver.approximateMinimumLengthSectionArc(ellipsoid, angleA, angleB, numSample,
             minLengthArcDataA.minLengthNormalInterpolationFraction - 0.10, minLengthArcDataA.minLengthNormalInterpolationFraction + 0.10);
           if (minLengthArcDataB) {
             const lB = minLengthArcDataB.minLengthArc.curveLength();
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, minLengthArcDataB.minLengthArc, x0, y1);
             ck.testLE(lB, lA * (1.0 + 1.0e-10), "Secondary search refines min length");
-            if (Checker.noisy.Ellipsoid)
-              console.log("Approximate min section lengthB " + minLengthArcDataB.minLengthArc.curveLength(), "fraction " + minLengthArcDataB.minLengthNormalInterpolationFraction,
-                "ratio " + lB / lA);
+            if (Checker.noisy.ellipsoid)
+              console.log({
+                "approximate min section lengthB ": minLengthArcDataB.minLengthArc.curveLength(),
+                "fraction ": minLengthArcDataB.minLengthNormalInterpolationFraction,
+                "ratio ": lB / lA,
+              });
           }
         }
       }

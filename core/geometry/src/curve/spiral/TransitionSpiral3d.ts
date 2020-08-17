@@ -27,12 +27,7 @@ import { LineString3d } from "../LineString3d";
  * *
  * @public
  */
-export type IntegratedSpiralTypeName = "clothoid"
-  | "bloss"
-  | "biquadratic"
-  | "cosine"
-  | "sine"
-  ;
+export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine";
 
 /**
  * This is the set of valid type names for "direct" spirals.
@@ -43,7 +38,10 @@ export type DirectSpiralTypeName = "Arema"
   | "JapaneseCubic"  // 1 term from each of the X,Y clothoid series expansions:  y = x^3 / (6RL)
   | "Arema"       // 2 terms from each of the X,Y clothoid series expansions.  Identical to ChineseCubic!
   | "ChineseCubic"  // Identical to Arema!
-  | "HalfCosine"  //
+  | "HalfCosine"  // high continuity cosine variation from quadratic.
+  | "AustralianRailCorp" // cubic with high accuracy distance series
+  | "WesterAustralian"  // simple cubic
+  | "Czech"  // simple cubic with two term distance approximation
   ;
 
 /**
@@ -151,7 +149,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
       // but we save it as [Q*R sQb+a] with spiral data scaled by s.
       const transformC0 = transformA.multiplyTransformTransform(this.localToWorld);
       // BUT pull the scale part out of the matrix ...
-      const matrixC = (rigidData.rigidAxes as Matrix3d).multiplyMatrixMatrix(this.localToWorld.matrix);
+      const matrixC = rigidData.rigidAxes.multiplyMatrixMatrix(this.localToWorld.matrix);
       this._localToWorld = Transform.createOriginAndMatrix(transformC0.origin, matrixC);
       if (this.designProperties)
         this.designProperties.applyScaleFactor(rigidData.scale);

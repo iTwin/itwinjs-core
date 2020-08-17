@@ -94,6 +94,8 @@ describe("ConvexClipPlaneSet", () => {
     setC.setInvisible(true);
     expect(ck.getNumErrors()).equals(0);
   });
+  // allow XOR etc as property names
+  /* eslint-disable @typescript-eslint/naming-convention */
   it("parser", () => {
     const ck = new Checker();
     const boxA = ConvexClipPlaneSet.createXYBox(1, 2, 3, 5);

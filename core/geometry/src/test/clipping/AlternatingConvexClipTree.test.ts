@@ -109,9 +109,9 @@ function testClipper(points: Point3d[], root: AlternatingCCTreeNode, outputLevel
 
   const numTest = fractions.length * fractions.length;
   if (Checker.noisy.clipTree === true) {
-    console.log("ClipperTest  (polygonPoints: " + points.length + ") (TestPoint: " + numTest + ")");
-    console.log("IN: " + inSum.count + " avg: " + inSum.mean + " max: " + inSum.minMax);
-    console.log("OUT: " + outSum.count + " avg: " + outSum.mean + " max: " + outSum.minMax);
+    console.log(`ClipperTest  (polygonPoints: ${points.length}) (TestPoint: ${numTest})`);
+    console.log(`IN: ${inSum.count} avg: ${inSum.mean} max ${inSum.minMax}`);
+    console.log(`OUT: ${outSum.count} avg: ${outSum.mean}  max: ${outSum.minMax}`);
   }
 }
 
@@ -272,10 +272,10 @@ describe("RecursiveClipSets", () => {
             AngleSweep.createStartEndDegrees(-120, 240),
           );
           ck.testFalse(arc0 === undefined, "Created arc is not undefined");
-          Checker.saveTransformed(arc0!);
+          Checker.saveTransformed(arc0);
           Checker.shift(0, 4, 0);
           Checker.saveTransformedLineString(polygon);
-          clipAndSave(root, arc0!);
+          clipAndSave(root, arc0);
 
           Checker.shift(0, 5, 0);
           Checker.saveTransformedLineString(polygon);
@@ -311,7 +311,7 @@ describe("RecursiveClipSets", () => {
               Point3d.create(0, 0.8),
               Point3d.create(0.5, 1.3),
             ]);
-          Checker.saveTransformed(linestring!);
+          Checker.saveTransformed(linestring);
           Checker.shift(0, 4, 0);
           Checker.saveTransformedLineString(polygon);
           clipAndSave(root, linestring);
@@ -321,7 +321,7 @@ describe("RecursiveClipSets", () => {
           const segmentB = LineSegment3d.create(
             Point3d.create(1, 0.3),
             Point3d.create(1.2, 0.8));
-          Checker.saveTransformed(segmentB!);
+          Checker.saveTransformed(segmentB);
           Checker.shift(0, 4, 0);
           Checker.saveTransformedLineString(polygon);
           clipAndSave(root, segmentB);

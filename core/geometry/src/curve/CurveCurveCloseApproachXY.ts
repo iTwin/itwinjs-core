@@ -772,7 +772,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
   /** double dispatch handler for strongly typed linestring.. */
   public handleLineString3d(lsA: LineString3d): any {
     if (this._geometryB instanceof LineString3d) {
-      const lsB = this._geometryB as LineString3d;
+      const lsB = this._geometryB;
       this.computeLineStringLineString(lsA, lsB, false);
     } else if (this._geometryB instanceof LineSegment3d) {
       this.computeSegmentLineString(this._geometryB, lsA, true);

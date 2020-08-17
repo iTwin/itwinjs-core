@@ -59,6 +59,7 @@
     "lines": 85
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js",
+    "rules": {"@typescript-eslint/indent": "off"}
   }
 }

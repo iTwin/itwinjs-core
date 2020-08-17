@@ -656,7 +656,7 @@ function faceAreaFromCurvedEdgeData(faceSeed: HalfEdge): number {
   let area = 0.0;
   let edge = faceSeed;
   do {
-    area += (edge.sortData as number) * areaUnderPartialCurveXY((edge.edgeTag! as CurveLocationDetail), edge, edge.faceSuccessor, faceSeed);
+    area += (edge.sortData as number) * areaUnderPartialCurveXY((edge.edgeTag as CurveLocationDetail), edge, edge.faceSuccessor, faceSeed);
   } while ((edge = edge.faceSuccessor) !== faceSeed);
   return area;
 }

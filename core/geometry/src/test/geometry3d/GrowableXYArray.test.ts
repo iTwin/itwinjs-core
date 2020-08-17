@@ -46,7 +46,7 @@ describe("GrowableXYArray", () => {
         ck.testPoint2d(pointB[0], pointA.front() as Point2d);
       }
       for (let i = 0; i < n; i++)
-        ck.testPoint2d(pointB[i], pointA.getPoint2dAtUncheckedPointIndex(i) as Point2d);
+        ck.testPoint2d(pointB[i], pointA.getPoint2dAtUncheckedPointIndex(i));
       ck.testExactNumber(pointA.length, pointB.length, "array lengths");
 
       let lengthA = 0;
@@ -503,9 +503,9 @@ describe("GrowableXYArray", () => {
     for (const numAdd of [1, 3]) {
       for (let i = 0; i < numAdd; i++)
         wrapper.push(origin);
-      ck.testExactNumber(originalTrim + numAdd, wrapper.length, "after adding " + numAdd + " closure points");
+      ck.testExactNumber(originalTrim + numAdd, wrapper.length, `after adding  ${numAdd} closure points`);
       GrowableXYZArray.removeClosure(wrapper);
-      ck.testExactNumber(originalTrim, wrapper.length, "after removeClosure " + numAdd);
+      ck.testExactNumber(originalTrim, wrapper.length, `after removeClosure ${numAdd}`);
     }
 
   });

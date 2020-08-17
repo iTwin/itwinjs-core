@@ -20,7 +20,6 @@ import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { Angle } from "../../geometry3d/Angle";
-import { IndexedPolyface } from "../../polyface/Polyface";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 describe("MeshConstruction", () => {
   /**
@@ -83,7 +82,7 @@ describe("MeshConstruction", () => {
     }
     // clean up the chicken-scratch clip lines (only visually, no geometry change in the mesh.)
     mesh1.data.compress();
-    PolyfaceQuery.markPairedEdgesInvisible(mesh1 as IndexedPolyface, Angle.createDegrees(1));
+    PolyfaceQuery.markPairedEdgesInvisible(mesh1, Angle.createDegrees(1));
     y0 += yStep;
     GeometryCoreTestIO.captureCloneGeometry(geometryToSave, mesh1, x0, y0);
 

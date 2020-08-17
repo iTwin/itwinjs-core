@@ -498,7 +498,7 @@ describe("Matrix4d", () => {
           0, 1, 0, 0,
           - 0.6643638388299198, 0, 0.7474093186836596, 0,
           0.7474093186836597, 0, 0.6643638388299198, 0,
-          0, 0, 0, a33), "David S example with scale " + a33);
+          0, 0, 0, a33), `David S example with scale ${a33}`);
     }
 
     for (const singularMatrix of [
@@ -687,7 +687,7 @@ describe("Map4d", () => {
       "confirm Map4d constructor rejects mismatch");
     const scaleMap = Map4d.createTransform(scaleTransform, scaleTransform1);
     if (ck.testPointer(scaleMap) && scaleMap) {
-      ck.testFalse(mapI.isAlmostEqual(scaleMap!));
+      ck.testFalse(mapI.isAlmostEqual(scaleMap));
       const scaleMap1 = Map4d.createRefs(scaleMap.transform1.clone(), scaleMap.transform0.clone());
       const reverseMap = scaleMap.clone();
       reverseMap.reverseInPlace();
@@ -717,7 +717,7 @@ describe("Map4d", () => {
     const rotationTransform = Transform.createFixedPointAndMatrix(
       Point3d.create(4, 2, 8),
       Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!);
-    const rotationMap = Map4d.createTransform(rotationTransform, rotationTransform.inverse()!)!;
+    const rotationMap = Map4d.createTransform(rotationTransform, rotationTransform.inverse())!;
     verifySandwich(ck, rotationMap, mapI);
     verifySandwich(ck, mapI, rotationMap);
     verifySandwich(ck, scaleMap!, rotationMap);
@@ -911,6 +911,6 @@ export function exerciseNearInverse(ck: bsiChecker.Checker, matrixA: Matrix4d, i
       }
     }
     if (!ck.testTrue(ok, "unable to make step in invertible", name, i, j, matrixA))
-      console.log("matrixA " + prettyPrint(matrixA));
+      console.log(`matrixA ${prettyPrint(matrixA)}`);
   }
 }

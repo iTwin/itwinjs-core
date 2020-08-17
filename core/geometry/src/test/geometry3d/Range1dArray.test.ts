@@ -35,9 +35,9 @@ function constructRangesByStepFunction(numRange: number, firstLow: number, range
  * * an optional value within each pair of adjacent values in data
  * * an optional point to the right.
  * @param data array of values
- * @param leftDelta (optinoal) (signed) shift from data[0] to first output point.  Negative is to left !!!
- * @param interiorFraction (optional) internal interplation fraction to be used in each interval
- * @param rightDelta (optional) (signed) shfit from data[last] to last output point.   Poisitive is to the right!!!
+ * @param leftDelta (optional) (signed) shift from data[0] to first output point.  Negative is to left !!!
+ * @param interiorFraction (optional) internal interpolation fraction to be used in each interval
+ * @param rightDelta (optional) (signed) shift from data[last] to last output point.   Positive is to the right!!!
  */
 function constructGapPoints(data: GrowableFloat64Array, leftDelta: undefined | number, interiorFraction: undefined | number, rightDelta: undefined | number): GrowableFloat64Array {
   const result = new GrowableFloat64Array();
@@ -164,9 +164,9 @@ function getParityArrayData(dataA: Range1d[], dataB: Range1d[]): any {
     const toCheck2: number | undefined = rangeA.low + Math.abs(rangeA.high - rangeA.low) * .75;
 
     for (const rangeB of dataB) {
-      if (rangeB.containsX(toCheck0!)) counter0++;
-      if (rangeB.containsX(toCheck1!)) counter1++;
-      if (rangeB.containsX(toCheck2!)) counter2++;
+      if (rangeB.containsX(toCheck0)) counter0++;
+      if (rangeB.containsX(toCheck1)) counter1++;
+      if (rangeB.containsX(toCheck2)) counter2++;
     }
 
     if (counter0 % 2 === 0)

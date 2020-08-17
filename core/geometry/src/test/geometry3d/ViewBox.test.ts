@@ -23,7 +23,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 /* eslint-disable no-console */
 /* Create an XYZ triad with arcs to clarify XY and XYZ planes
  */
-function MakeViewableGeometry(): GeometryQuery[] {
+function makeViewableGeometry(): GeometryQuery[] {
   const geometry = [];
   geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0)));
   geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 1, 0)));
@@ -68,8 +68,8 @@ function MakeViewableGeometry(): GeometryQuery[] {
 // create viewing setup from given vectors local Z, Y rotations.
 // append the (rotated) geometry to the GeometryQuery[].
 //
-function CollectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number, topNoneBottom: number, xShift: number, yShift: number, expectedIndex: StandardViewIndex) {
-  const geometry0 = MakeViewableGeometry();
+function collectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number, topNoneBottom: number, xShift: number, yShift: number, expectedIndex: StandardViewIndex) {
+  const geometry0 = makeViewableGeometry();
   const axes0 = Matrix3d.createViewedAxes(rightVector, upVector, leftNoneRight, topNoneBottom)!;
   if (expectedIndex !== 0) {
     const standardAxes = Matrix3d.createStandardWorldToView(expectedIndex, true);
@@ -93,8 +93,8 @@ function CollectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVe
 // create viewing setup from given vectors local Z, Y rotations.
 // append the (rotated) geometry to the GeometryQuery[].
 //
-function CollectViewableGeometryByXYZ(geometry: GeometryQuery[], x: number, y: number, z: number) {
-  const geometry0 = MakeViewableGeometry();
+function collectViewableGeometryByXYZ(geometry: GeometryQuery[], x: number, y: number, z: number) {
+  const geometry0 = makeViewableGeometry();
   const axes0 = Matrix3d.createRigidViewAxesZTowardsEye(x, y, z)!;
   /*
   const frame0 = Transform.createOriginAndMatrix(Point3d.create(xShift, yShift - 4, 0), axes0);
@@ -217,39 +217,39 @@ describe("ViewWidget", () => {
 
     const b = 30;
     const a = b * 0.5;
-    CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitY(), 0, 0, 0, b, StandardViewIndex.Top);  // TOP
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitY(), 0, 0, 0, b, StandardViewIndex.Top);  // TOP
 
-    CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 0, 0, 0, 0, StandardViewIndex.Front);  // FRONT
-    CollectViewableGeometry(ck, geometry, Vector3d.unitY(), Vector3d.unitZ(), 0, 0, b, 0, StandardViewIndex.Right); // RIGHT
-    CollectViewableGeometry(ck, geometry, Vector3d.unitX(-1), Vector3d.unitZ(), 0, 0, 2 * b, 0, StandardViewIndex.Back); // BACK
-    CollectViewableGeometry(ck, geometry, Vector3d.unitY(-1), Vector3d.unitZ(), 0, 0, -b, 0, StandardViewIndex.Left); // LEFT
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 0, 0, 0, 0, StandardViewIndex.Front);  // FRONT
+    collectViewableGeometry(ck, geometry, Vector3d.unitY(), Vector3d.unitZ(), 0, 0, b, 0, StandardViewIndex.Right); // RIGHT
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(-1), Vector3d.unitZ(), 0, 0, 2 * b, 0, StandardViewIndex.Back); // BACK
+    collectViewableGeometry(ck, geometry, Vector3d.unitY(-1), Vector3d.unitZ(), 0, 0, -b, 0, StandardViewIndex.Left); // LEFT
 
-    CollectViewableGeometry(ck, geometry, Vector3d.unitX(1), Vector3d.unitY(-1), 0, 0, 0, -b, StandardViewIndex.Bottom); // BOTTOM
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(1), Vector3d.unitY(-1), 0, 0, 0, -b, StandardViewIndex.Bottom); // BOTTOM
     // full iso views
-    CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, 1, a, a, StandardViewIndex.RightIso);  // RIGHT FRONT ISO (bottom to top)
-    CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, 1, -a, a, StandardViewIndex.Iso);  // LEFT FRONT ISO (bottom to top)
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, 1, a, a, StandardViewIndex.RightIso);  // RIGHT FRONT ISO (bottom to top)
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, 1, -a, a, StandardViewIndex.Iso);  // LEFT FRONT ISO (bottom to top)
 
     // incremental iso views based on front
     for (const isoFactor of [0.5, -0.25, 0, 0.25, 0.5]) {
-      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, isoFactor, a, isoFactor * a, 0);  // RIGHT FRONT ISO (bottom to top)
-      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, isoFactor, -a, isoFactor * a, 0);  // LEFT FRONT ISO (bottom to top)
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, isoFactor, a, isoFactor * a, 0);  // RIGHT FRONT ISO (bottom to top)
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, isoFactor, -a, isoFactor * a, 0);  // LEFT FRONT ISO (bottom to top)
     }
 
     for (const cornerFactor of [-0.75, -0.5, -0.25, 0.25, 0.5, 0.75]) {
-      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0);  // left to right swings from front
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0);  // left to right swings from front
     }
     for (const cornerFactor of [-3, -1, 1, 3]) {
       // look in from middle of all vertical edges . . .
-      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0);  // swing front to 4 corners.
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0);  // swing front to 4 corners.
       // look in down and up from vertical edge
-      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 1, cornerFactor * a, a, 0);
-      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, -1, cornerFactor * a, -a, 0);
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 1, cornerFactor * a, a, 0);
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, -1, cornerFactor * a, -a, 0);
     }
     // look in from all horizontal edges
     const q = Math.PI * 0.25 / Math.atan(Math.sqrt(0.5));
     for (const cornerFactor of [-2, 0, 2, 4]) {
-      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, q, cornerFactor * a, a, 0);  // swing front to edges and look down
-      CollectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, q, cornerFactor * a, -a, 0);  // swing front to edges and look up
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, q, cornerFactor * a, a, 0);  // swing front to edges and look down
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, q, cornerFactor * a, -a, 0);  // swing front to edges and look up
     }
 
     // lay out the unfolded box
@@ -277,7 +277,7 @@ it("StandardViewsByXYZ", () => {
   for (const x of [-1, 0, 1]) {
     for (const y of [-1, 0, 1]) {
       for (const z of [-1, 0, 1]) {
-        CollectViewableGeometryByXYZ(geometry, a * x, a * y, a * z);
+        collectViewableGeometryByXYZ(geometry, a * x, a * y, a * z);
         if (x !== 0.0 || y !== 0.0) {
           const axis0 = Matrix3d.createRigidHeadsUp(Vector3d.create(x, y, z));
           const axis1 = Matrix3d.createRigidViewAxesZTowardsEye(x, y, z);
@@ -299,7 +299,7 @@ describe("RaggedMatrix", () => {
       0.707421, -0.415747, -0.571585,
       0, 0.808703, -0.588217,
       0.706792, 0.416117, 0.572094);
-    if (Checker.noisy.RaggedViewMatrix) {
+    if (Checker.noisy.raggedViewMatrix) {
       console.log(" ragged matrix ", raggedMatrix.toJSON());
       console.log("   determinant", raggedMatrix.determinant());
       console.log("  column scales", raggedMatrix.columnX().magnitude(), raggedMatrix.columnY().magnitude(), raggedMatrix.columnZ().magnitude());
@@ -319,9 +319,9 @@ describe("RaggedMatrix", () => {
     const diffAB = matrixB.maxDiff(raggedMatrix);
     ck.testLT(diffBC, 5.0e-7, "ragged matrix YPR round trip versus cleanup rigid");
     ck.testLT(diffAB, 5.0e-7, "ragged matrix YPR round trip versus raggedMatrix");
-    if (Checker.noisy.RaggedViewMatrix) {
+    if (Checker.noisy.raggedViewMatrix) {
       console.log(" clean matrix ", cleanMatrix.toJSON());
-      console.log(" maxDiff " + maxDiff);
+      console.log(` maxDiff ${maxDiff}`);
       console.log("Clean ypr", yprC);
       console.log("maxDiff between ypr round trips", diffBC);
     }

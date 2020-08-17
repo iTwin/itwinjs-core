@@ -15,7 +15,7 @@ function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResul
   const matrix = Matrix3dOps.createRowValues(
     5, 1, 2,
     3, 8, 2,
-    1, -2, 8) as Matrix3d;
+    1, -2, 8);
   // Give result storage a temporary value
   let inverse: Matrix3d = Matrix3d.createIdentity();
 
@@ -23,8 +23,7 @@ function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResul
     Matrix3d.useCachedInverse = true;
   else
     Matrix3d.useCachedInverse = false;
-  const name: string = "Matrix3d inverse "
-    + (usingCache ? "Cache" : "NoCache") + " " + (usingResult ? "preallocate" : "new");
+  const name: string = `Matrix3d inverse ${usingCache ? "Cache" : "NoCache"} ${usingResult ? "preallocate" : "new "}`;
 
   if (usingResult) {
     console.time(name);
@@ -407,7 +406,7 @@ class TimingTests {
     console.timeEnd("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
 
     for (let numReps = 0; numReps < 20; numReps = 3 * numReps + 1) {
-      const name = "Matrix3dOps.multiplyMatrixMatrixdirectAssignment (numReps " + numReps + ")";
+      const name = `Matrix3dOps.multiplyMatrixMatrixdirectAssignment (numReps ${numReps}`;
       console.time(name);
       for (let k = 0; k < numTest; k++)
         matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignmentN(numReps, matrixA, matrixB, matrixD);

@@ -125,9 +125,9 @@ class PolygonBooleanTests {
         if (properties.indexOf("R") >= 0 && properties.indexOf("M") >= 0) {
           const euler = graph.countVertexLoops() - graph.countNodes() / 2.0 + graph.countFaceLoops();
 
-          if (!this.ck.testExactNumber(2, euler, boolOp + "Expected euler characteristic " + name)) {
-            console.log("outerRectangle" + prettyPrint(boundary0));
-            console.log("innerRectangle" + prettyPrint(boundary1));
+          if (!this.ck.testExactNumber(2, euler, `${boolOp} Expected euler characteristic ${name}`)) {
+            console.log(`outerRectangle  ${prettyPrint(boundary0)}`);
+            console.log(`innerRectangle  ${prettyPrint(boundary1)}`);
             GraphChecker.dumpGraph(graph);
           }
         }
@@ -272,7 +272,7 @@ describe("RegionOps", () => {
       const graph = HalfEdgeGraphMerge.formGraphFromChains(data, true)!;
       GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0);
       y0 += dy;
-      const polyface = PolyfaceBuilder.graphToPolyface(graph!);
+      const polyface = PolyfaceBuilder.graphToPolyface(graph);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
       x0 += dx;
     }
@@ -325,7 +325,7 @@ function testPolygonOffset(polygons: Point3d[][],
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
       for (const offsetDistance of distances) {
         const stickA = RegionOps.constructPolygonWireXYOffset(points, closed, offsetDistance * distanceFactor);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA!, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA, x0, y0, 0);
       }
       y0 += yStep;
     }
@@ -367,9 +367,9 @@ function testFilteredPolygonOffset(polygons: Point3d[][],
       // unfiltered offset
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
       const stickA0 = context.constructPolygonWireXYOffset(points, closed, offsetDistance);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA0!, x0, y0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA0, x0, y0, 0);
       const stickB0 = context.constructPolygonWireXYOffset(points, closed, -offsetDistance);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickB0!, x0, y0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickB0, x0, y0, 0);
       y0 += yStep;
       for (const factor of filterFactor) {
         const pointsA = PolylineOps.compressByChordError(points, factor * offsetDistance);
@@ -378,9 +378,9 @@ function testFilteredPolygonOffset(polygons: Point3d[][],
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(pointsA), x0, y0, 0);
         const stickA = context.constructPolygonWireXYOffset(pointsA, closed, offsetDistance);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA!, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA, x0, y0, 0);
         const stickB = context.constructPolygonWireXYOffset(pointsA, closed, -offsetDistance);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickB!, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickB, x0, y0, 0);
         y0 += yStep;
       }
       x0 += xStep;
@@ -876,7 +876,7 @@ describe("RectangleRecognizer", () => {
           ck.testDefined(transform);
           if (transform) {
             for (let i = 0; i < points.length; i++) {
-              ck.testPoint3d(points[i], transform.multiplyXYZ(uv[i][0], uv[i][1]), "rectangle transform point " + i);
+              ck.testPoint3d(points[i], transform.multiplyXYZ(uv[i][0], uv[i][1]), `rectangle transform point ${i}`);
             }
           }
         }
@@ -891,10 +891,10 @@ describe("RectangleRecognizer", () => {
       for (let i = 0; i < 4; i++) {
         const points1 = Point3dArray.clonePoint3dArray(points);
         points1[i].z += 0.01;
-        ck.testUndefined(RegionOps.rectangleEdgeTransform(points1), "non planar should fail " + i);
+        ck.testUndefined(RegionOps.rectangleEdgeTransform(points1), `non planar should fail ${i}`);
         const points2 = Point3dArray.clonePoint3dArray(points);
         points2[i].x += 0.01;
-        ck.testUndefined(RegionOps.rectangleEdgeTransform(points2), "skew should fail " + i);
+        ck.testUndefined(RegionOps.rectangleEdgeTransform(points2), `skew should fail ${i}`);
       }
     }
     ck.testUndefined(RegionOps.rectangleEdgeTransform(LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 2)));

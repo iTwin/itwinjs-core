@@ -62,19 +62,19 @@ export class Checker {
     bsiJsonValuesQuick: false,
     testTransitionSpiral: true,
     newtonRtoRD: false,
-    ACSArrows: false,
-    OrderedRotationAngles: false,
-    RaggedViewMatrix: false,
-    ReportRoundTripFileNames: false,
-    ConvexSetCorners: false,
-    PolygonOffset: false,
-    UnionFind: false,
-    Ellipsoid: false,
+    acsArrows: false,
+    orderedRotationAngles: false,
+    raggedViewMatrix: false,
+    reportRoundTripFileNames: false,
+    convexSetCorners: false,
+    polygonOffset: false,
+    unionFind: false,
+    ellipsoid: false,
     regionBoolean: false,
-    ParityRegionAnalysis: false,
+    parityRegionAnalysis: false,
     isolateFacetsOnClipPlane: false,
     bandedMatrix: false,
-    DirectSpiralDistanceAlong: false,
+    directSpiralDistanceAlong: false,
     skipKnownClothoidSeriesProblems: false,
   };
   public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
@@ -116,7 +116,7 @@ export class Checker {
     if (Geometry.isSamePoint3d(dataA1, dataB))
       return this.announceOK();
     this.announceError("expect same transformed Point3d",
-      prettyPrint(transformAToB) + "*" + prettyPrint(dataA) + " ==>" + prettyPrint(dataA1) + " =?=" + prettyPrint(dataB), params);
+      `${prettyPrint(transformAToB)} * ${prettyPrint(dataA)} ==> ${prettyPrint(dataA1)} =?= ${prettyPrint(dataB)}`, params);
     return false;
   }
 
@@ -126,8 +126,7 @@ export class Checker {
 
     for (let i = 0; i < dataA.length; i++)
       if (!Geometry.isSamePoint3d(dataA[i], dataB[i]))
-        return this.announceError("mismatched point at array position " + i,
-          dataA, dataB, params);
+        return this.announceError(`mismatched point at array position ${i}`, dataA, dataB, params);
     return this.announceOK();
   }
   /**

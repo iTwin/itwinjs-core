@@ -16,7 +16,7 @@ import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { SmallSystem } from "../numerics/Polynomials";
 import { MaskManager } from "./MaskManager";
 // import { GraphChecker } from "../test/topology/Graph.test";
-
+/* eslint-disable @typescript-eslint/no-this-alias */
 // cspell:word CONSTU
 // cspell:word CONSTV
 // cspell:word USEAM
@@ -555,11 +555,9 @@ export class HalfEdge {
   public static nodeToIdMaskXY(node: HalfEdge): { id: any, mask: any, xy: number[] } {
     return { id: node.id, mask: HalfEdge.nodeToMaskString(node), xy: [node.x, node.y] };
   }
-
   /** Return the [id, [x,y]] of a node.  Useful for collector methods. */
   public static nodeToIdXYString(node: HalfEdge): string {
-    const s = node.id.toString() + " " +
-      HalfEdge.nodeToMaskString(node) + " [" + node.x + "," + node.y + "]";
+    const s = `${node.id.toString()}+${HalfEdge.nodeToMaskString(node)}[${node.x},${node.y}]`;
     return s;
   }
 

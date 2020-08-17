@@ -247,7 +247,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
     let x0 = 0;
     const y0 = 0;
     for (const filename of ["consolidateAdjacent00"]) {
-      const stringData = fs.readFileSync(consolidateAdjacentPath + filename + ".imjs", "utf8");
+      const stringData = fs.readFileSync(`${consolidateAdjacentPath}${filename}.imjs`, "utf8");
       if (stringData) {
         const jsonData = JSON.parse(stringData);
         const fragments = resolveToArray(IModelJson.Reader.parse(jsonData));

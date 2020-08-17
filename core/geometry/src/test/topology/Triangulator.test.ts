@@ -174,7 +174,7 @@ describe("Triangulation", () => {
     for (const degrees of [0, 10, 30, 95, -20]) {
       let y0 = 0.0;
       for (const numPhase of [1, 3, 7, 15]) {
-        const name = "SquareWave" + degreeCount + "." + numPhase;
+        const name = `SquareWave ${degreeCount}.${numPhase}`;
         degreeCount++;
         const pointA = Point3d.create(1.5 * numPhase, 0, 0);
         const yShiftVector = Vector3d.create(0, 2, 0);
@@ -281,7 +281,7 @@ describe("MonotoneFaces", () => {
       // Sample.creatVerticalStaggerPolygon(7, 0, 0, -6, ax, ay, -0.5, 0),
     ]) {
       const segmentA = Sample.convertPointsToSegments(loopA);
-      testGraphFromSegments(ck, id * 30, segmentA, true, "LoopA" + id++, false);
+      testGraphFromSegments(ck, id * 30, segmentA, true, `LoopA${id++}`, false);
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -648,11 +648,11 @@ describe("Triangulation", () => {
 
         sweepContour!.emitFacets(builder, false);
         const polyface = builder.claimPolyface(true);
-        if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, "Triangle count in arrow " + counter0 + "." + counter1 + " needParams" + needParams)
-          || Checker.noisy.ACSArrows) {
-          console.log(" Triangulation From Start index " + startIndex, " (needParams " + needParams + ")");
-          console.log("   arrow parameter " + a);
-          console.log("    Facet Count " + polyface.facetCount, " case " + counter0 + "." + counter1);
+        if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, `Triangle count in arrow ${counter0}.${counter1}   needParams${needParams}`)
+          || Checker.noisy.acsArrows) {
+          console.log(` Triangulation From Start index ${startIndex} needParams ${needParams} `);
+          console.log(`   arrow parameter ${a}`);
+          console.log(`    Facet Count ${polyface.facetCount} counter0 ${counter0}   counter1 ${counter1}`);
           console.log(prettyPrint(arrowPoints));
           const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
           console.log(prettyPrint(jsPolyface));

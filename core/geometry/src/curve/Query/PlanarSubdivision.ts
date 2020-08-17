@@ -86,7 +86,7 @@ export class PlanarSubdivision {
       for (let i = 1; i < details.length; i++) {
         // create (both sides of) a graph edge . . .
         const detail1 = getDetailOnCurve(details[i], p)!;
-        if (detail0.point!.isAlmostEqual(detail1.point)) {
+        if (detail0.point.isAlmostEqual(detail1.point)) {
 
         } else {
           const halfEdge = graph.createEdgeXYAndZ(detail0.point, 0, detail1.point, 0);
@@ -144,7 +144,7 @@ export class PlanarSubdivision {
     for (const faceSeeds of q) {
       const componentAreas = { positiveAreaLoops: [], negativeAreaLoops: [], slivers: [] };
       for (const faceSeed of faceSeeds) {
-        const loop = this.createLoopInFace (faceSeed);
+        const loop = this.createLoopInFace(faceSeed);
         this.collectSignedLoop(loop, componentAreas);
       }
       result.push(componentAreas);
