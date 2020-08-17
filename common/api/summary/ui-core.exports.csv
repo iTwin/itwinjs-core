@@ -42,6 +42,7 @@ public;ContextMenuProps
 public;ContextSubMenu 
 public;ContextSubMenuProps 
 internal;Corner
+internal;CrossAxisArrowKeyFunc = (forward: boolean) => void
 public;Cube 
 internal;CubeFace 
 internal;CubeFaceProps 
@@ -114,6 +115,7 @@ public;InputLabelProps
 public;InputProps 
 public;InputStatus
 internal;isHTMLElement: (message: MessageType) => message is HTMLElement
+internal;isNavigationKey(key: string): boolean
 internal;isPromiseLike(obj: unknown): obj is PromiseLike
 internal;isReactMessage: (message: MessageType) => message is ReactMessage
 internal;ItemKeyboardNavigator

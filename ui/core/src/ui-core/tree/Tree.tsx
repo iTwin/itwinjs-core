@@ -20,6 +20,8 @@ export interface TreeProps extends CommonProps {
   onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
   onMouseMove?: React.MouseEventHandler<HTMLDivElement>;
   onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
+  onKeyUp?: React.KeyboardEventHandler<HTMLDivElement>;
 }
 
 /** Presentation React component for a Tree
@@ -108,6 +110,8 @@ export class Tree extends React.PureComponent<TreeProps> {
         onMouseDown={this.props.onMouseDown}
         onMouseMove={this.props.onMouseMove}
         onMouseUp={this.props.onMouseUp}
+        onKeyDown={this.props.onKeyDown}
+        onKeyUp={this.props.onKeyUp}
         role="tree"
         tabIndex={-1}
       >

@@ -414,6 +414,9 @@ export enum Corner {
     TopRight = 1
 }
 
+// @internal
+export type CrossAxisArrowKeyFunc = (forward: boolean) => void;
+
 // @public
 export class Cube extends React.PureComponent<CubeProps> {
     // (undocumented)
@@ -986,6 +989,9 @@ export enum InputStatus {
 export const isHTMLElement: (message: MessageType) => message is HTMLElement;
 
 // @internal
+export function isNavigationKey(key: string): boolean;
+
+// @internal
 export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown>;
 
 // @internal
@@ -996,6 +1002,8 @@ export class ItemKeyboardNavigator {
     constructor(onFocusItem: (index: number) => void, onActivateItem: (index: number) => void);
     get allowWrap(): boolean;
     set allowWrap(v: boolean);
+    get crossAxisArrowKeyHandler(): CrossAxisArrowKeyFunc | undefined;
+    set crossAxisArrowKeyHandler(v: CrossAxisArrowKeyFunc | undefined);
     handleKeyDownEvent(event: React_2.KeyboardEvent, index: number): void;
     handleKeyUpEvent(event: React_2.KeyboardEvent, index: number): void;
     get itemCount(): number;
@@ -2198,6 +2206,10 @@ export interface TreeNodeProps extends CommonProps {
 export interface TreeProps extends CommonProps {
     // (undocumented)
     children?: React.ReactNode;
+    // (undocumented)
+    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
+    // (undocumented)
+    onKeyUp?: React.KeyboardEventHandler<HTMLDivElement>;
     // (undocumented)
     onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
     // (undocumented)

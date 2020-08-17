@@ -101,7 +101,7 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
         () => {
           // istanbul ignore else
           if (hadFocus) {
-            const newElement = this._anchorRefs[this.state.activeIndex].current;
+            const newElement = this._anchorRefs[activeIndex].current;
             // istanbul ignore else
             if (newElement)
               newElement.focus();

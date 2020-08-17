@@ -182,9 +182,17 @@ export function TreeRenderer(props: TreeRendererProps) {
     />
   )), []);
 
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+    props.treeActions.onTreeKeyDown(e);
+  }, [props.treeActions]);
+
+  const handleKeyUp = React.useCallback((e: React.KeyboardEvent) => {
+    props.treeActions.onTreeKeyUp(e);
+  }, [props.treeActions]);
+
   return (
     <TreeRendererContextProvider value={rendererContext}>
-      <CoreTree ref={coreTreeRef} className="components-controlledTree">
+      <CoreTree ref={coreTreeRef} className="components-controlledTree" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
         <AutoSizer>
           {({ width, height }: Size) => {
             onTreeSizeChanged(width);

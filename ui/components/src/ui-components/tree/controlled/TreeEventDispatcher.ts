@@ -194,6 +194,14 @@ export class TreeEventDispatcher implements TreeActions {
     this._selectionManager.onNodeMouseMove(nodeId);
   }
 
+  public onTreeKeyDown(event: React.KeyboardEvent): void {
+    this._selectionManager.onTreeKeyDown(event, this);
+  }
+
+  public onTreeKeyUp(event: React.KeyboardEvent): void {
+    this._selectionManager.onTreeKeyUp(event, this);
+  }
+
   private collectSelectionChanges(
     selection: IndividualSelection | RangeSelection,
     deselection: IndividualSelection,

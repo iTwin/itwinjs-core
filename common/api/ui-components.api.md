@@ -3965,6 +3965,10 @@ export interface TreeActions {
     onNodeMouseDown: (nodeId: string) => void;
     // (undocumented)
     onNodeMouseMove: (nodeId: string) => void;
+    // (undocumented)
+    onTreeKeyDown: (event: React_2.KeyboardEvent) => void;
+    // (undocumented)
+    onTreeKeyUp: (event: React_2.KeyboardEvent) => void;
 }
 
 // @beta @deprecated
@@ -4035,6 +4039,10 @@ export class TreeEventDispatcher implements TreeActions {
     onNodeMouseDown(nodeId: string): void;
     // (undocumented)
     onNodeMouseMove(nodeId: string): void;
+    // (undocumented)
+    onTreeKeyDown(event: React_2.KeyboardEvent): void;
+    // (undocumented)
+    onTreeKeyUp(event: React_2.KeyboardEvent): void;
     // (undocumented)
     setVisibleNodes(visibleNodes: () => VisibleTreeNodes): void;
     }
@@ -4616,6 +4624,8 @@ export type ViewStateProp = ViewState | (() => ViewState);
 export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNodePlaceholder> {
     // (undocumented)
     getAtIndex(index: number): TreeModelNode | TreeModelNodePlaceholder | undefined;
+    // (undocumented)
+    getIndexOfNode(nodeId: string): number;
     // (undocumented)
     getModel(): TreeModel;
     // (undocumented)

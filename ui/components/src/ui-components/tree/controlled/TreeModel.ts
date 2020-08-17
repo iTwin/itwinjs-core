@@ -169,6 +169,7 @@ export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNode
   getAtIndex(index: number): TreeModelNode | TreeModelNodePlaceholder | undefined;
   getModel(): TreeModel;
   getNumRootNodes(): number | undefined;
+  getIndexOfNode(nodeId: string): number;
 }
 
 /**
@@ -337,6 +338,9 @@ export class MutableTreeModel implements TreeModel {
       getModel: () => this,
       getNumRootNodes: () => this._rootNode.numChildren,
       [Symbol.iterator]: () => result[Symbol.iterator](),
+      getIndexOfNode: (nodeId: string): number => {
+        return result.findIndex((visibleNode) => (visibleNode as TreeModelNode).id === nodeId);
+      },
     };
   }
 

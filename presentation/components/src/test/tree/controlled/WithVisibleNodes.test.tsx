@@ -30,6 +30,7 @@ describe("Tree withModelSource", () => {
     getNumNodes: () => 0,
     getNumRootNodes: () => 0,
     getModel: () => new MutableTreeModel(),
+    getIndexOfNode: () => -1,
     [Symbol.iterator]: () => [][Symbol.iterator](),
   };
 

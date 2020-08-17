@@ -1169,7 +1169,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     cols.splice(columnTargetIndex, 0, cols.splice(columnSourceIndex, 1)[0]);
     if (this.props.settingsIdentifier) {
-      const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
+      const uiSettings: UiSettings = this.props.uiSettings || /* istanbul ignore next */ new LocalUiSettings();
       const keys = cols.map((col) => col.key);
       uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -1275,6 +1275,7 @@ export class Table extends React.Component<TableProps, TableState> {
       const offsetY = headerRect.top;
       const height = headerRect.height;
       const x = e.clientX, y = e.clientY;
+      // istanbul ignore else
       if (y < offsetY + height) {
         e.preventDefault();
         this.setState({
@@ -1291,6 +1292,7 @@ export class Table extends React.Component<TableProps, TableState> {
       this.setState({ menuVisible: false });
   }
 
+  // istanbul ignore next
   private _handleShowHideChange = (cols: string[]) => {
     this.setState({ hiddenColumns: cols });
     if (this.props.settingsIdentifier) {
@@ -1363,6 +1365,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
   }
 
+  // istanbul ignore next
   private _handleOnClearFilters = () => {
     this.filterDescriptors.clear();
 
@@ -1381,6 +1384,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
   }
 
+  // istanbul ignore next
   private _getValidFilterValues = (columnKey: string): any[] => {
     const tableColumn = this.state.columns.find((column: TableColumn) => column.reactDataGridColumn.key === columnKey);
     if (tableColumn && tableColumn.distinctValueCollection) {
@@ -1394,6 +1398,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   // private _onPopupHide = () =>  this.setState({ popup: undefined });
 
+  // istanbul ignore next
   private _onScroll = (scrollData: ScrollState) => {
     if (this.props.onScrollToRow)
       this.props.onScrollToRow(scrollData.rowVisibleStartIdx);
@@ -1405,6 +1410,7 @@ export class Table extends React.Component<TableProps, TableState> {
         const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(index));
         selectionFunction(e.shiftKey, e.ctrlKey);
       };
+      // istanbul ignore next
       const handleKeyboardActivateItem = (_index: number) => { };
 
       const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
@@ -1412,7 +1418,7 @@ export class Table extends React.Component<TableProps, TableState> {
       itemKeyboardNavigator.allowWrap = false;
       itemKeyboardNavigator.itemCount = this.state.rowsCount;
 
-      const processedRow = this._rowSelectionHandler.processedItem ?? 0;
+      const processedRow = this._rowSelectionHandler.processedItem ? this._rowSelectionHandler.processedItem /* istanbul ignore next */ : 0;
       keyDown ?
         itemKeyboardNavigator.handleKeyDownEvent(e, processedRow) :
         itemKeyboardNavigator.handleKeyUpEvent(e, processedRow);

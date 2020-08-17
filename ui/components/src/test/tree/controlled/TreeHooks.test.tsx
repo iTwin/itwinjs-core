@@ -24,6 +24,7 @@ describe("useVisibleTreeNodes", () => {
     getModel: () => new MutableTreeModel(),
     getNumNodes: () => 0,
     getNumRootNodes: () => 0,
+    getIndexOfNode: () => -1,
     [Symbol.iterator]: () => [][Symbol.iterator](),
   };
 

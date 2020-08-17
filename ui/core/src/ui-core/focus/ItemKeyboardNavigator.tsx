@@ -6,8 +6,13 @@
  * @module Focus
  */
 
-import { SpecialKey } from "@bentley/ui-abstract";
+import { isArrowKey, SpecialKey } from "@bentley/ui-abstract";
 import { Orientation } from "../enums/Orientation";
+
+/** Cross-Axis Arrow Key Callback
+ * @internal
+ */
+export type CrossAxisArrowKeyFunc = (forward: boolean) => void;
 
 /** Keyboard Navigator for parent components
  * @internal
@@ -17,6 +22,7 @@ export class ItemKeyboardNavigator {
   private _itemCount = 0;
   private _orientation = Orientation.Horizontal;
   private _allowWrap = true;
+  private _crossAxisArrowKeyHandler?: CrossAxisArrowKeyFunc;
 
   constructor(public onFocusItem: (index: number) => void, public onActivateItem: (index: number) => void) {
     this._direction.set(SpecialKey.ArrowLeft, -1);
@@ -37,8 +43,12 @@ export class ItemKeyboardNavigator {
   public get allowWrap(): boolean { return this._allowWrap; }
   public set allowWrap(v: boolean) { this._allowWrap = v; }
 
+  /** Called when the arrow keys that run perpendicular to the primary orientation are pressed */
+  public get crossAxisArrowKeyHandler(): CrossAxisArrowKeyFunc | undefined { return this._crossAxisArrowKeyHandler; }
+  public set crossAxisArrowKeyHandler(v: CrossAxisArrowKeyFunc | undefined) { this._crossAxisArrowKeyHandler = v; }
+
   /** Handle KeyDown on items */
-  public handleKeyDownEvent(event: React.KeyboardEvent, index: number) {
+  public handleKeyDownEvent(event: React.KeyboardEvent, index: number): void {
     const key = event.key;
 
     switch (key) {
@@ -63,7 +73,7 @@ export class ItemKeyboardNavigator {
   }
 
   /** Handle KeyUp on items */
-  public handleKeyUpEvent(event: React.KeyboardEvent, index: number) {
+  public handleKeyUpEvent(event: React.KeyboardEvent, index: number): void {
     const key = event.key;
 
     switch (key) {
@@ -72,17 +82,17 @@ export class ItemKeyboardNavigator {
         this.determineOrientation(event, index);
         break;
       case SpecialKey.Enter:
-      case " ":
+      case SpecialKey.Space:
         this.activateItem(index);
         break;
     }
   }
 
-  private focusFirstItem() {
+  private focusFirstItem(): void {
     this.onFocusItem(0);
   }
 
-  private focusLastItem() {
+  private focusLastItem(): void {
     const index = this._itemCount - 1;
     this.onFocusItem(index);
   }
@@ -91,7 +101,7 @@ export class ItemKeyboardNavigator {
    * only up and down arrow should function.
    * In all other cases only left and right arrow function.
    */
-  private determineOrientation(event: React.KeyboardEvent, index: number) {
+  private determineOrientation(event: React.KeyboardEvent, index: number): void {
     const key = event.key;
     const vertical = this._orientation === Orientation.Vertical;
     let proceed = false;
@@ -100,10 +110,14 @@ export class ItemKeyboardNavigator {
       if (key === SpecialKey.ArrowUp || key === SpecialKey.ArrowDown) {
         event.preventDefault();
         proceed = true;
+      } else if (this.crossAxisArrowKeyHandler && (key === SpecialKey.ArrowLeft || key === SpecialKey.ArrowRight)) {
+        this.crossAxisArrowKeyHandler(key === SpecialKey.ArrowRight);
       }
     } else {
       if (key === SpecialKey.ArrowLeft || key === SpecialKey.ArrowRight) {
         proceed = true;
+      } else if (this.crossAxisArrowKeyHandler && (key === SpecialKey.ArrowUp || key === SpecialKey.ArrowDown)) {
+        this.crossAxisArrowKeyHandler(key === SpecialKey.ArrowDown);
       }
     }
 
@@ -114,7 +128,7 @@ export class ItemKeyboardNavigator {
 
   /** Either focus the next, previous, first, or last item depending on key pressed
    */
-  private switchItemOnArrowPress(event: React.KeyboardEvent, index: number) {
+  private switchItemOnArrowPress(event: React.KeyboardEvent, index: number): void {
     // Add or subtract depending on key pressed
     const pressed = event.key;
     const targetDirection = this._direction.get(pressed);
@@ -138,7 +152,14 @@ export class ItemKeyboardNavigator {
     }
   }
 
-  private activateItem(index: number) {
+  private activateItem(index: number): void {
     this.onActivateItem(index);
   }
+}
+
+/** Determines if a KeyboardEvent.key is an Item Navigation key
+ * @internal
+ */
+export function isNavigationKey(key: string): boolean {
+  return (isArrowKey(key) || key === SpecialKey.Home || key === SpecialKey.End || key === SpecialKey.Space || key === SpecialKey.Enter);
 }
