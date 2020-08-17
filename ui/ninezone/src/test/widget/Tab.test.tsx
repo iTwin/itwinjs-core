@@ -10,6 +10,7 @@ import {
   WidgetTabsEntryContext,
 } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
+import { WidgetOverflowContext } from "../../ui-ninezone/widget/Overflow";
 
 describe("WidgetTab", () => {
   const sandbox = sinon.createSandbox();
@@ -124,6 +125,7 @@ describe("WidgetTab", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
+    const close = sinon.spy();
     render(
       <NineZoneProvider
         state={nineZone}
@@ -134,7 +136,9 @@ describe("WidgetTab", () => {
             <WidgetTabsEntryContext.Provider value={{
               lastNotOverflown: false,
             }}>
-              <WidgetTab tab={nineZone.tabs.t1} />
+              <WidgetOverflowContext.Provider value={{ close }}>
+                <WidgetTab tab={nineZone.tabs.t1} />
+              </WidgetOverflowContext.Provider>
             </WidgetTabsEntryContext.Provider>
           </WidgetStateContext.Provider>
         </PanelSideContext.Provider>
@@ -152,6 +156,7 @@ describe("WidgetTab", () => {
       widgetId: "w1",
       id: "t1",
     })).should.true;
+    close.calledOnceWithExactly().should.true;
   });
 
   it("should dispatch WIDGET_TAB_DOUBLE_CLICK", () => {
@@ -160,6 +165,7 @@ describe("WidgetTab", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
+    const close = sinon.spy();
     render(
       <NineZoneProvider
         state={nineZone}
@@ -170,7 +176,9 @@ describe("WidgetTab", () => {
             <WidgetTabsEntryContext.Provider value={{
               lastNotOverflown: false,
             }}>
-              <WidgetTab tab={nineZone.tabs.t1} />
+              <WidgetOverflowContext.Provider value={{ close }}>
+                <WidgetTab tab={nineZone.tabs.t1} />
+              </WidgetOverflowContext.Provider>
             </WidgetTabsEntryContext.Provider>
           </WidgetStateContext.Provider>
         </PanelSideContext.Provider>
@@ -190,6 +198,7 @@ describe("WidgetTab", () => {
       widgetId: "w1",
       id: "t1",
     })).should.true;
+    close.calledOnceWithExactly().should.true;
   });
 
   it("should dispatch WIDGET_TAB_DRAG_START on pointer move", () => {
@@ -197,6 +206,7 @@ describe("WidgetTab", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
+    const close = sinon.spy();
     render(
       <NineZoneProvider
         state={nineZone}
@@ -204,7 +214,9 @@ describe("WidgetTab", () => {
       >
         <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
           <WidgetStateContext.Provider value={nineZone.widgets.w1}>
-            <WidgetTab tab={nineZone.tabs.t1} />
+            <WidgetOverflowContext.Provider value={{ close }}>
+              <WidgetTab tab={nineZone.tabs.t1} />
+            </WidgetOverflowContext.Provider>
           </WidgetStateContext.Provider>
         </WidgetContext.Provider>
       </NineZoneProvider>,
@@ -219,6 +231,7 @@ describe("WidgetTab", () => {
       widgetId: "w1",
       id: "t1",
     })).should.true;
+    close.calledOnceWithExactly().should.true;
   });
 
   it("should not dispatch WIDGET_TAB_DRAG_START on pointer move if pointer moved less than 10px", () => {

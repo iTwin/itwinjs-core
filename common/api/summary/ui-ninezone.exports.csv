@@ -453,6 +453,7 @@ beta;WidgetManagerProps
 internal;WidgetMenu(props: WidgetMenuProps): JSX.Element
 internal;WidgetMenuProps 
 internal;WidgetOverflow: React.NamedExoticComponent
+internal;WidgetOverflowContext: React.Context
 internal;WidgetOverflowProps
 internal;WidgetPanel: React.NamedExoticComponent
 internal;WidgetPanelComponent: React.NamedExoticComponent

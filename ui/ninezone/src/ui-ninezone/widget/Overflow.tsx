@@ -38,8 +38,12 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
     "nz-widget-overflow",
     props.hidden && "nz-hidden",
   );
+  const overflowContext = React.useMemo<WidgetOverflowContextArgs>(() => {
+    return {
+      close: handleClose,
+    };
+  }, [handleClose])
   const moreWidgetsTitle = useLabel("moreWidgetsTitle");
-
   return (
     <div
       className={className}
@@ -56,12 +60,22 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
       >
         <div className="nz-icon" />
       </div>
-      <WidgetMenu
-        children={props.children} // eslint-disable-line react/no-children-prop
-        open={open}
-        onClose={handleClose}
-        target={target}
-      />
+      <WidgetOverflowContext.Provider value={overflowContext}>
+        <WidgetMenu
+          children={props.children} // eslint-disable-line react/no-children-prop
+          open={open}
+          onClose={handleClose}
+          target={target}
+        />
+      </WidgetOverflowContext.Provider>
     </div>
   );
 });
+
+interface WidgetOverflowContextArgs {
+  close(): void;
+}
+
+/** @internal */
+export const WidgetOverflowContext = React.createContext<WidgetOverflowContextArgs | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
+WidgetOverflowContext.displayName = "nz:WidgetOverflowContext";

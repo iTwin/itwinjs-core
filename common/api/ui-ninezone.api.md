@@ -3056,6 +3056,9 @@ export interface WidgetMenuProps extends CommonProps {
 export const WidgetOverflow: React.NamedExoticComponent<WidgetOverflowProps>;
 
 // @internal (undocumented)
+export const WidgetOverflowContext: React.Context<WidgetOverflowContextArgs | undefined>;
+
+// @internal (undocumented)
 export interface WidgetOverflowProps {
     // (undocumented)
     children?: React.ReactNode;
