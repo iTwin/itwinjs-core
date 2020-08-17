@@ -1,6 +1,23 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+
+## 2.4.2
+Fri, 14 Aug 2020 16:34:09 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.4.4
+- Added suport for restart query
+
+## 2.4.1
+Fri, 07 Aug 2020 19:57:43 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.4.3
+- add missing rbac-client dep
+- Removed unnecessary binary decode from IModelSchemaLoader
 
 ## 2.4.0
 Tue, 28 Jul 2020 16:26:24 GMT

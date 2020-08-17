@@ -1,6 +1,22 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+
+## 2.4.2
+Fri, 14 Aug 2020 16:34:09 GMT
+
+### Updates
+
+- Fix regressions in background map locate and ground bias.
+- Add support for restart query
+
+## 2.4.1
+Fri, 07 Aug 2020 19:57:43 GMT
+
+### Updates
+
+- add missing rbac-client dep
+- Synch map layer imagery when properties change (could cause new tree to be used).
 
 ## 2.4.0
 Tue, 28 Jul 2020 16:26:24 GMT

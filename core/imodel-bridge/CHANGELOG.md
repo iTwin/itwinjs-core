@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodel-bridge
 
-This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+
+## 2.4.2
+Fri, 14 Aug 2020 16:34:09 GMT
+
+### Updates
+
+- Fixing known location for mobile
+
+## 2.4.1
+Fri, 07 Aug 2020 19:57:43 GMT
+
+### Updates
+
+- add missing rbac-client dep
 
 ## 2.4.0
 Tue, 28 Jul 2020 16:26:24 GMT
