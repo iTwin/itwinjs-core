@@ -2,28 +2,43 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { BackendTelemetryEvent, ClientAuthDetail, ClientAuthIntrospectionManager } from "@bentley/backend-itwin-client";
 import { Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, IncludePrefix } from "@bentley/itwin-client";
-import { IModelHost } from "../IModelHost";
+import { TelemetryEvent } from "@bentley/telemetry-client";
+import { LogEntryConverter } from "@bentley/usage-logging-client";
+import * as os from "os";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { IModelHost } from "../IModelHost";
 
-/**
- * @internal
- * Defines a base set of additional properties that might be useful to attach to feature logs
- * Extend this interface with additional properties to communicate more specific data.
- */
-export interface AdditionalFeatureData {
-  iModelId?: GuidString;
+/** @internal */
+export interface UsageLoggingUtilitiesOptions {
+  iModelJsNative?: typeof IModelJsNative;
+  hostApplicationId?: string;
+  hostApplicationVersion?: string;
+  clientAuthManager?: ClientAuthIntrospectionManager;
 }
 
 /** @internal */
 export class UsageLoggingUtilities {
+  private static _options: UsageLoggingUtilitiesOptions = {};
+
+  private constructor() {
+  }
+
+  public static configure(options: UsageLoggingUtilitiesOptions): void {
+    UsageLoggingUtilities._options = Object.assign({}, options);
+  }
+
+  private static get nativePlatform(): typeof IModelJsNative {
+    return UsageLoggingUtilities._options.iModelJsNative || IModelHost.platform;
+  }
 
   public static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement {
-    return IModelHost.platform.NativeUlasClient.checkEntitlement(
+    return UsageLoggingUtilities.nativePlatform.NativeUlasClient.checkEntitlement(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
-      requestContext.applicationVersion,
+      UsageLoggingUtilities.getApplicationVersion(requestContext),
       contextId,
       authType,
       productId,
@@ -32,18 +47,17 @@ export class UsageLoggingUtilities {
   }
 
   /**
-   * Attempts to send a single request to log user usage with the Bentley Usage Logging and Analysis Service
+   * Attempts to send a single request to log user (billable) usage with the Bentley Usage Logging and Analysis Service
    * @throws When configurations are invalid or the request is rejected
    * @param requestContext
    * @param contextId
    * @param authType
-   * @param hostName
    * @param usageType
    */
   public static async postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): Promise<void> {
-    return IModelHost.platform.NativeUlasClient.postUserUsage(
+    return UsageLoggingUtilities.nativePlatform.NativeUlasClient.postUserUsage(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
-      requestContext.applicationVersion,
+      UsageLoggingUtilities.getApplicationVersion(requestContext),
       contextId,
       authType,
       UsageLoggingUtilities.getApplicationId(requestContext),
@@ -54,18 +68,17 @@ export class UsageLoggingUtilities {
 
   /**
    * Attempts to send a single request to log feature usage with the Bentley Usage Logging and Analysis Service
-   * @throws When configurations are invalid or the request is rejected
+   * @throws When configurations are invalid or the request is rejected by ULAS
    * @param requestContext The client request context
    * @param featureId The unique id of the feature to be tracked
    * @param authType The authentication mechanism used to authorize the request
-   * @param hostName The name of the machine which utilized the feature
    * @param usageType The type of usage which occurred on the client.
    * @param contextId The context in which the feature was used (i.e. a specific projectId). When omitted, the Guid 99999999-9999-9999-9999-999999999999 is substituted internally.
    * @param startTime The time at which feature usage began. If both startTime and endTime are left undefined, then both will default to the current time. Otherwise these fields are passed as received.
    * @param endTime The time at which feature usage was completed. If both endTime and startTime are left undefined, then both will default to the current time. Otherwise these fields are passed as received.
    * @param additionalData A collection of arbitrary data that will be attached to the feature usage log
    */
-  public static async postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startTime?: Date, endTime?: Date, additionalData?: AdditionalFeatureData): Promise<void> {
+  public static async postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startTime?: Date, endTime?: Date, additionalData?: { [key: string]: string }): Promise<void> {
     const currentTime = new Date().toISOString();
     let startDateZ: string | undefined;
     let endDateZ: string | undefined;
@@ -85,20 +98,20 @@ export class UsageLoggingUtilities {
     for (const propName in additionalData) { // eslint-disable-line guard-for-in
       featureUserData.push({
         key: propName,
-        value: (additionalData as any)[propName],
+        value: additionalData[propName],
       });
     }
 
     const featureEvent: IModelJsNative.NativeUlasClientFeatureEvent = {
       featureId,
-      versionStr: requestContext.applicationVersion,
+      versionStr: UsageLoggingUtilities.getApplicationVersion(requestContext),
       projectId: contextId,
       startDateZ,
       endDateZ,
       featureUserData,
     };
 
-    return IModelHost.platform.NativeUlasClient.postFeatureUsage(
+    return UsageLoggingUtilities.nativePlatform.NativeUlasClient.postFeatureUsage(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
       featureEvent,
       authType,
@@ -107,6 +120,40 @@ export class UsageLoggingUtilities {
       usageType,
       UsageLoggingUtilities.getSessionId(requestContext),
     );
+  }
+
+  /**
+   * Attempts to send a single request to log feature usage with the Bentley Usage Logging and Analysis Service
+   * @throws When configurations are invalid or the request is rejected by ULAS
+   * @param requestContext The client request context
+   * @param telemetryEvent Core data specific to the feature/telemetry event
+   * @param usageType The type of usage which occurred on the client.
+   */
+  public static async postFeatureUsageFromTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent, usageType: IModelJsNative.UsageType): Promise<void> {
+    if (!telemetryEvent.eventId || !Guid.isGuid(telemetryEvent.eventId)) {
+      throw new Error("Cannot post feature usage without a defined featureId Guid");
+    }
+
+    let clientAuth: ClientAuthDetail | undefined;
+    try {
+      clientAuth = UsageLoggingUtilities._options.clientAuthManager
+        ? await UsageLoggingUtilities._options.clientAuthManager.getClientAuthDetails(requestContext)
+        : undefined;
+    } catch (err) {
+      Logger.logWarning(BackendLoggerCategory.UsageLogging, `Unable to obtain client auth details from request context`, () => err);
+    }
+    const backendTelemetryEvent = new BackendTelemetryEvent(telemetryEvent, requestContext, undefined, UsageLoggingUtilities._options.hostApplicationId, UsageLoggingUtilities._options.hostApplicationVersion, clientAuth);
+
+    return UsageLoggingUtilities.postFeatureUsage(
+      requestContext,
+      telemetryEvent.eventId,
+      IModelJsNative.AuthType.OIDC,
+      os.hostname(),
+      usageType,
+      telemetryEvent.contextId,
+      telemetryEvent.time?.startTime,
+      telemetryEvent.time?.endTime,
+      backendTelemetryEvent.getProperties());
   }
 
   /**
@@ -122,6 +169,20 @@ export class UsageLoggingUtilities {
     }
 
     return parseInt(requestContext.applicationId, 10) || defaultId;
+  }
+
+  private static getApplicationVersion(requestContext: AuthorizedClientRequestContext): string {
+    const applicationVersion = LogEntryConverter.getApplicationVersion(requestContext);
+
+    let versionStr = `${applicationVersion.major}.${applicationVersion.minor}`;
+    if (applicationVersion.sub1) {
+      versionStr = `${versionStr}.${applicationVersion.sub1}`;
+    }
+    if (applicationVersion.sub2) {
+      versionStr = `${versionStr}.${applicationVersion.sub2}`;
+    }
+
+    return versionStr;
   }
 
   /**

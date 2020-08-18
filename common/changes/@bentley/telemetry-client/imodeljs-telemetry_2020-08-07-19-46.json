@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/telemetry-client",
+      "comment": "add new client for general telemetry events in frontend and backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/telemetry-client",
+  "email": "evan.preslar@bentley.com"
+}

@@ -6,9 +6,9 @@
  * @module Authentication
  */
 
-import { GrantBody, TokenSet } from "openid-client";
 import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix, SamlAccessToken } from "@bentley/itwin-client";
+import { GrantBody, TokenSet } from "openid-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
 /* eslint-disable deprecation/deprecation */

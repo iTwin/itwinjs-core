@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { app as electron } from "electron";
+import * as os from "os";
 import * as fs from "fs";
 import * as path from "path";
 import { Config, Logger } from "@bentley/bentleyjs-core";
@@ -12,6 +13,7 @@ import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
 import getSupportedRpcs from "../common/rpcs";
 import { initializeLogging } from "./web/BackendServer";
+import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
@@ -30,6 +32,12 @@ import { initializeLogging } from "./web/BackendServer";
 
     // initialize imodeljs-backend
     await IModelHost.startup();
+
+    const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
+    if (iModelJsApplicationInsightsKey) {
+      const applicationInsightsClient = new BackendApplicationInsightsClient({ applicationInsightsKey: iModelJsApplicationInsightsKey, backendMachineName: os.hostname(), backendApplicationId: IModelHost.applicationId, backendApplicationVersion: IModelHost.applicationVersion, clientAuthManager: IModelHost.clientAuthIntrospectionManager });
+      IModelHost.telemetry.addClient(applicationInsightsClient);
+    }
 
     // initialize presentation-backend
     Presentation.initialize({

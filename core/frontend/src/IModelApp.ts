@@ -15,6 +15,7 @@ import { IModelError, IModelStatus, NativeAppRpcInterface, RpcConfiguration, Rpc
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
+import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
@@ -26,7 +27,6 @@ import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
 import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { FeatureToggleClient } from "./FeatureToggleClient";
-import { FeatureTrackingManager } from "./FeatureTrackingManager";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { FrontendRequestContext } from "./FrontendRequestContext";
 import * as modelselector from "./ModelSelectorState";
@@ -49,6 +49,7 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
+import { FrontendFeatureUsageTelemetryClient } from "@bentley/usage-logging-client";
 import { MapLayerFormatRegistry } from "./tile/map/MapLayerFormatRegistry";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -121,10 +122,6 @@ export interface IModelAppOptions {
   extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
-  /** if present, supplies the [[FeatureTrackingManager]] for this session
-   * @internal
-   */
-  features?: FeatureTrackingManager;
   /** if present, supplies the [[FeatureToggleClient]] for this session
    * @internal
    */
@@ -202,7 +199,6 @@ export class IModelApp {
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
-  private static _features: FeatureTrackingManager;
   private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
   private static _securityOptions: FrontendSecurityOptions;
@@ -276,10 +272,10 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
-  /** The [[FeatureTrackingManager]] for this session
+  /** The [[TelemetryManager]] for this session
    * @internal
    */
-  public static get features() { return this._features; }
+  public static readonly telemetry: TelemetryManager = new TelemetryManager();
 
   /** The [[FeatureToggleClient]] for this session
    * @internal
@@ -359,8 +355,11 @@ export class IModelApp {
     // Initialize basic application details before log messages are sent out
     this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
     this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
-    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "";
+    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
     this.authorizationClient = opts.authorizationClient;
+
+    const featureUsageClient = new FrontendFeatureUsageTelemetryClient();
+    this.telemetry.addClient(featureUsageClient);
 
     this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
     if (this._securityOptions.csrfProtection?.enabled) {
@@ -413,7 +412,6 @@ export class IModelApp {
     this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
-    this._features = (opts.features !== undefined) ? opts.features : new FeatureTrackingManager();
     this._featureToggles = (opts.featureToggles !== undefined) ? opts.featureToggles : new FeatureToggleClient();
 
     [

@@ -16,6 +16,7 @@ import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
+import { TelemetryManager } from "@bentley/telemetry-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BackendRequestContext } from "./BackendRequestContext";
@@ -37,6 +38,8 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
+import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
+import { BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient } from "@bentley/backend-itwin-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -215,6 +218,20 @@ export class IModelHostConfiguration {
  */
 export class IModelHost {
   private static _authorizationClient?: AuthorizationClient;
+  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
+  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
+  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
+  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
+
+  private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
+  /** @alpha */
+  public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
+  /** @alpha */
+  public static get introspectionClient(): IntrospectionClient | undefined { return this._clientAuthIntrospectionManager?.introspectionClient; }
+
+  /** @alpha */
+  public static readonly telemetry: TelemetryManager = new TelemetryManager();
+
   private static _nativeAppBackend: boolean;
   public static backendVersion = "";
   private static _cacheDir = "";
@@ -252,11 +269,6 @@ export class IModelHost {
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
-
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
-  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
-  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
   /** Get the active authorization/access token for use with various services
    * @throws [[BentleyError]] if the access token cannot be obtained
@@ -300,8 +312,6 @@ export class IModelHost {
     if (!semver.satisfies(process.version, requiredVersion))
       throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
   }
-
-  private static getApplicationVersion(): string { return require("../package.json").version; }
 
   private static setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
@@ -350,7 +360,7 @@ export class IModelHost {
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
 
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
-    if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
+    if (!IModelHost.applicationVersion) IModelHost.applicationVersion = "1.0.0"; // Default to placeholder version.
     IModelHost.sessionId = Guid.createValue();
     this.logStartup();
 
@@ -438,6 +448,20 @@ export class IModelHost {
     if (undefined !== this._platform) {
       this._platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
     }
+
+    const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
+    const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
+    if (introspectionClientId && introspectionClientSecret) {
+      const introspectionClient = new IntrospectionClient(introspectionClientId, introspectionClientSecret);
+      this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
+    }
+
+    if (configuration.applicationType !== ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
+      const usageLoggingClient = new BackendFeatureUsageTelemetryClient({ backendApplicationId: this.applicationId, backendApplicationVersion: this.applicationVersion, backendMachineName: os.hostname(), clientAuthManager: this._clientAuthIntrospectionManager });
+      this.telemetry.addClient(usageLoggingClient);
+    }
+
+    UsageLoggingUtilities.configure({ hostApplicationId: IModelHost.applicationId, hostApplicationVersion: IModelHost.applicationVersion, clientAuthManager: this._clientAuthIntrospectionManager });
 
     IModelHost.onAfterStartup.raiseEvent();
   }

@@ -229,6 +229,7 @@ import { StrokeOptions } from '@bentley/geometry-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { SubLayerId } from '@bentley/imodeljs-common';
+import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
@@ -3809,8 +3810,6 @@ export class IModelApp {
     // @beta
     static get extensionAdmin(): ExtensionAdmin;
     // @internal
-    static get features(): FeatureTrackingManager;
-    // @internal
     static get featureToggles(): FeatureToggleClient;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
@@ -3866,6 +3865,8 @@ export class IModelApp {
     // @internal (undocumented)
     static startEventLoop(): void;
     static startup(opts?: IModelAppOptions): Promise<void>;
+    // @internal
+    static readonly telemetry: TelemetryManager;
     // @internal (undocumented)
     static get tentativePoint(): TentativePoint;
     // @alpha
@@ -3886,8 +3887,6 @@ export interface IModelAppOptions {
     authorizationClient?: FrontendAuthorizationClient;
     // @beta
     extensionAdmin?: ExtensionAdmin;
-    // @internal
-    features?: FeatureTrackingManager;
     // @internal
     featureToggles?: FeatureToggleClient;
     i18n?: I18N | I18NOptions;

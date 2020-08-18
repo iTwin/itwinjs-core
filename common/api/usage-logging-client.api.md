@@ -7,6 +7,8 @@
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { Client } from '@bentley/itwin-client';
+import { ClientTelemetryEvent } from '@bentley/telemetry-client';
+import { FrontendTelemetryClient } from '@bentley/telemetry-client';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { RequestOptions } from '@bentley/itwin-client';
 
@@ -26,6 +28,9 @@ export class FeatureLogEntry {
     hostName: string,
     usageType: UsageType,
     contextId?: string | undefined);
+    additionalData: {
+        [key: string]: string;
+    };
     readonly contextId?: string | undefined;
     // (undocumented)
     correlationId: string;
@@ -33,7 +38,6 @@ export class FeatureLogEntry {
     readonly featureId: GuidString;
     readonly hostName: string;
     startTime: Date;
-    usageData: FeatureLogEntryMetadata[];
     readonly usageType: UsageType;
 }
 
@@ -54,15 +58,19 @@ export interface FeatureLogEntryJson extends UsageLogEntryJson {
 }
 
 // @internal
-export interface FeatureLogEntryMetadata {
+export class FrontendFeatureUsageTelemetryClient extends FrontendTelemetryClient {
+    constructor(_hostname?: string);
     // (undocumented)
-    name: string;
+    static getFeatureLogEntry(clientTelemetryEvent: ClientTelemetryEvent, hostname: string): FeatureLogEntry;
     // (undocumented)
-    value: any;
-}
+    protected readonly _hostname: string;
+    // (undocumented)
+    protected _postTelemetry(requestContext: AuthorizedClientRequestContext, clientTelemetryEvent: ClientTelemetryEvent): Promise<void>;
+    }
 
 // @internal (undocumented)
 export class LogEntryConverter {
+    static getApplicationVersion(requestContext: AuthorizedClientRequestContext): ProductVersion;
     // (undocumented)
     static toFeatureLogJson(requestContext: AuthorizedClientRequestContext, entry: FeatureLogEntry): FeatureLogEntryJson;
     // (undocumented)
@@ -143,7 +151,8 @@ export class UsageLoggingClient extends Client {
 
 // @beta
 export enum UsageLoggingClientLoggerCategory {
-    Client = "usage-logging-client"
+    Client = "usage-logging-client.Client",
+    Telemetry = "usage-logging-client.Telemetry"
 }
 
 // @internal

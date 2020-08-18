@@ -55,6 +55,7 @@
     "@bentley/itwin-client": "^2.6.0-dev.1",
     "@bentley/backend-itwin-client": "^2.6.0-dev.1",
     "@bentley/imodeljs-common": "^2.6.0-dev.1",
+    "@bentley/telemetry-client": "^2.6.0-dev.1",
     "@bentley/rbac-client": "^2.6.0-dev.1"
   },
   "//devDependencies": [
@@ -74,6 +75,7 @@
     "@bentley/imodeljs-common": "2.6.0-dev.1",
     "@bentley/oidc-signin-tool": "2.6.0-dev.1",
     "@bentley/perf-tools": "2.6.0-dev.1",
+    "@bentley/telemetry-client": "2.6.0-dev.1",
     "@bentley/rbac-client": "2.6.0-dev.1",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -96,6 +98,7 @@
     "mocha": "^5.2.0",
     "null-loader": "^0.1.1",
     "nyc": "^14.0.0",
+    "openid-client": "^3.15.3",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
     "source-map-support": "^0.5.6",
@@ -106,6 +109,7 @@
   "dependencies": {
     "@bentley/imodeljs-native": "2.5.5",
     "@bentley/context-registry-client": "2.6.0-dev.1",
+    "@bentley/usage-logging-client": "2.6.0-dev.1",
     "@azure/storage-blob": "10.4.0",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",

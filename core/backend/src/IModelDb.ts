@@ -39,13 +39,14 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { Entity } from "./Entity";
 import { EventSink, EventSinkManager } from "./EventSink";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
-import { ApplicationType, IModelHost } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
-import { AdditionalFeatureData, UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
+import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { TelemetryEvent } from "@bentley/telemetry-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -78,14 +79,6 @@ export class OpenParams {
     public readonly syncMode?: SyncMode,
   ) {
   }
-}
-
-/**
- * @internal
- * Defines a base set of additional properties that might be useful to attach to feature logs
- */
-export interface IModelJsAdditionalFeatureData extends AdditionalFeatureData {
-  iModelJsVersion?: string;
 }
 
 /** Options supplied to [[IModelDb.computeProjectExtents]].
@@ -2198,6 +2191,8 @@ export class BriefcaseDb extends IModelDb {
    */
   public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb> {
     requestContext.enter();
+    const startTime = new Date();
+
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcaseKey);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb.open: Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => briefcaseKey);
@@ -2230,7 +2225,9 @@ export class BriefcaseDb extends IModelDb {
       briefcaseDb = briefcaseEntry.iModelDb as BriefcaseDb; // NEEDS_WORK: change iModelDb type in BriefcaseEntry
       Logger.logTrace(loggerCategory, "BriefcaseDb.open: Reusing an existing open briefcase", () => briefcaseEntry.getDebugInfo());
 
-      await briefcaseDb.logUsage(requestContext);
+      const alreadyOpenEndTime = new Date();
+      Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
+      await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime);
       return briefcaseDb;
     }
 
@@ -2268,47 +2265,43 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
+    const endTime = new Date();
+    Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
+    await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime);
+
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
-    await briefcaseDb.logUsage(requestContext);
     return briefcaseDb;
   }
 
-  /** Log usage when opening the iModel
-   * @note Failure to log usage is not considered a critical error - we simply log the error and move on
-   */
-  private async logUsage(requestContext: ClientRequestContext | AuthorizedClientRequestContext) {
-    requestContext.enter();
-
+  /** Log usage when opening the iModel */
+  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string, startTime: Date, endTime: Date) {
+    // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.briefcase.getDebugInfo());
       return;
     }
-    if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent) {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage in agents", () => this.briefcase.getDebugInfo());
-      return; // Note: The usage logging service has not been setup to log usage for agents
-    }
 
-    const contextId = this.briefcase.contextId;
-    const authType = IModelJsNative.AuthType.OIDC;
+    requestContext.enter();
+    const telemetryEvent = new TelemetryEvent(
+      "imodeljs-backend - Open iModel",
+      "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
+      contextId,
+      iModelId,
+      changeSetId,
+      {
+        startTime,
+        endTime,
+      },
+    );
+    Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage/telemetry", () => this.briefcase.getDebugInfo());
+    await IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent);
+
     try {
       Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
-      await UsageLoggingUtilities.postUserUsage(requestContext, contextId, authType, os.hostname(), IModelJsNative.UsageType.Trial);
+      await UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
     } catch (err) {
       requestContext.enter();
       Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
-    }
-
-    const featureId = "7a6424d1-2114-4e89-b13b-43670a38ccd4"; // Feature: "iModel Use" - registration is pending
-    const additionalFeatureData: IModelJsAdditionalFeatureData = {
-      iModelId: this.getGuid(),
-      iModelJsVersion: IModelHost.backendVersion,
-    };
-    try {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage", () => this.briefcase.getDebugInfo());
-      await UsageLoggingUtilities.postFeatureUsage(requestContext, featureId, authType, os.hostname(), IModelJsNative.UsageType.Trial, contextId, new Date(), new Date(), additionalFeatureData);
-    } catch (err) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, `Could not log feature usage: ${featureId}`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
     }
   }
 

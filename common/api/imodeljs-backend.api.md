@@ -31,6 +31,7 @@ import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodelhub-client';
 import { ChangesType } from '@bentley/imodelhub-client';
 import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
+import { ClientAuthIntrospectionManager } from '@bentley/backend-itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
@@ -106,6 +107,7 @@ import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
+import { IntrospectionClient } from '@bentley/backend-itwin-client';
 import { LightLocationProps } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
@@ -166,6 +168,8 @@ import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
 import { SyncMode } from '@bentley/imodeljs-common';
+import { TelemetryEvent } from '@bentley/telemetry-client';
+import { TelemetryManager } from '@bentley/telemetry-client';
 import { TextureFlags } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
@@ -190,12 +194,6 @@ import { ViewStateProps } from '@bentley/imodeljs-common';
 import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
-
-// @internal
-export interface AdditionalFeatureData {
-    // (undocumented)
-    iModelId?: GuidString;
-}
 
 // @beta (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
@@ -2651,6 +2649,8 @@ export class IModelHost {
     // (undocumented)
     static backendVersion: string;
     static get cacheDir(): string;
+    // @alpha (undocumented)
+    static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2660,6 +2660,8 @@ export class IModelHost {
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
+    // @alpha (undocumented)
+    static get introspectionClient(): IntrospectionClient | undefined;
     // @internal (undocumented)
     static get isNativeAppBackend(): boolean;
     // @internal (undocumented)
@@ -2680,6 +2682,8 @@ export class IModelHost {
     static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
+    // @alpha (undocumented)
+    static readonly telemetry: TelemetryManager;
     // @beta
     static tileCacheService: CloudStorageService;
     // @internal
@@ -2758,12 +2762,6 @@ export class IModelImporter {
 // @beta
 export interface IModelImportOptions {
     autoExtendProjectExtents?: boolean;
-}
-
-// @internal
-export interface IModelJsAdditionalFeatureData extends AdditionalFeatureData {
-    // (undocumented)
-    iModelJsVersion?: string;
 }
 
 // @public
@@ -4058,9 +4056,26 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
 export class UsageLoggingUtilities {
     // (undocumented)
     static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
-    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startTime?: Date, endTime?: Date, additionalData?: AdditionalFeatureData): Promise<void>;
+    // (undocumented)
+    static configure(options: UsageLoggingUtilitiesOptions): void;
+    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startTime?: Date, endTime?: Date, additionalData?: {
+        [key: string]: string;
+    }): Promise<void>;
+    static postFeatureUsageFromTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent, usageType: IModelJsNative.UsageType): Promise<void>;
     static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): Promise<void>;
     }
+
+// @internal (undocumented)
+export interface UsageLoggingUtilitiesOptions {
+    // (undocumented)
+    clientAuthManager?: ClientAuthIntrospectionManager;
+    // (undocumented)
+    hostApplicationId?: string;
+    // (undocumented)
+    hostApplicationVersion?: string;
+    // (undocumented)
+    iModelJsNative?: typeof IModelJsNative;
+}
 
 // @beta
 export interface ValidationError {

@@ -54,6 +54,7 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -717,6 +718,13 @@ async function main() {
 
   // Start the app.
   await SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
+
+  // Add ApplicationInsights telemetry client
+  const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
+  if (iModelJsApplicationInsightsKey) {
+    const applicationInsightsClient = new FrontendApplicationInsightsClient(iModelJsApplicationInsightsKey);
+    IModelApp.telemetry.addClient(applicationInsightsClient);
+  }
 
   // wait for both our i18n namespaces to be read.
   await SampleAppIModelApp.initialize();

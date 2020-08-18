@@ -2,12 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as os from "os";
 import { Config, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
-import { IModelJsAdditionalFeatureData } from "../../IModelDb";
+import { TelemetryEvent } from "@bentley/telemetry-client";
+import { assert } from "chai";
+import * as os from "os";
 import { AuthorizedBackendRequestContext, IModelJsNative } from "../../imodeljs-backend";
 import { UsageLoggingUtilities } from "../../usage-logging/UsageLoggingUtilities";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -59,7 +59,7 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
   });
 
   it("Post usage log (#integration)", async () => {
-    for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Production, IModelJsNative.UsageType.Trial]) {
+    for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Trial, IModelJsNative.UsageType.Trial]) {
       await UsageLoggingUtilities.postUserUsage(requestContext, Guid.createValue(), defaultAuthType, os.hostname(), usageType);
     }
   });
@@ -78,17 +78,6 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
     }
 
     assert.isTrue(exceptionThrown, "Expected usage log posted without product version to be rejected");
-  });
-
-  it("Post usage log - hostName special cases (#integration)", async () => {
-    const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.5");
-    for (const hostName of [
-      "::1",
-      "127.0.0.1",
-      "localhost",
-    ]) {
-      await UsageLoggingUtilities.postUserUsage(localRequestContext, Guid.createValue(), defaultAuthType, hostName, IModelJsNative.UsageType.Beta);
-    }
   });
 
   it("Post usage log - invalid usage type (#integration)", async function (this: Mocha.Context) {
@@ -143,7 +132,7 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
       let tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.5.101");
       let exceptionThrown = false;
       try {
-        await UsageLoggingUtilities.postUserUsage(tempRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production);
+        await UsageLoggingUtilities.postUserUsage(tempRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial);
       } catch (err) {
         exceptionThrown = true;
       }
@@ -161,21 +150,21 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
   });
 
   it("Post feature log (#integration)", async () => {
-    for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Production, IModelJsNative.UsageType.Trial]) {
+    for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Trial, IModelJsNative.UsageType.Trial]) {
       await UsageLoggingUtilities.postFeatureUsage(requestContext, Guid.createValue(), defaultAuthType, os.hostname(), usageType);
     }
   });
 
   it("Post feature log with project id (#integration)", async () => {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
-    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, Guid.createValue());
+    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial, Guid.createValue());
   });
 
   it("Post feature log with invalid project id (#integration)", async () => {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
     let exceptionThrown = false;
     try {
-      await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, "Non-Guid project id");
+      await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial, "Non-Guid project id");
     } catch (err) {
       exceptionThrown = true;
     }
@@ -186,7 +175,7 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43");
     let exceptionThrown = false;
     try {
-      await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production);
+      await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial);
     } catch (err) {
       exceptionThrown = true;
     }
@@ -194,40 +183,30 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
     assert.isTrue(exceptionThrown, "Attempting to track feature logs without a product version should throw an exception.");
   });
 
-  it("Post feature log - hostName special cases (#integration)", async function (this: Mocha.Context) {
-    for (const hostName of [
-      "::1",
-      "127.0.0.1",
-      "localhost",
-    ]) {
-      await UsageLoggingUtilities.postFeatureUsage(requestContext, Guid.createValue(), defaultAuthType, hostName, IModelJsNative.UsageType.Production);
-    }
-  });
-
   it("Post feature log - with both startDate and endDate (#integration)", async function (this: Mocha.Context) {
     const startDate = new Date();
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
     const endDate = new Date();
-    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate, endDate);
+    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial, undefined, startDate, endDate);
   });
 
   it("Post feature log - with startDate and no endDate (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
     const startDate = new Date();
-    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate);
+    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial, undefined, startDate);
   });
 
   it("Post feature log - with endDate and no startDate (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
     const endDate = new Date();
-    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, undefined, endDate);
+    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial, undefined, undefined, endDate);
   });
 
   it("Post feature log - with no startDate or endDate (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
     let exceptionThrown = false;
     try {
-      await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, undefined, undefined);
+      await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial, undefined, undefined, undefined);
     } catch (err) {
       exceptionThrown = true;
     }
@@ -237,10 +216,27 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
 
   it("Post feature log - with additional metadata (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
-    const metadata: IModelJsAdditionalFeatureData = {
+    const metadata = {
       iModelId: Guid.createValue(),
       iModelJsVersion: "1.2.3.4",
     };
-    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, undefined, undefined, metadata);
+    await UsageLoggingUtilities.postFeatureUsage(localRequestContext, Guid.createValue(), defaultAuthType, os.hostname(), IModelJsNative.UsageType.Trial, undefined, undefined, undefined, metadata);
+  });
+
+  it("Post feature log - from telemetry data (#integration)", async function (this: Mocha.Context) {
+    const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
+    const telemetryData = new TelemetryEvent(
+      "UsageLoggingUtilities TestFeature",
+      "fa1c504d-3bdc-4718-95af-5fdf08a176af",
+      Guid.createValue(),
+      Guid.createValue(),
+      Guid.createValue(),
+    );
+
+    UsageLoggingUtilities.configure({
+      hostApplicationId: "43",
+      hostApplicationVersion: "4.5.6",
+    });
+    await UsageLoggingUtilities.postFeatureUsageFromTelemetry(localRequestContext, telemetryData, IModelJsNative.UsageType.Trial);
   });
 });

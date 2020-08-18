@@ -11,8 +11,20 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@bentley/backend-application-insights-client",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/backend-authorization-client",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/backend-telemetry-application-insights-client",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/bentleyjs-core",
@@ -24,7 +36,7 @@
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/config-loader",
@@ -59,11 +71,19 @@
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
+      "name": "@bentley/frontend-application-insights-client",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/frontend-authorization-client",
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/frontend-devtools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/frontend-telemetry-application-insights-client",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -115,6 +135,10 @@
       "allowedCategories": [ "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@bentley/introspection-client",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -133,6 +157,10 @@
     {
       "name": "@bentley/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@bentley/openid-introspection-client",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/orbitgt-core",
@@ -183,6 +211,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@bentley/telemetry-client",
+      "allowedCategories": [ "backend", "common", "frontend" ]
+    },
+    {
       "name": "@bentley/ui-abstract",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
@@ -204,7 +236,7 @@
     },
     {
       "name": "@bentley/usage-logging-client",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@bentley/webgl-compatibility",
@@ -217,6 +249,10 @@
     {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "@microsoft/applicationinsights-web",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@openid/appauth",
@@ -248,6 +284,14 @@
     },
     {
       "name": "@ungap/url-search-params",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "applicationinsights",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "applicationinsights-web",
       "allowedCategories": [ "common" ]
     },
     {
@@ -652,7 +696,7 @@
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "backend", "integration-testing", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
     },
     {
       "name": "postcss-flexbugs-fixes",
@@ -904,7 +948,7 @@
     },
     {
       "name": "tslint",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "tslint-consistent-codestyle",

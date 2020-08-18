@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { IModelVersion, MobileRpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 
 describe("Agent (#integration)", () => {
   // iOS does not support agent test

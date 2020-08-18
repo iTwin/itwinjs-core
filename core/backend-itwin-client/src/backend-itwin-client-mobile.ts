@@ -4,3 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./BackendITwinClientLoggerCategory";
 export * from "./UrlFileHandler";
+export * from "./telemetry";
