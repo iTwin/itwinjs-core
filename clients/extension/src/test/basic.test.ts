@@ -96,7 +96,7 @@ describe("ExtensionClient (#integration)", () => {
 
     for (const expected of expectedExtensions) {
       const found = foundExtensions.find((props: ExtensionProps) => props.extensionName === expected.extensionName && props.version === expected.version);
-      assert.isDefined(found, "Could not find extension with name " + expected.extensionName + " and version " + expected.version);
+      assert.isDefined(found, `Could not find extension with name ${expected.extensionName} and version ${expected.version}`);
 
       // comment out until we come up with a better way to handle the difference between who uploaded and the test user used.
       // assert.strictEqual(found!.uploadedBy, expected.uploadedBy, "UploadedBy does not match");
@@ -111,7 +111,7 @@ describe("ExtensionClient (#integration)", () => {
       while (relativePathStart > 0 && firstUri[relativePathStart] !== "/") relativePathStart--;
 
       for (let i = 0; i < expected.files.length; i++) {
-        assert.isTrue(sortedUris[i].url.startsWith(expected.files[i] + "?", relativePathStart + 1), "File name does not match - expected " + expected.files[i] + ", found " + sortedUris[i].url.substr(relativePathStart));
+        assert.isTrue(sortedUris[i].url.startsWith(`${expected.files[i]}?`, relativePathStart + 1), `File name does not match - expected ${expected.files[i]}, found ${sortedUris[i].url.substr(relativePathStart)}`);
       }
     }
   });
@@ -146,7 +146,7 @@ describe("ExtensionClient (#integration)", () => {
 
     for (const expected of expectedExtensions) {
       const found = foundExtensions.find((props: ExtensionProps) => props.extensionName === expected.extensionName && props.version === expected.version);
-      assert.isDefined(found, "Could not find extension with name " + expected.extensionName + " and version " + expected.version);
+      assert.isDefined(found, `Could not find extension with name ${expected.extensionName} and version ${expected.version}`);
 
       assert.strictEqual(found!.contextId, teamId, "ContextId does not match");
       assert.strictEqual(found!.files.length, expected.files.length, "Returned file count does not match");
@@ -159,7 +159,7 @@ describe("ExtensionClient (#integration)", () => {
       while (relativePathStart > 0 && firstUri[relativePathStart] !== "/") relativePathStart--;
 
       for (let i = 0; i < expected.files.length; i++) {
-        assert.isTrue(sortedUris[i].url.startsWith(expected.files[i] + "?", relativePathStart + 1), "File name does not match - expected " + expected.files[i] + ", found " + sortedUris[i].url.substr(relativePathStart));
+        assert.isTrue(sortedUris[i].url.startsWith(`${expected.files[i]}?`, relativePathStart + 1), `File name does not match - expected ${expected.files[i]}, found ${sortedUris[i].url.substr(relativePathStart)}`);
       }
     }
   });
@@ -190,24 +190,26 @@ describe("ExtensionClient (#integration)", () => {
       { name: "testDir1/testFile.txt", content: "test file content 2" },
     ],
   }].forEach((testCase) => {
-    it("downloads extension " + testCase.name + ", version " + testCase.version, async () => {
+    it(`downloads extension ${testCase.name}, version ${testCase.version}`, async () => {
       const files = await extensionClient.downloadExtension(requestContext, teamId, testCase.name, testCase.version);
 
       assert.strictEqual(files.length, testCase.files.length, "Returned file count does not match");
 
       for (const file of testCase.files) {
         const foundFile = files.find((f) => f.fileName === file.name);
-        assert.isDefined(foundFile, "File not downloaded: " + file.name);
+        assert.isDefined(foundFile, `File not downloaded: ${file.name}`);
         const content = Buffer.from(foundFile!.content).toString();
-        assert.strictEqual(content, file.content, "Incorrect file content downloaded: " + file.name);
+        assert.strictEqual(content, file.content, `Incorrect file content downloaded: ${file.name}`);
       }
       assert.isTrue(true);
     });
   });
 
-  [{ name: "testExt1", version: "3.0.0" },
-  { name: "testExt that doesn't exist", version: "1.0.0" }].forEach((testCase) => {
-    it("fails to download extension `" + testCase.name + "`, version `" + testCase.version + "` that doesn't exist", async () => {
+  [
+    { name: "testExt1", version: "3.0.0" },
+    { name: "testExt that doesn't exist", version: "1.0.0" },
+  ].forEach((testCase) => {
+    it(`fails to download extension '${testCase.name}', version '${testCase.version}' that doesn't exist`, async () => {
       let thrown = false;
       try {
         await extensionClient.downloadExtension(requestContext, teamId, testCase.name, testCase.version);
@@ -223,7 +225,7 @@ describe("ExtensionClient (#integration)", () => {
   });
 
   it("uploads and deletes extension with specific version", async () => {
-    const extensionName = "tempTestExt-" + Guid.createValue();
+    const extensionName = `tempTestExt-${Guid.createValue()}`;
     const currentTime = new Date().getTime();
     await extensionClient.createExtension(requestContext, teamId, extensionName, "1.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
     await extensionClient.createExtension(requestContext, teamId, extensionName, "2.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
@@ -250,7 +252,7 @@ describe("ExtensionClient (#integration)", () => {
   });
 
   it("uploads and deletes all versions of extension", async () => {
-    const extensionName = "tempTestExt-" + Guid.createValue();
+    const extensionName = `tempTestExt-${Guid.createValue()}`;
     await extensionClient.createExtension(requestContext, teamId, extensionName, "1.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
     await extensionClient.createExtension(requestContext, teamId, extensionName, "2.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
 
