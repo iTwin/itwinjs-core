@@ -19,8 +19,8 @@ describe("WidgetPanels", () => {
 
   it("should render widget content", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}

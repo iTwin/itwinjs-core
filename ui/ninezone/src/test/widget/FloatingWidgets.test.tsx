@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addFloatingWidget, createNineZoneState, FloatingWidgets } from "../../ui-ninezone";
+import { addFloatingWidget, createNineZoneState, FloatingWidgets, addTab } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 
 describe("FloatingWidgets", () => {
   it("should render", () => {
     let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1");
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -18,6 +19,6 @@ describe("FloatingWidgets", () => {
         <FloatingWidgets />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 });

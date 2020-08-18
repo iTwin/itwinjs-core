@@ -1,9 +1,9 @@
 sep=;
 Release Tag;API Item
 internal;ActiveTabIdContext: React.Context
-internal;addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial
-internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial
-internal;addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial
+internal;addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial
+internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial
+internal;addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial
 alpha;AppButton 
 alpha;AppButtonProps 
 internal;AppContent: React.NamedExoticComponent
@@ -41,7 +41,7 @@ internal;createPanelState(side: PanelSide):
 internal;createTabsState(args?: Partial
 internal;createTabState(id: TabState["id"], args?: Partial
 internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
-internal;createWidgetState(id: WidgetState["id"], args?: Partial
+internal;createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial
 internal;Css
 internal;CssProperties
 internal;CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing"

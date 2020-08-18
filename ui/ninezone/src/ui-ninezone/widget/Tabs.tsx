@@ -24,10 +24,10 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
   assert(widget);
-  const activeTabIndex = widget.activeTabId ? widget.tabs.indexOf(widget.activeTabId) : undefined;
+  const activeTabIndex = widget.tabs.indexOf(widget.activeTabId);
   const children = React.useMemo<React.ReactNode>(() => {
     return widget.tabs.map((tabId, index, array) => {
-      const firstInactive = activeTabIndex === undefined ? false : activeTabIndex + 1 === index;
+      const firstInactive = activeTabIndex + 1 === index;
       return (
         <React.Fragment
           key={tabId}

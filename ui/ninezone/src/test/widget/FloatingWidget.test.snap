@@ -16,6 +16,20 @@ exports[`FloatingWidget should render 1`] = `
       role="tablist"
     >
       <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
@@ -35,6 +49,9 @@ exports[`FloatingWidget should render 1`] = `
       <i />
     </button>
   </div>
+  <div
+    class="nz-widget-content-container"
+  />
   <div
     class="nz-widget-floatingWidget_handle nz-left"
   />
@@ -78,6 +95,20 @@ exports[`FloatingWidget should render dragged 1`] = `
       role="tablist"
     >
       <div
+        class="nz-widget-tabTarget nz-hidden nz-widgetPanels-cursorOverlay_cursor nz-grabbing"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden nz-widgetPanels-cursorOverlay_cursor nz-grabbing"
+      />
+      <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
@@ -97,6 +128,9 @@ exports[`FloatingWidget should render dragged 1`] = `
       <i />
     </button>
   </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
   <div
     class="nz-widget-floatingWidget_handle nz-left"
   />
@@ -140,6 +174,20 @@ exports[`FloatingWidget should render minimized 1`] = `
       role="tablist"
     >
       <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
@@ -159,6 +207,9 @@ exports[`FloatingWidget should render minimized 1`] = `
       <i />
     </button>
   </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
   <div
     class="nz-widget-floatingWidget_handle nz-left"
   />

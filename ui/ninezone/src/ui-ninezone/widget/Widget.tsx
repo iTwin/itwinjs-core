@@ -147,7 +147,7 @@ export const WidgetStateContext = React.createContext<WidgetState | undefined>(u
 WidgetStateContext.displayName = "nz:WidgetStateContext";
 
 /** @internal */
-export const ActiveTabIdContext = React.createContext<WidgetState["activeTabId"]>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
+export const ActiveTabIdContext = React.createContext<WidgetState["activeTabId"]>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 ActiveTabIdContext.displayName = "nz:ActiveTabIdContext";
 
 /** @internal */
@@ -177,5 +177,5 @@ function useActiveTab(): TabState | undefined {
   const tabs = React.useContext(TabsStateContext);
   assert(widget);
   const tabId = widget.activeTabId;
-  return tabId ? tabs[tabId] : undefined;
+  return tabs[tabId];
 }

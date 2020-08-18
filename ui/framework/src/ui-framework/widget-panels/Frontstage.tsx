@@ -182,22 +182,26 @@ export function useLabels() {
 
 /** @internal */
 export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState {
-  if (widgets.length > 0) {
-    const activeWidget = widgets.find((widget) => widget.isActive);
-    const minimized = !activeWidget;
-    state = addPanelWidget(state, side, widgetId, {
-      activeTabId: activeWidget?.id,
-      minimized,
-    });
-  }
+  if (widgets.length === 0)
+    return state;
 
+  const tabs = new Array<string>();
   for (const widget of widgets) {
     const label = getWidgetLabel(widget.label);
-    state = addTab(state, widgetId, widget.id, {
+    state = addTab(state, widget.id, {
       label,
       preferredPanelWidgetSize: widget.preferredPanelSize,
     });
+    tabs.push(widget.id);
   }
+
+  const activeWidget = widgets.find((widget) => widget.isActive);
+  const minimized = !activeWidget;
+  state = addPanelWidget(state, side, widgetId, tabs, {
+    activeTabId: activeWidget ? activeWidget.id : tabs[0],
+    minimized,
+  });
+
   return state;
 }
 
@@ -206,28 +210,36 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
 export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<WidgetDef>, side: PanelSide, preferredWidgetIndex: number): NineZoneState {
   if (widgetDefs.length === 0)
     return state;
+
+  // Add new tabs.
+  const tabs = new Array<string>();
+  for (const widgetDef of widgetDefs) {
+    const label = getWidgetLabel(widgetDef.label);
+    state = addTab(state, widgetDef.id, {
+      label,
+    });
+    tabs.push(widgetDef.id);
+  }
+
   const panel = state.panels[side];
-  let widgetId;
   if (panel.maxWidgetCount === panel.widgets.length) {
-    // Append to existing widget.
-    widgetId = panel.widgets[preferredWidgetIndex];
+    // Append tabs to existing widget.
+    const widgetId = panel.widgets[preferredWidgetIndex];
+    state = produce(state, (draft) => {
+      const widget = draft.widgets[widgetId];
+      for (const tab of tabs) {
+        widget.tabs.push(tab);
+      }
+    });
   } else {
     // Create a new panel widget.
-    const widget = createWidgetState(getUniqueId(), { activeTabId: widgetDefs[0].id });
-    widgetId = widget.id;
+    const widget = createWidgetState(getUniqueId(), tabs);
     state = produce(state, (draft) => {
       draft.panels[side].widgets.splice(preferredWidgetIndex, 0, widget.id);
       draft.widgets[widget.id] = castDraft(widget);
     });
   }
 
-  // Append tabs to the widget.
-  for (const widgetDef of widgetDefs) {
-    const label = getWidgetLabel(widgetDef.label);
-    state = addTab(state, widgetId, widgetDef.id, {
-      label,
-    });
-  }
   return state;
 }
 
@@ -389,7 +401,7 @@ function getPanelMaxSize(maxSizeSpec: StagePanelMaxSizeSpec, panel: PanelSide, n
   return maxSizeSpec.percentage / 100 * size;
 }
 
-const stateVersion = 7; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 9; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
@@ -409,10 +421,9 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
   nineZone = initializePanel(nineZone, frontstageDef, "bottom");
   nineZone = produce(nineZone, (stateDraft) => {
     for (const [, panel] of Object.entries(stateDraft.panels)) {
-      const widgetWithActiveTab = panel.widgets.find((widgetId) => stateDraft.widgets[widgetId].activeTabId !== undefined);
+      const expanded = panel.widgets.find((widgetId) => stateDraft.widgets[widgetId].minimized === false);
       const firstWidget = panel.widgets.length > 0 ? stateDraft.widgets[panel.widgets[0]] : undefined;
-      if (!widgetWithActiveTab && firstWidget) {
-        firstWidget.activeTabId = firstWidget.tabs[0];
+      if (!expanded && firstWidget) {
         firstWidget.minimized = false;
       }
     }

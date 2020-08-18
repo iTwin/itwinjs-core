@@ -24,7 +24,7 @@ export interface TabsState { readonly [id: string]: TabState }
 
 /** @internal future */
 export interface WidgetState {
-  readonly activeTabId: TabState["id"] | undefined;
+  readonly activeTabId: TabState["id"];
   readonly id: string;
   readonly minimized: boolean;
   readonly tabs: ReadonlyArray<TabState["id"]>;
@@ -466,8 +466,8 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
 
       const widget = state.widgets[action.id];
       const size = newBounds.getSize();
-      const tab = widget.activeTabId ? state.tabs[widget.activeTabId] : undefined;
-      tab && initSizeProps(tab, "preferredFloatingWidgetSize", size);
+      const tab = state.tabs[widget.activeTabId];
+      initSizeProps(tab, "preferredFloatingWidgetSize", size);
       return;
     }
     case "FLOATING_WIDGET_BRING_TO_FRONT": {
@@ -697,12 +697,9 @@ function removeWidgetTab(
   const widget = state.widgets[widgetId];
   const tabs = widget.tabs;
   const tabIndex = tabs.indexOf(tabId);
-  if (tabIndex < 0)
-    return;
-
   tabs.splice(tabIndex, 1);
   if (tabId === widget.activeTabId) {
-    setWidgetActiveTabId(state, widget.id, widget.tabs.length > 0 ? widget.tabs[0] : undefined);
+    setWidgetActiveTabId(state, widget.id, widget.tabs[0]);
   }
 
   if (tabs.length === 0) {
@@ -796,12 +793,13 @@ export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneStat
 }
 
 /** @internal */
-export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetState>): WidgetState {
+export function createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial<WidgetState>): WidgetState {
+  assert(tabs.length !== 0);
   return {
-    activeTabId: undefined,
+    activeTabId: tabs[0],
     id,
     minimized: false,
-    tabs: [],
+    tabs,
     ...args,
   };
 }
@@ -844,8 +842,8 @@ export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Pa
 }
 
 /** @internal */
-export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial<WidgetState>): NineZoneState {
-  const widget = createWidgetState(id, widgetArgs);
+export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState {
+  const widget = createWidgetState(id, tabs, widgetArgs);
   return produce(state, (stateDraft) => {
     stateDraft.widgets[widget.id] = castDraft(widget);
     stateDraft.panels[side].widgets.push(widget.id);
@@ -853,11 +851,11 @@ export function addPanelWidget(state: NineZoneState, side: PanelSide, id: Widget
 }
 
 /** @internal */
-export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
+export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
   widgetArgs?: Partial<WidgetState>,
 ): NineZoneState {
   const floatingWidget = createFloatingWidgetState(id, floatingWidgetArgs);
-  const widget = createWidgetState(id, widgetArgs);
+  const widget = createWidgetState(id, tabs, widgetArgs);
   return produce(state, (stateDraft) => {
     stateDraft.floatingWidgets.byId[id] = floatingWidget;
     stateDraft.floatingWidgets.allIds.push(id);
@@ -866,13 +864,12 @@ export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState[
 }
 
 /** @internal */
-export function addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
+export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
   const tab = {
     ...createTabState(id),
     ...tabArgs,
   };
   return produce(state, (stateDraft) => {
-    stateDraft.widgets[widgetId].tabs.push(tab.id);
     stateDraft.tabs[id] = tab;
   });
 }

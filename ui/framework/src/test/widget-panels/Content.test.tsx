@@ -19,7 +19,7 @@ describe("WidgetContent", () => {
 
   it("should render", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "leftStart", { activeTabId: "w1" });
+    nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
     const frontstage = new FrontstageDef();
     const widget = new WidgetDef({
       id: "w1",
@@ -43,7 +43,7 @@ describe("WidgetContent", () => {
 
   it("should render w/o frontstage", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "leftStart", { activeTabId: "w1" });
+    nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
     sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
     const { container } = render(
       <NineZoneProvider
@@ -61,7 +61,7 @@ describe("WidgetContent", () => {
 
   it("should render w/o widgetDef", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "leftStart", { activeTabId: "w1" });
+    nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
     const frontstage = new FrontstageDef();
     sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
     sandbox.stub(frontstage, "findWidgetDef").returns(undefined);

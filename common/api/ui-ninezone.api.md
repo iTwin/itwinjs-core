@@ -19,16 +19,16 @@ import { RectangleProps } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 
 // @internal (undocumented)
-export const ActiveTabIdContext: React.Context<string | undefined>;
+export const ActiveTabIdContext: React.Context<string>;
 
 // @internal (undocumented)
-export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>, widgetArgs?: Partial<WidgetState>): NineZoneState;
+export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial<FloatingWidgetState>, widgetArgs?: Partial<WidgetState>): NineZoneState;
 
 // @internal (undocumented)
-export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial<WidgetState>): NineZoneState;
+export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState;
 
 // @internal (undocumented)
-export function addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
+export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
 
 // @alpha
 export class AppButton extends React.PureComponent<AppButtonProps> {
@@ -237,7 +237,7 @@ export function createTabState(id: TabState["id"], args?: Partial<TabState>): Ta
 export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState;
 
 // @internal (undocumented)
-export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetState>): WidgetState;
+export function createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial<WidgetState>): WidgetState;
 
 // @internal
 export class Css {
@@ -3154,7 +3154,7 @@ export const WidgetsStateContext: React.Context<WidgetsState>;
 // @internal
 export interface WidgetState {
     // (undocumented)
-    readonly activeTabId: TabState["id"] | undefined;
+    readonly activeTabId: TabState["id"];
     // (undocumented)
     readonly id: string;
     // (undocumented)

@@ -25,7 +25,8 @@ describe("PanelWidget", () => {
       sandbox.stub(NineZoneModule, "getUniqueId").returns("newId");
       const dispatch = sinon.stub<NineZoneDispatch>();
       let nineZone = createNineZoneState();
-      nineZone = addPanelWidget(nineZone, "left", "w1");
+      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+      nineZone = addTab(nineZone, "t1");
       const { container } = render(
         <NineZoneProvider
           state={nineZone}
@@ -56,7 +57,8 @@ describe("PanelWidget", () => {
     it("should adjust bounds to keep widget under pointer", () => {
       const dispatch = sinon.stub<NineZoneDispatch>();
       let nineZone = createNineZoneState();
-      nineZone = addPanelWidget(nineZone, "left", "w1");
+      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+      nineZone = addTab(nineZone, "t1");
       const { container } = render(
         <NineZoneProvider
           state={nineZone}
@@ -91,8 +93,8 @@ describe("PanelWidget", () => {
     it("should use preferredFloatingWidgetSize of active tab", () => {
       const dispatch = sinon.stub<NineZoneDispatch>();
       let nineZone = createNineZoneState();
-      nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
-      nineZone = addTab(nineZone, "w1", "t1", {
+      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+      nineZone = addTab(nineZone, "t1", {
         preferredFloatingWidgetSize: {
           height: 400,
           width: 500,
@@ -130,8 +132,8 @@ describe("PanelWidget", () => {
 
   it("should measure widget bounds", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -159,7 +161,7 @@ describe("PanelWidget", () => {
   it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
       <NineZoneProvider
         state={nineZone}

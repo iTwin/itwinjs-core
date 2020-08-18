@@ -1810,7 +1810,7 @@ export const expandWidget: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -4374,7 +4374,7 @@ export const setPanelSize: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -4488,7 +4488,7 @@ export const setWidgetLabel: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -4599,7 +4599,7 @@ export const setWidgetState: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -4774,7 +4774,7 @@ export const showWidget: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];

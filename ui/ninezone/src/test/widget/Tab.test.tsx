@@ -21,8 +21,8 @@ describe("WidgetTab", () => {
 
   it("should render active", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -41,8 +41,8 @@ describe("WidgetTab", () => {
 
   it("should render overflown", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -56,13 +56,13 @@ describe("WidgetTab", () => {
         </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render minimized", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { minimized: true });
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"], { minimized: true });
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -76,13 +76,13 @@ describe("WidgetTab", () => {
         </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render first inactive", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -101,8 +101,8 @@ describe("WidgetTab", () => {
 
   it("should render last not overflown", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -123,8 +123,8 @@ describe("WidgetTab", () => {
     const fakeTimers = sandbox.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const close = sinon.spy();
     render(
       <NineZoneProvider
@@ -163,8 +163,8 @@ describe("WidgetTab", () => {
     const fakeTimers = sandbox.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const close = sinon.spy();
     render(
       <NineZoneProvider
@@ -204,8 +204,8 @@ describe("WidgetTab", () => {
   it("should dispatch WIDGET_TAB_DRAG_START on pointer move", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const close = sinon.spy();
     render(
       <NineZoneProvider
@@ -237,8 +237,8 @@ describe("WidgetTab", () => {
   it("should not dispatch WIDGET_TAB_DRAG_START on pointer move if pointer moved less than 10px", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     render(
       <NineZoneProvider
         state={nineZone}
@@ -261,8 +261,8 @@ describe("WidgetTab", () => {
     const fakeTimers = sandbox.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     render(
       <NineZoneProvider
         state={nineZone}
@@ -288,8 +288,8 @@ describe("WidgetTab", () => {
   it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     render(
       <NineZoneProvider
         state={nineZone}

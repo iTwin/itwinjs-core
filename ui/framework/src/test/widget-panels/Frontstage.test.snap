@@ -310,7 +310,7 @@ Object {
   },
   "widgets": Object {
     "w1": Object {
-      "activeTabId": undefined,
+      "activeTabId": "t1",
       "id": "w1",
       "minimized": false,
       "tabs": Array [

@@ -21,8 +21,8 @@ describe("FloatingTab", () => {
 
   it("should render", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
       draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
@@ -42,8 +42,8 @@ describe("FloatingTab", () => {
     const dragManager = React.createRef<DragManager>();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
       draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
@@ -77,8 +77,8 @@ describe("FloatingTab", () => {
     const dragManager = React.createRef<DragManager>();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
       draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
@@ -116,8 +116,8 @@ describe("FloatingTab", () => {
     const dragManager = React.createRef<DragManager>();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
       draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
@@ -160,8 +160,8 @@ describe("FloatingTab", () => {
     const dragManager = React.createRef<DragManager>();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
       draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),

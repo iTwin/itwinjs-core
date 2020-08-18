@@ -3,12 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import produce from "immer";
-import { should } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
-import { addPanelWidget, addTab, createNineZoneState, NineZoneState, PanelSide, PanelStateContext, PanelWidget, usePreferredPanelWidgetSize, WidgetContentManagerContext } from "../../ui-ninezone";
+import { addPanelWidget, addTab, createNineZoneState, NineZoneState, PanelSide, PanelStateContext, PanelWidget, WidgetContentManagerContext } from "../../ui-ninezone";
 import { ContextConsumer, NineZoneProvider } from "../Providers";
 import { createDOMRect } from "../Utils";
 import { WidgetContentManagerContextArgs } from "../../ui-ninezone/widget/ContentManager";
@@ -41,7 +39,8 @@ describe("PanelWidget", () => {
 
   it("should render", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <Provider
         state={nineZone}
@@ -49,12 +48,13 @@ describe("PanelWidget", () => {
         <PanelWidget widgetId="w1" />
       </Provider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render minimized", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { minimized: true });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"], { minimized: true });
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <Provider
         state={nineZone}
@@ -62,15 +62,15 @@ describe("PanelWidget", () => {
         <PanelWidget widgetId="w1" />
       </Provider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render with fit-content", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
-    nineZone = addPanelWidget(nineZone, "left", "w2", { activeTabId: "t2" });
-    nineZone = addTab(nineZone, "w1", "t1", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "w2", "t2");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
+    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
+    nineZone = addTab(nineZone, "t2");
     const { container } = render(
       <Provider
         state={nineZone}
@@ -83,10 +83,10 @@ describe("PanelWidget", () => {
 
   it("should render horizontal with fit-content", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", { activeTabId: "t1" });
-    nineZone = addPanelWidget(nineZone, "top", "w2", { activeTabId: "t2" });
-    nineZone = addTab(nineZone, "w1", "t1", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "w2", "t2");
+    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
+    nineZone = addPanelWidget(nineZone, "top", "w2", ["t2"]);
+    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
+    nineZone = addTab(nineZone, "t2");
     const { container } = render(
       <Provider
         state={nineZone}
@@ -100,8 +100,8 @@ describe("PanelWidget", () => {
 
   it("should force fill", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "w1", "t1", { preferredPanelWidgetSize: "fit-content" });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
     const { container } = render(
       <Provider
         state={nineZone}
@@ -113,10 +113,57 @@ describe("PanelWidget", () => {
     widget.classList.contains("nz-fill").should.true;
   });
 
+  it("should transition horizontal", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
+    nineZone = addPanelWidget(nineZone, "top", "w2", ["t2"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = addTab(nineZone, "t2");
+
+    const getBoundingClientRectStub = sandbox.stub(Element.prototype, "getBoundingClientRect");
+    getBoundingClientRectStub.returns(createDOMRect({ width: 200 }));
+
+    const { container, rerender } = render(
+      <Provider
+        side="top"
+        state={nineZone}
+      >
+        <PanelWidget
+          widgetId="w1"
+        />
+      </Provider>,
+    );
+    nineZone = produce(nineZone, (draft) => {
+      draft.widgets.w1.minimized = true;
+    });
+
+    getBoundingClientRectStub.reset();
+    getBoundingClientRectStub.onCall(0).returns(createDOMRect({ width: 300 }));
+    getBoundingClientRectStub.returns(createDOMRect({ width: 35 }));
+
+    rerender(<Provider
+      side="top"
+      state={nineZone}
+    >
+      <PanelWidget
+        widgetId="w1"
+      />
+    </Provider>);
+
+    container.firstChild!.should.matchSnapshot();
+
+    const widget = container.firstChild! as HTMLElement;
+    fireEvent.transitionEnd(widget);
+
+    container.firstChild!.should.matchSnapshot();
+  });
+
   it("should transition", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    nineZone = addPanelWidget(nineZone, "left", "w2");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = addTab(nineZone, "t2");
 
     const getBoundingClientRectStub = sandbox.stub(Element.prototype, "getBoundingClientRect");
     getBoundingClientRectStub.returns(createDOMRect({ height: 200 }));
@@ -136,7 +183,7 @@ describe("PanelWidget", () => {
 
     getBoundingClientRectStub.reset();
     getBoundingClientRectStub.onCall(0).returns(createDOMRect({ height: 300 }));
-    getBoundingClientRectStub.onCall(1).returns(createDOMRect({ height: 35 }));
+    getBoundingClientRectStub.returns(createDOMRect({ height: 35 }));
 
     rerender(<Provider
       state={nineZone}
@@ -154,13 +201,47 @@ describe("PanelWidget", () => {
     container.firstChild!.should.matchSnapshot();
   });
 
+  it("should not transition", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = addTab(nineZone, "t2");
+
+    const getBoundingClientRectStub = sandbox.stub(Element.prototype, "getBoundingClientRect");
+    getBoundingClientRectStub.returns(createDOMRect({ height: 200 }));
+
+    const { container, rerender } = render(
+      <Provider
+        state={nineZone}
+      >
+        <PanelWidget
+          widgetId="w1"
+        />
+      </Provider>,
+    );
+    nineZone = produce(nineZone, (draft) => {
+      draft.widgets.w1.minimized = true;
+    });
+
+    rerender(<Provider
+      state={nineZone}
+    >
+      <PanelWidget
+        widgetId="w1"
+      />
+    </Provider>);
+
+    container.firstChild!.should.matchSnapshot();
+  });
+
   it("should transition when switching tab", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1_1" });
-    nineZone = addPanelWidget(nineZone, "left", "w2");
-    nineZone = addTab(nineZone, "w1", "t1_1");
-    nineZone = addTab(nineZone, "w1", "t1_2", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "w2", "t2_1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1_1", "t1_2"]);
+    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2_1"]);
+    nineZone = addTab(nineZone, "t1_1");
+    nineZone = addTab(nineZone, "t1_2", { preferredPanelWidgetSize: "fit-content" });
+    nineZone = addTab(nineZone, "t2_1");
 
     const getBoundingClientRectStub = sandbox.stub(Element.prototype, "getBoundingClientRect");
     getBoundingClientRectStub.returns(createDOMRect({ height: 200 }));
@@ -197,15 +278,5 @@ describe("PanelWidget", () => {
     contentManagerRef.current?.onRestoreTransientState.emit("t1_2");
 
     container.firstChild!.should.matchSnapshot();
-  });
-});
-
-describe("usePreferredPanelWidgetSize", () => {
-  it("should return undefined for widget w/o active tab", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    // eslint-disable-next-line react/display-name
-    const { result } = renderHook(() => usePreferredPanelWidgetSize("w1"), { wrapper: (props) => <NineZoneProvider state={nineZone} {...props} /> });
-    should().not.exist(result.current);
   });
 });

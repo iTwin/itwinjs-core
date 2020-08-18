@@ -42,7 +42,7 @@ describe("NineZoneStateReducer", () => {
           width: 300,
         },
       });
-      state = addFloatingWidget(state, "fw1", {
+      state = addFloatingWidget(state, "fw1", ["t1"], {
         bounds: {
           top: 0,
           bottom: 150,
@@ -180,21 +180,21 @@ describe("NineZoneStateReducer", () => {
   describe("WIDGET_TAB_CLICK", () => {
     it("should activate tab", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
-      state = addTab(state, "w1", "t1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_CLICK",
         side: "left",
         widgetId: "w1",
         id: "t1",
       });
-      newState.widgets.w1.activeTabId!.should.eq("t1");
+      newState.widgets.w1.activeTabId.should.eq("t1");
     });
 
     it("should restore minimized widget", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", { minimized: true });
-      state = addTab(state, "w1", "t1");
+      state = addPanelWidget(state, "left", "w1", ["t1"], { minimized: true });
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_CLICK",
         side: "left",
@@ -206,12 +206,12 @@ describe("NineZoneStateReducer", () => {
 
     it("should expand (minimize other widgets)", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", { activeTabId: "t1" });
-      state = addPanelWidget(state, "left", "w2");
-      state = addPanelWidget(state, "left", "w3");
-      state = addTab(state, "w1", "t1");
-      state = addTab(state, "w2", "t2");
-      state = addTab(state, "w3", "t3");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addPanelWidget(state, "left", "w2", ["t2"]);
+      state = addPanelWidget(state, "left", "w3", ["t3"]);
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
+      state = addTab(state, "t3");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_CLICK",
         side: "left",
@@ -225,13 +225,13 @@ describe("NineZoneStateReducer", () => {
 
     it("should not expand clicked tab is not active", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", { activeTabId: "t1" });
-      state = addPanelWidget(state, "left", "w2");
-      state = addPanelWidget(state, "left", "w3");
-      state = addTab(state, "w1", "t1");
-      state = addTab(state, "w1", "t2");
-      state = addTab(state, "w2", "t2");
-      state = addTab(state, "w3", "t3");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addPanelWidget(state, "left", "w2", ["t2"]);
+      state = addPanelWidget(state, "left", "w3", ["t3"]);
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
+      state = addTab(state, "t2");
+      state = addTab(state, "t3");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_CLICK",
         side: "left",
@@ -245,8 +245,8 @@ describe("NineZoneStateReducer", () => {
 
     it("should maximize minimized floating widget", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "w1", undefined, { activeTabId: "t1", minimized: true });
-      state = addTab(state, "w1", "t1");
+      state = addFloatingWidget(state, "w1", ["t1"], undefined, { minimized: true });
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_CLICK",
         side: undefined,
@@ -258,10 +258,10 @@ describe("NineZoneStateReducer", () => {
 
     it("should update preferredFloatingWidgetSize of a tab", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "w1", {
+      state = addFloatingWidget(state, "w1", ["t1"], {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
-      }, { activeTabId: "t1" });
-      state = addTab(state, "w1", "t1");
+      });
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_CLICK",
         side: undefined,
@@ -275,12 +275,12 @@ describe("NineZoneStateReducer", () => {
   describe("WIDGET_TAB_DOUBLE_CLICK", () => {
     it("should expand minimized widget", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", { minimized: true });
-      state = addPanelWidget(state, "left", "w2");
-      state = addPanelWidget(state, "left", "w3");
-      state = addTab(state, "w1", "t1");
-      state = addTab(state, "w1", "t2");
-      state = addTab(state, "w1", "t3");
+      state = addPanelWidget(state, "left", "w1", ["t1"], { minimized: true });
+      state = addPanelWidget(state, "left", "w2", ["t2"]);
+      state = addPanelWidget(state, "left", "w3", ["t3"]);
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
+      state = addTab(state, "t3");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DOUBLE_CLICK",
         side: "left",
@@ -295,12 +295,12 @@ describe("NineZoneStateReducer", () => {
 
     it("should activate inactive tab if widget is not minimized", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
-      state = addPanelWidget(state, "left", "w2");
-      state = addPanelWidget(state, "left", "w3");
-      state = addTab(state, "w1", "t1");
-      state = addTab(state, "w1", "t2");
-      state = addTab(state, "w1", "t3");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addPanelWidget(state, "left", "w2", ["t2"]);
+      state = addPanelWidget(state, "left", "w3", ["t3"]);
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
+      state = addTab(state, "t3");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DOUBLE_CLICK",
         side: "left",
@@ -308,17 +308,17 @@ describe("NineZoneStateReducer", () => {
         id: "t1",
         floatingWidgetId: undefined,
       });
-      newState.widgets.w1.activeTabId!.should.eq("t1");
+      newState.widgets.w1.activeTabId.should.eq("t1");
     });
 
     it("should minimize", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", { activeTabId: "t1" });
-      state = addPanelWidget(state, "left", "w2");
-      state = addPanelWidget(state, "left", "w3");
-      state = addTab(state, "w1", "t1");
-      state = addTab(state, "w1", "t2");
-      state = addTab(state, "w1", "t3");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addPanelWidget(state, "left", "w2", ["t2"]);
+      state = addPanelWidget(state, "left", "w3", ["t3"]);
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
+      state = addTab(state, "t3");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DOUBLE_CLICK",
         side: "left",
@@ -331,12 +331,12 @@ describe("NineZoneStateReducer", () => {
 
     it("should not minimize last non-minimized widget", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", { activeTabId: "t1" });
-      state = addPanelWidget(state, "left", "w2", { minimized: true });
-      state = addPanelWidget(state, "left", "w3", { minimized: true });
-      state = addTab(state, "w1", "t1");
-      state = addTab(state, "w1", "t2");
-      state = addTab(state, "w1", "t3");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
+      state = addPanelWidget(state, "left", "w3", ["t3"], { minimized: true });
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
+      state = addTab(state, "t3");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DOUBLE_CLICK",
         side: "left",
@@ -349,8 +349,8 @@ describe("NineZoneStateReducer", () => {
 
     it("should minimize floating widget", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t1" });
-      state = addTab(state, "fw1", "t1");
+      state = addFloatingWidget(state, "fw1", ["t1"]);
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DOUBLE_CLICK",
         id: "t1",
@@ -363,9 +363,9 @@ describe("NineZoneStateReducer", () => {
 
     it("should activate tab", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t1" });
-      state = addTab(state, "fw1", "t1");
-      state = addTab(state, "fw1", "t2");
+      state = addFloatingWidget(state, "fw1", ["t1"]);
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DOUBLE_CLICK",
         id: "t2",
@@ -373,14 +373,14 @@ describe("NineZoneStateReducer", () => {
         widgetId: "fw1",
         floatingWidgetId: "fw1",
       });
-      newState.widgets.fw1.activeTabId!.should.eq("t2");
+      newState.widgets.fw1.activeTabId.should.eq("t2");
     });
   });
 
   describe("PANEL_WIDGET_DRAG_START", () => {
     it("should move widget to floating state", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
       const newState = NineZoneStateReducer(state, {
         type: "PANEL_WIDGET_DRAG_START",
         bounds: new Rectangle().toProps(),
@@ -394,8 +394,8 @@ describe("NineZoneStateReducer", () => {
 
     it("should keep one widget expanded", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
-      state = addPanelWidget(state, "left", "w2", { minimized: true });
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
       const newState = NineZoneStateReducer(state, {
         type: "PANEL_WIDGET_DRAG_START",
         bounds: new Rectangle().toProps(),
@@ -433,7 +433,7 @@ describe("NineZoneStateReducer", () => {
     describe("no target", () => {
       it("should not remove floating widget", () => {
         let state = createNineZoneState();
-        state = addFloatingWidget(state, "fw1");
+        state = addFloatingWidget(state, "fw1", ["t1"]);
         const newState = NineZoneStateReducer(state, {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
@@ -448,12 +448,12 @@ describe("NineZoneStateReducer", () => {
     describe("tab target", () => {
       it("should add dragged tab", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "left", "w1");
-        state = addTab(state, "w1", "t1");
-        state = addTab(state, "w1", "t2");
-        state = addTab(state, "w1", "t3");
-        state = addFloatingWidget(state, "fw1");
-        state = addTab(state, "fw1", "fwt1");
+        state = addPanelWidget(state, "left", "w1", ["t1", "t2", "t3"]);
+        state = addTab(state, "t1");
+        state = addTab(state, "t2");
+        state = addTab(state, "t3");
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
+        state = addTab(state, "fwt1");
         const newState = NineZoneStateReducer(state, {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
@@ -469,11 +469,8 @@ describe("NineZoneStateReducer", () => {
 
       it("should update home of tool settings floating widget", () => {
         let state = createNineZoneState();
-        state = addFloatingWidget(state, "fw1", undefined, {
-          activeTabId: toolSettingsTabId,
-          tabs: [toolSettingsTabId],
-        });
-        state = addFloatingWidget(state, "fw2", {
+        state = addFloatingWidget(state, "fw1", [toolSettingsTabId]);
+        state = addFloatingWidget(state, "fw2", ["t2"], {
           home: {
             side: "bottom",
             widgetId: undefined,
@@ -501,9 +498,9 @@ describe("NineZoneStateReducer", () => {
     describe("widget target", () => {
       it("should add widget", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "left", "w1");
-        state = addPanelWidget(state, "left", "w2");
-        state = addFloatingWidget(state, "fw1");
+        state = addPanelWidget(state, "left", "w1", ["t1"]);
+        state = addPanelWidget(state, "left", "w2", ["t2"]);
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
         const newState = NineZoneStateReducer(state, {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
@@ -522,7 +519,7 @@ describe("NineZoneStateReducer", () => {
     describe("panel target", () => {
       it("should add panel", () => {
         let state = createNineZoneState();
-        state = addFloatingWidget(state, "fw1");
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
         const newState = NineZoneStateReducer(state, {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
@@ -541,10 +538,10 @@ describe("NineZoneStateReducer", () => {
   describe("FLOATING_WIDGET_SEND_BACK", () => {
     it("should send back to specified `left` panel widget", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", {
+      state = addPanelWidget(state, "left", "w1", ["t1"], {
         tabs: ["t0"],
       });
-      state = addFloatingWidget(state, "fw1", {
+      state = addFloatingWidget(state, "fw1", ["fwt1"], {
         home: {
           side: "left",
           widgetId: "w1",
@@ -565,17 +562,13 @@ describe("NineZoneStateReducer", () => {
 
     it("should send back to specified `right` panel widget", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "right", "w1", {
-        tabs: ["t0"],
-      });
-      state = addFloatingWidget(state, "fw1", {
+      state = addPanelWidget(state, "right", "w1", ["t0"]);
+      state = addFloatingWidget(state, "fw1", ["t1", "t2"], {
         home: {
           side: "right",
           widgetId: "w1",
           widgetIndex: 0,
         },
-      }, {
-        tabs: ["t1", "t2"],
       });
       const newState = NineZoneStateReducer(state, {
         type: "FLOATING_WIDGET_SEND_BACK",
@@ -589,15 +582,13 @@ describe("NineZoneStateReducer", () => {
 
     it("should send back by widgetIndex", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
-      state = addFloatingWidget(state, "fw1", {
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addFloatingWidget(state, "fw1", ["t1", "t2"], {
         home: {
           side: "left",
           widgetId: undefined,
           widgetIndex: 0,
         },
-      }, {
-        tabs: ["t1", "t2"],
       });
       const newState = NineZoneStateReducer(state, {
         type: "FLOATING_WIDGET_SEND_BACK",
@@ -612,15 +603,13 @@ describe("NineZoneStateReducer", () => {
 
     it("should send back by widgetIndex when there is no widget with specified widgetId", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w2");
-      state = addFloatingWidget(state, "fw1", {
+      state = addPanelWidget(state, "left", "w2", ["t2"]);
+      state = addFloatingWidget(state, "fw1", ["t1", "t2"], {
         home: {
           side: "left",
           widgetId: "w1",
           widgetIndex: 0,
         },
-      }, {
-        tabs: ["t1", "t2"],
       });
       const newState = NineZoneStateReducer(state, {
         type: "FLOATING_WIDGET_SEND_BACK",
@@ -635,20 +624,18 @@ describe("NineZoneStateReducer", () => {
 
     it("should insert to provided widgetIndex when maxWidgetCount is reached", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
-      state = addTab(state, "w1", "t1");
-      state = addPanelWidget(state, "left", "w2");
-      state = addTab(state, "w2", "t2");
-      state = addPanelWidget(state, "left", "w3");
-      state = addTab(state, "w3", "t3");
-      state = addFloatingWidget(state, "fw1", {
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addTab(state, "t1");
+      state = addPanelWidget(state, "left", "w2", ["t2"]);
+      state = addTab(state, "t2");
+      state = addPanelWidget(state, "left", "w3", ["t3"]);
+      state = addTab(state, "t3");
+      state = addFloatingWidget(state, "fw1", ["ft1", "ft2"], {
         home: {
           side: "left",
           widgetId: undefined,
           widgetIndex: 1,
         },
-      }, {
-        tabs: ["ft1", "ft2"],
       });
       const newState = NineZoneStateReducer(state, {
         type: "FLOATING_WIDGET_SEND_BACK",
@@ -668,9 +655,10 @@ describe("NineZoneStateReducer", () => {
   describe("FLOATING_WIDGET_RESIZE", () => {
     it("should resize widget", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "fw1", {
+      state = addFloatingWidget(state, "fw1", ["t1"], {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
       });
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "FLOATING_WIDGET_RESIZE",
         id: "fw1",
@@ -686,10 +674,10 @@ describe("NineZoneStateReducer", () => {
 
     it("should set preferredFloatingWidgetSize of active tab", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "fw1", {
+      state = addFloatingWidget(state, "fw1", ["t1"], {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
-      }, { activeTabId: "t1" });
-      state = addTab(state, "fw1", "t1");
+      });
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "FLOATING_WIDGET_RESIZE",
         id: "fw1",
@@ -705,8 +693,8 @@ describe("NineZoneStateReducer", () => {
   describe("FLOATING_WIDGET_BRING_TO_FRONT", () => {
     it("should bring widget to front", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "fw1");
-      state = addFloatingWidget(state, "fw2");
+      state = addFloatingWidget(state, "fw1", ["t1"]);
+      state = addFloatingWidget(state, "fw2", ["t2"]);
       const newState = NineZoneStateReducer(state, {
         type: "FLOATING_WIDGET_BRING_TO_FRONT",
         id: "fw1",
@@ -718,7 +706,7 @@ describe("NineZoneStateReducer", () => {
   describe("WIDGET_TAB_DRAG_START", () => {
     it("should set dragged tab", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
@@ -732,9 +720,9 @@ describe("NineZoneStateReducer", () => {
 
     it("should remove tab from widget", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
-      state = addTab(state, "w1", "t1");
-      state = addTab(state, "w1", "t2");
+      state = addPanelWidget(state, "left", "w1", ["t1", "t2"]);
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
@@ -748,8 +736,8 @@ describe("NineZoneStateReducer", () => {
 
     it("should remove widget from panel", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
-      state = addTab(state, "w1", "t1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
@@ -763,8 +751,8 @@ describe("NineZoneStateReducer", () => {
 
     it("should remove widget", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
-      state = addTab(state, "w1", "t1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
@@ -778,8 +766,8 @@ describe("NineZoneStateReducer", () => {
 
     it("should remove floating widget", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "fw1");
-      state = addTab(state, "fw1", "t1");
+      state = addFloatingWidget(state, "fw1", ["t1"]);
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: "fw1",
@@ -793,9 +781,9 @@ describe("NineZoneStateReducer", () => {
 
     it("should keep active tab", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t2" });
-      state = addTab(state, "fw1", "t1");
-      state = addTab(state, "fw1", "t2");
+      state = addFloatingWidget(state, "fw1", ["t1", "t2"], undefined, { activeTabId: "t2" });
+      state = addTab(state, "t1");
+      state = addTab(state, "t2");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: "fw1",
@@ -804,14 +792,14 @@ describe("NineZoneStateReducer", () => {
         side: undefined,
         widgetId: "fw1",
       });
-      newState.widgets.fw1.activeTabId!.should.eq("t1");
+      newState.widgets.fw1.activeTabId.should.eq("t1");
     });
 
     it("should keep one widget expanded", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", { activeTabId: "t1" });
-      state = addPanelWidget(state, "left", "w2", { minimized: true });
-      state = addTab(state, "w1", "t1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
+      state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
+      state = addTab(state, "t1");
       const newState = NineZoneStateReducer(state, {
         type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
@@ -827,7 +815,7 @@ describe("NineZoneStateReducer", () => {
   describe("WIDGET_TAB_DRAG", () => {
     it("should update tab position", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
       state = produce(state, (draft) => {
         draft.draggedTab = createDraggedTabState("dt", {
           position: new Point(100, 200).toProps(),
@@ -848,9 +836,9 @@ describe("NineZoneStateReducer", () => {
     describe("tab target", () => {
       it("should add tab", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "left", "w1");
-        state = addTab(state, "w1", "t1");
-        state = addTab(state, "w1", "t2");
+        state = addPanelWidget(state, "left", "w1", ["t1", "t2"]);
+        state = addTab(state, "t1");
+        state = addTab(state, "t2");
         state = produce(state, (draft) => {
           draft.draggedTab = createDraggedTabState("dt", {
             position: new Point(100, 200).toProps(),
@@ -881,10 +869,7 @@ describe("NineZoneStateReducer", () => {
             },
           });
         });
-        state = addFloatingWidget(state, "fw1", undefined, {
-          activeTabId: toolSettingsTabId,
-          tabs: [toolSettingsTabId],
-        });
+        state = addFloatingWidget(state, "fw1", [toolSettingsTabId]);
         const newState = NineZoneStateReducer(state, {
           type: "WIDGET_TAB_DRAG_END",
           id: "d2",
@@ -906,7 +891,7 @@ describe("NineZoneStateReducer", () => {
     describe("widget target", () => {
       it("should add widget", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "left", "w1");
+        state = addPanelWidget(state, "left", "w1", ["t1"]);
         state = produce(state, (draft) => {
           draft.draggedTab = createDraggedTabState("dt", {
             position: new Point(100, 200).toProps(),
@@ -980,12 +965,11 @@ describe("NineZoneStateReducer", () => {
   describe("TOOL_SETTINGS_DOCK", () => {
     it("should dock from panel widget", () => {
       let state = createNineZoneState();
-      state = addPanelWidget(state, "left", "w1", { activeTabId: toolSettingsTabId });
+      state = addPanelWidget(state, "left", "w1", [toolSettingsTabId]);
       state = produce(state, (draft) => {
         draft.toolSettings = {
           type: "widget",
         };
-        draft.widgets.w1.tabs.push(toolSettingsTabId);
       });
       const newState = NineZoneStateReducer(state, {
         type: "TOOL_SETTINGS_DOCK",
@@ -996,12 +980,11 @@ describe("NineZoneStateReducer", () => {
 
     it("should dock from floating widget", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "w1", undefined, { activeTabId: toolSettingsTabId });
+      state = addFloatingWidget(state, "w1", [toolSettingsTabId]);
       state = produce(state, (draft) => {
         draft.toolSettings = {
           type: "widget",
         };
-        draft.widgets.w1.tabs.push(toolSettingsTabId);
       });
       const newState = NineZoneStateReducer(state, {
         type: "TOOL_SETTINGS_DOCK",
@@ -1058,17 +1041,18 @@ describe("NineZoneStateReducer", () => {
 describe("findTab", () => {
   it("should return undefined if widget is not found", () => {
     let nineZone = produce(createNineZoneState(), (draft) => {
-      draft.widgets.w1 = castDraft(createWidgetState("w1"));
+      draft.widgets.w1 = castDraft(createWidgetState("w1", ["t1"]));
     });
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addTab(nineZone, "t1");
     const tab = findTab(nineZone, "t1");
     should().not.exist(tab);
   });
 
   it("should return undefined if tab is not found", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    const tab = findTab(nineZone, "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
+    const tab = findTab(nineZone, "t2");
     should().not.exist(tab);
   });
 });
@@ -1080,5 +1064,28 @@ describe("removeTab", () => {
       removeTab(draft, "t1");
     });
     newState.should.eq(state);
+  });
+
+  it("should update widget activeTabId", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1", ["t1", "t2"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    const newState = produce(state, (draft) => {
+      removeTab(draft, "t1");
+    });
+    newState.widgets.w1.activeTabId.should.eq("t2");
+  });
+
+  it("should not update widget activeTabId", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1", ["t1", "t2"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    const newState = produce(state, (draft) => {
+      removeTab(draft, "t2");
+    });
+    newState.widgets.w1.activeTabId.should.eq("t1");
+    newState.widgets.w1.tabs.should.eql(["t1"]);
   });
 });

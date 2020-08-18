@@ -40,7 +40,7 @@ describe("WidgetPanelGrip", () => {
   it("should dispatch PANEL_TOGGLE_COLLAPSED", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     render(
       <NineZoneProvider
         state={nineZone}
@@ -68,7 +68,7 @@ describe("WidgetPanelGrip", () => {
     const fakeTimers = sandbox.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     render(
       <NineZoneProvider
         state={nineZone}
@@ -101,7 +101,7 @@ describe("WidgetPanelGrip", () => {
 
   it("should not start resize w/o pointer down", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -120,7 +120,7 @@ describe("WidgetPanelGrip", () => {
 
   it("should reset initial position on pointer up", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
       <NineZoneProvider
         state={nineZone}

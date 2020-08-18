@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PanelWidget should render 1`] = `
+exports[`PanelWidget should not transition 1`] = `
 <div
-  class="nz-widget-widget nz-widget-panelWidget nz-fill"
+  class="nz-widget-widget nz-widget-panelWidget nz-minimized"
 >
   <div
     class="nz-widget-tabBar"
@@ -14,6 +14,20 @@ exports[`PanelWidget should render 1`] = `
       class="nz-widget-tabs"
       role="tablist"
     >
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
       <div
         class="nz-widget-overflow nz-hidden"
       >
@@ -29,6 +43,58 @@ exports[`PanelWidget should render 1`] = `
       </div>
     </div>
   </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
+</div>
+`;
+
+exports[`PanelWidget should render 1`] = `
+<div
+  class="nz-widget-widget nz-widget-panelWidget nz-fill"
+>
+  <div
+    class="nz-widget-tabBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+      role="tablist"
+    >
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+          role="button"
+          tabindex="-1"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content-container"
+  />
 </div>
 `;
 
@@ -97,6 +163,20 @@ exports[`PanelWidget should render minimized 1`] = `
       role="tablist"
     >
       <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
@@ -111,6 +191,9 @@ exports[`PanelWidget should render minimized 1`] = `
       </div>
     </div>
   </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
 </div>
 `;
 
@@ -262,6 +345,20 @@ exports[`PanelWidget should transition 1`] = `
       role="tablist"
     >
       <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
@@ -276,6 +373,9 @@ exports[`PanelWidget should transition 1`] = `
       </div>
     </div>
   </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
 </div>
 `;
 
@@ -295,6 +395,20 @@ exports[`PanelWidget should transition 2`] = `
       role="tablist"
     >
       <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
@@ -309,6 +423,109 @@ exports[`PanelWidget should transition 2`] = `
       </div>
     </div>
   </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
+</div>
+`;
+
+exports[`PanelWidget should transition horizontal 1`] = `
+<div
+  class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-transition nz-transitioning"
+  style="max-width: 35px;"
+>
+  <div
+    class="nz-widget-tabBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+      role="tablist"
+    >
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+          role="button"
+          tabindex="-1"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
+</div>
+`;
+
+exports[`PanelWidget should transition horizontal 2`] = `
+<div
+  class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-minimized"
+  style=""
+>
+  <div
+    class="nz-widget-tabBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+      role="tablist"
+    >
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        role="tab"
+      >
+        <span
+          title=""
+        />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+          role="button"
+          tabindex="-1"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
 </div>
 `;
 

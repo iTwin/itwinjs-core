@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import {
-  addPanelWidget, createNineZoneState, DraggedPanelSideContext, NineZoneDispatch, WidgetPanel,
+  addPanelWidget, createNineZoneState, DraggedPanelSideContext, NineZoneDispatch, WidgetPanel, addTab,
 } from "../../ui-ninezone";
 import { createDOMRect } from "../Utils";
 import { NineZoneProvider } from "../Providers";
@@ -21,7 +21,8 @@ describe("WidgetPanel", () => {
 
   it("should render vertical", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.size = 200;
     });
@@ -34,12 +35,13 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render horizontal", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", {});
+    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.top.size = 200;
     });
@@ -52,12 +54,13 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render collapsed", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.collapsed = true;
     });
@@ -70,12 +73,13 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render captured", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -87,12 +91,13 @@ describe("WidgetPanel", () => {
         </DraggedPanelSideContext.Provider>
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render spanned", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", {});
+    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.top.span = true;
     });
@@ -105,12 +110,13 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render with top spanned", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -121,12 +127,13 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should render with span bottom", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -137,13 +144,14 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 
   it("should dispatch PANEL_INITIALIZE", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 300 }));
     render(
       <NineZoneProvider
@@ -164,8 +172,10 @@ describe("WidgetPanel", () => {
 
   it("should render multiple widgets", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", {});
-    nineZone = addPanelWidget(nineZone, "left", "w2", {});
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = addTab(nineZone, "t2");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -175,6 +185,6 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    container.firstChild!.should.matchSnapshot(true);
   });
 });

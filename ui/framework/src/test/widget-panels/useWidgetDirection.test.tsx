@@ -22,8 +22,8 @@ describe("useWidgetDirection", () => {
 
   it("should return 'horizontal' for a widget in a horizontal side panel", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1");
-    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { result } = renderHook(() => useWidgetDirection(), {
       wrapper: ({ children }) => ( // eslint-disable-line react/display-name
         <NineZoneContext.Provider value={nineZone}>
