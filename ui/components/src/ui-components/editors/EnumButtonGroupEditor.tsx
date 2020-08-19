@@ -179,8 +179,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
  * It uses the [[EnumButtonGroupEditor]] React component.
  * @beta
  */
-export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
-
+export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {  // istanbul ignore next
   public get reactNode(): React.ReactNode {
     return <EnumButtonGroupEditor />;
   }

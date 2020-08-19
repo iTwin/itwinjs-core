@@ -370,6 +370,9 @@ public;TableStructValueRenderer
 beta;TextareaEditor 
 beta;TextareaPropertyEditor 
 beta;TextEditor 
+beta;ThemedEnumEditor 
+beta;ThemedEnumEditorProps 
+beta;ThemedEnumPropertyEditor 
 internal;Timeline 
 alpha;TimelineComponent 
 alpha;TimelineDataProvider

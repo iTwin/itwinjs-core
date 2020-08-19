@@ -99,6 +99,7 @@
     "raf": "^3.4.0",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
+    "react-select-event": "^5.0.0",
     "react-test-renderer": "^16.13.1",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",

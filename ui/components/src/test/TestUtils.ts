@@ -151,10 +151,9 @@ export class TestUtils {
 
     return propertyRecord;
   }
-
   public static createEnumProperty(name: string, index: string | number, column?: ColumnDescription) {
     const value: PrimitiveValue = {
-      displayValue: "",
+      displayValue: name,
       value: index,
       valueFormat: PropertyValueFormat.Primitive,
     };

@@ -6,32 +6,44 @@
  * @module PropertyEditors
  */
 
-import "./EnumEditor.scss";
+import "./ThemedEnumEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
-import { Select } from "@bentley/ui-core";
+import { EnumerationChoice, PrimitiveValue, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
+import { OptionType, ThemedSelect } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { ActionMeta, ValueType } from "react-select/src/types";
 
+/** Properties for [[EnumEditor]] component
+ * @beta
+ */
+export interface ThemedEnumEditorProps extends PropertyEditorProps {
+  /** Allow searching in enum list */
+  isSearchable?: boolean;
+  /** The prompt string used when no enum member has been selected */
+  placeholder?: string;
+  /** The function to return an error message used when the search string can't be found in the list */
+  noOptionsMessage?: (obj: { inputValue: string }) => string | null;
+}
 /** @internal */
 interface EnumEditorState {
   selectValue: string | number;
   valueIsNumber: boolean;
-  options: { [key: string]: string };
+  options: OptionType[] | undefined;
 }
 
 /** EnumEditor React component that is a property editor with select input
  * @beta
  */
-export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
+export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
 
   /** @internal */
   public readonly state: Readonly<EnumEditorState> = {
     selectValue: "",
     valueIsNumber: false,
-    options: {},
+    options: undefined,
   };
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -50,15 +62,19 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     return propertyValue;
   }
 
-  private _updateSelectValue = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  private _updateSelectValue = (value: ValueType<OptionType>, action: ActionMeta<OptionType>) => {
     // istanbul ignore else
-    if (this._isMounted) {
+    if (this._isMounted && action.action === "select-option" && value) {
       let selectValue: string | number;
+      const selectedOption: OptionType = value as OptionType;
+      // istanbul ignore next
+      if (selectedOption === undefined) // no multi-select allowed
+        return;
 
       if (this.state.valueIsNumber)
-        selectValue = parseInt(e.target.value, 10);
+        selectValue = parseInt(selectedOption.value, 10);
       else
-        selectValue = e.target.value;
+        selectValue = selectedOption.value;
 
       this.setState({
         selectValue,
@@ -97,33 +113,37 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     const { propertyRecord } = this.props;
     let initialValue: string | number = "";
     let valueIsNumber: boolean = false;
-
-    // istanbul ignore else
-    if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
-      const primitiveValue = propertyRecord.value.value;
-      if (typeof primitiveValue === "string") {
-        initialValue = primitiveValue;
-        valueIsNumber = false;
-      } else {
-        initialValue = primitiveValue as number;
-        valueIsNumber = true;
-      }
-    }
-
     let choices: EnumerationChoice[] | undefined;
 
     if (propertyRecord && propertyRecord.property.enum)
+        // istanbul ignore else
       if (propertyRecord.property.enum.choices instanceof Promise) {
         choices = await propertyRecord.property.enum.choices;
       } else {
         choices = propertyRecord.property.enum.choices;
       }
 
-    const options: { [key: string]: string } = {};
-    if (choices) {
-      choices.forEach((choice: EnumerationChoice) => {
-        options[choice.value.toString()] = choice.label;
-      });
+    let options: OptionType[] = [];
+    if (this.state.options === undefined) {
+      if (choices) {
+        choices.forEach((choice: EnumerationChoice) => {
+          options.push({ value: choice.value.toString(), label: choice.label });
+        });
+      }
+    } else {
+      options = this.state.options;
+    }
+
+    // istanbul ignore else
+    if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
+      const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
+      if (typeof primitiveValue === "string") {
+        initialValue = primitiveValue as string;
+        valueIsNumber = false;
+      } else {
+        initialValue = primitiveValue as number;
+        valueIsNumber = true;
+      }
     }
 
     // istanbul ignore else
@@ -135,22 +155,28 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   public render() {
     const className = classnames("components-cell-editor", "components-enum-editor", this.props.className);
     const selectValue = this.state.selectValue ? this.state.selectValue.toString() : undefined;
-
+    const options = this.state.options === undefined ? [] : this.state.options;
+    const selectedOption = options.find((e) => e.value === selectValue);
+    const { isSearchable, placeholder, noOptionsMessage } = this.props as any;
     // set min-width to show about 4 characters + down arrow
     const minWidthStyle: React.CSSProperties = {
       minWidth: `${6 * 0.75}em`,
     };
 
     return (
-      <Select
-        onBlur={this.props.onBlur}
+      <ThemedSelect
         className={className}
-        style={this.props.style ? this.props.style : minWidthStyle}
-        value={selectValue}
+        value={selectedOption}
         onChange={this._updateSelectValue}
         data-testid="components-select-editor"
-        options={this.state.options}
-        setFocus={this.props.setFocus} />
+        styles={this.props.style ? this.props.style : minWidthStyle}
+        isSearchable={isSearchable}
+        placeholder={placeholder}
+        noOptionsMessage={noOptionsMessage}
+        isMulti={false}
+        // eslint-disable-next-line jsx-a11y/no-autofocus
+        autoFocus={this.props.setFocus}
+        options={options} />
     );
   }
 }
@@ -159,10 +185,28 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
  * It uses the [[EnumEditor]] React component.
  * @beta
  */
-export class EnumPropertyEditor extends PropertyEditorBase {
+export class ThemedEnumPropertyEditor extends PropertyEditorBase {
+
+  // istanbul ignore next
+  public get containerHandlesBlur(): boolean {
+    return false;
+  }
+  // istanbul ignore next
+  public get containerHandlesEscape(): boolean {
+    return false;
+  }
+  // istanbul ignore next
+  public get containerHandlesEnter(): boolean {
+    return false;
+  }
+  // istanbul ignore next
+  public get containerHandlesTab(): boolean {
+    return false;
+  }
+  // istanbul ignore next
   public get reactNode(): React.ReactNode {
-    return <EnumEditor />;
+    return <ThemedEnumEditor />;
   }
 }
 
-PropertyEditorManager.registerEditor(StandardTypeNames.Enum, EnumPropertyEditor);
+PropertyEditorManager.registerEditor(StandardTypeNames.Enum, ThemedEnumPropertyEditor, StandardEditorNames.ThemedEnum);

@@ -34,6 +34,15 @@ describe("PropertyEditorManager", () => {
   });
 
   class MinePropertyEditor extends PropertyEditorBase {
+    public get containerHandlesBlur(): boolean {
+      return true;
+    }
+    public get containerHandlesEscape(): boolean {
+      return true;
+    }
+    public get containerHandlesEnter(): boolean {
+      return true;
+    }
     public get reactNode(): React.ReactNode {
       return <TextEditor />;
     }
@@ -161,6 +170,15 @@ describe("PropertyEditorManager", () => {
   });
 
   class PropertyEditorWithEditorParams extends PropertyEditorBase {
+    public get containerHandlesBlur(): boolean {
+      return true;
+    }
+    public get containerHandlesEscape(): boolean {
+      return true;
+    }
+    public get containerHandlesEnter(): boolean {
+      return true;
+    }
     public get reactNode(): React.ReactNode {
       return <TextEditor />;
     }

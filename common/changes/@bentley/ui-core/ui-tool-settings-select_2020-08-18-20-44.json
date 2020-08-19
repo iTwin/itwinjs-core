@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Add ThemedEnumEditor for DialogItems and ToolSettings, using the ThemedSelect component.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

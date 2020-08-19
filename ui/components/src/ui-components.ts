@@ -58,6 +58,7 @@ export * from "./ui-components/editors/SliderEditor";
 export * from "./ui-components/editors/StandardEditorNames";
 export * from "./ui-components/editors/TextEditor";
 export * from "./ui-components/editors/TextareaEditor";
+export * from "./ui-components/editors/ThemedEnumEditor";
 export * from "./ui-components/editors/ToggleEditor";
 export * from "./ui-components/editors/WeightEditor";
 

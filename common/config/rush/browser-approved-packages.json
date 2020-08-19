@@ -803,6 +803,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "react-select-event",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-split-pane",
       "allowedCategories": [ "frontend" ]
     },

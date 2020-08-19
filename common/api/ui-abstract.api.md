@@ -893,6 +893,8 @@ export enum StandardEditorNames {
     // (undocumented)
     Slider = "slider",
     // (undocumented)
+    ThemedEnum = "themed-enum",
+    // (undocumented)
     Toggle = "toggle",
     // (undocumented)
     WeightPicker = "weight-picker"

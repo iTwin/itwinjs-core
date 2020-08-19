@@ -136,7 +136,6 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
  * @beta
  */
 export class ImageCheckBoxPropertyEditor extends PropertyEditorBase {
-
   public get reactNode(): React.ReactNode {
     return <ImageCheckBoxEditor />;
   }

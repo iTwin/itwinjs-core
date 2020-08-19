@@ -1998,6 +1998,7 @@ export type ThemedSelectProps = {
     options: OptionsType;
     pageSize?: number;
     placeholder?: string;
+    styles?: React.CSSProperties;
     tabIndex?: string;
     tabSelectsValue?: boolean;
     value?: ValueType<OptionType>;

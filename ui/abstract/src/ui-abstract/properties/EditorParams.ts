@@ -255,16 +255,7 @@ export interface ImageCheckBoxParams extends BasePropertyEditorParams {
   imageOff: string;
 
 }
-// /**
-//  * Parameters used with boolean properties to indicate icon overrides.
-//  * @alpha
-//  */
-// export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
-//   type: PropertyEditorParamTypes.CheckBoxIcons;
-//   onIconDefinition?: IconDefinition;
-//   offIconDefinition?: IconDefinition;
-// }
-//
+
 // /**
 //  * Parameter used to suppress Unit labels
 //  * @alpha

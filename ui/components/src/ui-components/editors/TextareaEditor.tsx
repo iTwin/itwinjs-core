@@ -188,7 +188,6 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
  * @beta
  */
 export class TextareaPropertyEditor extends PropertyEditorBase {
-
   public get reactNode(): React.ReactNode {
     return <TextareaEditor />;
   }

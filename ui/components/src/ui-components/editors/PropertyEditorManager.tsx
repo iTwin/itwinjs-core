@@ -44,6 +44,19 @@ export interface DataController {
  * @beta
  */
 export abstract class PropertyEditorBase implements DataController {
+
+  public get containerHandlesBlur(): boolean {
+    return true;
+  }
+  public get containerHandlesEscape(): boolean {
+    return true;
+  }
+  public get containerHandlesEnter(): boolean {
+    return true;
+  }
+  public get containerHandlesTab(): boolean {
+    return true;
+  }
   public customDataController: DataController | undefined = undefined;
 
   public abstract get reactNode(): React.ReactNode;
@@ -142,7 +155,6 @@ export class PropertyEditorManager {
  * @beta
  */
 export class BasicPropertyEditor extends PropertyEditorBase {
-
   public get reactNode(): React.ReactNode {
     return <TextEditor />;
   }

@@ -132,7 +132,6 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
  * @beta
  */
 export class BooleanPropertyEditor extends PropertyEditorBase {
-
   public get reactNode(): React.ReactNode {
     return <BooleanEditor />;
   }

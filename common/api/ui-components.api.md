@@ -42,6 +42,7 @@ import { NodeCheckboxRenderer } from '@bentley/ui-core';
 import { Observable as Observable_2 } from 'rxjs/internal/Observable';
 import { Omit } from '@bentley/ui-core';
 import { OnItemExecutedFunc } from '@bentley/ui-abstract';
+import { OptionType } from '@bentley/ui-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
@@ -2660,6 +2661,14 @@ export abstract class PropertyEditorBase implements DataController {
     // (undocumented)
     commitValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
     // (undocumented)
+    get containerHandlesBlur(): boolean;
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
+    // (undocumented)
+    get containerHandlesEscape(): boolean;
+    // (undocumented)
+    get containerHandlesTab(): boolean;
+    // (undocumented)
     customDataController: DataController | undefined;
     // (undocumented)
     abstract get reactNode(): React.ReactNode;
@@ -3714,6 +3723,45 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     // @internal (undocumented)
     readonly state: Readonly<TextEditorState>;
     }
+
+// @beta
+export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps, EnumEditorState_2> implements TypeEditor {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: Readonly<EnumEditorState_2>;
+    }
+
+// @beta
+export interface ThemedEnumEditorProps extends PropertyEditorProps {
+    isSearchable?: boolean;
+    noOptionsMessage?: (obj: {
+        inputValue: string;
+    }) => string | null;
+    placeholder?: string;
+}
+
+// @beta
+export class ThemedEnumPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesBlur(): boolean;
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
+    // (undocumented)
+    get containerHandlesEscape(): boolean;
+    // (undocumented)
+    get containerHandlesTab(): boolean;
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+}
 
 // @internal
 export class Timeline extends React.Component<TimelineProps, TimelineState> {
