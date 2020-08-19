@@ -6,6 +6,8 @@
  * @module DisplayStyles
  */
 
+// cspell:ignore ovrs
+
 import { JsonUtils } from "@bentley/bentleyjs-core";
 
 /** @internal */

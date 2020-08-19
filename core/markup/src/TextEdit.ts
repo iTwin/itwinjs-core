@@ -15,6 +15,8 @@ import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { RedlineTool } from "./RedlineTool";
 
+// cspell:ignore rbox
+
 /** Tool to place new text notes on a Markup.
  * @beta
  */
@@ -30,7 +32,7 @@ export class PlaceTextTool extends RedlineTool {
     super.onPostInstall();
   }
 
-  protected showPrompt(): void { this.provideToolAssistance(MarkupTool.toolKey + "Text.Place.Prompts.FirstPoint", true); }
+  protected showPrompt(): void { this.provideToolAssistance(`${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`, true); }
 
   protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (isDynamics && InputSource.Touch === ev.inputSource)
@@ -62,7 +64,7 @@ export class EditTextTool extends MarkupTool {
   constructor(public text?: MarkupText | G, private _fromPlaceTool = false) { super(); }
 
   protected showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(MarkupTool.toolKey + "Text.Edit.Prompts.FirstPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
@@ -94,7 +96,7 @@ export class EditTextTool extends MarkupTool {
         return;
       this.text = text;
     }
-    const markupDiv = this.markup.markupDiv!;
+    const markupDiv = this.markup.markupDiv;
     const editDiv = this.editDiv = document.createElement("div"); // create a new DIV to hold the text editor
     const editProps = MarkupApp.props.text.edit;
     let style = editDiv.style;
@@ -132,8 +134,8 @@ export class EditTextTool extends MarkupTool {
     style = editor.style;
     style.pointerEvents = "auto";
     style.position = "absolute";
-    style.top = ((rbox.cy - (bbox.h / 2)) - divRect.top) + "px"; // put the editor over the middle of the text element
-    style.left = ((rbox.cx - (bbox.w / 2)) - divRect.left) + "px";
+    style.top = `${(rbox.cy - (bbox.h / 2)) - divRect.top}px`; // put the editor over the middle of the text element
+    style.left = `${(rbox.cx - (bbox.w / 2)) - divRect.left}px`;
     style.height = editProps.size.height;
     style.width = editProps.size.width;
     style.resize = "both";
@@ -184,8 +186,8 @@ export class EditTextTool extends MarkupTool {
 
     const editSize = MarkupApp.props.text.edit.size;
     const style = this.editor!.style;
-    editSize.height = style.height!;
-    editSize.width = style.width!;
+    editSize.height = style.height;
+    editSize.width = style.width;
     this.editDiv.remove();
     this.editDiv = undefined;
     this.editor = undefined;

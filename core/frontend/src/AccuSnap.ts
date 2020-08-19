@@ -335,7 +335,7 @@ export class AccuSnap implements Decorator {
   /** flash a hit in its view. */
   private setFlashHit(hit?: HitDetail): void {
     if (hit !== undefined && this.hitShouldBeHilited(hit))
-      this.setNeedsFlashView(hit.viewport!);
+      this.setNeedsFlashView(hit.viewport);
   }
 
   /** @internal */
@@ -435,7 +435,7 @@ export class AccuSnap implements Decorator {
       return;
 
     const crossPt = snap.snapPoint;
-    const viewport = snap.viewport!;
+    const viewport = snap.viewport;
     const crossSprite = IconSprites.getSpriteFromUrl(snap.isHot ? "sprites/SnapCross.png" : "sprites/SnapUnfocused.png");
 
     this.cross.activate(crossSprite, viewport, crossPt);
@@ -713,7 +713,7 @@ export class AccuSnap implements Decorator {
       snapPoint = adjustedSnapPoint;
     }
 
-    const snap = new SnapDetail(thisHit, result.snapMode!, result.heat!, snapPoint);
+    const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
 
     // Apply model's elevation to curve for display.
     let transform;
@@ -962,7 +962,7 @@ export class AccuSnap implements Decorator {
   }
 
   private flashElements(context: DecorateContext): void {
-    const viewport = context.viewport!;
+    const viewport = context.viewport;
     if (this.currHit) {
       if (this.needsFlash(viewport))
         this.flashHitInView(this.currHit, context);

@@ -12,11 +12,13 @@ import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
 } from "@bentley/imodeljs-frontend";
-import { ArrayXY, Box, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
+import { ArrayXY, Box, Container, G, Line, Element as MarkupElement, Text as MarkupText, Matrix, Point, Polygon } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
+
+// cspell:ignore lmultiply untransform unFlash multiselect
 
 /** Classes added to HTMLElements so they can be customized in CSS by applications.
  * A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement.
@@ -64,7 +66,7 @@ export abstract class ModifyHandle {
     if (InputSource.Touch !== IModelApp.toolAdmin.currentInputState.inputSource)
       return visible;
     const padding = visible.cloneMarkup().scale(3).attr("opacity", 0);
-    const g = handles.group!.group();
+    const g = handles.group.group();
     padding.addTo(g);
     visible.addTo(g);
     return g;
@@ -85,7 +87,7 @@ class StretchHandle extends ModifyHandle {
     super(handles);
     this.posNpc = new Point2d(xy[0], xy[1]);
     const props = MarkupApp.props.handles;
-    this._circle = handles.group!.circle(props.size).addClass(MarkupApp.stretchHandleClass).attr(props.stretch).attr("cursor", cursor + "-resize"); // the visible "circle" for this handle
+    this._circle = handles.group.circle(props.size).addClass(MarkupApp.stretchHandleClass).attr(props.stretch).attr("cursor", `${cursor}-resize`); // the visible "circle" for this handle
     this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
@@ -145,8 +147,8 @@ class RotateHandle extends ModifyHandle {
     super(handles);
     const props = MarkupApp.props.handles;
 
-    this._line = handles.group!.line(0, 0, 1, 1).attr(props.rotateLine).addClass(MarkupApp.rotateLineClass);
-    this._circle = handles.group!.circle(props.size * 1.25).attr(props.rotate).addClass(MarkupApp.rotateHandleClass);
+    this._line = handles.group.line(0, 0, 1, 1).attr(props.rotateLine).addClass(MarkupApp.rotateLineClass);
+    this._circle = handles.group.circle(props.size * 1.25).attr(props.rotate).addClass(MarkupApp.rotateHandleClass);
     this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
@@ -178,9 +180,9 @@ class VertexHandle extends ModifyHandle {
   constructor(public handles: Handles, index: number) {
     super(handles);
     const props = MarkupApp.props.handles;
-    this._circle = handles.group!.circle(props.size).attr(props.vertex).addClass(MarkupApp.vertexHandleClass);
-    this._x = "x" + (index + 1);
-    this._y = "y" + (index + 1);
+    this._circle = handles.group.circle(props.size).attr(props.vertex).addClass(MarkupApp.vertexHandleClass);
+    this._x = `x${index + 1}`;
+    this._y = `y${index + 1}`;
     this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
@@ -507,11 +509,11 @@ export class SelectTool extends MarkupTool {
   public onRestartTool(): void { this.initSelect(); }
 
   protected showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(MarkupTool.toolKey + "Select.Prompts.IdentifyMarkup"));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = IModelApp.i18n.translate(MarkupTool.toolKey + "Select.Prompts.AcceptMarkup");
+    const acceptMsg = IModelApp.i18n.translate(`${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`);
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
 

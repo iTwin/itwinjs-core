@@ -70,7 +70,7 @@ export class EntityState implements EntityProps {
   public clone(iModel?: IModelConnection): this { return new this._ctor(this.toJSON(), iModel ? iModel : this.iModel, this) as this; }
 
   /** Get full BIS class name of this Entity in the form "SchemaName:ClassName".  */
-  public static get classFullName(): string { return this.schemaName + ":" + this.className; }
+  public static get classFullName(): string { return `${this.schemaName}:${this.className}`; }
 }
 
 /** The "state" of an Element as represented in a web browser.

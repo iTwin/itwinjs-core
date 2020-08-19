@@ -26,7 +26,7 @@ export interface TileProps {
   isLeaf?: boolean;
 }
 
-/** Wire format adescribing an [IModelTileTree]($frontend)
+/** Wire format describing an [IModelTileTree]($frontend)
  * @internal
  */
 export interface TileTreeProps {

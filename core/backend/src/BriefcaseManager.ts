@@ -6,6 +6,8 @@
  * @module iModels
  */
 
+// cspell:ignore csets ecchanges vsts cset
+
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import {
   assert, AsyncMutex, BeDuration, BeEvent, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64,
@@ -211,7 +213,7 @@ export class BriefcaseEntry {
    * @note This may not be the changeSetIndex if the briefcase has reversed changes
    */
   public get currentChangeSetIndex(): number {
-    return this.reversedChangeSetIndex !== undefined ? this.reversedChangeSetIndex! : this.parentChangeSetIndex!;
+    return this.reversedChangeSetIndex !== undefined ? this.reversedChangeSetIndex : this.parentChangeSetIndex!;
   }
 
   /** Returns true if the briefcase has reversed changes */
@@ -490,7 +492,7 @@ export class BriefcaseManager {
         }
         // Validate that the briefcase id is set to standalone
         if (briefcaseId !== BriefcaseIdValue.Standalone) {
-          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOfline: The briefcase found is not valid", Logger.logError, loggerCategory, () => ({
+          throw new IModelError(BentleyStatus.ERROR, "The briefcase found is not valid", Logger.logError, loggerCategory, () => ({
             pathname: bcPathname, syncMode, briefcaseId,
           }));
         }
@@ -822,7 +824,7 @@ export class BriefcaseManager {
    */
   public static openBriefcase(briefcase: BriefcaseEntry, upgradeOptions?: UpgradeOptions) {
     Logger.logTrace(loggerCategory, "BriefcaseManager.openBriefcase: Opening a new NativeDb connection to a briefcase", () => briefcase.getDebugInfo());
-    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode, upgradeOptions);
+    const res: DbResult = briefcase.nativeDb.openIModel(briefcase.pathname, briefcase.openMode, upgradeOptions);
     // NEEDS_WORK: Temporary cast to any to by pass circular dependency between iModelJs and addon - will remove after addon gets updated
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
@@ -1043,7 +1045,7 @@ export class BriefcaseManager {
   private static async finishInitializeBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
     requestContext.enter();
 
-    const briefcaseHasChanges = briefcase.nativeDb!.hasPendingTxns();
+    const briefcaseHasChanges = briefcase.nativeDb.hasPendingTxns();
     try {
       Logger.logTrace(loggerCategory, "BriefcaseManager.finishInitializeBriefcase: Started initializing an existing briefcase on disk", () => briefcase.getDebugInfo());
       const perfLogger = new PerfLogger("Initializing an existing briefcase on disk", () => briefcase.getDebugInfo());
@@ -1184,7 +1186,7 @@ export class BriefcaseManager {
 
       // Note: A defect in applying change sets caused some checkpoints to be created with Txns - we need to clear these out
       // at least until these checkpoints aren't being used - VSTS#419723. The error typically is a worry only
-      // for ReadWrite applications, and can be evantually phased out based on the occurence of the log warning below.
+      // for ReadWrite applications, and can be eventually phased out based on the occurrence of the log warning below.
       if (nativeDb.hasPendingTxns()) {
         Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => briefcase.getDebugInfo());
         nativeDb.deleteAllTxns();
@@ -1925,25 +1927,25 @@ export class BriefcaseManager {
   }
 
   private static startCreateChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
-    const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = briefcase.nativeDb!.startCreateChangeSet();
+    const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = briefcase.nativeDb.startCreateChangeSet();
     if (res.error)
       throw new IModelError(res.error.status, "Error in startCreateChangeSet", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
     return JSON.parse(res.result!);
   }
 
   private static finishCreateChangeSet(briefcase: BriefcaseEntry) {
-    const status = briefcase.nativeDb!.finishCreateChangeSet();
+    const status = briefcase.nativeDb.finishCreateChangeSet();
     if (ChangeSetStatus.Success !== status)
       throw new IModelError(status, "Error in finishCreateChangeSet", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
   }
 
   private static abandonCreateChangeSet(briefcase: BriefcaseEntry) {
-    briefcase.nativeDb!.abandonCreateChangeSet();
+    briefcase.nativeDb.abandonCreateChangeSet();
   }
 
   /** Get array of pending ChangeSet ids that need to have their codes updated */
   private static getPendingChangeSets(briefcase: BriefcaseEntry): string[] {
-    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.getPendingChangeSets();
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb.getPendingChangeSets();
     if (res.error)
       throw new IModelError(res.error.status, "Error in getPendingChangeSets", Logger.logWarning, loggerCategory, () => briefcase.getDebugInfo());
     return JSON.parse(res.result!) as string[];
@@ -1951,14 +1953,14 @@ export class BriefcaseManager {
 
   /** Add a pending ChangeSet before updating its codes */
   private static addPendingChangeSet(briefcase: BriefcaseEntry, changeSetId: string): void {
-    const result = briefcase.nativeDb!.addPendingChangeSet(changeSetId);
+    const result = briefcase.nativeDb.addPendingChangeSet(changeSetId);
     if (DbResult.BE_SQLITE_OK !== result)
       throw new IModelError(result, "Error in addPendingChangeSet", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
   }
 
   /** Remove a pending ChangeSet after its codes have been updated */
   private static removePendingChangeSet(briefcase: BriefcaseEntry, changeSetId: string): void {
-    const result = briefcase.nativeDb!.removePendingChangeSet(changeSetId);
+    const result = briefcase.nativeDb.removePendingChangeSet(changeSetId);
     if (DbResult.BE_SQLITE_OK !== result)
       throw new IModelError(result, "Error in removePendingChangeSet", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
   }
@@ -2016,7 +2018,7 @@ export class BriefcaseManager {
 
   /** Extracts codes from current ChangeSet */
   private static extractCodes(briefcase: BriefcaseEntry): HubCode[] {
-    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodes();
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb.extractCodes();
     if (res.error)
       throw new IModelError(res.error.status, "Error in extractCodes", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
     return BriefcaseManager.parseCodesFromJson(briefcase, res.result!);
@@ -2024,7 +2026,7 @@ export class BriefcaseManager {
 
   /** Extracts codes from ChangeSet file */
   private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): HubCode[] {
-    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodesFromFile(JSON.stringify(changeSetTokens));
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb.extractCodesFromFile(JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status, "Error in extractCodesFromFile", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
     return BriefcaseManager.parseCodesFromJson(briefcase, res.result!);
@@ -2086,7 +2088,7 @@ export class BriefcaseManager {
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
     if (changeSet.description.length >= 255) {
-      Logger.logWarning(loggerCategory, "pushChanges - Truncating description to 255 characters. " + changeSet.description, () => briefcase.getDebugInfo());
+      Logger.logWarning(loggerCategory, `pushChanges - Truncating description to 255 characters. ${changeSet.description}`, () => briefcase.getDebugInfo());
       changeSet.description = changeSet.description.slice(0, 254);
     }
 
@@ -2136,7 +2138,7 @@ export class BriefcaseManager {
   /** Return true if should attempt pushing again. */
   private static shouldRetryPush(error: any): boolean {
     if (error instanceof IModelHubError && error.errorNumber) {
-      switch (error.errorNumber!) {
+      switch (error.errorNumber) {
         case IModelHubStatus.AnotherUserPushing:
         case IModelHubStatus.PullIsRequired:
         case IModelHubStatus.DatabaseTemporarilyLocked:

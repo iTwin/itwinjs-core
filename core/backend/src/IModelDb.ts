@@ -7,6 +7,7 @@
  */
 
 // cspell:ignore ulas postrc pollrc CANTOPEN
+/* eslint-disable @typescript-eslint/unbound-method */
 
 import * as os from "os";
 import {
@@ -307,7 +308,7 @@ export abstract class IModelDb extends IModel {
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
     const stats = this._concurrentQueryStats;
-    const config = IModelHost.configuration!.concurrentQuery!;
+    const config = IModelHost.configuration!.concurrentQuery;
     stats.lastActivityTime = Date.now();
     if (!this._concurrentQueryInitialized) {
       // Initialize concurrent query and setup statistics reset timer
@@ -603,10 +604,10 @@ export abstract class IModelDb extends IModel {
     if (params.only)
       sql += "ONLY ";
     sql += params.from;
-    if (params.where) sql += " WHERE " + params.where;
-    if (typeof params.limit === "number" && params.limit > 0) sql += " LIMIT " + params.limit;
-    if (typeof params.offset === "number" && params.offset > 0) sql += " OFFSET " + params.offset;
-    if (params.orderBy) sql += " ORDER BY " + params.orderBy;
+    if (params.where) sql += ` WHERE ${params.where}`;
+    if (typeof params.limit === "number" && params.limit > 0) sql += ` LIMIT ${params.limit}`;
+    if (typeof params.offset === "number" && params.offset > 0) sql += ` OFFSET ${params.offset}`;
+    if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
@@ -843,7 +844,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
     const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, JSON.stringify(codeSpec.properties));
-    if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
+    if (error) throw new IModelError(error.status, `inserting CodeSpec ${codeSpec}`, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
   }
 
@@ -1207,7 +1208,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getModelJson(modelIdArg: string): string {
       const modelJson: string | undefined = this.tryGetModelJson(modelIdArg);
       if (undefined === modelJson) {
-        throw new IModelError(IModelStatus.NotFound, "Model=" + modelIdArg);
+        throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`);
       }
       return modelJson;
     }
@@ -1224,7 +1225,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         if (IModelStatus.NotFound === val.error.status) {
           return undefined;
         }
-        throw new IModelError(val.error.status, "Model=" + modelIdArg);
+        throw new IModelError(val.error.status, `Model=${modelIdArg}`);
       }
       return val.result!;
     }
@@ -1295,7 +1296,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
       const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, "updating model id=" + props.id, Logger.logWarning, loggerCategory);
+        throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
 
       jsClass.onUpdated(props, this._iModel);
     }
@@ -1312,7 +1313,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
         const error = this._iModel.nativeDb.deleteModel(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, "deleting model id " + id, Logger.logWarning, loggerCategory);
+          throw new IModelError(error, `deleting model id ${id}`, Logger.logWarning, loggerCategory);
 
         jsClass.onDeleted(props, this._iModel);
       });
@@ -1336,7 +1337,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getElementJson<T extends ElementProps>(elementIdArg: string): T {
       const elementProps: T | undefined = this.tryGetElementJson(elementIdArg);
       if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementIdArg}`, Logger.logWarning, loggerCategory);
       }
       return elementProps;
     }
@@ -1353,7 +1354,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         if (IModelStatus.NotFound === val.error.status) {
           return undefined;
         }
-        throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
+        throw new IModelError(val.error.status, `reading element=${elementIdArg}`, Logger.logWarning, loggerCategory);
       }
       return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
     }
@@ -1365,7 +1366,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
       const elementProps: T | undefined = this.tryGetElementProps(elementId);
       if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementId, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
       return elementProps;
     }
@@ -1393,7 +1394,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
       const element: T | undefined = this.tryGetElement(elementId);
       if (undefined === element) {
-        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementId, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
       return element;
     }
@@ -1749,7 +1750,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
         viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
           from: "BisCore.ViewAttachment",
-          where: "Model.Id=" + viewDefinitionElement.baseModelId,
+          where: `Model.Id=${viewDefinitionElement.baseModelId}`,
         }));
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
@@ -1832,9 +1833,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
-            reject(new IModelError(ret.error.status, "TreeId=" + id));
+            reject(new IModelError(ret.error.status, `TreeId=${id}`));
           else
-            resolve(ret.result! as TileTreeProps);
+            resolve(ret.result as TileTreeProps);
         });
       });
     }
@@ -1910,7 +1911,7 @@ export class TxnManager {
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
 
-  private get _nativeDb() { return this._iModel.nativeDb!; }
+  private get _nativeDb() { return this._iModel.nativeDb; }
   private _getElementClass(elClassName: string): typeof Element { return this._iModel.getJsClass(elClassName) as unknown as typeof Element; }
   private _getRelationshipClass(relClassName: string): typeof Relationship { return this._iModel.getJsClass<typeof Relationship>(relClassName); }
 

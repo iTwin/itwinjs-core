@@ -66,7 +66,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
     this._stmt = new IModelHost.platform.SqliteStatement();
-    const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, sql);
+    const stat: StatusCodeWithMessage<DbResult> = this._stmt.prepare(db, sql);
     if (stat.status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat.status, stat.message);
   }
@@ -263,7 +263,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     else {
       suffix++;
       duplicatePropNames.set(jsName, suffix);
-      jsName += "_" + suffix;
+      jsName += `_${suffix}`;
     }
 
     return jsName;

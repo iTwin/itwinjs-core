@@ -107,7 +107,7 @@ export class DynamicsContext extends RenderContext {
 
   /** @internal */
   public changeDynamics(): void {
-    this.viewport!.changeDynamics(this._dynamics);
+    this.viewport.changeDynamics(this._dynamics);
   }
 }
 
@@ -155,7 +155,7 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Restores decorations onto this context from the specificed array of cached decorations. */
+  /** Restores decorations onto this context from the specified array of cached decorations. */
   private restoreCache(cachedDecorations: CachedDecoration[]) {
     cachedDecorations.forEach((cachedDecoration) => {
       switch (cachedDecoration.type) {

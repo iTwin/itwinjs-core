@@ -552,7 +552,7 @@ export class AccuDraw {
       return;
 
     const rMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, this.currentView, true);
-    rMatrix!.multiplyTransposeVectorInPlace(vec);
+    rMatrix.multiplyTransposeVectorInPlace(vec);
   }
 
   private static useACSContextRotation(vp: Viewport, isSnap: boolean): boolean {
@@ -1889,7 +1889,7 @@ export class AccuDraw {
     if (!this.isActive)
       return;
 
-    const vp = context.viewport!;
+    const vp = context.viewport;
     if (this.currentView !== vp) // Do nothing if AccuDraw is not enabled for this view...
       return;
 

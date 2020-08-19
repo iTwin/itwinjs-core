@@ -260,7 +260,7 @@ export class ElementLocateManager {
   public readonly picker = new ElementPicker();
 
   /** get the full message key for a locate failure  */
-  public static getFailureMessageKey(key: string) { return "LocateFailure." + key; }
+  public static getFailureMessageKey(key: string) { return `LocateFailure.${key}`; }
   public onInitialized() { }
   public get apertureInches() { return 0.11; }
   public get touchApertureInches() { return 0.22; }
@@ -276,7 +276,7 @@ export class ElementLocateManager {
     let preLocated = IModelApp.accuSnap.getHitAndList(this);
 
     if (!preLocated && !!(preLocated = IModelApp.tentativePoint.getHitAndList(this))) {
-      const vp = preLocated.viewport!;
+      const vp = preLocated.viewport;
       this.picker.empty(); // Get new hit list at hit point; want reset to cycle hits using adjusted point location...
       this.picker.doPick(vp, preLocated.getPoint(), (vp.pixelsFromInches(this.apertureInches) / 2.0) + 1.5, this.options);
       this.setHitList(this.picker.getHitList(true));

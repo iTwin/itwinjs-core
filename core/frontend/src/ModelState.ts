@@ -106,7 +106,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
       const ranges = await this.iModel.models.queryModelRanges(this.id);
       this._modelRange = Range3d.fromJSON(ranges[0]);
     }
-    return this._modelRange!;
+    return this._modelRange;
   }
 
   /** @internal */

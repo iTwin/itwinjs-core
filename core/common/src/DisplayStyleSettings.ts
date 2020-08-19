@@ -6,6 +6,8 @@
  * @module DisplayStyles
  */
 
+// cspell:ignore greyscale ovrs
+
 import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
@@ -476,12 +478,12 @@ export class DisplayStyleSettings {
 
   /** Obtain the override applied to a [[Model]] by this style.
    * @param id The ID of the [[Model]].
-   * @returns The corresponding FeatureAppearance, or undefined if the Model'ss appearance is not overridden.
+   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideModelAppearance]]
    */
   public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined { return this._modelAppearanceOverrides.get(id); }
 
-  /** Returns true if model appearance overridess are defined by this style. */
+  /** Returns true if model appearance overrides are defined by this style. */
   public get hasModelAppearanceOverride(): boolean { return this._modelAppearanceOverrides.size > 0; }
 
   /** The set of elements that the display style will exclude.
@@ -975,7 +977,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
         assert(undefined !== this._json3d.planProjections);
 
         this._planProjections.delete(modelId);
-        delete this._json3d.planProjections![modelId];
+        delete this._json3d.planProjections[modelId];
 
         if (0 === this._planProjections.size) {
           this._planProjections = undefined;

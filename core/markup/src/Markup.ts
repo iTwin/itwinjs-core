@@ -17,6 +17,8 @@ import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
 import { UndoManager } from "./Undo";
 
+// cspell:ignore blanchedalmond, lmultiply, svgs
+
 /** @beta */
 export interface WidthAndHeight {
   width: number;
@@ -192,11 +194,11 @@ export class MarkupApp {
         height = Math.floor(width * aspect);
     }
     const style = parentDiv.style;
-    style.width = width + "px";
-    style.height = height + "px";
+    style.width = `${width}px`;
+    style.height = `${height}px`;
   }
 
-  public static getActionName(action: string) { return IModelApp.i18n.translate(this.namespace.name + ":actions." + action); }
+  public static getActionName(action: string) { return IModelApp.i18n.translate(`${this.namespace.name}:actions.${action}`); }
 
   /** Start a markup session */
   public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
@@ -318,7 +320,7 @@ export class MarkupApp {
       // return the markup data to be saved by the application.
       image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
     } catch (e) {
-      Logger.logError(FrontendLoggerCategory.Package + ".markup", "Error creating image from svg", () => ({ message: e.message }));
+      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => ({ message: e.message }));
     }
     return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }
@@ -326,35 +328,35 @@ export class MarkupApp {
   /** @internal */
   public static markupPrefix = "markup-";
   /** @internal */
-  public static get dropShadowId() { return this.markupPrefix + "dropShadow"; } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
+  public static get dropShadowId() { return `${this.markupPrefix}dropShadow`; } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
   /** @internal */
-  public static get cornerId() { return this.markupPrefix + "photoCorner"; }
+  public static get cornerId() { return `${this.markupPrefix}photoCorner`; }
   /** @internal */
-  public static get containerClass() { return this.markupPrefix + "container"; }
+  public static get containerClass() { return `${this.markupPrefix}container`; }
   /** @internal */
-  public static get dynamicsClass() { return this.markupPrefix + "dynamics"; }
+  public static get dynamicsClass() { return `${this.markupPrefix}dynamics`; }
   /** @internal */
-  public static get decorationsClass() { return this.markupPrefix + "decorations"; }
+  public static get decorationsClass() { return `${this.markupPrefix}decorations`; }
   /** @internal */
-  public static get markupSvgClass() { return this.markupPrefix + "svg"; }
+  public static get markupSvgClass() { return `${this.markupPrefix}svg`; }
   /** @internal */
-  public static get boxedTextClass() { return this.markupPrefix + "boxedText"; }
+  public static get boxedTextClass() { return `${this.markupPrefix}boxedText`; }
   /** @internal */
-  public static get textClass() { return this.markupPrefix + "text"; }
+  public static get textClass() { return `${this.markupPrefix}text`; }
   /** @internal */
-  public static get stretchHandleClass() { return this.markupPrefix + "stretchHandle"; }
+  public static get stretchHandleClass() { return `${this.markupPrefix}stretchHandle`; }
   /** @internal */
-  public static get rotateLineClass() { return this.markupPrefix + "rotateLine"; }
+  public static get rotateLineClass() { return `${this.markupPrefix}rotateLine`; }
   /** @internal */
-  public static get rotateHandleClass() { return this.markupPrefix + "rotateHandle"; }
+  public static get rotateHandleClass() { return `${this.markupPrefix}rotateHandle`; }
   /** @internal */
-  public static get vertexHandleClass() { return this.markupPrefix + "vertexHandle"; }
+  public static get vertexHandleClass() { return `${this.markupPrefix}vertexHandle`; }
   /** @internal */
-  public static get moveHandleClass() { return this.markupPrefix + "moveHandle"; }
+  public static get moveHandleClass() { return `${this.markupPrefix}moveHandle`; }
   /** @internal */
-  public static get textOutlineClass() { return this.markupPrefix + "textOutline"; }
+  public static get textOutlineClass() { return `${this.markupPrefix}textOutline`; }
   /** @internal */
-  public static get textEditorClass() { return this.markupPrefix + "textEditor"; }
+  public static get textEditorClass() { return `${this.markupPrefix}textEditor`; }
 }
 
 const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
@@ -376,7 +378,7 @@ export class Markup {
 
   /** create the drop-shadow filter in the Defs section of the supplied svg element */
   private createDropShadow(svg: Svg) {
-    const filter = SVG("#" + MarkupApp.dropShadowId); // see if we already have one?
+    const filter = SVG(`#${MarkupApp.dropShadowId}`); // see if we already have one?
     if (filter) filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
 
     // create a new filter, and add it to the Defs of the supplied svg
@@ -411,8 +413,8 @@ export class Markup {
     // First, see if there is a markup passed in as an argument
     if (markupData && markupData.svg) {
       this.markupDiv.innerHTML = markupData.svg; // make it a child of the markupDiv
-      this.svgContainer = SVG("." + MarkupApp.containerClass) as Svg | undefined; // get it in svg.js format
-      this.svgMarkup = SVG("." + MarkupApp.markupSvgClass) as G | undefined;
+      this.svgContainer = SVG(`.${MarkupApp.containerClass}`) as Svg | undefined; // get it in svg.js format
+      this.svgMarkup = SVG(`.${MarkupApp.markupSvgClass}`) as G | undefined;
       if (!this.svgContainer || !this.svgMarkup) // if either isn't present, its not a valid markup
         return;
       removeSvgNamespace(this.svgContainer); // the SVG call above adds this - remove it
@@ -426,7 +428,7 @@ export class Markup {
 
     if (MarkupApp.props.dropShadow.enable) {
       this.createDropShadow(this.svgContainer);
-      this.svgContainer.attr("filter", "url(#" + MarkupApp.dropShadowId + ")");
+      this.svgContainer.attr("filter", `url(#${MarkupApp.dropShadowId})`);
     }
 
     /** add two nested groups for providing feedback during the markup session. These Svgs are removed before the data is returned. */

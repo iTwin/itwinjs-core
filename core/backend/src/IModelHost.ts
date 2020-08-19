@@ -304,7 +304,7 @@ export class IModelHost {
       return;
     }
     this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, "imodeljs-native version is (" + thisVersion + "). imodeljs-backend requires version (" + requiredVersion + ")");
+    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). imodeljs-backend requires version (${requiredVersion})`);
   }
 
   private static validateNodeJsVersion(): void {

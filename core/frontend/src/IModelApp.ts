@@ -303,7 +303,7 @@ export class IModelApp {
   public static registerEntityState(classFullName: string, classType: typeof EntityState) {
     const lowerName = classFullName.toLowerCase();
     if (this._entityClasses.has(lowerName)) {
-      const errMsg = "Class " + classFullName + " is already registered. Make sure static schemaName and className members are correct on class " + classType.name;
+      const errMsg = `Class ${classFullName} is already registered. Make sure static schemaName and className members are correct on class ${classType.name}`;
       Logger.logError(FrontendLoggerCategory.IModelConnection, errMsg);
       throw new Error(errMsg);
     }
@@ -654,7 +654,7 @@ export class IModelApp {
 
     const modal = IModelApp.makeHTMLElement("div", { parent: overlay, className: "imodeljs-modal" });
     if (undefined !== options.width)
-      modal.style.width = options.width + "px";
+      modal.style.width = `${options.width}px`;
     if (options.closeBox) {
       const close = IModelApp.makeHTMLElement("p", { parent: modal, className: "imodeljs-modal-close" });
       close.innerText = "\u00d7"; // unicode "times" symbol
@@ -717,8 +717,8 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">` + this.i18n.translate("Notices.PoweredBy") + "</span>&nbsp;iModel.js",
-      notice: this.applicationVersion + "<br>" + copyrightNotice,
+      heading: `<span style="font-weight:normal">${this.i18n.translate("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
+      notice: `${this.applicationVersion}<br>${copyrightNotice}`,
     });
   }
 
@@ -727,7 +727,7 @@ export class IModelApp {
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {
     let out = "";
-    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
+    msg.forEach((line) => out += `${IModelApp.i18n.translateKeys(line)}<br>`);
     const div = document.createElement("div");
     div.innerHTML = out;
     return div;

@@ -47,7 +47,7 @@ export class ECDb implements IDisposable {
       return;
 
     this.closeDb();
-    this._nativeDb!.dispose();
+    this._nativeDb.dispose();
     this._nativeDb = undefined;
   }
 
@@ -125,8 +125,8 @@ export class ECDb implements IDisposable {
   public importSchema(pathName: string): void {
     const status: DbResult = this.nativeDb.importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
-      Logger.logError(loggerCategory, "Failed to import schema from '" + pathName + "'.");
-      throw new IModelError(status, "Failed to import schema from '" + pathName + "'.");
+      Logger.logError(loggerCategory, `Failed to import schema from '${pathName}'.`);
+      throw new IModelError(status, `Failed to import schema from '${pathName}'.`);
     }
   }
 
@@ -274,7 +274,7 @@ export class ECDb implements IDisposable {
     if (!this._nativeDb)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
 
-    return this._nativeDb!;
+    return this._nativeDb;
   }
   /** Compute number of rows that would be returned by the ECSQL.
    *
@@ -324,7 +324,7 @@ export class ECDb implements IDisposable {
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
     const stats = this._concurrentQueryStats;
-    const config = IModelHost.configuration!.concurrentQuery!;
+    const config = IModelHost.configuration!.concurrentQuery;
     stats.lastActivityTime = Date.now();
     if (!this._concurrentQueryInitialized) {
       // Initialize concurrent query and setup statistics reset timer

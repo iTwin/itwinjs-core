@@ -210,7 +210,7 @@ export class TentativePoint {
     this._rawPoint.setFrom(ev.rawPoint);
     this._viewPoint.setFrom(ev.viewPoint);
 
-    const newSearch = (!this.isSnapped || !TentativePoint.arePointsCloseEnough(lastPtView, this._viewPoint, this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches)));
+    const newSearch = (!this.isSnapped || !TentativePoint.arePointsCloseEnough(lastPtView, this._viewPoint, this.viewport.pixelsFromInches(IModelApp.locateManager.apertureInches)));
     const promise = this.getSnap(newSearch);
     this._tentativePromise = promise;
 

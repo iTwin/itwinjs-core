@@ -41,14 +41,17 @@ export class BisCoreSchema extends Schema {
 
     Schemas.unregisterSchema(this.schemaName);
     Schemas.registerSchema(this);
+
     // this list should include all backend .ts files with implementations of Entity-based classes. Order does not matter.
-    ClassRegistry.registerModule(elementMod, this);
-    ClassRegistry.registerModule(aspectMod, this);
-    ClassRegistry.registerModule(modelMod, this);
-    ClassRegistry.registerModule(categoryMod, this);
-    ClassRegistry.registerModule(viewMod, this);
-    ClassRegistry.registerModule(linkMod, this);
-    ClassRegistry.registerModule(textureMod, this);
-    ClassRegistry.registerModule(materialMod, this);
+    [
+      elementMod,
+      aspectMod,
+      modelMod,
+      categoryMod,
+      viewMod,
+      linkMod,
+      textureMod,
+      materialMod,
+    ].forEach((module) => ClassRegistry.registerModule(module, this));
   }
 }

@@ -6,6 +6,7 @@
  * @module Utils
  */
 
+// cspell:ignore lhvp rhvp
 import { ReadonlySortedArray, SortedArray } from "@bentley/bentleyjs-core";
 import { Viewport } from "./Viewport";
 

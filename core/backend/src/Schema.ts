@@ -20,7 +20,7 @@ export class Schema {
    * Failure to do so will ordinarily result in an error when the schema is registered, since there may only
    * be one JavaScript class for a given BIS schema (usually the errant schema will collide with its superclass.)
    */
-  public static get schemaName(): string { throw new Error("you must override static schemaName in " + this.name); }
+  public static get schemaName(): string { throw new Error(`you must override static schemaName in ${this.name}`); }
 
   /** if true, this Schema is a proxy for a missing Domain marked with the `BisCore.SchemaHasBehavior` customAttribute.
    * Classes generated for this Schema will disallow protected operations.
@@ -32,7 +32,7 @@ export class Schema {
    * error if it is ever called.
    * @internal
    */
-  protected constructor() { throw new Error("cannot create an instance of a Schema " + this.constructor.name); }
+  protected constructor() { throw new Error(`cannot create an instance of a Schema ${this.constructor.name}`); }
 }
 
 /** Manages registered schemas

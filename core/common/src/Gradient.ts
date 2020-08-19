@@ -298,11 +298,11 @@ export namespace Gradient {
 
       function addColor(color: ColorDef) {
         if (hasAlpha)
-          image[currentIdx--] = color!.getAlpha();
+          image[currentIdx--] = color.getAlpha();
 
-        image[currentIdx--] = color!.colors.b;
-        image[currentIdx--] = color!.colors.g;
-        image[currentIdx--] = color!.colors.r;
+        image[currentIdx--] = color.colors.b;
+        image[currentIdx--] = color.colors.g;
+        image[currentIdx--] = color.colors.r;
       }
 
       switch (settings.mode) {
@@ -321,7 +321,7 @@ export namespace Gradient {
         case ThematicGradientMode.Stepped: {
           assert(settings.stepCount > 1, "Step count must be at least two to generate renderer gradient for thematic display");
           for (let j = 0; j < dimension; j++) {
-            // If we use smooth's approach to generate the gradient...
+            // If we use Smooth's approach to generate the gradient...
             // We would get these values for stepCount five: 0   .2   .4   .6   .8
             //                  We really want these values: 0   .25  .5   .75   1
             // This preserves an exact color mapping of a n-step gradient when stepCount also equals n.
@@ -336,7 +336,7 @@ export namespace Gradient {
       assert(-1 === currentIdx);
       const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, 1);
       assert(undefined !== imageBuffer);
-      return imageBuffer!;
+      return imageBuffer;
     }
 
     /** Applies this gradient's settings to produce a bitmap image.
@@ -506,7 +506,7 @@ export namespace Gradient {
       assert(-1 === currentIdx);
       const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, width);
       assert(undefined !== imageBuffer);
-      return imageBuffer!;
+      return imageBuffer;
     }
   }
 }
