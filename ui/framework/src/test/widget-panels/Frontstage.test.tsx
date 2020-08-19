@@ -29,6 +29,17 @@ function createSavedNineZoneState(args?: Partial<NineZoneState>) {
     tabs: {},
   };
 }
+
+type SavedNineZoneState = ReturnType<typeof packNineZoneState>;
+type SavedTabState = SavedNineZoneState["tabs"][0];
+
+function createSavedTabState(id: SavedTabState["id"], args?: Partial<SavedTabState>): SavedTabState {
+  return {
+    id,
+    ...args,
+  };
+}
+
 function createFrontstageState(nineZone = createSavedNineZoneState()) {
   return {
     id: "frontstage1",
@@ -909,10 +920,7 @@ describe("restoreNineZoneState", () => {
     const savedState = {
       ...createSavedNineZoneState(),
       tabs: {
-        t1: {
-          id: "t1",
-          preferredFloatingWidgetSize: undefined,
-        },
+        t1: createSavedTabState("t1"),
       },
     };
     restoreNineZoneState(frontstageDef, savedState);
@@ -930,14 +938,8 @@ describe("restoreNineZoneState", () => {
     const savedState = {
       ...createSavedNineZoneState(state),
       tabs: {
-        t1: {
-          id: "t1",
-          preferredFloatingWidgetSize: undefined,
-        },
-        t2: {
-          id: "t2",
-          preferredFloatingWidgetSize: undefined,
-        },
+        t1: createSavedTabState("t1"),
+        t2: createSavedTabState("t2"),
       },
     };
     const newState = restoreNineZoneState(frontstageDef, savedState);
@@ -953,10 +955,7 @@ describe("restoreNineZoneState", () => {
     const savedState = {
       ...createSavedNineZoneState(),
       tabs: {
-        t1: {
-          id: "t1",
-          preferredFloatingWidgetSize: undefined,
-        },
+        t1: createSavedTabState("t1"),
       },
     };
     const sut = restoreNineZoneState(frontstageDef, savedState);
@@ -974,10 +973,7 @@ describe("restoreNineZoneState", () => {
         },
       }),
       tabs: {
-        t1: {
-          id: "t1",
-          preferredFloatingWidgetSize: undefined,
-        },
+        t1: createSavedTabState("t1"),
       },
     };
 
@@ -995,10 +991,7 @@ describe("restoreNineZoneState", () => {
         },
       }),
       tabs: {
-        t1: {
-          id: "t1",
-          preferredFloatingWidgetSize: undefined,
-        },
+        t1: createSavedTabState("t1"),
       },
     };
 

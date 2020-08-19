@@ -2280,6 +2280,8 @@ export const TabsStateContext: React.Context<TabsState>;
 // @internal
 export interface TabState {
     // (undocumented)
+    readonly allowedPanelTargets?: PanelSide[];
+    // (undocumented)
     readonly id: string;
     // (undocumented)
     readonly label: string;
@@ -2725,6 +2727,9 @@ export class UpdateWindowResizeSettings implements ResizeStrategy {
     // (undocumented)
     tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
 }
+
+// @internal (undocumented)
+export function useAllowedPanelTarget(): boolean;
 
 // @internal
 export function useCursor(): void;

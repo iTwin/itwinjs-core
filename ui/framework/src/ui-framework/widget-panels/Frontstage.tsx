@@ -402,7 +402,7 @@ function getPanelMaxSize(maxSizeSpec: StagePanelMaxSizeSpec, panel: PanelSide, n
   return maxSizeSpec.percentage / 100 * size;
 }
 
-const stateVersion = 9; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 10; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
@@ -513,6 +513,7 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
       draft.tabs[tab.id] = {
         id: tab.id,
         preferredFloatingWidgetSize: tab.preferredFloatingWidgetSize,
+        allowedPanelTargets: tab.allowedPanelTargets,
       };
     }
   });

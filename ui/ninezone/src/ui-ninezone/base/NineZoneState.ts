@@ -17,6 +17,7 @@ export interface TabState {
   readonly label: string;
   readonly preferredFloatingWidgetSize?: SizeProps;
   readonly preferredPanelWidgetSize?: "fit-content";
+  readonly allowedPanelTargets?: PanelSide[];
 }
 
 /** @internal future */
@@ -765,6 +766,7 @@ export function createTabsState(args?: Partial<TabsState>): TabsState {
   return {
     [toolSettingsTabId]: createTabState(toolSettingsTabId, {
       label: "Tool Settings",
+      allowedPanelTargets: ["bottom", "left", "right"],
     }),
     ...args,
   };
@@ -821,6 +823,7 @@ export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: 
 /** @internal */
 export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
   return {
+    allowedPanelTargets: undefined,
     id,
     label: "",
     ...args,

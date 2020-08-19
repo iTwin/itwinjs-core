@@ -77,6 +77,11 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
         },
         "tabs": Object {
           "nz-tool-settings-tab": Object {
+            "allowedPanelTargets": Array [
+              "bottom",
+              "left",
+              "right",
+            ],
             "id": "nz-tool-settings-tab",
             "label": "Tool Settings",
           },
@@ -212,6 +217,11 @@ Object {
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {
+      "allowedPanelTargets": Array [
+        "bottom",
+        "left",
+        "right",
+      ],
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
     },
@@ -301,6 +311,7 @@ Object {
   },
   "tabs": Object {
     "t1": Object {
+      "allowedPanelTargets": undefined,
       "id": "t1",
       "preferredFloatingWidgetSize": undefined,
     },
@@ -389,13 +400,17 @@ Object {
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {
+      "allowedPanelTargets": Array [
+        "bottom",
+        "left",
+        "right",
+      ],
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
     },
     "t1": Object {
       "id": "t1",
       "label": "Widget",
-      "preferredFloatingWidgetSize": undefined,
     },
   },
   "toolSettings": Object {
@@ -466,6 +481,11 @@ Object {
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {
+      "allowedPanelTargets": Array [
+        "bottom",
+        "left",
+        "right",
+      ],
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
     },

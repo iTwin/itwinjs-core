@@ -391,6 +391,7 @@ beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
 internal;TopPanelSide = "top"
 internal;UpdateWindowResizeSettings 
+internal;useAllowedPanelTarget(): boolean
 internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag

@@ -1801,6 +1801,7 @@ export const expandWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4365,6 +4366,7 @@ export const setPanelSize: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4479,6 +4481,7 @@ export const setWidgetLabel: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4590,6 +4593,7 @@ export const setWidgetState: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4765,6 +4769,7 @@ export const showWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
