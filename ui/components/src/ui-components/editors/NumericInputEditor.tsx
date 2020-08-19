@@ -10,7 +10,7 @@ import "./NumericInputEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, RangeEditorParams,
+  InputEditorSizeParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, RangeEditorParams,
   StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { NumericInput } from "@bentley/ui-core";
@@ -93,7 +93,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      initialValue = (record.value as PrimitiveValue).value as number;
+      initialValue = record.value.value as number;
     }
 
     const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;

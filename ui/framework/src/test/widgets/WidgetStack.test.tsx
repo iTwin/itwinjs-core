@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BadgeType, WidgetState } from "@bentley/ui-abstract";
-import { HorizontalAnchor, ResizeHandle, Stacked as NZ_WidgetStack, Tab as NZ_Tab, TabMode, VerticalAnchor } from "@bentley/ui-ninezone";
+import { HorizontalAnchor, Tab as NZ_Tab, Stacked as NZ_WidgetStack, ResizeHandle, TabMode, VerticalAnchor } from "@bentley/ui-ninezone";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
   FrontstageProps, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabs,

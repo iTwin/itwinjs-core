@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addFloatingWidget, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch, addTab } from "../../ui-ninezone";
+import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 
 describe("FloatingWidget", () => {

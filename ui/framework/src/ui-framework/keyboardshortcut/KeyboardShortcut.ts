@@ -199,11 +199,11 @@ export class KeyboardShortcutContainer {
     let keyMapKey = keyboardKey;
 
     if (isAltKeyRequired)
-      keyMapKey = "Alt+" + keyMapKey;
+      keyMapKey = `Alt+${keyMapKey}`;
     if (isShiftKeyRequired)
-      keyMapKey = "Shift+" + keyMapKey;
+      keyMapKey = `Shift+${keyMapKey}`;
     if (isCtrlKeyRequired)
-      keyMapKey = "Ctrl+" + keyMapKey;
+      keyMapKey = `Ctrl+${keyMapKey}`;
 
     return keyMapKey;
   }

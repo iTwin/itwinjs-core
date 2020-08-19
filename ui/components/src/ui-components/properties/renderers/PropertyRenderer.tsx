@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ArrayValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { UiComponents } from "../../UiComponents";
@@ -191,7 +191,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
       case PropertyValueFormat.Array:
         // If array is empty, render it as a primitive property
         if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Array
-          && (this.props.propertyRecord.value as ArrayValue).items.length === 0)
+          && this.props.propertyRecord.value.items.length === 0)
           return (
             <PrimitivePropertyRenderer {...primitiveRendererProps} />
           );

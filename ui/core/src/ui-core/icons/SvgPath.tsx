@@ -32,7 +32,7 @@ export class SvgPath extends React.PureComponent<SvgPathProps> {
       "core-icons-svgSprite",
       this.props.className,
     );
-    const viewBox = "0 0 " + this.props.viewBoxWidth + " " + this.props.viewBoxHeight;
+    const viewBox = `0 0 ${this.props.viewBoxWidth} ${this.props.viewBoxHeight}`;
 
     return (
       <svg className={className} style={this.props.style} width="100%" height="100%" viewBox={viewBox}>

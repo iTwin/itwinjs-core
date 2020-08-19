@@ -20,7 +20,7 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
 
   let x: number | undefined;
   if ("pageX" in e) {
-      x = e.pageX;
+    x = e.pageX;
   } else {
     // istanbul ignore if
     if (undefined !== e.touches && e.touches.length)
@@ -32,7 +32,7 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
 
   let y = 0;
   if ("pageY" in e) {
-      y = e.pageY;
+    y = e.pageY;
   } else {
     // istanbul ignore if
     if (undefined !== e.touches && e.touches.length)

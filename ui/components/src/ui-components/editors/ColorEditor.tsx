@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import {
-  ColorEditorParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+  ColorEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { ColorPickerButton } from "../color/ColorPickerButton";
@@ -98,7 +98,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      const colorValue = (record.value as PrimitiveValue).value as number;
+      const colorValue = record.value.value as number;
       let numColumns = 4;
       const availableColors = new Array<ColorDef>();
       const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;

@@ -10,7 +10,7 @@ import "./EnumButtonGroupEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  ButtonGroupEditorParams, EnumerationChoice, IconDefinition, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord,
+  ButtonGroupEditorParams, EnumerationChoice, IconDefinition, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord,
   PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
@@ -72,7 +72,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.property.enum && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
-      const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
+      const primitiveValue = propertyRecord.value.value;
       let selectValue: string | number;
 
       if (typeof primitiveValue === "string") {
@@ -103,7 +103,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
             bgParams.buttons.forEach((iconDef: IconDefinition, index: number) => {
               // istanbul ignore else
               if (index < numChoices) {
-                enumIcons![index] = iconDef;
+                enumIcons[index] = iconDef;
               }
             });
           }

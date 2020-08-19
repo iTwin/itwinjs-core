@@ -12,7 +12,7 @@ import classnames from "classnames";
 // third-party imports
 import _ from "lodash";
 import * as React from "react";
-import { AutoSizer, List as VirtualizedList, ListRowProps as VirtualizedListRowProps, Size } from "react-virtualized";
+import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
 // bentley imports
 import { Guid, using } from "@bentley/bentleyjs-core";
 import {

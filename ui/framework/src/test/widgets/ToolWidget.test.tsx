@@ -104,7 +104,7 @@ describe("ToolWidget", () => {
       const widgetDef = new ToolWidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
       expect(widgetDef).to.be.instanceof(ToolWidgetDef); // eslint-disable-line deprecation/deprecation
 
-      const toolWidgetDef = widgetDef as ToolWidgetDef; // eslint-disable-line deprecation/deprecation
+      const toolWidgetDef = widgetDef;
       backstageToggleCommand.execute();
       expect(testCallback.calledOnce).to.be.true;
 

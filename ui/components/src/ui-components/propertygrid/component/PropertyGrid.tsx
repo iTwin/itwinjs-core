@@ -12,7 +12,7 @@ import { produce } from "immer";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { CommonProps, Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
 import { matchLinks } from "../../common/Links";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
@@ -251,9 +251,9 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         // eslint-disable-next-line @typescript-eslint/unbound-method
         record.links.onClick = this.props.onPropertyLinkClick ? this.props.onPropertyLinkClick : this.handleLinkClick;
       if (record.value.valueFormat === PropertyValueFormat.Array)
-        this.assignRecordClickHandlers((record.value as ArrayValue).items);
+        this.assignRecordClickHandlers(record.value.items);
       if (record.value.valueFormat === PropertyValueFormat.Struct)
-        this.assignRecordClickHandlers(Object.values((record.value as StructValue).members));
+        this.assignRecordClickHandlers(Object.values(record.value.members));
     });
   }
 

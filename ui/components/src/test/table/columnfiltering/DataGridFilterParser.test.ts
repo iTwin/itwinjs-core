@@ -75,7 +75,7 @@ const createRow = (i: number) => {
   });
   row.cells.push({
     key: columns[1].key,
-    record: TestUtils.createPropertyRecord("Title " + i, columns[1], "text"),
+    record: TestUtils.createPropertyRecord(`Title ${i}`, columns[1], "text"),
   });
   row.cells.push({
     key: columns[2].key,

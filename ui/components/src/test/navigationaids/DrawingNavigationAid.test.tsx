@@ -93,8 +93,8 @@ describe("DrawingNavigationAid", () => {
       const size = DrawingNavigationAid.getDefaultClosedMapSize();
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} />);
       const navAid = component.getByTestId("components-drawing-navigation-aid");
-      expect(navAid.style.width).to.equal(size.x + "px");
-      expect(navAid.style.height).to.equal(size.y + "px");
+      expect(navAid.style.width).to.equal(`${size.x}px`);
+      expect(navAid.style.height).to.equal(`${size.y}px`);
     });
     it("should have expected opened dimensions", () => {
       const size = Vector3d.create(350, 300);
@@ -107,8 +107,8 @@ describe("DrawingNavigationAid", () => {
       const size = DrawingNavigationAid.getDefaultOpenedMapSize();
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} initialMapMode={MapMode.Opened} />);
       const navAid = component.getByTestId("components-drawing-navigation-aid");
-      expect(navAid.style.width).to.equal(size.x + "px");
-      expect(navAid.style.height).to.equal(size.y + "px");
+      expect(navAid.style.width).to.equal(`${size.x}px`);
+      expect(navAid.style.height).to.equal(`${size.y}px`);
     });
     it("should change from closed to opened when clicked", async () => {
       const animationEnd = sinon.fake();

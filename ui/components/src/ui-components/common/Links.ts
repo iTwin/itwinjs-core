@@ -19,9 +19,9 @@ linkify
 
       if (!self.re.pw) {
         self.re.pw = new RegExp(
-          "//" + self.re.src_host + ":" +
+          `//${self.re.src_host}:` +
           // Regex for path according to RFC 3986 standards plus the possibility to write '{}' brackets for ProjectWise monikers
-          "([a-zA-Z0-9-._~!$&'()*+,;=@%{}]+/)+[a-zA-Z0-9-._~!$&'()*+,;=@%{}]*",
+          `([a-zA-Z0-9-._~!$&'()*+,;=@%{}]+/)+[a-zA-Z0-9-._~!$&'()*+,;=@%{}]*`,
           "i");
       }
       // istanbul ignore else
@@ -42,7 +42,7 @@ linkify
 
       if (!self.re.www) {
         self.re.www = new RegExp(
-          "^" + self.re.src_auth + self.re.src_host_port_strict + self.re.src_path,
+          `^${self.re.src_auth}${self.re.src_host_port_strict}${self.re.src_path}`,
           "i");
       }
       // istanbul ignore else
@@ -56,7 +56,7 @@ linkify
     },
     normalize: (match: LinkifyIt.Match) => {
       match.schema = "http:";
-      match.url = "http://" + match.url;
+      match.url = `http://${match.url}`;
     },
   });
 

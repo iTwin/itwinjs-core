@@ -232,7 +232,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
 
     const context = useTreeRendererContext(Node);
     const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered, highlightingEngine, onNodeWidthMeasured } = context;
-    const node = visibleNodes!.getAtIndex(index)!;
+    const node = visibleNodes.getAtIndex(index)!;
 
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
     const className = classnames("node-wrapper", { "is-selected": isTreeModelNode(node) && node.isSelected });

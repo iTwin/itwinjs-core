@@ -182,9 +182,9 @@ describe("PropertyGrid", () => {
 
       wrapper.update();
 
-      expect(testArrayRecord.links!.onClick).to.be.not.undefined;
-      expect(testNestedRecord1.links!.onClick).to.be.not.undefined;
-      expect(testNestedRecord2.links!.onClick).to.be.not.undefined;
+      expect(testArrayRecord.links.onClick).to.be.not.undefined;
+      expect(testNestedRecord1.links.onClick).to.be.not.undefined;
+      expect(testNestedRecord2.links.onClick).to.be.not.undefined;
     });
 
     it("sets passed onPropertyLinkClick event handler to records with link property", async () => {
@@ -223,9 +223,9 @@ describe("PropertyGrid", () => {
 
       wrapper.update();
 
-      expect(testNestedRecord1.links!.onClick).to.be.equal(propertyLinkClickFn);
-      expect(testStructRecord.links!.onClick).to.be.equal(propertyLinkClickFn);
-      expect(testNestedRecord2.links!.onClick).to.be.equal(propertyLinkClickFn);
+      expect(testNestedRecord1.links.onClick).to.be.equal(propertyLinkClickFn);
+      expect(testStructRecord.links.onClick).to.be.equal(propertyLinkClickFn);
+      expect(testNestedRecord2.links.onClick).to.be.equal(propertyLinkClickFn);
     });
 
     describe("default onPropertyLinkClick behavior", () => {
@@ -337,7 +337,7 @@ describe("PropertyGrid", () => {
     });
 
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
-      const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+      const wrapper = mount<PropertyGrid>(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
       await TestUtils.flushAsyncOperations();
 
@@ -348,7 +348,7 @@ describe("PropertyGrid", () => {
 
       categoryBlock.find(".header").simulate("click");
 
-      const isExpanded = (wrapper.state("categories") as any)[0].category.expand;
+      const isExpanded = wrapper.state().categories[0].category.expand;
       expect(isExpanded, "Category did not get collapsed").to.be.false;
     });
 
@@ -382,7 +382,7 @@ describe("PropertyGrid", () => {
         }),
       };
 
-      const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+      const wrapper = mount<PropertyGrid>(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
       await TestUtils.flushAsyncOperations();
       wrapper.update();
 
@@ -394,17 +394,17 @@ describe("PropertyGrid", () => {
       childCategoryBlock.find(".header").simulate("click");
       rootCategoryBlock2.find(".header").simulate("click");
 
-      expect((wrapper.state("categories") as any)[0].category.expand, "First root category did not get collapsed").to.be.false;
-      expect((wrapper.state("categories") as any)[0].children[0].category.expand, "Child category did not get expanded").to.be.true;
-      expect((wrapper.state("categories") as any)[1].category.expand, "Second root category did not get expanded").to.be.true;
+      expect(wrapper.state().categories[0].category.expand, "First root category did not get collapsed").to.be.false;
+      expect(wrapper.state().categories[0].children[0].category.expand, "Child category did not get expanded").to.be.true;
+      expect(wrapper.state().categories[1].category.expand, "Second root category did not get expanded").to.be.true;
 
       // Refresh PropertyGrid data.
       dataProvider.onDataChanged.raiseEvent();
       await TestUtils.flushAsyncOperations();
 
-      expect((wrapper.state("categories") as any)[0].category.expand, "First root category did not stay collapsed").to.be.false;
-      expect((wrapper.state("categories") as any)[0].children[0].category.expand, "Child category did not stay expanded").to.be.true;
-      expect((wrapper.state("categories") as any)[1].category.expand, "Second root category did not stay expanded").to.be.true;
+      expect(wrapper.state().categories[0].category.expand, "First root category did not stay collapsed").to.be.false;
+      expect(wrapper.state().categories[0].children[0].category.expand, "Child category did not stay expanded").to.be.true;
+      expect(wrapper.state().categories[1].category.expand, "Second root category did not stay expanded").to.be.true;
     });
 
     it("rerenders if data in the provider changes", async () => {

@@ -14,12 +14,12 @@ import { PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 export class Css {
   /** @returns Value in pixels. */
   public static toPx(px: number): string {
-    return px + "px";
+    return `${px}px`;
   }
 
   /** @returns Value in percentage. */
   public static toPercentage(px: number): string {
-    return px + "%";
+    return `${px}%`;
   }
 }
 

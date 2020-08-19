@@ -188,7 +188,7 @@ describe("DragDropRow", () => {
       expect(ret).to.equal("test");
     });
     it("should pass data through for functional objectType", async () => {
-      const objectType = sinon.spy((data: { row: number }) => data.row + "");
+      const objectType = sinon.spy((data: { row: number }) => `${data.row}`);
       const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dragProps={{ objectType }} />) as any;
       const callbacks = root.createDragProps(0) as DragSourceProps;
       const ret = (callbacks.objectType as any)();

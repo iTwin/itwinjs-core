@@ -140,7 +140,7 @@ describe("UiFramework", () => {
     const userInfo = mockUserInfo();
 
     UiFramework.setUserInfo(userInfo);
-    expect(UiFramework.getUserInfo()!.id).to.eq(userInfo!.id);
+    expect(UiFramework.getUserInfo()!.id).to.eq(userInfo.id);
 
     UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
     expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");

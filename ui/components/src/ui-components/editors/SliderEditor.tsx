@@ -10,9 +10,7 @@ import "./SliderEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
-  PropertyValue, PropertyValueFormat, SliderEditorParams,
-  StandardEditorNames, StandardTypeNames,
+  PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, SliderEditorParams, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon, Slider } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
@@ -110,7 +108,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      initialValue = (record.value as PrimitiveValue).value as number;
+      initialValue = record.value.value as number;
     }
 
     let size: number | undefined;

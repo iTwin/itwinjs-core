@@ -12,9 +12,9 @@ import * as React from "react";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { ViewportComponentEvents } from "@bentley/ui-components";
-import { CommonProps, Popup } from "@bentley/ui-core";
+import { CommonProps, Icon, Popup } from "@bentley/ui-core";
 import {
-  containHorizontally, ExpandableButton as NZ_Expandable, Group as NZ_Tray, GroupColumn as NZ_Column, GroupTool as NZ_Item, ToolbarIcon as NZ_Icon,
+  containHorizontally, GroupColumn as NZ_Column, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupTool as NZ_Item, Group as NZ_Tray,
   withContainIn,
 } from "@bentley/ui-ninezone";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
@@ -168,7 +168,7 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
                   key={itemIndex.toString()}
                   ref={itemIndex.toString()}
                   label={item.label}
-                  icon={<span className={"icon " + item.iconClassName} />}
+                  icon={<Icon iconSpec={item.iconClassName} />}
                   isActive={this.state.selected === itemIndex}
                   onClick={() => this._handleListItemClicked(itemIndex)}
                 >

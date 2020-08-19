@@ -11,7 +11,7 @@ import "./ListPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PopupItem } from "@bentley/ui-components";
-import { CommonProps, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
+import { CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import { containHorizontally, ExpandableItem, Group, GroupColumn, Item, Panel, withContainIn } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
@@ -269,7 +269,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
   /** Renders ListPickerBase */
   public render() {
     const icon = this.props.iconSpec ? /* istanbul ignore next */ (typeof this.props.iconSpec === "string" ?
-      /* istanbul ignore next */ <i className={"icon " + (this.props.iconSpec)} /> : <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) :
+      /* istanbul ignore next */ <Icon iconSpec={this.props.iconSpec} /> : <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) :
       <i className="icon icon-list" />;
 
     return (
@@ -389,7 +389,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
         // Minimize any other list picker that has been opened
         // This is to mimic Bimium's behavior where pickers only close when other pickers are opened
         if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker.isExpanded())
-          lastOpenedPicker!.minimize();
+          lastOpenedPicker.minimize();
 
         lastOpenedPicker = this;
 
@@ -409,8 +409,8 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
  * @beta
  */
 function ListPickerPopupItem(props: ListPickerProps) {
-  const icon = props.iconSpec ? /* istanbul ignore next */ (typeof props.iconSpec === "string" ? <i className={"icon " + (props.iconSpec)} /> :
-    <i className="icon uifw-item-svg-icon">{props.iconSpec}</i>) : <i className="icon icon-list" />;
+  const icon = props.iconSpec ? /* istanbul ignore next */ (typeof props.iconSpec === "string" ? <Icon iconSpec={props.iconSpec} /> :
+    <i className="icon uifw-item-svg-icon">{props.iconSpec}</i>) : <Icon iconSpec="icon-list" />;
 
   return (
     <ToolbarDragInteractionContext.Consumer>
@@ -486,46 +486,45 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     return item.key === ListPicker.Key_All || item.key === ListPicker.Key_Invert || item.key === ListPicker.Key_None || item.type !== ListItemType.Item || item.key === ListPicker.Key_Separator;
   }
 
-  /** Renders ListPicker */
-  public render() {
-    const self = this;
-    // Handle enabling/disabling the items
-    // This will call the this.props.setEnabled function to provide the parent with a chance to process it
-    const setEnabled = (item: ListItem, enabled: boolean) => {
-      if (self.isSpecialItem(item)) {
-        switch (item.key) {
-          case ListPicker.Key_All: {
-            // istanbul ignore else
-            if (self.props.enableAllFunc)
-              self.props.enableAllFunc();
-            return;
-          }
-          case ListPicker.Key_None: {
-            // istanbul ignore else
-            if (self.props.disableAllFunc)
-              self.props.disableAllFunc();
-            return;
-          }
-          case ListPicker.Key_Invert: {
-            // istanbul ignore else
-            if (self.props.invertFunc)
-              self.props.invertFunc();
-            return;
-          }
+  // Handle enabling/disabling the items
+  // This will call the this.props.setEnabled function to provide the parent with a chance to process it
+  private _setEnabled = (item: ListItem, enabled: boolean) => {
+    if (this.isSpecialItem(item)) {
+      switch (item.key) {
+        case ListPicker.Key_All: {
+          // istanbul ignore else
+          if (this.props.enableAllFunc)
+            this.props.enableAllFunc();
+          return;
+        }
+        case ListPicker.Key_None: {
+          // istanbul ignore else
+          if (this.props.disableAllFunc)
+            this.props.disableAllFunc();
+          return;
+        }
+        case ListPicker.Key_Invert: {
+          // istanbul ignore else
+          if (this.props.invertFunc)
+            this.props.invertFunc();
+          return;
         }
       }
+    }
 
-      // Call on parent to do processing of the item
-      self.props.setEnabled(item, enabled);
-    };
+    // Call on parent to do processing of the item
+    this.props.setEnabled(item, enabled);
+  }
 
+  /** Renders ListPicker */
+  public render() {
     return (
       <FrameworkVersionSwitch
         v1={
           <ListPickerBase
             {...this.props}
             title={this.props.title}
-            setEnabled={setEnabled}
+            setEnabled={this._setEnabled}
             onExpanded={this.props.onExpanded}
             items={this.createItems(this.props.items)}
             iconSpec={this.props.iconSpec}
@@ -535,7 +534,7 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
           <ListPickerPopupItem
             {...this.props}
             title={this.props.title}
-            setEnabled={setEnabled}
+            setEnabled={this._setEnabled}
             onExpanded={this.props.onExpanded}
             items={this.createItems(this.props.items)}
             iconSpec={this.props.iconSpec}

@@ -202,7 +202,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   private _displayTime(millisec: number) {
     const addZero = (i: number) => {
-      return (i < 10) ? "0" + i : i;
+      return (i < 10) ? `0${i}` : i;
     };
 
     const date = new Date(millisec);

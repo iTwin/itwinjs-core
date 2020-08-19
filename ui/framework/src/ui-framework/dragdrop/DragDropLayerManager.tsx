@@ -127,7 +127,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
       sourceClientOffset, initialSourceClientOffset,
     } = this.props;
 
-    const dragSourceArgs = item! as DragSourceArguments;
+    const dragSourceArgs = item as DragSourceArguments;
 
     const LayerElement = DragDropLayerManager.getActiveLayer() || (dragSourceArgs && dragSourceArgs.defaultDragLayer); // eslint-disable-line @typescript-eslint/naming-convention
     if (!this._dragging || !LayerElement)

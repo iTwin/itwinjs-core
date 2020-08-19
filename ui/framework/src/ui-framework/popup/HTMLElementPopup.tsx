@@ -44,7 +44,7 @@ export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps,
 
   public render() {
     let point = PopupManager.getPopupPosition(this.props.el, this.props.pt, new Point(), this.state.size);
-    const popupRect = CursorPopup.getPopupRect(point, this.props.offset, this.state.size, this.props.relativePosition!);
+    const popupRect = CursorPopup.getPopupRect(point, this.props.offset, this.state.size, this.props.relativePosition);
     point = new Point(popupRect.left, popupRect.top);
 
     return (

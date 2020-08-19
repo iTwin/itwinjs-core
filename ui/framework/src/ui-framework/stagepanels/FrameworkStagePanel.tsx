@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
-  NineZoneStagePanelManagerProps, SafeAreaInsets, Splitter, SplitterPaneTarget as NZ_SplitterPaneTarget, SplitterTarget, StagePanel as NZ_StagePanel,
+  NineZoneStagePanelManagerProps, SplitterPaneTarget as NZ_SplitterPaneTarget, StagePanel as NZ_StagePanel, SafeAreaInsets, Splitter, SplitterTarget,
   StagePanelTarget, StagePanelTypeHelpers, WidgetZoneId, ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
 import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";

@@ -32,8 +32,8 @@ function addClass(element: HTMLElement, className: string) {
   if (element.classList) {
     return element.classList.add(className);
   }
-  if (!element.className.search(new RegExp("\\b" + className + "\\b"))) {
-    element.className = " " + className;
+  if (!element.className.search(new RegExp(`\\b${className}\\b`))) {
+    element.className = ` ${className}`;
   }
 }
 
@@ -50,7 +50,7 @@ function removeClass(element: HTMLElement, className: string) {
     }
 
     element.className = element.className.replace(
-      new RegExp("\\b" + className + "\\b", "g"),
+      new RegExp(`\\b${className}\\b`, "g"),
       "",
     );
   }
@@ -295,6 +295,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       borderRadius: 2,
       paddingLeft: 4,
       display: "block",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       WebkitAppearance: "none",
       lineHeight: "normal",
     },
@@ -588,9 +589,9 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     if (this._isStrict) {
       const precision = access(this.props, "precision", null, this);
       const q = Math.pow(10, precision === null ? 10 : precision);
-      const _min = +access(this.props, "min", ReactNumericInput.defaultProps.min, this);
-      const _max = +access(this.props, "max", ReactNumericInput.defaultProps.max, this);
-      n = Math.min(Math.max(n, _min), _max);
+      const min = +access(this.props, "min", ReactNumericInput.defaultProps.min, this);
+      const max = +access(this.props, "max", ReactNumericInput.defaultProps.max, this);
+      n = Math.min(Math.max(n, min), max);
       n = Math.round(n * q) / q;
     }
 
@@ -615,29 +616,29 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
    * It will invoke the this.props.format function if one is provided.
    */
   private _format(n: number): string {
-    const _n: number = this._toNumber(n);
-    let _s: string = _n + "";
+    const num: number = this._toNumber(n);
+    let str: string = `${num}`;
     const precision = access(this.props, "precision", null, this);
 
     if (precision !== null) {
-      _s = _n.toFixed(precision);
+      str = num.toFixed(precision);
     }
 
     if (this.props.format) {
-      return this.props.format(_n, _s);
+      return this.props.format(num, str);
     }
 
-    return _s;
+    return str;
   }
 
   /**
    * The internal method that actually sets the new value on the input
    */
   private _step(n: number, callback?: () => void): boolean {
-    const _isStrict = this._isStrict;
+    const isStrict = this._isStrict;
     this._isStrict = true;
 
-    const _step = +access(
+    const step = +access(
       this.props,
       "step",
       ReactNumericInput.defaultProps.step,
@@ -649,17 +650,17 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       ),
     );
 
-    let _n = this._toNumber((this.state.value || 0) + _step * n);
+    let num = this._toNumber((this.state.value || 0) + step * n);
 
     if (this.props.snap) {
-      _n = Math.round(_n / _step) * _step;
+      num = Math.round(num / step) * step;
     }
 
-    this._isStrict = _isStrict;
+    this._isStrict = isStrict;
 
-    if (_n !== this.state.value) {
+    if (num !== this.state.value) {
       if (!this._isUnmounted)
-        this.setState({ value: _n, stringValue: _n + "" }, callback);
+        this.setState({ value: num, stringValue: `${num}` }, callback);
       return true;
     }
 
@@ -723,8 +724,8 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   private increase(_recursive: boolean = false, callback?: () => void): void {
     this._stop();
     this._step(1, callback);
-    const _max = +access(this.props, "max", ReactNumericInput.defaultProps.max, this);
-    if (this.state.value === undefined || this.state.value === null || isNaN(this.state.value) || +this.state.value < _max) {
+    const max = +access(this.props, "max", ReactNumericInput.defaultProps.max, this);
+    if (this.state.value === undefined || this.state.value === null || isNaN(this.state.value) || +this.state.value < max) {
       this._timer = window.setTimeout(() => {
         this.increase(true);
       }, _recursive ? ReactNumericInput.SPEED : ReactNumericInput.DELAY);
@@ -742,8 +743,8 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   private decrease(_recursive: boolean = false, callback?: () => void): void {
     this._stop();
     this._step(-1, callback);
-    const _min = +access(this.props, "min", ReactNumericInput.defaultProps.min, this);
-    if (this.state.value === undefined || this.state.value === null || isNaN(this.state.value) || +this.state.value > _min) {
+    const min = +access(this.props, "min", ReactNumericInput.defaultProps.min, this);
+    if (this.state.value === undefined || this.state.value === null || isNaN(this.state.value) || +this.state.value > min) {
       this._timer = window.setTimeout(() => {
         this.decrease(true);
       }, _recursive ? ReactNumericInput.SPEED : ReactNumericInput.DELAY);
@@ -1052,7 +1053,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
           args[0].persist();
           this._inputFocus = true;
           const val = this._parse(args[0].target.value);
-          const stringVal = val || val === 0 ? val + "" : "";
+          const stringVal = val || val === 0 ? `${val}` : "";
           // istanbul ignore else
           if (!this._isUnmounted && val !== this.state.value && stringVal !== this.state.stringValue)
             this.setState({
@@ -1063,7 +1064,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
             });
         },
         onBlur: (...args: any[]) => {
-          const _isStrict = this._isStrict;
+          const isStrict = this._isStrict;
           this._isStrict = true;
           args[0].persist();
           this._inputFocus = false;
@@ -1074,7 +1075,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
               value: val,
             }, () => {
               this._invokeEventCallback("onBlur", ...args);
-              this._isStrict = _isStrict;
+              this._isStrict = isStrict;
             });
         },
       });

@@ -8,7 +8,7 @@ import { flattenChildren } from "../../ui-core/utils/flattenChildren";
 
 describe("flattenChildren", () => {
 
-  const _checkFlattened = (flattened: React.ReactNode) => {
+  const checkFlattened = (flattened: React.ReactNode) => {
     const a = flattened as [1];
     expect(a.length).to.eq(1);
     const o = a[0] as any;
@@ -22,13 +22,13 @@ describe("flattenChildren", () => {
       </>
     );
     const flattened = flattenChildren(fragment);
-    _checkFlattened(flattened);
+    checkFlattened(flattened);
   });
 
   it("should return a lone element", () => {
     const element = <div />;
     const flattened = flattenChildren(element);
-    _checkFlattened(flattened);
+    checkFlattened(flattened);
   });
 
 });

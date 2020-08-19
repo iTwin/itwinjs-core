@@ -116,7 +116,7 @@ export class CalculatorEngine {
 
         case CalculatorOperator.Decimal:
           if (!resultString.includes("."))
-            resultString = displayedNum + ".";
+            resultString = `${displayedNum}.`;
           else if (this._previousKeyType === CalculatorKeyType.Operator || this._previousKeyType === CalculatorKeyType.Equals)
             resultString = "0.";
           break;
@@ -125,7 +125,7 @@ export class CalculatorEngine {
           if (displayedNum.length > 0 && displayedNum[0] === "-")
             resultString = displayedNum.substr(1);
           else
-            resultString = "-" + displayedNum;
+            resultString = `-${displayedNum}`;
           break;
 
         case CalculatorOperator.Equals: {

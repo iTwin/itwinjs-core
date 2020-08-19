@@ -84,7 +84,7 @@ export class StateManager {
   /** Return the current Redux store. Useful when using connect method to connect a Ui Component to the store. */
   public static get store(): Store<any> {
     if (StateManager.isInitialized()) {
-      return StateManager._singletonStore! as Store<any>;
+      return StateManager._singletonStore!;
     } else {
       throw new UiError(StateManager._LOG_CATEGORY, `Redux Store has not been initialized`);
     }
@@ -93,7 +93,7 @@ export class StateManager {
   /** Return the current state from the Redux store. */
   public static get state(): any {
     if (StateManager.isInitialized()) {
-      return StateManager._singletonStore!.getState() as any;
+      return StateManager._singletonStore!.getState();
     } else {
       return undefined;
     }

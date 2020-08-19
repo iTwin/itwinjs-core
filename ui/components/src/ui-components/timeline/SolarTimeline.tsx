@@ -34,7 +34,7 @@ const millisecPerDay = millisecPerHour * 24;
 const scrubberIncrement = 1;
 const defaultPlaybackDuration = 40 * 1000; // 40 seconds
 const addZero = (i: number) => {
-  return (i < 10) ? "0" + i : i;
+  return (i < 10) ? `0${i}` : i;
 };
 
 // *******************************************************
@@ -646,7 +646,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   }
 
   private _formatDate = (date: Date) => {
-    return this._months[date.getUTCMonth()] + ", " + date.getUTCDate();
+    return `${this._months[date.getUTCMonth()]}, ${date.getUTCDate()}`;
   }
 
   private _onPresetColorPick = (shadowColor: ColorDef) => {

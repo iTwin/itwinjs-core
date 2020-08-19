@@ -58,7 +58,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
 
     let displayLabel = props.propertyRecord.property.displayLabel;
     if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Array)
-      displayLabel = `${displayLabel} (${(this.props.propertyRecord.value as ArrayValue).items.length})`;
+      displayLabel = `${displayLabel} (${this.props.propertyRecord.value.items.length})`;
 
     return (
       <NonPrimitivePropertyLabelRenderer
@@ -121,6 +121,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
   public render() {
     let items: PropertyRecord[];
     if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Struct)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       items = this.getStructProperties((this.props.propertyRecord.value as StructValue).members);
     else
       items = this.getArrayProperties((this.props.propertyRecord.value as ArrayValue).items);

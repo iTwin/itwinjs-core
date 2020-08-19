@@ -274,14 +274,14 @@ export class UiFramework {
   public static get projectServices(): ProjectServices {
     if (!UiFramework._projectServices)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._projectServices!;
+    return UiFramework._projectServices;
   }
 
   /** @internal */
   public static get iModelServices(): IModelServices {
     if (!UiFramework._iModelServices)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._iModelServices!;
+    return UiFramework._iModelServices;
   }
 
   public static dispatchActionToStore(type: string, payload: any, immediateSync = false) {

@@ -83,7 +83,7 @@ function PropertyEditor({ itemsManager, record, isLock, setFocus }: { itemsManag
 
   return (
     <div key={record.property.name} className={className} >
-      <EditorContainer key={record.property.name} propertyRecord={propertyRecord!} setFocus={setFocus} onCommit={handleCommit} onCancel={
+      <EditorContainer key={record.property.name} propertyRecord={propertyRecord} setFocus={setFocus} onCommit={handleCommit} onCancel={
         // istanbul ignore next
         () => { }
       } />
@@ -162,7 +162,7 @@ export class ComponentGenerator {
     const label = (DialogItemsManager.editorWantsLabel(rowItem)) ? this.getEditorLabel(rowItem) : null;
     const classNames = multiplePropertiesOnRow ? "uifw-default-lock-and-label uifw-default-wide-only-display" : "uifw-default-lock-and-label";
     return (
-      <div key={"lock-" + record.property.name} className={classNames}>
+      <div key={`lock-${record.property.name}`} className={classNames}>
         {lockEditor}
         {label}
       </div>

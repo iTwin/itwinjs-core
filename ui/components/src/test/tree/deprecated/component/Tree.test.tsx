@@ -19,7 +19,7 @@ import { LoadedImage } from "../../../../ui-components/common/IImageLoader";
 import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { TreeNodeProps } from "../../../../ui-components/tree/deprecated/component/Node";
 import {
-  DEPRECATED_Tree as Tree, NodesDeselectedCallback, NodesSelectedCallback, TreeProps,
+  NodesDeselectedCallback, NodesSelectedCallback, DEPRECATED_Tree as Tree, TreeProps,
 } from "../../../../ui-components/tree/deprecated/component/Tree";
 import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
@@ -81,8 +81,8 @@ describe("Tree", () => {
           { id: "1", label: PropertyRecord.fromString("1"), hasChildren: true, autoExpand: isExpanded("1") },
         ];
       return [
-        { id: parent.id + "-a", label: PropertyRecord.fromString(getPropertyRecordAsString(parent.label) + "-a") },
-        { id: parent.id + "-b", label: PropertyRecord.fromString(getPropertyRecordAsString(parent.label) + "-b") },
+        { id: `${parent.id}-a`, label: PropertyRecord.fromString(`${getPropertyRecordAsString(parent.label)}-a`) },
+        { id: `${parent.id}-b`, label: PropertyRecord.fromString(`${getPropertyRecordAsString(parent.label)}-b`) },
       ];
     };
   };
@@ -1211,8 +1211,8 @@ describe("Tree", () => {
           { id: "1", label: PropertyRecord.fromString("1"), hasChildren: true },
         ];
       return [
-        { id: parent.id + "-a", label: PropertyRecord.fromString(parent.label + "-a") },
-        { id: parent.id + "-b", label: PropertyRecord.fromString(parent.label + "-b") },
+        { id: `${parent.id}-a`, label: PropertyRecord.fromString(`${parent.label}-a`) },
+        { id: `${parent.id}-b`, label: PropertyRecord.fromString(`${parent.label}-b`) },
       ];
     };
 

@@ -83,7 +83,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      const value = (record.value as PrimitiveValue).value;
+      const value = record.value.value;
       initialValue = await TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
     }
 

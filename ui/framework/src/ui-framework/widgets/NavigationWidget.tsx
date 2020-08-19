@@ -11,7 +11,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiError } from "@bentley/ui-abstract";
 import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { CommonProps } from "@bentley/ui-core";
-import { Direction, ToolbarPanelAlignment, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
+import { Direction, Tools as NZ_ToolsWidget, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ContentControlActivatedEventArgs } from "../content/ContentControl";

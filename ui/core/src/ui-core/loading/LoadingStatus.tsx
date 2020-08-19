@@ -39,7 +39,7 @@ export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
   }
 
   public render() {
-    const percent = this.inRange(this.props.percent) + "%";
+    const percent = `${this.inRange(this.props.percent)}%`;
     const containerClass = classnames(this.props.className, "loading-status-container");
     return (
       <div className={containerClass} style={this.props.style}>

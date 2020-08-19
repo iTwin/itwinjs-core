@@ -141,7 +141,7 @@ describe("GroupItem", () => {
       expect(stateFunctionCalled).to.eq(true);
 
       stateFunctionCalled = false;
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId + "-noop");
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(`${testEventId}-noop`);
       expect(stateFunctionCalled).to.eq(false);
 
       wrapper.unmount();

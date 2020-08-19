@@ -10,7 +10,7 @@ import "./Slider.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  GetRailProps, GetTrackProps, Handles, Rail, Slider as CompoundSlider, SliderItem, SliderModeFunction, Ticks, Tracks,
+  Slider as CompoundSlider, GetRailProps, GetTrackProps, Handles, Rail, SliderItem, SliderModeFunction, Ticks, Tracks,
 } from "react-compound-slider";
 import { BodyText } from "../text/BodyText";
 import { CommonProps } from "../utils/Props";
@@ -273,7 +273,7 @@ function TooltipTrack(props: TooltipTrackProps) {
   const [percent, setPercent] = React.useState(null as number | null);
   const [tooltipTargetRef, tooltipTarget] = useRefState<HTMLDivElement>();
   // istanbul ignore next
-  const _onPointerMove = (e: React.PointerEvent) => {
+  const onPointerMove = (e: React.PointerEvent) => {
     if (activeHandleID) {
       setPercent(null);
     } else {
@@ -283,7 +283,7 @@ function TooltipTrack(props: TooltipTrackProps) {
   };
 
   // istanbul ignore next
-  const _onPointerLeave = () => {
+  const onPointerLeave = () => {
     setPercent(null);
   };
 
@@ -313,7 +313,7 @@ function TooltipTrack(props: TooltipTrackProps) {
         className="core-slider-track"
         data-testid="core-slider-track"
         style={{ left: `${source.percent}%`, width: `${target.percent - source.percent}%` }}
-        onPointerMove={_onPointerMove} onPointerLeave={_onPointerLeave}
+        onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}
         {...getTrackProps()}
       >
         <div className="core-slider-track-inner" />
@@ -377,22 +377,22 @@ function Handle(props: HandleProps) {
   const [tooltipTargetRef, tooltipTarget] = useRefState<HTMLDivElement>();
 
   // istanbul ignore next
-  const _onMouseEnter = () => {
+  const onMouseEnter = () => {
     setMouseOver(true);
   };
 
   // istanbul ignore next
-  const _onMouseLeave = () => {
+  const onMouseLeave = () => {
     setMouseOver(false);
   };
 
   // istanbul ignore next
-  const _onFocus = () => {
+  const onFocus = () => {
     setFocused(true);
   };
 
   // istanbul ignore next
-  const _onBlur = () => {
+  const onBlur = () => {
     setFocused(false);
   };
 
@@ -425,10 +425,10 @@ function Handle(props: HandleProps) {
         tabIndex={disabled ? -1 : 0}
         style={{ left: `${percent}%` }}
         {...getHandleProps(id, {
-          onMouseEnter: _onMouseEnter,
-          onMouseLeave: _onMouseLeave,
-          onFocus: _onFocus,
-          onBlur: _onBlur,
+          onMouseEnter,
+          onMouseLeave,
+          onFocus,
+          onBlur,
         })} />
     </>
   );

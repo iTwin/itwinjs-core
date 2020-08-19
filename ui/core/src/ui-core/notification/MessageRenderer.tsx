@@ -28,6 +28,7 @@ export function MessageRenderer(props: MessageRendererProps) {
     if (typeof props.message === "string")
       messageNode = <span className={props.className}>{props.message}</span>;
     else if (isHTMLElement(props.message))
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       messageNode = <span className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
     else {
       /* istanbul ignore else */
@@ -38,6 +39,7 @@ export function MessageRenderer(props: MessageRendererProps) {
     if (typeof props.message === "string")
       messageNode = <div className={props.className}>{props.message}</div>;
     else if (isHTMLElement(props.message))
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       messageNode = <div className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
     else {
       /* istanbul ignore else */

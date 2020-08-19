@@ -200,7 +200,7 @@ describe("FrontstageComposer", () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
     const spyMethod = sinon.spy(Logger, "logError");
 
-    const instance = wrapper.instance() as FrontstageComposer;
+    const instance = wrapper.instance();
     instance.getZoneDef(1);
     spyMethod.called.should.true;
 

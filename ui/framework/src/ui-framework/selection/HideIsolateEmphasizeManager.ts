@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { ElementProps, FeatureAppearance, GeometricElementProps } from "@bentley/imodeljs-common";
+import { FeatureAppearance, GeometricElementProps } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
@@ -462,7 +462,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   }
 
   private static async getSelectionSetElementModels(iModel: IModelConnection) {
-    const props = (await iModel.elements.getProps(iModel.selectionSet.elements)) as ElementProps[];
+    const props = await iModel.elements.getProps(iModel.selectionSet.elements);
     const modelIds = new Set<string>();
     for (const prop of props)
       if (prop.model)

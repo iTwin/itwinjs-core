@@ -43,6 +43,7 @@ class AppStateManager {
   ): IAppState {
     type AppActionsUnion = ActionsUnion<typeof AppStateManager._appActions>;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const appActionsParam = action as AppActionsUnion;
 
     switch (appActionsParam.type) {
@@ -91,6 +92,7 @@ class ExtensionStateManager {
   ): ExtensionState {
     type ExtensionActionsUnion = ActionsUnion<typeof ExtensionStateManager._extensionActions>;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const extensionActionsParam = action as ExtensionActionsUnion;
 
     switch (extensionActionsParam.type) {
@@ -129,51 +131,51 @@ describe("StateManager", () => {
     const testState = new StateManager();
     expect(testState).to.exist;
     const currentState = StateManager.state;
-    expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
+    expect(currentState.hasOwnProperty("frameworkState")).to.be.true;
   });
 
   it("should allow initialization with app Reducer", () => {
     const testState = new StateManager({ appState: AppStateManager.appReducer });
     expect(testState).to.exist;
     const currentState = StateManager.state;
-    expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
-    expect(currentState!.hasOwnProperty("appState")).to.be.true;
+    expect(currentState.hasOwnProperty("frameworkState")).to.be.true;
+    expect(currentState.hasOwnProperty("appState")).to.be.true;
   });
 
   it("should allow initialization with defaults that include frameworkState", () => {
     const testState = new StateManager({ appState: AppStateManager.appReducer, frameworkState: FrameworkReducer });
     expect(testState).to.exist;
     const currentState = StateManager.state;
-    expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
-    expect(currentState!.hasOwnProperty("appState")).to.be.true;
+    expect(currentState.hasOwnProperty("frameworkState")).to.be.true;
+    expect(currentState.hasOwnProperty("appState")).to.be.true;
   });
 
   it("should see extension state once extension reducer is registered", () => {
     const testState = new StateManager({ appState: AppStateManager.appReducer });
     expect(testState).to.exist;
     let currentState = StateManager.state;
-    expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
-    expect(currentState!.hasOwnProperty("appState")).to.be.true;
+    expect(currentState.hasOwnProperty("frameworkState")).to.be.true;
+    expect(currentState.hasOwnProperty("appState")).to.be.true;
 
     ExtensionStateManager.initialize();
     currentState = StateManager.state;
-    expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
-    expect(currentState!.hasOwnProperty("appState")).to.be.true;
-    expect(currentState!.hasOwnProperty("extension_state")).to.be.true;
+    expect(currentState.hasOwnProperty("frameworkState")).to.be.true;
+    expect(currentState.hasOwnProperty("appState")).to.be.true;
+    expect(currentState.hasOwnProperty("extension_state")).to.be.true;
   });
 
   it("should see extension state once extension reducer is registered (using store property)", () => {
     const testState = new StateManager({ appState: AppStateManager.appReducer });
     expect(testState).to.exist;
     let currentState = StateManager.store.getState();
-    expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
-    expect(currentState!.hasOwnProperty("appState")).to.be.true;
+    expect(currentState.hasOwnProperty("frameworkState")).to.be.true;
+    expect(currentState.hasOwnProperty("appState")).to.be.true;
 
     ExtensionStateManager.initialize();
     currentState = StateManager.store.getState();
-    expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
-    expect(currentState!.hasOwnProperty("appState")).to.be.true;
-    expect(currentState!.hasOwnProperty("extension_state")).to.be.true;
+    expect(currentState.hasOwnProperty("frameworkState")).to.be.true;
+    expect(currentState.hasOwnProperty("appState")).to.be.true;
+    expect(currentState.hasOwnProperty("extension_state")).to.be.true;
   });
 
 });

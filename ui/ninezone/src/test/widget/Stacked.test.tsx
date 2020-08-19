@@ -387,7 +387,7 @@ describe("<Stacked />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
 
-    const widget = sut.find("div").first().getDOMNode() as HTMLDivElement;
+    const widget = sut.find("div").first().getDOMNode();
     const clientHeightStub = sinon.stub(widget, "clientHeight");
     clientHeightStub.get(() => {
       clientHeightStub.get(() => 100);
@@ -420,7 +420,7 @@ describe("<Stacked />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
 
-    const widget = sut.find("div").first().getDOMNode() as HTMLDivElement;
+    const widget = sut.find("div").first().getDOMNode();
     const clientHeightStub = sinon.stub(widget, "clientHeight");
 
     const grip = sut.find(ResizeGrip).at(0);
@@ -442,7 +442,7 @@ describe("<Stacked />", () => {
       horizontalAnchor={HorizontalAnchor.Right}
       verticalAnchor={VerticalAnchor.Middle}
     />);
-    const element = sut.getDOMNode() as HTMLDivElement;
+    const element = sut.getDOMNode();
     sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
@@ -462,7 +462,7 @@ describe("<Stacked />", () => {
       horizontalAnchor={HorizontalAnchor.Right}
       verticalAnchor={VerticalAnchor.Middle}
     />);
-    const element = sut.getDOMNode() as HTMLDivElement;
+    const element = sut.getDOMNode();
     sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();

@@ -116,6 +116,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     this._secondarySortColumnStack.push(columnIndex);
 
     // Sort by the column
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const dataProvider = this;
     this._rowItemIndices.sort((a: number, b: number) => {
       return dataProvider.sortDispatcher(dataProvider._items[a], dataProvider._items[b], columnIndex, sortDirection);

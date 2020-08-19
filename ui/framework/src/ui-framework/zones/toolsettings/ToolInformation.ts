@@ -36,7 +36,7 @@ export class ToolInformation {
       // istanbul ignore else
       if (provider) {
         if (provider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
-          throw new UiError(UiFramework.loggerCategory(this), "toolUiProvider: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
+          throw new UiError(UiFramework.loggerCategory(this), `toolUiProvider: toolId '${this.toolId}' is registered to a control that is NOT a ToolUiProvider`);
         }
 
         this._toolUiProvider = provider;

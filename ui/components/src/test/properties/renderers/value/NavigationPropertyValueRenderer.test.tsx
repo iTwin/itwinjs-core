@@ -58,7 +58,7 @@ describe("NavigationPropertyValueRenderer", () => {
       const renderer = new NavigationPropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
 
-      const highlightNode = (text: string) => <span>{text + " Highlighted"}</span>;
+      const highlightNode = (text: string) => <span>{`${text} Highlighted`}</span>;
       const renderContext: PropertyValueRendererContext = {
         textHighlighter: highlightNode,
       };

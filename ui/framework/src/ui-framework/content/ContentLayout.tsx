@@ -143,7 +143,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
 
   public render(): React.ReactNode {
     const orientation = (this.props.orientation === Orientation.Horizontal) ? "horizontal" : "vertical";
-    const defaultSize = (this.props.percentage * 100).toString() + "%";
+    const defaultSize = `${(this.props.percentage * 100).toString()}%`;
     const minSizeTopLeft = this.props.minSizeTopLeft;
     const minSizeBottomRight = -(this.props.minSizeBottomRight);
 
@@ -369,7 +369,7 @@ export class ContentLayoutDef {
       this.id = layoutProps.id;
     else {
       ContentLayoutDef._sId++;
-      this.id = "ContentLayout-" + ContentLayoutDef._sId;
+      this.id = `ContentLayout-${ContentLayoutDef._sId}`;
     }
 
     if (layoutProps.descriptionKey !== undefined)

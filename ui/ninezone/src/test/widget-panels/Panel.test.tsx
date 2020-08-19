@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import {
-  addPanelWidget, createNineZoneState, DraggedPanelSideContext, NineZoneDispatch, WidgetPanel, addTab,
+  addPanelWidget, addTab, createNineZoneState, DraggedPanelSideContext, NineZoneDispatch, WidgetPanel,
 } from "../../ui-ninezone";
 import { createDOMRect } from "../Utils";
 import { NineZoneProvider } from "../Providers";

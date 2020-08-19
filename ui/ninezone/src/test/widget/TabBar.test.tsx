@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { Rectangle } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext, PanelTarget, useDrag,
-  WidgetIdContext, WidgetTabTarget, addTab,
+  addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext, PanelTarget,
+  useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";

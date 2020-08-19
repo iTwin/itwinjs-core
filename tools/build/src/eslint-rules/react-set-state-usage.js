@@ -62,6 +62,20 @@ module.exports = {
       return getFirstSetStateAncestor(node.parent);
     }
 
+    function isInSetStateUpdater(node) {
+      const setState = getFirstSetStateAncestor(node.parent);
+      if (!setState)
+        return false;
+      const [updaterArgument] = setState.arguments;
+      let ancestorNode = node.parent;
+      while (ancestorNode) {
+        if (ancestorNode === updaterArgument)
+          return true;
+        ancestorNode = ancestorNode.parent;
+      }
+      return false;
+    }
+
     return {
       CallExpression(node) {
         if (!isThisSetState(node))
@@ -91,12 +105,13 @@ module.exports = {
           || node.property.name !== "state" && node.property.name !== "props")
           return;
 
-        if (getFirstSetStateAncestor(node))
+        if (isInSetStateUpdater(node)) {
           context.report({
             node,
             messageId: "failureAccessedMember",
             data: { accessedMember: node.property.name }
           });
+        }
       }
     };
   },

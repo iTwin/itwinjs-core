@@ -1033,7 +1033,7 @@ describe("useUpdateNineZoneSize", () => {
     sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
     rerender(newFrontstageDef);
 
-    newFrontstageDef.nineZoneState!.size.should.eql({ width: 10, height: 20 });
+    newFrontstageDef.nineZoneState.size.should.eql({ width: 10, height: 20 });
   });
 
   it("should not update size if FrontstageManager.nineZoneSize is not initialized", () => {
@@ -1044,6 +1044,6 @@ describe("useUpdateNineZoneSize", () => {
 
     rerender(newFrontstageDef);
 
-    newFrontstageDef.nineZoneState!.size.should.eql({ height: 1, width: 2 });
+    newFrontstageDef.nineZoneState.size.should.eql({ height: 1, width: 2 });
   });
 });

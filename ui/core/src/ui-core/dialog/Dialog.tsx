@@ -230,12 +230,12 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     }
 
     const minMaxStyle: React.CSSProperties = {};
-    minMaxStyle.minWidth = (typeof minWidth === "number") ? minWidth + "px" : minWidth;
-    minMaxStyle.minHeight = (typeof minHeight === "number") ? minHeight + "px" : minHeight;
+    minMaxStyle.minWidth = (typeof minWidth === "number") ? `${minWidth}px` : minWidth;
+    minMaxStyle.minHeight = (typeof minHeight === "number") ? `${minHeight}px` : minHeight;
     if (maxWidth !== undefined)
-      minMaxStyle.maxWidth = (typeof maxWidth === "number") ? maxWidth + "px" : maxWidth;
+      minMaxStyle.maxWidth = (typeof maxWidth === "number") ? `${maxWidth}px` : maxWidth;
     if (maxHeight !== undefined)
-      minMaxStyle.maxHeight = (typeof maxHeight === "number") ? maxHeight + "px" : maxHeight;
+      minMaxStyle.maxHeight = (typeof maxHeight === "number") ? `${maxHeight}px` : maxHeight;
 
     const buttons = this.getFooterButtons(this.props);
 
@@ -289,10 +289,11 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
                   {!hideHeader &&
                     headerElement
                   }
-                  <div className={classnames(
-                    "core-dialog-content",
-                    { "core-dialog-content-no-inset": !inset },
-                    contentClassName)}
+                  <div
+                    className={classnames(
+                      "core-dialog-content",
+                      { "core-dialog-content-no-inset": !inset },
+                      contentClassName)}
                     style={contentStyle}>
                     {this.props.children}
                   </div>
@@ -495,7 +496,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         width = pointerX - x;
         // istanbul ignore else
         if (typeof minWidth === "number")
-          width = Math.max(width, minWidth!);
+          width = Math.max(width, minWidth);
         if (maxWidth !== undefined && typeof maxWidth === "number")
           width = Math.min(width, maxWidth);
       }
@@ -505,7 +506,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         height = pointerY - y!;
         // istanbul ignore else
         if (typeof minHeight === "number")
-          height = Math.max(height, minHeight!);
+          height = Math.max(height, minHeight);
         if (maxHeight !== undefined && typeof maxHeight === "number")
           height = Math.min(height, maxHeight);
       }

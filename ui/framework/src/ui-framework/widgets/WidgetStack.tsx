@@ -10,7 +10,7 @@ import * as React from "react";
 import { BadgeType, ConditionalStringValue } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, IconHelper, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
-  DisabledResizeHandles, DraggedWidgetManagerProps, HandleMode, HorizontalAnchor, ResizeHandle, Stacked as NZ_WidgetStack, Tab, TabGroup, TabMode,
+  DisabledResizeHandles, DraggedWidgetManagerProps, HandleMode, HorizontalAnchor, Stacked as NZ_WidgetStack, ResizeHandle, Tab, TabGroup, TabMode,
   TabSeparator, VerticalAnchor, VerticalAnchorHelpers, WidgetZoneId,
 } from "@bentley/ui-ninezone";
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";

@@ -129,6 +129,24 @@
     "extends": [
       "./node_modules/@bentley/build-tools/.eslintrc.js",
       "plugin:jsx-a11y/recommended"
-    ]
+    ],
+    "rules": {
+      "@typescript-eslint/naming-convention": [
+        "warn",
+        {
+          "selector": "function",
+          "format": [
+            "camelCase",
+            "PascalCase"
+          ]
+        }
+      ],
+      "@typescript-eslint/unbound-method": "off"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    }
   }
 }

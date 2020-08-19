@@ -26,7 +26,7 @@ describe("SimpleTreeDataProvider", () => {
       const nodes: DelayLoadedTreeNodeItem[] = [];
 
       for (let x = 0; x < childrenNodeCount; x++)
-        nodes[x] = createTreeNodeItem(i.toString() + "-" + x.toString(), false, rootNodes[i].id);
+        nodes[x] = createTreeNodeItem(`${i.toString()}-${x.toString()}`, false, rootNodes[i].id);
 
       hierarchy.set(rootNodes[i].id, nodes);
     }

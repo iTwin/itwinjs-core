@@ -250,7 +250,8 @@ function getWidgetLabel(label: string) {
 type FrontstagePanelDefs = Pick<FrontstageDef, "leftPanel" | "rightPanel" | "topPanel" | "bottomPanel">;
 type FrontstagePanelDefKeys = keyof FrontstagePanelDefs;
 
-type WidgetIdTypes = "leftStart" |
+type WidgetIdTypes =
+  "leftStart" |
   "leftMiddle" |
   "leftEnd" |
   "rightStart" |

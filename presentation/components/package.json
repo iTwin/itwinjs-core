@@ -90,6 +90,7 @@
     "enzyme-adapter-react-16": "1.12.1",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^6.8.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-react-hooks": "^3.0.0",
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
@@ -121,6 +122,6 @@
     ]
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "extends": "./node_modules/@bentley/ui-core/package.json"
   }
 }

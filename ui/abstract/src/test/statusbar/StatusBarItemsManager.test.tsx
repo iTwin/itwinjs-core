@@ -186,17 +186,17 @@ describe("StatusBarItemsManager", () => {
     expect(ConditionalBooleanValue.getValue(actionItem!.isHidden)).to.be.false;
     expect(isAbstractStatusBarLabelItem(actionItem!)).to.be.true;
     if (isAbstractStatusBarLabelItem(actionItem!)) {
-      expect(ConditionalStringValue.getValue(actionItem!.label)).to.be.equal("Hello");
+      expect(ConditionalStringValue.getValue(actionItem.label)).to.be.equal("Hello");
     }
     let stageItem = sut.items.find((i) => i.id === "ExtensionTest:StatusBarLabel2");
     expect(ConditionalBooleanValue.getValue(stageItem!.isDisabled)).to.be.false;
     if (isAbstractStatusBarLabelItem(stageItem!)) {
-      expect(ConditionalStringValue.getValue(stageItem!.icon)).to.be.equal("icon-hand-2");
+      expect(ConditionalStringValue.getValue(stageItem.icon)).to.be.equal("icon-hand-2");
     }
     let item3 = sut.items.find((i) => i.id === "ExtensionTest:StatusBarItem3");
     expect(ConditionalBooleanValue.getValue(item3!.isDisabled)).to.be.false;
     if (isAbstractStatusBarActionItem(item3!)) {
-      expect(ConditionalStringValue.getValue(item3!.tooltip)).to.be.equal("default tooltip");
+      expect(ConditionalStringValue.getValue(item3.tooltip)).to.be.equal("default tooltip");
     }
 
     setVisibility(false);
@@ -208,20 +208,20 @@ describe("StatusBarItemsManager", () => {
     expect(ConditionalBooleanValue.getValue(actionItem!.isHidden)).to.be.true;
     expect(isAbstractStatusBarLabelItem(actionItem!)).to.be.true;
     if (isAbstractStatusBarLabelItem(actionItem!)) {
-      expect(ConditionalStringValue.getValue(actionItem!.label)).to.be.equal("Goodbye");
+      expect(ConditionalStringValue.getValue(actionItem.label)).to.be.equal("Goodbye");
     }
 
     stageItem = sut.items.find((i) => i.id === "ExtensionTest:StatusBarLabel2");
     expect(ConditionalBooleanValue.getValue(stageItem!.isDisabled)).to.be.true;
     expect(isAbstractStatusBarLabelItem(stageItem!)).to.be.true;
     if (isAbstractStatusBarLabelItem(stageItem!)) {
-      expect(ConditionalStringValue.getValue(stageItem!.icon)).to.be.equal("icon-hand");
+      expect(ConditionalStringValue.getValue(stageItem.icon)).to.be.equal("icon-hand");
     }
 
     item3 = sut.items.find((i) => i.id === "ExtensionTest:StatusBarItem3");
     expect(ConditionalBooleanValue.getValue(item3!.isDisabled)).to.be.false;
     if (isAbstractStatusBarActionItem(item3!)) {
-      expect(ConditionalStringValue.getValue(item3!.tooltip)).to.be.equal("new tooltip");
+      expect(ConditionalStringValue.getValue(item3.tooltip)).to.be.equal("new tooltip");
     }
 
   });

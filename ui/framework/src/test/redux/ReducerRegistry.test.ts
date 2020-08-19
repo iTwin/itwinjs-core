@@ -42,6 +42,7 @@ class ExtensionStateManager {
   ): ExtensionState {
     type ExtensionActionsUnion = ActionsUnion<typeof ExtensionStateManager._extensionActions>;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const extensionActionsParam = action as ExtensionActionsUnion;
 
     switch (extensionActionsParam.type) {

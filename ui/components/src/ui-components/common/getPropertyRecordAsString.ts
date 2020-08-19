@@ -6,7 +6,7 @@
  * @module Common
  */
 
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 
 /**
  * @internal
@@ -15,6 +15,6 @@ import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui
  */
 export function getPropertyRecordAsString(label: PropertyRecord) {
   if (label.value.valueFormat === PropertyValueFormat.Primitive)
-    return (label.value as PrimitiveValue).displayValue ?? "";
+    return label.value.displayValue ?? "";
   return "";
 }

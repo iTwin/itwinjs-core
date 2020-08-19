@@ -223,6 +223,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
         noOptionsMessage={noOptionFunction}
         menuPortalTarget={portalTarget}
         styles={{ menuPortal: (base) => ({ ...base, zIndex }) }}
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         components={{ Menu: ThemedMenu, ...props.components }}
         {...otherProps}
       />

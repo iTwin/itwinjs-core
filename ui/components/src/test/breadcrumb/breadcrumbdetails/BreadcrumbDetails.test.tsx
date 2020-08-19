@@ -145,7 +145,7 @@ describe("BreadcrumbDetails", () => {
         const path = new BreadcrumbPath(mockInterfaceTreeDataProvider);
         await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 7);
         renderSpy.resetHistory();
-        mockInterfaceTreeDataProvider.onTreeNodeChanged!.raiseEvent([undefined]);
+        mockInterfaceTreeDataProvider.onTreeNodeChanged.raiseEvent([undefined]);
         expect(renderSpy).to.have.been.called;
       });
 
@@ -155,7 +155,7 @@ describe("BreadcrumbDetails", () => {
         path.setCurrentNode(node);
         await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 7);
         renderSpy.resetHistory();
-        mockInterfaceTreeDataProvider.onTreeNodeChanged!.raiseEvent([node]);
+        mockInterfaceTreeDataProvider.onTreeNodeChanged.raiseEvent([node]);
         expect(renderSpy).to.have.been.called;
       });
     });

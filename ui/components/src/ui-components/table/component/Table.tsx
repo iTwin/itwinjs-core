@@ -13,7 +13,7 @@ import { memoize } from "lodash";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { isArrowKey, PrimitiveValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
+import { isArrowKey, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
 import {
   CommonProps, Dialog, ItemKeyboardNavigator, LocalUiSettings, Orientation, SortDirection, UiSettings, UiSettingsStatus,
 } from "@bentley/ui-core";
@@ -882,7 +882,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!cellItem.record || cellItem.record.value.valueFormat !== PropertyValueFormat.Primitive)
       return "";
 
-    const value = (cellItem.record.value as PrimitiveValue).value;
+    const value = cellItem.record.value.value;
 
     if (value === undefined)
       return "";

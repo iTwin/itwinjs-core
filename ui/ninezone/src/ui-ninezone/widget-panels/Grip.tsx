@@ -66,11 +66,7 @@ export const useResizeGrip = <T extends HTMLElement>(
   side: PanelSide,
   onResize?: (resizeBy: number) => void,
   onDoubleClick?: () => void,
-): [
-    (instance: T | null) => void,
-    boolean,
-    boolean,
-  ] => {
+): [(instance: T | null) => void, boolean, boolean,] => {
   const initialPointerPosition = React.useRef<Point>();
   const dragStartTimer = React.useRef(new Timer(300));
   const handleClick = useDoubleClick(onDoubleClick);

@@ -239,6 +239,7 @@ module.exports = {
     "import/no-deprecated": "off", // using deprecation/deprecation instead
     "import/no-duplicates": "off", // using no-duplicate-imports instead
     "import/order": "off",
+    "indent": "off",  // note you must disable the base rule as it can report incorrect errors
     "max-classes-per-file": "off",
     "max-len": "off",
     "new-parens": "error",
@@ -352,7 +353,7 @@ module.exports = {
     }],
     "rulesdir/import-within-package": "error",
     "rulesdir/prefer-get": "error",
-    "rulesdir/react-set-state-usage": ["warn", { "updater-only": true, "allow-object": true }],
+    "rulesdir/react-set-state-usage": ["warn", { "updater-only": false, "allow-object": true }],
     "rulesdir/require-basic-rpc-values": "off",
   },
   overrides: [
@@ -362,5 +363,10 @@ module.exports = {
         "no-direct-imports": "off",
       },
     }
-  ]
+  ],
+  settings: {
+    "react": {
+      "version": "16.8"
+    }
+  }
 }

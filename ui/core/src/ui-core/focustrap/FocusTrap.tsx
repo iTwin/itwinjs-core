@@ -67,14 +67,14 @@ function processFindLastFocusableDescendant(element: HTMLElement): HTMLElement |
   for (let i = element.childNodes.length - 1; i >= 0; i--) {
     const child = element.childNodes[i] as HTMLElement;
 
-    const focusable = processFindLastFocusableDescendant(child as HTMLElement);
+    const focusable = processFindLastFocusableDescendant(child);
     // istanbul ignore else
     if (focusable)
       return focusable;
 
     // istanbul ignore else
-    if (isFocusable(child as HTMLElement))
-      return child as HTMLElement;
+    if (isFocusable(child))
+      return child;
   }
   return null;
 }
@@ -90,7 +90,7 @@ function getInitialFocusElement(focusContainer: HTMLDivElement | null, initialFo
 
   if (initialFocusSpec) {
     if (typeof initialFocusSpec === "string") {
-      const node = focusContainer.querySelector(initialFocusSpec as string);
+      const node = focusContainer.querySelector(initialFocusSpec);
       if (node) {
         return node as HTMLElement;
       } else {
@@ -208,6 +208,7 @@ export function FocusTrap(props: FocusTrapProps) {
     <>
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
       <div data-testid="focus-trap-div" onFocus={cycleFocusToEnd} ref={focusContainer} tabIndex={0}
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         style={{ outline: "none", WebkitTapHighlightColor: "rgba(0,0,0,0)" }}>
         {props.children}
       </div>

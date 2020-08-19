@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import {
-  CheckBoxState, CommonProps, NodeCheckboxProps as CheckboxProps, NodeCheckboxRenderer, Omit, shallowDiffers, TreeNode as TreeNodeBase,
+  NodeCheckboxProps as CheckboxProps, CheckBoxState, CommonProps, NodeCheckboxRenderer, Omit, shallowDiffers, TreeNode as TreeNodeBase,
 } from "@bentley/ui-core";
 import { Image } from "../../../common/IImageLoader";
 import { ImageRenderer } from "../../../common/ImageRenderer";

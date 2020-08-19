@@ -9,7 +9,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { SnapMode } from "@bentley/imodeljs-frontend";
-import { FooterPopup, FooterPopupContentType, Snap, SnapMode as NZ_SnapMode, SnapModePanel } from "@bentley/ui-ninezone";
+import { FooterPopup, FooterPopupContentType, SnapMode as NZ_SnapMode, Snap, SnapModePanel } from "@bentley/ui-ninezone";
 import { ConfigurableUiActions } from "../configurableui/state";
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
@@ -154,7 +154,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
 
   /** Called when user clicks on a Snap Mode entry in the pop-up window. */
   private _handleSnapModeFieldClick = (snapModeField: number) => {
-    this.props.setSnapMode(snapModeField as number);
+    this.props.setSnapMode(snapModeField);
   }
 
   /** Called when user click on field in status bar which triggers the pop-up to open. */

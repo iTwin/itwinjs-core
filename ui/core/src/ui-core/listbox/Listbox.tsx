@@ -140,6 +140,7 @@ export function Listbox(props: ListboxProps) {
     if (itemIndex >= 0 && itemIndex < optionValues.length) {
       const newSelection = optionValues[itemIndex];
       const listElement = listRef.current as HTMLUListElement;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const optionToFocus = listElement.querySelector(`li[data-value="${newSelection.value}"]`) as HTMLLIElement | null;
       // istanbul ignore else
       if (optionToFocus && listElement) {

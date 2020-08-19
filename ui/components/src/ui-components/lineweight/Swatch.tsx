@@ -58,17 +58,21 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
       rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
     }
 
-    const buttonStyle: React.CSSProperties = colorDef ? {
-      ...this.props.style,
-      color: rgbaString,
-    } : {
+    const buttonStyle: React.CSSProperties = colorDef ?
+      {
+        ...this.props.style,
+        color: rgbaString,
+      } :
+      {
         ...this.props.style,
       };
 
-    const svgStyle: React.CSSProperties = colorDef ? {
-      height: `${weight}px`,
-      background: rgbaString,
-    } : {
+    const svgStyle: React.CSSProperties = colorDef ?
+      {
+        height: `${weight}px`,
+        background: rgbaString,
+      } :
+      {
         height: `${weight}px`,
       };
 

@@ -150,7 +150,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     }
 
     if (!this._formatParams) {
-      Logger.logError(UiComponents.loggerCategory(this), `CustomFormattedNumberParams must be defined for property ${record.property!.name}`);
+      Logger.logError(UiComponents.loggerCategory(this), `CustomFormattedNumberParams must be defined for property ${record.property.name}`);
       // eslint-disable-next-line no-console
       // console.log(`CustomFormattedNumberParams must be defined for property ${record!.property!.name}`);
       return;
@@ -161,12 +161,12 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
     // istanbul ignore else
     if (record.value.valueFormat === PropertyValueFormat.Primitive) {
-      const primitiveValue = (record.value as PrimitiveValue);
+      const primitiveValue = record.value;
       numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : 0;
       if (primitiveValue.displayValue)
         initialDisplayValue = primitiveValue.displayValue;
       else
-        initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue);
+        initialDisplayValue = this._formatParams.formatFunction(numberValue);
     }
 
     let size: number | undefined;
@@ -205,7 +205,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     if (record) {
       // istanbul ignore else
       if (record.value.valueFormat === PropertyValueFormat.Primitive) {
-        const primitiveValue = (record.value as PrimitiveValue);
+        const primitiveValue = record.value;
         numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : 0;
         if (primitiveValue.displayValue)
           initialDisplayValue = primitiveValue.displayValue;

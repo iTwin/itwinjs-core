@@ -423,31 +423,30 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         return {
           nineZone,
         };
-      },
-        () => {
-          // TODO: use NineZoneManager notifications once available
-          const manager = FrontstageManager.NineZoneManager.getZonesManager();
-          const props = this.state.nineZone.zones;
-          const zone = manager.findZoneWithWidget(widgetId, props);
-          const widgets = zone ? zone.widgets : /* istanbul ignore next */[widgetId];
-          widgets.forEach((wId) => {
-            const zoneDef = this.getZoneDef(wId);
-            if (!zoneDef)
-              return;
+      }, () => {
+        // TODO: use NineZoneManager notifications once available
+        const manager = FrontstageManager.NineZoneManager.getZonesManager();
+        const props = this.state.nineZone.zones;
+        const zone = manager.findZoneWithWidget(widgetId, props);
+        const widgets = zone ? zone.widgets : /* istanbul ignore next */[widgetId];
+        widgets.forEach((wId) => {
+          const zoneDef = this.getZoneDef(wId);
+          if (!zoneDef)
+            return;
 
-            const w = props.widgets[wId];
-            const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
-            for (let i = 0; i < visibleWidgets.length; i++) {
-              const widgetDef = visibleWidgets[i];
-              let state = widgetDef.state;
-              if (w.tabIndex === i)
-                state = WidgetState.Open;
-              else if (state === WidgetState.Open)
-                state = WidgetState.Closed;
-              widgetDef.setWidgetState(state);
-            }
-          });
-        },
+          const w = props.widgets[wId];
+          const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
+          for (let i = 0; i < visibleWidgets.length; i++) {
+            const widgetDef = visibleWidgets[i];
+            let state = widgetDef.state;
+            if (w.tabIndex === i)
+              state = WidgetState.Open;
+            else if (state === WidgetState.Open)
+              state = WidgetState.Closed;
+            widgetDef.setWidgetState(state);
+          }
+        });
+      },
       );
   }
 

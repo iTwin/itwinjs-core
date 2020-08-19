@@ -10,7 +10,7 @@ import { BeDuration } from "@bentley/bentleyjs-core";
 import { Point2d, XAndY } from "@bentley/geometry-core";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { MessageType, ReactMessage as Core_ReactMessage } from "@bentley/ui-core";
+import { ReactMessage as Core_ReactMessage, MessageType } from "@bentley/ui-core";
 
 /** Describes a React based message
  * @public

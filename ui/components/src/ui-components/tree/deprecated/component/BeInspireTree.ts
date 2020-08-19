@@ -146,7 +146,8 @@ export interface BeInspireTreeDataProviderInterface<TPayload> {
  * @public
  * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
-export type BeInspireTreeDataProvider<TPayload> = BeInspireTreeDataProviderRaw<TPayload>
+export type BeInspireTreeDataProvider<TPayload> =
+  BeInspireTreeDataProviderRaw<TPayload>
   | BeInspireTreeDataProviderPromise<TPayload>
   | BeInspireTreeDataProviderMethod<TPayload>
   | BeInspireTreeDataProviderInterface<TPayload>;
@@ -162,7 +163,8 @@ type BeInspireTreeDataFunc<TPayload> = (parent: BeInspireTreeNode<TPayload> | un
   reject: (err: Error) => any,
   pagination?: Inspire.Pagination,
 ) => void;
-type BeInspireTreeData<TPayload> = Array<BeInspireTreeNodePayloadConfig<TPayload>>
+type BeInspireTreeData<TPayload> =
+  Array<BeInspireTreeNodePayloadConfig<TPayload>>
   | Promise<Array<BeInspireTreeNodePayloadConfig<TPayload>>>
   | BeInspireTreeDataFunc<TPayload>;
 

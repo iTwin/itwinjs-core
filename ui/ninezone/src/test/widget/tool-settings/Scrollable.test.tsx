@@ -70,7 +70,7 @@ describe("<ScrollableToolSettings />", () => {
       isBottomIndicatorVisible: true,
     });
     const content = sut.find(".nz-content");
-    const contentElement = content.getDOMNode() as HTMLDivElement;
+    const contentElement = content.getDOMNode();
     const scrollTopGetter = sinon.spy();
     const scrollTopSetter = sinon.spy();
     sinon.stub(contentElement, "scrollTop").get(scrollTopGetter).set(scrollTopSetter);
@@ -98,7 +98,7 @@ describe("<ScrollableToolSettings />", () => {
       isTopIndicatorVisible: true,
     });
     const content = sut.find(".nz-content");
-    const contentElement = content.getDOMNode() as HTMLDivElement;
+    const contentElement = content.getDOMNode();
     const scrollTopGetter = sinon.spy();
     const scrollTopSetter = sinon.spy();
     sinon.stub(contentElement, "scrollTop").get(scrollTopGetter).set(scrollTopSetter);

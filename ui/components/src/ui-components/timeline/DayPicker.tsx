@@ -10,7 +10,7 @@ import { UiComponents } from "../../ui-components/UiComponents";
 /* istanbul ignore file */
 
 const addZero = (i: number) => {
-  return (i < 10) ? "0" + i : i;
+  return (i < 10) ? `0${i}` : i;
 };
 
 interface DayPickerProps {
