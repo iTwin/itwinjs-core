@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
@@ -12,6 +12,7 @@ import {
 } from "../../ui-framework";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import TestUtils from "../TestUtils";
+import { BadgeType } from "@bentley/ui-abstract";
 
 export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
   execute: () => { },
@@ -105,6 +106,23 @@ describe("BackstageComposerItem", () => {
     it("should render action item", async () => {
       shallow(<BackstageComposerItem item={getActionItem()} />).should.matchSnapshot();
     });
+
+    it("should render with badgeType", async () => {
+      shallow(<BackstageComposerItem item={getActionItem({ badgeType: BadgeType.TechnicalPreview })} />).should.matchSnapshot();
+    });
+
+    it("renders stage launcher with badge correctly", () => {
+      const sut = mount(<BackstageComposerItem item={getStageLauncherItem({ badgeType: BadgeType.TechnicalPreview })} />);
+      const badge = sut.find("div.nz-badge");
+      badge.length.should.eq(1);
+    });
+
+    it("renders action item with badge correctly", () => {
+      const sut = mount(<BackstageComposerItem item={getActionItem({ badgeType: BadgeType.TechnicalPreview })} />);
+      const badge = sut.find("div.nz-badge");
+      badge.length.should.eq(1);
+    });
+
   });
 
 });

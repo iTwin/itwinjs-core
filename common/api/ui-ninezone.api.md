@@ -93,6 +93,7 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
 
 // @beta
 export interface BackstageItemProps extends CommonProps {
+    badge?: React.ReactNode;
     children?: string;
     icon?: React.ReactNode;
     isActive?: boolean;

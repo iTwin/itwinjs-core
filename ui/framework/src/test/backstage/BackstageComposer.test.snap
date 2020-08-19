@@ -90,6 +90,38 @@ exports[`BackstageComposerItem BackstageComposerItem should render stage launche
 />
 `;
 
+exports[`BackstageComposerItem BackstageComposerItem should render with badge 1`] = `
+<BackstageComposerActionItem
+  item={
+    Object {
+      "badgeType": 1,
+      "execute": [Function],
+      "groupPriority": 100,
+      "id": "Action",
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "type": 1,
+    }
+  }
+/>
+`;
+
+exports[`BackstageComposerItem BackstageComposerItem should render with badgeType 1`] = `
+<BackstageComposerActionItem
+  item={
+    Object {
+      "badgeType": 1,
+      "execute": [Function],
+      "groupPriority": 100,
+      "id": "Action",
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "type": 1,
+    }
+  }
+/>
+`;
+
 exports[`BackstageComposerItem BackstageComposerStageLauncher should render 1`] = `
 <BackstageItem
   icon={
