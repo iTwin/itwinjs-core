@@ -17,7 +17,6 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/frontend-authorization-client/file.json --tsIndexFile=frontend-authorization-client.ts --onlyJson",
     "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
-    "test:integration": "",
     "cover": ""
   },
   "keywords": [

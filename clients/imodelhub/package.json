@@ -17,7 +17,6 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson",
     "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
-    "test:integration": "",
     "cover": ""
   },
   "keywords": [
