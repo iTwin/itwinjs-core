@@ -45,6 +45,7 @@ describe("System WebGL Capabilities", () => {
     expect(cap.supportsTextureHalfFloat).to.be.false;
     expect(cap.supportsShaderTextureLOD).to.be.false;
     expect(cap.supportsFragDepth).to.be.false;
+    expect(cap.supportsAntiAliasing).to.be.false;
   });
 
   it("capabilities should be able to be initialized", () => {
