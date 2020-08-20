@@ -55,29 +55,31 @@
     height: $nz-widget-tab-height;
     max-width: 9em;
 
-    &.nz-active {
-      background: $buic-background-3;
-      color: $buic-foreground-primary;
-      padding-bottom: 1px;
+    &:not(.nz-minimized) {
+      &.nz-active {
+        background: $buic-background-3;
+        color: $buic-foreground-primary;
+        padding-bottom: 1px;
 
-      &:after {
-        $padding: 0.25em;
-        content: '';
-        position: absolute;
-        background: currentColor;
-        left: $padding;
-        top: 0.25em;
-        border-radius: 0.2em;
-        width: calc(100% - #{2 * $padding});
-        height: 0.15em;
-      }
+        &:after {
+          $padding: 0.25em;
+          content: '';
+          position: absolute;
+          background: currentColor;
+          left: $padding;
+          top: 0.25em;
+          border-radius: 0.2em;
+          width: calc(100% - #{2 * $padding});
+          height: 0.15em;
+        }
 
-      &.nz-last, &.nz-last-not-overflown {
-        border-right-width: 1px;
+        &.nz-last, &.nz-last-not-overflown {
+          border-right-width: 1px;
+        }
       }
     }
 
-    &:not(.nz-active) {
+    &:not(.nz-active), &.nz-minimized {
       color: $buic-foreground-muted;
       border-right-width: 1px;
 

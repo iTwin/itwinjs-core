@@ -443,6 +443,38 @@ describe("NineZoneStateReducer", () => {
         });
         (!!newState.floatingWidgets.byId.fw1).should.true;
       });
+
+      it("should contain minimized", () => {
+        let state = createNineZoneState({
+          size: {
+            height: 1000,
+            width: 2000,
+          },
+        });
+        state = addFloatingWidget(state, "w1", ["t1"], {
+          bounds: {
+            left: 2500,
+            top: 990,
+            right: 2700,
+            bottom: 1100,
+          },
+        }, {
+          minimized: true,
+        });
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_DRAG_END",
+          floatingWidgetId: "w1",
+          target: {
+            type: "floatingWidget",
+          },
+        });
+        newState.floatingWidgets.byId.w1.bounds.should.eql({
+          left: 1800,
+          top: 965,
+          right: 2000,
+          bottom: 1075,
+        });
+      });
     });
 
     describe("tab target", () => {

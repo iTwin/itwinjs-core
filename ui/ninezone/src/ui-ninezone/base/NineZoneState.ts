@@ -424,14 +424,21 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "WIDGET_DRAG_END": {
       const target = action.target;
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
+      const draggedWidget = state.widgets[action.floatingWidgetId];
       if (isWidgetTargetFloatingWidgetState(target)) {
         const nzBounds = Rectangle.createFromSize(state.size);
-        const containedBounds = Rectangle.create(floatingWidget.bounds).containIn(nzBounds);
-        setRectangleProps(floatingWidget.bounds, containedBounds);
+        if (draggedWidget.minimized) {
+          const bounds = Rectangle.create(floatingWidget.bounds);
+          const containedBounds = bounds.setHeight(35).containIn(nzBounds);
+          const newBounds = Rectangle.create(floatingWidget.bounds).setPosition(containedBounds.topLeft());
+          setRectangleProps(floatingWidget.bounds, newBounds);
+        } else {
+          const containedBounds = Rectangle.create(floatingWidget.bounds).containIn(nzBounds);
+          setRectangleProps(floatingWidget.bounds, containedBounds);
+        }
         floatingWidgetBringToFront(state, action.floatingWidgetId);
         return;
       }
-      const draggedWidget = state.widgets[action.floatingWidgetId];
       if (isWidgetTargetTabState(target)) {
         if (isToolSettingsFloatingWidget(state, target.widgetId)) {
           state.floatingWidgets.byId[target.widgetId].home = floatingWidget.home;
@@ -449,6 +456,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         state.widgets[target.newWidgetId] = {
           ...draggedWidget,
           id: target.newWidgetId,
+          minimized: false,
         };
       }
       delete state.widgets[action.floatingWidgetId];
@@ -493,6 +501,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         removeWidget(state, widget.id);
       } else {
         panel.widgets.splice(home.widgetIndex, 0, widget.id);
+        widget.minimized = false;
         removeFloatingWidget(state, widget.id);
       }
       return;
