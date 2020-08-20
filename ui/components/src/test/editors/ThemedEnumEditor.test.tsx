@@ -8,7 +8,7 @@ import { mount, shallow } from "enzyme";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import {  PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import { ThemedEnumEditor } from "../../ui-components/editors/ThemedEnumEditor";
 import TestUtils from "../TestUtils";
 
@@ -24,7 +24,8 @@ describe("<ThemedEnumEditor />", () => {
   afterEach(cleanup);
 
   it("should render", () => {
-    mount(<ThemedEnumEditor />);
+    const wrapper = mount(<ThemedEnumEditor />);
+    wrapper.unmount();
   });
 
   it("renders correctly", () => {

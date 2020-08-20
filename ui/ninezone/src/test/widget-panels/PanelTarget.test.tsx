@@ -6,9 +6,9 @@ import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { createNineZoneState, CursorTypeContext, DragManager, PanelStateContext, PanelTarget, createDraggedTabState } from "../../ui-ninezone";
-import { createDragStartArgs, NineZoneProvider, createDragItemInfo } from "../Providers";
-import { addTab, addPanelWidget } from "../../ui-ninezone/base/NineZoneState";
+import { createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext, PanelTarget } from "../../ui-ninezone";
+import { createDragItemInfo, createDragStartArgs, NineZoneProvider } from "../Providers";
+import { addPanelWidget, addTab } from "../../ui-ninezone/base/NineZoneState";
 import { renderHook } from "@testing-library/react-hooks";
 import { useAllowedPanelTarget } from "../../ui-ninezone/widget-panels/PanelTarget";
 

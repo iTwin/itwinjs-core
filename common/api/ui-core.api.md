@@ -1155,7 +1155,7 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
 }
 
 // @public
-export interface LoadingPromptProps {
+export interface LoadingPromptProps extends CommonProps {
     isDeterminate: boolean;
     // @deprecated
     isDeterministic: boolean;
@@ -1163,6 +1163,7 @@ export interface LoadingPromptProps {
     onCancel?: () => void;
     percent: number;
     showCancel: boolean;
+    showIndeterminateBar: boolean;
     showPercentage: boolean;
     showStatus: boolean;
     status: string;
@@ -1374,6 +1375,9 @@ export enum Orientation {
 // @internal (undocumented)
 export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
 
+// @internal
+export function percentInRange(percent: number): number;
+
 // @internal (undocumented)
 export function placementToPosition(placement: TooltipPlacement | undefined): RelativePosition;
 
@@ -1448,6 +1452,18 @@ export interface PopupProps extends CommonProps {
     showShadow: boolean;
     target?: HTMLElement | null;
     top: number;
+}
+
+// @beta
+export function ProgressBar(props: ProgressBarProps): JSX.Element;
+
+// @beta
+export interface ProgressBarProps extends CommonProps {
+    barHeight?: number;
+    indeterminate?: boolean;
+    labelLeft?: string;
+    labelRight?: string;
+    percent?: number;
 }
 
 // @internal

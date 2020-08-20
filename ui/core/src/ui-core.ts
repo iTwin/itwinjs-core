@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore focustrap imagecheckbox iconinput hocs
+// cSpell:ignore focustrap imagecheckbox iconinput hocs numericinput
 
 export * from "./ui-core/UiCore";
 
@@ -89,6 +89,8 @@ export * from "./ui-core/notification/MessageRenderer";
 export * from "./ui-core/notification/MessageType";
 
 export * from "./ui-core/popup/Popup";
+
+export * from "./ui-core/progress-indicators/ProgressBar";
 
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";
@@ -233,7 +235,7 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
  */
 /**
  * @docs-group-description Loading
- * Components for working with Loading spinner and progress indicator.
+ * Components for working with Loading spinners and progress indicators and bars.
  */
 /**
  * @docs-group-description Notification

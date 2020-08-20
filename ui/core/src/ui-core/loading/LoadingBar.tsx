@@ -32,15 +32,8 @@ export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     barHeight: 4,
   };
 
-  // sanity check to keep percentage between 0 & 100
-  private inRange(percent: number): number {
-    let value = Math.min(percent, 100);
-    value = Math.max(value, 0);
-    return value;
-  }
-
   public render() {
-    const percent = `${this.inRange(this.props.percent)}%`;
+    const percent = `${percentInRange(this.props.percent)}%`;
     const containerClass = classnames(this.props.className, "core-lb");
     return (
       <div className={containerClass} style={this.props.style}>
@@ -51,4 +44,13 @@ export class LoadingBar extends React.PureComponent<LoadingBarProps> {
       </div>
     );
   }
+}
+
+/** Sanity check to keep percentage between 0 & 100
+ * @internal
+ */
+export function percentInRange(percent: number): number {
+  let value = Math.min(percent, 100);
+  value = Math.max(value, 0);
+  return value;
 }

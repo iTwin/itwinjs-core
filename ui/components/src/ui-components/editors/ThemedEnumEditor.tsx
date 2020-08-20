@@ -9,7 +9,7 @@
 import "./ThemedEnumEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { EnumerationChoice, PrimitiveValue, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
+import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { OptionType, ThemedSelect } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
@@ -115,13 +115,14 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
     let valueIsNumber: boolean = false;
     let choices: EnumerationChoice[] | undefined;
 
-    if (propertyRecord && propertyRecord.property.enum)
-        // istanbul ignore else
+    if (propertyRecord && propertyRecord.property.enum) {
+      // istanbul ignore else
       if (propertyRecord.property.enum.choices instanceof Promise) {
         choices = await propertyRecord.property.enum.choices;
       } else {
         choices = propertyRecord.property.enum.choices;
       }
+    }
 
     let options: OptionType[] = [];
     if (this.state.options === undefined) {
@@ -136,9 +137,9 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
-      const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
+      const primitiveValue = propertyRecord.value.value;
       if (typeof primitiveValue === "string") {
-        initialValue = primitiveValue as string;
+        initialValue = primitiveValue;
         valueIsNumber = false;
       } else {
         initialValue = primitiveValue as number;

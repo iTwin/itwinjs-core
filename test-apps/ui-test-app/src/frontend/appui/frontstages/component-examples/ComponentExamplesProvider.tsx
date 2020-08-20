@@ -11,8 +11,8 @@ import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumericInput, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile,
-  Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
+  NewBadge, NumericInput, ProgressBar, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect,
+  Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch } from "@bentley/ui-components";
@@ -26,6 +26,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 
 /* eslint-disable no-console */
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ColorPickerToggle() {
   const [colorDialogTitle] = React.useState("Select Color");
   const [selectedColor, setSelectedColor] = React.useState(ColorDef.red);
@@ -250,13 +251,27 @@ export class ComponentExamplesProvider {
         createComponentExample("LoadingStatus", undefined, <LoadingStatus message="Loading status..." percent={50} />),
         createComponentExample("Basic LoadingPrompt", undefined, <LoadingPrompt title="Title" />),
         createComponentExample("LoadingPrompt with message", undefined, <LoadingPrompt title="Title" message="This is the message" />),
-        createComponentExample("Determinate LoadingPrompt", undefined, <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} />),
+        createComponentExample("LoadingPrompt with Indeterminate Bar", undefined,
+          <LoadingPrompt style={{ width: "100%" }} title="Title" message="This is the message" showIndeterminateBar />),
         createComponentExample("Determinate LoadingPrompt with percent", undefined,
           <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} percent={50} />),
         createComponentExample("Determinate LoadingPrompt with cancel", undefined,
           <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} percent={50} showCancel={true} />),
         createComponentExample("Determinate LoadingPrompt with status", undefined,
           <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} showStatus={true} percent={50} status="Updating..." />),
+      ],
+    };
+  }
+
+  private static get progressIndicatorsSamples(): ComponentExampleCategory {
+    return {
+      title: "Progress Indicators",
+      examples: [
+        createComponentExample("ProgressBar", "at 50%", <ProgressBar percent={50} />),
+        createComponentExample("ProgressBar with height", "height of 8", <ProgressBar percent={50} barHeight={8} />),
+        createComponentExample("Indeterminate ProgressBar", "indeterminate prop", <ProgressBar indeterminate />),
+        createComponentExample("ProgressBar with label", "labelLeft prop", <ProgressBar percent={25} labelLeft="Centered Label" />),
+        createComponentExample("ProgressBar with label", "labelLeft prop", <ProgressBar percent={75} labelLeft="Loading..." labelRight="75%" />),
       ],
     };
   }
@@ -490,6 +505,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.inputsSamples,
       ComponentExamplesProvider.listboxSamples,
       ComponentExamplesProvider.loadingSamples,
+      ComponentExamplesProvider.progressIndicatorsSamples,
       ComponentExamplesProvider.searchBoxSample,
       ComponentExamplesProvider.selectSamples,
       ComponentExamplesProvider.sliderSamples,
