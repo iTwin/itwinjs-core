@@ -1,6 +1,19 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:09 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:09 GMT
+
+### Updates
+
+- Update to imodeljs-native 2.5.0
+- VSTS#419723: Accomodated "bad" checkpoints that may have serialized transactions preventing their use in ReadWrite cases. 
+- Fix for a recursive exception while closing a briefcase
+- Added mobile oidc client
+- Remove special code handling for mobile.
+- locking, deleting of assemblies
+- Switch to ESLint
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

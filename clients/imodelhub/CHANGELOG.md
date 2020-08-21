@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodelhub-client
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:09 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:09 GMT
+
+### Updates
+
+- Added applicationVersion parameter to iModelHubClient constructor that will be used in all requests.
+- Added iModelHub ClientAPIs for BlockCacheVfs checkpoints
+- Added a way to change headers for all requests
+- Remove special code handling for mobile.
+- Switch to ESLint
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

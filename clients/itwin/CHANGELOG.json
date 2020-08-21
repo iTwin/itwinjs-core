@@ -2,6 +2,27 @@
   "name": "@bentley/itwin-client",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/itwin-client_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix bug in AccessToken's fromJson "
+          },
+          {
+            "comment": "Added HttpRequestOptions to request methods for passing additional options to HTTP requests."
+          },
+          {
+            "comment": "accomoadate strict property initialization on dependent subpackages"
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/itwin-client_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

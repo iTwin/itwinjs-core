@@ -2,6 +2,27 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/presentation-components_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WIP: Update components' UI when rulesets, ruleset variables or iModel data changes."
+          },
+          {
+            "comment": "lock down @types/react version at 16.9.43 to prevent build error from csstype dependency"
+          },
+          {
+            "comment": "Switch to ESLint"
+          },
+          {
+            "comment": "Tree keyboard node selection & expansion"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/presentation-components_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

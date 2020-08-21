@@ -2,6 +2,30 @@
   "name": "@bentley/ui-abstract",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/ui-abstract_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update EnumerationChoicesInfo to use Promise so enum choices can be defined asynchronously."
+          },
+          {
+            "comment": "Moved SpecialKey & FunctionKey enums to ui-abstract & started using them throughout UI packages"
+          },
+          {
+            "comment": "Added Table component keyboard row selection. Miscellaneous a11y fixes."
+          },
+          {
+            "comment": "Switch to ESLint"
+          },
+          {
+            "comment": "Added Home focus support to ui-abstract"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/ui-abstract_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

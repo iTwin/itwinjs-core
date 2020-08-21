@@ -2,6 +2,27 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/geometry-core_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Direct Spiral types AustralianRailCorp, HalfCosine"
+          },
+          {
+            "comment": "Spiral Line-to-Line constructions; make spiral classes public"
+          },
+          {
+            "comment": "Spiral support: LineSpiralArcSpiralLine construction; active interval stroking"
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/geometry-core_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

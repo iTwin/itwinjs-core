@@ -1,52 +1,129 @@
-# 2.4.0 Change Notes
+# 2.5.0 Change Notes
 
-## Hypermodeling marker filtering
+## Restart Query (ECSQL)
+Added method that let you cancel last query with same token. This cause last query to throw a exception that was cancelled.
 
-Some iModels contain thousands of [SectionDrawingLocation]($backend)s. When hypermodeling is used with such iModels, this may result in display of thousands of [SectionMarker]($hypermodeling)s. While markers located close together will automatically cluster, and [SectionMarkerConfig]($hypermodeling) supports filtering markers based on model, category, or section type, some applications may want to apply their own filtering logic. They can now do so by implementing [SectionMarkerHandler]($hypermodeling) to customize the visibility of the markers.
+```ts
+    // A async task running following query
+    for await (const row of db.restartQuery("my-tag", "SELECT * FROM ts.Foo")) {
+        // ...
+    }
 
-## Device pixel ratio
+    // Now submit another query with same tag 'my-tag'.
+    // If above query still running it would be cancelled and exception would be thrown
+    for await (const row of db.restartQuery("my-tag", "SELECT * FROM ts.Goo")) {
+        ...
+    }
 
-[Device pixel ratio](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) is the ratio of physical (screen) pixels to logical (CSS) pixels. For example, most mobile devices have a device pixel ratio of 2, causing UI controls to display at twice the size while still appearing sharp on the screen. Similarly, a desktop computer with a 4k monitor always has a 4k physical resolution, but the operating system may allow the UI to be arbitrarily scaled to the user's preferences. In such cases the number of logical pixels will not match the number of physical pixels.
+    // In order to see what error was thrown use
+    try {
+        for await (const row of db.restartQuery("my-tag", "SELECT * FROM ts.Foo")) {
+            // ...
+        }
+    } catch(err) {
+        if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT){
+            // query cancelled
+        }
+    }
+```
 
-Previously, when iModel.js computed the appropriate level of detail for tiles and decoration graphics, it exclusively used the logical resolution, ignoring device pixel ratio. On high-DPI devices this causes lower-resolution graphics to be displayed, resulting in a less detailed image.
+This method is available on all following classes
 
-Now, if [RenderSystem.Options.dpiAwareLOD]($frontend) is set to `true` when supplied to [IModelApp.startup]($frontend), level of detail computations will take device pixel ratio into account. This will result in a sharper image on high-DPI displays. However, it may also reduce display performance, especially on mobile devices, due to more tiles of higher resolution being displayed.
+* ECDb (backend)
+* IModelDb (backend)
+* IModelConnection (frontend)
 
-This option has no effect if [RenderSystem.Options.dpiAwareViewports]($frontend) is overridden to be `false`.
+## Cached decorations
 
-## Device pixel ratio override
+A [Decorator]($frontend)'s `decorate` method is invoked to create new [Decorations]($frontend) whenever a viewport's decorations are invalidated. Decorations are invalidated quite frequently - for example, every time the view frustum or scene changes, and even on every mouse motion. Most decorators' decorations only actually change when the scene changes. Having to regenerate them every time the mouse moves is quite wasteful and - for all but the most trivial decorations - can negatively impact framerate. Here's an example of a decorator that draws some complicated shape in a specified color:
 
-If [RenderSystem.Options.devicePixelRatioOverride]($frontend) is defined when supplied to [IModelApp.startup]($frontend), its numeric value will be used as the device pixel ratio instead of the system's actual device pixel ratio. This can be helpful for situations like running in the iOS Simulator where forcing a lower resolution by setting a sub-1 device pixel ratio would increase performance.
+```ts
+class FancyDecorator {
+  private _color: ColorDef; // the color of our shape decoration
 
-Please note:
+  public set color(color: ColorDef): void {
+    this._color = color;
 
-* If this setting is used to decrease the effective device pixel ratio, the view will appear pixelated.
-* This setting should only be used to increase performance in situations like the iOS Simulator for testing purposes only. It should not be used in a production situation.
+    // Make sure our decorate method is called so we draw using the new color.
+    // This also invalidates every other decorator's decorations!
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
 
-This option has no effect if [RenderSystem.Options.dpiAwareViewports]($frontend) is overridden to be `false`.
+  public decorate(context: DecorateContext): void {
+    // ...draw a fancy shape using this._color
+    // This gets called every single time the mouse moves,
+    // and any other time the viewport's decorations become invalidated!
+  }
+}
+```
 
-## Background Map Enhancements
+We can avoid unnecessarily recreating decorations by defining the `useCachedDecorations` property. If this is `true`, then whenever the viewport's decorations are invalidated, the viewport will first check to see if it already has cached decorations for this decorator. If so, it will simply reuse them; if not, it will invoke `decorate` and cache the result. When the scene changes, our cached decorations will automatically be discarded. Here's the decorator from above, updated to use cached decorations:
 
-![Background Map with Wetlands and GIS layers](assets/MapLayers.png)
+```ts
+class FancyDecorator {
+  private _color: ColorDef; // the color of our shape decoration
 
-Support for map imagery from WMS, WMTS, ArcGIS, AzureMaps, MapBox and file based tiled map servers is added in this version.  This imagery is seperated into base map, background layers and overlay layers.  The visibility and transparency of these layers can be individually controlled.  Map servers can either provide fixed, potentially cached tiles based on a predefined tiling scheme (WMTS, AzureMaps, MapBox) or produce images on demand (WMS, ArcGIS MapServer).  In general cached tile servers are more performant while the servers that produce images on demand are more flexible and may potentially include hierarchical sublayers that can be filtered seperately.
+  // Tell the viewport to cache our decorations.
+  // We'll tell it when to regenerate them.
+  public readonly useCachedDecorations = true;
 
-### BaseMap
+  public set color(color: ColorDef): void {
+    this._color = color;
 
-The base map imagery can now be provided by any map imagery source or set to be a single color.  The transparency of the base map can be controlled seperately from the background map. [DisplayStyleState]($frontend) methods `changeBaseMapProps` and `changeBaseMapTransparency` are provided to control the baseMap display.   The `changeBackgroundMapProps` method continues to supports changing map properties that are not related to imagery. If `changeBackgroundMapProps` is used to change the legacy map imagery settings (`providerName` and `providerData.mapType`), the base map properties are set appropriately.  The  [DisplayStyleState]($frontend) `backgroundMapBase` property contains the base map imagery settings.
+    // Invalidate *only* this decorator's decorations.
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
+  }
 
-### Map Layers
+  public decorate(context: DecorateContext): void {
+    // ...draw a fancy shape using this._color
+    // This *only* gets called if the scene changed,
+    // or if explicitly asked for our decorations to be regenerated.
+  }
+}
+```
 
-Map Layers can be either **background** layers displayed on top of the base map but below all iModel geometry or **overlay** layers displayed on top of the iModel geometry.  The  [DisplayStyleState]($frontend) properties `backgroundMapLayers` and `overlayMapLayers` contain the background and overlay layers.  A set of  [DisplayStyleState]($frontend) methods, `attachMapLayer`, `detachMapLayerByIndex`, `changeMapLayerProps`, `changeMapSubLayerProps` etc are provided to manipulate these layers.
+[ViewManager.invalidateCachedDecorationsAllViews]($frontend) (and [Viewport.invalidateCachedDecorations]($frontend)) give the decorator much tighter control over when its decorations are regenerated, potentially resulting in significantly improved performance.
 
-## Antialiasing
+## FeatureSymbology namespace
 
-Antialiasing can now be turned on and off per view by setting [Viewport.antialiasSamples]($frontend) to the number of desired samples.  A value of 1 will turn off antialiasing, and a value > 1 will turn it on and attempt to use that many samples (restricted by the given hardware constraints).
+Types related to overriding feature symbology - previously defined in `imodeljs-frontend`'s [FeatureSymbology]($frontend) namespace - are now also available in the `imodeljs-common` package.
 
-[ViewManager.setAntialiasingAllViews]($frontend) can be used to set the antialiasing samples in all currnet views as well as all future views created.
+- [FeatureSymbology.Appearance]($frontend) and [FeatureSymbology.AppearanceProps]($frontend) are now deprecated in favor of [FeatureAppearance]($common) and [FeatureAppearanceProps]($common).
+- [FeatureAppearanceProvider]($common) replaces the `beta` `FeatureSymbology.AppearanceProvider` interface.
+- [FeatureOverrides]($common) now serves as a base class for [FeatureSymbology.Overrides]($frontend). Only the latter can be constructed from a [Viewport]($frontend) or [ViewState]($frontend).
 
-![example of no antialiasing on left, and antialiasing with 8 samples on the right](./assets/AntialiasExample1.png)
-<p align="center">Example: no antialiasing on left, and antialiasing with 8 samples on the right</p>
+## Locatable flag for background map
 
-![example of no antialiasing on left, and antialiasing with 4 samples on the right](./assets/AntialiasExample2.png)
-<p align="center">Example: no antialiasing on left, and antialiasing with 4 samples on the right</p>
+Previously, [TerrainSettings.locatable]($common) and [TerrainProps.nonLocatable]($common) could be used to control whether or not tools could locate and interact with the background map while terrain was enabled - but there was no way to similarly control locatability of the map when terrain was disabled. Now, these two properties are deprecated in favor of [BackgroundMapSettings.locatable]($common) and [BackgroundMapProps.nonLocatable]($common). The new properties control locatability of the map regardless of whether or not terrain is enabled. To retain backwards compatibility with the deprecated properties:
+- If `TerrainProps.nonLocatable` is `true`, then the terrain will be non-locatable.
+- Otherwise, the terrain will be locatable if and only if the background map is locatable.
+
+## ui-components
+
+Breaking change to the `beta` interface [ColorPickerProps]($ui-components). The `activeColor` property has been renamed to `initialColor`. The modified props are used by the [ColorPickerButton]($ui-components) React component.
+
+## Model Appearance Overrides
+Appearance overrides can be applied to models in a similar manner to subcategory overries with [DisplayStyleState.overrideModelAppearance] or [Viewport.overrideModelAppearance].  Overrides can be applied to the "contextual" reality models included within display styles with  [DisplayStyleState.overrideRealityModelAppearance] or [Viewport.overrideRealityModelAppearance].  For reality models only transparency, color, emphasized and nonLocatable overrides are applicable.
+
+## CSRF Security Option
+
+IModelApp now supports passing FrontendSecurityOptions at startup. In particular, one can now enable CSRF (Cross Site Request Forgery) protection. To enable CSRF protection, set csrfProtection: enabled in the new security section of IModelAppOptions. The header and cookie names for CSRF are configurable as needed and default to X-XSRF-TOKEN and XSRF-TOKEN.
+
+## ESLint Support and Configuration Available
+
+The @bentley/build-tools package now supports ESLint ^6.8.0 and a configuration file to match, the now deprecated, TSLint configuration. The TSLint configuration and custom rules will still exist for the rest of iModel.js 2.x and will be removed in iModel.js 3.0.
+
+To start using the new configuration add the following to the package.json to extend the build-tools package and run the eslint rules against all `ts` and `tsx` files: 
+
+```json
+"scripts": {
+  "lint": "eslint ./src/**/*.{ts,tsx} 1>&2",
+},
+"devDependencies": {
+  "eslint": "^6.8.0",
+  ...
+},
+"eslintConfig": {
+  "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+}
+```

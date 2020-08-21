@@ -1,6 +1,29 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:10 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:09 GMT
+
+### Updates
+
+- Change to use toast message to inform user of extension loaded. 
+- Decorators can now optionally have their decorations cached to achieve a potential performance benefit.
+- Introduce IModelApp security options (including CSRF protection).
+- Fixed Web Accessibility issues
+- Move types from FeatureSymbology namespace from imodeljs-frontend to imodeljs-common.
+- When recalling a saved view with elevated plan projections, ensure the elevation is applied.
+- Fix an exception when drawing a surface that should have a texture but doesn't.
+- Use IModelRoutingContext
+- Added mobile oidc client
+- Moved SpecialKey & FunctionKey enums to ui-abstract & started using them throughout UI packages
+- Support reality model transparency
+- Refine reality model alignment test to avoid misapplication where no misalignment exists.
+- element editor
+- Switch to ESLint
+- Fix inaccurate snapping for elevated plan projection models.
+- Fix for crash when doing volume classification and there is no classifier geometry.
+- Make IModelApp globally accessible for debugging.
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

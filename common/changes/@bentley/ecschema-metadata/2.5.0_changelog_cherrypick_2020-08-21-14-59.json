@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/ecschema-metadata"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Colin.Kerr@bentley.com"
+}

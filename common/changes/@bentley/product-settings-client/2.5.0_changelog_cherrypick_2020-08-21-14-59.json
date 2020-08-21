@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/product-settings-client"
+    }
+  ],
+  "packageName": "@bentley/product-settings-client",
+  "email": "Colin.Kerr@bentley.com"
+}

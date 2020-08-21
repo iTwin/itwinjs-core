@@ -2,6 +2,54 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/ui-framework_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed updating focus when Tabs activeIndex updated. More a11y issues."
+          },
+          {
+            "comment": "Toolbar overflow styling."
+          },
+          {
+            "comment": "Update calculation of StageUsage to pass to UiItemsProviders"
+          },
+          {
+            "comment": "Added eslint-plugin-jsx-a11y devDependency and made first pass at adding a11y roles"
+          },
+          {
+            "comment": "Added react-axe and resolved some a11y issues"
+          },
+          {
+            "comment": "Moved SpecialKey & FunctionKey enums to ui-abstract & started using them throughout UI packages"
+          },
+          {
+            "comment": "lock down @types/react version at 16.9.43 to prevent build error from csstype dependency"
+          },
+          {
+            "comment": "Added Table component keyboard row selection. Miscellaneous a11y fixes."
+          },
+          {
+            "comment": "Switch to ESLint"
+          },
+          {
+            "comment": "Add drop shadow to statusbar overflow popup."
+          },
+          {
+            "comment": "Ability to fit content of panel widgets."
+          },
+          {
+            "comment": "Added Home focus support to ui-abstract"
+          },
+          {
+            "comment": "Update to @bentley/react-scripts@3.4.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/ui-framework_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

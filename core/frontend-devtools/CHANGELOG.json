@@ -2,6 +2,27 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/frontend-devtools_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Make certain devtools with decorators cache their decorations."
+          },
+          {
+            "comment": "Use IModelRoutingContext"
+          },
+          {
+            "comment": "Add tool to set reality model transparency."
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/frontend-devtools_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

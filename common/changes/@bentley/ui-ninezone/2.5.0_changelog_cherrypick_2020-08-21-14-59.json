@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/ui-ninezone"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "Colin.Kerr@bentley.com"
+}

@@ -2,6 +2,27 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/presentation-frontend_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to compare hierarchies based on rulesets or ruleset variables."
+          },
+          {
+            "comment": "Add a `RulesetManager.onRulesetModified` event that's raised when rulesets are modified."
+          },
+          {
+            "comment": "Add a `RulesetVariablesManager.onVariableChanged` event that's raised when ruleset variables are changed."
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/presentation-frontend_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

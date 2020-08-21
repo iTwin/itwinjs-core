@@ -2,6 +2,27 @@
   "name": "@bentley/hypermodeling-frontend",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/hypermodeling-frontend_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Cache decorations for hypermodeling decorator."
+          },
+          {
+            "comment": "Use IModelRoutingContext"
+          },
+          {
+            "comment": "Add tools to override primary model appearances"
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/hypermodeling-frontend_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

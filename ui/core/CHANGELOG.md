@@ -1,6 +1,24 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:10 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:10 GMT
+
+### Updates
+
+- Fixed updating focus when Tabs activeIndex updated. More a11y issues.
+- Add new variable to define drop shadow color for popups.
+- Logging error when UiCore.translate called without UiCore.initialize being called beforehand
+- Colorpicker updates
+- Added eslint-plugin-jsx-a11y devDependency and made first pass at adding a11y roles
+- Added react-axe and resolved some a11y issues
+- Moved SpecialKey & FunctionKey enums to ui-abstract & started using them throughout UI packages
+- lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
+- Added Table component keyboard row selection. Miscellaneous a11y fixes.
+- Switch to ESLint
+- Tree keyboard node selection & expansion
+- Update to @bentley/react-scripts@3.4.2
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

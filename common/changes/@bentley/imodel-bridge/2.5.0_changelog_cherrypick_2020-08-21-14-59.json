@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/imodel-bridge"
+    }
+  ],
+  "packageName": "@bentley/imodel-bridge",
+  "email": "Colin.Kerr@bentley.com"
+}

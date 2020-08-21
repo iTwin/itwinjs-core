@@ -1,5 +1,4 @@
 ---
-ignore: true
+publish: false
 ---
 # NextVersion
-

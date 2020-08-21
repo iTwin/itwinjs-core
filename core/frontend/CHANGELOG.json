@@ -2,6 +2,66 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/imodeljs-frontend_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change to use toast message to inform user of extension loaded. "
+          },
+          {
+            "comment": "Decorators can now optionally have their decorations cached to achieve a potential performance benefit."
+          },
+          {
+            "comment": "Introduce IModelApp security options (including CSRF protection)."
+          },
+          {
+            "comment": "Fixed Web Accessibility issues"
+          },
+          {
+            "comment": "Move types from FeatureSymbology namespace from imodeljs-frontend to imodeljs-common."
+          },
+          {
+            "comment": "When recalling a saved view with elevated plan projections, ensure the elevation is applied."
+          },
+          {
+            "comment": "Fix an exception when drawing a surface that should have a texture but doesn't."
+          },
+          {
+            "comment": "Use IModelRoutingContext"
+          },
+          {
+            "comment": "Added mobile oidc client"
+          },
+          {
+            "comment": "Moved SpecialKey & FunctionKey enums to ui-abstract & started using them throughout UI packages"
+          },
+          {
+            "comment": "Support reality model transparency"
+          },
+          {
+            "comment": "Refine reality model alignment test to avoid misapplication where no misalignment exists."
+          },
+          {
+            "comment": "element editor"
+          },
+          {
+            "comment": "Switch to ESLint"
+          },
+          {
+            "comment": "Fix inaccurate snapping for elevated plan projection models."
+          },
+          {
+            "comment": "Fix for crash when doing volume classification and there is no classifier geometry."
+          },
+          {
+            "comment": "Make IModelApp globally accessible for debugging."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/imodeljs-frontend_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

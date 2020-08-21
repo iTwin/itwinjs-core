@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/imodeljs-common"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Colin.Kerr@bentley.com"
+}

@@ -1,6 +1,17 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:10 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:10 GMT
+
+### Updates
+
+- Update EnumerationChoicesInfo to use Promise so enum choices can be defined asynchronously.
+- Moved SpecialKey & FunctionKey enums to ui-abstract & started using them throughout UI packages
+- Added Table component keyboard row selection. Miscellaneous a11y fixes.
+- Switch to ESLint
+- Added Home focus support to ui-abstract
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

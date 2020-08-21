@@ -1,6 +1,13 @@
 # Change Log - @bentley/geonames-extension
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:09 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:09 GMT
+
+### Updates
+
+- Switch to ESLint
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

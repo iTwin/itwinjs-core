@@ -1,6 +1,14 @@
 # Change Log - @bentley/webpack-tools-core
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:10 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:10 GMT
+
+### Updates
+
+- Switch to ESLint
+- Add 'react-redux' to list of 3rd party shared libraries for the IModelJsLibrary Exports and Imports plugins
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT
