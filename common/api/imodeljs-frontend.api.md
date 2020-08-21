@@ -2088,6 +2088,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
     // @beta
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
+    // @beta
+    getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     get globeMode(): GlobeMode;
@@ -2125,7 +2127,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @beta
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     // @beta
-    overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean;
+    overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
@@ -10745,10 +10747,14 @@ export abstract class Viewport implements IDisposable {
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @beta
+    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
+    // @beta
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     // @beta
     getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
+    // @beta
+    getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined;
     // @internal (undocumented)
     getSubCategories(categoryId: Id64String): Id64Set | undefined;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
@@ -10832,7 +10838,7 @@ export abstract class Viewport implements IDisposable {
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
     overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
     // @beta
-    overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean;
+    overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @beta
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;

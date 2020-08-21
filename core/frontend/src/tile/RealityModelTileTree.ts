@@ -397,7 +397,7 @@ export namespace RealityModelTileTree {
         // If the reality model is located in the same region and height and their is significant misalighment in their orientation,
         //  then align the cartesian systems as otherwise different origins
         // can result in a misalignment from the curvature of the earth. (EWR - large point cloud)
-        if (undefined !== ypr && undefined !== carto && (Math.abs(ypr.pitch.degrees) > 1.0E-6 || Math.abs(ypr.roll.degrees) > 1.0E-6) && carto.height < 300.0) {
+        if (undefined !== ypr && undefined !== carto && Math.abs(ypr.roll.degrees) > 1.0E-6 && carto.height < 300.0) {  // Don't test yaw- it may be present from eccentricity fix.
           ypr.pitch.setRadians(0);
           ypr.roll.setRadians(0);
           ypr.toMatrix3d(rootTransform.matrix);

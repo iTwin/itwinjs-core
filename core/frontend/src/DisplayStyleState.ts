@@ -7,7 +7,7 @@
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Vector3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, FeatureAppearance, FeatureAppearanceProps, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
+import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
@@ -243,7 +243,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Obtain the override applied to a [[Model]] by this style.
    * @param id The ID of the [[Model]].
-   * @returns The corresponding FeatureAppearance, or undefined if the Model'ss appearance is not overridden.
+   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideModelAppearance]]
    * @beta
    */
@@ -257,7 +257,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * the changes are promptly visible on the screen.
    * @beta
    */
-  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean {
+  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean {
     if (undefined === this.jsonProperties.styles)
       this.jsonProperties.styles = {};
 
@@ -267,22 +267,21 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return false;     // No context reality models.
     }
 
-    const changeContextRealityModelOverrides = (changeIndex: number) => {
+    const setContextRealityModelOverrides = (changeIndex: number) => {
       if (changeIndex >= this._contextRealityModels.length)
         return false;
 
-      const newOverrides = this._contextRealityModels[changeIndex].appearanceOverrides ? this._contextRealityModels[changeIndex].appearanceOverrides?.clone(overrides) : FeatureAppearance.fromJSON(overrides);
-      contextRealityModels[changeIndex].appearanceOverrides = this._contextRealityModels[changeIndex].appearanceOverrides = newOverrides;
+      contextRealityModels[changeIndex].appearanceOverrides = this._contextRealityModels[changeIndex].appearanceOverrides = overrides;
       return true;
     };
     let changed = false;
     if (index < 0) {
       // All context models...
       for (let i = 0; i < this._contextRealityModels.length; i++)
-        changed = changed || changeContextRealityModelOverrides(i);
+        changed = setContextRealityModelOverrides(i) || changed;
     } else {
       // Context model by index...
-      changed = changeContextRealityModelOverrides(index);
+      changed = setContextRealityModelOverrides(index);
     }
     return changed;
   }
@@ -315,6 +314,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       dropContextRealityModelOverrides(index);
     }
   }
+
+  /** Obtain the override applied to a "contextual" reality model displayed by this style.
+   * @param index The reality model index
+   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
+   * @see [[overrideRealityModelAppearance]]
+   * @beta
+   */
+  public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
+    return index >= 0 && index < this._contextRealityModels.length ? this._contextRealityModels[index]?.appearanceOverrides : undefined;
+  }
+
 
   /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }

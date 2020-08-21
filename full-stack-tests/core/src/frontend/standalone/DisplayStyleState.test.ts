@@ -2,12 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Vector3d } from "@bentley/geometry-core";
-import {
-  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, SpatialClassificationProps, ThematicDisplayMode,
-} from "@bentley/imodeljs-common";
+import { BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, SpatialClassificationProps, ThematicDisplayMode } from "@bentley/imodeljs-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { expect } from "chai";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -65,9 +63,31 @@ describe("DisplayStyle", () => {
     expect(style.sunDirection!.z).to.equal(sunDir.z);
   });
 
+  it("Should override model appearance correctly", () => {
+    const style = new DisplayStyle3dState(styleProps, imodel);
+    const appearanceOverride = FeatureAppearance.fromJSON({
+      rgb: { r: 0, g: 255, b: 0 },
+      transparency: 0.5,
+      nonLocatable: true,
+      emphasized: true,
+    });
+
+    let index = 0;
+    style.forEachRealityModel((_realityModel) => {
+      style.overrideRealityModelAppearance(index, appearanceOverride);
+
+      expect(appearanceOverride).to.deep.equal(style.getRealityModelAppearanceOverride(index));
+      index++;
+    });
+
+    const modelId = "0x001f";
+    style.overrideModelAppearance(modelId, appearanceOverride);
+    expect(appearanceOverride).to.deep.equal(style.getModelAppearanceOverride(modelId));
+  });
+
   it("should use iModel extents for thematic height range if unspecified", () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
-    style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height, range: [ 1, 100 ]  } });
+    style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height, range: [1, 100] } });
     expect(style.settings.thematic.range.low).to.equal(1);
     expect(style.settings.thematic.range.high).to.equal(100);
 
@@ -154,7 +174,7 @@ describe("DisplayStyle", () => {
         realityModelUrl: "askjeeves.com",
         elementTimelines: [{
           batchId: 54,
-          elementIds: [ "0x1", "0x2", "0x3", "0x4" ],
+          elementIds: ["0x1", "0x2", "0x3", "0x4"],
         }],
       }],
     });
@@ -162,9 +182,9 @@ describe("DisplayStyle", () => {
     test({
       thematic: {
         displayMode: ThematicDisplayMode.Slope,
-        axis: [ 0, 0.5, 1 ],
-        range: [ 12, 24 ],
-        sunDirection: [ 0, 1, 0 ],
+        axis: [0, 0.5, 1],
+        range: [12, 24],
+        sunDirection: [0, 1, 0],
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
@@ -212,7 +232,7 @@ describe("DisplayStyle", () => {
         realityModelUrl: "altavista.com",
         elementTimelines: [{
           batchId: 45,
-          elementIds: [ "0xa", "0xb" ],
+          elementIds: ["0xa", "0xb"],
         }],
       }],
     });
