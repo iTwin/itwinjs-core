@@ -340,6 +340,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               title="Visibility tree"
             />}
             defaultState={StagePanelState.Minimized}
+            pinned={false}
             size={400}
             minSize={150}
             maxSize={800}

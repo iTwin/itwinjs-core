@@ -4948,6 +4948,7 @@ export class StagePanelDef extends WidgetHost {
     set panelState(panelState: StagePanelState);
     // @internal
     get panelZones(): StagePanelZonesDef | undefined;
+    get pinned(): boolean;
     get resizable(): boolean;
     get size(): number | undefined;
     set size(size: number | undefined);
@@ -5000,6 +5001,7 @@ export interface StagePanelProps {
     maxSize?: StagePanelMaxSizeSpec;
     minSize?: number;
     panelZones?: StagePanelZonesProps;
+    pinned?: boolean;
     resizable: boolean;
     // @internal (undocumented)
     runtimeProps?: StagePanelRuntimeProps;

@@ -387,6 +387,7 @@ export function initializePanel(nineZone: NineZoneState, frontstageDef: Frontsta
     const draftPanel = draft.panels[panel];
     draftPanel.size = panelDef?.size;
     draftPanel.minSize = panelDef?.minSize ?? draftPanel.minSize;
+    draftPanel.pinned = panelDef?.pinned ?? draftPanel.pinned;
     if (panelDef?.maxSizeSpec) {
       draftPanel.maxSize = getPanelMaxSize(panelDef.maxSizeSpec, panel, nineZone.size);
     }

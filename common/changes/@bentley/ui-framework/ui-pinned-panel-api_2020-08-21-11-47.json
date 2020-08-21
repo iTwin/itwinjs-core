@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Add pinned flag to StagePanelProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Gerardas.Butkevicius@bentley.com"
+}

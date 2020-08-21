@@ -86,6 +86,8 @@ export interface StagePanelProps {
   maxSize?: StagePanelMaxSizeSpec;
   /** Minimum size of the panel. */
   minSize?: number;
+  /** Indicates whether the panel is pinned. Defaults to true. */
+  pinned?: boolean;
   /** Indicates whether the panel is resizable. Defaults to true. */
   resizable: boolean;
   /** Default size of the panel. */

@@ -55,7 +55,8 @@ export class StagePanelDef extends WidgetHost {
   private _maxSizeSpec: StagePanelMaxSizeSpec | undefined;
   private _minSize: number | undefined;
   private _size: number | undefined;
-  private _resizable: boolean = false;
+  private _resizable = true;
+  private _pinned = true;
   private _applicationData?: any;
   private _location: StagePanelLocation = StagePanelLocation.Left;
   private _panelZones: StagePanelZonesDef | undefined;
@@ -89,6 +90,10 @@ export class StagePanelDef extends WidgetHost {
   /** Indicates whether the panel is resizable. */
   // istanbul ignore next
   public get resizable(): boolean { return this._resizable; }
+
+  /** Indicates whether the panel is pinned. */
+  public get pinned(): boolean { return this._pinned; }
+
   /** Any application data to attach to this Panel. */
   public get applicationData(): any | undefined { return this._applicationData; }
   /** Location of panel. */
@@ -131,6 +136,8 @@ export class StagePanelDef extends WidgetHost {
     if (props.defaultState !== undefined)
       this.initializePanelState(props.defaultState);
     this._resizable = props.resizable;
+    if (props.pinned !== undefined)
+      this._pinned = props.pinned;
     if (props.applicationData !== undefined)
       this._applicationData = props.applicationData;
     if (props.panelZones) {
