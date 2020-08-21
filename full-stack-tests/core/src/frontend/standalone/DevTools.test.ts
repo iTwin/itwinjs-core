@@ -5,8 +5,7 @@
 import { assert } from "chai";
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevToolsStatsOptions, IModelRpcProps } from "@bentley/imodeljs-common";
-import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
-import { EventSourceManager } from "@bentley/imodeljs-frontend/lib/EventSource";
+import { DevTools, EventSourceManager, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
 
 describe("DevTools", () => {
   let devTools: DevTools;

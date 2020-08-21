@@ -8,6 +8,7 @@
 
 import "./configurableui.scss";
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, Point } from "@bentley/ui-core";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
@@ -25,7 +26,7 @@ import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
-// cSpell:ignore cursormenu
+// cSpell:ignore cursormenu cursorpopup
 
 /** Properties for [[ConfigurableUiContent]]
  * @public
@@ -52,7 +53,7 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
     const handleKeyUp = (e: KeyboardEvent) => {
       const element = document.activeElement as HTMLElement;
 
-      if (element === document.body && e.key !== "Escape") {
+      if (element === document.body && e.key !== SpecialKey.Escape) {
         KeyboardShortcutManager.processKey(e.key, e.altKey, e.ctrlKey, e.shiftKey);
       }
     };
@@ -74,7 +75,7 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
   }, []);
 
   return (
-    <div
+    <main role="main"
       id="uifw-configurableui-wrapper"
       className={props.className}
       style={props.style}
@@ -91,6 +92,6 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       <CursorPopupMenu />
       <CursorPopupRenderer />
       <PopupRenderer />
-    </div>
+    </main>
   );
 }

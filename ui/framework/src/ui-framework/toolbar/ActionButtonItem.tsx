@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, OnItemExecutedFunc } from "@bentley/ui-abstract";
+import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, OnItemExecutedFunc, SpecialKey } from "@bentley/ui-abstract";
 import { BadgeUtilities } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../../ui-framework";
@@ -15,7 +15,7 @@ import { ToolbarHelper } from "./ToolbarHelper";
 
 function handleKeyDown(e: React.KeyboardEvent): void {
   // istanbul ignore else
-  if (e.key === "Escape") {
+  if (e.key === SpecialKey.Escape) {
     KeyboardShortcutManager.setFocusToHome();
   }
 }

@@ -19,7 +19,6 @@ class TileRequestDecoration {
   private constructor(vp: Viewport) {
     this._targetVp = vp;
     this._removeDecorator = IModelApp.viewManager.addDecorator(this);
-    IModelApp.viewManager.invalidateDecorationsAllViews();
   }
 
   private stop(): void {
@@ -27,9 +26,10 @@ class TileRequestDecoration {
       this._removeDecorator();
       this._removeDecorator = undefined;
     }
-
-    IModelApp.viewManager.invalidateDecorationsAllViews();
   }
+
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
     const tiles = IModelApp.tileAdmin.getRequestsForViewport(this._targetVp);

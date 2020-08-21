@@ -85,7 +85,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
 
   // called when this component is first loaded
   public async componentDidMount() {
-    this.startRetrieveViews(); // tslint:disable-line:no-floating-promises
+    this.startRetrieveViews(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _onClose = () => {
@@ -127,7 +127,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
       viewProps = await this._iModelConnection.views.queryProps(viewQueryParams);
       this.setState({ views: viewProps, waitingForViews: false });
     } catch (e) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log("error getting views", e);
     }
   }
@@ -141,7 +141,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
       );
     } else if (this.state.views && this.state.views.length > 0) {
       return (
-        <div className="views-list">
+        <div className="views-list" tabIndex={0}>
           {this.state.views.map((view: ViewDefinitionProps, i: number) => (
             <ViewCard key={i} view={view} onClick={this._onViewClick.bind(this, view)} />
           ))}

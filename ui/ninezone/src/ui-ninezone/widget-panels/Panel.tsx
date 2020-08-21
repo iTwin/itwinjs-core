@@ -50,7 +50,7 @@ export interface WidgetPanelProps {
 /** Widget panel component is a side panel with multiple widgets.
  * @internal
  */
-export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanel(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanel(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   return (
     <PanelStateContext.Provider value={props.panel}>
       <PanelSideContext.Provider value={props.panel.side}>
@@ -76,7 +76,7 @@ export interface WidgetPanelComponentProps {
 }
 
 /** @internal */
-export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(function WidgetPanelComponent(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(function WidgetPanelComponent(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const draggedPanelSide = React.useContext(DraggedPanelSideContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const captured = draggedPanelSide === props.panel.side;
@@ -151,19 +151,19 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
 });
 
 /** @internal */
-export const PanelSideContext = React.createContext<PanelSide | undefined>(undefined); // tslint:disable-line: variable-name
+export const PanelSideContext = React.createContext<PanelSide | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 PanelSideContext.displayName = "nz:PanelSideContext";
 
 /** @internal */
-export const PanelPinnedContext = React.createContext<boolean>(false); // tslint:disable-line: variable-name
+export const PanelPinnedContext = React.createContext<boolean>(false); // eslint-disable-line @typescript-eslint/naming-convention
 PanelPinnedContext.displayName = "nz:PanelPinnedContext";
 
 /** @internal */
-export const PanelSpanContext = React.createContext<boolean | undefined>(undefined); // tslint:disable-line: variable-name
+export const PanelSpanContext = React.createContext<boolean | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 PanelSpanContext.displayName = "nz:PanelStateContext";
 
 /** @internal */
-export const PanelStateContext = React.createContext<PanelState | undefined>(undefined); // tslint:disable-line: variable-name
+export const PanelStateContext = React.createContext<PanelState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 PanelStateContext.displayName = "nz:PanelStateContext";
 
 /** @internal */

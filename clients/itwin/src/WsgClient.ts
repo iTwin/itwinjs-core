@@ -198,6 +198,14 @@ export interface WsgRequestOptions {
 }
 
 /**
+ * Additional options used for requests
+ * @beta
+ */
+export interface HttpRequestOptions {
+  headers?: any;
+}
+
+/**
  * Base class for Client implementations of services that are based on WSG
  * @beta
  */
@@ -257,7 +265,7 @@ export abstract class WsgClient extends Client {
   }
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
-  protected async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
+  protected async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void> {
     requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
@@ -272,6 +280,9 @@ export abstract class WsgClient extends Client {
     if (requestOptions) {
       options.body.requestOptions = requestOptions;
     }
+    if (httpRequestOptions?.headers) {
+      options.headers = { ...options.headers, ...httpRequestOptions.headers };
+    }
     await this.setupOptionDefaults(options);
     await request(requestContext, url, options);
   }
@@ -283,9 +294,10 @@ export abstract class WsgClient extends Client {
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Strongly typed instance to be posted.
    * @param requestOptions WSG options for the request.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns The posted instance that's returned back from the server.
    */
-  protected async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
+  protected async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
@@ -300,6 +312,9 @@ export abstract class WsgClient extends Client {
     };
     if (requestOptions) {
       options.body.requestOptions = requestOptions;
+    }
+    if (httpRequestOptions?.headers) {
+      options.headers = { ...options.headers, ...httpRequestOptions.headers };
     }
     await this.setupOptionDefaults(options);
     requestContext.enter();
@@ -326,9 +341,10 @@ export abstract class WsgClient extends Client {
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instances Strongly typed instances to be posted.
    * @param requestOptions WSG options for the request.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns The posted instances that's returned back from the server.
    */
-  protected async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
+  protected async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
@@ -344,6 +360,9 @@ export abstract class WsgClient extends Client {
     };
     if (requestOptions) {
       options.body.requestOptions = requestOptions;
+    }
+    if (httpRequestOptions?.headers) {
+      options.headers = { ...options.headers, ...httpRequestOptions.headers };
     }
     await this.setupOptionDefaults(options);
     requestContext.enter();
@@ -377,9 +396,10 @@ export abstract class WsgClient extends Client {
    * @param typedConstructor Constructor function for the type
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  protected async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
+  protected async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
@@ -388,7 +408,7 @@ export abstract class WsgClient extends Client {
     const chunkedQueryContext = queryOptions ? ChunkedQueryContext.create(queryOptions) : undefined;
     const typedInstances: T[] = new Array<T>();
     do {
-      const chunk = await this.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions);
+      const chunk = await this.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions, httpRequestOptions);
       requestContext.enter();
       typedInstances.push(...chunk);
     } while (chunkedQueryContext && !chunkedQueryContext.isQueryFinished);
@@ -404,9 +424,10 @@ export abstract class WsgClient extends Client {
    * @param chunkedQueryContext Chunked query context.
    * @param typedConstructor Constructor function for the type
    * @param queryOptions Query options.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  protected async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]> {
+  protected async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     requestContext.enter();
     const resultInstances: T[] = new Array<T>();
 
@@ -422,6 +443,9 @@ export abstract class WsgClient extends Client {
     options.headers = {
       authorization: requestContext.accessToken.toTokenString(),
     };
+    if (httpRequestOptions?.headers) {
+      options.headers = { ...options.headers, ...httpRequestOptions.headers };
+    }
 
     if (chunkedQueryContext && chunkedQueryContext.skipToken && chunkedQueryContext.skipToken.length > 0)
       options.headers.skiptoken = chunkedQueryContext.skipToken;
@@ -478,9 +502,10 @@ export abstract class WsgClient extends Client {
    * @param typedConstructor Constructor function for the type
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  protected async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
+  protected async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     requestContext.enter();
     const url: string = `${await this.getUrl(requestContext)}${relativeUrlPath}$query`;
     requestContext.enter();
@@ -491,6 +516,9 @@ export abstract class WsgClient extends Client {
       headers: { authorization: requestContext.accessToken.toTokenString() },
       body: this.getQueryRequestBody(queryOptions),
     };
+    if (httpRequestOptions?.headers) {
+      options.headers = { ...options.headers, ...httpRequestOptions.headers };
+    }
 
     await this.setupOptionDefaults(options);
     requestContext.enter();

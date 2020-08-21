@@ -40,20 +40,21 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
   }
 
   public componentDidMount() {
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     // console.log(`LineWeightSwatchProps.componentDidMount setFocusRef=${this.props.setFocusRef} focusRef=${this.props.focusRef && this.props.focusRef.current ? "set" : "unset"}`);
   }
 
   public render() {
     const {
       onClick, colorDef, weight, hideLabel, className, // do not pass on color swatch specific props
-      disabled, readonly, ...otherProps /* tslint:disable-line: trailing-comma */ // pass-through props
+      // eslint-disable-next-line comma-dangle
+      disabled, readonly, ...otherProps // pass-through props
     } = this.props as any;
 
     let rgbaString = "";
 
     if (colorDef) {
-      const { b, g, r, t } = colorDef.colors as any;
+      const { b, g, r, t } = colorDef.colors;
       rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
     }
 
@@ -61,15 +62,15 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
       ...this.props.style,
       color: rgbaString,
     } : {
-      ...this.props.style,
-    };
+        ...this.props.style,
+      };
 
     const svgStyle: React.CSSProperties = colorDef ? {
       height: `${weight}px`,
       background: rgbaString,
     } : {
-      height: `${weight}px`,
-    };
+        height: `${weight}px`,
+      };
 
     const handleClick = (_e: React.MouseEvent) => {
       if (onClick)

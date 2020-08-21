@@ -67,6 +67,7 @@ describe("PropertyValueRendererManager", () => {
       const rendererManager = new PropertyValueRendererManager();
       rendererManager.registerRenderer("string", fakeRenderer);
 
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const value = await rendererManager.render(TestUtils.createPrimitiveStringProperty("Label", "Test prop"));
 
       const valueMount = mount(<div>{value}</div>);
@@ -76,7 +77,7 @@ describe("PropertyValueRendererManager", () => {
     });
 
     it("renders a primitive type", async () => {
-      const value = await manager.render(TestUtils.createPrimitiveStringProperty("Label", "Test prop"));
+      const value = manager.render(TestUtils.createPrimitiveStringProperty("Label", "Test prop"));
 
       const valueMount = mount(<div>{value}</div>);
 
@@ -84,7 +85,7 @@ describe("PropertyValueRendererManager", () => {
     });
 
     it("renders an array type", async () => {
-      const value = await manager.render(TestUtils.createArrayProperty("LabelArray"));
+      const value = manager.render(TestUtils.createArrayProperty("LabelArray"));
 
       const valueMount = mount(<div>{value}</div>);
 
@@ -92,7 +93,7 @@ describe("PropertyValueRendererManager", () => {
     });
 
     it("renders a struct type", async () => {
-      const value = await manager.render(TestUtils.createStructProperty("TestStruct"));
+      const value = manager.render(TestUtils.createStructProperty("TestStruct"));
 
       const valueMount = mount(<div>{value}</div>);
 
@@ -103,7 +104,7 @@ describe("PropertyValueRendererManager", () => {
       const property = TestUtils.createStructProperty("TestStruct");
       property.value.valueFormat = 10;
 
-      const value = await manager.render(property);
+      const value = manager.render(property);
 
       const valueMount = mount(<div>{value}</div>);
 
@@ -114,7 +115,7 @@ describe("PropertyValueRendererManager", () => {
       const property = TestUtils.createPrimitiveStringProperty("Label", "Test prop");
       property.isMerged = true;
 
-      const value = await manager.render(property);
+      const value = manager.render(property);
 
       const valueMount = mount(<div>{value}</div>);
 

@@ -1,6 +1,16 @@
 # Change Log - @bentley/itwin-client
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:10 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:10 GMT
+
+### Updates
+
+- Fix bug in AccessToken's fromJson 
+- Added HttpRequestOptions to request methods for passing additional options to HTTP requests.
+- accomoadate strict property initialization on dependent subpackages
+- Switch to ESLint
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

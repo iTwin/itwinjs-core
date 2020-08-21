@@ -405,7 +405,7 @@ export class AlternatingCCTreeNodeCurveClipper {
     const fractionIntervals = AlternatingCCTreeNodeCurveClipper._fractionIntervals;
 
     if (this._curve instanceof LineSegment3d) {
-      const segment = this._curve as LineSegment3d;
+      const segment = this._curve;
       let f0: number;
       let f1: number;
       if (segment.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => { f0 = a0; f1 = a1; })) {
@@ -414,7 +414,7 @@ export class AlternatingCCTreeNodeCurveClipper {
       return true;
 
     } else if (this._curve instanceof Arc3d) {
-      const arc = this._curve as Arc3d;
+      const arc = this._curve;
       fractionIntervals.length = 0;
       arc.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => {
         fractionIntervals.push(a0); fractionIntervals.push(a1);
@@ -423,8 +423,8 @@ export class AlternatingCCTreeNodeCurveClipper {
         insideSegments.push(Range1d.createXX(fractionIntervals[i], fractionIntervals[i + 1]));
       return true;
 
-    } else if (this._curve instanceof LineString3d && (this._curve as LineString3d).points.length > 1) {
-      const linestring = this._curve as LineString3d;
+    } else if (this._curve instanceof LineString3d && (this._curve).points.length > 1) {
+      const linestring = this._curve;
       let f0: number;
       let f1: number;
       const nPoints = linestring.points.length;
@@ -438,7 +438,7 @@ export class AlternatingCCTreeNodeCurveClipper {
       return true;
 
     } else if (this._curve instanceof BSplineCurve3d) {
-      const bcurve = this._curve as BSplineCurve3d;
+      const bcurve = this._curve;
       fractionIntervals.length = 0;
       bcurve.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => {
         fractionIntervals.push(a0); fractionIntervals.push(a1);

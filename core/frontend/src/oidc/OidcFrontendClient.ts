@@ -52,8 +52,8 @@ export interface IOidcFrontendClient extends IDisposable, AuthorizationClient {
  * @beta
  * @deprecated Use [[FrontendAuthorizationClient]] instead
  */
-export const isIOidcFrontendClient = (client: AuthorizationClient | undefined): client is IOidcFrontendClient => { // tslint:disable-line:deprecation
-  return client !== undefined && (client as IOidcFrontendClient).signIn !== undefined && (client as IOidcFrontendClient).signOut !== undefined; // tslint:disable-line:deprecation
+export const isIOidcFrontendClient = (client: AuthorizationClient | undefined): client is IOidcFrontendClient => { // eslint-disable-line deprecation/deprecation
+  return client !== undefined && (client as IOidcFrontendClient).signIn !== undefined && (client as IOidcFrontendClient).signOut !== undefined; // eslint-disable-line deprecation/deprecation
 };
 
 /**

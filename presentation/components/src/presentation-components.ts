@@ -5,6 +5,8 @@
 import { Presentation } from "@bentley/presentation-frontend";
 import { initializeLocalization } from "./presentation-components/common/Utils";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * @module Core
  *

@@ -12,7 +12,7 @@ import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContai
 import { TreeNodeItem } from "../TreeDataProvider";
 import { BeInspireTreeNode } from "./component/BeInspireTree";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /** Properties for a [[Tree]] that has cell editing enabled
  * @beta

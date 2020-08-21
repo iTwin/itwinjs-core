@@ -26,4 +26,6 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
   element?: React.ReactNode;
   /** Control's class id */
   classId?: string | ConfigurableUiControlConstructor;
+  /** @alpha */
+  preferredPanelSize?: "fit-content";
 }

@@ -13,6 +13,8 @@ import { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 
+/* eslint-disable no-shadow */
+
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {
     return typeof args[theNumber] !== "undefined"
@@ -247,6 +249,7 @@ export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> ext
 export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
   return class extends SchemaDiagnostic<ARGS> {
+    public static code = code;
     public get code(): string { return code; }
     public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };
@@ -289,6 +292,7 @@ export function createClassDiagnosticClass<ARGS extends any[]>(code: string, mes
 export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
   return class extends PropertyDiagnostic<ARGS> {
+    public static code = code;
     public get code(): string { return code; }
     public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };

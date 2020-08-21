@@ -25,11 +25,11 @@ import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNo
 const PAGING_SIZE = 20;
 
 /** @internal */
-export const RULESET_MODELS: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
+export const RULESET_MODELS: Ruleset = require("./Hierarchy.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 /** @internal */
-export const RULESET_MODELS_GROUPED_BY_CLASS: Ruleset = require("./Hierarchy.GroupedByClass.json"); // tslint:disable-line: no-var-requires
+export const RULESET_MODELS_GROUPED_BY_CLASS: Ruleset = require("./Hierarchy.GroupedByClass.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
-const RULESET_MODELS_SEARCH: Ruleset = require("./ModelsTreeSearch.json"); // tslint:disable-line: no-var-requires
+const RULESET_MODELS_SEARCH: Ruleset = require("./ModelsTreeSearch.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /**
  * Visibility tree node types.
@@ -179,7 +179,7 @@ export function ModelsTree(props: ModelsTreeProps) {
  * application must set up the Redux store and include the FrameworkReducer.
  * @alpha
  */
-export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // tslint:disable-line:variable-name
+export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // eslint-disable-line @typescript-eslint/naming-convention
 
 const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: VisibilityHandler) => {
   const previous = React.useRef<IDisposable>();
@@ -480,23 +480,23 @@ export class VisibilityHandler implements IVisibilityHandler {
     }, 0);
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onViewChanged = (_vp: Viewport) => {
     this.onVisibilityChangeInternal();
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onElementAlwaysDrawnChanged = () => {
     this.onVisibilityChangeInternal();
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onElementNeverDrawnChanged = () => {
     this.onVisibilityChangeInternal();
   }
 
   private async getSubjectModelIds(subjectIds: Id64String[]) {
-    return (await Promise.all(subjectIds.map((id) => this._subjectModelIdsCache.getSubjectModelIds(id))))
+    return (await Promise.all(subjectIds.map(async (id) => this._subjectModelIdsCache.getSubjectModelIds(id))))
       .reduce((allModelIds: Id64String[], curr: Id64String[]) => [...allModelIds, ...curr], []);
   }
 
@@ -596,7 +596,7 @@ class RulesetDrivenIdsProvider extends ContentDataProvider {
   }
   protected async getResultIds() {
     const content = await this.getContent();
-    const result = new Array();
+    const result: string[] = [];
     content!.contentSet.forEach((item) => {
       result.push(...item.primaryKeys.map((k) => k.id));
     });

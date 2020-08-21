@@ -32,7 +32,7 @@ describe("useActiveIModelConnection", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     imodelMock.setup((x) => x.name).returns(() => "Fake");
 
-    // tslint:disable-next-line:variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const HookTester = () => {
       const activeIModelConnection = useActiveIModelConnection();
       // I expected the following to work

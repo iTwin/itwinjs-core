@@ -18,5 +18,9 @@
     cursor: pointer;
     justify-self: end;
     padding: 5px;
+
+    &:focus {
+      outline: none;
+    }
   }
 }

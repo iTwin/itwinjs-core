@@ -18,21 +18,21 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.4.2",
-    "@bentley/react-scripts": "3.4.1",
+    "@bentley/build-tools": "2.5.0",
+    "@bentley/react-scripts": "3.4.2",
     "@types/classnames": "^2.2.3",
     "@types/highlight.js": "^9.12.3",
-    "@types/react": "^16.8.0",
+    "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
     "@types/react-router-dom": "^5.1.5",
     "typescript": "~3.7.4"
   },
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@bentley/ui-abstract": "2.4.2",
-    "@bentley/ui-components": "2.4.2",
-    "@bentley/ui-core": "2.4.2",
-    "@bentley/ui-ninezone": "2.4.2",
+    "@bentley/ui-abstract": "2.5.0",
+    "@bentley/ui-components": "2.5.0",
+    "@bentley/ui-core": "2.5.0",
+    "@bentley/ui-ninezone": "2.5.0",
     "classnames": "^2.2.5",
     "highlight.js": "~10.0.3",
     "raf-schd": "^4.0.0",

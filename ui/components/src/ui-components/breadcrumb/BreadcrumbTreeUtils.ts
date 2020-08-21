@@ -11,7 +11,7 @@ import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataPr
 import { DelayLoadedTreeNodeItem, hasChildren, ImmediatelyLoadedTreeNodeItem, TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 import { UiComponents } from "../UiComponents";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.

@@ -151,7 +151,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this._isMounted = true;
     this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
 
-    // tslint:disable-next-line:no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.gatherData();
   }
 
@@ -194,7 +194,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   private _onPropertyDataChanged = () => {
-    // tslint:disable-next-line:no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.gatherData();
   }
 
@@ -248,6 +248,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   private assignRecordClickHandlers(records: PropertyRecord[]) {
     records.forEach((record: PropertyRecord) => {
       if (record.links)
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         record.links.onClick = this.props.onPropertyLinkClick ? this.props.onPropertyLinkClick : this.handleLinkClick;
       if (record.value.valueFormat === PropertyValueFormat.Array)
         this.assignRecordClickHandlers((record.value as ArrayValue).items);
@@ -313,7 +314,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         editingPropertyKey = undefined;
         if (selectedPropertyKey !== key)
           selectedPropertyKey = key;
-      } else
+      } else {
         if (selectedPropertyKey === key) {
           // Deselect
           selectedPropertyKey = undefined;
@@ -321,6 +322,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
           // Select another one
           selectedPropertyKey = key;
         }
+      }
       if (this.props.onPropertySelectionChanged)
         this.props.onPropertySelectionChanged(property);
     }
@@ -470,7 +472,7 @@ interface DelayedSpinnerProps {
   loadStart?: Date;
   delay?: number;
 }
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const DelayedSpinner = (props: DelayedSpinnerProps) => {
   const delay = props.delay || 500;
   const [loadStart] = React.useState(props.loadStart || new Date());

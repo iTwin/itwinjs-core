@@ -8,11 +8,12 @@
 
 import "./ElementSeparator.scss";
 import * as React from "react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"; // tslint:disable-line: no-duplicate-imports
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"; // eslint-disable-line no-duplicate-imports
 import classnames from "classnames";
 import { Orientation } from "../enums/Orientation";
 import { CommonProps } from "../utils/Props";
 import { useThrottledFn } from "../utils/hooks/useThrottledFn";
+import { UiCore } from "../UiCore";
 
 /**
  * Results returned by onRatioChanged callback for determining new ratio and whether the ratio was updated.
@@ -192,8 +193,9 @@ function getStyle(orientation: Orientation, separatorSize?: number): React.CSSPr
 /** A movable button, which allows to change the ratio between left element and right element
  * @public
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ElementSeparator = (props: ElementSeparatorProps) => {
+  const label = useRef(UiCore.translate("elementSeparator.label"));
   const [hasHoverHappened, setHasHoverHappened] = useState(false);
   const { isDragged, isHovered, onPointerDown, onPointerOver, onPointerOut } = useElementSeparatorPointerHandler(props);
 
@@ -226,6 +228,7 @@ export const ElementSeparator = (props: ElementSeparatorProps) => {
       onPointerDown={onPointerDown}
       onPointerOver={onPointerOver}
       onPointerOut={onPointerOut}
+      aria-label={label.current}
     />
   );
 };

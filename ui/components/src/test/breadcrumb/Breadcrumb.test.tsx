@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, RenderResult, waitForElement } from "@testing-library/react";
 import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components";
 import { BreadcrumbNode, BreadcrumbNodeProps } from "../../ui-components/breadcrumb/Breadcrumb";
@@ -17,7 +17,7 @@ import {
   mockInterfaceTreeDataProvider, mockMutableInterfaceTreeDataProvider, mockRawTreeDataProvider, mockRawTreeDataProvider2,
 } from "./mockTreeDataProvider";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("Breadcrumb", () => {
   let renderSpy: sinon.SinonSpy;
@@ -227,7 +227,7 @@ describe("Breadcrumb", () => {
           breadcrumbInput.value = "";
           breadcrumbInput.setSelectionRange(0, 0);
           fireEvent.click(breadcrumbInput);
-          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 1);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { key: SpecialKey.Enter }), renderSpy, 1);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
         });
         it("should submit undefined node with parentsOnly={false}", async () => {
@@ -236,7 +236,7 @@ describe("Breadcrumb", () => {
           breadcrumbInput.value = "";
           breadcrumbInput.setSelectionRange(0, 0);
           fireEvent.click(breadcrumbInput);
-          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 1);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { key: SpecialKey.Enter }), renderSpy, 1);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
         });
         it("should submit node", async () => {
@@ -247,7 +247,7 @@ describe("Breadcrumb", () => {
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
-          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 2);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { key: SpecialKey.Enter }), renderSpy, 2);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
           expect(renderedComponent.getAllByText(getPropertyRecordAsString(label))[0]).to.exist;
         });
@@ -259,7 +259,7 @@ describe("Breadcrumb", () => {
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
-          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 2);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { key: SpecialKey.Enter }), renderSpy, 2);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
           expect(renderedComponent.getAllByText(getPropertyRecordAsString(label))[0]).to.exist;
         });
@@ -272,7 +272,7 @@ describe("Breadcrumb", () => {
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
-          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 2);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { key: SpecialKey.Enter }), renderSpy, 2);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
           expect(renderedComponent.getAllByText(getPropertyRecordAsString(label1))[0]).to.exist;
           expect(renderedComponent.getAllByText(getPropertyRecordAsString(label2))[0]).to.exist;
@@ -286,7 +286,7 @@ describe("Breadcrumb", () => {
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
-          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 2);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { key: SpecialKey.Enter }), renderSpy, 2);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
           expect(renderedComponent.getAllByText(getPropertyRecordAsString(label))[0]).to.exist;
         });
@@ -297,7 +297,7 @@ describe("Breadcrumb", () => {
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
-          fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ });
+          fireEvent.keyUp(breadcrumbInput, { key: SpecialKey.Enter });
           const close = await waitForElement(() => renderedComponent.getByTestId("core-dialog-close"));
           expect(close).to.exist;
           fireEvent.click(close);
@@ -313,7 +313,7 @@ describe("Breadcrumb", () => {
           breadcrumbInput.value = "";
           breadcrumbInput.setSelectionRange(0, 0);
           fireEvent.click(breadcrumbInput);
-          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 1);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { key: SpecialKey.Enter }), renderSpy, 1);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
           expect(updateEvent).to.be.calledWithMatch({ currentNode: undefined });
         });
@@ -339,7 +339,7 @@ describe("Breadcrumb", () => {
         it("should focus inputElement on <Esc> pressed", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
           const menu = renderedComponent.getByTestId("core-context-menu-root");
-          fireEvent.keyUp(menu, { keyCode: 27 });
+          fireEvent.keyUp(menu, { key: SpecialKey.Escape });
         });
         it("should navigate to node when autocomplete item chosen", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
@@ -351,28 +351,28 @@ describe("Breadcrumb", () => {
           it("Should close context menu on <Esc>", async () => {
             await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
             const input = renderedComponent.getByTestId("components-breadcrumb-input");
-            fireEvent.keyUp(input, { keyCode: 27 });
+            fireEvent.keyUp(input, { key: SpecialKey.Escape });
             expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("core-context-menu-opened")).to.be.false;
           });
           it("Should prevent default on <Up> and <Down> keydown", async () => {
             await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
             const input = renderedComponent.getByTestId("components-breadcrumb-input");
-            fireEvent.keyDown(input, { keyCode: 38 });
-            fireEvent.keyDown(input, { keyCode: 40 });
+            fireEvent.keyDown(input, { key: SpecialKey.ArrowUp });
+            fireEvent.keyDown(input, { key: SpecialKey.ArrowDown });
           });
           it("Should prevent default on <Up> and <Down> keyup", async () => {
             await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
             const input = renderedComponent.getByTestId("components-breadcrumb-input");
-            fireEvent.keyUp(input, { keyCode: 38 });
-            fireEvent.keyUp(input, { keyCode: 40 });
+            fireEvent.keyUp(input, { key: SpecialKey.ArrowUp });
+            fireEvent.keyUp(input, { key: SpecialKey.ArrowDown });
           });
           it("Should reopen autocomplete on Up/Down keypress", async () => {
             await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
             const input = renderedComponent.getByTestId("components-breadcrumb-input");
-            fireEvent.keyUp(input, { keyCode: 27 });
+            fireEvent.keyUp(input, { key: SpecialKey.Escape });
             expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("core-context-menu-opened")).to.be.false;
-            fireEvent.keyUp(input, { keyCode: 38 });
-            fireEvent.keyUp(input, { keyCode: 40 });
+            fireEvent.keyUp(input, { key: SpecialKey.ArrowUp });
+            fireEvent.keyUp(input, { key: SpecialKey.ArrowDown });
             expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("core-context-menu-opened")).to.be.true;
           });
         });

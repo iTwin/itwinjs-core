@@ -8,14 +8,16 @@
 
 import * as path from "path";
 import { BeEvent, BentleyError, BentleyStatus, Logger } from "@bentley/bentleyjs-core";
-import { Events, InternetConnectivityStatus, OverriddenBy } from "@bentley/imodeljs-common";
+import { Events, InternetConnectivityStatus, MobileRpcConfiguration, OverriddenBy } from "@bentley/imodeljs-common";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
+import { EmitStrategy } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { EmitStrategy, EventSinkManager } from "./EventSink";
+import { EventSinkManager } from "./EventSink";
 import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
+import { initialize, MobileDevice } from "./MobileDevice";
 
 const loggerCategory = BackendLoggerCategory.NativeApp;
-
+initialize();
 /**
  * Used by desktop/mobile native application
  * @internal
@@ -55,7 +57,12 @@ export class NativeAppBackend {
     }
     /** Override applicationType to NativeApp */
     configuration!.applicationType = ApplicationType.NativeApp;
-
+    if (MobileRpcConfiguration.isMobileBackend) {
+      MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
+        const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
+        EventSinkManager.global.emit(Events.NativeApp.namespace, Events.NativeApp.onUserStateChanged, { accessToken: accessTokenObj, err }, { strategy: EmitStrategy.None });
+      });
+    }
     await IModelHost.startup(configuration);
   }
 

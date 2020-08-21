@@ -30,7 +30,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
@@ -371,7 +371,7 @@ export abstract class RenderSystem implements IDisposable {
       const image = await this.loadTextureImage(id, iModel);
       if (undefined !== image) {
         // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
-        texture = this.createTextureFromImage(image.image!, ImageSourceFormat.Png === image.format!, iModel, new RenderTexture.Params(id.toString()));
+        texture = this.createTextureFromImage(image.image!, ImageSourceFormat.Png === image.format, iModel, new RenderTexture.Params(id.toString()));
       }
     }
 
@@ -395,11 +395,11 @@ export abstract class RenderSystem implements IDisposable {
     if (undefined === textureProps.data || "string" !== typeof (textureProps.data) || undefined === textureProps.format || "number" !== typeof (textureProps.format))
       return undefined;
 
-    const format = textureProps.format as ImageSourceFormat;
+    const format = textureProps.format;
     if (!isValidImageSourceFormat(format))
       return undefined;
 
-    const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
+    const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data), format);
     const image = await imageElementFromImageSource(imageSource);
     return { image, format };
   }
@@ -455,7 +455,7 @@ export abstract class RenderSystem implements IDisposable {
  * @see [[IModelApp.renderSystem]].
  * @public
  */
-export namespace RenderSystem {
+export namespace RenderSystem { // eslint-disable-line no-redeclare
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
    *
    * @beta

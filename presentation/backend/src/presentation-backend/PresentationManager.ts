@@ -15,7 +15,7 @@ import {
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
   ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node,
   NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus,
-  PresentationUnitSystem, RequestPriority, Ruleset, RulesetVariable, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -280,11 +280,12 @@ export class PresentationManager {
     return new RulesetVariablesManagerImpl(this.getNativePlatform, rulesetId);
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onIModelOpened = (requestContext: ClientRequestContext, imodel: BriefcaseDb) => {
+    requestContext.enter();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    // tslint:disable-next-line:no-floating-promises
-    this.getNativePlatform().forceLoadSchemas(requestContext, imodelAddon);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.getNativePlatform().forceLoadSchemas(imodelAddon);
   }
 
   /** @internal */
@@ -578,8 +579,8 @@ export class PresentationManager {
    */
   public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
     const [size, content] = await Promise.all<number, Content | undefined>([
-      this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys), // tslint:disable-line:deprecation
-      this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys), // tslint:disable-line:deprecation
+      this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys), // eslint-disable-line deprecation/deprecation
+      this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys), // eslint-disable-line deprecation/deprecation
     ]);
     return { content, size };
   }
@@ -734,7 +735,7 @@ export class PresentationManager {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.computeSelection({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, ids: deprecatedIds!, scopeId: deprecatedScopeId! });
     }
-    const { requestContext, ids, scopeId, ...requestOptions } = requestContextOrOptions;
+    const { requestContext, ids, scopeId, ...requestOptions } = requestContextOrOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
     return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId);
   }
 
@@ -749,7 +750,7 @@ export class PresentationManager {
         ...strippedParams,
       },
     };
-    const serializedResponse = await this.getNativePlatform().handleRequest(requestContext, imodelAddon, JSON.stringify(nativeRequestParams));
+    const serializedResponse = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
     requestContext.enter();
     if (!serializedResponse)
       throw new PresentationError(PresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
@@ -757,32 +758,41 @@ export class PresentationManager {
   }
 
   /** @deprecated Use an overload with one argument */
-  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]>;
+  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
   /**
    * Compares two hierarchies specified in the request options
    * TODO: Return results in pages
    * @beta
    */
-  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>>): Promise<PartialHierarchyModification[]>;
-  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]> {
+  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<PartialHierarchyModification[]>;
+  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
       return this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
     }
 
-    const prev = getPrevValues(requestContextOrOptions);
+    if (!requestContextOrOptions.prev.rulesetOrId && !requestContextOrOptions.prev.rulesetVariables)
+      return [];
+
+    const { strippedOptions: { prev, rulesetVariables, ...options } } = this.registerRuleset(requestContextOrOptions);
+
     const currRulesetId = this.getRulesetIdObject(requestContextOrOptions.rulesetOrId);
-    const prevRulesetId = this.getRulesetIdObject(prev.rulesetOrId);
+    const prevRulesetId = prev.rulesetOrId ? this.getRulesetIdObject(prev.rulesetOrId) : currRulesetId;
     if (prevRulesetId.parts.id !== currRulesetId.parts.id)
       throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
 
-    this.registerRuleset(requestContextOrOptions);
-    const imodelAddon = this.getNativePlatform().getImodelAddon(requestContextOrOptions.imodel);
-    const modificationJsons = await this.getNativePlatform().compareHierarchies(requestContextOrOptions.requestContext, imodelAddon, {
+    const currRulesetVariables = rulesetVariables ?? [];
+    const prevRulesetVariables = prev.rulesetVariables ?? currRulesetVariables;
+
+    const params = {
+      requestId: NativePlatformRequestTypes.CompareHierarchies,
+      ...options,
       prevRulesetId: prevRulesetId.uniqueId,
       currRulesetId: currRulesetId.uniqueId,
-      locale: normalizeLocale(requestContextOrOptions.locale ?? this.activeLocale) ?? "",
-    });
-    return modificationJsons.map(PartialHierarchyModification.fromJSON);
+      prevRulesetVariables: JSON.stringify(prevRulesetVariables),
+      currRulesetVariables: JSON.stringify(currRulesetVariables),
+      expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
+    };
+    return this.request(params, (key: string, value: any) => ((key === "") ? value.map(PartialHierarchyModification.fromJSON) : value));
   }
 }
 
@@ -809,23 +819,6 @@ const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | De
   if (descriptorOrOverrides instanceof Descriptor)
     return descriptorOrOverrides.createDescriptorOverrides();
   return descriptorOrOverrides as DescriptorOverrides;
-};
-
-const hasPrevRuleset = (prev: ({ rulesetOrId: string | Ruleset } | { rulesetVariables: RulesetVariable[] })): prev is ({ rulesetOrId: string | Ruleset }) => {
-  return !!(prev as { rulesetOrId: string | Ruleset }).rulesetOrId;
-};
-
-const getPrevValues = (options: PresentationDataCompareOptions<IModelDb>) => {
-  if (hasPrevRuleset(options.prev)) {
-    return {
-      rulesetOrId: options.prev.rulesetOrId,
-      rulesetVariables: options.rulesetVariables ?? [],
-    };
-  }
-  return {
-    rulesetOrId: options.rulesetOrId,
-    rulesetVariables: options.prev.rulesetVariables,
-  };
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {

@@ -13,6 +13,8 @@ import {
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Hierarchies", () => {
 
   let imodel: IModelConnection;

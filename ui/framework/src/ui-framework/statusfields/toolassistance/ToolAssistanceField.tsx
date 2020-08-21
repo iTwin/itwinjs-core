@@ -353,7 +353,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
     return (
       <>
-        <div ref={this._handleTargetRef} title={tooltip}>
+        <div ref={this._handleTargetRef}>
           <ToolAssistance
             icons={
               <>
@@ -365,6 +365,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
             style={this.props.style}
             isInFooterMode={this.props.isInFooterMode}
             onClick={this._handleToolAssistanceIndicatorClick}
+            title={tooltip}
           >
             {this.props.isInFooterMode ? prompt : undefined}
           </ToolAssistance>

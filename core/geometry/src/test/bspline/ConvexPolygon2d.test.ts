@@ -10,7 +10,7 @@ import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { ConvexPolygon2d, Ray2d } from "../../numerics/ConvexPolygon2d";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console no-trailing-whitespace */
+/* eslint-disable no-console, no-trailing-spaces */
 
 // Form rays from centroid to each point.
 // Compute points fractionally on the chord.
@@ -95,13 +95,11 @@ describe("ConvexPolygon2d", () => {
       const pointA = points[i];
       const pointB = points[(i + skip) % points.length];
       const rayAB = Ray2d.createOriginAndTarget(pointA, pointB);
-      let pointA1: Point2d;
-      let pointB1: Point2d;
       let range = hull.clipRay(rayAB);
       ck.testFalse(range.isNull, "Clip interior segment");
 
-      pointA1 = rayAB.fractionToPoint(range.low);
-      pointB1 = rayAB.fractionToPoint(range.high);
+      const pointA1: Point2d = rayAB.fractionToPoint(range.low);
+      const pointB1: Point2d = rayAB.fractionToPoint(range.high);
       const dAB = pointA.distance(pointB);
       const d1 = pointA1.distance(pointB1);
       ck.testCoordinate(dAB, d1, "Clipped chord length");

@@ -2,21 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
-import {
-  ColorDef, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+import { ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags } from "@bentley/imodeljs-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
   Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, Viewport, ViewRect,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
-import {
-  Color, comparePixelData, createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports,
-} from "../TestViewport";
+import { expect } from "chai";
+import { Color, comparePixelData, createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../TestViewport";
 
 describe("Test VAO creation", () => {
   before(async () => {
@@ -211,6 +207,69 @@ describe("Render mirukuru with single clip plane", () => {
           expect(isReddish(c) || isGreenish(c)).to.be.true;
         }
       }
+    });
+  });
+});
+
+
+describe("Render mirukuru with model appearance override applied", () => {
+  let imodel: IModelConnection;
+  before(async () => {
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+  });
+
+  after(async () => {
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
+  });
+
+  function isReddish(c: Color): boolean {
+    return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+  }
+
+  const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+  function expectCorrectColors(vp: TestViewport) {
+    const colors = vp.readUniqueColors();
+    expect(colors.length === 2);
+    expect(colors.contains(bgColor)).to.be.true; // black background
+    colors.forEach((color) => expect(color === bgColor || isReddish(color)));
+  }
+  function expectAlmostTransparent(vp: TestViewport) {
+    const colors = vp.readUniqueColors();
+    expect(colors.length === 2);
+    expect(colors.contains(bgColor)).to.be.true; // black background
+    colors.forEach((color) => expect(color.r < 20 && color.b < 20 && color.g < 20));
+  }
+
+  it("should render the model with color override applied", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      expect(vp.view.is3d());
+      const colorOverride = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xff, 0, 0) });
+
+      vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      expectCorrectColors(vp);
+    });
+  });
+  it("should render the model almost transparent", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      expect(vp.view.is3d());
+      const colorOverride = FeatureAppearance.fromJSON({ transparency: .95 });
+
+      vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      expectAlmostTransparent(vp);
     });
   });
 });
@@ -765,7 +824,7 @@ describe("Render mirukuru", () => {
       expect(pixels.length).to.equal(1);
 
       // Specify element is nonLocatable
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromJSON({ nonLocatable: true }));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromJSON({ nonLocatable: true }));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       pixels = vp.readUniquePixelData(undefined, true); // Exclude non-locatable elements
@@ -776,7 +835,7 @@ describe("Render mirukuru", () => {
       expect(pixels.containsElement(elemId)).to.be.true;
 
       // Specify element is drawn blue
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(ColorDef.blue));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.blue));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -784,7 +843,7 @@ describe("Render mirukuru", () => {
       expect(colors.contains(Color.fromRgba(0, 0, 0xff, 0xff))).to.be.true;
 
       // Specify default overrides
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ColorDef.red));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.red));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -793,8 +852,8 @@ describe("Render mirukuru", () => {
 
       // Specify default overrides, but also override element color
       ovrProvider.ovrFunc = (ovrs, _) => {
-        ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ColorDef.green));
-        ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(ColorDef.create(0x7f0000))); // blue = 0x7f...
+        ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.green));
+        ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.create(0x7f0000))); // blue = 0x7f...
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -804,7 +863,7 @@ describe("Render mirukuru", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.false;
 
       // Override by subcategory
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideSubCategory(subcatId, FeatureSymbology.Appearance.fromRgb(ColorDef.red));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideSubCategory(subcatId, FeatureAppearance.fromRgb(ColorDef.red));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -812,8 +871,8 @@ describe("Render mirukuru", () => {
 
       // Override color for element and subcategory - element wins
       ovrProvider.ovrFunc = (ovrs, _) => {
-        ovrs.overrideSubCategory(subcatId, FeatureSymbology.Appearance.fromRgb(ColorDef.blue));
-        ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(ColorDef.red));
+        ovrs.overrideSubCategory(subcatId, FeatureAppearance.fromRgb(ColorDef.blue));
+        ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.red));
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -821,7 +880,7 @@ describe("Render mirukuru", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
 
       // Override to be fully transparent - element should not draw at all
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromTransparency(1.0));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromTransparency(1.0));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -835,7 +894,7 @@ describe("Render mirukuru", () => {
       // Set bg color to red, elem color to 50% transparent blue => expect blending
       vp.view.displayStyle.backgroundColor = ColorDef.red;
       vp.invalidateRenderPlan();
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -877,11 +936,11 @@ describe("Render mirukuru", () => {
       await expectSurfaceColor(ColorDef.white);
 
       // Override System.createGraphicBranch to use an AppearanceProvider that always overrides color to red.
-      const overrideColor = (color: ColorDef) => () => FeatureSymbology.Appearance.fromRgb(color);
-      const appearanceProvider: FeatureSymbology.AppearanceProvider = { getFeatureAppearance: overrideColor(ColorDef.red) };
+      const overrideColor = (color: ColorDef) => () => FeatureAppearance.fromRgb(color);
+      const appearanceProvider: FeatureAppearanceProvider = { getFeatureAppearance: overrideColor(ColorDef.red) };
       const createGraphicBranch = IModelApp.renderSystem.createGraphicBranch;
       IModelApp.renderSystem.createGraphicBranch = (branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) => {
-        options = options ?? { };
+        options = options ?? {};
         return createGraphicBranch.call(IModelApp.renderSystem, branch, transform, { ...options, appearanceProvider });
       };
 
@@ -905,12 +964,12 @@ describe("Render mirukuru", () => {
       //  - If the child has no symbology overrides:
       //    - It uses its own AppearanceProvider, or its parents if it has none.
       //  - Otherwise, it uses its own AppearanceProvider, or none.
-      interface OvrAug { ovr?: ColorDef; aug?: ColorDef; }
+      interface OvrAug { ovr?: ColorDef, aug?: ColorDef }
       const testNestedBranch = async (parent: OvrAug | undefined, child: OvrAug | undefined, expected: ColorDef) => {
         const applyOvrs = (branch: GraphicBranch, ovraug?: OvrAug) => {
           if (ovraug?.ovr) {
             branch.symbologyOverrides = new FeatureSymbology.Overrides(vp);
-            branch.symbologyOverrides.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ovraug.ovr));
+            branch.symbologyOverrides.setDefaultOverrides(FeatureAppearance.fromRgb(ovraug.ovr));
           }
         };
 
@@ -923,7 +982,7 @@ describe("Render mirukuru", () => {
 
         // Nest the branch inside a parent branch.
         IModelApp.renderSystem.createGraphicBranch = (branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) => {
-          options = options ?? { };
+          options = options ?? {};
           const childOptions = getBranchOptions(options, child);
           applyOvrs(branch, child);
           const childBranch = createGraphicBranch.call(IModelApp.renderSystem, branch, transform, childOptions);
@@ -1411,7 +1470,7 @@ describe("White-on-white reversal", async () => {
     await test([white, blue], (vp, _vf) => {
       class ColorOverride {
         public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _viewport: Viewport): void {
-          ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ColorDef.blue));
+          ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.blue));
         }
       }
 

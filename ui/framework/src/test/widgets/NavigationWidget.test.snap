@@ -36,6 +36,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "_label": "",
       "_navigationAidId": "",
       "_onWidgetStateChanged": undefined,
+      "_preferredPanelSize": undefined,
       "_priority": 0,
       "_restoreTransientState": undefined,
       "_saveTransientState": undefined,

@@ -101,13 +101,14 @@ export class Logger {
 
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
   public static initializeToConsole(): void {
-    // tslint:disable:no-console
+    /* eslint-disable no-console */
     Logger.initialize(
       (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Error   |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
       (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Warning |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
       (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Info    |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
       (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Trace   |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
     );
+    /* eslint-enable no-console */
   }
 
   /** Register a metadata source to the logger.
@@ -387,7 +388,7 @@ export class PerfLogger implements IDisposable {
     Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},END`, () => {
       const mdata = this._metaData ? this._metaData() : {};
       return {
-        ...mdata, TimeElapsed: endTimeStamp - this._startTimeStamp,
+        ...mdata, TimeElapsed: endTimeStamp - this._startTimeStamp, // eslint-disable-line @typescript-eslint/naming-convention
       };
     });
   }
@@ -405,7 +406,7 @@ export class EnvMacroSubst {
   public static replace(str: string, defaultValues?: any): string {
     let startMacro;
     let startNext = 0;
-    // tslint:disable-next-line:no-conditional-assignment
+    // eslint-disable-next-line no-cond-assign
     while ((startMacro = str.indexOf("${", startNext)) !== -1) {
       const endMacro = str.indexOf("}", startMacro + 2);
       if (endMacro === -1) {

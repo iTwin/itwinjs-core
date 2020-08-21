@@ -19,4 +19,6 @@ export interface TreeActions {
   onNodeClicked: (nodeId: string, event: React.MouseEvent) => void;
   onNodeMouseDown: (nodeId: string) => void;
   onNodeMouseMove: (nodeId: string) => void;
+  onTreeKeyDown: (event: React.KeyboardEvent) => void;
+  onTreeKeyUp: (event: React.KeyboardEvent) => void;
 }

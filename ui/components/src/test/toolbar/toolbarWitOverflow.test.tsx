@@ -6,11 +6,12 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../ui-components/toolbar/ToolbarWithOverflow";
 import { Direction } from "../../ui-components/toolbar/utilities/Direction";
 import { createDOMRect } from "../Utils";
+import TestUtils from "../TestUtils";
 
 // cSpell:ignore testid
 
@@ -22,6 +23,14 @@ function createBubbledEvent(type: string, props = {}) {
 
 describe("<ToolbarWithOverflow />", () => {
   const sandbox = sinon.createSandbox();
+
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
 
   afterEach(() => {
     sandbox.restore();
@@ -46,7 +55,7 @@ describe("<ToolbarWithOverflow />", () => {
     });
 
     it("will render 6 items without overflow", () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -62,7 +71,7 @@ describe("<ToolbarWithOverflow />", () => {
     });
 
     it("will render 6 items without overflow - simulate horizontal toolbar at bottom right of window.", () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -78,7 +87,7 @@ describe("<ToolbarWithOverflow />", () => {
     });
 
     it("will render 3 items with overflow - simulate horizontal toolbar right of window.", () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 168 }); // 4*42 = 168
@@ -108,7 +117,7 @@ describe("<ToolbarWithOverflow />", () => {
     });
 
     it("will render with 3 items + overflow", () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 168 }); // 4*42 = 168
@@ -149,7 +158,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group6", 60, "icon-developer", "Group6", childItems, { isDisabled: true }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 168 }); // 4*42 = 168
@@ -183,7 +192,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("Entry5", 50, "icon-developer", "Entry5", (): void => { }, { groupPriority: 10 }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 300 }); // plenty of room not no need overflow
@@ -207,7 +216,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("Entry5", 50, "icon-developer", "Entry5", (): void => { }, { groupPriority: 10 }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 300 }); // plenty of room not no need overflow
@@ -231,7 +240,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("Entry5", 50, "icon-developer", "Entry5", (): void => { }, { groupPriority: 10 }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 300 }); // plenty of room not no need overflow
@@ -258,7 +267,7 @@ describe("<ToolbarWithOverflow />", () => {
     ];
 
     it("will render 6 items without overflow", () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ height: 252 }); // 6*42 = 252
@@ -273,7 +282,7 @@ describe("<ToolbarWithOverflow />", () => {
     });
 
     it("will render 6 items without overflow - simulate vertical bar in Navigation Area", () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ height: 252 }); // 6*42 = 252
@@ -288,7 +297,7 @@ describe("<ToolbarWithOverflow />", () => {
     });
 
     it("will render with 3 items + overflow", () => {
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ height: 168 }); // 4*42 = 168
@@ -311,7 +320,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", spy),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -345,7 +354,7 @@ describe("<ToolbarWithOverflow />", () => {
         getCustomDefWithPopupPanel(),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -367,7 +376,7 @@ describe("<ToolbarWithOverflow />", () => {
       // Also make sure the popup panel can inform user when key down is pressed
       const popupPanel = renderedComponent.queryByTestId("popup-panel");
       expect(popupPanel).not.to.be.null;
-      popupPanel!.dispatchEvent(createBubbledEvent("keydown", { keyCode: 27 /* <Esc> */ }));
+      popupPanel!.dispatchEvent(createBubbledEvent("keydown", { key: SpecialKey.Escape /* <Esc> */ }));
       onKeyDownSpy.calledOnce.should.true;
     });
 
@@ -387,7 +396,7 @@ describe("<ToolbarWithOverflow />", () => {
         getCustomDef(),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -415,7 +424,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools", badgeType: BadgeType.TechnicalPreview }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -490,7 +499,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -553,7 +562,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -604,7 +613,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -640,7 +649,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -700,7 +709,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group2", 10, "icon-developer", "Group2", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -743,7 +752,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("Entry6", 30, "icon-developer", "Entry6", (): void => { }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -774,7 +783,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -813,7 +822,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -850,7 +859,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -883,7 +892,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -912,7 +921,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -960,7 +969,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -1008,7 +1017,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -1056,7 +1065,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252
@@ -1137,7 +1146,7 @@ describe("<ToolbarWithOverflow />", () => {
       const actionButton = renderedComponent.queryByTitle("Entry1");
       expect(actionButton).not.to.be.null;
       fireEvent.click(actionButton!);
-      actionButton!.dispatchEvent(createBubbledEvent("keydown", { keyCode: 27 /* <Esc> */ }));
+      actionButton!.dispatchEvent(createBubbledEvent("keydown", { key: SpecialKey.Escape /* <Esc> */ }));
       onKeyDownSpy.calledOnce.should.true;
     });
 
@@ -1154,7 +1163,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
-      // tslint:disable-next-line: only-arrow-functions
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
           return createDOMRect({ width: 252 }); // 6*42 = 252

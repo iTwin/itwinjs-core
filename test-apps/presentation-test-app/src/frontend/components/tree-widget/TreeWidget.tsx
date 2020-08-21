@@ -11,7 +11,7 @@ interface Props {
   rulesetId: string;
 }
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const TreeWidget: React.FC<Props> = (props: Props) => {
   return <Tree imodel={props.imodel} rulesetId={props.rulesetId} />;
 };

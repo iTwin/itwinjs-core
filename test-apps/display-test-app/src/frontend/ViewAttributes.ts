@@ -247,17 +247,24 @@ export class ViewAttributes {
     this.addDisplayStylePicker();
     this.addRenderMode();
     this.addRenderingStyles();
-    this._element.appendChild(document.createElement("hr"));
+    const hr = document.createElement("hr");
+    hr.style.borderColor = "grey";
+    this._element.appendChild(hr);
 
     const flagsDiv = document.createElement("div");
-    createNestedMenu({
+    const vfMenu = createNestedMenu({
       id: this._nextId,
       label: "View Flags",
       parent: this._element,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
       expand: ViewAttributes._expandViewFlags,
-      handler: (expanded) => ViewAttributes._expandViewFlags = expanded,
+      handler: (expanded) => { ViewAttributes._expandViewFlags = expanded; vfMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
       body: flagsDiv,
+    });
+    (vfMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
+
+    this._updates.push((_view) => {
+      vfMenu.label.style.fontWeight = ViewAttributes._expandViewFlags ? "bold" : "500";
     });
 
     this._element.appendChild(flagsDiv);
@@ -277,6 +284,9 @@ export class ViewAttributes {
 
     this.addCameraToggle(flagsDiv);
     this.addMonochrome(flagsDiv);
+    const hr2 = document.createElement("hr");
+    hr2.style.borderColor = "grey";
+    flagsDiv.appendChild(hr2);
 
     this.addEnvironmentEditor();
     this.addBackgroundMapOrTerrain();
@@ -364,8 +374,10 @@ export class ViewAttributes {
       this.sync();
     }, parent);
     scaledCb.div.style.cssFloat = "right";
+    scaledCb.div.style.marginRight = "0.67em";
 
     this.addViewFlagAttribute(parent, "Monochrome", "monochrome");
+    colorInput.div.style.marginTop = "-4px";
 
     this._updates.push((view: ViewState) => {
       if (view.viewFlags.monochrome) {
@@ -453,7 +465,6 @@ export class ViewAttributes {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
 
     const div = document.createElement("div");
-    div.appendChild(document.createElement("hr")!);
 
     const backgroundSettingsDiv = document.createElement("div")!;
 
@@ -470,7 +481,9 @@ export class ViewAttributes {
       showOrHideSettings(enabled);
       this.sync();
     };
-    const checkbox = this.addCheckbox("Background Map", enableMap, div).checkbox;
+    const checkboxInterface = this.addCheckbox("Background Map", enableMap, div);
+    const checkbox = checkboxInterface.checkbox;
+    const checkboxLabel = checkboxInterface.label;
 
     const imageryProviders = createComboBox({
       parent: backgroundSettingsDiv,
@@ -519,7 +532,6 @@ export class ViewAttributes {
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
     const locatable = this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
     backgroundSettingsDiv.appendChild(document.createElement("hr")!);
-    backgroundSettingsDiv.appendChild(document.createElement("hr")!);
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
 
@@ -530,6 +542,7 @@ export class ViewAttributes {
         return;
 
       checkbox.checked = view.viewFlags.backgroundMap;
+      checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
 
       const map = this.getBackgroundMap(view);
@@ -545,6 +558,9 @@ export class ViewAttributes {
     });
 
     div.appendChild(backgroundSettingsDiv);
+    const hr = document.createElement("hr");
+    hr.style.borderColor = "grey";
+    div.appendChild(hr);
     this._element.appendChild(div);
   }
 
@@ -686,9 +702,11 @@ export class ViewAttributes {
       parent: this._element,
       expand: ViewAttributes._expandEdgeDisplay,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-      handler: (expanded) => ViewAttributes._expandEdgeDisplay = expanded,
+      handler: (expanded) => { ViewAttributes._expandEdgeDisplay = expanded; nestedMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
       body: edgeDisplayDiv,
     });
+    nestedMenu.label.style.fontWeight = "500";
+    (nestedMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
 
     const slider: Slider = createSlider({
       id: this._nextId,
@@ -727,6 +745,7 @@ export class ViewAttributes {
     edgeDisplayDiv.appendChild(hidEditor);
 
     this._updates.push((view) => {
+      nestedMenu.label.style.fontWeight = ViewAttributes._expandEdgeDisplay ? "bold" : "500";
       if (view.is2d()) {
         nestedMenu.div.hidden = true;
         return;
@@ -742,6 +761,9 @@ export class ViewAttributes {
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
+    const hr = document.createElement("hr");
+    hr.style.borderColor = "grey";
+    edgeDisplayDiv.appendChild(hr);
   }
 
   private addHiddenLineEditor(forHiddenEdges: boolean): HTMLDivElement {

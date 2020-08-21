@@ -21,7 +21,7 @@ const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
  * @internal
  */
 export class LocalhostHandler implements FileHandler {
-  public agent: https.Agent;
+  public agent?: https.Agent;
 
   /**
    * Download a file.

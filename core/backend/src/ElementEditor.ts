@@ -9,7 +9,7 @@
 import * as deepAssign from "deep-assign";
 import { BentleyError, DbOpcode, Id64, Id64Array, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { GeometryQuery, IModelJson, Point3d, Transform, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
-import { GeometricElement3dProps, GeometryStreamBuilder, Placement3d } from "@bentley/imodeljs-common";
+import { Editor3dRpcInterfaceWriteOptions, Editor3dRpcInterfaceWriteReturnType, GeometricElement3dProps, GeometryStreamBuilder, Placement3d } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { GeometricElement3d } from "./Element";
@@ -82,7 +82,7 @@ export class GeometricElement3dEditor implements IElementEditor {
   public async startModifyingElements(ctx: AuthorizedClientRequestContext, elementIds: Id64Array): Promise<void> {
     ctx.enter();
     const elements = elementIds.map((id: string) => ({ element: this.iModel.elements.getElement<GeometricElement3d>(id), opcode: DbOpcode.Update }));
-    if (this.iModel.isBriefcaseDb()) {
+    if (this.iModel.isBriefcaseDb() && !this.iModel.concurrencyControl.isBulkMode) {
       await this.iModel.concurrencyControl.requestResources(ctx, elements); // don't allow the tool to start editing this element until we have locked them and their models.
       ctx.enter();
     }
@@ -95,12 +95,13 @@ export class GeometricElement3dEditor implements IElementEditor {
    * A createGeometricElement3d class method may use the specified geometry as the element's geometry or only as a hint.
    * For example, a hypothetical "Pipe" class may expect `geometry` to contain two Point3d's that define the endpoints, while it expects `props` to contain a radius value.
    * If the class does not have a method called "createGeometricElement3d", then an instance is created by calling 'new' and then assigning it the supplied geometry (if any)
+   * @param ctx request context (used to request resources, such as model lock and code reservation)
    * @param props Element properties, excluding placement and geom. Must specify classFullName.
    * @param origin The placement origin
    * @param angles The placement angles
    * @param geometryJson Geometry that should be used by the element class to construct the new instance in serialized JSON format.
    */
-  public createElement(props: GeometricElement3dProps, origin?: Point3d, angles?: YawPitchRollAngles, geometryJson?: any) {
+  public async createElement(ctx: AuthorizedClientRequestContext, props: GeometricElement3dProps, origin?: Point3d, angles?: YawPitchRollAngles, geometryJson?: any) {
     if (undefined === props.classFullName)
       throw new BentleyError(IModelStatus.BadArg, "GeometricElement3dEditor.createElement - missing classFullName", Logger.logError, loggingCategory, () => ({ props }));
 
@@ -128,9 +129,15 @@ export class GeometricElement3dEditor implements IElementEditor {
     if (newElements === undefined)
       throw new BentleyError(IModelStatus.BadRequest);
 
+    if (this.iModel.isBriefcaseDb() && !this.iModel.concurrencyControl.isBulkMode) {
+      await this.iModel.concurrencyControl.requestResourcesForInsert(ctx, newElements); // lock the target model and reserve codes.
+      ctx.enter();
+    }
+
     newElements.forEach((element) => this._targets.push({ element }));
   }
 
+  /** Apply the specified transform to all elements in the queue. */
   public applyTransform(tprops: TransformProps) {
     const transform = Transform.fromJSON(tprops);
     this._targets.forEach((target) => {
@@ -140,10 +147,28 @@ export class GeometricElement3dEditor implements IElementEditor {
     });
   }
 
-  public writeAllChangesToBriefcase() {
+  /** Write all elements in the queue to the briefcase. That is, update modified elements and insert new ones. */
+  public writeAllChangesToBriefcase(opts?: Editor3dRpcInterfaceWriteOptions): GeometricElement3dProps[] | Id64Array | void {
     this._targets.forEach((t) => this.writeChangesToBriefcase(t));
+
+    let retval: GeometricElement3dProps[] | Id64Array | undefined;
+    switch (opts?.returnType) {
+      case Editor3dRpcInterfaceWriteReturnType.Ids:
+        retval = this._targets.map((t) => t.element.id!);
+        break;
+      case Editor3dRpcInterfaceWriteReturnType.Props:
+        retval = this._targets.map((t) => {
+          if (!opts.returnPropsOptions?.geometry)
+            t.element.geom = undefined;
+          return t.element;
+        });
+        break;
+    }
+
     this._targets.length = 0;
     this._stateStack.length = 0;
+
+    return retval;
   }
 
   public pushState() {
@@ -161,7 +186,7 @@ export class GeometricElement3dEditor implements IElementEditor {
 }
 
 /** @internal */
-export namespace GeometricElement3dEditor {
+export namespace GeometricElement3dEditor { // eslint-disable-line no-redeclare
 
   /** @internal */
   export class Target {

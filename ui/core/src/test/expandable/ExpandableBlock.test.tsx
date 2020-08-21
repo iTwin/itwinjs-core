@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { ExpandableBlock } from "../../ui-core";
 import TestUtils from "../TestUtils";
 
@@ -60,7 +61,7 @@ describe("ExpandableBlock", () => {
         <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()} onKeyPress={spyMethod}>
           <div>Hello</div>
         </ExpandableBlock>);
-      wrapper.find(".header").simulate("keypress", { keyCode: 40 /* <Down> */ });
+      wrapper.find(".header").simulate("keypress", { key: SpecialKey.ArrowDown /* <Down> */ });
       spyMethod.calledOnce.should.true;
       wrapper.unmount();
     });

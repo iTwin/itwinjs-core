@@ -18,4 +18,4 @@ function getModule(mod: any) {
 }
 
 /** @internal */
-export const ResizeObserver: ResizeObserverType = getModule(ResizeObserverPolyfill); // tslint:disable-line: variable-name
+export const ResizeObserver: ResizeObserverType = getModule(ResizeObserverPolyfill); // eslint-disable-line @typescript-eslint/naming-convention

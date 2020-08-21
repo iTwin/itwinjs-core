@@ -31,7 +31,7 @@ interface ColorEditorState {
  * @beta
  */
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
-  private _control: any | null = null;
+  private _buttonElement: React.RefObject<HTMLButtonElement> = React.createRef();
 
   /** @internal */
   public readonly state: Readonly<ColorEditorState> = {
@@ -59,8 +59,8 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
   private setFocus(): void {
     // istanbul ignore else
-    if (this._control && !this.state.isDisabled) {
-      this._control.setFocus();
+    if (this._buttonElement && this._buttonElement.current && !this.state.isDisabled) {
+      this._buttonElement.current.focus();
     }
   }
 
@@ -83,13 +83,13 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
   /** @internal */
   public componentDidMount() {
-    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
-      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+      this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
@@ -133,8 +133,8 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     const colorDef = ColorDef.create(this.state.colorValue);
     return (
       <div className={classnames("components-color-editor", this.props.className)} style={this.props.style}>
-        <ColorPickerButton ref={(control) => this._control = control}
-          activeColor={colorDef}
+        <ColorPickerButton ref={this._buttonElement}
+          initialColor={colorDef}
           colorDefs={this.state.availableColors.length > 0 ? this.state.availableColors : [colorDef]}
           numColumns={this.state.numColumns}
           disabled={this.state.isDisabled ? true : false}

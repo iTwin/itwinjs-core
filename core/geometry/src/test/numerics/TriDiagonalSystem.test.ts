@@ -8,7 +8,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { TriDiagonalSystem } from "../../numerics/TriDiagonalSystem";
 import { Checker } from "../Checker";
 
-/* tslint:disable:variable-name no-console*/
+/* eslint-disable @typescript-eslint/naming-convention, no-console */
 
 class TestFixture {
   public ck: Checker;
@@ -31,7 +31,6 @@ class TestFixture {
   // Setup Methods --------------------------------------------------------------------
   public testOrder3() {
     const A = new TriDiagonalSystem(3);
-    let B: TriDiagonalSystem;
 
     A.setRow(0, 1, 2, 1);
     A.setRow(1, 1, 2, 1);
@@ -46,7 +45,7 @@ class TestFixture {
       console.log(A);
 
     }
-    B = A.copy();
+    const B: TriDiagonalSystem = A.copy();
     this.ck.testTrue(A.factorAndBackSubstitute(), "FactorAndBackSubstitute");
     this.ck.testTrue(A.factor(), "repeat factor");
     if (Checker.noisy.tridiagonalSolver) {
@@ -125,7 +124,7 @@ class TestFixture {
   }
   public testOrder4() {
     const A = new TriDiagonalSystem(4);
-    let B: TriDiagonalSystem;
+
     A.setRow(0, 0, -3.2, 0.3);
     A.setRow(1, 1.1, -3.4, 0.78);
     A.setRow(2, 0.3, -3.1, 0.98);
@@ -134,7 +133,7 @@ class TestFixture {
       A.setX(i, (1 + i * i));
     }
     A.multiplyAX();
-    B = A.copy();
+    const B: TriDiagonalSystem = A.copy();
     if (Checker.noisy.tridiagonalSolver) {
       console.log("A, X, AX");
       console.log(A.flatten());
@@ -156,7 +155,7 @@ class TestFixture {
     // Larger system.   Diagonals between 3 and 4, off diagonals between 0 and 2
     const n = 20;
     const A = new TriDiagonalSystem(n);
-    let B: TriDiagonalSystem;
+
     const noisy = 0;
     A.setRow(0, 0, 4, 0.4);
     for (let i = 1; i < (n - 1); i++) {
@@ -169,7 +168,7 @@ class TestFixture {
       A.setX(i, i + 1);
     }
     A.multiplyAX();
-    B = A.copy();
+    const B: TriDiagonalSystem = A.copy();
 
     if (noisy) {
       console.log("A, X, AX");

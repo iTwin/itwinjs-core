@@ -99,7 +99,7 @@ describe("IModelViewportControl", () => {
 
           topRight={
             <Zone widgets={[
-              <Widget isFreeform={true} element={<NavigationWidget />} />, // tslint:disable-line:deprecation
+              <Widget isFreeform={true} element={<NavigationWidget />} />, // eslint-disable-line deprecation/deprecation, react/jsx-key
             ]} />
           }
         />

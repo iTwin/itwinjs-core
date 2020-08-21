@@ -16,7 +16,7 @@ import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;
 
-// tslint:disable-next-line:no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 (global as any).btoa = (str: string) => {
   const buffer = Buffer.from(str, "binary");
   return buffer.toString("base64");
@@ -285,8 +285,6 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
   });
 
   it("IModelReadRpcInterface method getIModelCoordinatesFromGeoCoordinates should work as expected", async () => {
-    let wgs84Response: IModelCoordinatesResponseProps;
-
     const wgs84Converter = iModel.geoServices.getConverter("WGS84");
     const nad27Converter = iModel.geoServices.getConverter("NAD27");
 
@@ -302,7 +300,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     for (let iGeoPoint: number = 1; iGeoPoint < geoPointList.length; iGeoPoint += 2)
       testPoints.push(geoPointList[iGeoPoint]);
 
-    wgs84Response = await wgs84Converter!.getIModelCoordinatesFromGeoCoordinates(testPoints);
+    const wgs84Response: IModelCoordinatesResponseProps = await wgs84Converter!.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
     expect(wgs84Response.fromCache === 0).to.be.true;

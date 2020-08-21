@@ -40,4 +40,13 @@
   &.nz-safe-area-left {
     @include nz-safe-area-left;
   }
+
+  &:hover {
+    background: $nz-backstage-item-hover-background;
+    color: $nz-backstage-item-color;
+  }
+
+  &:focus {
+    outline: none;
+  }
 }

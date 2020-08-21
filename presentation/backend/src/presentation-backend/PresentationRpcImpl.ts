@@ -95,7 +95,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       return this.errorResponse((e as PresentationError).errorNumber, (e as PresentationError).message);
     }
 
-    const { clientId, ...options } = requestOptions;
+    const { clientId, ...options } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
     const resultPromise = request({ ...options, imodel, requestContext })
       .then((result: TResult) => this.successResponse(result))
       .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message));
@@ -171,7 +171,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, "loadHierarchy", requestOptions, async (options) => {
       const manager = this.getManager(requestOptions.clientId);
       // note: we intentionally don't await here - don't want frontend waiting for this task to complete
-      // tslint:disable-next-line:no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       manager.loadHierarchy(options)
         .catch((e) => Logger.logWarning(PresentationBackendLoggerCategory.PresentationManager, `Error loading '${manager.getRulesetId(requestOptions.rulesetOrId)}' hierarchy: ${e}`));
     });
@@ -336,6 +336,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
 
   public async compareHierarchies(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> {
     return this.makeRequest(token, "compareHierarchies", requestOptions, async (options) => {
+      options = {
+        ...options,
+        ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
+      };
       const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
       return result.map(PartialHierarchyModification.toJSON);
     });

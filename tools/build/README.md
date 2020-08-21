@@ -81,7 +81,7 @@ This is a script designed to extract sample code from test.ts files in a specifi
 
 This script runs the javascript output of Mocha tests with a few standard parameters. The output (success/failure) of the tests will be written to the console.
 
-- packageRoot - the root directory of the package in which the Mocha executable should be located. Really only needed for multi-package repository.
+- packageRoot - the root directory of the package in which the Mocha executable should be located. Really only needed for multi-package repositories.
 - testDir - the path to the javascript test output
 - watch - adds the "--watch" and "--inline-diffs" parameters to the Mocha command
 - debug - adds the "--inspect=9229" and "--debug-brk" parameters to the Mocha command (for debugging with VS Code)
@@ -91,7 +91,7 @@ This script runs the javascript output of Mocha tests with a few standard parame
 This script is similar to the test.js command, but looks for the TypeScript test source in order to run it using ts-node. The arguments for this command are similar to the test command, with the following differences:
 
 - testDir - specifies the test TypeScript source folder (instead of the test JavaScript output folder)
-- tscPaths - adds the --require tsconfig-paths/register arguments to the mocha command, in order to resolve paths in the typescript source files to run them with ts-node (needed for multi-package repository like imodeljs-core)
+- tscPaths - adds the --require tsconfig-paths/register arguments to the mocha command, in order to resolve paths in the typescript source files to run them with ts-node (needed for multi-package repositories like imodeljs-core)
 
 #### pseudolocalize.js
 

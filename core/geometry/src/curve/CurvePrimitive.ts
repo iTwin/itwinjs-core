@@ -114,6 +114,19 @@ export abstract class CurvePrimitive extends GeometryQuery {
     ray.trySetDirectionMagnitudeInPlace(1.0);
     return ray;
   }
+  /**
+   * Returns the (absolute) curvature magnitude.
+   * * Base implementation in CurvePrimitive computes curvature from the first and second derivative vectors.
+   * @param fraction fractional position on the curve
+   */
+  public fractionToCurvature(fraction: number): number | undefined {
+    const data = this.fractionToPointAnd2Derivatives(fraction)!;
+    const cross = data.vectorU.crossProduct(data.vectorV);
+    const a = cross.magnitude();
+    const b = data.vectorU.magnitude();
+    return Geometry.conditionalDivideFraction(a, b * b * b);
+  }
+
   /** Return a plane with
    *
    * * origin at fractional position along the curve

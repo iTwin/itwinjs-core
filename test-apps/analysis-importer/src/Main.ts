@@ -8,7 +8,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { AnalysisImporter } from "./AnalysisImporter";
 
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
   Logger.initializeToConsole();
 
@@ -21,4 +21,4 @@ import { AnalysisImporter } from "./AnalysisImporter";
   importer.import();
 
   await IModelHost.shutdown();
-})(); // tslint:disable-line:no-floating-promises
+})();

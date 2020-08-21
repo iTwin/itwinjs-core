@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
@@ -21,6 +20,8 @@ import { PageOptions } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
+
+/* eslint-disable @typescript-eslint/promise-function-async */
 
 describe("TreeDataProvider", () => {
 
@@ -161,6 +162,7 @@ describe("TreeDataProvider", () => {
       const override = sinon.mock().resolves(0);
       provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodesCount: override } });
       await provider.getNodesCount(undefined);
+      // eslint-disable-next-line deprecation/deprecation
       presentationManagerMock.verify((x) => x.getNodesCount(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
     });

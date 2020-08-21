@@ -1,6 +1,10 @@
 sep=;
 Release Tag;API Item
+beta;addApplicationVersion(version: string): HttpRequestOptionsTransformer
+beta;addCsrfHeader(headerName?: string, cookieName?: string): HttpRequestOptionsTransformer
+beta;addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer
 internal;addSelectApplicationData(query: RequestQueryOptions): void
+internal;addSelectBCVAccessKey(query: RequestQueryOptions): void
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
 internal;AggregateResponseError 
 alpha;AllCodesDeletedEvent 
@@ -50,6 +54,7 @@ internal;GlobalEventSAS
 internal;GlobalEventSubscription 
 internal;GlobalEventSubscriptionHandler
 internal;HardiModelDeleteEvent 
+beta;HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void
 alpha;HubCode 
 beta;HubIModel 
 alpha;HubUserInfo 

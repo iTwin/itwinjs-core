@@ -7,6 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 
 import { cleanup, fireEvent, render } from "@testing-library/react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { Listbox, ListboxItem, ListboxValue } from "../../ui-core/listbox/Listbox";
 
 describe("<ListBox />", () => {
@@ -145,7 +146,7 @@ describe("<ListBox />", () => {
     expect(focusedItem!.getAttribute("data-value")).to.eq(listItems[2]);
 
     // set list box selection using space key
-    fireEvent.keyDown(listBoxElement!, { keyCode: 32 });
+    fireEvent.keyDown(listBoxElement!, { key: SpecialKey.Space });
     // ensure list box value is set to match
     expect(listBoxElement!.getAttribute("data-value")).to.eq(listItems[2]);
 
@@ -212,7 +213,7 @@ describe("<ListBox />", () => {
     expect(focusedItem!.getAttribute("data-value")).to.eq(listItems[5]);
 
     // set list box selection using space key
-    fireEvent.keyDown(listBoxElement!, { keyCode: 32 });
+    fireEvent.keyDown(listBoxElement!, { key: SpecialKey.Space });
     // ensure list box value is set to match
     expect(listBoxElement!.getAttribute("data-value")).to.eq(listItems[5]);
 
@@ -275,12 +276,12 @@ describe("<ListBox />", () => {
 
     // hitting spacebar below should trigger onListboxValueChange
     expect(onListboxValueChangeCalled).to.be.false;
-    fireEvent.keyDown(listBoxElement!, { keyCode: 32 });
+    fireEvent.keyDown(listBoxElement!, { key: SpecialKey.Space });
     expect(onListboxValueChangeCalled).to.be.true;
     expect(spyOnKeyboard.notCalled);
     spyOnKeyboard.resetHistory();
 
-    fireEvent.keyDown(listBoxElement!, { key: "Enter" });
+    fireEvent.keyDown(listBoxElement!, { key: SpecialKey.Enter });
     expect(spyOnKeyboard.calledOnce);
     spyOnKeyboard.resetHistory();
 

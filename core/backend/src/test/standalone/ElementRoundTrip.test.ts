@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, Cone, Point2d, Point3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@bentley/geometry-core";
 import {
   Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import { BackendRequestContext, BriefcaseIdValue, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 interface IPrimitiveBase {
   i?: number;

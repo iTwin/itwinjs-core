@@ -124,7 +124,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     if (this._client === undefined)
       await this.initialize();
 
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     // console.log(`Starting OIDC signin for ${this._user.email} ...`);
 
     const [authParams, callbackChecks] = this.createAuthParams(this._config.scope);
@@ -164,7 +164,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     await page.close();
     await browser.close();
 
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     // console.log(`Finished OIDC signin for ${this._user.email} ...`);
 
     const token = await this.tokenSetToAccessToken(tokenSet);

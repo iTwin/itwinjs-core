@@ -25,7 +25,7 @@ export interface ToolbarPopupContextProps {
  * Context used by Toolbar items in popups to close the popup panel.
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ToolbarPopupContext = React.createContext<ToolbarPopupContextProps>({
   closePanel: /* istanbul ignore next */ () => { },
   setSelectedItem: /* istanbul ignore next */  (_buttonItem: ActionButton) => { },

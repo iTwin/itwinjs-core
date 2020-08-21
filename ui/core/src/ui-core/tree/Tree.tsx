@@ -20,6 +20,8 @@ export interface TreeProps extends CommonProps {
   onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
   onMouseMove?: React.MouseEventHandler<HTMLDivElement>;
   onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
+  onKeyUp?: React.KeyboardEventHandler<HTMLDivElement>;
 }
 
 /** Presentation React component for a Tree
@@ -51,7 +53,7 @@ export class Tree extends React.PureComponent<TreeProps> {
       return;
 
     // istanbul ignore next
-    if (!Element.prototype.scrollTo) {
+    if (!Element.prototype.scrollTo) { // eslint-disable-line @typescript-eslint/unbound-method
       // workaround for Edge scrollTo issue https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/15534521/
       element.scrollIntoView();
       return;
@@ -108,6 +110,10 @@ export class Tree extends React.PureComponent<TreeProps> {
         onMouseDown={this.props.onMouseDown}
         onMouseMove={this.props.onMouseMove}
         onMouseUp={this.props.onMouseUp}
+        onKeyDown={this.props.onKeyDown}
+        onKeyUp={this.props.onKeyUp}
+        role="tree"
+        tabIndex={-1}
       >
         {this.props.children}
       </div>

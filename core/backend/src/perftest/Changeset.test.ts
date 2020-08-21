@@ -17,8 +17,9 @@ import { HubUtility } from "../test/integration/HubUtility";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { RevisionUtility } from "../test/RevisionUtility";
 import { PerfTestUtility } from "./PerfTestUtils";
-import { Arc3d, Point3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
@@ -136,7 +137,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
 
   // get the time to push a data change of an imodel to imodel hub
   const startTime1 = new Date().getTime();
-  await rwIModel.pushChanges(requestContext, "test change").catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch(() => { });
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   reporter.addEntry("ImodelChangesetPerformance", "PushDataChangeToHub", "Execution time(s)", elapsedTime1, { Description: "data changes to hub", Operation: "Push" });
@@ -159,7 +160,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   // import schema and push change to hub
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-  await rwIModel.importSchemas(requestContext, [schemaPathname]).catch();
+  await rwIModel.importSchemas(requestContext, [schemaPathname]).catch(() => { });
   assert.isDefined(rwIModel.getMetaData("PerfTestDomain:" + "PerfElement"), "PerfElement" + "is present in iModel.");
   await rwIModel.concurrencyControl.request(requestContext);
   rwIModel.saveChanges("schema change pushed");
@@ -207,7 +208,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
-  await rwIModel.pushChanges(requestContext, "test change").catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch(() => { });
   const firstCount = getElementCount(rwIModel);
   assert.equal(firstCount, 7);
 
@@ -217,7 +218,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
     i = i + 1;
   }
   rwIModel.saveChanges("added more elements to imodel");
-  await rwIModel.pushChanges(requestContext, "test change").catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch(() => { });
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
@@ -252,7 +253,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
-  await rwIModel.pushChanges(requestContext, "test change").catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch(() => { });
   const firstCount = getElementCount(rwIModel);
   assert.equal(firstCount, 7);
 
@@ -262,7 +263,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
     i = i + 1;
   }
   rwIModel.saveChanges("added more elements to imodel");
-  await rwIModel.pushChanges(requestContext, "test change").catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch(() => { });
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
@@ -294,7 +295,7 @@ describe("ImodelChangesetPerformance", () => {
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-    const configData = require(path.join(__dirname, "CSPerfConfig.json"));
+    const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     projectId = configData.basicTest.projectId;
     imodelId = configData.basicTest.imodelId;
     imodelPushId = configData.basicTest.imodelPushId;
@@ -310,38 +311,38 @@ describe("ImodelChangesetPerformance", () => {
   });
 
   it("GetImodel", async () => {
-    await getIModelAfterApplyingCS(requestContext, reporter, projectId, imodelId, client).catch();
+    await getIModelAfterApplyingCS(requestContext, reporter, projectId, imodelId, client).catch(() => { });
   });
 
   it("PushMetaChangeToHub", async () => {
-    await pushIModelAfterMetaChanges(requestContext, reporter, projectId, imodelPushId).catch();
+    await pushIModelAfterMetaChanges(requestContext, reporter, projectId, imodelPushId).catch(() => { });
   });
 
   it("PushDataChangeToHub", async () => {
-    await pushIModelAfterDataChanges(requestContext, reporter, projectId).catch();
+    await pushIModelAfterDataChanges(requestContext, reporter, projectId).catch(() => { });
   });
 
   it("PushSchemaChangeToHub", async () => {
-    await pushIModelAfterSchemaChanges(requestContext, reporter, projectId).catch();
+    await pushIModelAfterSchemaChanges(requestContext, reporter, projectId).catch(() => { });
   });
 
   it("ExecuteQuery", async () => {
-    await executeQueryTime(requestContext, reporter, projectId, imodelId).catch();
+    await executeQueryTime(requestContext, reporter, projectId, imodelId).catch(() => { });
   });
 
   it("ReverseChanges", async () => {
-    await reverseChanges(requestContext, reporter, projectId).catch();
+    await reverseChanges(requestContext, reporter, projectId).catch(() => { });
   });
 
   it("ReinstateChanges", async () => {
-    await reinstateChanges(requestContext, reporter, projectId).catch();
+    await reinstateChanges(requestContext, reporter, projectId).catch(() => { });
   });
 
 });
 
 describe("ImodelChangesetPerformance big datasets", () => {
   let iModelRootDir: string;
-  const configData = require(path.join(__dirname, "CSPerfConfig.json"));
+  const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSLocalPerf.csv");
 
   before(async () => {
@@ -519,7 +520,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
           }
         }
         if (apply) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log("For iModel: " + ds.modelName + ": Applying changeset: " + (j + 1).toString() + " / " + endNum.toString());
           requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
           const startTime = new Date().getTime();
@@ -598,7 +599,7 @@ describe("ImodelChangesetPerformance own data", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ChangesetPerfOwn");
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSPerfOwnData.csv");
   const reporter = new Reporter();
-  const configData = require(path.join(__dirname, "CSPerfConfig.json"));
+  const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
   const dbSize: number = configData.ownDataTest.dbSize;
   const iModelNameBase: string = `CS_Lg3d_PElSub3_${dbSize}_`;
   const opSizes: number[] = configData.ownDataTest.opSizes;
@@ -657,7 +658,7 @@ describe("ImodelChangesetPerformance own data", () => {
         const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
         if (iModels.length === 0) {
           // create iModel and push changesets 1) with schema 2) with 1M records of PerfElementSub3 3) insert of opSize for actual testing
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`iModel ${iModelName} does not exist on iModelHub. Creating with changesets...`);
           const imodelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
           const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.PullAndPush, IModelVersion.latest());
@@ -667,7 +668,7 @@ describe("ImodelChangesetPerformance own data", () => {
           IModelJsFs.writeFileSync(schemaPathname, sxml);
 
           iModelDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-          await iModelDb.importSchemas(requestContext, [schemaPathname]).catch();
+          await iModelDb.importSchemas(requestContext, [schemaPathname]).catch(() => { });
           assert.isDefined(iModelDb.getMetaData(`${schemaName}:${baseClassName}`), `${baseClassName} is not present in iModel.`);
           await iModelDb.concurrencyControl.request(requestContext);
           iModelDb.saveChanges("schema changes");
@@ -764,7 +765,7 @@ describe("ImodelChangesetPerformance own data", () => {
 
           iModelDb.close();
         } else {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`iModel ${iModelName} exists on iModelHub`);
         }
       }
@@ -776,7 +777,7 @@ describe("ImodelChangesetPerformance own data", () => {
       const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`Downloading iModel ${iModelName} from iModelHub.`);
         const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_insert.bim");
         await setupLocalIModel(projectId, iModel.id!, iModelPathname);
@@ -785,7 +786,7 @@ describe("ImodelChangesetPerformance own data", () => {
         const csToken = await lastChangesetToken(iModel.id!);
         const tempChangeSets = [csToken];
         const applyOption = ChangeSetApplyOption.Merge;
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`Applying Insert changeset to iModel ${iModelName}.`);
         requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
         const startTime = new Date().getTime();
@@ -810,7 +811,7 @@ describe("ImodelChangesetPerformance own data", () => {
       const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`Downloading iModel ${iModelName} from iModelHub.`);
         const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_delete.bim");
         await setupLocalIModel(projectId, iModel.id!, iModelPathname);
@@ -819,7 +820,7 @@ describe("ImodelChangesetPerformance own data", () => {
         const csToken = await lastChangesetToken(iModel.id!);
         const tempChangeSets = [csToken];
         const applyOption = ChangeSetApplyOption.Merge;
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`Applying Delete changeset to iModel ${iModelName}.`);
         const startTime = new Date().getTime();
         const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(saIModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
@@ -843,7 +844,7 @@ describe("ImodelChangesetPerformance own data", () => {
       const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`Downloading iModel ${iModelName} from iModelHub.`);
         const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_update.bim");
         await setupLocalIModel(projectId, iModel.id!, iModelPathname);
@@ -852,7 +853,7 @@ describe("ImodelChangesetPerformance own data", () => {
         const csToken = await lastChangesetToken(iModel.id!);
         const tempChangeSets = [csToken];
         const applyOption = ChangeSetApplyOption.Merge;
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`Applying Update changeset to iModel ${iModelName}.`);
         const startTime = new Date().getTime();
         const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(saIModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);

@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-// tslint:disable: no-direct-imports
 import * as React from "react";
 import * as sinon from "sinon";
 import { BeEvent, BeUiEvent, Id64String } from "@bentley/bentleyjs-core";
@@ -11,9 +10,8 @@ import { IModelConnection, SpatialViewState, SubCategoriesCache, ViewManager, Vi
 import { ECInstancesNodeKey, KeySet, LabelDefinition, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import {
-  Presentation, PresentationManager, RulesetManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager,
-} from "@bentley/presentation-frontend";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
@@ -39,9 +37,7 @@ describe("CategoryTreeWithSearchBox", () => {
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
-  const rulesetVariablesMock = moq.Mock.ofType<RulesetVariablesManager>();
+  let presentationManagerMock: moq.IMock<PresentationManager>;
   const viewportMock = moq.Mock.ofType<Viewport>();
   const viewStateMock = moq.Mock.ofType<SpatialViewState>();
   const viewManagerMock = moq.Mock.ofType<ViewManager>();
@@ -53,9 +49,6 @@ describe("CategoryTreeWithSearchBox", () => {
     viewManagerMock.reset();
     imodelMock.reset();
     selectionManagerMock.reset();
-    presentationManagerMock.reset();
-    rulesetManagerMock.reset();
-    rulesetVariablesMock.reset();
     viewportMock.reset();
     viewStateMock.reset();
 
@@ -64,9 +57,8 @@ describe("CategoryTreeWithSearchBox", () => {
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
     Presentation.setSelectionManager(selectionManagerMock.object);
-    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
-    presentationManagerMock.setup((x) => x.vars(moq.It.isAny())).returns(() => rulesetVariablesMock.object);
-    presentationManagerMock.setup((x) => x.onHierarchyUpdate).returns(() => new BeEvent());
+
+    presentationManagerMock = mockPresentationManager().presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
 
     async function* generator() {
@@ -126,7 +118,7 @@ describe("CategoryTreeWithSearchBox", () => {
     it("should match snapshot", async () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const result = render(
-        <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+        <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
@@ -138,7 +130,7 @@ describe("CategoryTreeWithSearchBox", () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const showAll = new BeUiEvent<void>();
       const result = render(
-        <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+        <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showAll={showAll}
         />,
       );
@@ -153,7 +145,7 @@ describe("CategoryTreeWithSearchBox", () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const hideAll = new BeUiEvent<void>();
       const result = render(
-        <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+        <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} hideAll={hideAll}
         />,
       );
@@ -189,7 +181,7 @@ describe("CategoryTreeWithSearchBox", () => {
 
       it("filters tree", async () => {
         const result = render(
-          <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+          <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true}
           />,
         );
@@ -201,7 +193,7 @@ describe("CategoryTreeWithSearchBox", () => {
       it("enables all filtered categories", async () => {
         const showAll = new BeUiEvent<void>();
         const result = render(
-          <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
+          <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true} showAll={showAll}
           />,
         );

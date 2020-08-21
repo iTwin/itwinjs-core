@@ -105,7 +105,7 @@ export class KeyinField {
     }
 
     if (undefined !== props.historyLength && props.historyLength > 0) {
-      this.textBox.textbox.onkeydown = (ev) => this.handleKeyDown(ev);
+      this.textBox.textbox.onkeydown = (ev) => this.handleKeyDown(ev); // eslint-disable-line @typescript-eslint/promise-function-async
       this._historyLength = props.historyLength;
       this._history = [];
     }

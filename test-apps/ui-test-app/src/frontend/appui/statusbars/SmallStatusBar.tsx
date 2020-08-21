@@ -15,15 +15,15 @@ export class SmallStatusBarWidgetControl extends StatusBarWidgetControl {
   private _statusBarItems: StatusBarItem[] | undefined;
 
   private get statusBarItems(): StatusBarItem[] {
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const SnapMode = withMessageCenterFieldProps(SnapModeField);
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const ActivityCenter = withStatusFieldProps(ActivityCenterField);
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const FooterMode = withStatusFieldProps(FooterModeField);
 
     if (!this._statusBarItems) {

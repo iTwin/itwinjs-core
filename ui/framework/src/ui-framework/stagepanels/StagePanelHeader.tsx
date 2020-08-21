@@ -14,6 +14,8 @@ import { CommonProps } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StagePanelState } from "./StagePanelDef";
 
+// cspell:ignore stagepanelheader
+
 /** Properties of a [[StagePanelHeader]] component
  * @alpha
  */
@@ -42,11 +44,17 @@ export class StagePanelHeader extends React.PureComponent<StagePanelHeaderProps>
         style={this.props.style}
       >
         <span>{this.props.title}</span>
-        {this.props.collapseButton ? <i
-          className="uifw-collapse icon icon-close"
-          title={this.props.collapseButtonTitle}
-          onClick={this._handleCollapseButtonClick}
-        /> : undefined}
+        {this.props.collapseButton ?
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+          <i
+            className="uifw-collapse icon icon-close"
+            title={this.props.collapseButtonTitle}
+            onClick={this._handleCollapseButtonClick}
+            role="button"
+            tabIndex={-1}
+          /> :
+          undefined
+        }
       </div>
     );
   }

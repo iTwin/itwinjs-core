@@ -13,6 +13,7 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
 import { Geometry } from "../../Geometry";
+import { LineString3d } from "../LineString3d";
 /**
  * This is the set of valid type names for "integrated" spirals
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -24,25 +25,23 @@ import { Geometry } from "../../Geometry";
  *   * cosine: half of a cosine wave, centered around 0.5
  *   * sine: full period of a sine wave added to the line f(u)=u
  * *
- * @beta
+ * @public
  */
-export type IntegratedSpiralTypeName = "clothoid"
-  | "bloss"
-  | "biquadratic"
-  | "cosine"
-  | "sine"
-  ;
+export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine";
 
 /**
  * This is the set of valid type names for "direct" spirals.
  * "Direct" spirals can evaluate fractionToPoint by direct equations, i.e. not requiring the numeric integrations in "Integrated" spiral types.
- * @beta
+ * @public
  */
 export type DirectSpiralTypeName = "Arema"
   | "JapaneseCubic"  // 1 term from each of the X,Y clothoid series expansions:  y = x^3 / (6RL)
   | "Arema"       // 2 terms from each of the X,Y clothoid series expansions.  Identical to ChineseCubic!
   | "ChineseCubic"  // Identical to Arema!
-  | "HalfCosine"  //
+  | "HalfCosine"  // high continuity cosine variation from quadratic.
+  | "AustralianRailCorp" // cubic with high accuracy distance series
+  | "WesterAustralian"  // simple cubic
+  | "Czech"  // simple cubic with two term distance approximation
   ;
 
 /**
@@ -53,7 +52,10 @@ export type DirectSpiralTypeName = "Arema"
  *   * DirectSpiral3d -- a spiral implemented with direct calculation of x,y from fractional position along the spiral.
  *     * The direct spiral types are enumerated in the `DirectSpiralType`
  * * The method set for CurvePrimitive support includes a `handleTransitionSpiral(g: TransitionSpiral3d)` which receives all the spiral types.
- * @beta
+ * * The spiral class may impose expectations that its inflection is at the origin, with tangent along the x axis.
+ *   * This is generally necessary for direct spirals.
+ *   * This is not necessary for integrated spirals.
+ * @public
  */
 export abstract class TransitionSpiral3d extends CurvePrimitive {
   /** string name of spiral type */
@@ -65,9 +67,13 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
    * (The radius, angle, and length conditions define a complete spiral, and some portion of it is "active")
    */
   protected _activeFractionInterval: Segment1d;
+  /** Return (reference to) the active portion of the reference spiral. */
   public get activeFractionInterval(): Segment1d { return this._activeFractionInterval; }
+  /** strokes in the active portion */
+  public abstract get activeStrokes(): LineString3d;
   /** Placement transform */
   protected _localToWorld: Transform;
+  /** (reference to) placement transform. */
   public get localToWorld(): Transform { return this._localToWorld; }
 
   protected constructor(spiralType: string | undefined, localToWorld: Transform, activeFractionInterval: Segment1d | undefined, designProperties: TransitionConditionalProperties | undefined) {
@@ -101,6 +107,15 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   public static averageCurvatureR0R1(r0: number, r1: number): number {
     return 0.5 * (TransitionSpiral3d.radiusToCurvature(r0) + TransitionSpiral3d.radiusToCurvature(r1));
   }
+  /**
+   * Given two radii (or zeros for 0 curvature) return the average curvature
+   * @param r0 start radius, or 0 for line
+   * @param r1 end radius, or 0 for line
+   */
+  public static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number {
+    return Geometry.interpolate(TransitionSpiral3d.radiusToCurvature(r0), fraction, TransitionSpiral3d.radiusToCurvature(r1));
+  }
+
   /** Return the arc length of a transition spiral with given sweep and radius pair. */
   public static radiusRadiusSweepRadiansToArcLength(radius0: number, radius1: number, sweepRadians: number): number {
     return Math.abs(sweepRadians / TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1));
@@ -134,7 +149,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
       // but we save it as [Q*R sQb+a] with spiral data scaled by s.
       const transformC0 = transformA.multiplyTransformTransform(this.localToWorld);
       // BUT pull the scale part out of the matrix ...
-      const matrixC = (rigidData.rigidAxes as Matrix3d).multiplyMatrixMatrix(this.localToWorld.matrix);
+      const matrixC = rigidData.rigidAxes.multiplyMatrixMatrix(this.localToWorld.matrix);
       this._localToWorld = Transform.createOriginAndMatrix(transformC0.origin, matrixC);
       if (this.designProperties)
         this.designProperties.applyScaleFactor(rigidData.scale);

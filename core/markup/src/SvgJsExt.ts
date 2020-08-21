@@ -20,8 +20,8 @@ export interface MarkupColor {
  * @public
  */
 declare module "@svgdotjs/svg.js" {
-  function register(subclass: typeof MarkupElement, name?: string): void;
-  function nodeOrNew(name: string, node: any): any;
+  function register(subclass: typeof MarkupElement, name?: string): void; // eslint-disable-line no-shadow
+  function nodeOrNew(name: string, node: any): any; // eslint-disable-line no-shadow
 
   interface Dom {
     css(val: object): this;

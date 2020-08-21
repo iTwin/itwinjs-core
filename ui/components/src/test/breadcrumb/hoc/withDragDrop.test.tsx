@@ -18,7 +18,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
 
   afterEach(cleanup);
 
-  const DragDropBreadcrumb = withBreadcrumbDragDrop(Breadcrumb); // tslint:disable-line:variable-name
+  const DragDropBreadcrumb = withBreadcrumbDragDrop(Breadcrumb); // eslint-disable-line @typescript-eslint/naming-convention
 
   it("should render", () => {
     const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];

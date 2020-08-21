@@ -13,7 +13,7 @@ import { RpcRequest } from "./rpc/core/RpcRequest";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 
 /** @public */
-export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; interfaceName: string; interfaceVersion: string; }
+export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
 
 /** @public */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
@@ -53,7 +53,7 @@ export abstract class RpcInterface {
     const parametersArray = Array.isArray(parametersCompat) ? parametersCompat : Array.prototype.slice.call(parametersCompat);
     const operationName = parametersArray.pop();
     const request = new (this.configuration.protocol.requestType as any)(this, operationName, parametersArray) as RpcRequest;
-    request.submit(); // tslint:disable-line:no-floating-promises
+    request.submit(); // eslint-disable-line @typescript-eslint/no-floating-promises
     (this as any)[CURRENT_REQUEST] = request;
     return request.response;
   }

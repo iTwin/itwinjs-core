@@ -33,8 +33,8 @@ import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
-/* tslint:disable:deprecation */
+/* eslint-disable no-console */
+/* eslint-disable deprecation/deprecation */
 /**
  * Return the radius of a circle with area matching centroidData.a
  * @param centroidData result of centroid calculation, with "a" property.
@@ -318,11 +318,11 @@ describe("PolygonOps", () => {
     for (let x = -1.5; x < 14; x += 1.0) {
       const classification = PolygonOps.classifyPointInPolygon(x, ay, points)!;
       if (x < ax0 || x > ax2)
-        ck.testExactNumber(-1, classification, "Expect OUT " + x);
+        ck.testExactNumber(-1, classification, `Expect OUT ${x}`);
       else if (x > ax0 && x < ax1)
-        ck.testExactNumber(1, classification, " expect IN " + x);
+        ck.testExactNumber(1, classification, `Expect IN ${x}`);
       else if (x >= ax1 && x <= ax2)
-        ck.testExactNumber(0, classification, " expect ON " + x);
+        ck.testExactNumber(0, classification, `Expect ON ${x}`);
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -544,7 +544,7 @@ describe("Point3dArray", () => {
     ck.testTrue(Point3dArray.isAlmostEqual(pointsA, pointsB), "point3d from point4d trips");
     ck.testTrue(NumberArray.isExactEqual(weights, weightB), "weights from point4d trips");
 
-    const point4dBChanged = point4dB!.map((x: Point4d) => x.clone());
+    const point4dBChanged = point4dB.map((x: Point4d) => x.clone());
     point4dBChanged[1].x = 0.213213;
     ck.testFalse(Point4dArray.isAlmostEqual(point4dB, point4dBChanged));
     expect(ck.getNumErrors()).equals(0);
@@ -1079,6 +1079,28 @@ describe("PolygonAreas", () => {
       x0 += dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Point3dArray", "ConvexHullManyPoints");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("SmallConvexHullExample", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const points: Point3d[] = [];
+    points.push(Point3d.create(1, 0, 0));
+    points.push(Point3d.create(2, 1, 0));
+    points.push(Point3d.create(1, 3, 0));
+    points.push(Point3d.create(8, 0.5, 0));
+    points.push(Point3d.create(5, 6, 0));
+    points.push(Point3d.create(-1, 2, 0));
+    points.push(Point3d.create(3, 4, 0));
+    const hullPoints: Point3d[] = [];
+    const interiorPoints: Point3d[] = [];
+    Point3dArray.computeConvexHullXY(points, hullPoints, interiorPoints, true);
+    // output circles at the original points . . .
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, points, 0.04, 0, 0);
+    // Output a linestring . . .
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hullPoints), 0, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Point3dArray", "SmallConvexHullExample");
     expect(ck.getNumErrors()).equals(0);
   });
 

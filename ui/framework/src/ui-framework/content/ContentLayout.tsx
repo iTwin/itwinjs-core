@@ -21,7 +21,7 @@ import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentView
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
 // Locking into react-split-pane release 0.1.87 and using the require statement works for browser, electron and mocha test environment.
 // import SplitPane from "react-split-pane";
-const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
+const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // eslint-disable-line
 
 /** Properties for [[ContentWrapper]] */
 interface ContentWrapperProps extends CommonProps {
@@ -58,8 +58,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
 
     return (
       <div className={classnames("uifw-contentlayout-wrapper", this.props.className)} style={this.props.style}
-        onMouseDown={this._handleMouseDown}
-        onMouseMove={UiShowHideManager.handleContentMouseMove}
+        onMouseDown={this._handleMouseDown} onMouseMove={UiShowHideManager.handleContentMouseMove} role="presentation"
       >
         {this.state.content}
         <div className={overlayClassName} />
@@ -554,7 +553,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     if (this.state.contentContainer) {
       return (
         <div id="uifw-contentlayout-div" className={this.props.className} style={this.props.style} key={this.state.contentLayoutDef.id}
-          onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp}
+          onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp} role="presentation"
         >
           {this.state.contentContainer}
         </div>

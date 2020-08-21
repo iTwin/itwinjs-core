@@ -21,7 +21,7 @@ import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
 import { addAlpha, addFeatureAndMaterialLookup, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** @internal */
 export const enum FeatureSymbologyOptions {

@@ -8,7 +8,7 @@
 
 import { combineReducers as baseCombineReducers } from "redux";
 
-// tslint:disable
+/* eslint-disable */
 
 /** Shorthand for "any function".  TSLint doesn't like the built-in `Function` type for some reason.
  * @public

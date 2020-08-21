@@ -70,9 +70,9 @@
   /// Status colors ----------------------------------------------------------
 
   $status-colors: (
-    success:    $uicore-green,
-    warning:    $uicore-orange,
-    error:      $uicore-red
+    success:    $buic-accessory-success,
+    warning:    $buic-accessory-warning,
+    error:      $buic-accessory-alert
   );
 
   @each $status, $color in $status-colors {

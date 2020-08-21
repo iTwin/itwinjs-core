@@ -10,7 +10,7 @@ import "./FilteringInput.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Key } from "ts-key-enum";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, UiCore } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 
@@ -62,6 +62,9 @@ export enum InputContext {
  */
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
   private _inputElement = React.createRef<HTMLInputElement>();
+  private _searchLabel = UiCore.translate("general.search");
+  private _cancelLabel = UiCore.translate("dialog.cancel");
+  private _clearLabel = UiCore.translate("general.search");
 
   constructor(props: FilteringInputProps) {
     super(props);
@@ -134,27 +137,36 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
       <div className={classnames("components-filtering-input", "filtering-input-preload-images", this.props.className)}
         style={this.props.style}
         onKeyDown={this._onFilterKeyDown}
+        role="presentation"
       >
         <span className="components-filtering-input-input">
           <input type="text"
             placeholder={UiComponents.translate("filteringInput:placeholder")}
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus={this.props.autoFocus}
             onKeyDown={this._onFilterKeyDown}
             value={this.state.searchText}
-            onChange={this._onInputChanged} />
+            onChange={this._onInputChanged}
+            aria-label={UiCore.translate("general.search")} />
 
           <span className="components-filtering-input-input-components">
             {this.state.context === InputContext.FilteringFinished ?
               <ResultSelector {...this.props.resultSelectorProps!} /> : undefined}
 
             {this.state.context === InputContext.ReadyToFilter ?
-              <span className="icon icon-search" onClick={this._onSearchButtonClick} /> : undefined}
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+              <span className="icon icon-search" onClick={this._onSearchButtonClick}
+                role="button" tabIndex={-1} title={this._searchLabel} /> : undefined}
 
             {this.state.context === InputContext.FilteringInProgress ?
-              <span className="icon icon-close" onClick={this._onCancelButtonClick} /> : undefined}
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+              <span className="icon icon-close" onClick={this._onCancelButtonClick}
+                role="button" tabIndex={-1} title={this._cancelLabel} /> : undefined}
 
             {this.state.context === InputContext.FilteringFinishedWithNoStepping || this.state.context === InputContext.FilteringFinished ?
-              <span className="components-filtering-input-clear icon icon-close" onClick={this._onClearButtonClick} /> : undefined}
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+              <span className="components-filtering-input-clear icon icon-close" onClick={this._onClearButtonClick}
+                role="button" tabIndex={-1} title={this._clearLabel} /> : undefined}
           </span>
         </span>
       </div>

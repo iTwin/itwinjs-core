@@ -236,11 +236,15 @@
     },
     {
       "name": "@testing-library/react-hooks",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@typescript-eslint/eslint-plugin",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "@typescript-eslint/parser",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "@ungap/url-search-params",
@@ -311,6 +315,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "chai-subset",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "chalk",
       "allowedCategories": [ "tools" ]
     },
@@ -349,10 +357,6 @@
     {
       "name": "css-loader",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "csstype",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "debug",
@@ -396,11 +400,43 @@
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "eslint-import-resolver-node",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-import-resolver-typescript",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-plugin-deprecation",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-plugin-import",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-plugin-jsx-a11y",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "eslint-plugin-prefer-arrow",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "eslint-plugin-react",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "eslint-plugin-react-hooks",
       "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+    },
+    {
+      "name": "eslint-plugin-rulesdir",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "event-stream",
@@ -480,7 +516,7 @@
     },
     {
       "name": "immer",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "immutable",
@@ -639,10 +675,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "prop-types",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "puppeteer",
       "allowedCategories": [ "integration-testing", "tools" ]
     },
@@ -665,6 +697,10 @@
     {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-axe",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-beautiful-dnd",
@@ -728,7 +764,7 @@
     },
     {
       "name": "react-test-renderer",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-virtualized",
@@ -868,11 +904,11 @@
     },
     {
       "name": "tslint",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tslint-consistent-codestyle",
-      "allowedCategories": [ "common", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tslint-eslint-rules",
@@ -880,7 +916,7 @@
     },
     {
       "name": "tslint-etc",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tsutils",

@@ -8,8 +8,7 @@ import { Code, ColorDef, DbResult, GeometricElementProps, GeometryStreamProps, I
 import { BackendRequestContext, BriefcaseIdValue, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, Point2d, Point3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@bentley/geometry-core";
 
 export class PerfTestDataMgr {
   public db: SnapshotDb | undefined;

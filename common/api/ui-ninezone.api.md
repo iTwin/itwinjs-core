@@ -260,10 +260,10 @@ export class CssProperties {
 }
 
 // @internal (undocumented)
-export type CursorType = "ew-resize" | "ns-resize" | "grabbing";
+export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing";
 
 // @internal (undocumented)
-export const CursorTypeContext: React.Context<"ew-resize" | "ns-resize" | "grabbing" | undefined>;
+export const CursorTypeContext: React.Context<"nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing" | undefined>;
 
 // @beta
 export class Dialog extends React.PureComponent<DialogProps> {
@@ -370,7 +370,7 @@ export interface DockedToolSettingsState {
 export const DraggedPanelSideContext: React.Context<"left" | "right" | "top" | "bottom" | undefined>;
 
 // @internal (undocumented)
-export const DraggedResizeHandleContext: React.Context<"left" | "right" | "top" | "bottom" | undefined>;
+export const DraggedResizeHandleContext: React.Context<"left" | "right" | "top" | "bottom" | "topLeft" | "topRight" | "bottomLeft" | "bottomRight" | undefined>;
 
 // @internal (undocumented)
 export const DraggedTabContext: React.Context<boolean>;
@@ -587,7 +587,7 @@ export interface FloatingWidgetResizeAction {
 }
 
 // @internal (undocumented)
-export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
+export type FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle;
 
 // @internal
 export const FloatingWidgets: React.NamedExoticComponent<object>;
@@ -639,6 +639,7 @@ export class FooterIndicator extends React.PureComponent<FooterIndicatorProps> {
 export interface FooterIndicatorProps extends CommonProps {
     children?: React.ReactNode;
     isInFooterMode?: boolean;
+    title?: string;
 }
 
 // @beta
@@ -924,6 +925,9 @@ export class HandleModeHelpers {
     static readonly VISIBLE_CLASS_NAME = "nz-handle-visible";
 }
 
+// @internal (undocumented)
+export function handleToCursorType(handle: FloatingWidgetResizeHandle): CursorType;
+
 // @beta
 export enum HorizontalAnchor {
     // (undocumented)
@@ -1200,7 +1204,15 @@ export interface NineZoneLabels {
     // (undocumented)
     dockToolSettingsTitle?: string;
     // (undocumented)
+    moreToolSettingsTitle?: string;
+    // (undocumented)
+    moreWidgetsTitle?: string;
+    // (undocumented)
+    resizeGripTitle?: string;
+    // (undocumented)
     sendWidgetHomeTitle?: string;
+    // (undocumented)
+    toolSettingsHandleTitle?: string;
 }
 
 // @internal (undocumented)
@@ -2271,7 +2283,9 @@ export interface TabState {
     // (undocumented)
     readonly label: string;
     // (undocumented)
-    readonly preferredFloatingWidgetSize: SizeProps | undefined;
+    readonly preferredFloatingWidgetSize?: SizeProps;
+    // (undocumented)
+    readonly preferredPanelWidgetSize?: "fit-content";
 }
 
 // @internal
@@ -2471,6 +2485,7 @@ export interface ToolbarButtonProps extends CommonProps {
     mouseProximity?: number;
     onClick?: () => void;
     small?: boolean;
+    title?: string;
 }
 
 // @internal
@@ -2802,6 +2817,9 @@ export interface UseDragWidgetArgs {
     widgetId: WidgetState["id"];
 }
 
+// @internal
+export function useForceFill(): boolean;
+
 // @internal (undocumented)
 export function useIsDragged(callback: () => boolean): boolean;
 
@@ -2828,6 +2846,9 @@ export interface UsePanelTargetArgs {
 
 // @internal
 export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((args: PointerCaptorArgs, e: PointerCaptorEvent) => void) | undefined, onPointerMove?: ((args: PointerCaptorArgs, e: PointerCaptorEvent) => void) | undefined, onPointerUp?: ((e: PointerCaptorEvent) => void) | undefined) => (instance: T | null) => void;
+
+// @internal (undocumented)
+export function usePreferredPanelWidgetSize(widgetId: WidgetState["id"]): "fit-content" | undefined;
 
 // @internal (undocumented)
 export const useResizeGrip: <T extends HTMLElement>(side: PanelSide, onResize?: ((resizeBy: number) => void) | undefined, onDoubleClick?: (() => void) | undefined) => [(instance: T | null) => void, boolean, boolean];
@@ -2857,6 +2878,9 @@ export interface UseTabTargetArgs {
     // (undocumented)
     widgetId: WidgetState["id"];
 }
+
+// @internal (undocumented)
+export function useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void): void;
 
 // @internal (undocumented)
 export function useToolSettingsEntry(): DockedToolSettingsEntryContextArgs;
@@ -2909,7 +2933,13 @@ export interface VerticalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
-export const Widget: React.NamedExoticComponent<WidgetProps>;
+export const Widget: React.MemoExoticComponent<React.ForwardRefExoticComponent<WidgetProps & React.RefAttributes<WidgetComponent>>>;
+
+// @internal (undocumented)
+export interface WidgetComponent {
+    // (undocumented)
+    measure: () => SizeProps;
+}
 
 // @alpha
 export class WidgetContent extends React.PureComponent<WidgetContentProps> {
@@ -3026,6 +3056,9 @@ export interface WidgetMenuProps extends CommonProps {
 export const WidgetOverflow: React.NamedExoticComponent<WidgetOverflowProps>;
 
 // @internal (undocumented)
+export const WidgetOverflowContext: React.Context<WidgetOverflowContextArgs | undefined>;
+
+// @internal (undocumented)
 export interface WidgetOverflowProps {
     // (undocumented)
     children?: React.ReactNode;
@@ -3094,6 +3127,8 @@ export interface WidgetPanelsProps extends CommonProps {
 export interface WidgetProps extends CommonProps {
     // (undocumented)
     children?: React.ReactNode;
+    // (undocumented)
+    onTransitionEnd?(): void;
 }
 
 // @internal (undocumented)

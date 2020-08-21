@@ -10,9 +10,9 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
 import {
   AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogPropertyItem, PropertyChangeResult,
-  PropertyChangeStatus, PropertyDescription, RelativePosition, UiDataProvider,
+  PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames, UiDataProvider,
 } from "@bentley/ui-abstract";
-import { EditorContainer, StandardTypeNames, Toolbar, ToolbarWithOverflow } from "@bentley/ui-components";
+import { EditorContainer, Toolbar, ToolbarWithOverflow } from "@bentley/ui-components";
 import { LeadingText, Point } from "@bentley/ui-core";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
 import { Calculator } from "../../ui-framework/accudraw/Calculator";

@@ -9,7 +9,7 @@
 import "./PopupButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { Button, ButtonType, CommonDivProps, CommonProps, Div, Icon, Popup, UiCore } from "@bentley/ui-core";
 
 /** Properties for [[PopupButton]] component
@@ -84,7 +84,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
 
   private _handleKeyDown = (event: React.KeyboardEvent) => {
     // istanbul ignore else
-    if (event.key === "ArrowDown" && !this.state.showPopup) {
+    if ((event.key === SpecialKey.ArrowDown || event.key === SpecialKey.Space) && !this.state.showPopup) {
       event.preventDefault();
       event.stopPropagation();
       this.setState({ showPopup: true });
@@ -109,6 +109,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
           data-testid="components-popup-button"
           tabIndex={0}
           ref={this._buttonRef}
+          role="button"
         >
           <div className="components-popup-button-value">
             {this.props.label}

@@ -57,7 +57,7 @@ export class ElectronAuthorizationRequestHandler extends AuthorizationRequestHan
         resolve(authRequestResponse);
 
         // Ask the base class to call our completeAuthorizationRequest - this calls the registered notifier to broadcast the event outside of the client
-        this.completeAuthorizationRequestIfPossible(); // tslint:disable-line:no-floating-promises
+        this.completeAuthorizationRequestIfPossible(); // eslint-disable-line @typescript-eslint/no-floating-promises
       });
     });
 

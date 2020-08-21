@@ -12,6 +12,7 @@ import {
 } from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 // cspell:ignore setxxx
 
@@ -31,8 +32,11 @@ export const useUiItemsProviderStatusBarItems = (manager: StatusBarItemsManager)
     // istanbul ignore else
     if (providersRef.current !== uiProviders || currentStageRef.current !== stageId) {
       currentStageRef.current = stageId;
+      const frontstageDef = FrontstageManager.findFrontstageDef(stageId);
+      // istanbul ignore next
+      const usage = frontstageDef?.usage ? frontstageDef.usage : StageUsage.General;
       providersRef.current = uiProviders;
-      const statusBarItems = UiItemsManager.getStatusBarItems(stageId, StageUsage.General);
+      const statusBarItems = UiItemsManager.getStatusBarItems(stageId, usage);
       const updatedStatusBarItems = UiItemsArbiter.updateStatusBarItems(statusBarItems);
       manager.loadItems(updatedStatusBarItems);
       setItems(manager.items);

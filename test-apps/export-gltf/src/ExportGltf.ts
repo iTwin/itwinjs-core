@@ -422,8 +422,8 @@ async function doExport(iModelName: string, gltfName: string): Promise<void> {
   process.stdout.write(`Export successful, wrote ${GltfGlobals.binBytesWritten} bytes.\n`);
 }
 
-interface ExportGltfArgs { input: string; output: string; }
-(async () => {
+interface ExportGltfArgs { input: string, output: string }
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
     yargs.usage("Export a GLTF from an existing BIM file.");
     yargs.required("input", "The input BIM");
@@ -433,4 +433,4 @@ interface ExportGltfArgs { input: string; output: string; }
   } catch (error) {
     process.stdout.write(error.message + "\n" + error.stack);
   }
-})(); // tslint:disable-line:no-floating-promises
+})();

@@ -174,10 +174,10 @@ export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType
       return dropProps;
     }
     public render(): React.ReactElement<any> {
-      // tslint:disable-next-line:variable-name
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const DDRow = withDropTarget<RowWrapperProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
         withDragSource<RowWrapperProps, DragDropObject>(DragDropRowWrapper));
-      const { dragProps, dropProps, ...props } = this.props;
+      const { dragProps, dropProps, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <DDRow
           canDropOn={(this.props.dropProps && this.props.dropProps.canDropOn) || false}

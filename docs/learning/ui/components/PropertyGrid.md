@@ -71,7 +71,7 @@ import { PropertyGrid } from "@bentley/ui-components";
 import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
 
 // create a HOC property grid component that supports unified selection
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SimplePropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 /** React properties for the property grid component */

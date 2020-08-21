@@ -59,7 +59,7 @@ import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 /**
  * Function to be called to obtain function value at (i,n), for
  * * n fixed over many calls
@@ -1067,17 +1067,17 @@ export class Sample {
         Point3d.create(0, 0, 0),
         Vector3d.create(size, 0, 0),
         Vector3d.create(0, size, 0),
-        AngleSweep.createStartEndDegrees(0, 90)) as Arc3d,
+        AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.create(
         Point3d.create(0, 0, 0),
         Vector3d.create(size, 0, 0),
         Vector3d.create(0, size, 0),
-        AngleSweep.createStartEndDegrees(-40, 270)) as Arc3d,
+        AngleSweep.createStartEndDegrees(-40, 270)),
       Arc3d.create(
         Point3d.create(0, 0, 0),
         Vector3d.create(size, alpha * size, 0),
         Vector3d.create(-alpha * beta * size, beta * size, 0),
-        AngleSweep.createStartEndDegrees(-40, 270)) as Arc3d,
+        AngleSweep.createStartEndDegrees(-40, 270)),
     ];
   }
   /** assorted small polyface grids, possibly expanded by gridMultiplier */
@@ -1845,27 +1845,27 @@ export class Sample {
         Angle.createDegrees(0), Angle.createRadians(dThetaRadians), undefined,
         Segment1d.create(0, 0.5),
         Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
-          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))))!,
       DirectSpiral3d.createFromLengthAndRadius("Arema", r0, r1,
         Angle.createDegrees(0), undefined, arcLength,
         undefined,
         Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
-          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))))!,
       DirectSpiral3d.createFromLengthAndRadius("ChineseCubic", r0, r1,
         Angle.createDegrees(0), undefined, arcLength,
         undefined,
         Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
-          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))))!,
       DirectSpiral3d.createFromLengthAndRadius("JapaneseCubic", r0, r1,
         Angle.createDegrees(0), undefined, arcLength,
         undefined,
         Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
-          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))))!,
       DirectSpiral3d.createFromLengthAndRadius("DirectHalfCosine", r0, r1,
         Angle.createDegrees(0), undefined, arcLength,
         undefined,
         Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
-          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))))!,
       DirectSpiral3d.createCzechCubic(Transform.createIdentity(), arcLength, r1)!];
   }
   /** Create a Bezier curve with significant twist effects

@@ -154,7 +154,7 @@ export class PolarData {
     // add tangible geometry to single points ...
     for (const r of result) {
       if (r.state === ConstraintState.singlePoint && r.geometry === undefined)
-        r.geometry = CoordinateXYZ.createXYZ(r.x!, r.y!, 0.0);
+        r.geometry = CoordinateXYZ.createXYZ(r.x, r.y, 0.0);
     }
     return result;
   }

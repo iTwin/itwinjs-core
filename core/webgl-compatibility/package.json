@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webgl-compatibility",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/webgl-compatibility.js",
@@ -11,7 +11,7 @@
     "cover": "npm test -- --cover",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
     "extract-api": "betools extract-api --entry=webgl-compatibility",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "npm run webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
@@ -34,19 +34,21 @@
   "dependencies": {},
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.4.2",
-    "@bentley/certa": "2.4.2",
+    "@bentley/build-tools": "2.5.0",
+    "@bentley/certa": "2.5.0",
     "@types/node": "10.14.1",
     "@types/mocha": "^5.2.5",
     "@types/chai": "^4.1.4",
+    "eslint": "^6.8.0",
     "typescript": "~3.7.4",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "rimraf": "^3.0.2",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "source-map-loader": "^1.0.0",
     "glob": "^7.1.2",
     "webpack": "4.42.0"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

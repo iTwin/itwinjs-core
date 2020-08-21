@@ -23,7 +23,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console variable-name */
+/* eslint-disable no-console, @typescript-eslint/naming-convention */
 /** Add individual segments of  xyz array to parent. */
 function addSegmentsToChain(parent: CurveChain, points: Point3d[]) {
   for (let i = 1; i < points.length; i++)

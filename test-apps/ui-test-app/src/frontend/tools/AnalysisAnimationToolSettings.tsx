@@ -123,7 +123,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
   private _handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const activeContentControl = ContentViewManager.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
-      const elapsedTime = parseInt(event.target.value, undefined);
+      const elapsedTime = parseInt(event.target.value, 10);
       if (elapsedTime === 0) {
         this.setState({ elapsedTime });
         this._stopAnimation();
@@ -143,7 +143,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
 
   private _handleDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
-    const value = parseInt(target.value, undefined);
+    const value = parseInt(target.value, 10);
     // min 1 sec, max 30 seconds
     const animationDuration = (value <= 1) ? 1000 : (value >= 30) ? 30000 : value * 1000;
     this.setState({ animationDuration });

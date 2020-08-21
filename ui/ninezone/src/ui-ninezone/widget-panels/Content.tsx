@@ -25,8 +25,8 @@ export interface WidgetPanelsContentProps extends CommonProps {
 /** Component that displays widget panels content.
  * @internal
  */
-const WidgetPanelsContentComponent = React.forwardRef<HTMLDivElement, WidgetPanelsContentProps>( // tslint:disable-line: variable-name
-  function WidgetPanelsContent(props, ref) {   // tslint:disable-line: no-shadowed-variable
+const WidgetPanelsContentComponent = React.forwardRef<HTMLDivElement, WidgetPanelsContentProps>( // eslint-disable-line @typescript-eslint/naming-convention
+  function WidgetPanelsContent(props, ref) {   // eslint-disable-line no-shadow
     const className = classnames(
       "nz-widgetPanels-content",
       props.pinnedLeft && "nz-pinned-left",
@@ -48,4 +48,4 @@ const WidgetPanelsContentComponent = React.forwardRef<HTMLDivElement, WidgetPane
 );
 
 /** @internal */
-export const WidgetPanelsContent = React.memo(WidgetPanelsContentComponent); // tslint:disable-line: variable-name
+export const WidgetPanelsContent = React.memo(WidgetPanelsContentComponent); // eslint-disable-line @typescript-eslint/naming-convention

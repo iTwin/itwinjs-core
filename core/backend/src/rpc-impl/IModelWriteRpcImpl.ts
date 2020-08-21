@@ -29,7 +29,7 @@ class EditingFunctions {
       code: newModelCode,
     };
     const modeledElement: Element = iModelDb.elements.createElement(modeledElementProps);
-    if (iModelDb.isBriefcaseDb()) {
+    if (iModelDb.isBriefcaseDb() && !iModelDb.concurrencyControl.isBulkMode) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [{ element: modeledElement, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }
@@ -38,7 +38,7 @@ class EditingFunctions {
 
   public static async createAndInsertPhysicalModel(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    if (iModelDb.isBriefcaseDb()) {
+    if (iModelDb.isBriefcaseDb() && !iModelDb.concurrencyControl.isBulkMode) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [], [{ model: newModel, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }
@@ -57,7 +57,7 @@ class EditingFunctions {
 
   public static async createAndInsertSpatialCategory(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-    if (iModelDb.isBriefcaseDb()) {
+    if (iModelDb.isBriefcaseDb() && !iModelDb.concurrencyControl.isBulkMode) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [{ element: category, opcode: DbOpcode.Insert }]);
       rqctx.enter();
     }
@@ -153,6 +153,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async requestResources(tokenProps: IModelRpcProps, elementIds: Id64Array, modelIds: Id64Array, opcode: DbOpcode): Promise<void> {
+    // Don't check if we are in bulk mode - assume the caller knows what he is doing.
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const elements = elementIds.map((id: string) => ({ element: iModelDb.elements.getElement(id), opcode }));

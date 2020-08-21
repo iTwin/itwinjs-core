@@ -15,7 +15,7 @@ import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecat
 import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
 import TestUtils from "../../../TestUtils";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("NodeContent", () => {
   const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();

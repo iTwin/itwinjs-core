@@ -442,7 +442,6 @@ export class ConcurrencyControl {
   }
 
   private emitOnSavedChangesEvent() {
-    // tslint:disable-next-line:no-debugger
     const data = { hasPendingTxns: this.iModel.txns.hasPendingTxns, time: Date.now() }; // Note that not all calls to saveChanges create a txn. For example, an update to be_local does not.
     this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onSavedChanges", data);
   }
@@ -783,7 +782,7 @@ export class ConcurrencyControl {
   }
 
   /** API to reserve Codes and query the status of Codes */
-  get codes(): ConcurrencyControl.Codes {
+  public get codes(): ConcurrencyControl.Codes {
     if (this._codes === undefined)
       this._codes = new ConcurrencyControl.Codes(this._iModel);
     return this._codes;
@@ -791,7 +790,7 @@ export class ConcurrencyControl {
 }
 
 /** @beta */
-export namespace ConcurrencyControl {
+export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
   /**
    * Information about the channel that an element is in.
@@ -828,7 +827,7 @@ export namespace ConcurrencyControl {
    */
   export class RepositoryChannelInfo extends ChannelRootInfo {
     constructor() {
-      super(BriefcaseDb.rootSubjectId, { Subject: { repositoryChannel: true } });
+      super(BriefcaseDb.rootSubjectId, { Subject: { repositoryChannel: true } }); // eslint-disable-line @typescript-eslint/naming-convention
     }
   }
 

@@ -12,7 +12,7 @@ import { XmlParser } from "@bentley/ecschema-metadata/lib/Deserialization/XmlPar
 import { ECSchemaToTs } from "../../ecschema2ts";
 import { expect } from "chai";
 
-declare const __dirname: string;
+declare const __dirname: string; // eslint-disable-line @typescript-eslint/naming-convention
 
 export interface PropertyTestCase {
   testName: string;

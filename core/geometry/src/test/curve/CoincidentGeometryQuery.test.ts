@@ -57,9 +57,9 @@ describe("CoincidentGeometryQuery", () => {
           pB.y += y0 + dy3;
           GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pA, pB), x0, 0);
           GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, pair, 0.01, x0, y0);
-          if (pair.detailA.point1 && !ck.testCoordinate(rangeA01.length(), pair.detailA.point.distance(pair.detailA.point1!), "length A", fA0, fA1))
+          if (pair.detailA.point1 && !ck.testCoordinate(rangeA01.length(), pair.detailA.point.distance(pair.detailA.point1), "length A", fA0, fA1))
             GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointA0.interpolate(2.0, pointA1), endMarkerSize, x0, y0);
-          if (pair.detailB.point1 && !ck.testCoordinate(rangeA01.length(), pair.detailB.point.distance(pair.detailB.point1!), "length B", fA0, fA1))
+          if (pair.detailB.point1 && !ck.testCoordinate(rangeA01.length(), pair.detailB.point.distance(pair.detailB.point1), "length B", fA0, fA1))
             GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointB0.interpolate(2.0, pointB1), endMarkerSize, x0, y0 + dy1);
         } else {
           GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointA0, 0.2, x0, y0);

@@ -95,7 +95,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async beginOfflineScope(): Promise<void> {
     nock(/^https:\/\/.*$/i)
       .log((message: any, optionalParams: any[]) => {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(message, optionalParams);
       }).get("/").reply(503);
   }

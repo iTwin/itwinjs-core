@@ -21,11 +21,12 @@ function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOw
 type CalcMem = (stats: RenderMemory.Statistics, vp: Viewport) => number;
 type PurgeMem = (olderThan?: BeTimePoint) => void;
 
-const enum MemIndex {
+const enum MemIndex { // eslint-disable-line no-restricted-syntax
   None = -1,
   ViewportTileTrees,
   AllTileTrees,
   RenderTarget,
+  // eslint-disable-next-line no-shadow
   Viewport, // RenderTarget + Viewed Tile Trees
   System,
   All, // All Tile Trees + System + (RenderTarget for each ViewManager viewport)

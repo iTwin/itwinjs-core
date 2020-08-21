@@ -61,7 +61,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
       throw new BentleyError(AuthStatus.Error, "Scopes for an Agent cannot include 'openid email profile organization'");
 
     const grantParams: GrantBody = {
-      grant_type: "client_credentials",
+      grant_type: "client_credentials", // eslint-disable-line @typescript-eslint/naming-convention
       scope,
     };
 

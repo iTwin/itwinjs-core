@@ -49,7 +49,7 @@ export abstract class BasePointTypeConverter extends TypeConverter {
     }
     const hasAsyncComponents = components.some(isPromiseLike);
     if (hasAsyncComponents) {
-      return Promise.all(components.map((c) => isPromiseLike(c) ? c : Promise.resolve(c))).then((c) => c.join(", "));
+      return Promise.all(components.map(async (c) => isPromiseLike(c) ? c : Promise.resolve(c))).then((c) => c.join(", "));
     }
     return components.join(", ");
   }

@@ -16,7 +16,7 @@ import {
 import { SampleAppIModelApp } from "../..";
 
 // create a HOC viewport component that supports unified selection
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
 /** iModel Viewport Control
@@ -88,7 +88,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
         }
         this.setState({ viewId: firstViewId });
       } catch (e) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log("error getting views", e);
       }
     }
@@ -99,13 +99,13 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
 
     timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewState);
     if (timelineDataProvider.supportsTimelineAnimation) {
-      if (timelineDataProvider.loadTimelineData())
-        return timelineDataProvider as TimelineDataProvider;
+      if (timelineDataProvider.loadTimelineData()) // eslint-disable-line @typescript-eslint/no-misused-promises
+        return timelineDataProvider;
     } else {
       timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewState);
       if (timelineDataProvider.supportsTimelineAnimation) {
-        if (timelineDataProvider.loadTimelineData())
-          return timelineDataProvider as TimelineDataProvider;
+        if (timelineDataProvider.loadTimelineData()) // eslint-disable-line @typescript-eslint/no-misused-promises
+          return timelineDataProvider;
       }
     }
     return undefined;

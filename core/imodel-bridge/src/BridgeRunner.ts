@@ -199,6 +199,7 @@ export class BridgeRunner {
   }
 
   private async loadBridge(bridgeModulePath: string): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const bridgeModule = require(bridgeModulePath); // throws if not found
     this._bridge = bridgeModule.getBridgeInstance();
     return null !== this._bridge;

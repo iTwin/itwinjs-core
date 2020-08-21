@@ -19,9 +19,9 @@ import { MapCartoRectangle } from "./MapCartoRectangle";
 import { WmsCapabilities, WmsCapability } from "./WmsCapabilities";
 
 const tileImageSize = 256, untiledImageSize = 256;
-// tslint:disable-next-line:prefer-const
+// eslint-disable-next-line prefer-const
 let doToolTips = true;
-// tslint:disable-next-line:prefer-const
+// eslint-disable-next-line prefer-const
 let debugToolTip = false;
 
 const scratchPoint2d = Point2d.createZero();
@@ -49,7 +49,7 @@ export abstract class MapLayerImageryProvider {
   constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) { }
 
   public async initialize(): Promise<void> {
-    this.loadTile(0, 0, 22).then((tileData: ImageSource | undefined) => { // tslint:disable-line:no-floating-promises
+    this.loadTile(0, 0, 22).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
     });
   }
@@ -76,7 +76,7 @@ export abstract class MapLayerImageryProvider {
       const cartoRectangle = tree.cartoRectangleFromQuadId(quadId);
       const debugString = `QuadId: ${quadId.debugString} Rectangle: ${cartoRectangle.latLongString} EPSG:3857: ${this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level)} URL: ${this.constructUrl(quadId.row, quadId.column, quadId.level)}`;
       strings.push(debugString);
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log(debugString);
     }
   }
@@ -188,7 +188,7 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _allLayersRange?: MapCartoRectangle;
   private _subLayerRanges = new Map<string, MapCartoRectangle>();
   private _baseUrl: string;
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private _isVersion1_1 = false;
   constructor(settings: MapLayerSettings) {
     super(settings, false);

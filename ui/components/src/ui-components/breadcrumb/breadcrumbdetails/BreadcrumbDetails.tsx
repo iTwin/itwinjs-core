@@ -21,7 +21,7 @@ import { UiComponents } from "../../UiComponents";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
 import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /** Properties for the [[BreadcrumbDetails]] component
  * @beta
@@ -108,7 +108,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     });
     this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     this._tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    this._tree.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
+    this._tree.ready.then(this._onModelReady); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
@@ -159,7 +159,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   }
 
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
-    using((this._tree as any).pauseRendering(), async () => {
+    using((this._tree as any).pauseRendering(), async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
       await this._tree.reload();
     });
   }
@@ -245,7 +245,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
               // istanbul ignore else should always be false
               if (!iteratorResult.done) {
                 const row = iteratorResult.value as DataRowItem;
-                this.props.path.setCurrentNode(row._node!);
+                this.props.path.setCurrentNode(row._node);
               }
               return replace;
             },
@@ -255,7 +255,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     );
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private renderTable = (props: TableProps, _node: TreeNodeItem | undefined, _children: TreeNodeItem[]) => {
     return <Table {...props} onRender={this.props.onRender} />;
   }

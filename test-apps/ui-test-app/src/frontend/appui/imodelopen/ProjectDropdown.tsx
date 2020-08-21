@@ -93,7 +93,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
 
     if (projects && projects.length === 0) {
       return (
-        <div className="pp-no-mru" style={ulStyle}><p>Most recently used projects appear here.</p>Click "More" below to search for a project and add it to this list.</div>
+        <div className="pp-no-mru" style={ulStyle}><p>Most recently used projects appear here.</p>Click &quot;More&quot; below to search for a project and add it to this list.</div>
       );
     } else {
       return (

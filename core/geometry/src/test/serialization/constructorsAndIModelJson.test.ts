@@ -26,29 +26,29 @@ import { RotationalSweep } from "../../solid/RotationalSweep";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
 
-/* tslint:disable:no-console */
-// This file emits (to console.log) text suitable for use as markdown content for examples of construtor call and json of results
+/* eslint-disable no-console */
+// This file emits (to console.log) text suitable for use as markdown content for examples of constructor call and json of results
 // The output is suppressed by emitToLog.
 
-const emitToLog = false;
+const emitToLog = true;
 function emitCategoryHeader(name: string) {
   if (emitToLog) {
-    console.log("## " + name);
+    console.log(`## ${name}`);
     console.log("|constructor | remarks | json |");
     console.log("|----|----|---|");
   }
 }
 // emit a single geometry fragment in bare json form ...
-function emitIModelJson(classname: string, description: string, g: GeometryQuery) {
+function emitIModelJson(className: string, description: string, g: GeometryQuery) {
   if (emitToLog) {
     const imjs = IModelJson.Writer.toIModelJson(g);
-    console.log("| " + classname + " | " + description + " | `", JSON.stringify(imjs) + "`|");
+    console.log(`| ${className} | ${description} | ${JSON.stringify(imjs)}|`);
   }
 }
 // Typical snippets for sandbox windows . . . . These assume that
-// the window alwyas has
+// the window always has
 // 1) the "import * as geometry" directive
-// 2) An additional "import" directive to obtain an appropriate implemetation of "emit".
+// 2) An additional "import" directive to obtain an appropriate implementation of "emit".
 
 describe("constructorsAndImodelJson", () => {
 
@@ -79,7 +79,7 @@ describe("constructorsAndImodelJson", () => {
 
   });
 
-  it("constructorsAndImodleJson.CurveCollections", () => {
+  it("constructorsAndIModelJson.CurveCollections", () => {
     emitCategoryHeader("CurveCollections");
     const pointA = Point3d.create(0, 0, 0);
     const pointB = Point3d.create(4, 0, 0);
@@ -102,9 +102,9 @@ describe("constructorsAndImodelJson", () => {
     const b = 9;
     const outerRectangle = Loop.create(LineString3d.createRectangleXY(Point3d.create(a, a, 0), b, b));
     const parityRegionWith1Hole = ParityRegion.create(outerRectangle, semiCircleRegion);
-    emitIModelJson("ParityRegion.create", "rectangle with semicirular hole", parityRegionWith1Hole);
+    emitIModelJson("ParityRegion.create", "rectangle with semicircular hole", parityRegionWith1Hole);
   });
-  it("constructorsAndImodleJson.SolidPrimitives", () => {
+  it("constructorsAndImodelJson.SolidPrimitives", () => {
     emitCategoryHeader("SolidPrimitives");
     // REMARK:  These braces are to wall off the local variables of each create step
     {
@@ -140,7 +140,7 @@ describe("constructorsAndImodelJson", () => {
       const sweep = Angle.createDegrees(90);
       const capped = true;
       emitIModelJson("TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped)",
-        "90 degree elbos",
+        "90 degree elbows",
         TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped)!);
     }
     {
@@ -162,7 +162,7 @@ describe("constructorsAndImodelJson", () => {
     }
 
   });
-  it("constructorsAndImodleJson.Other", () => {
+  it("constructorsAndImodelJson.Other", () => {
     emitCategoryHeader("CurveCollections");
     emitIModelJson("CoordinateXYZ.create", "isolated point", CoordinateXYZ.create(Point3d.create(2, 3, 4)));
   });

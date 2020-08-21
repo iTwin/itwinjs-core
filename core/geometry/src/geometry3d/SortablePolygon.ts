@@ -310,10 +310,10 @@ export class SortablePolygon {
               candidateParityRegion = ParityRegion.create();
               candidateParityRegion.tryAddChild(candidateLoop);
               childData._loopCarrier.reverseForAreaSign(-1.0);
-              candidateParityRegion.tryAddChild(childData._loopCarrier.grabLoop()!);
+              candidateParityRegion.tryAddChild(childData._loopCarrier.grabLoop());
             } else {
               childData._loopCarrier.reverseForAreaSign(-1.0);
-              candidateParityRegion.tryAddChild(childData._loopCarrier.grabLoop()!);
+              candidateParityRegion.tryAddChild(childData._loopCarrier.grabLoop());
             }
           }
         }

@@ -21,10 +21,10 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
+import { FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, CoreTools, FrontstageManager, FunctionKey, KeyboardShortcutManager,
+  CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, CoreTools, FrontstageManager, KeyboardShortcutManager,
   KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState, WorkflowProps, WorkflowPropsList,
   ZoneLocation,
 } from "@bentley/ui-framework";

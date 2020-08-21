@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { Client as OpenIdClient, ClientMetadata, Issuer } from "openid-client";
+import { ClientMetadata, Issuer, Client as OpenIdClient } from "openid-client";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ImsAuthorizationClient } from "@bentley/itwin-client";
 
@@ -38,7 +38,7 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     this._configuration = configuration;
   }
 
-  private _issuer: Issuer<OpenIdClient>;
+  private _issuer?: Issuer<OpenIdClient>;
   private async getIssuer(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
     requestContext.enter();
 
@@ -58,7 +58,7 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     return this.getIssuer(requestContext);
   }
 
-  private _client: OpenIdClient;
+  private _client?: OpenIdClient;
   protected async getClient(requestContext: ClientRequestContext): Promise<OpenIdClient> {
     requestContext.enter();
 
@@ -66,8 +66,8 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
       return this._client;
 
     const clientConfiguration: ClientMetadata = {
-      client_id: this._configuration.clientId,
-      client_secret: this._configuration.clientSecret,
+      client_id: this._configuration.clientId, // eslint-disable-line @typescript-eslint/naming-convention
+      client_secret: this._configuration.clientSecret, // eslint-disable-line @typescript-eslint/naming-convention
     };
     const issuer = await this.getIssuer(requestContext);
     this._client = new issuer.Client(clientConfiguration);

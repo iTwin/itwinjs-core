@@ -35,7 +35,7 @@ export class FacetOrientationFixup {
   private _visitor: PolyfaceVisitor;
   private _mesh: IndexedPolyface;
   private constructor(mesh: IndexedPolyface) {
-    this._visitor = mesh.createVisitor(1) as PolyfaceVisitor;
+    this._visitor = mesh.createVisitor(1);
     this._edges = PolyfaceQuery.createIndexedEdges(this._visitor);
     this._edgeToPartnerEdge = [];
     this._edgeToEdgeInComponent = [];

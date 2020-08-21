@@ -66,20 +66,20 @@ $toggle-handle-large: $toggle-height-large - ($toggle-padding * 2);
 
 /* Blue (default) */
 .core-toggle-input:checked~.core-toggle-background {
-  background: $uicore-blue;
+  background: $buic-accessory-primary;
 }
 
 /* Green (primary) */
 .core-toggle-primary> .core-toggle-input:checked~.core-toggle-background {
-  background: $uicore-green;
+  background: $buic-accessory-success;
 }
 
 .core-toggle-handle {
   position: absolute;
-  background: #FFF;
+  background: $buic-accessory-hollow;
   border-radius: 3px;
   box-sizing:     border-box;
-  border:         1px solid #FFF;
+  border:         1px solid $buic-accessory-hollow;
   transition:     border-color 0.15s ease-in-out;
 
   min-width:  $toggle-handle-small;
@@ -129,9 +129,5 @@ $toggle-handle-large: $toggle-height-large - ($toggle-padding * 2);
     ~.core-toggle-background {
       box-shadow:     $uicore-button-focus-boxshadow;
     }
-
-    // ~.core-toggle-handle {
-    //   border-color:   $buic-foreground-muted;
-    // }
   }
 }

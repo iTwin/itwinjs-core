@@ -14,12 +14,12 @@ import { ContentNodeContext } from "./Panels";
 /** Main app content (i.e. viewport) that will change bounds based on panel pinned settings.
  * @internal
  */
-export const AppContent = React.memo(function AppContent() { // tslint:disable-line: variable-name no-shadowed-variable
+export const AppContent = React.memo(function AppContent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panels = React.useContext(PanelsStateContext);
   const content = React.useContext(ContentNodeContext);
   return (
     <WidgetPanelsContent
-      children={content}
+      children={content} // eslint-disable-line react/no-children-prop
       pinnedLeft={panels.left.pinned}
       pinnedRight={panels.right.pinned}
       pinnedTop={panels.top.pinned}

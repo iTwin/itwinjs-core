@@ -44,7 +44,7 @@ describe("DelegationAuthorizationClient (#integration)", () => {
     };
 
     const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
-    const saml: SamlAccessToken = await delegationClient.getSamlFromJwt(requestContext, jwt);
+    const saml: SamlAccessToken = await delegationClient.getSamlFromJwt(requestContext, jwt); // eslint-disable-line deprecation/deprecation
     const str = saml.toTokenString();
     chai.assert.isTrue(str.length > 10);
     // Note: No SAML support for existing clients anymore. Testing any further requires a new client that

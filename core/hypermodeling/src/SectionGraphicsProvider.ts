@@ -136,7 +136,7 @@ class ProxyTreeReference extends TileTreeReference {
       ref.discloseTileTrees(trees);
   }
 
-  public getToolTip(hit: HitDetail) {
+  public async getToolTip(hit: HitDetail) {
     const ref = this._proxiedRef;
     return undefined !== ref ? ref.getToolTip(hit) : super.getToolTip(hit);
   }
@@ -244,7 +244,7 @@ class DrawingProxyTree extends ProxyTree {
 
 class SheetProxyTree extends ProxyTree {
   public constructor(params: ProxyTreeParams) {
-    const { state, attachment } = {...params };
+    const { state, attachment } = { ...params };
     assert(undefined !== state.viewAttachment);
     assert(undefined !== attachment);
     const location = state.viewAttachment.transformToSpatial.clone();
@@ -282,7 +282,7 @@ class ProxyTile extends Tile {
 
     const location = proxyTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
     const clipVolume = true === proxyTree.viewFlagOverrides.clipVolumeOverride ? proxyTree.clipVolume : undefined;
-    args = new TileDrawArgs(args.context, location, sectionTree, args.now, proxyTree.viewFlagOverrides, clipVolume, args.parentsAndChildrenExclusive, proxyTree.symbologyOverrides);
+    args = new TileDrawArgs({ context: args.context, location, tree: sectionTree, now: args.now, viewFlagOverrides: proxyTree.viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: args.parentsAndChildrenExclusive, symbologyOverrides: proxyTree.symbologyOverrides });
     sectionTree.draw(args);
 
     const rangeGfx = this.getRangeGraphic(args.context);

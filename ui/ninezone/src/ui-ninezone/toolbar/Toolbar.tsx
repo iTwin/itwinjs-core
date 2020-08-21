@@ -233,6 +233,6 @@ export const getToolbarItemProps = <TProps extends {}>(props: TProps): ToolbarIt
  * Context used by Toolbar component to provide Direction to child components.
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ToolbarDirectionContext = React.createContext<Direction>(Direction.Bottom);
 ToolbarDirectionContext.displayName = "nz:ToolbarDirectionContext";

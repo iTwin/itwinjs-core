@@ -18,9 +18,10 @@ import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowF
 import { InspectElementTool } from "./tools/InspectElementTool";
 import { AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool, AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapLayerSubLayerVisiblityTool, MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool } from "./tools/MapLayerTool";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
+import { ClearModelAppearanceOverrides, SetModelColorTool, SetModelEmphasizedTool, SetModelIgnoresMaterialsTool, SetModelLineCodeTool, SetModelLineWeightTool, SetModelLocateTool, SetModelTransparencyTool } from "./tools/ModelAppearanceTools";
 import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools";
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
-import { AttachRealityModelTool, SaveRealityModelTool } from "./tools/RealityModelTools";
+import { AttachRealityModelTool, ClearRealityModelAppearanceOverrides, SaveRealityModelTool, SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
 import { SetAASamplesTool, ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect } from "./tools/RenderTargetTools";
@@ -129,6 +130,19 @@ export class FrontendDevTools {
       ViewportTileSizeModifierTool,
       AttachRealityModelTool,
       SaveRealityModelTool,
+      SetRealityModelLocateTool,
+      SetRealityModelEmphasizedTool,
+      SetRealityModelTransparencyTool,
+      SetRealityModelColorTool,
+      SetModelLocateTool,
+      SetModelEmphasizedTool,
+      SetModelTransparencyTool,
+      SetModelColorTool,
+      SetModelLineWeightTool,
+      SetModelLineCodeTool,
+      SetModelIgnoresMaterialsTool,
+      ClearRealityModelAppearanceOverrides,
+      ClearModelAppearanceOverrides,
     ];
 
     for (const tool of tools)

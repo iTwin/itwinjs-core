@@ -7,8 +7,11 @@ import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState } from "@bentley/imodeljs-frontend";
+import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface, RpcConfiguration } from "@bentley/imodeljs-common";
+import {
+  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
+  IModelAppOptions, IModelConnection, MobileAuthorizationClient, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+} from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
@@ -55,7 +58,8 @@ import { HyperModeling } from "@bentley/hypermodeling-frontend";
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx
+
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
@@ -86,7 +90,7 @@ const initialState: SampleAppState = {
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
@@ -176,7 +180,7 @@ export class SampleAppIModelApp {
   public static set uiSettings(v: UiSettings) {
     SampleAppIModelApp._uiSettings = v;
 
-    SampleAppIModelApp._appUiSettings.apply(v);  // tslint:disable-line: no-floating-promises
+    SampleAppIModelApp._appUiSettings.apply(v);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
@@ -187,7 +191,11 @@ export class SampleAppIModelApp {
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
     opts.viewManager = new AppViewManager(true);  // Favorite Properties Support
-    await IModelApp.startup(opts);
+    if (MobileRpcConfiguration.isMobileFrontend) {
+      await NativeApp.startup(opts);
+      NativeAppLogger.initialize();
+    } else
+      await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
@@ -208,6 +216,13 @@ export class SampleAppIModelApp {
 
     // Mobx configuration
     mobxConfigure({ enforceActions: "observed" });
+
+    if (SampleAppIModelApp.testAppConfiguration?.reactAxeConsole) {
+      if (process.env.NODE_ENV !== "production") {
+        const axe = require("react-axe"); // eslint-disable-line @typescript-eslint/no-var-requires
+        axe(React, ReactDOM, 1000);
+      }
+    }
   }
 
   public static async initialize() {
@@ -251,7 +266,7 @@ export class SampleAppIModelApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
-    await MapLayersUI.initialize();
+    await MapLayersUI.initialize(true); // if false then add widget in FrontstageDef
   }
 
   // cSpell:enable
@@ -345,7 +360,7 @@ export class SampleAppIModelApp {
     }
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
+      FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
         // Frontstage & ScreenViewports are ready
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
       });
@@ -485,7 +500,7 @@ export class SampleAppIModelApp {
 
   public static async showFrontstage(frontstageId: string) {
     const frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
-    FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+    FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }
 
@@ -513,9 +528,9 @@ function mapFrameworkVersionStateToProps(state: RootState) {
   return { frameworkVersion: state.sampleAppState.frameworkVersion };
 }
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
 class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
@@ -525,7 +540,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
     AppUi.initialize();
 
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-    this._initializeSignin(authorized); // tslint:disable-line:no-floating-promises
+    this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     this.state = {
       authorized,
@@ -541,7 +556,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
 
     this.setState({ authorized });
-    this._initializeSignin(authorized); // tslint:disable-line:no-floating-promises
+    this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private setUiSettings(authorized: boolean): void {
@@ -598,12 +613,15 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
 }
 
 // If we are using a browser, close the current iModel before leaving
-window.addEventListener("beforeunload", async () => {
+window.addEventListener("beforeunload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
-  const redirectUri = "http://localhost:3000/signin-callback";
+  let redirectUri = "http://localhost:3000/signin-callback";
+  if (MobileRpcConfiguration.isMobileFrontend) {
+    redirectUri = "imodeljs://app/signin-callback";
+  }
   const baseOidcScopes = [
     "openid",
     "email",
@@ -617,7 +635,7 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
     "imodel-extension-service-api",
   ];
 
-  return isElectronRenderer
+  return isElectronRenderer || MobileRpcConfiguration.isMobileFrontend
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
@@ -636,6 +654,10 @@ async function createOidcClient(requestContext: ClientRequestContext, oidcConfig
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
+  } else if (MobileRpcConfiguration.isMobileFrontend) {
+    const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
+    await mobileClient.initialize(requestContext);
+    return mobileClient;
   } else {
     await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
@@ -665,16 +687,17 @@ async function main() {
     SampleAppIModelApp.testAppConfiguration = {
       snapshotPath: process.env.imjs_TESTAPP_SNAPSHOT_FILEPATH,
       startWithSnapshots: process.env.imjs_TESTAPP_START_WITH_SNAPSHOTS,
+      reactAxeConsole: process.env.imjs_TESTAPP_REACT_AXE_CONSOLE,
     } as TestAppConfiguration;
-    Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // tslint:disable-line:no-console
+    Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
   }
-
-  const oidcConfig = getOidcConfiguration();
-  const oidcClient = await createOidcClient(new ClientRequestContext(), oidcConfig);
 
   const rpcInterfaces = getSupportedRpcs();
   if (isElectronRenderer) {
     ElectronRpcManager.initializeClient({}, rpcInterfaces);
+  } else if (MobileRpcConfiguration.isMobileFrontend) {
+    rpcInterfaces.push(NativeAppRpcInterface);
+    MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {
     const urlClient = new UrlDiscoveryClient();
     const requestContext = new ClientRequestContext();
@@ -683,6 +706,9 @@ async function main() {
   } else {
     BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
   }
+
+  const oidcConfig = getOidcConfiguration();
+  const oidcClient = await createOidcClient(new ClientRequestContext(), oidcConfig);
 
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {
@@ -698,4 +724,4 @@ async function main() {
 }
 
 // Entry point - run the main function
-main(); // tslint:disable-line:no-floating-promises
+main(); // eslint-disable-line @typescript-eslint/no-floating-promises

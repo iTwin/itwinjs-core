@@ -13,7 +13,6 @@ packageClassification:  [
          "bentleyjs-core",
          "ecschema-metadata",
          "geometry-core",
-         "ecschema-metadata",
          "logger-config",
          "frontend-devtools",
          "hypermodeling-frontend",

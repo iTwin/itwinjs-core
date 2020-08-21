@@ -78,7 +78,7 @@ describe("ConnectedContent", () => {
       };
     }
 
-    const ConnectControl = connectIModelConnection(localMapStateToProps, sessionStateMapDispatchToProps)(TestComponent); // tslint:disable-line:variable-name
+    const ConnectControl = connectIModelConnection(localMapStateToProps, sessionStateMapDispatchToProps)(TestComponent); // eslint-disable-line @typescript-eslint/naming-convention
     const renderedComponent = render(<Provider store={TestUtils.store} ><ConnectControl /></Provider>);
 
     expect(renderedComponent).not.to.be.undefined;

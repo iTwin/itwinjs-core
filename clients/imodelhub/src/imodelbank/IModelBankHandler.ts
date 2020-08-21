@@ -24,6 +24,10 @@ export class IModelBankHandler extends IModelBaseHandler {
   public constructor(url: string, handler: FileHandler | undefined, keepAliveDuration = 30000) {
     super(keepAliveDuration, handler);
     this._baseUrl = url;
+    if (url.startsWith("http://")) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      this._agent = require("http").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
+    }
   }
 
   protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }

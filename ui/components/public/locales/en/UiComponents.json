@@ -5,12 +5,14 @@
     "loading": "loading",
     "noData": "The data required for this tree layout is not available in this iModel.",
     "length": "Length",
-    "label": "Label"
+    "label": "Label",
+    "of": "of"
   },
   "button": {
     "label": {
       "search": "Search",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "settings": "Settings"
     }
   },
   "breadcrumb": {
@@ -52,7 +54,12 @@
     "repeat": "Repeat",
     "slow": "Speed: slow",
     "medium": "Speed: medium",
-    "fast": "Speed: fast"
+    "fast": "Speed: fast",
+    "play": "Play",
+    "pause": "Pause",
+    "backward": "Backward",
+    "forward": "Forward",
+    "step": "Step"
   },
   "month": {
     "long": {
@@ -134,5 +141,13 @@
   "drawing": {
     "unrotate": "Un-Rotate",
     "rotateStyle": "Toggle background-rotate"
+  },
+  "color": {
+    "hue": "Hue",
+    "saturation": "Saturation",
+    "transparency": "Transparency"
+  },
+  "toolbar": {
+    "overflow": "More toolbar items"
   }
 }

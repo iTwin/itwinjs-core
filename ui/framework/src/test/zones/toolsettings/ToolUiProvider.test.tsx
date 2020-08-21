@@ -73,7 +73,7 @@ describe("ToolUiProvider", () => {
             topCenter={
               <Zone
                 widgets={[
-                  <Widget isToolSettings={true} />,
+                  <Widget isToolSettings={true} />, // eslint-disable-line react/jsx-key
                 ]}
               />
             }

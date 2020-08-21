@@ -14,7 +14,7 @@ import { TabState, toolSettingsTabId } from "../base/NineZoneState";
 import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
 
 /** @internal */
-export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const widgetContent = React.useContext(WidgetContentNodeContext);
   const toolSettingsContent = React.useContext(ToolSettingsNodeContext);
   const widgetContentContainers = React.useContext(WidgetContentContainersContext);
@@ -26,7 +26,7 @@ export const WidgetContentRenderers = React.memo(function WidgetContentRenderers
         const container = widgetContentContainers[tab.id];
         const children = tab.id === toolSettingsTabId ? toolSettingsContent : widgetContent;
         return <WidgetContentRenderer
-          children={children}
+          children={children} // eslint-disable-line react/no-children-prop
           key={tab.id}
           renderTo={container}
           tabId={tab.id}
@@ -43,22 +43,30 @@ interface WidgetContentRendererProps {
 }
 
 /** @internal */
-export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(props: WidgetContentRendererProps) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(props: WidgetContentRendererProps) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   const container = React.useRef<HTMLDivElement>(undefined!);
   if (!container.current) {
     container.current = document.createElement("div");
-    container.current.className = "nz-widget-contentRenderer";
+    container.current.classList.add("nz-widget-contentRenderer");
   }
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     const parent = props.renderTo;
-    const child = container.current;
     if (parent) {
-      parent.appendChild(child);
+      while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+      }
+
+      parent.appendChild(container.current);
       widgetContentManager.onRestoreTransientState.emit(props.tabId);
     }
     return () => {
-      parent?.removeChild(child);
+      for (const child of parent?.children || []) {
+        if (child === container.current) {
+          parent!.removeChild(child);
+          return;
+        }
+      }
     };
   }, [props.renderTo, widgetContentManager, props.tabId]);
   return ReactDOM.createPortal(
@@ -70,13 +78,12 @@ export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(p
 });
 
 /** @internal */
-export const TabIdContext = React.createContext<TabState["id"]>(""); // tslint:disable-line: variable-name
+export const TabIdContext = React.createContext<TabState["id"]>(""); // eslint-disable-line @typescript-eslint/naming-convention
 TabIdContext.displayName = "nz:TabIdContext";
 
 /** @internal */
-export function useTransientState(onSave?: () => void, onRestore?: () => void) {
+export function useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void) {
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
-  const tabId = React.useContext(TabIdContext);
   React.useEffect(() => {
     const handleSaveTransientState = (id: TabState["id"]) => {
       tabId === id && onSave && onSave();
@@ -95,4 +102,10 @@ export function useTransientState(onSave?: () => void, onRestore?: () => void) {
       widgetContentManager.onRestoreTransientState.remove(handleRestoreTransientState);
     };
   }, [widgetContentManager, onRestore, tabId]);
+}
+
+/** @internal */
+export function useTransientState(onSave?: () => void, onRestore?: () => void) {
+  const tabId = React.useContext(TabIdContext);
+  return useTabTransientState(tabId, onSave, onRestore);
 }

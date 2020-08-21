@@ -70,7 +70,7 @@ export class GeometryParams {
    */
   public elmPriority?: number;
   /** Optional line weight to override [[SubCategoryAppearance.weight]].
-   * The weight is an integer in the range of [0,32] that by default corresponds to a pixel width of weight+1.
+   * The weight is an integer in the range of [0,31] that by default corresponds to a pixel width of weight+1.
    */
   public weight?: number;
   /** Optional line color to override [[SubCategoryAppearance.color]].

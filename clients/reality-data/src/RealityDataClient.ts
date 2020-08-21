@@ -141,7 +141,7 @@ export class RealityData extends WsgInstance {
 
   // Cache parameters for reality data access. Contains the blob url, the timestamp to refresh (every 50 minutes) the url and the root document path.
   private _blobUrl: any;
-  private _blobTimeStamp: Date;
+  private _blobTimeStamp?: Date;
   private _blobRooDocumentPath: undefined | string; // Path relative to blob root of root document. It is slash terminated if not empty
 
   // Link to client to fetch the blob url
@@ -205,7 +205,8 @@ export class RealityData extends WsgInstance {
     if (!this.id)
       throw new Error("id not set");
 
-    if (undefined === this._blobUrl || (Date.now() - this._blobTimeStamp.getTime()) > 3000000) { // 3 million milliseconds or 50 minutes
+    const blobUrlRequiresRefresh = !this._blobTimeStamp || (Date.now() - this._blobTimeStamp.getTime()) > 3000000; // 3 million milliseconds or 50 minutes
+    if (undefined === this._blobUrl || blobUrlRequiresRefresh) {
       const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId as string, this.id, writeAccess);
       requestContext.enter();
       if (fileAccess.length !== 1)

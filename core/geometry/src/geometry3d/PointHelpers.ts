@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-/* tslint:disable:variable-name jsdoc-format no-empty */
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { MultiLineStringDataVariant } from "../topology/Triangulation";
@@ -136,11 +136,11 @@ export class NumberArray {
     const delta = high - low;
     const numInterval = Math.max(1, Math.floor(Math.abs(delta / step)));
     const result = [];
-    result.push (low);
+    result.push(low);
     for (let i = 1; i < numInterval; i++) {
       result.push(low + (i / numInterval) * delta);
     }
-    result.push (high);
+    result.push(high);
     return result;
   }
 

@@ -71,7 +71,7 @@ describe("ToolButton", () => {
     const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
     const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
-    element.simulate("keyDown", { key: "Escape", keyCode: 27 });
+    element.simulate("keyDown", { key: "Escape" });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
     wrapper.unmount();
   });
@@ -91,7 +91,7 @@ describe("ToolButton", () => {
     const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
     const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
-    element.simulate("keyDown", { key: "Escape", keyCode: 27 });
+    element.simulate("keyDown", { key: "Escape" });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
 
     expect(stateFunctionCalled).to.eq(false);

@@ -412,11 +412,39 @@ export interface EnumerationChoice {
 // @beta
 export interface EnumerationChoicesInfo {
     // (undocumented)
-    choices: EnumerationChoice[];
+    choices: Promise<EnumerationChoice[]> | EnumerationChoice[];
     // (undocumented)
     isStrict?: boolean;
     // (undocumented)
     maxDisplayedRows?: number;
+}
+
+// @public
+export enum FunctionKey {
+    // (undocumented)
+    F1 = "F1",
+    // (undocumented)
+    F10 = "F10",
+    // (undocumented)
+    F11 = "F11",
+    // (undocumented)
+    F12 = "F12",
+    // (undocumented)
+    F2 = "F2",
+    // (undocumented)
+    F3 = "F3",
+    // (undocumented)
+    F4 = "F4",
+    // (undocumented)
+    F5 = "F5",
+    // (undocumented)
+    F6 = "F6",
+    // (undocumented)
+    F7 = "F7",
+    // (undocumented)
+    F8 = "F8",
+    // (undocumented)
+    F9 = "F9"
 }
 
 // @internal
@@ -489,6 +517,9 @@ export const isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item i
 
 // @beta
 export const isActionItem: (item: BackstageItem) => item is BackstageActionItem;
+
+// @public
+export function isArrowKey(key: string): boolean;
 
 // @beta
 export const isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams;
@@ -751,6 +782,54 @@ export interface SliderEditorParams extends BasePropertyEditorParams {
     tooltipBelow?: boolean;
     // (undocumented)
     type: PropertyEditorParamTypes.Slider;
+}
+
+// @public
+export enum SpecialKey {
+    // (undocumented)
+    Add = "Add",
+    // (undocumented)
+    ArrowDown = "ArrowDown",
+    // (undocumented)
+    ArrowLeft = "ArrowLeft",
+    // (undocumented)
+    ArrowRight = "ArrowRight",
+    // (undocumented)
+    ArrowUp = "ArrowUp",
+    // (undocumented)
+    Backspace = "Backspace",
+    // (undocumented)
+    Clear = "Clear",
+    // (undocumented)
+    Decimal = "Decimal",
+    // (undocumented)
+    Delete = "Delete",
+    // (undocumented)
+    Divide = "Divide",
+    // (undocumented)
+    End = "End",
+    // (undocumented)
+    Enter = "Enter",
+    // (undocumented)
+    Escape = "Escape",
+    // (undocumented)
+    Home = "Home",
+    // (undocumented)
+    Insert = "Insert",
+    // (undocumented)
+    Multiply = "Multiply",
+    // (undocumented)
+    PageDown = "PageDown",
+    // (undocumented)
+    PageUp = "PageUp",
+    // (undocumented)
+    Return = "Enter",
+    // (undocumented)
+    Space = " ",
+    // (undocumented)
+    Subtract = "Subtract",
+    // (undocumented)
+    Tab = "Tab"
 }
 
 // @beta
@@ -1031,9 +1110,11 @@ export class UiAdmin {
     hideInputEditor(): boolean;
     hideMenuButton(_id: string): boolean;
     hideToolbar(): boolean;
+    get isFocusOnHome(): boolean;
     // @internal (undocumented)
     onInitialized(): void;
     openToolSettingsPopup(_dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
+    setFocusToHome(): void;
     showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showCard(_content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;

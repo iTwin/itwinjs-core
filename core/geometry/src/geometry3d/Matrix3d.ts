@@ -14,7 +14,7 @@ import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
-/* tslint:disable:prefer-get */
+/* eslint-disable rulesdir/prefer-get */
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
@@ -420,7 +420,7 @@ export class Matrix3d implements BeJSONFunctions {
       if (other.inverseState === InverseMatrixState.inverseStored && other.inverseCoffs !== undefined) {
         this.createInverseCoffsWithZeros();
         for (let i = 0; i < 9; i++)
-          this.inverseCoffs![i] = other.inverseCoffs![i];
+          this.inverseCoffs![i] = other.inverseCoffs[i];
         this.inverseState = InverseMatrixState.inverseStored;
       } else if (other.inverseState !== InverseMatrixState.inverseStored) {
         this.inverseState = other.inverseState;

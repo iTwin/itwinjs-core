@@ -13,7 +13,7 @@ import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { PascalCoefficients } from "./PascalCoefficients";
 import { AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial } from "./Polynomials";
 
-/* tslint:disable:variable-name*/
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * * BezierCoffs is an abstract base class for one-dimensional (u to f(u)) Bezier polynomials.
  * * The base class carries a Float64Array with coefficients.
@@ -211,7 +211,7 @@ export class BezierPolynomialAlgebra {
     let qA;
     for (let a = 0; a < orderA; a++) {
       qA = scale * (constA + data[indexA + a * dataBlockSize]) * coffA[a];
-      for (let b = 0, k = indexB; b < orderB; b++ , k += dataBlockSize) {
+      for (let b = 0, k = indexB; b < orderB; b++, k += dataBlockSize) {
         product[a + b] += qA * coffB[b] * (data[k + dataBlockSize] - data[k]) / coffC[a + b];
       }
     }
@@ -228,7 +228,7 @@ export class BezierPolynomialAlgebra {
   public static scaledComponentSum(sum: Float64Array, data: Float64Array, dataBlockSize: number, dataOrder: number, indexA: number, constA: number, indexB: number, constB: number) {
     const orderA = dataOrder;
     if (sum.length !== orderA) return;
-    for (let a = 0, rowBase = 0; a < orderA; a++ , rowBase += dataBlockSize) {
+    for (let a = 0, rowBase = 0; a < orderA; a++, rowBase += dataBlockSize) {
       sum[a] = constA * data[rowBase + indexA] + constB * data[rowBase + indexB];
     }
   }

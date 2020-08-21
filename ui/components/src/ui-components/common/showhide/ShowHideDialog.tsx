@@ -78,7 +78,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
 
   /** @internal */
   public render(): React.ReactNode {
-    const { opened, items, initialHidden, onClose, onShowHideChange, ...props } = this.props;
+    const { opened, items, initialHidden, onClose, onShowHideChange, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
       <GlobalDialog
         opened={opened}

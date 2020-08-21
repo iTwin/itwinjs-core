@@ -8,9 +8,7 @@
 
 import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
-import {
-  PartialHierarchyModificationJSON, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValueJSON, VariableValueTypes,
-} from "@bentley/presentation-common";
+import { PresentationError, PresentationStatus, UpdateInfoJSON, VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common";
 import { PresentationManagerMode } from "./PresentationManager";
 
 /** @internal */
@@ -28,11 +26,12 @@ export enum NativePlatformRequestTypes {
   GetDistinctValues = "GetDistinctValues",
   GetPagedDistinctValues = "GetPagedDistinctValues",
   GetDisplayLabel = "GetDisplayLabel",
+  CompareHierarchies = "CompareHierarchies",
 }
 
 /** @internal */
 export interface NativePlatformDefinition extends IDisposable {
-  forceLoadSchemas(requestContext: ClientRequestContext, db: any): Promise<void>;
+  forceLoadSchemas(db: any): Promise<void>;
   setupRulesetDirectories(directories: string[]): void;
   setupSupplementalRulesetDirectories(directories: string[]): void;
   getImodelAddon(imodel: IModelDb): any;
@@ -40,11 +39,10 @@ export interface NativePlatformDefinition extends IDisposable {
   addRuleset(serializedRulesetJson: string): string;
   removeRuleset(rulesetId: string, hash: string): boolean;
   clearRulesets(): void;
-  handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string>;
+  handleRequest(db: any, options: string): Promise<string>;
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
   getUpdateInfo(): UpdateInfoJSON | undefined;
-  compareHierarchies(requestContext: ClientRequestContext, db: any, options: { prevRulesetId: string, currRulesetId: string, locale: string }): Promise<PartialHierarchyModificationJSON[]>;
 }
 
 /** @internal */
@@ -90,7 +88,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public dispose() {
       this._nativeAddon.dispose();
     }
-    public async forceLoadSchemas(requestContext: ClientRequestContext, db: any): Promise<void> {
+    public async forceLoadSchemas(db: any): Promise<void> {
+      const requestContext = ClientRequestContext.current;
       return new Promise((resolve: () => void, reject: () => void) => {
         requestContext.enter();
         this._nativeAddon.forceLoadSchemas(db, (result: IModelJsNative.ECPresentationStatus) => {
@@ -124,16 +123,23 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public clearRulesets(): void {
       this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
-    public async handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string> {
+    public async handleRequest(db: any, options: string): Promise<string> {
+      const requestContext = ClientRequestContext.current;
+      const requestGuid = this.handleResult(this._nativeAddon.queueRequest(db, options));
       return new Promise((resolve, reject) => {
         requestContext.enter();
-        this._nativeAddon.handleRequest(db, options, (response) => {
-          try {
-            resolve(this.handleResult(response));
-          } catch (error) {
-            reject(error);
+        const interval = setInterval(() => {
+          const pollResult = this._nativeAddon.pollResponse(requestGuid);
+          if (pollResult.error) {
+            if (pollResult.error.status !== IModelJsNative.ECPresentationStatus.Pending) {
+              reject(new PresentationError(this.getStatus(pollResult.error.status), pollResult.error.message));
+              clearInterval(interval);
+            }
+            return; // ignore 'pending' responses
           }
-        });
+          resolve(pollResult.result);
+          clearInterval(interval);
+        }, 20);
       });
     }
     public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON {
@@ -144,18 +150,6 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());
-    }
-    public async compareHierarchies(requestContext: ClientRequestContext, db: any, options: { prevRulesetId: string, currRulesetId: string, locale: string }): Promise<PartialHierarchyModificationJSON[]> {
-      return new Promise((resolve, reject) => {
-        requestContext.enter();
-        this._nativeAddon.compareHierarchies(db, options, (response) => {
-          try {
-            resolve(this.handleResult(response));
-          } catch (error) {
-            reject(error);
-          }
-        });
-      });
     }
   };
 };

@@ -44,7 +44,7 @@ internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
 internal;createWidgetState(id: WidgetState["id"], args?: Partial
 internal;Css
 internal;CssProperties
-internal;CursorType = "ew-resize" | "ns-resize" | "grabbing"
+internal;CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing"
 internal;CursorTypeContext: React.Context
 beta;Dialog 
 beta;DialogProps 
@@ -98,7 +98,7 @@ internal;FloatingWidgetHomeState
 internal;FloatingWidgetIdContext: React.Context
 internal;FloatingWidgetProps
 internal;FloatingWidgetResizeAction
-internal;FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom"
+internal;FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle
 internal;FloatingWidgets: React.NamedExoticComponent
 internal;FloatingWidgetSendBackAction
 internal;FloatingWidgetsState
@@ -156,6 +156,7 @@ internal;class GrowStrategy
 internal;GrowTop 
 alpha;HandleMode
 alpha;HandleModeHelpers
+internal;handleToCursorType(handle: FloatingWidgetResizeHandle): CursorType
 beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
 internal;HorizontalPanelSide = TopPanelSide | BottomPanelSide
@@ -406,6 +407,7 @@ internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPo
 internal;UseDragToolSettingsArgs
 internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
 internal;UseDragWidgetArgs
+internal;useForceFill(): boolean
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
@@ -414,11 +416,13 @@ internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [Rea
 internal;usePanelTarget
 internal;UsePanelTargetArgs
 internal;usePointerCaptor: 
+internal;usePreferredPanelWidgetSize(widgetId: WidgetState["id"]): "fit-content" | undefined
 internal;useResizeGrip: 
 beta;UserProfile 
 beta;UserProfileProps 
 internal;useTabTarget
 internal;UseTabTargetArgs
+internal;useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void): void
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
 internal;useTransientState(onSave?: () => void, onRestore?: () => void): void
 internal;useWidgetTarget
@@ -427,7 +431,8 @@ beta;VerticalAnchor
 internal;VerticalAnchorHelpers
 internal;VerticalPanelSide = LeftPanelSide | RightPanelSide
 internal;VerticalPanelState 
-internal;Widget: React.NamedExoticComponent
+internal;Widget: React.MemoExoticComponent
+internal;WidgetComponent
 alpha;WidgetContent 
 internal;WidgetContentContainer: React.NamedExoticComponent
 internal;WidgetContentContainersContext: React.Context
@@ -448,6 +453,7 @@ beta;WidgetManagerProps
 internal;WidgetMenu(props: WidgetMenuProps): JSX.Element
 internal;WidgetMenuProps 
 internal;WidgetOverflow: React.NamedExoticComponent
+internal;WidgetOverflowContext: React.Context
 internal;WidgetOverflowProps
 internal;WidgetPanel: React.NamedExoticComponent
 internal;WidgetPanelComponent: React.NamedExoticComponent

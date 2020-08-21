@@ -24,7 +24,7 @@ describe("PromptField", () => {
       if (openWidget) { }
       return (
         <>
-          <PromptField isInFooterMode={isInFooterMode} openWidget={null} onOpenWidget={() => { }} />   {/* tslint:disable-line: deprecation */}
+          <PromptField isInFooterMode={isInFooterMode} openWidget={null} onOpenWidget={() => { }} />   {/* eslint-disable-line deprecation/deprecation */}
         </>
       );
     }

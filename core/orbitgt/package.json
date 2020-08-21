@@ -1,6 +1,6 @@
 {
   "name": "@bentley/orbitgt-core",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "",
   "main": "lib/imodeljs-orbitgt.js",
   "typings": "lib/imodeljs-orbitgt",
@@ -12,7 +12,7 @@
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-orbitgt/file.json --tsIndexFile=./imodeljs-orbitgt.ts --onlyJson",
     "extract-api": "betools extract-api --entry=imodeljs-orbitgt",
-    "lint": "tslint --project . 1>&2",
+    "lint": "",
     "test": "betools test",
     "cover": ""
   },
@@ -38,22 +38,24 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.4.2",
-    "@bentley/build-tools": "2.4.2",
+    "@bentley/bentleyjs-core": "2.5.0",
+    "@bentley/build-tools": "2.5.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
     "debug": "^2.6.9",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
     "semver": "^5.5.0",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+  }
 }

@@ -88,8 +88,8 @@ describe("WidgetStack", () => {
           centerRight={
             <Zone defaultState={ZoneState.Open}
               widgets={[
-                <Widget id="widget1" control={TestWidget1} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />,
-                <Widget id="widget2" control={TestWidget2} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />,
+                <Widget id="widget1" control={TestWidget1} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />, // eslint-disable-line react/jsx-key
+                <Widget id="widget2" control={TestWidget2} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />, // eslint-disable-line react/jsx-key
               ]}
             />
           }

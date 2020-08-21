@@ -15,8 +15,10 @@ import { IModelApp, IModelConnection, ScreenViewport, ViewManager, Viewport, Vie
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 // cSpell:ignore Quaternion Quaternions unrotate
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 
 /**
  * Enum for mode that minimap is currently in
@@ -202,7 +204,8 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
         ref={this._rootElementRef}
         onWheel={this._handleWheel}
         onMouseDown={this._handleDrawingMouseDown}
-        style={rootStyle}>
+        style={rootStyle}
+        role="presentation">
         <DrawingNavigationCanvas view={this.state.view} viewManagerOverride={viewManager} screenViewportOverride={screenViewport} viewId={viewId} origin={map.plus(offset).minus(mapOffset)} extents={e} zoom={dz} rotation={rotateMinimapWithView || is3D ? rotation : Matrix3d.createIdentity()} />
         <div className="drawing-container"
           data-testid="drawing-container"
@@ -212,21 +215,28 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
             onMouseDown={this._handleWindowMouseDown}
             onTouchStart={this._handleWindowTouchStart}
             style={viewWindowStyle}
-            ref={this._viewElementRef} />
+            ref={this._viewElementRef}
+            role="presentation" />
           {!is3D &&
             <div className={classnames("toggle-rotate-style", "icon", "icon-rotate-left", { checked: rotateMinimapWithView })} data-testid="toggle-rotate-style"
               style={mode === MapMode.Closed && !isAnimating ? { bottom: 2, left: 2 } : {}}
               title={UiComponents.translate("drawing.rotateStyle")}
-              onClick={this._toggleRotationMode} />}
+              onClick={this._toggleRotationMode}
+              role="presentation" />}
           {!rot.isIdentity &&
-            <div className="unrotate-button" data-testid="drawing-unrotate-button" style={mode === MapMode.Closed && !isAnimating ? { top: 2 } : {}} onClick={this._handleUnrotate}>{unrotateLabel}</div>}
+            <div className="unrotate-button" data-testid="drawing-unrotate-button" style={mode === MapMode.Closed && !isAnimating ? { top: 2 } : {}} onClick={this._handleUnrotate}
+              role="button" tabIndex={-1}
+            >
+              {unrotateLabel}
+            </div>
+          }
           {mode === MapMode.Opened && !isAnimating && <>
-            <div className="close" data-testid="drawing-close-button" onClick={this._closeLargeMap}>
+            <div className="close" data-testid="drawing-close-button" onClick={this._closeLargeMap} role="button" tabIndex={-1}>
               <div className="close-icon icon icon-sort-up" />
             </div>
             <div className="zoom">
-              <div className="zoom-button icon icon-add" data-testid="drawing-zoom-in-button" onClick={this._handleZoomIn} />
-              <div className="zoom-button icon icon-remove-2" data-testid="drawing-zoom-out-button" onClick={this._handleZoomOut} />
+              <div className="zoom-button icon icon-add" data-testid="drawing-zoom-in-button" onClick={this._handleZoomIn} role="button" tabIndex={-1} />
+              <div className="zoom-button icon icon-remove-2" data-testid="drawing-zoom-out-button" onClick={this._handleZoomOut} role="button" tabIndex={-1} />
             </div>
           </>}
         </div>
@@ -409,7 +419,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
 
   private _handleKeyUp = (event: React.KeyboardEvent) => {
     // istanbul ignore else
-    if ((event.key === "Escape" || event.key === "Esc") && this.state.mode === MapMode.Opened) {
+    if (event.key === SpecialKey.Escape && this.state.mode === MapMode.Opened) {
       this._closeLargeMap();
     }
   }

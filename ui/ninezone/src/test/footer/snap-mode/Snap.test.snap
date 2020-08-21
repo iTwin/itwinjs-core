@@ -3,6 +3,8 @@
 exports[`<Snap /> renders active correctly 1`] = `
 <div
   className="nz-footer-snapMode-snap nz-active"
+  role="button"
+  tabIndex={-1}
 >
   <div />
 </div>
@@ -11,6 +13,8 @@ exports[`<Snap /> renders active correctly 1`] = `
 exports[`<Snap /> renders correctly 1`] = `
 <div
   className="nz-footer-snapMode-snap"
+  role="button"
+  tabIndex={-1}
 >
   <div />
 </div>
@@ -19,6 +23,8 @@ exports[`<Snap /> renders correctly 1`] = `
 exports[`<Snap /> renders correctly with icon 1`] = `
 <div
   className="nz-footer-snapMode-snap"
+  role="button"
+  tabIndex={-1}
 >
   <div>
     <i />

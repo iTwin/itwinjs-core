@@ -191,7 +191,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
           <div className="tooltip-rail" style={{ left: `${percent}%` }}>
             <div className="tooltip">
               <span className="tooltip-text">{toolTip}</span>
-             </div>
+            </div>
           </div>
         }
         <div

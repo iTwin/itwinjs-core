@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, PackedFeatureTable, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, PackedFeatureTable, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
@@ -209,7 +209,7 @@ export class Branch extends Graphic {
   public readonly edgeSettings?: EdgeSettings;
   public readonly iModel?: IModelConnection; // used chiefly for readPixels to identify context of picked Ids.
   public readonly frustum?: GraphicBranchFrustum;
-  public readonly appearanceProvider?: FeatureSymbology.AppearanceProvider;
+  public readonly appearanceProvider?: FeatureAppearanceProvider;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();

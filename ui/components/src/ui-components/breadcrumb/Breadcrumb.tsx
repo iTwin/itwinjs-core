@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as _ from "lodash";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
 import {
   CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, MessageSeverity, SplitButton, withOnOutsideClick,
 } from "@bentley/ui-core";
@@ -26,7 +26,7 @@ import {
 import { UiComponents } from "../UiComponents";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 // cspell:ignore itree autocompleting
 
 /** @internal */
@@ -232,7 +232,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     model.on(BeInspireTreeEvent.ChangesApplied, this._onModelChanged);
     model.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    // tslint:disable-next-line:no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     model.ready.then(() => {
       if (model === this.state.model)
         this._onModelReady();
@@ -300,7 +300,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
-    using(this.state.model.pauseRendering(), async (_r) => { // tslint:disable-line:no-floating-promises
+    using(this.state.model.pauseRendering(), async (_r) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       await this.state.model.reload();
     });
   }
@@ -419,7 +419,7 @@ export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> 
   }
 }
 /** @internal */
-const InputSwitch = withOnOutsideClick(InputSwitchComponent); // tslint:disable-line:variable-name
+const InputSwitch = withOnOutsideClick(InputSwitchComponent); // eslint-disable-line @typescript-eslint/naming-convention
 
 /** @internal */
 export interface BreadcrumbInputProps {
@@ -468,7 +468,9 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
           onKeyDown={this._handleKeyDown} onKeyUp={this._handleKeyUp}
           onChange={this._handleChange} onPaste={this._handleChange} onCut={this._handleChange} onFocus={this._handleChange} onClick={this._handleChange}
           spellCheck={false}></input>
-        <div className="components-breadcrumb-close icon icon-close" data-testid="components-breadcrumb-input-close" onClick={this._handleClose} />
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <div className="components-breadcrumb-close icon icon-close" data-testid="components-breadcrumb-input-close" onClick={this._handleClose}
+          role="button" tabIndex={-1} />
         <ContextMenu
           ref={(el) => { this._autocomplete = el; }}
           style={{ width: "100%" }}
@@ -498,7 +500,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
                     this._inputElement.setSelectionRange(listItem.length, listItem.length);
 
                     const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
-                    this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
+                    this._getAutocompleteList(autocompleteStr).then((list) => { // eslint-disable-line @typescript-eslint/no-floating-promises
                       // istanbul ignore else
                       if (this._mounted)
                         this.setState({
@@ -550,7 +552,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   private _getAutocompleteList = async (path: string) => {
     const node = await this._findChildParentPartial(path);
     if (node) {
-      const baseString = node.getTextualHierarchy().join(this.props.delimiter!);
+      const baseString = node.getTextualHierarchy().join(this.props.delimiter);
       const children = node.getChildren();
       const parentChildren = this.props.parentsOnly ? children.filter((child) => child.hasOrWillHaveChildren()) : children;
       const strList = parentChildren.map((n) => baseString + this.props.delimiter! + n.toString());
@@ -610,7 +612,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     return undefined;
   }
 
-  private _handleClick = (event: any): void => {
+  private _handleClick = (event: MouseEvent): void => {
     // istanbul ignore else
     if (this._autocomplete) {
       // istanbul ignore else
@@ -621,22 +623,22 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     }
   }
 
-  private _handleKeyDown = (event: any) => {
-    switch (event.keyCode) {
-      case 38: /*<Up>*/
-      case 40: /*<Down>*/
+  private _handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (event.key) {
+      case SpecialKey.ArrowUp:
+      case SpecialKey.ArrowDown:
         event.preventDefault();
     }
   }
-  private _handleKeyUp = async (event: any) => {
-    switch (event.keyCode) {
-      case 27: /*<Esc>*/
+  private _handleKeyUp = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (event.key) {
+      case SpecialKey.Escape:
         // istanbul ignore else
         if (this._mounted)
           this.setState({ autocompleting: false });
         break;
-      case 38: /*<Up>*/
-      case 40: /*<Down>*/
+      case SpecialKey.ArrowUp:
+      case SpecialKey.ArrowDown:
         event.preventDefault();
         // istanbul ignore else
         if (this._autocomplete && this.state.autocompleteList.length > 0) {
@@ -646,7 +648,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
             this.setState({ autocompleting: true });
         }
         break;
-      case 13: /*<Return>*/
+      case SpecialKey.Enter:
         // istanbul ignore else
         if (this._inputElement) {
           const path = this._inputElement.value;
@@ -671,7 +673,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     // istanbul ignore else
     if (this._inputElement) {
       const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
-      this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
+      this._getAutocompleteList(autocompleteStr).then((list) => { // eslint-disable-line @typescript-eslint/no-floating-promises
         if (this._mounted)
           this.setState({
             autocompleting: list.length > 0,
@@ -739,15 +741,24 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
       nodes.push(node);
     }
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
         className="components-breadcrumb-dropdown"
         data-testid="components-breadcrumb-dropdown-background"
-        style={{ width: this.props.width! }}
-        onClick={this._focusInput}>
-        {!this.props.staticOnly && this.props.showUpDir ? <div data-testid="components-breadcrumb-up-dir" className={classnames("components-breadcrumb-up-dir", "icon", "icon-sort-up", {
-          root: this.props.node === undefined,
-        })
-        } onClick={this._handleUpClick} /> : undefined}
+        style={{ width: this.props.width }}
+        onClick={this._focusInput}
+        role="button" tabIndex={-1}
+      >
+        {!this.props.staticOnly && this.props.showUpDir ?
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+          <div data-testid="components-breadcrumb-up-dir"
+            className={classnames(
+              "components-breadcrumb-up-dir",
+              "icon", "icon-sort-up",
+              { root: this.props.node === undefined })
+            } onClick={this._handleUpClick} role="button" tabIndex={-1} />
+          : undefined
+        }
         <div className="components-breadcrumb-crumb-list"
           data-testid="components-breadcrumb-crumb-list">
           <BreadcrumbDropdownNode
@@ -866,7 +877,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
     }
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private renderNode = (props: BreadcrumbNodeProps, _node?: TreeNodeItem, _parent?: TreeNodeItem) => {
     return <BreadcrumbNode label={props.label} icon={props.icon} />;
   }

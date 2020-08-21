@@ -89,7 +89,7 @@ describe("EmitStrokableParts", () => {
       const ls2 = LineString3d.create();
       c.emitStrokes(ls2, options);
       const aMax2 = maxSegmentLength(ls2);
-      ck.testLE(aMax2, options.maxEdgeLength!, "maxEdgeLength effective for strokes", c);
+      ck.testLE(aMax2, options.maxEdgeLength, "maxEdgeLength effective for strokes", c);
       const handler = new StrokeVerifier(ck);
       c.emitStrokableParts(handler, options);
     }

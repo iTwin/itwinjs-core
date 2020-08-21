@@ -24,7 +24,7 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { TileContent } from "./internal";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /* -----------------------------------
  * To restore the use of web workers to decode jpeg, locate and uncomment the three sections by searching for "webworker".

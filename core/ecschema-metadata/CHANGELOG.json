@@ -2,6 +2,24 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/ecschema-metadata_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new EC Rules for NavigationProperty validation."
+          },
+          {
+            "comment": "Added support for adding schema references via the Editor class."
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/ecschema-metadata_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

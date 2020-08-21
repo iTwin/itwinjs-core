@@ -6,8 +6,9 @@ import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { CommandItemDef, FunctionKey, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../ui-framework";
+import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { FunctionKey, SpecialKey } from "@bentley/ui-abstract";
 
 describe("KeyboardShortcutMenu", () => {
   const testSpyMethod = sinon.spy();
@@ -69,7 +70,7 @@ describe("KeyboardShortcutMenu", () => {
 
     expect(wrapper.find("div.core-context-menu").length).to.not.eq(0);
 
-    wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { keyCode: 27 /* <Esc> */ });
+    wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { key: SpecialKey.Escape /* <Esc> */ });
     wrapper.update();
 
     expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);

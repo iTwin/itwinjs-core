@@ -10,7 +10,7 @@ import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel
 import "./PopupButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -22,11 +22,11 @@ import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 
-// tslint:disable: deprecation
+/* eslint-disable deprecation/deprecation */
 
 // cSpell:ignore popupbutton
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, true);
 
 /** Arguments of [[PopupButtonChildrenRenderProp]].
@@ -82,8 +82,8 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       this._label = UiFramework.i18n.translate(props.labelKey);
 
     this.state = {
-      isVisible: undefined !== props.isVisible ? props.isVisible : true, // tslint:disable-line:deprecation
-      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true, // tslint:disable-line:deprecation
+      isVisible: undefined !== props.isVisible ? props.isVisible : true, // eslint-disable-line deprecation/deprecation
+      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true, // eslint-disable-line deprecation/deprecation
       isActive: undefined !== props.isActive ? props.isActive : false,
       isPressed: undefined !== props.isPressed ? props.isPressed : false,
     };
@@ -109,14 +109,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     let newState: BaseItemState = { ...this.state };
 
     // istanbul ignore else
-    if (this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // tslint:disable-line:deprecation
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
+    if (this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
 
     // istanbul ignore else
     if (refreshState) {
       // istanbul ignore else
-      if (this.props.stateFunc) // tslint:disable-line:deprecation
-        newState = this.props.stateFunc(newState); // tslint:disable-line:deprecation
+      if (this.props.stateFunc) // eslint-disable-line deprecation/deprecation
+        newState = this.props.stateFunc(newState); // eslint-disable-line deprecation/deprecation
       // istanbul ignore next
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         if (this._isMounted)
@@ -146,7 +146,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore next
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       this.minimize();
       KeyboardShortcutManager.setFocusToHome();
     }

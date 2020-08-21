@@ -93,20 +93,20 @@ class TestUiProvider implements UiItemsProvider {
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool", 200, "icon-developer", "simple-test-action-tool",
         (): void => {
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           console.log("Got Here!");
         });
 
       const isHiddenCondition = new ConditionalBooleanValue((): boolean => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
       const childActionSpec = ToolbarItemUtilities.createActionButton("child-test-action-tool", 210, "icon-developer", "child-test-action-tool",
         (): void => {
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           console.log("Got Here!");
         }, { isHidden: isHiddenCondition });
 
       const nestedActionSpec = ToolbarItemUtilities.createActionButton("nested-test-action-tool", 220, "icon-developer", "test action tool (nested)",
         (): void => {
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           console.log("Got Here!");
         });
       const groupSpec = ToolbarItemUtilities.createGroupButton("test-tool-group", 230, "icon-developer", "test group", [childActionSpec, simpleActionSpec], { badgeType: BadgeType.TechnicalPreview, parentToolGroupId: "tool-formatting-setting" });
@@ -118,14 +118,14 @@ class TestUiProvider implements UiItemsProvider {
 
   public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const ShadowToggle = withStatusFieldProps(ShadowField);
 
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
         AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
           () => {
-            // tslint:disable-next-line: no-console
+            // eslint-disable-next-line no-console
             console.log("Got Here!");
           }));
 
@@ -153,7 +153,7 @@ class TestUiProvider implements UiItemsProvider {
     if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
       widgets.push({
         id: "addonWidget",
-        getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>,
+        getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>, // eslint-disable-line react/display-name
       });
     }
     return widgets;

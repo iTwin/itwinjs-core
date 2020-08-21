@@ -10,7 +10,7 @@ import * as bunyan from "bunyan";
 import * as domain from "domain";
 import { Writable } from "stream";
 
-// tslint:disable-next-line:no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const post = require("request-promise");
 
 /** @beta */
@@ -98,14 +98,14 @@ export class FluentdLoggerStream extends Writable {
     return response;
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public _writev(chunks: Array<{ chunk: any, encoding: string }>, callback: (err?: Error) => void): void {
     for (const entry of chunks) {
       this._write(entry.chunk, entry.encoding, callback);
     }
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public _write(chunk: any, encoding: string, callback: (err?: Error) => void): void {
     // we create a domain to catch errors from the socket. Major errors like CONNECTION not made is sent to bunyan
     const fluentdDomain: domain.Domain = domain.create();

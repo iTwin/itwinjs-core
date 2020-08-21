@@ -7,7 +7,7 @@
  * @module Serialization
  */
 
-/* tslint:disable: object-literal-key-quotes */
+/* eslint-disable quote-props */
 
 /**
  * Utilities to compare json objects by search through properties.
@@ -16,13 +16,13 @@
 export class DeepCompare {
   /** Statistical accumulations during searchers. */
   public typeCounts = {
-    "numbers": 0,
-    "arrays": 0,
-    "functions": 0,
-    "objects": 0,
-    "strings": 0,
-    "booleans": 0,
-    "undefined": 0,
+    numbers: 0,
+    arrays: 0,
+    functions: 0,
+    objects: 0,
+    strings: 0,
+    booleans: 0,
+    undefined: 0,
   };
   /** Counts of property names encountered during various searches. */
   public propertyCounts: { [key: string]: any } = {};
@@ -41,7 +41,7 @@ export class DeepCompare {
     } else {
       this.errorTracker.unshift(_b);
       this.errorTracker.unshift(_a);
-      this.errorTracker.unshift("In " + this.errorTracker[this.errorTracker.length - 1] + " property: Mismatched values");
+      this.errorTracker.unshift(`In ${this.errorTracker[this.errorTracker.length - 1]} property: Mismatched values`);
       return this.announce(false);
     }
   }
@@ -79,7 +79,7 @@ export class DeepCompare {
       }
       this.errorTracker.unshift(aCounter);
 
-      this.errorTracker.unshift("Mismatched array lengths a: [" + a.length + "] b: [" + b.length + "]");
+      this.errorTracker.unshift(`Mismatched array lengths a: [${a.length}] b: [${b.length}]`);
       return this.announce(false);
     }
     // Keep track of result for each element of array
@@ -87,7 +87,7 @@ export class DeepCompare {
     for (let i = 0; i < a.length; i++) {
       if (!this.compareInternal(a[i], b[i])) {
         toReturn = false;
-        this.errorTracker.unshift("[" + i.toString() + "]");
+        this.errorTracker.unshift(`[${i.toString()}]`);
         break;
       }
     }
@@ -99,7 +99,7 @@ export class DeepCompare {
     if (a == null && b == null)
       return this.announce(true);
     if ((Object.keys(a)).length !== (Object.keys(b)).length) {
-      this.errorTracker.unshift("Mismatched property lists [" + (Object.keys(a)) + "][" + (Object.keys(b)) + "]");
+      this.errorTracker.unshift(`Mismatched property lists [${Object.keys(a)}][${Object.keys(b)}`);
       return this.announce(false);
     }
     // Keep track of result for each property of object
@@ -115,7 +115,7 @@ export class DeepCompare {
 
         // Check that same property exists in b
         if (!(b.hasOwnProperty(property))) {
-          this.errorTracker.unshift("Property " + property + " of A not in B");
+          this.errorTracker.unshift(`Property ${property} of A not in B`);
           this.errorTracker.unshift(a);
           this.errorTracker.unshift(b);
           return this.announce(false);

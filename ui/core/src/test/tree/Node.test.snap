@@ -4,6 +4,8 @@ exports[`<Node /> renders correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -26,6 +28,8 @@ exports[`<Node /> renders expander correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -44,6 +48,8 @@ exports[`<Node /> renders expander correctly 2`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -67,6 +73,8 @@ exports[`<Node /> renders expander correctly 3`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -85,6 +93,8 @@ exports[`<Node /> renders icon correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -102,6 +112,7 @@ exports[`<Node /> renders icon correctly 1`] = `
       className="core-tree-node-icon"
     >
       <img
+        alt="Test"
         src="testIcon"
       />
     </div>
@@ -114,6 +125,8 @@ exports[`<Node /> renders label correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -140,6 +153,8 @@ exports[`<Node /> renders loader correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -165,6 +180,8 @@ exports[`<Node /> should set is-focused class 1`] = `
 <div
   className="core-tree-node is-focused"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -187,6 +204,8 @@ exports[`<Node /> should set is-hover-disabled class 1`] = `
 <div
   className="core-tree-node is-hover-disabled"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"
@@ -209,6 +228,8 @@ exports[`<Node /> should set is-selected class 1`] = `
 <div
   className="core-tree-node is-selected"
   onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
 >
   <div
     className="contents"

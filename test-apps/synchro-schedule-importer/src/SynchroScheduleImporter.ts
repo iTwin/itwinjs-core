@@ -54,7 +54,7 @@ class ScriptEntry {
     return json;
   }
   public setCuttingPlaneLimits(iModel: IModelDb) {
-    for (let [key, value] of Object.entries(this.data)) {
+    for (let [key, value] of Object.entries(this.data)) { // eslint-disable-line prefer-const
       if (key === "cuttingPlaneTimeline") {
         if (Array.isArray(value)) {
           const range = Range3d.createNull() as ElementAlignedBox3d;
@@ -275,7 +275,7 @@ Yargs.default("createDuplicateIbim", true, "Create a duplicate IBIM with the imp
 Yargs.required("script", "Animation script JSON file");
 Yargs.string("script");
 const args = Yargs.parse() as Yargs.Arguments<ImportInputArgs>;
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup(new IModelHostConfiguration());
   doImport(args);
-})(); // tslint:disable-line:no-floating-promises
+})();

@@ -660,7 +660,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
-  public readonly schemaItemType!: SchemaItemType.StructClass; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.StructClass; // eslint-disable-line
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);

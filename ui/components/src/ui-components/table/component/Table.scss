@@ -14,7 +14,13 @@
   background-color: $buic-background-control;
 
   .rdg-selected {
-    border: none;
+    border: none !important;
+    background-color: transparent !important;
+  }
+
+  .rdg-selected-range {
+    border: none !important;
+    background-color: transparent !important;
   }
 
   // Appears when columns get reordered

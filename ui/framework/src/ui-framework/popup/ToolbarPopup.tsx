@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, RelativePosition } from "@bentley/ui-abstract";
+import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { Direction, Toolbar, ToolbarOpacitySetting, ToolbarPanelAlignment } from "@bentley/ui-components";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
@@ -45,7 +45,7 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, Toolbar
 
   private _handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
     switch (event.key) {
-      case "Escape":
+      case SpecialKey.Escape:
         this._cancel();
         break;
     }

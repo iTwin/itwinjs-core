@@ -16,7 +16,7 @@ import { TreeNode, TreeNodeProps } from "../component/Node";
 import { TreeProps } from "../component/Tree";
 import { DragDropTreeNode } from "./DragDropTreeNode";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Type for drag and drop,
@@ -40,12 +40,12 @@ export interface TreeDragDropProps<DragDropObject = any> {
  * @beta
  * @deprecated
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject extends TreeDragDropType>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>> {
 
   type CombinedProps = P & TreeDragDropProps<DragDropObject>;
 
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const DropTree = withDropTarget<P, DragDropObject>(TreeComponent);
 
   return class WithDragAndDrop extends React.Component<CombinedProps> {
@@ -162,7 +162,7 @@ export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject 
 
     public renderNode = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
       const baseNode = this.props.renderOverrides && this.props.renderOverrides.renderNode ? this.props.renderOverrides.renderNode(item, props) : <TreeNode {...props} />;
-      const DDTreeNode = DragDropTreeNode<DragDropObject>(); // tslint:disable-line:variable-name
+      const DDTreeNode = DragDropTreeNode<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
       return (
         <DDTreeNode
           key={item.id}
@@ -175,7 +175,7 @@ export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject 
     }
 
     public render() {
-      const { dragProps, dropProps, renderNode, ...treeProps } = this.props as any;
+      const { dragProps, dropProps, renderNode, ...treeProps } = this.props as any; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <DropTree {...treeProps}
           renderNode={this.renderNode}

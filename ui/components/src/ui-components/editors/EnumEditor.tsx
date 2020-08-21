@@ -18,6 +18,7 @@ import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManag
 interface EnumEditorState {
   selectValue: string | number;
   valueIsNumber: boolean;
+  options: { [key: string]: string };
 }
 
 /** EnumEditor React component that is a property editor with select input
@@ -30,6 +31,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   public readonly state: Readonly<EnumEditorState> = {
     selectValue: "",
     valueIsNumber: false,
+    options: {},
   };
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -76,7 +78,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
-    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
@@ -87,7 +89,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
-      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+      this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
@@ -100,7 +102,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
       const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
       if (typeof primitiveValue === "string") {
-        initialValue = primitiveValue as string;
+        initialValue = primitiveValue;
         valueIsNumber = false;
       } else {
         initialValue = primitiveValue as number;
@@ -108,20 +110,14 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
       }
     }
 
-    // istanbul ignore else
-    if (this._isMounted)
-      this.setState({ selectValue: initialValue, valueIsNumber });
-  }
-
-  /** @internal */
-  public render() {
-    const className = classnames("components-cell-editor", "components-enum-editor", this.props.className);
-    const { propertyRecord } = this.props;
-    const selectValue = this.state.selectValue ? this.state.selectValue.toString() : undefined;
     let choices: EnumerationChoice[] | undefined;
 
     if (propertyRecord && propertyRecord.property.enum)
-      choices = propertyRecord.property.enum.choices;
+      if (propertyRecord.property.enum.choices instanceof Promise) {
+        choices = await propertyRecord.property.enum.choices;
+      } else {
+        choices = propertyRecord.property.enum.choices;
+      }
 
     const options: { [key: string]: string } = {};
     if (choices) {
@@ -129,6 +125,16 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
         options[choice.value.toString()] = choice.label;
       });
     }
+
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ selectValue: initialValue, valueIsNumber, options });
+  }
+
+  /** @internal */
+  public render() {
+    const className = classnames("components-cell-editor", "components-enum-editor", this.props.className);
+    const selectValue = this.state.selectValue ? this.state.selectValue.toString() : undefined;
 
     // set min-width to show about 4 characters + down arrow
     const minWidthStyle: React.CSSProperties = {
@@ -143,7 +149,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
         value={selectValue}
         onChange={this._updateSelectValue}
         data-testid="components-select-editor"
-        options={options}
+        options={this.state.options}
         setFocus={this.props.setFocus} />
     );
   }

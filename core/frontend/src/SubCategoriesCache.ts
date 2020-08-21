@@ -114,7 +114,7 @@ export class SubCategoriesCache {
 /** This namespace and the types within it are exported strictly for use in tests.
  * @internal
  */
-export namespace SubCategoriesCache {
+export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
   export interface ResultRow {
     parentId: Id64String;
     id: Id64String;
@@ -250,7 +250,7 @@ export namespace SubCategoriesCache {
       assert(undefined === this._next);
 
       this._current = entry;
-      this._request!.promise.then((completed: boolean) => { // tslint:disable-line:no-floating-promises
+      this._request!.promise.then((completed: boolean) => { // eslint-disable-line @typescript-eslint/no-floating-promises
         if (this._disposed)
           return;
 

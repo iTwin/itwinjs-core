@@ -77,8 +77,8 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
   }
 
   public render() {
-    const { status, disabled, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle,
-      onClick, onBlur, setFocus, ...inputProps } = this.props;
+    const { status, disabled, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle, // eslint-disable-line @typescript-eslint/no-unused-vars
+      onClick, onBlur, setFocus, ...inputProps } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const checkBoxClass = classnames("core-checkbox",
       disabled && "core-disabled",
       !label && "core-checkbox-no-label",
@@ -86,6 +86,8 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
       className);
 
     return (
+      /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+      /* eslint-disable-next-line jsx-a11y/click-events-have-key-events */
       <label className={checkBoxClass} onClick={onClick} onBlur={onBlur}>
         {label &&
           <span className="core-checkbox-label">{label}</span>
@@ -94,7 +96,7 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
           disabled={disabled} className={inputClassName} style={inputStyle}
           onClick={this._onCheckboxClick} onBlur={this._onCheckboxBlur} />
         <span className="core-checkbox-checkmark"></span>
-      </label>
+      </label >
     );
   }
 }

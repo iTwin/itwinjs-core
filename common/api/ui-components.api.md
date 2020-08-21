@@ -21,6 +21,7 @@ import * as CSS from 'csstype';
 import { CSSProperties } from 'react';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { DndComponentClass } from 'react-dnd';
+import { EnumerationChoice } from '@bentley/ui-abstract';
 import { Face } from '@bentley/ui-core';
 import { GlobalContextMenuProps } from '@bentley/ui-core';
 import { GlobalDialogProps } from '@bentley/ui-core';
@@ -802,18 +803,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 }
 
 // @beta
-export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
-    // (undocumented)
-    static get defaultColors(): ColorDef[];
-    // @internal (undocumented)
-    static defaultProps: Partial<ColorPickerProps>;
-    // @internal (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    setFocus(): void;
-    // @internal (undocumented)
-    readonly state: Readonly<ColorPickerState>;
-    }
+export const ColorPickerButton: React.ForwardRefExoticComponent<ColorPickerProps & React.RefAttributes<HTMLButtonElement>>;
 
 // @beta
 export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
@@ -833,12 +823,38 @@ export interface ColorPickerDialogProps {
 }
 
 // @beta
-export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element;
+
+// @beta
+export interface ColorPickerPanelProps {
+    // (undocumented)
     activeColor: ColorDef;
+    // (undocumented)
+    colorPresets?: ColorDef[];
+    // (undocumented)
+    onColorChange: (selectedColor: ColorDef) => void;
+}
+
+// @beta
+export const ColorPickerPopup: React.ForwardRefExoticComponent<ColorPickerPopupProps & React.RefAttributes<HTMLButtonElement>>;
+
+// @beta
+export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+    colorDefs?: ColorDef[];
+    disabled?: boolean;
+    initialColor: ColorDef;
+    onColorChange?: ((newColor: ColorDef) => void) | undefined;
+    popupPosition?: RelativePosition;
+    readonly?: boolean;
+}
+
+// @beta
+export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDefs?: ColorDef[];
     disabled?: boolean;
     dropDownTitle?: string;
-    numColumns: number;
+    initialColor: ColorDef;
+    numColumns?: number;
     onColorPick?: ((color: ColorDef) => void) | undefined;
     readonly?: boolean;
     round?: boolean;
@@ -957,6 +973,8 @@ export interface ControlledSelectableContentProps {
     children: SelectableContentDefinition[];
     // (undocumented)
     onSelectedContentIdChanged?: (contentId: string) => void;
+    // (undocumented)
+    selectAriaLabel?: string;
     // (undocumented)
     selectedContentId: string;
 }
@@ -1642,7 +1660,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     } | null;
     // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface FilteringInputProps extends CommonProps {
@@ -1814,14 +1832,7 @@ export enum HitBoxZ {
 }
 
 // @beta
-export class HueSlider extends React.PureComponent<HueSliderProps> {
-    // @internal
-    constructor(props: HueSliderProps);
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): React.ReactNode;
-    }
+export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element;
 
 // @beta
 export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
@@ -2888,14 +2899,7 @@ export interface RowProps {
 }
 
 // @beta
-export class SaturationPicker extends React.PureComponent<SaturationPickerProps> {
-    // @internal
-    constructor(props: SaturationPickerProps);
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): React.ReactNode;
-    }
+export function SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element;
 
 // @beta
 export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
@@ -2955,6 +2959,8 @@ export interface SelectableContentProps {
     children: SelectableContentDefinition[];
     // (undocumented)
     defaultSelectedContentId: string;
+    // (undocumented)
+    selectAriaLabel?: string;
 }
 
 // @internal (undocumented)
@@ -2967,6 +2973,7 @@ export class SelectionHandler<Item> {
     onItemsDeselectedCallback?: OnItemsDeselectedCallback<Item>;
     // (undocumented)
     onItemsSelectedCallback?: OnItemsSelectedCallback<Item>;
+    get processedItem(): Item | undefined;
     selectionMode: SelectionMode;
     updateDragAction(latestItem: Item): void;
 }
@@ -3958,6 +3965,10 @@ export interface TreeActions {
     onNodeMouseDown: (nodeId: string) => void;
     // (undocumented)
     onNodeMouseMove: (nodeId: string) => void;
+    // (undocumented)
+    onTreeKeyDown: (event: React_2.KeyboardEvent) => void;
+    // (undocumented)
+    onTreeKeyUp: (event: React_2.KeyboardEvent) => void;
 }
 
 // @beta @deprecated
@@ -4028,6 +4039,10 @@ export class TreeEventDispatcher implements TreeActions {
     onNodeMouseDown(nodeId: string): void;
     // (undocumented)
     onNodeMouseMove(nodeId: string): void;
+    // (undocumented)
+    onTreeKeyDown(event: React_2.KeyboardEvent): void;
+    // (undocumented)
+    onTreeKeyUp(event: React_2.KeyboardEvent): void;
     // (undocumented)
     setVisibleNodes(visibleNodes: () => VisibleTreeNodes): void;
     }
@@ -4609,6 +4624,8 @@ export type ViewStateProp = ViewState | (() => ViewState);
 export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNodePlaceholder> {
     // (undocumented)
     getAtIndex(index: number): TreeModelNode | TreeModelNodePlaceholder | undefined;
+    // (undocumented)
+    getIndexOfNode(nodeId: string): number;
     // (undocumented)
     getModel(): TreeModel;
     // (undocumented)

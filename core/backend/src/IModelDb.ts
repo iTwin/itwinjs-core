@@ -921,7 +921,7 @@ export abstract class IModelDb extends IModel {
    */
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     const meta = iModel.getMetaData(classFullName); // will load if necessary
-    for (const propName in meta.properties) {    // tslint:disable-line: forin
+    for (const propName in meta.properties) { // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
       if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
         func(propName, propMeta);
@@ -931,7 +931,7 @@ export abstract class IModelDb extends IModel {
       meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
   }
 
-  /*** @internal */
+  /** @internal */
   private loadMetaData(classFullName: string) {
     if (this.classMetaDataRegistry.find(classFullName))
       return;
@@ -1138,7 +1138,7 @@ export abstract class IModelDb extends IModel {
 }
 
 /** @public */
-export namespace IModelDb {
+export namespace IModelDb { // eslint-disable-line no-redeclare
 
   /** The collection of models in an [[IModelDb]].
    * @public
@@ -1513,7 +1513,9 @@ export namespace IModelDb {
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
-        const props = this.getElementProps(id);
+        const props = this.tryGetElementProps(id);
+        if (props === undefined) // this may be a child element which was deleted earlier as a consequence of deleting its parent.
+          return;
         const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
         jsClass.onDelete(props, iModel);
 
@@ -2123,8 +2125,19 @@ export class BriefcaseDb extends IModelDb {
   public get eventSink(): EventSink | undefined { return this._eventSink; }
   private _eventSink?: EventSink;
 
-  private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
-  private initializeEventSink() { if (this._fileKey !== "") { this._eventSink = EventSinkManager.get(this._fileKey); } }
+  private clearEventSink() {
+    if (this._eventSink) {
+      EventSinkManager.delete(this._eventSink.id);
+      this._eventSink = undefined;
+    }
+  }
+
+  private initializeEventSink() {
+    if (this._fileKey !== "") {
+      this._eventSink = EventSinkManager.get(this._fileKey);
+      this.nativeDb.setEventSink(this._eventSink);
+    }
+  }
 
   private constructor(briefcaseEntry: BriefcaseEntry) {
     super(briefcaseEntry.nativeDb, briefcaseEntry.getIModelRpcProps(), briefcaseEntry.openMode);
@@ -2314,8 +2327,8 @@ export class BriefcaseDb extends IModelDb {
     } catch (error) {
       throw error;
     } finally {
-      this.clearBriefcaseEntry();
       this.clearEventSink();
+      this.clearBriefcaseEntry();
     }
   }
 

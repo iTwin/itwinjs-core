@@ -7,6 +7,7 @@ import classnames from "classnames";
 
 import "./Listbox.scss";
 import { Guid } from "@bentley/bentleyjs-core";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Ideas borrowed from  https://reacttraining.com/reach-ui/listbox */
 
@@ -56,7 +57,7 @@ export interface ListboxContextProps {
  * @alpha
  */
 // istanbul ignore next
-export const ListboxContext = React.createContext<ListboxContextProps>({ onListboxValueChange: (_newValue: ListboxValue | undefined) => { } }); // tslint:disable-line: variable-name
+export const ListboxContext = React.createContext<ListboxContextProps>({ onListboxValueChange: (_newValue: ListboxValue | undefined) => { } }); // eslint-disable-line @typescript-eslint/naming-convention
 
 function makeId(...args: Array<string | number | null | undefined>) {
   return args.filter((val) => val != null).join("--");
@@ -71,7 +72,7 @@ function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: 
   let newIndex = itemIndex;
 
   // Note: In aria example Page Up/Down just moves up or down by one item. See https://www.w3.org/TR/wai-aria-practices-1.1/examples/listbox/js/listbox.js
-  if (key === "ArrowDown" || key === "PageDown") {
+  if (key === SpecialKey.ArrowDown || key === SpecialKey.PageDown) {
     for (let i = itemIndex + 1; i < optionValues.length; i++) {
       if (!optionValues[i].disabled) {
         newIndex = i;
@@ -79,7 +80,7 @@ function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: 
       }
     }
     keyProcessed = true;
-  } else if (key === "ArrowUp" || key === "PageUp") {
+  } else if (key === SpecialKey.ArrowUp || key === SpecialKey.PageUp) {
     for (let i = itemIndex - 1; i >= 0; i--) {
       if (!optionValues[i].disabled) {
         newIndex = i;
@@ -87,7 +88,7 @@ function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: 
       }
     }
     keyProcessed = true;
-  } else if (key === "Home") {
+  } else if (key === SpecialKey.Home) {
     for (let i = 0; i < optionValues.length; i++) {
       if (!optionValues[i].disabled) {
         newIndex = i;
@@ -95,7 +96,7 @@ function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: 
       }
     }
     keyProcessed = true;
-  } else if (key === "End") {
+  } else if (key === SpecialKey.End) {
     for (let i = optionValues.length - 1; i >= 0; i--) {
       if (!optionValues[i].disabled) {
         newIndex = i;
@@ -166,7 +167,7 @@ export function Listbox(props: ListboxProps) {
 
     const itemIndex = (undefined === focusValue) ? 0 : optionValues.findIndex((optionValue) => ((optionValue.value === focusValue)));
 
-    if (event.keyCode === 32) {
+    if (event.key === SpecialKey.Space) {
       event.preventDefault();
       // istanbul ignore else
       if (focusValue)
@@ -289,6 +290,7 @@ export function ListboxItem(props: ListboxItemProps) {
   }, [listboxId, value]);
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
     <li
       // In a single-select listbox, the selected option has `aria-selected`
       // set to `true`.

@@ -15,7 +15,7 @@ import { Checker } from "../Checker";
 import { clipPrimitivesAreEqual } from "./ClipPrimitives.test";
 
 /** Enumerated type for point manipulation at the extremities of a ClipVector's ClipShape. */
-const enum PointAdjustment {
+const enum PointAdjustment { // eslint-disable-line no-restricted-syntax
   AddX = 0,
   SubX = 1,
   AddY = 2,

@@ -14,7 +14,7 @@ import { TreeNodeItem } from "../../tree/TreeDataProvider";
 import { BreadcrumbNode, BreadcrumbNodeProps, BreadcrumbProps } from "../Breadcrumb";
 import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Props that are injected to the HOC component.
@@ -29,12 +29,12 @@ export interface BreadcrumbDragDropProps<DragDropObject = any> {
  * A HOC component that adds drag and drop functionality to the supplied breadcrumb component.
  * @beta
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject extends TreeDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDragDropProps<DragDropObject>> {
 
   type CombinedProps = P & BreadcrumbDragDropProps<DragDropObject>;
 
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   return class WithDragAndDrop extends React.Component<CombinedProps> {
 
     public static get displayName() { return `WithDragDrop(${getDisplayName(BreadcrumbComponent)})`; }
@@ -91,10 +91,10 @@ export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject
       };
       return dropProps;
     }
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private renderNode = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem): React.ReactNode => {
       const baseNode = this.props.renderNode ? /* istanbul ignore next */this.props.renderNode(props, node) : <BreadcrumbNode {...props} />;
-      const DDBreadcrumbNode = DragDropBreadcrumbNode<DragDropObject>(); // tslint:disable-line:variable-name
+      const DDBreadcrumbNode = DragDropBreadcrumbNode<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
       return (
         <DDBreadcrumbNode
           key={(node && node.id) || "root"}
@@ -106,7 +106,7 @@ export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject
     }
 
     public render() {
-      const { dragProps, dropProps, renderNode, ...treeProps } = this.props as any;
+      const { dragProps, dropProps, renderNode, ...treeProps } = this.props as any; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <BreadcrumbComponent {...treeProps}
           renderNode={this.renderNode} />

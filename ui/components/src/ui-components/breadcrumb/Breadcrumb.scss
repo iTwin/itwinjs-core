@@ -39,6 +39,10 @@ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
         &:hover {
           color: $buic-foreground-primary;
         }
+
+        &:focus {
+          outline: none;
+        }
       }
 
       > .context-menu .context-menu-item {
@@ -83,7 +87,12 @@ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
             color: $buic-foreground-mediumgray;
           }
         }
+
+        &:focus {
+          outline: none;
+        }
       }
+
       .components-breadcrumb-crumb-list {
         display: flex;
         .components-breadcrumb-split-button {

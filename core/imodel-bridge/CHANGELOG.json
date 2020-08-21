@@ -2,6 +2,24 @@
   "name": "@bentley/imodel-bridge",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/imodel-bridge_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added mobile oidc client"
+          },
+          {
+            "comment": "Remove special code handling for mobile."
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/imodel-bridge_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

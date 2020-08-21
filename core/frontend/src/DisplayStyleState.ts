@@ -7,6 +7,7 @@
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Vector3d } from "@bentley/geometry-core";
+import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, FeatureAppearance, FeatureAppearanceProps, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
@@ -19,7 +20,6 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { MapCartoRectangle, MapTileTree, MapTileTreeReference, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ScreenViewport, Viewport } from "./Viewport";
-import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -210,6 +210,112 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public hasAttachedRealityModel(name: string, url: string): boolean {
     return -1 !== this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
   }
+
+  /** The overrides applied by this style.
+   * @beta
+   */
+  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> { return this.settings.modelAppearanceOverrides; }
+  /** Customize the way a [[Model]]  is drawn by this display style.
+   * @param modelId The ID of the [[model]] whose appearance is to be overridden.
+   * @param ovr The overrides to apply to the [[Model]].
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelAppearance]] to ensure
+   * the changes are promptly visible on the screen.
+   * @see [[dropModelAppearanceOverride]]
+   * @beta
+   */
+  public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance) { this.settings.overrideModelAppearance(modelId, ovr); }
+
+  /** Remove any appearance overrides applied to a [[Model]] by this style.
+   * @param modelId The ID of the [[Model]].
+   * @param ovr The overrides to apply to the [[Model]].
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropModelAppearanceOverride]] to ensure
+   * the changes are promptly visible on the screen.
+   * @see [[overrideModelAppearance]]
+   * @beta
+   */
+  public dropModelAppearanceOverride(modelId: Id64String) { this.settings.dropModelAppearanceOverride(modelId); }
+
+  /** Returns true if model appearance overridess are defined by this style.
+   * @beta
+   */
+
+  public get hasModelAppearanceOverride() { return this.settings.hasModelAppearanceOverride; }
+
+  /** Obtain the override applied to a [[Model]] by this style.
+   * @param id The ID of the [[Model]].
+   * @returns The corresponding FeatureAppearance, or undefined if the Model'ss appearance is not overridden.
+   * @see [[overrideModelAppearance]]
+   * @beta
+   */
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined { return this.settings.getModelAppearanceOverride(id); }
+
+  /** Change the appearance overrides for a "contextual" reality model displayed by this style.
+   * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
+   * @param index The reality model index or -1 to apply to all models.
+   * @returns true if overrides are successfully applied.
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideRealityModelAppearance]] to ensure
+   * the changes are promptly visible on the screen.
+   * @beta
+   */
+  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean {
+    if (undefined === this.jsonProperties.styles)
+      this.jsonProperties.styles = {};
+
+    const styles = this.jsonProperties.styles;
+    const contextRealityModels = undefined !== styles ? styles.contextRealityModels : undefined;
+    if (!Array.isArray(contextRealityModels) || contextRealityModels.length !== this._contextRealityModels.length) {
+      return false;     // No context reality models.
+    }
+
+    const changeContextRealityModelOverrides = (changeIndex: number) => {
+      if (changeIndex >= this._contextRealityModels.length)
+        return false;
+
+      const newOverrides = this._contextRealityModels[changeIndex].appearanceOverrides ? this._contextRealityModels[changeIndex].appearanceOverrides?.clone(overrides) : FeatureAppearance.fromJSON(overrides);
+      contextRealityModels[changeIndex].appearanceOverrides = this._contextRealityModels[changeIndex].appearanceOverrides = newOverrides;
+      return true;
+    };
+    let changed = false;
+    if (index < 0) {
+      // All context models...
+      for (let i = 0; i < this._contextRealityModels.length; i++)
+        changed = changed || changeContextRealityModelOverrides(i);
+    } else {
+      // Context model by index...
+      changed = changeContextRealityModelOverrides(index);
+    }
+    return changed;
+  }
+
+  /** Drop the appearance overrides for a "contextual" reality model displayed by this style.
+   * @param index The reality model index or -1 to drop overrides from all reality models.
+   * @returns true if overrides are successfully dropped.
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropRealityModelAppearanceOverride]] to ensure
+   * the changes are promptly visible on the screen.
+   * @beta
+   */
+  public dropRealityModelAppearanceOverride(index: number) {
+    if (undefined === this.jsonProperties.styles || undefined === this.jsonProperties.styles.contextRealityModels)
+      return;
+
+    const contextRealityModels = this.jsonProperties.styles.contextRealityModels;
+    if (!Array.isArray(contextRealityModels) || contextRealityModels.length !== this._contextRealityModels.length)
+      return;
+
+    const dropContextRealityModelOverrides = (dropIndex: number) => {
+      if (dropIndex >= 0 && dropIndex < contextRealityModels.length) {
+        contextRealityModels[dropIndex].appearanceOverrides = undefined;
+        this._contextRealityModels[dropIndex].appearanceOverrides = undefined;
+      }
+    };
+    if (index < 0) {
+      for (let i = 0; i < this._contextRealityModels.length; i++)
+        dropContextRealityModelOverrides(i);
+    } else {
+      dropContextRealityModelOverrides(index);
+    }
+  }
+
   /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 
@@ -483,7 +589,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.overrideSubCategory]] to ensure
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideSubCategory]] to ensure
    * the changes are promptly visible on the screen.
    * @see [[dropSubCategoryOverride]]
    */
@@ -491,7 +597,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.dropSubCategoryOverride]] to ensure
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropSubCategoryOverride]] to ensure
    * the changes are promptly visible on the screen.
    * @see [[overrideSubCategory]]
    */
@@ -611,7 +717,7 @@ export abstract class SkyBox implements SkyBoxProps {
  *  - A sphere with a [[Gradient]] mapped to its surface.
  * @public
  */
-export namespace SkyBox {
+export namespace SkyBox { // eslint-disable-line no-redeclare
   /** Parameters defining a spherical [[SkyBox]].
    * @public
    */

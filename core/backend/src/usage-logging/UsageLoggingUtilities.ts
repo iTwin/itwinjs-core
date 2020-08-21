@@ -82,7 +82,7 @@ export class UsageLoggingUtilities {
     }
 
     const featureUserData: IModelJsNative.FeatureUserDataKeyValuePair[] = [];
-    for (const propName in additionalData) { // tslint:disable-line: forin
+    for (const propName in additionalData) { // eslint-disable-line guard-for-in
       featureUserData.push({
         key: propName,
         value: (additionalData as any)[propName],

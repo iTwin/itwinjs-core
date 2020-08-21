@@ -12,7 +12,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 export class MatrixTests {
 
   public static testCreateProperties(ck: bsiChecker.Checker) {
@@ -285,8 +285,8 @@ describe("Matrix3d.directDots", () => {
 });
 
 function testCacheUse(ck: bsiChecker.Checker, name: string, numCompute: number, numUse: number) {
-  ck.testExactNumber(numCompute, Matrix3d.numComputeCache, name + " numCompute");
-  ck.testExactNumber(numUse, Matrix3d.numUseCache, name + " numUse");
+  ck.testExactNumber(numCompute, Matrix3d.numComputeCache, `${name} + numCompute`);
+  ck.testExactNumber(numUse, Matrix3d.numUseCache, `${name} + numUse`);
   Matrix3d.numComputeCache = 0;
   Matrix3d.numUseCache = 0;
 }

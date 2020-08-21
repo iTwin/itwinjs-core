@@ -51,6 +51,7 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
+import { FunctionKey as FunctionKey_2 } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -119,6 +120,7 @@ import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
 import { SolarDataProvider } from '@bentley/ui-components';
+import { SpecialKey as SpecialKey_2 } from '@bentley/ui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
 import { StagePanelType } from '@bentley/ui-ninezone';
@@ -1794,10 +1796,11 @@ export const expandWidget: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
-            readonly preferredFloatingWidgetSize: {
+            readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPanelWidgetSize?: "fit-content" | undefined;
         };
     };
     readonly toolSettings: {
@@ -1924,9 +1927,11 @@ export class FrameworkUiAdmin extends UiAdmin {
     hideInputEditor(): boolean;
     hideMenuButton(id: string): boolean;
     hideToolbar(): boolean;
+    get isFocusOnHome(): boolean;
     // @internal (undocumented)
     onInitialized(): void;
     openToolSettingsPopup(dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
+    setFocusToHome(): void;
     showAngleEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showCard(content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
@@ -2399,7 +2404,7 @@ export interface FrontstageRuntimeProps {
     zoneDefProvider: ZoneDefProvider;
 }
 
-// @public
+// @public @deprecated
 export enum FunctionKey {
     // (undocumented)
     F1 = "F1",
@@ -2979,67 +2984,44 @@ export interface IVisibilityHandler extends IDisposable {
 // @public
 export class KeyboardShortcut extends ItemDefBase {
     constructor(props: KeyboardShortcutProps);
-    // (undocumented)
     getShortcut(mapKey: string): KeyboardShortcut | undefined;
-    // (undocumented)
     get id(): string;
     get isAltKeyRequired(): boolean;
     get isCtrlKeyRequired(): boolean;
     get isFunctionKey(): boolean;
     get isShiftKeyRequired(): boolean;
     get isSpecialKey(): boolean;
-    // (undocumented)
     get item(): ActionButtonItemDef | undefined;
-    // (undocumented)
     itemPicked(): void;
     get key(): string;
-    // (undocumented)
     get keyMapKey(): string;
-    // (undocumented)
     get shortcutContainer(): KeyboardShortcutContainer;
     }
 
 // @public
 export class KeyboardShortcutContainer {
-    // (undocumented)
     areKeyboardShortcutsAvailable(): boolean;
-    // (undocumented)
     emptyData(): void;
-    // (undocumented)
     findKey(keyMapKey: string): KeyboardShortcut | undefined;
-    // (undocumented)
     static generateKeyMapKey(keyboardKey: string, isAltKeyRequired: boolean, isCtrlKeyRequired: boolean, isShiftKeyRequired: boolean): string;
     // (undocumented)
     getAvailableKeyboardShortcuts(): KeyboardShortcut[];
-    // (undocumented)
     registerKey(keyMapKey: string, inShortcut: KeyboardShortcut): KeyboardShortcut | undefined;
-    // (undocumented)
     showShortcutsMenu(): void;
 }
 
 // @public
 export class KeyboardShortcutManager {
-    // (undocumented)
     static closeShortcutsMenu(): void;
-    // (undocumented)
     static get cursorX(): number;
-    // (undocumented)
     static get cursorY(): number;
-    // (undocumented)
     static displayShortcutsMenu(): void;
-    // (undocumented)
     static getShortcut(keyMapKey: string): KeyboardShortcut | undefined;
-    // (undocumented)
     static get isFocusOnHome(): boolean;
-    // (undocumented)
     static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps): void;
-    // (undocumented)
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
-    // (undocumented)
     static processKey(keyboardKey: string, isAltKeyPressed?: boolean, isCtrlKeyPressed?: boolean, isShiftKeyPressed?: boolean): boolean;
-    // (undocumented)
     static setFocusToHome(): void;
-    // (undocumented)
     static get shortcutContainer(): KeyboardShortcutContainer;
     }
 
@@ -3078,7 +3060,7 @@ export interface KeyboardShortcutProps extends ItemProps {
     isCtrlKeyRequired?: boolean;
     isShiftKeyRequired?: boolean;
     item?: ActionButtonItemDef;
-    key: string | FunctionKey | SpecialKey;
+    key: string | FunctionKey_2 | SpecialKey_2;
     shortcuts?: KeyboardShortcutProps[];
 }
 
@@ -4378,10 +4360,11 @@ export const setPanelSize: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
-            readonly preferredFloatingWidgetSize: {
+            readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPanelWidgetSize?: "fit-content" | undefined;
         };
     };
     readonly toolSettings: {
@@ -4491,10 +4474,11 @@ export const setWidgetLabel: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
-            readonly preferredFloatingWidgetSize: {
+            readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPanelWidgetSize?: "fit-content" | undefined;
         };
     };
     readonly toolSettings: {
@@ -4601,10 +4585,11 @@ export const setWidgetState: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
-            readonly preferredFloatingWidgetSize: {
+            readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPanelWidgetSize?: "fit-content" | undefined;
         };
     };
     readonly toolSettings: {
@@ -4775,10 +4760,11 @@ export const showWidget: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
-            readonly preferredFloatingWidgetSize: {
+            readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
             } | undefined;
+            readonly preferredPanelWidgetSize?: "fit-content" | undefined;
         };
     };
     readonly toolSettings: {
@@ -4860,7 +4846,7 @@ export interface SpatialContainmentTreeProps {
     iModel: IModelConnection;
 }
 
-// @public
+// @public @deprecated
 export enum SpecialKey {
     // (undocumented)
     ArrowDown = "ArrowDown",
@@ -6486,6 +6472,8 @@ export class WidgetDef {
     get label(): string;
     // (undocumented)
     onWidgetStateChanged(): void;
+    // @alpha (undocumented)
+    get preferredPanelSize(): "fit-content" | undefined;
     // (undocumented)
     get priority(): number;
     // @deprecated (undocumented)
@@ -6594,6 +6582,8 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
     control?: ConfigurableUiControlConstructor;
     element?: React.ReactNode;
     labelKey?: string;
+    // @alpha (undocumented)
+    preferredPanelSize?: "fit-content";
     tooltipKey?: string;
 }
 

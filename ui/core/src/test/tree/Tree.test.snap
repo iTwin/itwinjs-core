@@ -3,5 +3,7 @@
 exports[`<Tree /> renders correctly 1`] = `
 <div
   className="core-tree"
+  role="tree"
+  tabIndex={-1}
 />
 `;

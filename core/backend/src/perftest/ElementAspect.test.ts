@@ -14,6 +14,8 @@ import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, Snap
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
@@ -43,7 +45,7 @@ describe("ElementAspectPerformance", () => {
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-    const configData = require(path.join(__dirname, "CSPerfConfig.json"));
+    const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     const projectId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;
 
@@ -120,7 +122,7 @@ describe("ElementAspectPerformance", () => {
     const iModelDb = SnapshotDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
-    interface TestAspectProps extends ElementAspectProps { testUniqueAspectProperty: string; }
+    interface TestAspectProps extends ElementAspectProps { testUniqueAspectProperty: string }
     class TestAspect extends ElementAspect implements ElementAspectProps { public testUniqueAspectProperty: string = ""; }
 
     const count1 = 10000;

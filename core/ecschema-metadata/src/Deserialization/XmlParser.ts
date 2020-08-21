@@ -950,7 +950,7 @@ export class XmlParser extends AbstractParser<Element> {
     };
   }
 
-  private getPropertyMinAndMaxOccurs(xmlElement: Element): { minOccurs: number | undefined; maxOccurs: number | undefined; } {
+  private getPropertyMinAndMaxOccurs(xmlElement: Element): { minOccurs: number | undefined, maxOccurs: number | undefined } {
     const propName = this.getPropertyName(xmlElement);
     const minOccurs = this.getOptionalIntAttribute(xmlElement, "minOccurs",
       `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minOccurs' attribute. It should be a numeric value.`);

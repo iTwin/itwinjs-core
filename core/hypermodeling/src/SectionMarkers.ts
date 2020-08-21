@@ -88,7 +88,7 @@ export class SectionMarker extends Marker {
   public onMouseEnter(ev: BeButtonEvent) {
     // Lazily load the tooltip.
     if (undefined === this.title) {
-      IModelReadRpcInterface.getClient().getToolTipMessage(this.state.iModel.getRpcProps(), this.state.id).then((tooltipMsg) => {
+      IModelReadRpcInterface.getClientForRouting(this.state.iModel.routingContext.token).getToolTipMessage(this.state.iModel.getRpcProps(), this.state.id).then((tooltipMsg) => {
         this.title = IModelApp.formatElementToolTip(tooltipMsg);
       }).catch((_) => {
         this.title = this.description;

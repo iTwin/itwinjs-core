@@ -10,10 +10,9 @@ Access to the iModel.js shared libraries allows extensions to be used for many d
   - i.e. Tools, Widgets, Frontstages
 - Write event based processing
   - i.e. Subscribe to an iModel Event, or Unified Selection Event, and process that change
-- etc.
 
 ## What's next
 
 - [Getting Started](./extensions/GettingStarted.md)
 - [Building an Extension](./extensions/BuildingAnExtension.md)
-- [Supporting Extensions in iModel.js App](#setup-app-to-load-extensions)
+- [Supporting Extensions in iModel.js App](./extensions/SetupAppForExtensions.md)

@@ -10,7 +10,7 @@ import { withIsPressed } from "../../ui-core";
 
 describe("withIsPressed", () => {
 
-  const WithIsPressedDiv = withIsPressed((props) => (<div {...props} />)); // tslint:disable-line:variable-name
+  const WithIsPressedDiv = withIsPressed((props) => (<div {...props} />)); // eslint-disable-line @typescript-eslint/naming-convention
 
   it("should render", () => {
     mount(<WithIsPressedDiv isPressed={false} />);

@@ -331,9 +331,7 @@ async function generateResultForDataset(params: TileGenParams) {
   for (const bimFile of bimFiles) {
     const bimFilePath = path.join(params.datasetFolder, bimFile);
     const sizeOfFileInGb = (IModelJsFs.lstatSync(bimFilePath)!.size / (1024 * 1024 * 1024)).toFixed(4);
-
-    // tslint:disable-next-line:no-console
-    console.log(`Generating Tiles for (${fileIndex}/${bimFiles.length}) [size=${sizeOfFileInGb} GB] [file=${bimFilePath}]`);
+    console.log(`Generating Tiles for (${fileIndex}/${bimFiles.length}) [size=${sizeOfFileInGb} GB] [file=${bimFilePath}]`); // eslint-disable-line no-console
     if (params.sqlitePageSizeInKb) {
       changePageSize(bimFilePath, params.sqlitePageSizeInKb);
     }

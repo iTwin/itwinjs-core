@@ -14,9 +14,9 @@ import {
   BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNode,
 } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 interface Node {
   id: string;
@@ -103,7 +103,7 @@ describe("BeInspireTree", () => {
   const handleNodeRender = (renderList: RenderedNode[], node: BeInspireTreeNode<Node>) => {
     if (node.available()) {
       if (node.payload) {
-        const { autoExpand, children, ...nodeProps } = node.payload;
+        const { autoExpand, children, ...nodeProps } = node.payload; // eslint-disable-line @typescript-eslint/no-unused-vars
         const renderNode: RenderedNode = {
           level: node.getParents().length,
           ...nodeProps,
@@ -1275,7 +1275,7 @@ describe("BeInspireTree", () => {
         done();
       });
 
-      // tslint:disable-next-line:no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       tree.requestNodeLoad(undefined, 2);
     });
 

@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { Ellipsis } from "../base/Ellipsis";
+import { useLabel } from "../base/NineZone";
 
 /** Properties of [[ToolSettingsOverflow]] component.
  * @internal
@@ -25,21 +26,27 @@ export interface DockedToolSettingsOverflowProps extends CommonProps {
 /** Entry point to overflown tool settings of [[DockedToolSettings]] component.
  * @internal
  */
-export const DockedToolSettingsOverflow = React.memo( // tslint:disable-line: variable-name
+export const DockedToolSettingsOverflow = React.memo( // eslint-disable-line @typescript-eslint/naming-convention, react/display-name
   React.forwardRef<HTMLDivElement, DockedToolSettingsOverflowProps>(
-    function DockedToolSettingsOverflow(props, ref) {  // tslint:disable-line: no-shadowed-variable
+    function DockedToolSettingsOverflow(props, ref) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
       const roRef = useResizeObserver<HTMLDivElement>(props.onResize);
       const refs = useRefs(roRef, ref);
       const className = classnames(
         "nz-toolSettings-overflow",
         props.className,
       );
+      const moreToolSettingsTitle = useLabel("moreToolSettingsTitle");
+
       return (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events
         <div
           className={className}
           onClick={props.onClick}
           ref={refs}
           style={props.style}
+          role="button"
+          tabIndex={-1}
+          title={moreToolSettingsTitle}
         >
           <Ellipsis />
         </div>

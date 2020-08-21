@@ -213,4 +213,33 @@ describe("<Tabs />", () => {
     wrapper.unmount();
   });
 
+  it("Supports updating activeIndex", async () => {
+    const wrapper = mount<Tabs>(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]}
+      activeIndex={0} />);
+    expect(wrapper.state().activeIndex).to.eq(0);
+
+    const label = wrapper.find("a").at(0);
+    label.simulate("keydown", { key: "Home" });
+    const first = wrapper.find("a").at(0).getDOMNode();
+    expect(document.activeElement).to.eq(first);
+
+    wrapper.setProps({ activeIndex: 1 });
+    wrapper.update();
+    expect(wrapper.state().activeIndex).to.eq(1);
+    const second = wrapper.find("a").at(1).getDOMNode();
+    expect(document.activeElement).to.eq(second);
+
+    wrapper.setProps({ activeIndex: undefined });
+    expect(wrapper.state().activeIndex).to.eq(0);
+
+    document.documentElement.focus();
+    wrapper.setProps({ activeIndex: 2 });
+    expect(wrapper.state().activeIndex).to.eq(2);
+
+    wrapper.setProps({ activeIndex: 3 });
+    expect(wrapper.state().activeIndex).to.eq(0);
+
+    wrapper.unmount();
+  });
+
 });

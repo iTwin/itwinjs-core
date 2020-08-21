@@ -19,7 +19,6 @@ import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatc
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
-// tslint:disable: completed-docs
 
 export interface SampleAppState {
   placeHolder?: boolean;
@@ -34,7 +33,7 @@ export interface RootState {
   testDifferentFrameworkKey?: FrameworkState;
 }
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleAppActions = {
   example: () => createAction("SampleApp:EXAMPLE"),
 };
@@ -69,7 +68,7 @@ export class TestUtils {
   public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
       // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
+      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
       if (testAlternateKey) {
         // this is the rootReducer for the test application.
@@ -281,9 +280,9 @@ export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state
 
 declare module "sinon" {
   interface SinonStubStatic {
-    // tslint:disable-next-line: callable-types
+    // eslint-disable-next-line @typescript-eslint/prefer-function-type
     <T extends (...args: any) => any>(): sinon.SinonStub<Parameters<T>, ReturnType<T>>;
   }
 }
 
-export default TestUtils;   // tslint:disable-line: no-default-export
+export default TestUtils;   // eslint-disable-line: no-default-export

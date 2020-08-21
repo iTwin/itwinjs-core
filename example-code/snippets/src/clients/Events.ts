@@ -43,7 +43,7 @@ export async function testit() {
   const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken, "b0f0808d-e76f-4615-acf4-95aa1b78eba5");
   // __PUBLISH_EXTRACT_START__ EventSubscriptionsHandler.create.example-code
   const subscription: EventSubscription = await imodelHubClient.events
-    .subscriptions.create(authorizedRequestContext, imodelId, ["ChangeSetPostPushEvent", "VersionEvent"]);
+    .subscriptions.create(authorizedRequestContext, imodelId, ["ChangeSetPostPushEvent", "VersionEvent"]); // eslint-disable-line deprecation/deprecation
   // __PUBLISH_EXTRACT_END__
   // __PUBLISH_EXTRACT_START__ EventHandler.getSASToken.example-code
   const sasToken: EventSAS = await imodelHubClient.events.getSASToken(authorizedRequestContext, imodelId);
@@ -55,7 +55,7 @@ export async function testit() {
   if (!event)
     return;
   // __PUBLISH_EXTRACT_START__ EventHandler.createListener.create.example-code
-  const deleteCallback = await imodelHubClient.events  // tslint:disable-line:await-promise
+  const deleteCallback = await imodelHubClient.events  // eslint-disable-line @typescript-eslint/await-thenable
     .createListener(requestContext, authenticate, subscription.wsgId, imodelId, processEvent);
   // __PUBLISH_EXTRACT_END__
 

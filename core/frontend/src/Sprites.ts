@@ -51,7 +51,7 @@ export class Sprite {
       this.size.set(image.naturalWidth, image.naturalHeight);
     }).catch((err) => {
       const str = err.toString();
-      console.log(str); // tslint:disable-line: no-console
+      console.log(str); // eslint-disable-line no-console
       Logger.logError(FrontendLoggerCategory.Package + ".sprites", str);
     });
   }

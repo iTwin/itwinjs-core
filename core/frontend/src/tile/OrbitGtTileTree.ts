@@ -9,7 +9,8 @@
 import { BeTimePoint, compareStrings, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, TransformProps, Vector3d } from "@bentley/geometry-core";
 import {
-  BatchType, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
+  BatchType, ColorDef, Feature,
+  FeatureTable, Frustum, FrustumPlanes, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
   ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import {
@@ -30,7 +31,8 @@ import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  createClassifierTileTreeReference, SpatialClassifierTileTreeReference, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
+  createClassifierTileTreeReference,
+  RealityModelTileTree, SpatialClassifierTileTreeReference, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
   TileTree, TileTreeOwner, TileTreeParams, TileTreeReference, TileTreeSet, TileTreeSupplier,
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
@@ -100,7 +102,7 @@ function rangeFromOrbitGt(ogtBounds: OrbitGtBounds, result?: Range3d) {
 }
 
 /** @internal */
-export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference { return new OrbitGtTreeReference(props); }
+export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference { return new OrbitGtTreeReference(props); }
 
 class OrbitGtTileTreeParams implements TileTreeParams {
   public id: string;
@@ -315,7 +317,8 @@ export class OrbitGtTileTree extends TileTree {
       args.graphics.add(debugBuilder.finish());
 
     if (doLogging) {
-      console.log(`Total OrbitGtTiles: ${tileCount} MinLevel: ${minLevel} MaxLevel: ${maxLevel} Total Points: ${totalPointCount}`);   // tslint:disable-line
+      // eslint-disable-next-line no-console
+      console.log(`Total OrbitGtTiles: ${tileCount} MinLevel: ${minLevel} MaxLevel: ${maxLevel} Total Points: ${totalPointCount}`);
     }
 
     args.drawGraphics();
@@ -326,6 +329,7 @@ export class OrbitGtTileTree extends TileTree {
 }
 
 /** @internal */
+// eslint-disable-next-line no-redeclare
 export namespace OrbitGtTileTree {
   export interface ReferenceProps {
     orbitGtBlob: OrbitGtBlobProps;
@@ -334,10 +338,6 @@ export namespace OrbitGtTileTree {
     name?: string;
     classifiers?: SpatialClassifiers;
     displayStyle: DisplayStyleState;
-  }
-
-  export abstract class Reference extends TileTreeReference {
-    public abstract get classifiers(): SpatialClassifiers | undefined;
   }
 
   export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
@@ -350,8 +350,8 @@ export namespace OrbitGtTileTree {
     if (accountName.length > 0) blobFileURL = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
     const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
     const cacheKilobytes = 128;
-    const cachedBlobFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, cacheKilobytes * 1024 /*pageSize*/, 128/*maxPageCount*/);
-    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobFileURL, true/*lazyLoading*/);
+    const cachedBlobFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, cacheKilobytes * 1024 /* pageSize*/, 128/* maxPageCount*/);
+    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobFileURL, true/* lazyLoading*/);
     let pointCloudCRS = pointCloudReader.getFileCRS();
     if (pointCloudCRS == null)
       pointCloudCRS = "";
@@ -385,7 +385,7 @@ export namespace OrbitGtTileTree {
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextOrbitGtState]].
  * @internal
  */
-class OrbitGtTreeReference extends OrbitGtTileTree.Reference {
+class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
   private readonly _name: string; // tslint:disable-line
   private readonly _classifier?: SpatialClassifierTileTreeReference;

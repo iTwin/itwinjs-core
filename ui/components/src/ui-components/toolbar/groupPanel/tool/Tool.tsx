@@ -76,6 +76,8 @@ export function GroupTool(props: GroupToolProps) {
       onPointerUp={handlePointerUp}
       ref={ref}
       style={props.style}
+      role="button"
+      tabIndex={0}
     >
       <div className="components-icon">
         {props.icon}

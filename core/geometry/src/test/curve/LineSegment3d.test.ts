@@ -11,6 +11,8 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   const a = 4.2;
@@ -85,5 +87,21 @@ describe("LineSegment3d", () => {
 
     ck.checkpoint("LineSegment3d.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PointsAlongLine", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const circleRadius = 0.05;
+    const pointA = Point3d.create(1, 2);
+    const pointB = Point3d.create(4, 3);
+    const myLine = LineSegment3d.create(pointA, pointB);
+    // A draw a line from pointA to pointB ...
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, myLine);
+    // draw circles at some fractional coordinates along the line (and one beyond the end )
+    for (const fractionAlongLine of [0.0, 0.1, 0.15, 0.2, 0.25, 0.5, 0.9, 1.0, 1.1]) {
+      const pointAlongLine = myLine.fractionToPoint(fractionAlongLine);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pointAlongLine, circleRadius);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "PointsAlongLine");
   });
 });

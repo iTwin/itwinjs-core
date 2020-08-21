@@ -46,7 +46,7 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
   public render() {
     return (
       <PointerCaptor
-        children={this.props.children}
+        children={this.props.children} // eslint-disable-line react/no-children-prop
         className={this.props.className}
         isPointerDown={this.props.lastPosition === undefined ? this.state.isPointerDown : true}
         onClick={this._handleClick}

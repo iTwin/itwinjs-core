@@ -2,7 +2,7 @@
   "name": "@bentley/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -16,7 +16,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "betools extract-api --entry=ecschema2ts",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "docs": "",
     "test": "betools test",
     "test:watch": "betools test-tsnode --watch",
@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.4.2",
+    "@bentley/build-tools": "2.5.0",
     "@types/chai": "^4.1.4",
     "@types/chai-string": "^1.4.1",
     "@types/fs-extra": "^4.0.7",
@@ -45,26 +45,26 @@
     "chai": "^4.1.2",
     "chai-string": "^1.5.0",
     "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
     "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "2.4.2",
-    "@bentley/bentleyjs-core": "2.4.2",
-    "@bentley/ecschema-metadata": "2.4.2",
-    "@bentley/ecschema-locaters": "2.4.2",
-    "@bentley/frontend-authorization-client": "2.4.2",
-    "@bentley/geometry-core": "2.4.2",
-    "@bentley/itwin-client": "2.4.2",
-    "@bentley/imodelhub-client": "2.4.2",
-    "@bentley/imodeljs-common": "2.4.2",
-    "@bentley/imodeljs-backend": "2.4.2",
-    "@bentley/rbac-client": "2.4.2",
+    "@bentley/backend-itwin-client": "2.5.0",
+    "@bentley/bentleyjs-core": "2.5.0",
+    "@bentley/ecschema-metadata": "2.5.0",
+    "@bentley/ecschema-locaters": "2.5.0",
+    "@bentley/frontend-authorization-client": "2.5.0",
+    "@bentley/geometry-core": "2.5.0",
+    "@bentley/itwin-client": "2.5.0",
+    "@bentley/imodelhub-client": "2.5.0",
+    "@bentley/imodeljs-common": "2.5.0",
+    "@bentley/imodeljs-backend": "2.5.0",
+    "@bentley/rbac-client": "2.5.0",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
     "commander": "^2.14.1",
@@ -73,5 +73,8 @@
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

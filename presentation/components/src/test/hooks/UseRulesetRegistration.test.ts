@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises"; // tslint:disable-line: no-direct-imports
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
 import { useRulesetRegistration } from "../../presentation-components/hooks/UseRulesetRegistration";
+
+/* eslint-disable @typescript-eslint/promise-function-async */
 
 describe("useRulesetRegistration", () => {
   interface HookProps {

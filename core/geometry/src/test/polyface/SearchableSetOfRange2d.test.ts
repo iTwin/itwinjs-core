@@ -46,7 +46,7 @@ function saveRange(allGeometry: GeometryQuery[], ticFraction: number | undefined
   } else
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), xOrigin, yOrigin, zOrigin);
 }
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 // cspell::word lisajoue
 describe("LinearSearchRange2dArray", () => {
 

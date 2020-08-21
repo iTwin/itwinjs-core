@@ -9,10 +9,10 @@ import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
 import { addExternalPrefix, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
 
-// tslint:disable:no-var-requires variable-name
+/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
-// tslint:enable:no-var-requires variable-name
+/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 export class BackendDefaultsPlugin {
   public apply(compiler: Compiler) {

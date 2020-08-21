@@ -27,7 +27,7 @@ interface ComponentExamplesPageProps {
 
 /** ComponentExamplesPage displaying the component examples.
  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: ComponentExamplesPageProps) => {
   const _themeTitle: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeTitle");
   const _themeDescription: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeDescription");
@@ -90,7 +90,7 @@ export interface ComponentExampleProps extends CommonProps {
 }
 
 /** Component Example component */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ComponentExample: React.FC<ComponentExampleProps> = (props: ComponentExampleProps) => {
   const { title, description, content } = props;
   return (

@@ -16,6 +16,7 @@ exports[`ResultSelector content is '0 of 0' and buttons are disabled when result
     <span
       className="components-result-selector-current-result"
       onClick={[Function]}
+      role="presentation"
       style={
         Object {
           "pointerEvents": "none",
@@ -31,7 +32,7 @@ exports[`ResultSelector content is '0 of 0' and buttons are disabled when result
           }
         }
       >
-        of
+        general.of
       </span>
       <span>
         0
@@ -62,6 +63,7 @@ exports[`ResultSelector content is '1 of X' and buttons are not disabled when re
     <span
       className="components-result-selector-current-result"
       onClick={[Function]}
+      role="presentation"
       style={
         Object {
           "pointerEvents": "auto",
@@ -77,7 +79,7 @@ exports[`ResultSelector content is '1 of X' and buttons are not disabled when re
           }
         }
       >
-        of
+        general.of
       </span>
       <span>
         10

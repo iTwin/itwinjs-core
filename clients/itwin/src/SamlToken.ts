@@ -13,7 +13,7 @@ import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { IncludePrefix } from "./Token";
 import { UserInfo } from "./UserInfo";
 
-/* tslint:disable:deprecation */
+/* eslint-disable deprecation/deprecation */
 
 /** Base class for JWT and SAML tokens
  * @internal

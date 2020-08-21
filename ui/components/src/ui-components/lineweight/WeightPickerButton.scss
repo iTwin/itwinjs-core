@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/button/button";
 
 .components-weightpicker-button {
   color: $buic-foreground-body;
@@ -13,6 +14,11 @@
 
   &:not(.readonly):not([disabled]) {
     cursor: pointer;
+  }
+
+  &:active,
+  &:focus {
+    @include uicore-buttons-button-focused;
   }
 }
 

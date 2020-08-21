@@ -113,7 +113,7 @@ export enum KeyinStatus {
   DontUpdate = 2,
 }
 
-const enum Constants {
+const enum Constants { // eslint-disable-line no-restricted-syntax
   MAX_SAVED_VALUES = 20,
   SMALL_ANGLE = 1.0e-12,
   SMALL_DELTA = 0.00001,

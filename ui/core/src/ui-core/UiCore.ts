@@ -55,7 +55,7 @@ export class UiCore {
   /** The internationalization service created by the application. */
   public static get i18n(): I18N {
     if (!UiCore._i18n)
-      throw new UiError(UiCore.loggerCategory(this), "UiCore not initialized");
+      throw new UiError(UiCore.loggerCategory(this), "i18n: UiCore.initialize has not been called. Unable to return I18N object.");
     return UiCore._i18n;
   }
 
@@ -68,6 +68,10 @@ export class UiCore {
    * @internal
    */
   public static translate(key: string | string[]): string {
+    if (!UiCore.initialized) {
+      Logger.logError(UiCore.loggerCategory(this), `translate: UiCore.initialize has not been called. Returning blank string.`);
+      return "";
+    }
     return UiCore.i18n.translateWithNamespace(UiCore.i18nNamespace, key);
   }
 

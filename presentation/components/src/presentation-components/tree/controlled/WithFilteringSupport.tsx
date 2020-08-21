@@ -43,13 +43,13 @@ export interface ControlledTreeWithFilteringSupportProps {
  * @beta
  * @deprecated Use hooks. Will be removed in iModel.js 3.0
  */
-// tslint:disable-next-line: variable-name naming-convention deprecation
+// eslint-disable-next-line @typescript-eslint/naming-convention,  deprecation/deprecation
 export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>) {
 
-  type CombinedProps = P & ControlledTreeWithFilteringSupportProps; // tslint:disable-line:deprecation
+  type CombinedProps = P & ControlledTreeWithFilteringSupportProps; // eslint-disable-line deprecation/deprecation
   type TreeWithFilteringSupportProps = Omit<CombinedProps, "visibleNodes">;
 
-  // tslint:disable-next-line: variable-name naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const TreeWithFilteringSupport: React.FC<TreeWithFilteringSupportProps> = (props: TreeWithFilteringSupportProps) => {
     const {
       nodeLoader, filter, activeMatchIndex, onFilterApplied,

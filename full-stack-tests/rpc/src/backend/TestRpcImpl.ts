@@ -68,7 +68,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return val;
   }
 
-  public async op8(x: number, y: number): Promise<{ initializer: number; sum: number }> {
+  public async op8(x: number, y: number): Promise<{ initializer: number, sum: number }> {
     if (!op8Initializer) {
       op8Initializer = TestRpcInterface.OP8_INITIALIZER;
       throw new RpcPendingResponse(TestRpcInterface.OP8_PENDING_MESSAGE);
@@ -137,6 +137,18 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       token.iModelId === values.iModelId &&
       token.changeSetId === values.changeSetId &&
       token.openMode === values.openMode;
+  }
+
+  public async startCSRFTest(): Promise<void> {
+  }
+
+  public async stopCSRFTest(): Promise<void> {
+  }
+
+  public async csrfTestEnabled(): Promise<void> {
+  }
+
+  public async csrfTestDisabled(): Promise<void> {
   }
 }
 

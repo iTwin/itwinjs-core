@@ -13,9 +13,9 @@ import { NodeEventManager } from "../../../ui-components/tree/deprecated/NodeEve
 import { NodeLoadingOrchestrator } from "../../../ui-components/tree/deprecated/NodeLoadingOrchestrator";
 import { initializeTree } from "../TestDataFactories";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("NodeEventManager", () => {
   function matchNodes(...expectedNodes: number[]): sinon.SinonMatcher {
@@ -62,7 +62,7 @@ describe("NodeEventManager", () => {
     );
 
     tree = await initializeTree([{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }]);
-    await Promise.all(tree.nodes().map((_node, index) => tree.requestNodeLoad(undefined, index)));
+    await Promise.all(tree.nodes().map(async (_node, index) => tree.requestNodeLoad(undefined, index)));
     node0 = tree.nodes()[0];
     node1 = tree.nodes()[1];
     node2 = tree.nodes()[2];

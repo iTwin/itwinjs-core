@@ -31,7 +31,11 @@ export class IconHelper {
     if (React.isValidElement(icon))
       return <Icon iconSpec={icon} />;
 
-    const iconString = ConditionalStringValue.getValue(icon as (string | ConditionalStringValue));
+    // istanbul ignore if
+    if (!(icon instanceof ConditionalStringValue) && typeof icon !== "string")
+      return null;
+
+    const iconString = ConditionalStringValue.getValue(icon);
     if (!iconString)
       return null;
 

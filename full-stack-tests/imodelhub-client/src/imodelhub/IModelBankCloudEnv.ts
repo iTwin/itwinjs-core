@@ -62,7 +62,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     fsextra.removeSync(bankFsRoot);
   fsextra.mkdirpSync(bankFsRoot);
 
-  const cfg = require(path.resolve(__dirname, "../assets/local_orchestrator.config.json"));
+  const cfg = require(path.resolve(__dirname, "../assets/local_orchestrator.config.json")); // eslint-disable-line @typescript-eslint/no-var-requires
   cfg.baseUrl = "https://localhost";
   cfg.port = 4000;
   cfg.imodelfsRoot = bankFsRoot;

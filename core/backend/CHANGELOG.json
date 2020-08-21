@@ -2,6 +2,36 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/imodeljs-backend_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to imodeljs-native 2.5.0"
+          },
+          {
+            "comment": "VSTS#419723: Accomodated \"bad\" checkpoints that may have serialized transactions preventing their use in ReadWrite cases. "
+          },
+          {
+            "comment": "Fix for a recursive exception while closing a briefcase"
+          },
+          {
+            "comment": "Added mobile oidc client"
+          },
+          {
+            "comment": "Remove special code handling for mobile."
+          },
+          {
+            "comment": "locking, deleting of assemblies"
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/imodeljs-backend_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

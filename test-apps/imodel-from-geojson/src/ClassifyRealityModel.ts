@@ -62,7 +62,7 @@ class RealityModelTileUtils {
     return Range3d.createNull();
   }
   public static async rangeFromUrl(url: string): Promise<AxisAlignedBox3d> {
-    const json = await requestPromise(url, { json: true });   // tslint:disable-line
+    const json = await requestPromise(url, { json: true });   // eslint-disable-line
     return RealityModelTileUtils.rangeFromJson(json);
   }
 }

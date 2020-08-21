@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -16,7 +16,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""
   },
@@ -32,15 +32,24 @@
     "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.4.2",
+    "@bentley/build-tools": "2.5.0",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "10.14.1",
     "@types/webpack": "^4.41.2",
     "@types/webpack-sources": "^0.1.6",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
+    "eslint": "^6.8.0",
     "typescript": "~3.7.4",
     "webpack": "4.42.0"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js",
+    "rules": {
+      "@typescript-eslint/no-misused-promises": "off",
+      "@typescript-eslint/no-var-requires": "off",
+      "@typescript-eslint/unbound-method": "off",
+      "no-console": "off"
+    }
   }
 }

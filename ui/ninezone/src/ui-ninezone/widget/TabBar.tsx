@@ -20,7 +20,7 @@ import { WidgetTabs } from "./Tabs";
 import { WidgetIdContext } from "./Widget";
 
 /** @internal */
-export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetTabBar = React.memo(function WidgetTabBar() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const dispatch = React.useContext(NineZoneDispatchContext);
   const id = React.useContext(WidgetIdContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);

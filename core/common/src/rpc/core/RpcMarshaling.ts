@@ -6,8 +6,6 @@
  * @module RpcInterface
  */
 
-// tslint:disable:no-string-literal
-
 import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
 import { RpcProtocol } from "./RpcProtocol";
@@ -169,10 +167,10 @@ class WireFormat {
   private static marshalError(value: any) {
     if (value instanceof Error) {
       const props = Object.getOwnPropertyDescriptors(value);
-      props["isError"] = { configurable: true, enumerable: true, writable: true, value: true };
-      props["name"] = { configurable: true, enumerable: true, writable: true, value: value.name };
-      props["message"] = { configurable: true, enumerable: true, writable: true, value: value.message };
-      props["stack"] = { configurable: true, enumerable: true, writable: true, value: value.stack };
+      props.isError = { configurable: true, enumerable: true, writable: true, value: true };
+      props.name = { configurable: true, enumerable: true, writable: true, value: value.name };
+      props.message = { configurable: true, enumerable: true, writable: true, value: value.message };
+      props.stack = { configurable: true, enumerable: true, writable: true, value: value.stack };
       return Object.create(Object.prototype, props);
     }
 

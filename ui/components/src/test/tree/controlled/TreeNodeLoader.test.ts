@@ -22,6 +22,8 @@ import {
 import { extractSequence } from "../ObservableTestHelpers";
 import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
 
+/* eslint-disable @typescript-eslint/promise-function-async */
+
 const mockDataProvider = (dataProviderMock: moq.IMock<ITreeDataProvider>, pageSize: number) => {
   const rootWithChildren = createRandomMutableTreeModelNode();
   rootWithChildren.item.autoExpand = false;
@@ -79,7 +81,7 @@ describe("TreeNodeLoader", () => {
     dataProviderMock.reset();
     modelSourceMock.reset();
 
-    // tslint:disable-next-line:deprecation
+    // eslint-disable-next-line deprecation/deprecation
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
     treeNodeLoader = new TreeNodeLoader(dataProviderMock.object, modelSourceMock.object);
   });
@@ -174,7 +176,7 @@ describe("PagedTreeNodeLoader", () => {
     dataProviderMock.reset();
     modelSourceMock.reset();
 
-    // tslint:disable-next-line:deprecation
+    // eslint-disable-next-line deprecation/deprecation
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
 
     pagedTreeNodeLoader = new PagedTreeNodeLoader(dataProviderMock.object, modelSourceMock.object, pageSize);
@@ -299,7 +301,7 @@ describe("TreeDataSource", () => {
     it("handles dataProvider onTreeNodeChanged event", () => {
       const onTreeNodeChangedEvent = new BeEvent<TreeDataChangesListener>();
       const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
-      // tslint:disable-next-line:deprecation
+      // eslint-disable-next-line deprecation/deprecation
       dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChangedEvent);
 
       const treeDataSource = new TreeDataSource(dataProviderMock.object);
@@ -316,7 +318,7 @@ describe("TreeDataSource", () => {
       const onTreeNodeChangedEvent = new BeEvent<TreeDataChangesListener>();
       const spy = sinon.spy(onTreeNodeChangedEvent, "removeListener");
       const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
-      // tslint:disable-next-line:deprecation
+      // eslint-disable-next-line deprecation/deprecation
       dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChangedEvent);
 
       const treeDataSource = new TreeDataSource(dataProviderMock.object);
@@ -493,8 +495,7 @@ describe("TreeDataSource", () => {
       };
 
       it("throws error", async () => {
-        // @ts-ignore
-        const dataSource = new TreeDataSource({});
+        const dataSource = new TreeDataSource({} as any);
 
         const request = dataSource.requestItems(undefined, 0, 5, false);
         await expect(waitForCompleteOrError(request)).to.eventually.be.rejected;

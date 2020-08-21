@@ -13,7 +13,7 @@ import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../../geometry3d/Range";
+import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
@@ -23,7 +23,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { BuildingCodeOffsetOps } from "./BuildingCodeOffsetOps";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 function sampleSweeps(): AngleSweep[] {
   return [AngleSweep.create360(), AngleSweep.createStartEndDegrees(0, 40), AngleSweep.createStartEndDegrees(0, 2), AngleSweep.createStartEndDegrees(-1, 3), AngleSweep.createStartEndDegrees(88, 91),
@@ -42,7 +42,7 @@ function exerciseArcSet(ck: Checker, arcA: Arc3d) {
   arcC.setFrom(arcA);
   ck.testTrue(arcC.isAlmostEqual(arcA), "same after setFrom");    // but still not to confirm members where cloned.
   const transform = Transform.createOriginAndMatrix(Point3d.create(4, 23, 2),
-    Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 2), Angle.createDegrees(12))!);
+    Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 2), Angle.createDegrees(12)));
   arcC.tryTransformInPlace(transform);
   ck.testFalse(arcC.isAlmostEqual(arcA), "confirm cloned arc does not share pointers.");
 
@@ -173,7 +173,7 @@ describe("Arc3d", () => {
     for (const numGauss of [1, 2, 3, 4, 5]) {
       let maxFactor = 0;
       if (noisy)
-        console.log("\n\n  ******************* numGauss" + numGauss);
+        console.log(`\n\n  ******************* numGauss ${numGauss}`);
       for (let e2 = 1.0; e2 < 1000.0; e2 *= 2.0) {
         const e = Math.sqrt(e2);
         const arc = Arc3d.create(Point3d.createZero(),
@@ -202,15 +202,13 @@ describe("Arc3d", () => {
         const factor = lastNumInterval / e;
         if (noisy) {
           console.log("---");
-          console.log(" eccentricity " + e + "   "
-            + lengths.toString()
-            + "  (n " + lastNumInterval + ") (n/(fe) " + factor + ")");
-          console.log(" deltas                             " + deltas.toString());
+          console.log(` eccentricity ${e} ${lengths.toString()}(n ${lastNumInterval})(n / (fe) ${factor}`);
+          console.log(` deltas                             ${deltas.toString()}`);
         }
         maxFactor = Math.max(factor, maxFactor);
       }
       if (noisy)
-        console.log("Eccentric ellipse integration  (numGauss " + numGauss + ")   (maxFactor  " + maxFactor + ")");
+        console.log(`Eccentric ellipse integration  (numGauss ${numGauss})   (maxFactor  {maxFactor})`);
       if (numGauss === 5)
         ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integration factor");
     }
@@ -329,7 +327,7 @@ describe("Arc3d", () => {
       x0 = 0;
       y0 += dx;
     }
-    console.log("chord error range" + rangeE.toJSON());
+    console.log(`chord error range ${rangeE.toJSON()}`);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "PreciseRange");
     expect(ck.getNumErrors()).equals(0);
   });

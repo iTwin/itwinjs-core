@@ -31,8 +31,8 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  * @beta
  */
 export class RelationshipClass extends ECClass {
-  public readonly schema!: Schema; // tslint:disable-line
-  public readonly schemaItemType!: SchemaItemType.RelationshipClass; // tslint:disable-line
+  public readonly schema!: Schema; // eslint-disable-line
+  public readonly schemaItemType!: SchemaItemType.RelationshipClass; // eslint-disable-line
   protected _strength: StrengthType;
   protected _strengthDirection: StrengthDirection;
   protected _source: RelationshipConstraint;

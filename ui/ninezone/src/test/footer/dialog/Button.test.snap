@@ -3,5 +3,7 @@
 exports[`<TitleBarButton /> renders correctly 1`] = `
 <div
   className="nz-footer-dialog-button"
+  role="button"
+  tabIndex={-1}
 />
 `;

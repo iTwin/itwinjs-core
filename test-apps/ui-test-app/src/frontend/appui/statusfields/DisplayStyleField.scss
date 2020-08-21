@@ -16,6 +16,16 @@
     max-width: 20em;
   }
 
+  > .uifw-statusFields-displayStyle-label {
+    display: inline;
+    padding-right: 4px;
+
+    @include for-tablet-portrait-down {
+      display: none;
+      padding-right: 0px;
+    }
+  }
+
   @include for-tablet-portrait-down {
     font-size: $font-size-medium;
 

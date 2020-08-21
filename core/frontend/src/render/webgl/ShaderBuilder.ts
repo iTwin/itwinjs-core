@@ -14,7 +14,7 @@ import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } fro
 import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** Describes the data type of a shader program variable.
  * @internal
@@ -1124,7 +1124,7 @@ export class ProgramBuilder {
     // Debug output
     const debugVaryings = false;
     if (debugVaryings) {
-      const dbgLog = (x: string) => console.log(x); // tslint:disable-line:no-console
+      const dbgLog = (x: string) => console.log(x); // eslint-disable-line no-console
       const outSrc = false; // true for source out, false for just varying info
       if (this.frag.headerComment) {
         let tStr = "";

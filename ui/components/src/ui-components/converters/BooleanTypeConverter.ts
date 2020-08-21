@@ -43,8 +43,7 @@ export class BooleanTypeConverter extends TypeConverter {
   public convertFromString(value: string) {
     BooleanTypeConverter.getLocalizedTrueFalse();
 
-    let booleanValue: boolean;
-    booleanValue = (0 === value.toLocaleLowerCase().localeCompare(BooleanTypeConverter.sl10nTrue.toLocaleLowerCase()));
+    const booleanValue = (0 === value.toLocaleLowerCase().localeCompare(BooleanTypeConverter.sl10nTrue.toLocaleLowerCase()));
     return booleanValue;
   }
 

@@ -12,14 +12,14 @@ import * as React from "react";
 import { Point, Rectangle, Timer } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
-import { NineZoneDispatchContext } from "../base/NineZone";
+import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "./Panel";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 
 /** Resize grip of [[WidgetPanel]] component.
  * @internal
  */
-export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panel = React.useContext(PanelStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   assert(panel);
@@ -45,10 +45,13 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
     panel.collapsed && "nz-collapsed",
     resizing && "nz-resizing",
   );
+  const resizeGripTitle = useLabel("resizeGripTitle");
+
   return (
     <div
       className={className}
       ref={ref}
+      title={resizeGripTitle}
     >
       <div className="nz-dot" />
       <div className="nz-dot" />

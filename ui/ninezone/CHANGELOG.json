@@ -2,6 +2,48 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/ui-ninezone_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed updating focus when Tabs activeIndex updated. More a11y issues."
+          },
+          {
+            "comment": "Added eslint-plugin-jsx-a11y devDependency and made first pass at adding a11y roles"
+          },
+          {
+            "comment": "Added react-axe and resolved some a11y issues"
+          },
+          {
+            "comment": "Moved SpecialKey & FunctionKey enums to ui-abstract & started using them throughout UI packages"
+          },
+          {
+            "comment": "lock down @types/react version at 16.9.43 to prevent build error from csstype dependency"
+          },
+          {
+            "comment": "Added Table component keyboard row selection. Miscellaneous a11y fixes."
+          },
+          {
+            "comment": "Switch to ESLint"
+          },
+          {
+            "comment": "Add drop shadow to toolsettings overflow popup.  "
+          },
+          {
+            "comment": "Close widget overflow popup when tab is clicked."
+          },
+          {
+            "comment": "Add corner resize handles to floating widgets."
+          },
+          {
+            "comment": "Add preferredPanelWidgetSize to TabState."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/ui-ninezone_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

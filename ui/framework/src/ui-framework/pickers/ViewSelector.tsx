@@ -272,8 +272,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       // This itemMapper simply looks through all the list items and their nested children and enables the one
       // that we have registered to enable
       // Also disable all other items
-      let itemMapper: (tempItem: ListItem) => ListItem;
-      itemMapper = (tempItem: ListItem) => {
+      const itemMapper: (tempItem: ListItem) => ListItem = (tempItem: ListItem) => {
         if (tempItem.type === ListItemType.Container) {
           return { ...tempItem, children: tempItem.children!.map(itemMapper) };
         } else if (tempItem.key === item.key) {
@@ -309,14 +308,14 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     });
 
     // Set state to show enabled the view that got selected
-    this.updateState(item.key); // tslint:disable-line:no-floating-promises
+    this.updateState(item.key); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   // Hook on the category selector being expanded so that we may initialize if needed
   // istanbul ignore next
   private _onExpanded = (expand: boolean) => {
     if (expand)
-      this.updateState(IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.view.id : undefined); // tslint:disable-line:no-floating-promises
+      this.updateState(IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.view.id : undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /**
@@ -326,7 +325,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     if (!this.state.initialized)
       return null;
 
-    const { imodel, ...props } = this.props;
+    const { imodel, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     return (
       <ListPicker
@@ -344,4 +343,4 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 /** ViewSelector that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
  * @beta
  */
-export const IModelConnectedViewSelector = connectIModelConnection(null, null)(ViewSelector); // tslint:disable-line:variable-name
+export const IModelConnectedViewSelector = connectIModelConnection(null, null)(ViewSelector); // eslint-disable-line @typescript-eslint/naming-convention

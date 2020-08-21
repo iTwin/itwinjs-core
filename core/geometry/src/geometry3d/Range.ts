@@ -16,7 +16,8 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { PointStreamRangeCollector, VariantPointDataStream } from "./PointStreaming";
 import { Transform } from "./Transform";
 import { LowAndHighXY, LowAndHighXYZ, Range1dProps, Range2dProps, Range3dProps, XAndY, XYAndZ } from "./XYZProps";
-
+// allow _EXTREME_POSITIVE and _EXTREME_NEGATIVE
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Base class for Range1d, Range2d, Range3d.
  * @public

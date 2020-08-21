@@ -185,7 +185,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
 }
 
 /** @public */
-export namespace ExternalSourceAspect {
+export namespace ExternalSourceAspect { // eslint-disable-line no-redeclare
   /** Standard values for the `Kind` property of `ExternalSourceAspect`.
    * @public
    */

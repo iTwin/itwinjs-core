@@ -18,8 +18,8 @@ import { PointerCaptor } from "../../base/PointerCaptor";
 export enum ResizeDirection {
   EastWest,
   NorthSouth,
-  NorthEast_SouthWest,
-  NorthWest_SouthEast,
+  NorthEast_SouthWest, // eslint-disable-line @typescript-eslint/naming-convention
+  NorthWest_SouthEast, // eslint-disable-line @typescript-eslint/naming-convention
 }
 
 /** Helpers for [[ResizeDirection]].
@@ -109,10 +109,13 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
         onPointerMove={this._handlePointerMove}
         style={this.props.style}
       >
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div
           className="nz-grip"
           onClick={this._handleClick}
           ref={this._grip}
+          role="button"
+          tabIndex={-1}
         />
       </PointerCaptor>
     );

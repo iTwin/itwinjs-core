@@ -14,6 +14,7 @@ import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
+import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
 /** The RPC interface for writing to an iModel.
  * All operations require read+write access.
@@ -23,6 +24,9 @@ import { SubCategoryAppearance } from "../SubCategoryAppearance";
 export abstract class IModelWriteRpcInterface extends RpcInterface {
   /** Returns the IModelWriteRpcInterface client instance for the frontend. */
   public static getClient(): IModelWriteRpcInterface { return RpcManager.getClientForInterface(IModelWriteRpcInterface); }
+
+  /** Returns the IModelWriteRpcInterface client instance for a custom RPC routing configuration. */
+  public static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface { return RpcManager.getClientForInterface(IModelWriteRpcInterface, token); }
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "IModelWriteRpcInterface";

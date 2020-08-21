@@ -67,8 +67,8 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
 
   if (yAxisUp) {
     const branch = new GraphicBranch();
-    branch.add(renderGraphic!);
-    const transform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
+    branch.add(renderGraphic);
+    const transform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)));
 
     renderGraphic = system.createBranch(branch, transform);
   }

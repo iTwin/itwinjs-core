@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, StageUsage, ToolbarItemUtilities, WidgetState,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StagePanelLocation, StageUsage, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
@@ -37,7 +37,7 @@ import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { ExampleForm } from "../forms/ExampleForm";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+// import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
@@ -45,6 +45,9 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
+// import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
+
+/* eslint-disable react/jsx-key */
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";
@@ -108,7 +111,7 @@ export class ViewsFrontstage extends FrontstageProvider {
 
   private _onEmphasizeElementsChangedHandler = (args: EmphasizeElementsChangedArgs) => {
     if (FrontstageManager.activeFrontstageDef && FrontstageManager.activeFrontstageId === ViewsFrontstage.stageId)
-      this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // tslint:disable-line: no-floating-promises
+      this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
@@ -219,6 +222,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                 <Widget
                   iconSpec="icon-placeholder"
                   isToolSettings={true}
+                  preferredPanelSize="fit-content"
                 />,
               ]}
           />
@@ -254,8 +258,12 @@ export class ViewsFrontstage extends FrontstageProvider {
             defaultState={ZoneState.Minimized}
             initialWidth={400}
             widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+              // Used when using map-layers as a package and not using UiItemsProvider (compatible with V1 of framework)
+              // <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
+              //  iconSpec={MapLayersWidgetControl.iconSpec} />,
+
+              // <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
+              //   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
                   iModelConnection: this.iModelConnection,
@@ -431,32 +439,32 @@ class AdditionalTools {
     document.addEventListener("mousemove", this._handleTool4MouseMove);
   }
 
-  private _handleTool4Keypress = (event: any) => {
+  private _handleTool4Keypress = (event: KeyboardEvent) => {
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", this._tool4Detailed);
     let changed = false;
 
-    switch (event.keyCode) {
-      case 37:
+    switch (event.key) {
+      case SpecialKey.ArrowLeft:
         details.briefMessage = "Left pressed";
         this._toolRelativePosition = RelativePosition.Left;
         changed = true;
         break;
-      case 38:
+      case SpecialKey.ArrowUp:
         details.briefMessage = "Up pressed";
         this._toolRelativePosition = RelativePosition.Top;
         changed = true;
         break;
-      case 39:
+      case SpecialKey.ArrowRight:
         details.briefMessage = "Right pressed";
         this._toolRelativePosition = RelativePosition.Right;
         changed = true;
         break;
-      case 40:
+      case SpecialKey.ArrowDown:
         details.briefMessage = "Down pressed";
         this._toolRelativePosition = RelativePosition.Bottom;
         changed = true;
         break;
-      case 27:  // Escape
+      case SpecialKey.Escape:
         this._handleTool4Dismiss();
         break;
     }
@@ -651,9 +659,9 @@ class AdditionalTools {
     CursorPopupManager.updatePosition(args.newPt);
   }
 
-  private _handleCursorPopupKeypress = (event: any) => {
-    switch (event.keyCode) {
-      case 27:  // Escape
+  private _handleCursorPopupKeypress = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case SpecialKey.Escape:
         this._closeCursorPopup();
         break;
     }

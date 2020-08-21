@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, StringGetter } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
   Direction, ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
@@ -29,11 +29,11 @@ import { ToolbarDragInteractionContext } from "./DragInteraction";
 
 import classnames = require("classnames");
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, false);
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ItemWithDragInteraction = withDragInteraction(Item);
 
 // -----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
-    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.panelLabelKey); // tslint:disable-line: deprecation
+    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.panelLabelKey); // eslint-disable-line deprecation/deprecation
     this.items = groupItemProps.items;
     this.defaultActiveItemId = groupItemProps.defaultActiveItemId;
   }
@@ -202,10 +202,10 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     if (props.groupItemDef && props.groupItemDef.items.length > 0) {
       props.groupItemDef.items.forEach((itemDef: AnyItemDef) => {
         const item: ItemDefBase | undefined = itemDef;
-        if (item.stateSyncIds.length > 0) { // tslint:disable-line:deprecation
+        if (item.stateSyncIds.length > 0) { // eslint-disable-line deprecation/deprecation
           if (undefined === this._childSyncIds)
             this._childSyncIds = new Set<string>();
-          item.stateSyncIds.forEach((value) => this._childSyncIds!.add(value)); // tslint:disable-line:deprecation
+          item.stateSyncIds.forEach((value) => this._childSyncIds!.add(value)); // eslint-disable-line deprecation/deprecation
         }
       });
     }
@@ -220,11 +220,11 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
         this._childRefreshRequired = true;  // this is cleared when render occurs
     let newState: GroupItemState = { ...this.state };
-    if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0) // tslint:disable-line:deprecation
-      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
+    if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
     if (refreshState || this._childRefreshRequired) {
-      if (this.props.groupItemDef.stateFunc) // tslint:disable-line:deprecation
-        newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState; // tslint:disable-line:deprecation
+      if (this.props.groupItemDef.stateFunc) // eslint-disable-line deprecation/deprecation
+        newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState; // eslint-disable-line deprecation/deprecation
       // istanbul ignore else
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)
         || this._childRefreshRequired) {
@@ -273,9 +273,9 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     return {
       activeToolId: FrontstageManager.activeToolId,
       groupItemDef,
-      isEnabled: groupItemDef.isEnabled, // tslint:disable-line:deprecation
+      isEnabled: groupItemDef.isEnabled, // eslint-disable-line deprecation/deprecation
       isPressed: groupItemDef.isPressed,
-      isVisible: groupItemDef.isVisible, // tslint:disable-line:deprecation
+      isVisible: groupItemDef.isVisible, // eslint-disable-line deprecation/deprecation
       trayId,
       backTrays: [],
       trays,
@@ -349,7 +349,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       this.closeGroupButton();
       KeyboardShortcutManager.setFocusToHome();
     }
@@ -549,10 +549,10 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                 const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
 
                 if (item instanceof ItemDefBase) {
-                  isVisible = item.isVisible; // tslint:disable-line:deprecation
-                  isEnabled = item.isEnabled; // tslint:disable-line:deprecation
-                  if (item.stateFunc) { // tslint:disable-line:deprecation
-                    const newState = item.stateFunc({ isVisible, isActive, isEnabled }); // tslint:disable-line:deprecation
+                  isVisible = item.isVisible; // eslint-disable-line deprecation/deprecation
+                  isEnabled = item.isEnabled; // eslint-disable-line deprecation/deprecation
+                  if (item.stateFunc) { // eslint-disable-line deprecation/deprecation
+                    const newState = item.stateFunc({ isVisible, isActive, isEnabled }); // eslint-disable-line deprecation/deprecation
                     isVisible = undefined !== newState.isVisible ? newState.isVisible : /* istanbul ignore next */ isVisible;
                     isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : /* istanbul ignore next */ isEnabled;
                     isActive = undefined !== newState.isActive ? newState.isActive : /* istanbul ignore next */ isActive;

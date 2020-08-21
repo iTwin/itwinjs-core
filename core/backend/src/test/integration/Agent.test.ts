@@ -30,7 +30,7 @@ describe("Agent (#integration)", () => {
       };
 
       const agentClient = new AgentAuthorizationClient(agentConfiguration);
-      const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
+      const jwt: AccessToken = await agentClient.getAccessToken(new ClientRequestContext());
       requestContext = new AuthorizedBackendRequestContext(jwt);
 
       testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");

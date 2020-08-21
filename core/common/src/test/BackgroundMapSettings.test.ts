@@ -43,7 +43,7 @@ describe("BackgroundMapSettings", () => {
         expect(outTerrain.applyLighting).to.equal(expTerrain.applyLighting);
         expect(outTerrain.heightOrigin).to.equal(expTerrain.heightOrigin);
         expect(outTerrain.heightOriginMode).to.equal(expTerrain.heightOriginMode);
-        expect(outTerrain.nonLocatable).to.equal(expTerrain.nonLocatable); // tslint:disable-line:deprecation
+        expect(outTerrain.nonLocatable).to.equal(expTerrain.nonLocatable); // eslint-disable-line deprecation/deprecation
       }
 
       expect(settings.equalsJSON(expected)).to.be.true;
@@ -102,8 +102,8 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: -99 } }, {});
 
-    roundTrip({ terrainSettings: { nonLocatable: false } }, {}); // tslint:disable-line:deprecation
-    roundTrip({ terrainSettings: { nonLocatable: true } }, "input"); // tslint:disable-line:deprecation
+    roundTrip({ terrainSettings: { nonLocatable: false } }, {}); // eslint-disable-line deprecation/deprecation
+    roundTrip({ terrainSettings: { nonLocatable: true } }, "input"); // eslint-disable-line deprecation/deprecation
 
     roundTrip({
       providerName: "BingProvider",
@@ -118,7 +118,7 @@ describe("BackgroundMapSettings", () => {
         exaggeration: 1,
         heightOrigin: 0,
         heightOriginMode: TerrainHeightOriginMode.Geodetic,
-        nonLocatable: false, // tslint:disable-line:deprecation
+        nonLocatable: false, // eslint-disable-line deprecation/deprecation
       },
     }, {});
   });

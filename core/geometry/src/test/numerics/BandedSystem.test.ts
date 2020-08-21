@@ -14,7 +14,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 function maxDiff(arrayA: Float64Array, arrayB: Float64Array): number {
   let diff = 0.0;
   for (let i = 0; i < arrayA.length; i++) {

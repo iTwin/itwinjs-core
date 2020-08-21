@@ -13,7 +13,6 @@ import { TableFilterDescriptorCollection } from "../ui-components/table/columnfi
 
 // cSpell:ignore buttongroup
 
-// tslint:disable: completed-docs
 
 export class TestUtils {
   private static _i18n?: I18N;
@@ -31,7 +30,7 @@ export class TestUtils {
   public static async initializeUiComponents() {
     if (!TestUtils._uiComponentsInitialized) {
       // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
+      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
       await UiComponents.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;
@@ -138,13 +137,14 @@ export class TestUtils {
 
     const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;
-    propertyRecord.property.enum = { choices: [], isStrict: false };
-    propertyRecord.property.enum.choices = [
-      { label: "Yellow", value: "yellow" },
-      { label: "Red", value: "red" },
-      { label: "Green", value: "green" },
-      { label: "Blue", value: "blue" },
-    ];
+    propertyRecord.property.enum = {
+      choices: [
+        { label: "Yellow", value: "yellow" },
+        { label: "Red", value: "red" },
+        { label: "Green", value: "green" },
+      ],
+      isStrict: false,
+    };
 
     if (column)
       column.propertyDescription = description;
@@ -165,15 +165,18 @@ export class TestUtils {
       typename: StandardTypeNames.Enum,
     };
 
+    const getChoices = async () => {
+      return [
+        { label: "Yellow", value: 0 },
+        { label: "Red", value: 1 },
+        { label: "Green", value: 2 },
+        { label: "Blue", value: 3 },
+      ];
+    };
+
     const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;
-    propertyRecord.property.enum = { choices: [], isStrict: false };
-    propertyRecord.property.enum.choices = [
-      { label: "Yellow", value: 0 },
-      { label: "Red", value: 1 },
-      { label: "Green", value: 2 },
-      { label: "Blue", value: 3 },
-    ];
+    propertyRecord.property.enum = { choices: getChoices(), isStrict: false };
 
     if (column)
       column.propertyDescription = description;
@@ -417,4 +420,4 @@ export class TestFilterableTable implements FilterableTable {
   }
 }
 
-export default TestUtils;   // tslint:disable-line: no-default-export
+export default TestUtils;   // eslint-disable-line: no-default-export

@@ -12,7 +12,8 @@ import {
   PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
+  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
+  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
   SpatialViewDefinitionProps, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -20,20 +21,20 @@ import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialStat
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
 import { ElementState } from "./EntityState";
+import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
-import { RenderMemory } from "./render/RenderMemory";
 import { RenderClipVolume } from "./render/RenderClipVolume";
+import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, GlobalLocation } from "./ViewGlobalLocation";
-import { Frustum2d } from "./Frustum2d";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewChangeOptions, Viewport } from "./Viewport";
 
@@ -168,6 +169,47 @@ export class ViewPose2d extends ViewPose {
   public get rotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
 }
 
+/** Interface adopted by an object that wants to apply a per-model display transform.
+ * This is intended chiefly for use by model alignment tools.
+ * @see [[ViewState.modelDisplayTransformProvider]].
+ * @internal
+ */
+export interface ModelDisplayTransformProvider {
+  getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+}
+
+/** Decorates the viewport with the view's grid. Graphics are cached as long as scene remains valid. */
+class GridDecorator {
+  public constructor(private readonly _view: ViewState) { }
+
+  public readonly useCachedDecorations = true;
+
+  public decorate(context: DecorateContext): void {
+    const vp = context.viewport;
+    if (!vp.isGridOn)
+      return;
+
+    const orientation = this._view.getGridOrientation();
+    if (GridOrientationType.AuxCoord < orientation) {
+      return; // NEEDSWORK...
+    }
+    if (GridOrientationType.AuxCoord === orientation) {
+      this._view.auxiliaryCoordinateSystem.drawGrid(context);
+      return;
+    }
+
+    const isoGrid = false;
+    const gridsPerRef = this._view.getGridsPerRef();
+    const spacing = Point2d.createFrom(this._view.getGridSpacing());
+    const origin = Point3d.create();
+    const matrix = Matrix3d.createIdentity();
+    const fixedRepsAuto = Point2d.create();
+
+    this._view.getGridSettings(vp, origin, matrix, orientation);
+    context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
+  }
+}
+
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
@@ -179,8 +221,10 @@ export abstract class ViewState extends ElementState {
 
   private _auxCoordSystem?: AuxCoordSystemState;
   private _extentLimits?: ExtentLimits;
+  private _modelDisplayTransformProvider?: ModelDisplayTransformProvider;
   public description?: string;
   public isPrivate?: boolean;
+  private readonly _gridDecorator: GridDecorator;
 
   /** Selects the categories that are display by this ViewState. */
   public categorySelector: CategorySelectorState;
@@ -194,6 +238,7 @@ export abstract class ViewState extends ElementState {
     this.isPrivate = props.isPrivate;
     this.displayStyle = displayStyle;
     this.categorySelector = categoryOrClone;
+    this._gridDecorator = new GridDecorator(this);
     if (!(categoryOrClone instanceof ViewState))  // is this from the clone method?
       return; // not from clone
 
@@ -203,6 +248,7 @@ export abstract class ViewState extends ElementState {
     this.displayStyle = source.displayStyle.clone();
     this._extentLimits = source._extentLimits;
     this._auxCoordSystem = source._auxCoordSystem;
+    this._modelDisplayTransformProvider = source._modelDisplayTransformProvider;
   }
 
   /** Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
@@ -292,6 +338,13 @@ export abstract class ViewState extends ElementState {
     return this.displayStyle.getSubCategoryOverride(id);
   }
 
+  /** Query the symbology overrides applied to a model when rendered using this ViewState.
+   * @param id The Id of the model.
+   * @return The symbology overrides applied to the model, or undefined if no such overrides exist.
+   */
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
+    return this.displayStyle.getModelAppearanceOverride(id);
+  }
   /** @internal */
   public isSubCategoryVisible(id: Id64String): boolean {
     const app = this.iModel.subcategories.getSubCategoryAppearance(id);
@@ -439,28 +492,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public drawGrid(context: DecorateContext): void {
-    const vp = context.viewport;
-    if (!vp.isGridOn)
-      return;
-
-    const orientation = this.getGridOrientation();
-    if (GridOrientationType.AuxCoord < orientation) {
-      return; // NEEDSWORK...
-    }
-    if (GridOrientationType.AuxCoord === orientation) {
-      this.auxiliaryCoordinateSystem.drawGrid(context);
-      return;
-    }
-
-    const isoGrid = false;
-    const gridsPerRef = this.getGridsPerRef();
-    const spacing = Point2d.createFrom(this.getGridSpacing());
-    const origin = Point3d.create();
-    const matrix = Matrix3d.createIdentity();
-    const fixedRepsAuto = Point2d.create();
-
-    this.getGridSettings(vp, origin, matrix, orientation);
-    context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
+    context.addFromDecorator(this._gridDecorator);
   }
 
   /** @internal */
@@ -1026,6 +1058,27 @@ export abstract class ViewState extends ElementState {
 
   protected _updateMaxGlobalScopeFactor() { this._maxGlobalScopeFactor = Math.max(this._maxGlobalScopeFactor, this.globalScopeFactor); }
 
+  /** Return elevation applied to model when displayed. This is strictly relevant to plan projection models.
+   * @internal
+   */
+  public getModelElevation(_modelId: Id64String): number { return 0; }
+
+  /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
+   * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
+   * @see [[Viewport.setModelDisplayTransformProvider]].
+   * @internal
+   */
+  public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
+    return this._modelDisplayTransformProvider;
+  }
+  public set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) {
+    this._modelDisplayTransformProvider = provider;
+  }
+
+  /** @internal */
+  public getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform {
+    return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
+  }
 }
 
 /** Defines the state of a view of 3d models.
@@ -1754,6 +1807,12 @@ export abstract class ViewState3d extends ViewState {
 
     builder.addPolyface(polyface, true);
     context.addDecorationFromBuilder(builder);
+  }
+
+  /** @internal */
+  public getModelElevation(modelId: Id64String): number {
+    const settings = this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
+    return settings && settings.elevation ? settings.elevation : 0;
   }
 }
 

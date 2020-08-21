@@ -18,6 +18,7 @@ import { HitDetail } from '@bentley/imodeljs-frontend';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { LinePixels } from '@bentley/imodeljs-common';
 import { LocateFilterStatus } from '@bentley/imodeljs-frontend';
 import { LocateResponse } from '@bentley/imodeljs-frontend';
 import { MapLayerSource } from '@bentley/imodeljs-frontend';
@@ -25,6 +26,7 @@ import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 import { RenderSystemDebugControl } from '@bentley/imodeljs-frontend';
 import { RenderTargetDebugControl } from '@bentley/imodeljs-frontend';
 import { RgbColor } from '@bentley/imodeljs-common';
+import { RgbColorProps } from '@bentley/imodeljs-common';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { TileBoundingBoxes } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
@@ -305,6 +307,34 @@ export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
     static toolId: string;
     // (undocumented)
     protected get _wantCreate(): boolean;
+}
+
+// @beta
+export class ClearModelAppearanceOverrides extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(name?: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ClearRealityModelAppearanceOverrides extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(index: number): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha (undocumented)
@@ -625,6 +655,7 @@ export class FrustumDecorator implements Decorator {
     static enable(vp: Viewport, options?: FrustumDecorationOptions): void;
     // (undocumented)
     static get isEnabled(): boolean;
+    readonly useCachedDecorations = true;
 }
 
 // @alpha (undocumented)
@@ -908,6 +939,9 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
 export function parseArgs(args: string[]): ToolArgs;
 
 // @beta
+export function parseBoolean(arg: string | undefined): boolean | undefined;
+
+// @beta
 export function parseToggle(arg: string | undefined): string | boolean | undefined;
 
 // @beta (undocumented)
@@ -925,6 +959,7 @@ export class ProjectExtentsDecoration {
     static toggle(imodel: IModelConnection, enabled?: boolean): boolean;
     // (undocumented)
     protected updateDecorationListener(add: boolean): void;
+    readonly useCachedDecorations = true;
 }
 
 // @alpha (undocumented)
@@ -1116,6 +1151,162 @@ export class SetAspectRatioSkewTool extends Tool {
 // @alpha
 export class SetMapBaseTool extends AttachMapLayerTool {
     constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetModelColorTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(rgb: RgbColorProps, name: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetModelEmphasizedTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(emphasized: true | undefined, name: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetModelIgnoresMaterialsTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(ignoresMaterial: true | undefined, name: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetModelLineCodeTool extends Tool {
+    // (undocumented)
+    static linePixels: LinePixels[];
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(lineCode: number, name: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetModelLineWeightTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(weight: number, name: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetModelLocateTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(locate: boolean, name: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetModelTransparencyTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(transparency: number, name: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetRealityModelColorTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(rgb: RgbColorProps, index: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetRealityModelEmphasizedTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(emphasized: true | undefined, index: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetRealityModelLocateTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(locate: boolean, index: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetRealityModelTransparencyTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(transparency: number, index: number): boolean;
     // (undocumented)
     static toolId: string;
 }

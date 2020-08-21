@@ -10,8 +10,8 @@ const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com
 
 import { BeDuration, ClientRequestContext, dispose, Guid, GuidString, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
+import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
+import { IModelError, IModelStatus, NativeAppRpcInterface, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
@@ -51,10 +51,25 @@ import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 import { MapLayerFormatRegistry } from "./tile/map/MapLayerFormatRegistry";
 
-// tslint:disable-next-line: no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("./IModeljs-css");
 
-// cSpell:ignore noopener noreferrer gprid forin nbsp
+// cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
+
+/** Options that can be supplied with [[IModelAppOptions]] to customize frontend security.
+ * @public
+ */
+export interface FrontendSecurityOptions {
+  /** Configures protection from Cross Site Request Forgery attacks. */
+  readonly csrfProtection?: {
+    /** If enabled, IModelApp will extract the CSRF token for the current session from the document's cookies and send it with each request as a header value. */
+    readonly enabled: boolean;
+    /** Defaults to XSRF-TOKEN. */
+    readonly cookieName?: string;
+    /** Defaults to X-XSRF-TOKEN. */
+    readonly headerName?: string;
+  };
+}
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
  * @public
@@ -88,6 +103,8 @@ export interface IModelAppOptions {
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
   authorizationClient?: FrontendAuthorizationClient;
+  /** If present, supplies security options for the frontend. */
+  security?: FrontendSecurityOptions;
   /** @internal */
   sessionId?: GuidString;
   /** @internal */
@@ -146,6 +163,13 @@ export interface ModalReturn {
   stop: (_ev: Event) => void;
 }
 
+/** We hang the IModelApp object off the global `window` object in IModelApp.startup for debugging purposes.
+ * It's removed in IModelApp.shutdown.
+ */
+interface IModelAppForDebugger {
+  iModelAppForDebugger?: typeof IModelApp;
+}
+
 /**
  * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
@@ -181,6 +205,7 @@ export class IModelApp {
   private static _features: FeatureTrackingManager;
   private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
+  private static _securityOptions: FrontendSecurityOptions;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -249,6 +274,8 @@ export class IModelApp {
   public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
+  /** The requested security options for the frontend. */
+  public static get securityOptions() { return this._securityOptions; }
   /** The [[FeatureTrackingManager]] for this session
    * @internal
    */
@@ -266,7 +293,7 @@ export class IModelApp {
    * @internal
    */
   public static registerModuleEntities(moduleObj: any) {
-    for (const thisMember in moduleObj) { // tslint:disable-line: forin
+    for (const thisMember in moduleObj) { // eslint-disable-line guard-for-in
       const thisEntityState = moduleObj[thisMember];
       if (thisEntityState.prototype instanceof EntityState) {
         this.registerEntityState(thisEntityState.classFullName, thisEntityState);
@@ -322,7 +349,12 @@ export class IModelApp {
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
 
+    this._securityOptions = opts.security || {};
+
     this._initialized = true;
+
+    // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
+    (window as IModelAppForDebugger).iModelAppForDebugger = this;
 
     // Initialize basic application details before log messages are sent out
     this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
@@ -331,6 +363,13 @@ export class IModelApp {
     this.authorizationClient = opts.authorizationClient;
 
     this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
+    if (this._securityOptions.csrfProtection?.enabled) {
+      this._imodelClient.use(
+        addCsrfHeader(
+          this._securityOptions.csrfProtection.headerName,
+          this._securityOptions.csrfProtection.cookieName,
+        ));
+    }
 
     this._setupRpcRequestContext();
 
@@ -398,6 +437,8 @@ export class IModelApp {
   public static async shutdown() {
     if (!this._initialized)
       return;
+
+    (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
 
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
@@ -471,11 +512,11 @@ export class IModelApp {
       return;
 
     try {
-      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+      IModelApp.toolAdmin.processEvent(); // eslint-disable-line @typescript-eslint/no-floating-promises
       IModelApp.viewManager.renderLoop();
       IModelApp.tileAdmin.process();
     } catch (exception) {
-      ToolAdmin.exceptionHandler(exception); // tslint:disable-line:no-floating-promises
+      ToolAdmin.exceptionHandler(exception); // eslint-disable-line @typescript-eslint/no-floating-promises
 
       IModelApp._wantEventLoop = false;
       IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.
@@ -495,10 +536,29 @@ export class IModelApp {
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
       const id = _request.id;
-
+      /* todo: Following is required so to skip call to IModelApp.authorizationClient.getAccessToken() as it causes indirect recursion
+               in case when MobileAuthorizationClient is used which uses NativeAppRpcInterface to get token which by itself end up in this function.
+               We need Rpc operation policy that can be set for methods that does not expect any authorization.
+      **/
+      const authRequired = (request: RpcRequest) => {
+        const authOps = [{
+          interfaceName: NativeAppRpcInterface.interfaceName, operationNames: [
+            "authSignIn", "authSignOut", "authGetAccessToken", "authInitialize", "fetchEvents", "log", "checkInternetConnectivity", "overrideInternetConnectivity", "getConfig", "cancelTileContentRequests"],
+        }];
+        for (const authOp of authOps) {
+          if (authOp.interfaceName === request.operation.interfaceDefinition.interfaceName) {
+            for (const operationName of authOp.operationNames) {
+              if (request.operation.operationName === operationName) {
+                return false;
+              }
+            }
+          }
+        }
+        return true;
+      };
       let authorization: string | undefined;
       let userId: string | undefined;
-      if (IModelApp.authorizationClient) {
+      if (IModelApp.authorizationClient && authRequired(_request)) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
           const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
@@ -510,7 +570,7 @@ export class IModelApp {
           // The application may go offline
         }
       }
-      return {
+      const serialized: SerializedClientRequestContext = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
@@ -518,6 +578,20 @@ export class IModelApp {
         authorization,
         userId,
       };
+
+      const csrf = IModelApp.securityOptions.csrfProtection;
+      if (csrf && csrf.enabled) {
+        const cookieName = csrf.cookieName || "XSRF-TOKEN";
+        const cookieValue = document.cookie.split("; ").find((r) => r.startsWith(`${cookieName}=`));
+
+        if (cookieValue) {
+          const headerName = csrf.headerName || "X-XSRF-TOKEN";
+          const headerValue = cookieValue.split("=")[1];
+          serialized.csrfToken = { headerName, headerValue };
+        }
+      }
+
+      return serialized;
     };
   }
 
@@ -526,15 +600,15 @@ export class IModelApp {
    */
   public static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
     /** The parent for the new HTMLElement */
-    parent?: HTMLElement,
+    parent?: HTMLElement;
     /** The className for the new HTMLElement */
-    className?: string,
+    className?: string;
     /** The Id for the new HTMLElement */
-    id?: string,
+    id?: string;
     /** innerHTML for the new HTMLElement */
-    innerHTML?: string,
+    innerHTML?: string;
     /** innerText for the new HTMLElement */
-    innerText?: string,
+    innerText?: string;
   }) {
     const el = document.createElement(type);
     if (undefined !== opt) {
@@ -604,13 +678,13 @@ export class IModelApp {
   public static makeLogoCard(
     opts: {
       /** The heading to be put at the top of this logo card inside an <h2>. May include HTML. */
-      heading: string | HTMLElement,
+      heading: string | HTMLElement;
       /** The URL or HTMLImageElement for the icon on this logo card. */
       iconSrc?: string | HTMLImageElement;
       /** The width of the icon, if `iconSrc` is a string. Default is 64. */
       iconWidth?: number;
       /** A *notice* string to be shown on the logo card. May include HTML.  */
-      notice?: string | HTMLElement
+      notice?: string | HTMLElement;
     }): HTMLTableRowElement {
     const card = IModelApp.makeHTMLElement("tr");
     const iconCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-logo" });

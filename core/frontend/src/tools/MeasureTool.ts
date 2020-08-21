@@ -93,7 +93,7 @@ class MeasureMarker extends Marker {
       ctx.stroke();
     };
 
-    this.drawFunc = markerDrawFunc;
+    this.drawFunc = markerDrawFunc; // eslint-disable-line @typescript-eslint/unbound-method
     this.title = title;
     this.label = label;
     this.labelFont = "16px sans-serif";
@@ -107,7 +107,7 @@ class MeasureMarker extends Marker {
   public onMouseEnter(ev: BeButtonEvent) {
     super.onMouseEnter(ev);
     if (this.title && InputSource.Touch === ev.inputSource && ev.viewport)
-      ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
+      ev.viewport.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
   }
 
   public onMouseLeave() {
@@ -466,7 +466,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
             const wasSelected = seg.marker.isSelected;
             seg.marker.isSelected = (seg.marker === selectedMarker);
             if (wasSelected !== seg.marker.isSelected)
-              this.updateSelectedMarkerToolTip(seg, ev); // tslint:disable-line:no-floating-promises
+              this.updateSelectedMarkerToolTip(seg, ev); // eslint-disable-line @typescript-eslint/no-floating-promises
           }
 
           if (undefined !== ev.viewport)
@@ -474,7 +474,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
           return true;
         };
 
-        marker.onMouseButton = segMarkerButtonFunc;
+        marker.onMouseButton = segMarkerButtonFunc; // eslint-disable-line @typescript-eslint/unbound-method
         this._acceptedSegments.push({ distance, slope, start, end, delta, refAxes, marker });
       }
     }
@@ -836,15 +836,17 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
 
     const hints = new AccuDrawHintBuilder();
     hints.setOrigin(this._points[this._points.length - 1]);
-    if (1 === this._points.length) {
-      hints.setRotation(this._matrix!.inverse()!);
-      hints.setModeRectangular();
-    } else if (this._points.length > 1 && !(this._points[this._points.length - 1].isAlmostEqual(this._points[this._points.length - 2]))) {
-      const xVec = Vector3d.createStartEnd(this._points[this._points.length - 2], this._points[this._points.length - 1]);
-      const zVec = this._matrix!.getColumn(2);
-      const matrix = Matrix3d.createRigidFromColumns(xVec, zVec, AxisOrder.XZY);
-      if (undefined !== matrix)
-        hints.setRotation(matrix.inverse()!); // Rotate AccuDraw x axis to last segment preserving current up vector...
+    if (this._matrix) {
+      if (1 === this._points.length) {
+        hints.setRotation(this._matrix.inverse()!);
+        hints.setModeRectangular();
+      } else if (this._points.length > 1 && !(this._points[this._points.length - 1].isAlmostEqual(this._points[this._points.length - 2]))) {
+        const xVec = Vector3d.createStartEnd(this._points[this._points.length - 2], this._points[this._points.length - 1]);
+        const zVec = this._matrix.getColumn(2);
+        const matrix = Matrix3d.createRigidFromColumns(xVec, zVec, AxisOrder.XZY);
+        if (undefined !== matrix)
+          hints.setRotation(matrix.inverse()!); // Rotate AccuDraw x axis to last segment preserving current up vector...
+      }
     }
     hints.setLockZ = true;
     hints.sendHints();
@@ -857,10 +859,10 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     for (const pt of this._points)
       points.push(pt.clone());
 
-    if (this._isComplete)
+    if (this._isComplete || !this._matrix)
       return points;
 
-    const normal = this._matrix!.getColumn(2);
+    const normal = this._matrix.getColumn(2);
     let currentPt = EditManipulator.HandleUtils.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
     if (undefined === currentPt)
       currentPt = ev.point.clone();
@@ -1019,7 +1021,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix!.getColumn(2), ev.viewport!, true);
+      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }

@@ -37,7 +37,7 @@ export function serializeViewState(view: ViewState): ViewStateProps {
       scale: 1,
     };
 
-    props.sheetAttachments = [ ...view.attachmentIds ];
+    props.sheetAttachments = [...view.attachmentIds];
   }
 
   return props;
@@ -111,7 +111,7 @@ export class ApplyViewTool extends Tool {
       const json = JSON.parse(arg);
 
       // ###TODO: async...
-      deserializeViewState(json, vp.iModel).then((view) => this.run(view)); // tslint:disable-line:no-floating-promises
+      deserializeViewState(json, vp.iModel).then((view) => this.run(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, err.toString()));
     }
@@ -142,7 +142,7 @@ export class ApplyViewByIdTool extends Tool {
 
     vp.iModel.views.load(viewId).then((view) => {
       vp.changeView(view);
-    }).catch();
+    }).catch(() => { });
 
     return true;
   }

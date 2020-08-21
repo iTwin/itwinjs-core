@@ -100,11 +100,11 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
 
     // Create the authorization request
     const authReqJson: AuthorizationRequestJson = {
-      client_id: this._clientConfiguration.clientId,
-      redirect_uri: this._clientConfiguration.redirectUri,
+      client_id: this._clientConfiguration.clientId, // eslint-disable-line @typescript-eslint/naming-convention
+      redirect_uri: this._clientConfiguration.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       scope: this._clientConfiguration.scope,
-      response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
-      extras: { prompt: "consent", access_type: "offline" },
+      response_type: AuthorizationRequest.RESPONSE_TYPE_CODE, // eslint-disable-line @typescript-eslint/naming-convention
+      extras: { prompt: "consent", access_type: "offline" }, // eslint-disable-line @typescript-eslint/naming-convention
     };
     const authorizationRequest = new AuthorizationRequest(authReqJson, new NodeCrypto(), true /* = usePkce */);
     await authorizationRequest.setupCodeVerifier();
@@ -123,6 +123,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     // Setup a notifier to obtain the result of authorization
     const notifier = new AuthorizationNotifier();
     authorizationHandler.setAuthorizationNotifier(notifier);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     notifier.setAuthorizationListener(async (authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null) => {
       requestContext.enter();
       Logger.logTrace(loggerCategory, "Authorization listener invoked", () => ({ authRequest, authResponse, authError }));
@@ -192,9 +193,11 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     const profile = await this.getUserProfile(requestContext, tokenResponse);
 
     const json = {
+      /* eslint-disable @typescript-eslint/naming-convention */
       access_token: tokenResponse.accessToken,
       expires_at: tokenResponse.issuedAt + (tokenResponse.expiresIn ?? 0),
       expires_in: tokenResponse.expiresIn,
+      /* eslint-enable @typescript-eslint/naming-convention */
     };
 
     return AccessToken.fromTokenResponseJson(json, profile);
@@ -291,6 +294,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     const extras: StringMap = { code_verifier: codeVerifier };
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
@@ -299,6 +303,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
       client_id: this._clientConfiguration.clientId,
       extras,
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     const tokenRequest = new TokenRequest(tokenRequestJson);
     const tokenRequestor = new NodeRequestor();
@@ -311,12 +316,14 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
       refresh_token: refreshToken,
       redirect_uri: this._clientConfiguration.redirectUri,
       client_id: this._clientConfiguration.clientId,
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     const tokenRequest = new TokenRequest(tokenRequestJson);
     const tokenRequestor = new NodeRequestor();
@@ -333,11 +340,13 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
 
     const refreshToken = this._tokenResponse.refreshToken!;
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     const revokeTokenRequestJson: RevokeTokenRequestJson = {
       token: refreshToken,
       token_type_hint: "refresh_token",
       client_id: this._clientConfiguration.clientId,
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     const revokeTokenRequest = new RevokeTokenRequest(revokeTokenRequestJson);
     const tokenRequestor = new NodeRequestor();

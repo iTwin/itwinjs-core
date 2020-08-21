@@ -11,7 +11,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 function testIntersectionsXYZ(
   ck: Checker,
   intersections: CurveLocationDetailArrayPair, minExpected: number, maxExpected: number,

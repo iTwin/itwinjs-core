@@ -11,6 +11,8 @@ import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, Re
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /** A PhysicalMaterial defines the matter that makes up physical elements.
  * @note See [[RenderMaterialElement]] for the DefinitionElement used to define rendering characteristics.
  * @public
@@ -135,7 +137,7 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
 }
 
 /** @public */
-export namespace RenderMaterialElement {
+export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
   /** Parameters used to construct a [[RenderMaterial]]. */
   export class Params {
     /** The palette name which categorizes this RenderMaterial */

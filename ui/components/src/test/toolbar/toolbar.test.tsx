@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { ActionButton, BadgeType, CommonToolbarItem, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { ActionButton, BadgeType, CommonToolbarItem, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers } from "../../ui-components/toolbar/ToolbarWithOverflow";
 import { Toolbar } from "../../ui-components/toolbar/Toolbar";
@@ -171,7 +171,7 @@ describe("<Toolbar (No Overflow) />", () => {
       // Also make sure the popup panel can inform user when key down is pressed
       const popupPanel = renderedComponent.queryByTestId("popup-panel");
       expect(popupPanel).not.to.be.null;
-      popupPanel!.dispatchEvent(createBubbledEvent("keydown", { keyCode: 27 /* <Esc> */ }));
+      popupPanel!.dispatchEvent(createBubbledEvent("keydown", { key: SpecialKey.Escape /* <Esc> */ }));
       onKeyDownSpy.calledOnce.should.true;
     });
 

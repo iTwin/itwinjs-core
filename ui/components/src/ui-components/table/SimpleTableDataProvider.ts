@@ -194,20 +194,20 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     if (!propertyDescription)
       return distinctValues;
 
-    this._items.forEach((row: RowItem) => {
+    for (const row of this._items) {
       const cell = row.cells[columnIndex];
       const record = cell.record;
 
       // istanbul ignore next
       if (record === undefined)
-        return;
+        continue;
 
       const value = this.getPrimitiveValue(record);
-      const displayValue = TypeConverterManager.getConverter(propertyDescription.typename).convertPropertyToString(propertyDescription, value);
+      const displayValue = await TypeConverterManager.getConverter(propertyDescription.typename).convertPropertyToString(propertyDescription, value);
 
       // istanbul ignore next
       if (value === undefined || typeof displayValue !== "string")
-        return;
+        continue;
 
       const valueKey = value.toString();
       if (!uniqueKeysMap.hasOwnProperty(valueKey)) {
@@ -216,7 +216,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
         uniqueKeysMap[valueKey] = propertyValue;
         uniqueValues.push(propertyValue);
       }
-    });
+    }
 
     distinctValues.values = uniqueValues;
 

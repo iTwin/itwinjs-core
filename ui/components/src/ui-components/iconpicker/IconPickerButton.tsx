@@ -34,8 +34,9 @@ class IconItem extends React.PureComponent<IconItemProps> {
 
   public render() {
     const {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       onClick, icon, // do not pass on item specific props
-      ...otherProps /* tslint:disable-line: trailing-comma */ // pass-through props
+      ...otherProps
     } = this.props as any;
 
     const handleClick = (_e: React.MouseEvent) => {

@@ -26,6 +26,8 @@ export interface ToolbarButtonProps extends CommonProps {
   small?: boolean;
   /** Mouse proximity to button */
   mouseProximity?: number;
+  /** Tooltip for button */
+  title?: string;
 }
 
 /** Basic toolbar button. Used in [[Toolbar]] component.
@@ -61,6 +63,7 @@ export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
         className={className}
         style={buttonStyle}
         onClick={this.props.onClick}
+        title={this.props.title}
       >
         {!this.props.small &&
           <div className="nz-gradient" />

@@ -48,7 +48,7 @@ function Tool1Color() {
       (IModelApp.toolAdmin.activeTool as Tool1).color = value;
   }, []);
   return (
-    <ColorPickerButton activeColor={color} onColorPick={handleColorChange} />
+    <ColorPickerButton initialColor={color} onColorPick={handleColorChange} />
   );
 }
 

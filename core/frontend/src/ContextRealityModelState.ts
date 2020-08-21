@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Views
  */
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@bentley/imodeljs-common";
+import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -16,10 +16,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialModelState } from "./ModelState";
 import { SpatialClassifiers } from "./SpatialClassifiers";
-import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils,
-  TileTreeReference,
-} from "./tile/internal";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, RealityTreeReference, TileTreeReference } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -43,6 +40,7 @@ export class ContextRealityModelState {
   public readonly orbitGtBlob?: OrbitGtBlobProps;
   public readonly description: string;
   public readonly iModel: IModelConnection;
+  private _appearanceOverrides?: FeatureAppearance;
 
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     this.url = props.tilesetUrl;
@@ -50,6 +48,7 @@ export class ContextRealityModelState {
     this.name = undefined !== props.name ? props.name : "";
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
+    this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
 
     const classifiers = new SpatialClassifiers(props);
     this._treeRef = (undefined === props.orbitGtBlob) ?
@@ -72,6 +71,9 @@ export class ContextRealityModelState {
 
   public get treeRef(): TileTreeReference { return this._treeRef; }
   public get classifiers(): SpatialClassifiers | undefined { return this._treeRef.classifiers; }
+  public get appearanceOverrides(): FeatureAppearance | undefined { return this._appearanceOverrides; }
+  public set appearanceOverrides(overrides: FeatureAppearance | undefined) { this._appearanceOverrides = overrides; }
+  public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityTreeReference) ? this._treeRef.modelId : undefined; }
 
   public toJSON(): ContextRealityModelProps {
     return {
@@ -79,6 +81,7 @@ export class ContextRealityModelState {
       orbitGtBlob: this.orbitGtBlob,
       name: 0 > this.name.length ? this.name : undefined,
       description: 0 > this.description.length ? this.description : undefined,
+      appearanceOverrides: this.appearanceOverrides,
     };
   }
 

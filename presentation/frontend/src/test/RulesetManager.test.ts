@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
 import * as faker from "faker";
@@ -18,9 +17,8 @@ describe("RulesetManager", () => {
 
   beforeEach(() => {
     onRulesetModifiedSpy = sinon.stub<[RegisteredRuleset, Ruleset], Promise<void>>().resolves();
-    manager = RulesetManagerImpl.create({
-      onRulesetModified: onRulesetModifiedSpy,
-    });
+    manager = RulesetManagerImpl.create();
+    manager.onRulesetModified.addListener(onRulesetModifiedSpy);
   });
 
   describe("get", () => {

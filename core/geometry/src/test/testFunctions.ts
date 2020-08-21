@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/*tslint:disable: ban-types*/
+/* eslint-disable @typescript-eslint/ban-types */
 
 export function prettyPrint(jsonObject: object): string {
   if (jsonObject === undefined)

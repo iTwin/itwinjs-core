@@ -22,7 +22,7 @@ public;BackgroundMapSettings
 public;BackgroundMapType
 alpha;BaseLayerProps = MapLayerProps | ColorDefProps
 alpha;BaseLayerSettings = MapLayerSettings | ColorDef
-beta;BatchType
+public;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
 public;BentleyCloudRpcParams
@@ -87,6 +87,7 @@ internal;CurrentImdlVersion
 beta;CustomAttribute
 beta;DecorationGeometryProps
 alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
+alpha;defaultMobileAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DesktopAuthorizationClientConfiguration
@@ -95,6 +96,7 @@ internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
+beta;DisplayStyleModelAppearanceProps 
 beta;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
 public;DisplayStyleSettings
@@ -113,6 +115,9 @@ public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
 alpha;class Editor3dRpcInterface 
+alpha;Editor3dRpcInterfaceWriteOptions
+alpha;Editor3dRpcInterfaceWriteReturnPropsOptions
+alpha;Editor3dRpcInterfaceWriteReturnType
 beta;class ElectronRpcConfiguration 
 beta;ElectronRpcManager 
 beta;ElectronRpcParams
@@ -121,6 +126,7 @@ beta;ElectronRpcRequest
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
+alpha;ElementGeometryChange
 public;ElementLoadProps
 public;ElementProps 
 beta;EntityMetaData 
@@ -131,9 +137,13 @@ public;EnvironmentProps
 internal;Events
 public;ExternalSourceAspectProps 
 public;Feature
+public;FeatureAppearance 
+public;FeatureAppearanceProps
+beta;FeatureAppearanceProvider
 internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
+public;FeatureOverrides
 beta;FeatureTable 
 internal;FeatureTableHeader
 public;FilePropertyProps
@@ -265,6 +275,7 @@ internal;MeshEdge
 internal;MeshEdges
 internal;MeshPolyline
 internal;MeshPolylineList 
+alpha;MobileAuthorizationClientConfiguration
 beta;MobileRpcChunks = Array
 beta;class MobileRpcConfiguration 
 beta;MobileRpcGateway
@@ -274,6 +285,7 @@ beta;MobileRpcRequest
 alpha;ModelClipGroup
 internal;ModelClipGroupProps
 alpha;ModelClipGroups
+alpha;ModelGeometryChanges
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 
@@ -439,6 +451,7 @@ public;SolarShadowSettings
 public;SolarShadowSettingsProps
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
+internal;class StandaloneIModelRpcInterface 
 internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance

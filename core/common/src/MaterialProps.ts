@@ -96,7 +96,7 @@ export interface RenderMaterialProps extends DefinitionElementProps {
         Map?: {
           /** Optional pattern map. */
           Pattern?: TextureMapProps;
-        }
+        };
       };
     };
   };

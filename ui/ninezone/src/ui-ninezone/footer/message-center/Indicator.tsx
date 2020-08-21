@@ -33,16 +33,19 @@ export interface MessageCenterProps extends FooterIndicatorProps {
  */
 export class MessageCenter extends React.PureComponent<MessageCenterProps> {
   public render() {
-    const { children, className, indicatorRef, label, onClick, targetRef, ...props } = this.props;
+    const { children, className, indicatorRef, label, onClick, targetRef, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
       <FooterIndicator
         className={classnames("nz-footer-messageCenter-indicator", this.props.className)}
         {...props}
       >
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div
           className="nz-indicator"
           onClick={onClick}
           ref={indicatorRef}
+          role="button"
+          tabIndex={-1}
         >
           {label !== undefined &&
             <span className="nz-label">{label}</span>

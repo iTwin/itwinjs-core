@@ -66,7 +66,7 @@ describe("CoreToolDefinitions", () => {
 
   it("ToolWidget should render with Core Tool Definitions", () => {
     const wrapper = mount(
-      <ToolWidget // tslint:disable-line:deprecation
+      <ToolWidget // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbar}
       />,
     );
@@ -75,7 +75,7 @@ describe("CoreToolDefinitions", () => {
 
   it("ToolWidget should render correctly with Core Tool Definitions", () => {
     shallow(
-      <ToolWidget // tslint:disable-line:deprecation
+      <ToolWidget // eslint-disable-line deprecation/deprecation
         id="toolWidget"
         horizontalToolbar={horizontalToolbar}
       />,
@@ -84,7 +84,7 @@ describe("CoreToolDefinitions", () => {
 
   it("ToolWidgetComposer should render with Core Tool Definitions", () => {
     const wrapper = mount(
-      <ToolWidgetComposer // tslint:disable-line:deprecation
+      <ToolWidgetComposer // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbarWithOverflow}
       />,
     );
@@ -93,7 +93,7 @@ describe("CoreToolDefinitions", () => {
 
   it("ToolWidgetComposer should render correctly with Core Tool Definitions", () => {
     shallow(
-      <ToolWidgetComposer // tslint:disable-line:deprecation
+      <ToolWidgetComposer // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbarWithOverflow}
       />,
     ).should.matchSnapshot();

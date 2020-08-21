@@ -22,7 +22,7 @@ import { StrokeOptions } from "./StrokeOptions";
  * @public
  */
 export class Loop extends CurveChain {
-   /** String name for schema properties */
+  /** String name for schema properties */
   public readonly curveCollectionType = "loop";
 
   /** tag value that can be set to true for user code to mark inner and outer loops. */

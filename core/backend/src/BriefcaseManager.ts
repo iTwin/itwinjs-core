@@ -13,7 +13,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import {
-  Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, ConflictingCodesError, HubCode,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, ConflictingCodesError, Briefcase as HubBriefcase, HubCode,
   HubIModel, IModelBankClient, IModelClient, IModelHubClient, IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
@@ -90,7 +90,7 @@ export class BriefcaseEntry {
     this.pathname = pathname;
     this.syncMode = syncMode;
     this.openMode = openMode;
-    this.openParams = new OpenParams(openMode, syncMode); // tslint:disable-line:deprecation
+    this.openParams = new OpenParams(openMode, syncMode); // eslint-disable-line deprecation/deprecation
     this.briefcaseId = briefcaseId;
   }
 
@@ -134,7 +134,7 @@ export class BriefcaseEntry {
   public openMode: OpenMode;
 
   /** Params used to open the briefcase */
-  public openParams: OpenParams; // tslint:disable-line:deprecation
+  public openParams: OpenParams; // eslint-disable-line deprecation/deprecation
 
   /** Id of the last change set that was applied to the briefcase after it was reversed.
    * Undefined if no change sets have been reversed.
@@ -229,7 +229,7 @@ export class BriefcaseEntry {
 
   /** Get the briefcase size in bytes */
   private getBriefcaseSize(): number | undefined {
-    if (this.downloadStatus !== DownloadBriefcaseStatus.Complete)
+    if (this.downloadStatus !== DownloadBriefcaseStatus.Complete || !IModelJsFs.existsSync(this.pathname))
       return undefined;
 
     try {
@@ -1352,7 +1352,7 @@ export class BriefcaseManager {
     // Delete the briefcase folder itself
     const briefcaseFolderPath = path.dirname(briefcase.pathname);
     if (BriefcaseManager.deleteFolderAndContents(briefcaseFolderPath))
-      Logger.logTrace(loggerCategory, "Deleted briefcase from local disk", () => briefcase.getDebugInfo());
+      Logger.logTrace(loggerCategory, "Deleted briefcase folder from local disk", () => ({ briefcaseFolderPath }));
 
     this.deleteBriefcaseParentFolders(briefcase.iModelId, briefcase.syncMode);
   }

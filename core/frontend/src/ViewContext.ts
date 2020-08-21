@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
   Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
@@ -24,7 +24,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
 import { Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
-import { ScreenViewport, Viewport } from "./Viewport";
+import { CachedDecoration, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 
 const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
@@ -111,10 +111,12 @@ export class DynamicsContext extends RenderContext {
   }
 }
 
-/** Provides context for a [[Decorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
+/** Provides context for a [[ViewportDecorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
  * @public
  */
 export class DecorateContext extends RenderContext {
+  private _curCacheableDecorator?: ViewportDecorator;
+
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
   public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
   /** @internal */
@@ -133,6 +135,48 @@ export class DecorateContext extends RenderContext {
     return this._createGraphicBuilder(type, transform, id);
   }
 
+  /** @internal */
+  public addFromDecorator(decorator: ViewportDecorator): void {
+    assert(undefined === this._curCacheableDecorator);
+    try {
+      if (decorator.useCachedDecorations) {
+        const cached = this.viewport.getCachedDecorations(decorator);
+        if (cached) {
+          this.restoreCache(cached);
+          return;
+        }
+
+        this._curCacheableDecorator = decorator;
+      }
+
+      decorator.decorate(this);
+    } finally {
+      this._curCacheableDecorator = undefined;
+    }
+  }
+
+  /** Restores decorations onto this context from the specificed array of cached decorations. */
+  private restoreCache(cachedDecorations: CachedDecoration[]) {
+    cachedDecorations.forEach((cachedDecoration) => {
+      switch (cachedDecoration.type) {
+        case "graphic":
+          this.addDecoration(cachedDecoration.graphicType, cachedDecoration.graphicOwner);
+          break;
+        case "canvas":
+          this.addCanvasDecoration(cachedDecoration.canvasDecoration, cachedDecoration.atFront);
+          break;
+        case "html":
+          this.addHtmlDecoration(cachedDecoration.htmlElement);
+          break;
+      }
+    });
+  }
+
+  private _appendToCache(decoration: CachedDecoration) {
+    assert(undefined !== this._curCacheableDecorator);
+    this.viewport.addCachedDecoration(this._curCacheableDecorator, decoration);
+  }
+
   /** Calls [[GraphicBuilder.finish]] on the supplied builder to obtain a [[RenderGraphic]], then adds the graphic to the appropriate list of
    * [[Decorations]].
    * @param builder The builder from which to extract the graphic.
@@ -149,6 +193,12 @@ export class DecorateContext extends RenderContext {
    * @see [[DecorateContext.addDecorationFromBuilder]] for a more convenient API.
    */
   public addDecoration(type: GraphicType, decoration: RenderGraphic) {
+    if (this._curCacheableDecorator) {
+      const graphicOwner = this.target.renderSystem.createGraphicOwner(decoration);
+      this._appendToCache({ type: "graphic", graphicOwner, graphicType: type });
+      decoration = graphicOwner;
+    }
+
     switch (type) {
       case GraphicType.Scene:
         if (undefined === this._decorations.normal)
@@ -182,6 +232,9 @@ export class DecorateContext extends RenderContext {
 
   /** Add a [[CanvasDecoration]] to be drawn in this context's [[ScreenViewport]]. */
   public addCanvasDecoration(decoration: CanvasDecoration, atFront = false) {
+    if (this._curCacheableDecorator)
+      this._appendToCache({ type: "canvas", canvasDecoration: decoration, atFront });
+
     if (undefined === this._decorations.canvasDecorations)
       this._decorations.canvasDecorations = [];
 
@@ -194,6 +247,9 @@ export class DecorateContext extends RenderContext {
 
   /** Add an HTMLElement to be drawn as a decoration in this context's [[ScreenViewport]]. */
   public addHtmlDecoration(decoration: HTMLElement) {
+    if (this._curCacheableDecorator)
+      this._appendToCache({ type: "html", htmlElement: decoration });
+
     this.screenViewport.decorationDiv.appendChild(decoration);
   }
 

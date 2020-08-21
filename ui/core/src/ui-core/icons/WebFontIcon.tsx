@@ -45,6 +45,7 @@ export function WebFontIcon(props: WebFontIconProps) {
       title={props.title}
       style={props.style}
       onClick={props.onClick}
+      role="presentation"
     />
   );
 }

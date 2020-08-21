@@ -23,7 +23,7 @@ import { Hilites, Target } from "./Target";
 import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 
-// tslint:disable:no-const-enum
+/* eslint-disable no-restricted-syntax */
 
 /** @internal */
 export class ShaderProgramParams {
@@ -81,7 +81,7 @@ export const enum PushOrPop {
  * @internal
  */
 export enum DrawOpCode {
-  Primitive = "drawPrimitive",
+  Primitive = "drawPrimitive", // eslint-disable-line no-shadow
   PushBranch = "pushBranch",
   PopBranch = "popBranch",
   PushBatch = "pushBatch",
@@ -247,7 +247,7 @@ export type DrawCommands = DrawCommand[];
  * @internal
  */
 export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cmds: DrawCommands, numCmdsPerClassifier: number): DrawCommands | undefined {
-  if (!Id64.isValid(flashedId))
+  if (!Id64.isValid(flashedId) || 0 === numCmdsPerClassifier)
     return undefined;
 
   const firstPrim = (numCmdsPerClassifier - 1) / 2;

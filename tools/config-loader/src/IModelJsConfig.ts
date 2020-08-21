@@ -70,8 +70,8 @@ export class IModelJsConfig {
       return;
     }
 
-    const dotenv = require("dotenv");
-    const dotenvExpand = require("dotenv-expand");
+    const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+    const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
     const envResult = dotenv.config({ path: envFile });
     if (envResult.error) {
       throw envResult.error;
@@ -129,7 +129,7 @@ export class IModelJsConfig {
       // also set them as shell var
       Object.assign(process.env, configuration);
 
-      // tslint:disable-next-line:no-eval
+      // eslint-disable-next-line no-eval
       eval(`process.env.imjs_config_dir="${configRepository}"`);
 
       IModelJsConfig._repositoryPath = configRepository;
@@ -137,7 +137,7 @@ export class IModelJsConfig {
         config.merge(shellEnv);
     } catch (err) {
       if (!suppressErrorMessage) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`${chalk.yellowBright(err.message)}`);
       }
       if (!suppressException)
@@ -148,7 +148,7 @@ export class IModelJsConfig {
       IModelJsConfig.getEnvFile(configRepository);
     } catch (err) {
       if (!suppressErrorMessage) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`${chalk.yellowBright(err.message)}`);
       }
       if (!suppressException)

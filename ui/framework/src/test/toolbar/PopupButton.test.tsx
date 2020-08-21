@@ -11,7 +11,7 @@ import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../ui-framework";
-// tslint:disable: deprecation
+/* eslint-disable deprecation/deprecation */
 import TestUtils from "../TestUtils";
 
 // cSpell:ignore buttonstate

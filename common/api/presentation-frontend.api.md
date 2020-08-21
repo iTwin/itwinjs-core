@@ -37,6 +37,8 @@ import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
+import { PartialHierarchyModification } from '@bentley/presentation-common';
+import { PresentationDataCompareOptions } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
@@ -44,6 +46,7 @@ import { Ruleset } from '@bentley/presentation-common';
 import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
+import { VariableValue } from '@bentley/presentation-common';
 
 // @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
@@ -169,6 +172,8 @@ export enum PresentationFrontendLoggerCategory {
 export class PresentationManager implements IDisposable {
     activeLocale: string | undefined;
     activeUnitSystem: PresentationUnitSystem | undefined;
+    // @alpha (undocumented)
+    compareHierarchies(props: PresentationDataCompareOptions<IModelConnection, NodeKey>): Promise<PartialHierarchyModification[]>;
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
@@ -225,9 +230,15 @@ export class PresentationManager implements IDisposable {
     // @alpha
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
-    onContentUpdate: BeEvent<(ruleset: Ruleset, updateInfo: "FULL") => void>;
+    onIModelContentChanged: BeEvent<(args: {
+        ruleset: Ruleset;
+        updateInfo: "FULL";
+    }) => void>;
     // @alpha
-    onHierarchyUpdate: BeEvent<(ruleset: Ruleset, updateInfo: HierarchyUpdateInfo) => void>;
+    onIModelHierarchyChanged: BeEvent<(args: {
+        ruleset: Ruleset;
+        updateInfo: HierarchyUpdateInfo;
+    }) => void>;
     // @internal
     onNewiModelConnection(_: IModelConnection): Promise<void>;
     // @internal (undocumented)
@@ -258,6 +269,8 @@ export interface RulesetManager {
     get(id: string): Promise<RegisteredRuleset | undefined>;
     // @alpha
     modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
+    // @alpha (undocumented)
+    onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
     remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
 }
 
@@ -271,7 +284,7 @@ export interface RulesetVariablesManager {
     getInt(variableId: string): Promise<number>;
     getInts(variableId: string): Promise<number[]>;
     getString(variableId: string): Promise<string>;
-    onVariableChanged: BeEvent<(variableId: string) => void>;
+    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>;
     setBool(variableId: string, value: boolean): Promise<void>;
     setId64(variableId: string, value: Id64String): Promise<void>;
     setId64s(variableId: string, value: Id64String[]): Promise<void>;

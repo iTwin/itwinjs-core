@@ -407,7 +407,8 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
-  public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
+  public get isTexturedType() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
+  public get hasTexture() { return this.isTexturedType && undefined !== this.texture; }
   public get isGlyph() { return this.mesh.isGlyph; }
   public get alwaysRenderTranslucent() { return this.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
@@ -439,7 +440,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public wantMixMonochromeColor(target: Target): boolean {
     // Text relies on white-on-white reversal.
-    return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.isTextured));
+    return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.hasTexture));
   }
 
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
@@ -528,13 +529,13 @@ export class SurfaceGeometry extends MeshGeometry {
       return false;
 
     // Don't invert white pixels of textures...
-    return !this.wantTextures(target, this.isTextured);
+    return !this.wantTextures(target, this.hasTexture);
   }
 
   public get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
 
   public useTexture(params: ShaderProgramParams): boolean {
-    return this.wantTextures(params.target, this.isTextured);
+    return this.wantTextures(params.target, this.hasTexture);
   }
 
   public computeSurfaceFlags(params: ShaderProgramParams, flags: Int32Array): void {
@@ -559,7 +560,7 @@ export class SurfaceGeometry extends MeshGeometry {
       // Textured meshes store normal in place of color index.
       // Untextured lit meshes store normal where textured meshes would store UV coords.
       // Tell shader where to find normal.
-      if (!this.isTextured) {
+      if (!this.isTexturedType) {
         flags[SurfaceBitIndex.HasColorAndNormal] = 1;
       }
     } else {

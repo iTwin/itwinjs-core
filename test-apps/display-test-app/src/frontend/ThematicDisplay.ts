@@ -158,7 +158,6 @@ export class ThematicDisplayEditor {
     const isThematicDisplayEnabled = (view: ViewState) => view.viewFlags.thematicDisplay;
 
     const div = document.createElement("div");
-    div.appendChild(document.createElement("hr")!);
 
     const thematicControlsDiv = document.createElement("div")!;
 
@@ -201,12 +200,14 @@ export class ThematicDisplayEditor {
       this.sync();
     };
 
-    const checkbox = createCheckBox({
+    const checkboxInterface = createCheckBox({
       parent: div,
       handler: (cb) => enableThematicDisplay(cb.checked),
       name: "Thematic Display",
       id: "cbx_Thematic",
-    }).checkbox;
+    });
+    const checkbox = checkboxInterface.checkbox;
+    const checkboxLabel = checkboxInterface.label;
 
     const displayModeEntries = [
       { name: "Height", value: ThematicDisplayMode.Height },
@@ -329,9 +330,12 @@ export class ThematicDisplayEditor {
 
     const defaultAxis = Point3d.fromJSON(ThematicDisplayEditor._defaultSettings.axis!);
 
+    const spanAxis = document.createElement("span");
+    spanAxis.style.display = "flex";
+    thematicControlsDiv.appendChild(spanAxis);
     this._thematicAxisX = createLabeledNumericInput({
       id: "thematic_axisX",
-      parent: thematicControlsDiv,
+      parent: spanAxis,
       value: defaultAxis.x,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -346,10 +350,11 @@ export class ThematicDisplayEditor {
       parseAsFloat: true,
       name: "Axis X: ",
     });
+    this._thematicAxisX.div.style.marginRight = "0.5em";
 
     this._thematicAxisY = createLabeledNumericInput({
       id: "thematic_axisY",
-      parent: thematicControlsDiv,
+      parent: spanAxis,
       value: defaultAxis.y,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -362,12 +367,13 @@ export class ThematicDisplayEditor {
       max: 1.0,
       step: 0.1,
       parseAsFloat: true,
-      name: "Axis Y: ",
+      name: "Y: ",
     });
+    this._thematicAxisY.div.style.marginRight = "0.5em";
 
     this._thematicAxisZ = createLabeledNumericInput({
       id: "thematic_axisZ",
-      parent: thematicControlsDiv,
+      parent: spanAxis,
       value: defaultAxis.z,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -380,12 +386,15 @@ export class ThematicDisplayEditor {
       max: 1.0,
       step: 0.1,
       parseAsFloat: true,
-      name: "Axis Z: ",
+      name: "Z: ",
     });
 
+    const spanSunDir = document.createElement("span");
+    spanSunDir.style.display = "flex";
+    thematicControlsDiv.appendChild(spanSunDir);
     this._thematicSunDirX = createLabeledNumericInput({
       id: "thematic_sunDirX",
-      parent: thematicControlsDiv,
+      parent: spanSunDir,
       value: 0.0,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -400,10 +409,11 @@ export class ThematicDisplayEditor {
       parseAsFloat: true,
       name: "Sun Direction X: ",
     });
+    this._thematicSunDirX.div.style.marginRight = "0.5em";
 
     this._thematicSunDirY = createLabeledNumericInput({
       id: "thematic_sunDirY",
-      parent: thematicControlsDiv,
+      parent: spanSunDir,
       value: 0.0,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -416,12 +426,13 @@ export class ThematicDisplayEditor {
       max: 1.0,
       step: 0.1,
       parseAsFloat: true,
-      name: "Sun Direction Y: ",
+      name: "Y: ",
     });
+    this._thematicSunDirY.div.style.marginRight = "0.5em";
 
     this._thematicSunDirZ = createLabeledNumericInput({
       id: "thematic_sunDirZ",
-      parent: thematicControlsDiv,
+      parent: spanSunDir,
       value: 0.0,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -434,7 +445,7 @@ export class ThematicDisplayEditor {
       max: 1.0,
       step: 0.1,
       parseAsFloat: true,
-      name: "Sun Direction Z: ",
+      name: "Z: ",
     });
 
     this._thematicDistanceCutoff = createLabeledNumericInput({
@@ -464,9 +475,12 @@ export class ThematicDisplayEditor {
       }),
     });
 
+    const spanSensor = document.createElement("span");
+    spanSensor.style.display = "flex";
+    thematicControlsDiv.appendChild(spanSensor);
     this._thematicSensorX = createLabeledNumericInput({
       id: "thematic_sensorX",
-      parent: thematicControlsDiv,
+      parent: spanSensor,
       value: 0.0,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -482,10 +496,11 @@ export class ThematicDisplayEditor {
       parseAsFloat: true,
       name: "Sensor X: ",
     });
+    this._thematicSensorX.div.style.marginRight = "0.5em";
 
     this._thematicSensorY = createLabeledNumericInput({
       id: "thematic_sensorY",
-      parent: thematicControlsDiv,
+      parent: spanSensor,
       value: 0.0,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -499,12 +514,13 @@ export class ThematicDisplayEditor {
       max: 999999.0,
       step: 0.1,
       parseAsFloat: true,
-      name: "Sensor Y: ",
+      name: "Y: ",
     });
+    this._thematicSensorY.div.style.marginRight = "0.5em";
 
     this._thematicSensorZ = createLabeledNumericInput({
       id: "thematic_sensorZ",
-      parent: thematicControlsDiv,
+      parent: spanSensor,
       value: 0.0,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -518,7 +534,7 @@ export class ThematicDisplayEditor {
       max: 999999.0,
       step: 0.1,
       parseAsFloat: true,
-      name: "Sensor Z: ",
+      name: "Z: ",
     });
 
     this._thematicSensorValue = createLabeledNumericInput({
@@ -609,12 +625,17 @@ export class ThematicDisplayEditor {
         return;
 
       checkbox.checked = isThematicDisplayEnabled(view);
+      checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showHideControls(checkbox.checked);
 
       this.updateThematicDisplayUI(view);
     };
 
     div.appendChild(thematicControlsDiv);
+
+    const hr = document.createElement("hr");
+    hr.style.borderColor = "grey";
+    div.appendChild(hr);
 
     parent.appendChild(div);
   }

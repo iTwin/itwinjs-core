@@ -5,14 +5,13 @@
 import * as express from "express";
 import * as fs from "fs";
 import * as https from "https";
-import * as path from "path";
 import { Logger } from "@bentley/bentleyjs-core";
 import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeBackend } from "./backend";
 
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   // Initialize the backend
   await initializeBackend();
 
@@ -22,7 +21,7 @@ import { getRpcInterfaces, initializeBackend } from "./backend";
     Logger.logTrace("SVT", `reading server config from ${process.argv[2]}`);
 
     try {
-      // tslint:disable-next-line:no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       serverConfig = require(process.argv[2]);
       serverOptions = {
         key: fs.readFileSync(serverConfig.keyFile),
@@ -70,4 +69,4 @@ import { getRpcInterfaces, initializeBackend } from "./backend";
   } else {
     https.createServer(serverOptions, app).listen(app.get("port"), announce);
   }
-})(); // tslint:disable-line:no-floating-promises
+})();

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { IModelJsExpressServer } from "@bentley/express-server";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
 import { AttachedInterfaceImpl } from "./TestRpcImpl";
+import { TestServer } from "./TestServer";
 
 async function init() {
   await commonSetup();
@@ -18,12 +18,12 @@ async function init() {
 
   // create a basic express web server
   const port = Number(process.env.CERTA_PORT || 3021) + 2000;
-  const server = new IModelJsExpressServer(rpcConfig.protocol);
+  const server = new TestServer(rpcConfig.protocol);
   await server.initialize(port);
 
   initializeAttachedInterfacesTest(rpcConfig);
 
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   console.log("Web backend for full-stack-tests listening on port " + port);
 }
 

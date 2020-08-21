@@ -9,7 +9,7 @@
 import "./CardPopup.scss";
 import * as React from "react";
 import classnames from "classnames";
-import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, PropertyRecord, RelativePosition } from "@bentley/ui-abstract";
+import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, PropertyRecord, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, LeadingText, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
@@ -50,7 +50,7 @@ export class CardPopup extends React.PureComponent<CardPopupProps, CardPopupStat
 
   private _handleKeyDown = (event: React.KeyboardEvent): void => {
     switch (event.key) {
-      case "Escape":
+      case SpecialKey.Escape:
         this._cancel();
         break;
     }

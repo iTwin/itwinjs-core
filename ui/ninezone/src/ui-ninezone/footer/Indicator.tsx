@@ -19,6 +19,8 @@ export interface FooterIndicatorProps extends CommonProps {
   children?: React.ReactNode;
   /** Describes whether the footer is in footer or widget mode. */
   isInFooterMode?: boolean;
+  /** Title for the indicator */
+  title?: string;
 }
 
 /** Indicator used in [[Footer]] component.

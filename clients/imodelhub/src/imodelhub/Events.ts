@@ -16,6 +16,8 @@ import {
 } from "./EventsBase";
 import { LockLevel, LockType } from "./Locks";
 
+/* eslint-disable no-shadow */
+
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /** Type of [[IModelHubEvent]]. Event type is used to define which events you wish to receive from your [[EventSubscription]]. See [[EventSubscriptionHandler.create]] and [[EventSubscriptionHandler.update]].
@@ -51,6 +53,9 @@ export enum IModelHubEventType {
   /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
   VersionEvent = "VersionEvent",
 }
+
+/* eslint-enable no-shadow */
+
 /** @beta @deprecated Use [[IModelHubEventType]] instead */
 export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent";
 
@@ -305,8 +310,8 @@ export class EventSubscriptionHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @deprecated Use IModelHubEventType enum for `events` instead.
    */
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>; // tslint:disable-line:unified-signatures deprecation
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[] | EventType[]) { // tslint:disable-line:deprecation
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>; // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[] | EventType[]) { // eslint-disable-line deprecation/deprecation
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Creating event subscription on iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);

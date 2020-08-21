@@ -54,31 +54,13 @@ export class NumericInput extends React.Component<NumericInputProps> {
   }
 
   public render() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { step, ...props } = this.props;
     return (
       <span className={classnames("core-numeric-input", this.props.className)} style={this.props.style} data-testid="core-numeric-input" >
         <ReactNumericInput
-          componentClass={this.props.componentClass}
-          defaultValue={this.props.defaultValue}
-          format={this.props.format}
-          max={this.props.max}
-          maxLength={this.props.maxLength}
-          min={this.props.min}
-          mobile={this.props.mobile}
-          noValidate={this.props.noValidate}
-          onBlur={this.props.onBlur}
-          onChange={this.props.onChange}
-          onFocus={this.props.onFocus}
-          onInput={this.props.onInput}
-          onInvalid={this.props.onInvalid}
-          onKeyDown={this.props.onKeyDown}
-          onSelect={this.props.onSelect}
-          onValid={this.props.onValid}
-          parse={this.props.parse}
-          precision={this.props.precision}
-          snap={this.props.snap}
+          {...props}
           step={this._step}
-          strict={this.props.strict}
-          value={this.props.value}
         />
       </span>
     );

@@ -374,7 +374,7 @@ function Handle(props: HandleProps) {
 
   const [mouseOver, setMouseOver] = React.useState(false);
   const [focused, setFocused] = React.useState(false);
-  const [tooltipTargetRef, tooltipTarget] = useRefState<HTMLButtonElement>();
+  const [tooltipTargetRef, tooltipTarget] = useRefState<HTMLDivElement>();
 
   // istanbul ignore next
   const _onMouseEnter = () => {
@@ -396,6 +396,12 @@ function Handle(props: HandleProps) {
     setFocused(false);
   };
 
+  const classNames = classnames(
+    "core-slider-handle",
+    disabled && "core-disabled",
+  );
+  const tooltip = formatTooltip ? formatTooltip(value) : value.toString();
+
   // istanbul ignore next
   return (
     <>
@@ -404,17 +410,19 @@ function Handle(props: HandleProps) {
         target={tooltipTarget}
         visible={(mouseOver || isActive || focused) && !disabled && showTooltip}
       >
-        {formatTooltip ? formatTooltip(value) : value.toString()}
+        {tooltip}
       </Tooltip>
-      <button
+      <div
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}
-        className="core-slider-handle"
+        aria-disabled={disabled}
+        aria-label={tooltip}
+        className={classNames}
         data-testid="core-slider-handle"
-        disabled={disabled}
         ref={tooltipTargetRef}
         role="slider"
+        tabIndex={disabled ? -1 : 0}
         style={{ left: `${percent}%` }}
         {...getHandleProps(id, {
           onMouseEnter: _onMouseEnter,

@@ -65,14 +65,14 @@ import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
  *
  * @public
  */
-export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew; // tslint:disable-line:deprecation
+export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew; // eslint-disable-line deprecation/deprecation
 
 /**
  * Deprecated [[RelatedInstanceSpecification]] specification.
  * @public
  * @deprecated Use `RelatedInstanceSpecificationNew`. Will be removed in iModel.js 3.0
  */
-export interface DEPRECATED_RelatedInstanceSpecification { // tslint:disable-line: naming-convention class-name
+export interface DEPRECATED_RelatedInstanceSpecification { // eslint-disable-line @typescript-eslint/naming-convention
   /** Specification of the relationship to use for joining the related instance */
   relationship: SingleSchemaClassSpecification;
 

@@ -217,7 +217,7 @@ export class RbacClient extends WsgClient {
    * @param projectId Id of the specified project.
    * @deprecated This method does not accommodate new permissions per iModel logic. Use [[IModelHubClient.permissions]] methods to get context or iModel permissions.
    */
-  // tslint:disable-next-line: deprecation
+  // eslint-disable-next-line deprecation/deprecation
   public async getIModelHubPermissions(requestContext: AuthorizedClientRequestContext, projectId: GuidString): Promise<IModelHubPermission> {
     requestContext.enter();
 
@@ -225,7 +225,7 @@ export class RbacClient extends WsgClient {
     const permissionInstances: Permission[] = await this.getPermissions(requestContext, projectId, iModelHubServiceGPRId);
     requestContext.enter();
 
-    // tslint:disable:deprecation
+    /* eslint-disable deprecation/deprecation */
     let permissions: IModelHubPermission = IModelHubPermission.None;
     for (const permissionInstance of permissionInstances) {
       switch (permissionInstance.instanceId) {
@@ -256,7 +256,7 @@ export class RbacClient extends WsgClient {
         default:
       }
     }
-    // tslint:enable:deprecation
+    /* eslint-enable deprecation/deprecation */
 
     return permissions;
   }

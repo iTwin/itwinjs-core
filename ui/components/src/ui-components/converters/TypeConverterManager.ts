@@ -37,7 +37,7 @@ export class TypeConverterManager {
       return TypeConverterManager._converters[typename];
 
     if (!TypeConverterManager._defaultTypeConverter) {
-      const { StringTypeConverter } = require("../converters/StringTypeConverter");
+      const { StringTypeConverter } = require("../converters/StringTypeConverter"); // eslint-disable-line @typescript-eslint/no-var-requires
       TypeConverterManager._defaultTypeConverter = new StringTypeConverter();
     }
     return TypeConverterManager._defaultTypeConverter;

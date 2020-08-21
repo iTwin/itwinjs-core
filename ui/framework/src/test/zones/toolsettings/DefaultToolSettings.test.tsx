@@ -7,7 +7,6 @@ import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
 } from "@bentley/ui-abstract";
 
-// tslint:disable: completed-docs
 
 export enum SelectOptions {
   Method_Pick,

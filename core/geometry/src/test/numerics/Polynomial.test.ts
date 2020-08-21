@@ -21,7 +21,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import {
   AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, SmallSystem, SphereImplicit, TorusImplicit, TrigPolynomial,
@@ -135,7 +135,7 @@ describe("Cubic.Solutions", () => {
 
 function testQuadrature(ck: Checker, xA: number, xB: number, xx: Float64Array, ww: Float64Array, n: number, maxDegree: number) {
   if (Checker.noisy.gaussQuadrature)
-    console.log(" (nGauss " + n + ") (interval " + xA + " " + xB);
+    console.log(`(nGauss ${n}) (interval ${xA} ${xB}`);
   for (let p = 0; p < maxDegree + 3; p++) {
     {
       const trueIntegral = (Math.pow(xB, p + 1) - Math.pow(xA, p + 1)) / (p + 1.0);
@@ -144,7 +144,7 @@ function testQuadrature(ck: Checker, xA: number, xB: number, xx: Float64Array, w
       const isSame = Geometry.isSameCoordinate(trueIntegral, approximateIntegral);
       if (Checker.noisy.gaussQuadrature) {
         if (p === maxDegree + 1) console.log("    ---------------  end of expected precise integrals");
-        console.log("     (p " + p + ") (absErr " + (approximateIntegral - trueIntegral) + ") (relErr " + ((approximateIntegral - trueIntegral) / trueIntegral) + ")");
+        console.log(`     (p ${p}) (absErr ${approximateIntegral - trueIntegral}) (relErr ${(approximateIntegral - trueIntegral) / trueIntegral}`);
       }
       ck.testBoolean(p <= maxDegree, isSame, "Quadrature Exactness", p, maxDegree, trueIntegral, approximateIntegral);
     }
@@ -274,8 +274,8 @@ describe("ImplicitSurface", () => {
     ck.testCoordinate(0, sphere.evaluateImplicitFunction(0, 0, r), "evaluate sphere");
 
     for (const xyz of [Point3d.create(1, 2, 4),
-      Point3d.create(0, 0, 0),
-      Point3d.create(r, 0, 0)]) {
+    Point3d.create(0, 0, 0),
+    Point3d.create(r, 0, 0)]) {
       const w = 4.2;
       ck.testCoordinate(
         sphere.evaluateImplicitFunction(xyz.x, xyz.y, xyz.z) * w * w,
@@ -323,8 +323,8 @@ describe("ImplicitSurface", () => {
     ck.testCoordinate(0, torus.evaluateImplicitFunctionXYZ(rA, 0, -rB), "evaluate torus");
 
     for (const xyz of [Point3d.create(1, 2, 4),
-      Point3d.create(0, 0, 9),
-      Point3d.create(rA, 0, 0)]) {
+    Point3d.create(0, 0, 9),
+    Point3d.create(rA, 0, 0)]) {
       const w = 2.0;
       const fOfX = torus.evaluateImplicitFunctionXYZ(xyz.x, xyz.y, xyz.z);
       const f = torus.evaluateImplicitFunctionPoint(xyz);
@@ -483,7 +483,7 @@ describe("Ellipse.Perpendiculars", () => {
       for (const eccentricity of [1.0, 1.01, 1.01, 2.0, 0.5]) {
         for (const skew of [0, 0.0]) {
           // console.log("eccentricity ", eccentricity, "skew", skew);
-          const arc = Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(r0, 0, 0), Vector3d.create(skew, eccentricity * r0, 0), AngleSweep.create360()) as Arc3d;
+          const arc = Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(r0, 0, 0), Vector3d.create(skew, eccentricity * r0, 0), AngleSweep.create360());
           let angles = arc.allPerpendicularAngles(spacePoint);
           for (const theta of angles) {
             const ray = arc.angleToPointAndDerivative(Angle.createRadians(theta));
@@ -632,9 +632,9 @@ describe("LinearSystems", () => {
       y0 = 0;
       const sphere = Sphere.createCenterRadius(center, radius);
       for (const ray0 of [Ray3d.createXAxis(),
-        Ray3d.create(center, Vector3d.create(1, 2, 3)),
-        Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
-        Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
+      Ray3d.create(center, Vector3d.create(1, 2, 3)),
+      Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
+      Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphere, x0, y0);
         ray0.tryNormalizeInPlaceWithAreaWeight(1);
         const frame = Transform.createOriginAndMatrix(ray0.origin, Matrix3d.createRigidHeadsUp(ray0.direction));

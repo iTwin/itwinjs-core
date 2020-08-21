@@ -350,7 +350,7 @@ export class FrontstageDef {
         panelDef = this.topPanel;
         break;
       case StagePanelLocation.TopMost:
-        panelDef = this.topMostPanel; // tslint:disable-line: deprecation
+        panelDef = this.topMostPanel; // eslint-disable-line deprecation/deprecation
         break;
       case StagePanelLocation.Left:
         panelDef = this.leftPanel;
@@ -362,7 +362,7 @@ export class FrontstageDef {
         panelDef = this.bottomPanel;
         break;
       case StagePanelLocation.BottomMost:
-        panelDef = this.bottomMostPanel; // tslint:disable-line: deprecation
+        panelDef = this.bottomMostPanel; // eslint-disable-line deprecation/deprecation
         break;
       // istanbul ignore next
       default:

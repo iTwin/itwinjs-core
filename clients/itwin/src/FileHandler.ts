@@ -52,7 +52,7 @@ export class DownloadFailed extends BentleyError {
  * @beta
  */
 export interface FileHandler {
-  agent: https.Agent;
+  agent?: https.Agent;
   /**
    * Download a file.
    * @param requestContext The client request context

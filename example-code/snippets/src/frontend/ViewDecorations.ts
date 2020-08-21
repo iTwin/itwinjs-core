@@ -10,7 +10,7 @@ import {
   MessageBoxIconType, MessageBoxType,
 } from "@bentley/imodeljs-frontend";
 
-/// cSpell:ignore lerp
+// cSpell:ignore lerp
 
 export class ExampleGraphicDecoration {
   // __PUBLISH_EXTRACT_START__ View_Graphic_Decoration
@@ -116,7 +116,7 @@ class IncidentMarker extends Marker {
   public onMouseButton(ev: BeButtonEvent): boolean {
     if (ev.button === BeButton.Data) {
       if (ev.isDown) {
-        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
+        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
       }
     }
     return true;
@@ -233,7 +233,7 @@ export class IncidentMarkerDemo {
     } catch (err) {
       const msg = "Could not load image " + src;
       Logger.logError("IncidentDemo", msg);
-      console.log(msg); // tslint:disable-line: no-console
+      console.log(msg); // eslint-disable-line no-console
     }
     return undefined;
   }
@@ -266,7 +266,7 @@ export class IncidentMarkerDemo {
   }
 
   public constructor(extents: AxisAlignedBox3d) {
-    this.loadAll(extents); // tslint:disable-line: no-floating-promises
+    this.loadAll(extents); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */

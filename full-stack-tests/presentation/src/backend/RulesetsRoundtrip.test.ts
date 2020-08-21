@@ -20,7 +20,7 @@ describe("Rulesets roundtrip", () => {
   before(async () => {
     await initialize();
 
-    const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
+    const TNativePlatform = createDefaultNativePlatform({ // eslint-disable-line @typescript-eslint/naming-convention
       id: "",
       localeDirectories: [],
       taskAllocationsMap: {},
@@ -57,7 +57,7 @@ describe("Rulesets roundtrip", () => {
             `Before: \r\n${JSON.stringify(sourceRuleset)} \r\nAfter: \r\n${JSON.stringify(afterRoundtripRuleset)}`);
         });
       } catch (e) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`Threw with:\r\n${JSON.stringify(sourceRuleset)}`);
         throw e;
       }

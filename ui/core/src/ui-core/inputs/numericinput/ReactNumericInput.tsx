@@ -14,11 +14,10 @@
 import * as React from "react";
 import { CommonProps } from "../../utils/Props";
 import { Omit } from "../../utils/typeUtils";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 // cSpell:ignore nostyle
 
-const KEYCODE_UP = 38;
-const KEYCODE_DOWN = 40;
 const IS_BROWSER = typeof document !== "undefined";
 const RE_NUMBER = /^[+-]?((\.\d+)|(\d+(\.\d+)?))$/;
 const RE_INCOMPLETE_NUMBER = /^([+-]0?|[0-9]*\.0*|[+-][0-9]+\.0*|[+-]?\d+\.)?$/;
@@ -89,10 +88,7 @@ export type ReactStepFunctionProp = number | ((component: ReactNumericInput, dir
 /** Base properties for the [[NumericInput]] component
  * @beta
  */
-export interface ReactNumericInputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">,
-  CommonProps {
+export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
   componentClass?: string;
   defaultValue?: number | string;
   format?: ((value: number | null, strValue: string) => string);
@@ -117,6 +113,9 @@ export interface ReactNumericInputProps extends Omit<
   step?: ReactStepFunctionProp;
   strict: boolean;
   value?: number | string;
+
+  /** Indicates whether to set focus to the input element */
+  setFocus?: boolean;
 }
 
 /** @internal */
@@ -130,7 +129,7 @@ interface ReactNumericInputState {
   value?: number | null;
   stringValue?: string;
 }
-/*eslint-enable*/
+/* eslint-enable */
 
 /** @internal */
 // istanbul ignore next
@@ -475,7 +474,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
 
     // This is a special case! If the component has the "autoFocus" prop
     // and the browser did focus it we have to pass that to the onFocus
-    if (!this._inputFocus && IS_BROWSER && document.activeElement === this.refsInput) {
+    if ((!this._inputFocus && IS_BROWSER && document.activeElement === this.refsInput) || this.props.setFocus) {
       this._inputFocus = true;
       this.refsInput.focus();
       this._invokeEventCallback("onFocus", {
@@ -498,7 +497,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
 
     let valid, validationError = "";
 
-    const supportsValidation = !!this.refsInput.checkValidity;
+    const supportsValidation = !!this.refsInput.checkValidity; // eslint-disable-line @typescript-eslint/unbound-method
 
     // noValidate
     const noValidate = !!(
@@ -675,15 +674,15 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     this._invokeEventCallback("onKeyDown", ...args);
     const e = args[0];
     if (!e.isDefaultPrevented()) {
-      if (e.keyCode === KEYCODE_UP) {
+      if (e.key === SpecialKey.ArrowUp) {
         e.preventDefault();
         this._step(e.ctrlKey || e.metaKey ? 0.1 : e.shiftKey ? 10 : 1);
-      } else if (e.keyCode === KEYCODE_DOWN) {
+      } else if (e.key === SpecialKey.ArrowDown) {
         e.preventDefault();
         this._step(e.ctrlKey || e.metaKey ? -0.1 : e.shiftKey ? -10 : -1);
       } else if (this.refsInput) {
         const value = this.refsInput.value, length = value.length;
-        if (e.keyCode === 8) { // backspace
+        if (e.key === SpecialKey.Backspace) {
           if (this.refsInput.selectionStart === this.refsInput.selectionEnd &&
             this.refsInput.selectionEnd && this.refsInput.selectionEnd > 0 &&
             value.length &&
@@ -691,7 +690,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
             e.preventDefault();
             this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd - 1;
           }
-        } else if (e.keyCode === 46) { // delete
+        } else if (e.key === SpecialKey.Delete) {
           if (this.refsInput.selectionStart === this.refsInput.selectionEnd &&
             this.refsInput.selectionEnd && this.refsInput.selectionEnd < length + 1 &&
             value.length &&
@@ -807,13 +806,13 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     const state = this.state;
     const css: { [key: string]: any } = {};
 
-    // tslint:disable-next-line: prefer-const
+    // eslint-disable-next-line prefer-const
     let { mobile, noStyle, ...props } = this.props;
 
     const {
       // These are ignored in rendering
-      step, min, max, precision, parse, format, snap, componentClass,
-      value, type, style, defaultValue, onInvalid, onValid, strict,
+      step, min, max, precision, parse, format, snap, componentClass, // eslint-disable-line @typescript-eslint/no-unused-vars
+      value, type, style, defaultValue, onInvalid, onValid, strict, setFocus, // eslint-disable-line @typescript-eslint/no-unused-vars
 
       // The rest are passed to the input
       ...rest
@@ -822,7 +821,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     noStyle = noStyle || style === false;
 
     // Build the styles
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const x in ReactNumericInput._style) {
       css[x] = Object.assign(
         {},
@@ -1085,7 +1084,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       }
     }
 
-    // tslint:disable-next-line: variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const InputTag = componentClass || "input";
 
     if (mobile) {

@@ -13,14 +13,14 @@ import { MyAppFrontend } from "../../api/MyAppFrontend";
 import SelectionScopePicker from "./SelectionScopePicker";
 import ViewDefinitionSelector from "./ViewDefinitionSelector";
 
-// tslint:disable-next-line:variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleViewport = viewWithUnifiedSelection(ViewportComponent);
 
 export interface ViewportContentComponentProps {
   imodel: IModelConnection;
 }
 
-export default function ViewportContentComponent(props: ViewportContentComponentProps) {
+export default function ViewportContentComponent(props: ViewportContentComponentProps) { // eslint-disable-line @typescript-eslint/naming-convention
   const [selectedViewDefinitionId, setSelectedViewDefinitionId] = React.useState<Id64String | undefined>();
   const [prevIModel, setPrevIModel] = React.useState<IModelConnection | undefined>(props.imodel);
   if (prevIModel !== props.imodel) {
@@ -28,7 +28,7 @@ export default function ViewportContentComponent(props: ViewportContentComponent
     setPrevIModel(props.imodel);
   }
   React.useEffect(() => {
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     MyAppFrontend.getViewDefinitions(props.imodel).then((definitions) => {
       if (definitions.length)
         setSelectedViewDefinitionId(definitions[0].id);

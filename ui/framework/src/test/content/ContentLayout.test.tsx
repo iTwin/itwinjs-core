@@ -13,7 +13,7 @@ import {
 import TestUtils from "../TestUtils";
 
 // import SplitPane from "react-split-pane";
-const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
+const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // eslint-disable-line
 
 describe("ContentLayout", () => {
 

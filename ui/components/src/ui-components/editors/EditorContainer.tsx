@@ -9,7 +9,7 @@
 import "./EditorContainer.scss";
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
-import { PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
+import { isArrowKey, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
@@ -97,12 +97,11 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       style: this.props.style,
     };
 
-    let editorNode: React.ReactNode;
     const propDescription = this.props.propertyRecord.property;
 
     const editorName = propDescription.editor !== undefined ? propDescription.editor.name : undefined;
     this._propertyEditor = PropertyEditorManager.createEditor(propDescription.typename, editorName, propDescription.dataController);
-    editorNode = this._propertyEditor.reactNode;
+    const editorNode: React.ReactNode = this._propertyEditor.reactNode;
 
     let clonedNode: React.ReactNode = null;
     // istanbul ignore else
@@ -116,7 +115,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   private _handleEditorBlur = (_e: React.FocusEvent) => {
     // istanbul ignore else
     if (!this.props.ignoreEditorBlur)
-      this._commit();   // tslint:disable-line: no-floating-promises
+      this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _handleContainerBlur = (e: React.FocusEvent) => {
@@ -129,19 +128,19 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
   private _handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
-      case "Escape":
+      case SpecialKey.Escape:
         this.onPressEscape(e);
         break;
-      case "Enter":
+      case SpecialKey.Enter:
         this.onPressEnter(e);
         break;
-      case "Tab":
+      case SpecialKey.Tab:
         this.onPressTab(e);
         break;
     }
 
     // Prevent the arrow keys from bubbling up to the ReactDataGrid
-    if (e.keyCode >= 37 && e.keyCode <= 40)
+    if (isArrowKey(e.key))
       e.stopPropagation();
   }
 
@@ -160,12 +159,12 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     // istanbul ignore next
     if (this._editorRef && this._editorRef === document.activeElement)
       e.stopPropagation();
-    this._commit();   // tslint:disable-line: no-floating-promises
+    this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private onPressTab(e: React.KeyboardEvent): void {
     e.stopPropagation();
-    this._commit();   // tslint:disable-line: no-floating-promises
+    this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private async isNewValueValid(value: PropertyValue): Promise<boolean> {
@@ -231,6 +230,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
         onContextMenu={this._handleRightClick}
         title={this.props.title}
         data-testid="editor-container"
+        role="presentation"
       >
         {this.createEditor()}
       </span>

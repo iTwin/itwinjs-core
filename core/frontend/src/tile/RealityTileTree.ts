@@ -124,8 +124,8 @@ export class RealityTileTree extends TileTree {
     this.loader = params.loader;
     this.yAxisUp = true === params.yAxisUp;
     this._rootTile = this.createTile(params.rootTile);
-  }
 
+  }
   public get rootTile(): RealityTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return this.loader.maxDepth; }
@@ -315,6 +315,6 @@ export class RealityTileTree extends TileTree {
     }
 
     depthMap.forEach((key, value) => depthString += key + "-" + value + ", ");
-    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // tslint:disable-line
+    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // eslint-disable-line
   }
 }

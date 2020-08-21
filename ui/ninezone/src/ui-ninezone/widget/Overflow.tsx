@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { useRefs, useRefState, useResizeObserver } from "@bentley/ui-core";
 import { WidgetMenu } from "./Menu";
+import { useLabel } from "../base/NineZone";
 
 /** @internal */
 export interface WidgetOverflowProps {
@@ -20,7 +21,7 @@ export interface WidgetOverflowProps {
 }
 
 /** @internal */
-export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOverflow(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOverflow(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
   const [targetRef, target] = useRefState<HTMLDivElement>();
@@ -37,24 +38,44 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
     "nz-widget-overflow",
     props.hidden && "nz-hidden",
   );
+  const overflowContext = React.useMemo<WidgetOverflowContextArgs>(() => {
+    return {
+      close: handleClose,
+    };
+  }, [handleClose])
+  const moreWidgetsTitle = useLabel("moreWidgetsTitle");
   return (
     <div
       className={className}
       ref={refs}
     >
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
       <div
         className="nz-button"
         onClick={handleClick}
         ref={targetRef}
+        role="button"
+        tabIndex={-1}
+        title={moreWidgetsTitle}
       >
         <div className="nz-icon" />
       </div>
-      <WidgetMenu
-        children={props.children}
-        open={open}
-        onClose={handleClose}
-        target={target}
-      />
+      <WidgetOverflowContext.Provider value={overflowContext}>
+        <WidgetMenu
+          children={props.children} // eslint-disable-line react/no-children-prop
+          open={open}
+          onClose={handleClose}
+          target={target}
+        />
+      </WidgetOverflowContext.Provider>
     </div>
   );
 });
+
+interface WidgetOverflowContextArgs {
+  close(): void;
+}
+
+/** @internal */
+export const WidgetOverflowContext = React.createContext<WidgetOverflowContextArgs | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
+WidgetOverflowContext.displayName = "nz:WidgetOverflowContext";

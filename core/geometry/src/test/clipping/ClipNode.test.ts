@@ -25,7 +25,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 
-/* tslint:disable:no-console variable-name */
+/* eslint-disable no-console, @typescript-eslint/naming-convention */
 /**
  *
  * @param origin
@@ -79,7 +79,7 @@ describe("ClipNodes", () => {
         const clipper2 = BooleanClipFactory.parseToClipper(jsonA);
         ck.testTrue(ClipUtilities.isClipper(clipper2), clipper2);
       } else {
-        ck.announceError(" Clipper does not have toJSON" + clipperName.get(clipper));
+        ck.announceError({ "clipper does not have toJSON": clipperName.get(clipper) });
       }
     }
     const arcs = [];
@@ -121,7 +121,7 @@ describe("ClipNodes", () => {
           ck.testBoolean(q, !q1, "clip versus clip outside");
           clipper.toggleResult();
           const r = clipper.isPointOnOrInside(p);
-          ck.testBoolean(q, !r, "toggled test" + clipperName.get(clipper), p, q, r);
+          ck.testBoolean(q, !r, `toggled test ${clipperName.get(clipper)}`, p, q, r);
           clipper.toggleResult();
         }
       }
@@ -236,7 +236,7 @@ it("MichaelBCover", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape3, x0, y0 + 3 * dy, offset);
 
     for (const baseShape999 of [shape0]) {
-      const baseShape = baseShape999 as Loop;
+      const baseShape = baseShape999;
       y0 = 0;
       x0 += 10 * dx;
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, Point3d.create(x0, y0), 1.0, x0, y0);

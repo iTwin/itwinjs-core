@@ -245,7 +245,7 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
     });
 
-    Backstage.onBackstageEvent.addListener(() => { // tslint:disable-line:deprecation
+    Backstage.onBackstageEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
     });
 
@@ -316,7 +316,7 @@ export class SyncUiEventDispatcher {
       UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, numSelected);
     });
 
-    Presentation.selection.scopes.getSelectionScopes(iModelConnection).then((availableScopes: SelectionScope[]) => { // tslint:disable-line:no-floating-promises
+    Presentation.selection.scopes.getSelectionScopes(iModelConnection).then((availableScopes: SelectionScope[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       // istanbul ignore else
       if (availableScopes) {
         const presentationScopes: PresentationSelectionScope[] = [];

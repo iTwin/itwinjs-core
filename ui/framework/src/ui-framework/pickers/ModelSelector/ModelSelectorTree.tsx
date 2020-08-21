@@ -14,7 +14,7 @@ import { NodeKey } from "@bentley/presentation-common";
 import { DEPRECATED_treeWithFilteringSupport } from "@bentley/presentation-components";
 import { DEPRECATED_Tree, FilteringInput, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import {
-  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize,
+  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize, UiCore,
 } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
@@ -32,6 +32,8 @@ export class CategoryModelTree extends React.Component<
   private _optionsElement: HTMLElement | null = null;
   private _allNodeIds: string[] = [];
   private _isMounted = false;
+  private _searchLabel = UiCore.translate("general.search");
+  private _closeLabel = UiCore.translate("dialog.close");
 
   constructor(props: CategoryModelTreeProps) {
     super(props);
@@ -39,7 +41,7 @@ export class CategoryModelTree extends React.Component<
   }
 
   private _initState() {
-    this.state = {
+    this.state = { // eslint-disable-line react/no-direct-mutation-state
       activeGroup: this.props.activeGroup,
       checkboxInfo: this.createCheckBoxInfoCallback(),
       isLoading: false,
@@ -148,15 +150,15 @@ export class CategoryModelTree extends React.Component<
     }
 
     if (nodesToEnable.length > 0) {
-      this._manageNodesState(nodesToEnable, true); // tslint:disable-line:no-floating-promises
+      this._manageNodesState(nodesToEnable, true); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
 
     if (nodesToDisable.length > 0) {
-      this._manageNodesState(nodesToDisable, false); // tslint:disable-line:no-floating-promises
+      this._manageNodesState(nodesToDisable, false); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private renderNodeCheckbox(props: NodeCheckboxRenderProps): React.ReactNode {
     return (
       <ImageCheckBox
@@ -165,6 +167,7 @@ export class CategoryModelTree extends React.Component<
         imageOn="icon-visibility"
         imageOff="icon-visibility-hide-2"
         onClick={props.onChange}
+        tooltip={UiFramework.translate(props.checked ? "modelTree.status.visible" : "modelTree.status.hidden")}
       />
     );
   }
@@ -178,7 +181,7 @@ export class CategoryModelTree extends React.Component<
     this._onCloseContextMenu();
     if (this._allNodeIds.length === 0)
       this._allNodeIds = await this._fetchAllNodeIds();
-    this._setItemStates(this._allNodeIds, enable); // tslint:disable-line:no-floating-promises
+    this._setItemStates(this._allNodeIds, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     if (this._isMounted)
       this.setState({
@@ -306,15 +309,24 @@ export class CategoryModelTree extends React.Component<
         )}
         <div className="option-group">
           {!this.state.showSearchBox ?
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
             <span
               className="icon icon-search"
               onClick={this._onToggleSearchBox.bind(this)}
+              role="button"
+              tabIndex={-1}
+              title={this._searchLabel}
             /> :
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events
             <span
               className="icon icon-close"
               onClick={this._onToggleSearchBox.bind(this)}
+              role="button"
+              tabIndex={-1}
+              title={this._closeLabel}
             />
           }
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
           <span
             className="options icon icon-more-2"
             title={UiFramework.translate("categoriesModels.options")}
@@ -322,6 +334,8 @@ export class CategoryModelTree extends React.Component<
             ref={(element) => {
               this._optionsElement = element;
             }}
+            role="button"
+            tabIndex={-1}
           />
           <GlobalContextMenu
             opened={this.state.isOptionsOpened}
@@ -426,7 +440,7 @@ export class CategoryModelTree extends React.Component<
     }
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private async onFilterApplied(_filter?: string): Promise<void> {
     if (this.state.filterInfo && this.state.filterInfo.filtering) {
       this.setState((prevState) => ({
@@ -469,16 +483,16 @@ export class CategoryModelTree extends React.Component<
       <CategoryModelFilterTree
         dataProvider={this.state.activeGroup.dataProvider}
         filter={this.state.filterInfo ? this.state.filterInfo!.filter : ""}
-        onFilterApplied={(filter) => this.onFilterApplied(filter)}
+        onFilterApplied={async (filter) => this.onFilterApplied(filter)}
         onMatchesCounted={(count) => this._onMatchesCounted(count)}
         activeMatchIndex={
           this.state.filterInfo ? this.state.filterInfo.activeMatchIndex : 0
         }
         selectionMode={SelectionMode.SingleAllowDeselect}
-        onNodeExpanded={(node) => this._onNodeExpanded(node)}
+        onNodeExpanded={async (node) => this._onNodeExpanded(node)}
         showDescriptions={true}
         checkboxInfo={this.state.checkboxInfo}
-        onCheckboxClick={(stateChange) =>
+        onCheckboxClick={async (stateChange) =>
           this.onCheckboxStateChange(stateChange)
         }
         showIcons={true}
@@ -562,7 +576,7 @@ export class CategoryModelTree extends React.Component<
 
     if (this.state.activeGroup.id === Groups.Categories)
       treeItemIds.forEach((treeItemId: string) => {
-        this._setEnableChildren(treeItemId, enable); // tslint:disable-line:no-floating-promises
+        this._setEnableChildren(treeItemId, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
       });
   }
 
@@ -630,4 +644,4 @@ export class CategoryModelTree extends React.Component<
  * Tree component with support for filtering
  * @internal
  */
-const CategoryModelFilterTree = DEPRECATED_treeWithFilteringSupport(DEPRECATED_Tree); // tslint:disable-line:variable-name
+const CategoryModelFilterTree = DEPRECATED_treeWithFilteringSupport(DEPRECATED_Tree); // eslint-disable-line @typescript-eslint/naming-convention, deprecation/deprecation

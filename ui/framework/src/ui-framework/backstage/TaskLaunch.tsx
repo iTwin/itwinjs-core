@@ -20,13 +20,13 @@ import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 // cspell:ignore safearea
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[TaskLaunchBackstageItem]] component
  * @public
  */
-export interface TaskLaunchBackstageItemProps extends BackstageItemProps { // tslint:disable-line:deprecation
+export interface TaskLaunchBackstageItemProps extends BackstageItemProps { // eslint-disable-line deprecation/deprecation
   /** Workflow Id */
   workflowId: string;
   /** Task Id */
@@ -36,10 +36,10 @@ export interface TaskLaunchBackstageItemProps extends BackstageItemProps { // ts
 /** Backstage item that activates a Task
  * @public
  */
-export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> { // tslint:disable-line:deprecation
+export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
 
   /** @internal */
-  public readonly state: Readonly<BackstageItemState>; // tslint:disable-line:deprecation
+  public readonly state: Readonly<BackstageItemState>; // eslint-disable-line deprecation/deprecation
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
 
@@ -91,13 +91,13 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   }
 
   public execute = (): void => {
-    Backstage.hide(); // tslint:disable-line:deprecation
+    Backstage.hide(); // eslint-disable-line deprecation/deprecation
 
     const workflow = WorkflowManager.findWorkflow(this.props.workflowId);
     if (workflow) {
       const task = workflow.getTask(this.props.taskId);
       if (task)
-        WorkflowManager.setActiveWorkflowAndTask(workflow, task); // tslint:disable-line:no-floating-promises
+        WorkflowManager.setActiveWorkflowAndTask(workflow, task); // eslint-disable-line @typescript-eslint/no-floating-promises
       else
         Logger.logError(UiFramework.loggerCategory(this), `Task with id '${this.props.taskId}' not found`);
     } else

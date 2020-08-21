@@ -53,14 +53,14 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         isLoadingProjects: false,
         isLoadingiModels: false,
         isLoadingiModel: false,
-        currentProject: this.props.initialIModels[0].projectInfo, // tslint:disable-line: tslint-react-set-state-usage
-        iModels: this.props.initialIModels,  // tslint:disable-line: tslint-react-set-state-usage
+        currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line rulesdir/react-set-state-usage
+        iModels: this.props.initialIModels,  // eslint-disable-line rulesdir/react-set-state-usage
       });
 
       return;
     }
 
-    UiFramework.projectServices.getProjects(ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
+    UiFramework.projectServices.getProjects(ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       this.setState({
         isLoadingProjects: false,
         isLoadingiModels: true,
@@ -79,8 +79,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingProjects: false,
       currentProject: project,
     });
-    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 40, 0);
-    // tslint:disable-next-line:no-console
+    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 80, 0);
+    // eslint-disable-next-line no-console
     // console.log(JSON.stringify(iModelInfos));
     this.setState({
       isLoadingiModels: false,
@@ -93,7 +93,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   }
 
   private _selectProject(project: ProjectInfo) {
-    this.startRetrieveIModels(project); // tslint:disable-line:no-floating-promises
+    this.startRetrieveIModels(project); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _handleIModelSelected = (iModelInfo: IModelInfo): void => {

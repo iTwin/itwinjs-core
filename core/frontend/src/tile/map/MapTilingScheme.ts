@@ -171,7 +171,7 @@ export abstract class MapTilingScheme {
     const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
     const matrix = Matrix3d.createColumns(deltaX, deltaY, Vector3d.create(0, 0, 1));
 
-    const dbToMercator = Transform.createMatrixPickupPutdown(matrix!, projectCenter, mercatorOrigin);
+    const dbToMercator = Transform.createMatrixPickupPutdown(matrix, projectCenter, mercatorOrigin);
     return dbToMercator.inverse()!;
   }
 }

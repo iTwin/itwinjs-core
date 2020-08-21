@@ -12,9 +12,9 @@ import { BatchType, compareIModelTileTreeIds, iModelTileTreeIdToString, PrimaryT
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
+import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SceneContext } from "../ViewContext";
 import { ViewState, ViewState3d } from "../ViewState";
-import { RenderClipVolume } from "../render/RenderClipVolume";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
@@ -151,6 +151,15 @@ class PrimaryTreeReference extends TileTreeReference {
     const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
     return { type: BatchType.Primary, edgesRequired, animationId };
   }
+
+  protected computeBaseTransform(tree: TileTree): Transform {
+    return super.computeTransform(tree);
+  }
+
+  protected computeTransform(tree: TileTree): Transform {
+    const tf = this.computeBaseTransform(tree);
+    return this._view.getModelDisplayTransform(this._model.id, tf);
+  }
 }
 
 class PlanProjectionTreeReference extends PrimaryTreeReference {
@@ -169,7 +178,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const args = super.createDrawArgs(context);
     if (undefined !== args && this._id.treeId.enforceDisplayPriority) {
-      args.drawGraphics = () => {
+      args.drawGraphics = () => { // eslint-disable-line @typescript-eslint/unbound-method
         const graphics = args.produceGraphics();
         if (undefined !== graphics) {
           const settings = this.getSettings();
@@ -185,13 +194,16 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     return args;
   }
 
-  protected computeTransform(tree: TileTree): Transform {
+  protected computeBaseTransform(tree: TileTree): Transform {
     assert(tree instanceof PlanProjectionTileTree);
+    const baseElevation = (tree as PlanProjectionTileTree).baseElevation;
+    if (undefined === this._curTransform)
+      this._curTransform = { transform: tree.iModelTransform.clone(), elevation: baseElevation };
+
     const settings = this.getSettings();
-    const elevation = settings?.elevation ?? (tree as PlanProjectionTileTree).baseElevation;
-    if (undefined === this._curTransform) {
-      this._curTransform = { transform: tree.iModelTransform.clone(), elevation };
-    } else if (this._curTransform.elevation !== elevation) {
+    const elevation = settings?.elevation ?? baseElevation;
+
+    if (this._curTransform.elevation !== elevation) {
       const transform = tree.iModelTransform.clone();
       if (undefined !== settings?.elevation)
         transform.origin.z = elevation;

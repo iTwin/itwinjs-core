@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { ElementProps, GeometricElementProps } from "@bentley/imodeljs-common";
+import { ElementProps, FeatureAppearance, GeometricElementProps } from "@bentley/imodeljs-common";
 import { EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { UiFramework } from "../UiFramework";
@@ -42,12 +42,12 @@ export interface EmphasizeElementsChangedArgs {
  */
 // istanbul ignore next
 class ModelOverrideProvider implements FeatureOverrideProvider {
-  constructor(public modelIds: string[], public defaultAppearance: FeatureSymbology.Appearance) { }
+  constructor(public modelIds: string[], public defaultAppearance: FeatureAppearance) { }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _viewport: Viewport): void {
     overrides.setDefaultOverrides(this.defaultAppearance, true);
     // Override with nothing so that we keep the model looking normal and override the default appearance of everything else
-    const emptyAppearance = FeatureSymbology.Appearance.fromJSON({});
+    const emptyAppearance = FeatureAppearance.fromJSON({});
     this.modelIds.forEach((modelId: string) => {
       overrides.overrideModel(modelId, emptyAppearance, true);
     });
@@ -59,12 +59,12 @@ class ModelOverrideProvider implements FeatureOverrideProvider {
  */
 // istanbul ignore next
 class SubCategoryOverrideProvider implements FeatureOverrideProvider {
-  constructor(public subCategoryIds: string[], public defaultAppearance: FeatureSymbology.Appearance) { }
+  constructor(public subCategoryIds: string[], public defaultAppearance: FeatureAppearance) { }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _viewport: Viewport): void {
     overrides.setDefaultOverrides(this.defaultAppearance, true);
     // Override with nothing so that we keep the category looking normal and override the default appearance of everything else
-    const emptyAppearance = FeatureSymbology.Appearance.fromJSON({});
+    const emptyAppearance = FeatureAppearance.fromJSON({});
     this.subCategoryIds.forEach((id: string) => {
       overrides.overrideSubCategory(id, emptyAppearance, true);
     });

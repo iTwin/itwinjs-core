@@ -11,6 +11,7 @@ import { MutableSchema, Schema } from "../Metadata/Schema";
 import { EntityClass, MutableEntityClass } from "../Metadata/EntityClass";
 import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, SchemaItemType, SchemaMatchType, StrengthDirection } from "../ECObjects";
 import { CustomAttributeClass, MutableCAClass } from "../Metadata/CustomAttributeClass";
+import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { MutableRelationshipClass, RelationshipClass } from "../Metadata/RelationshipClass";
 import { AnyEnumerator, Enumeration, MutableEnumeration } from "../Metadata/Enumeration";
 import { MutableUnit, Unit } from "../Metadata/Unit";
@@ -29,6 +30,8 @@ import { MutableKindOfQuantity } from "../Metadata/KindOfQuantity";
 import { OverrideFormat } from "../Metadata/OverrideFormat";
 import { MutableUnitSystem, UnitSystem } from "../Metadata/UnitSystem";
 import { MutablePropertyCategory } from "../Metadata/PropertyCategory";
+import * as Rules from "../Validation/ECRules";
+import { assert } from "@bentley/bentleyjs-core";
 
 // We can either add validation in Editor, or in the protected methods of Schema.
 // TODO: Add an error code so we can do something programmatic with the error.
@@ -80,7 +83,7 @@ export class SchemaContextEditor {
   public readonly invertedUnits = new Editors.InvertedUnits(this);
 
   /**
-   *
+   * Creates a new SchemaContextEditor instance.
    * @param schemaContext The SchemaContext the Editor will use to edit in.
    */
   constructor(schemaContext: SchemaContext) {
@@ -88,10 +91,22 @@ export class SchemaContextEditor {
     this._schemaContext = schemaContext;
   }
 
+  /** Allows you to get schema classes and items through regular SchemaContext methods. */
+  public get schemaContext(): SchemaContext { return this._schemaContext; }
+
   public async finish(): Promise<SchemaContext> {
     return this._schemaContext;
   }
 
+  /**
+   * Creates a Schema with the given properties and adds it to the current schema context.
+   * @param name The name given to the new schema.
+   * @param alias The alias of the new schema.
+   * @param readVersion The read version number of the schema.
+   * @param writeVersion The write version number of the schema.
+   * @param minorVersion The minor version number of the schema.
+   * @returns Resolves to a SchemaEditResults object.
+   */
   public async createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaEditResults> {
     const newSchema = new Schema(this._schemaContext, name, alias, readVersion, writeVersion, minorVersion);
     await this._schemaContext.addSchema(newSchema);
@@ -99,10 +114,68 @@ export class SchemaContextEditor {
   }
 
   /**
-   * Allows you to get schema classes and items through regular SchemaContext methods.
+   * Adds a referenced schema to the schema identified by the given SchemaKey.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param refSchema The referenced schema to add.
    */
-  public get schemaContext(): SchemaContext { return this._schemaContext; }
+  public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults> {
+    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    await schema.addReference(refSchema);
+    const diagnostics = Rules.validateSchemaReferences(schema);
 
+    const result: SchemaEditResults = {errorMessage: ""};
+    for await (const diagnostic of diagnostics) {
+      result.errorMessage += diagnostic.code + ": " + diagnostic.messageText + "\r\n";
+    }
+
+    if (result.errorMessage) {
+      this.removeReference(schema, refSchema);
+      return result;
+    }
+
+    if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
+      await this.schemaContext.addSchema(refSchema);
+    }
+
+    return {};
+  }
+
+  /**
+   * Adds a CustomAttribute instance to the schema identified by the given SchemaKey
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param customAttribute The CustomAttribute instance to add.
+   */
+  public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults> {
+    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    schema.addCustomAttribute(customAttribute);
+
+    const diagnostics = Rules.validateCustomAttributeInstance(schema, customAttribute);
+
+    const result: SchemaEditResults = {errorMessage: ""};
+    for await (const diagnostic of diagnostics) {
+      result.errorMessage += diagnostic.code + ": " + diagnostic.messageText + "\r\n";
+    }
+
+    if (result.errorMessage) {
+      this.removeCustomAttribute(schema, customAttribute);
+      return result;
+    }
+
+    return {};
+  }
+
+  private removeReference(schema: Schema, refSchema: Schema) {
+    const index: number = schema.references.indexOf(refSchema);
+    if (index !== -1) {
+      schema.references.splice(index, 1);
+    }
+  }
+
+  private removeCustomAttribute(schema: Schema, customAttribute: CustomAttribute) {
+    assert(schema.customAttributes !== undefined);
+    const map = schema.customAttributes as Map<string, CustomAttribute>;
+    map.delete(customAttribute.className);
+  }
 }
 
 // TODO: Move Editors into a separate file.
@@ -118,6 +191,12 @@ export namespace Editors {
   export class ECClasses {
     protected constructor(protected _schemaEditor: SchemaContextEditor) { }
 
+    /**
+     * Create a primitive property on class identified by the given SchemaItemKey.
+     * @param classKey The SchemaItemKey of the class.
+     * @param name The name of the new property.
+     * @param type The PrimitiveType assigned to the new property.
+     */
     public async createPrimitiveProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults> {
       const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
       if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };

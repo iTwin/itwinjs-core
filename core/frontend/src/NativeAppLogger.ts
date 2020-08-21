@@ -47,7 +47,7 @@ export class NativeAppLogger {
       if (this._messages.length > 0) {
         this.flushToBackend();
       } else {
-        // tslint:disable-next-line: no-floating-promises
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         Promise.resolve(this._onFlushed);
       }
     }

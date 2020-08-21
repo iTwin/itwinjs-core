@@ -55,7 +55,7 @@ describe("TreeNodeEditor", () => {
     );
 
     const editorContainer = getByTestId("editor-container");
-    act(() => { fireEvent.keyDown(editorContainer, { key: "Esc", code: 27 }); });
+    act(() => { fireEvent.keyDown(editorContainer, { key: "Escape", code: 27 }); });
     await wait(() => { expect(spy).to.be.calledOnce; });
   });
 

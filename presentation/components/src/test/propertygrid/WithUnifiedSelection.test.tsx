@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
@@ -24,7 +23,7 @@ import { Orientation } from "@bentley/ui-core";
 import { IPresentationPropertyDataProvider, IUnifiedSelectionComponent, propertyGridWithUnifiedSelection } from "../../presentation-components";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 
-// tslint:disable-next-line:variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const PresentationPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 describe("PropertyGrid withUnifiedSelection", () => {
@@ -72,7 +71,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
     providerMock.reset();
     providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
-    providerMock.setup((x) => x.getData()).returns(async () => propertyData!);
+    providerMock.setup(async (x) => x.getData()).returns(async () => propertyData!);
     providerMock.setup((x) => x.onDataChanged).returns(() => evt);
   };
 

@@ -41,7 +41,7 @@ class HyperModelingTool extends Tool {
   public run(enable?: boolean, vp?: ScreenViewport): boolean {
     vp = vp ?? IModelApp.viewManager.selectedView;
     if (vp)
-      HyperModeling.startOrStop(vp, enable); // tslint:disable-line:no-floating-promises
+      HyperModeling.startOrStop(vp, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }
@@ -84,7 +84,7 @@ class SectionGraphicsConfigTool extends Tool {
     if (0 === args.length)
       return this.run(); // restore defaults...
 
-    const config: Writeable<SectionGraphicsConfig> = { };
+    const config: Writeable<SectionGraphicsConfig> = {};
     for (const arg of args) {
       const parts = arg.toLowerCase().split("=");
       if (2 !== parts.length)
@@ -131,7 +131,7 @@ abstract class SectionMarkerConfigTool extends Tool {
     if (0 === args.length)
       return this.run(); // restore defaults...
 
-    const config: Writeable<SectionMarkerConfig> = { };
+    const config: Writeable<SectionMarkerConfig> = {};
     for (const arg of args) {
       const parts = arg.toLowerCase().split("=");
       if (2 !== parts.length)

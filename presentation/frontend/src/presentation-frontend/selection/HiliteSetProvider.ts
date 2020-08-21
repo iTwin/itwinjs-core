@@ -13,10 +13,10 @@ import {
   Content, ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "../Presentation";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager"; /* tslint:disable-line:no-direct-imports */
+import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 
 /** @internal */
-// tslint:disable-next-line: no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 export const HILITE_RULESET: Ruleset = require("./HiliteRules.json");
 
 /** The function registers `HILITE_RULESET` the first time it's called and does nothing on other calls */

@@ -16,7 +16,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
   CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
-  PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
+  PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
@@ -72,7 +72,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         }
       } else {
         const msg = new NotifyMessageDetails(OutputMessagePriority.Error, parseResults.parseError ? parseResults.parseError : UiComponents.translate("errors.unable-to-parse-quantity"));
-        msg.setInputFieldTypeDetails(ReactDOM.findDOMNode(this) as HTMLElement);
+        msg.setInputFieldTypeDetails(ReactDOM.findDOMNode(this) as HTMLElement); // eslint-disable-line react/no-find-dom-node
         // istanbul ignore next
         if (IModelApp.notifications)
           IModelApp.notifications.outputMessage(msg);
@@ -120,7 +120,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
-    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
@@ -131,7 +131,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
-      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+      this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
@@ -140,7 +140,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     // istanbul ignore next
     if (!record || !record.property) {
       Logger.logError(UiComponents.loggerCategory(this), "PropertyRecord must be defined to use CustomNumberPropertyEditor");
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       // console.log("PropertyRecord must be defined to use CustomNumberPropertyEditor");
       return;
     }
@@ -150,8 +150,8 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     }
 
     if (!this._formatParams) {
-      Logger.logError(UiComponents.loggerCategory(this), `CustomFormattedNumberParams must be defined for property ${record!.property!.name}`);
-      // tslint:disable-next-line:no-console
+      Logger.logError(UiComponents.loggerCategory(this), `CustomFormattedNumberParams must be defined for property ${record.property!.name}`);
+      // eslint-disable-next-line no-console
       // console.log(`CustomFormattedNumberParams must be defined for property ${record!.property!.name}`);
       return;
     }
@@ -219,14 +219,14 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
   private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       e.preventDefault();
       e.stopPropagation();
       this._resetToOriginalValue();
     }
 
     // istanbul ignore else
-    if (e.key !== "Enter") {
+    if (e.key !== SpecialKey.Enter) {
       // istanbul ignore next
       if (IModelApp.notifications)
         IModelApp.notifications.closeInputFieldMessage();

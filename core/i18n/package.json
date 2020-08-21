@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-i18n",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "iModel.js localization code",
   "main": "lib/imodeljs-i18n",
   "typings": "lib/imodeljs-i18n",
@@ -15,7 +15,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./imodeljs-i18n.ts --onlyJson",
     "extract-api": "betools extract-api --entry=imodeljs-i18n",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""
   },
@@ -29,21 +29,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.4.2"
+    "@bentley/bentleyjs-core": "^2.5.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.4.2",
-    "@bentley/build-tools": "2.4.2",
+    "@bentley/bentleyjs-core": "2.5.0",
+    "@bentley/build-tools": "2.5.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/node": "10.14.1",
+    "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
   "//dependencies": [
@@ -55,5 +54,8 @@
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
     "i18next-xhr-backend": "^2.0.1"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

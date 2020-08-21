@@ -223,7 +223,7 @@ export class Config {
 
   /** Provide singleton object for application
    */
-  public static get App(): Config {
+  public static get App(): Config { // eslint-disable-line @typescript-eslint/naming-convention
     if (!Config._appConfig) {
       Config._appConfig = new Config();
       Config._appConfig.appendSystemVars();

@@ -10,7 +10,7 @@ import {
 } from "../../ui-framework";
 import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 
-// tslint:disable: completed-docs
+/* eslint-disable react/jsx-key */
 
 export class TestContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

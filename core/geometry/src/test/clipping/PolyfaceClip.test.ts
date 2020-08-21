@@ -36,7 +36,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RFunctions } from "../polyface/PolyfaceQuery.test";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
     const ck = new Checker();

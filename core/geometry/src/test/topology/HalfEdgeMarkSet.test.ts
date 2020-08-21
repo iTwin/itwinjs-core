@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 
 import { expect } from "chai";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
@@ -68,10 +68,10 @@ describe("HalfEdgeMarkSet", () => {
         edgeSet.addToSet(nodeQ0);
         faceSet.addToSet(nodeQ1);
         vertexSet.addToSet(nodeQ1);
-        ck.testExactNumber(1, graph.countMask(halfEdgeSet.mask), "halfEdgeSet singleton " + pass);
-        ck.testExactNumber(2, graph.countMask(edgeSet.mask), "edgeSet singleton" + pass);
-        ck.testExactNumber(4, graph.countMask(faceSet.mask), "faceSet singleton" + pass);
-        ck.testExactNumber(3, graph.countMask(vertexSet.mask), "vertexSet singleton" + pass);
+        ck.testExactNumber(1, graph.countMask(halfEdgeSet.mask), `halfEdgeSet singleton  ${pass}`);
+        ck.testExactNumber(2, graph.countMask(edgeSet.mask), `edgeSet singleton  ${pass}`);
+        ck.testExactNumber(4, graph.countMask(faceSet.mask), `faceSet singleton  ${pass}`);
+        ck.testExactNumber(3, graph.countMask(vertexSet.mask), `vertexSet singleton  ${pass}`);
         // add everything around the quad face
         let node = nodeQ0;
         do {
@@ -82,20 +82,20 @@ describe("HalfEdgeMarkSet", () => {
           node = node.faceSuccessor;
         } while (node !== nodeQ0);
 
-        verifyMarkSetState(ck, "HalfEdge MarkSet on pass (" + pass + ")", halfEdgeSet, 4, 4);
-        verifyMarkSetState(ck, "edge MarkSet on pass (" + pass + ")", edgeSet, 8, 4);
-        verifyMarkSetState(ck, "face MarkSet on pass (" + pass + ")", faceSet, 4, 1);
-        verifyMarkSetState(ck, "vertex MarkSet on pass (" + pass + ")", vertexSet, 10, 4);
+        verifyMarkSetState(ck, `HalfEdge MarkSet on pass (  ${pass} )`, halfEdgeSet, 4, 4);
+        verifyMarkSetState(ck, `edge MarkSet on pass (  ${pass} )`, edgeSet, 8, 4);
+        verifyMarkSetState(ck, `face MarkSet on pass (  ${pass} )`, faceSet, 4, 1);
+        verifyMarkSetState(ck, `vertex MarkSet on pass (  ${pass} )`, vertexSet, 10, 4);
 
         halfEdgeSet.addAroundFace(nodeT1);
         edgeSet.addAroundFace(nodeT1);
         faceSet.addAroundFace(nodeT1);
         vertexSet.addAroundFace(nodeT1);
 
-        verifyMarkSetState(ck, "HalfEdge MarkSet addAroundFace on pass (" + pass + ")", halfEdgeSet, 7, 7);
-        verifyMarkSetState(ck, "edge MarkSet addAroundFace on pass (" + pass + ")", edgeSet, 12, 6);
-        verifyMarkSetState(ck, "face MarkSet addAroundFace on pass (" + pass + ")", faceSet, 7, 2);
-        verifyMarkSetState(ck, "vertex MarkSet addAroundFace on pass (" + pass + ")", vertexSet, 12, 5);
+        verifyMarkSetState(ck, `HalfEdge MarkSet addAroundFace on pass (  ${pass} )`, halfEdgeSet, 7, 7);
+        verifyMarkSetState(ck, `edge MarkSet addAroundFace on pass (  ${pass} )`, edgeSet, 12, 6);
+        verifyMarkSetState(ck, `face MarkSet addAroundFace on pass (  ${pass} )`, faceSet, 7, 2);
+        verifyMarkSetState(ck, `vertex MarkSet addAroundFace on pass (  ${pass} )`, vertexSet, 12, 5);
 
         verifyMarkSetRemoval(ck, halfEdgeSet, nodeQ2);
         verifyMarkSetRemoval(ck, edgeSet, nodeQ2);
@@ -118,10 +118,10 @@ describe("HalfEdgeMarkSet", () => {
         faceSet.addAroundVertex(nodeT1);
         vertexSet.addAroundVertex(nodeT1);
 
-        verifyMarkSetState(ck, "HalfEdge MarkSet addAroundVertex on pass (" + pass + ")", halfEdgeSet, 2, 2);
-        verifyMarkSetState(ck, "edge MarkSet addAroundVertex on pass (" + pass + ")", edgeSet, 4, 2);
-        verifyMarkSetState(ck, "face MarkSet addAroundVertex on pass (" + pass + ")", faceSet, 8, 2);
-        verifyMarkSetState(ck, "vertex MarkSet addAroundVertex on pass (" + pass + ")", vertexSet, 2, 1);
+        verifyMarkSetState(ck, `HalfEdge MarkSet addAroundVertex on pass (  ${pass} )`, halfEdgeSet, 2, 2);
+        verifyMarkSetState(ck, `edge MarkSet addAroundVertex on pass (  ${pass} )`, edgeSet, 4, 2);
+        verifyMarkSetState(ck, `face MarkSet addAroundVertex on pass (  ${pass} )`, faceSet, 8, 2);
+        verifyMarkSetState(ck, `vertex MarkSet addAroundVertex on pass (  ${pass} )`, vertexSet, 2, 1);
         // clear all sets for next pass
         halfEdgeSet.clear();
         edgeSet.clear();
@@ -150,13 +150,18 @@ describe("HalfEdgeMarkSet", () => {
 
 function verifyMarkSetState(ck: Checker, title: string, markSet: AbstractHalfEdgeGraphMarkSet, expectedMaskCount: number, expectedLength: number) {
   const graph = markSet.graph;
-  ck.testExactNumber(expectedMaskCount, graph.countMask(markSet.mask), title + " mask count");
-  ck.testExactNumber(expectedLength, markSet.getLength(), title + " member count by method query");
+  ck.testExactNumber(expectedMaskCount, graph.countMask(markSet.mask), `${title} mask count`);
+  ck.testExactNumber(expectedLength, markSet.getLength(), `${title} member count by method query`);
   let myLength = 0;
-  for (const _he of markSet) {
-    myLength++;
+  let numNull = 0;
+  for (const he of markSet) {
+    if (he)
+      myLength++;
+    else
+      numNull++
   }
-  ck.testExactNumber(expectedLength, myLength, title + " member count by iterator");
+  ck.testExactNumber(expectedLength, myLength, `${title} member count by iterator`);
+  ck.testExactNumber(0, numNull, "check no nulls");
 }
 
 function verifyMarkSetRemoval(ck: Checker, markSet: AbstractHalfEdgeGraphMarkSet, candidate: HalfEdge) {
@@ -178,10 +183,15 @@ function verifyMarkSetRemoval(ck: Checker, markSet: AbstractHalfEdgeGraphMarkSet
   }
   // count live candidates manually to exercise some branches
   let numMembers = 0;
-  for (const _c of markSet) {
-    numMembers++;
+  let numNull = 0;
+  for (const c of markSet) {
+    if (c)
+      numMembers++;
+    else
+      numNull++
   }
   ck.testExactNumber(numMembers, markSet.getLength(), "check length versus iterator");
+  ck.testExactNumber(0, numNull, "check no nulls");
 }
 
 function countNullCandidates(markSet: AbstractHalfEdgeGraphMarkSet): number {

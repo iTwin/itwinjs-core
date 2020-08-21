@@ -6,15 +6,15 @@
  * @module Views
  */
 
-import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch,
-} from "@bentley/bentleyjs-core";
+import { asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
   Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction, ElementProps,
+  FeatureAppearance,
+  FeatureAppearanceProps, Frustum, GlobeMode,
   GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
   PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -26,14 +26,16 @@ import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ToolTipOptions } from "./NotificationManager";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
-import { GraphicList } from "./render/RenderGraphic";
+import { GraphicList, RenderGraphicOwner } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
+import { SheetViewState } from "./Sheet";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileBoundingBoxes, TileTreeReference, TileTreeSet } from "./tile/internal";
@@ -43,8 +45,7 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewRect } from "./ViewRect";
-import { MarginPercent, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
-import { SheetViewState } from "./Sheet";
+import { MarginPercent, ModelDisplayTransformProvider, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -73,6 +74,38 @@ export interface TiledGraphicsProvider {
   addToScene?: (context: SceneContext) => void;
 }
 
+/** Interface for drawing [[Decorations]] into, or on top of, a [[ScreenViewport]].
+ * @public
+ */
+export interface ViewportDecorator {
+  /** Override to enable cached decorations for this decorator.
+   * By default, a decorator is asked to recreate its decorations from scratch via its [[decorate]] method whenever the viewport's decorations are invalidated.
+   * Decorations become invaliated for a variety of reasons, including when the scene changes and when the mouse moves.
+   * Most decorators care only about when the scene changes, and may create decorations that are too expensive to recreate on every mouse motion.
+   * If `useCachedDecorations` is true, then the viewport will cache the most-recently-created decorations for this decorator, and only invoke its [[decorate]] method if it has no cached decorations for it.
+   * The cached decorations are discarded:
+   *  - Whenever the scene changes; and
+   *  - When the decorator explicitly requests it via [[Viewport.invalidateCachedDecorations]] or [[ViewManager.invalidateCachedDecorationsAllViews]].
+   * The decorator should invoke the latter when the criteria governing its decorations change.
+   */
+  readonly useCachedDecorations?: true;
+
+  /** Implement this method to add [[Decorations}} into the supplied DecorateContext.
+   * @see [[useCachedDecorations]] to avoid unncessarily recreating decorations.
+   */
+  decorate(context: DecorateContext): void;
+}
+
+/** @internal */
+export type CachedDecoration = { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner }
+  | { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean }
+  | { type: "html", htmlElement: HTMLElement };
+
+function disposeCachedDecoration(dec: CachedDecoration): void {
+  if ("graphic" === dec.type)
+    dec.graphicOwner.disposeGraphic();
+}
+
 /** @see [[ChangeFlags]]
  * @beta
  */
@@ -85,7 +118,7 @@ export enum ChangeFlag {
   DisplayStyle = 1 << 4,
   FeatureOverrideProvider = 1 << 5,
   ViewedCategoriesPerModel = 1 << 6,
-  ViewState = 1 << 7,
+  ViewState = 1 << 7, // eslint-disable-line no-shadow
   All = 0x0fffffff,
   Overrides = ChangeFlag.All & ~(ChangeFlag.ViewedModels | ChangeFlag.ViewState),
   Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
@@ -145,7 +178,7 @@ export class ChangeFlags {
 /** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
-  Geometry,
+  Geometry, // eslint-disable-line no-shadow
   /** Depth point from reality model within specified radius of pick point */
   Model,
   /** Depth point from ray projection to background map plane */
@@ -818,6 +851,8 @@ export abstract class Viewport implements IDisposable {
   private _redrawPending = false;
   private _analysisFractionValid = false;
   private _timePointValid = false;
+  /** @internal */
+  private readonly _decorationCache: Map<ViewportDecorator, CachedDecoration[]> = new Map<ViewportDecorator, CachedDecoration[]>();
 
   /** Mark the current set of decorations invalid, so that they will be recreated on the next render frame.
    * This can be useful, for example, if an external event causes one or more current decorations to become invalid and you wish to force
@@ -834,6 +869,7 @@ export abstract class Viewport implements IDisposable {
     this._sceneValid = false;
     this._timePointValid = false;
     this.invalidateDecorations();
+    this._disposeDecorationCache(); // When the scene is invalidated, remove all cached decorations so they get regenerated.
   }
   /** @internal */
   public invalidateRenderPlan(): void {
@@ -1185,6 +1221,53 @@ export abstract class Viewport implements IDisposable {
    */
   public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
 
+  /** Override the appearance of a model when rendered within this viewport.
+   * @param id The Id of the model.
+   * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
+   * @see [[dropModelAppearanceOverride]]
+   */
+  public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
+    this.view.displayStyle.overrideModelAppearance(id, ovr);
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
+  /** Remove any model appearance override for the specified model.
+   * @param id The Id of the subcategory.
+   * @see [[overrideModelAppearance]]
+   */
+  public dropModelAppearanceOverride(id: Id64String): void {
+    this.view.displayStyle.dropModelAppearanceOverride(id);
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
+  /** Change the appearance overrides for a "contextual" reality model displayed by this viewport.
+   * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
+   * @param index The reality model index or -1 to apply to all models.
+   * @returns true if overrides are successfully applied.
+   * @beta
+   */
+  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean {
+    const changed = this.displayStyle.overrideRealityModelAppearance(index, overrides);
+    if (changed) {
+      this._changeFlags.setDisplayStyle();
+      this.invalidateRenderPlan();
+    }
+    return changed;
+  }
+
+  /** Drop the appearance overrides for a "contextual" reality model displayed by this viewport.
+   * @param index The reality model index or to drop overrides from or -1 to drop overrides from all reality models.
+   * @returns true if overrides are successfully dropped.
+   * @beta
+   */
+  public dropRealityModelAppearanceOverride(index: number) {
+    this.displayStyle.dropRealityModelAppearanceOverride(index);
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
   /** Some changes may or may not require us to invalidate the scene.
    * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:
    * - Viewed categories and subcategories;
@@ -1469,8 +1552,38 @@ export abstract class Viewport implements IDisposable {
     IModelApp.tileAdmin.registerViewport(this);
   }
 
+  /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.
+   * This will force those decorations to be regenerated.
+   * @see [[ViewportDecorator.useCachedDecorations]].
+   * @beta
+   */
+  public invalidateCachedDecorations(decorator: ViewportDecorator) {
+    assert(true === decorator.useCachedDecorations, "Cannot invalidate cached decorations on a decorator which does not support cached decorations.");
+    if (true !== decorator.useCachedDecorations)
+      return;
+
+    const decorations = this._decorationCache.get(decorator);
+    if (decorations) {
+      decorations.forEach((decoration) => disposeCachedDecoration(decoration));
+      this._decorationCache.delete(decorator);
+    }
+
+    // Always invalidate decorations. Decorator may have no cached decorations currently, but wants them created.
+    this.invalidateDecorations();
+  }
+
+  /** Disposes of the entire decoration cache for this viewport. */
+  private _disposeDecorationCache() {
+    this._decorationCache.forEach((decorations: CachedDecoration[]) => {
+      decorations.forEach((decoration) => disposeCachedDecoration(decoration));
+    });
+
+    this._decorationCache.clear();
+  }
+
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
+    this._disposeDecorationCache();
     this._target = dispose(this._target);
     this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
@@ -1664,7 +1777,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
-    if (this.featureOverrideProvider === provider) // tslint:disable-line:deprecation
+    if (this.featureOverrideProvider === provider) // eslint-disable-line deprecation/deprecation
       return;
 
     if (undefined === provider) {
@@ -2589,6 +2702,23 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   protected addDecorations(_decorations: Decorations): void { }
 
+  /** @internal */
+  public getCachedDecorations(decorator: ViewportDecorator): CachedDecoration[] | undefined {
+    return this._decorationCache.get(decorator);
+  }
+
+  /** @internal */
+  public addCachedDecoration(decorator: ViewportDecorator, decoration: CachedDecoration): void {
+    assert(true === decorator.useCachedDecorations);
+    let list = this._decorationCache.get(decorator);
+    if (!list) {
+      list = [];
+      this._decorationCache.set(decorator, list);
+    }
+
+    list.push(decoration);
+  }
+
   /** Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
@@ -2664,8 +2794,14 @@ export abstract class Viewport implements IDisposable {
    */
   public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
-    if (undefined !== npc)
+    if (undefined !== npc) {
       this.npcToWorld(npc, npc);
+
+      // If this is a plan projection model, invert the elevation applied to its display transform.
+      const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+      if (undefined !== modelId)
+        npc.z -= this.view.getModelElevation(modelId);
+    }
 
     return npc;
   }
@@ -2727,6 +2863,16 @@ export abstract class Viewport implements IDisposable {
    */
   public cssPixelsToDevicePixels(cssPixels: number): number {
     return this.target.cssPixelsToDevicePixels(cssPixels);
+  }
+
+  /** @see [[ViewState.setModelDisplayTransformProvider]]
+   * @internal
+   */
+  public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
+    if (provider !== this.view.modelDisplayTransformProvider) {
+      this.view.modelDisplayTransformProvider = provider;
+      this.invalidateScene();
+    }
   }
 }
 
@@ -2880,6 +3026,7 @@ export class ScreenViewport extends Viewport {
   protected addLogo() {
     const logo = this._logo = IModelApp.makeHTMLElement("img", { parent: this.vpDiv, className: "imodeljs-icon" });
     logo.src = "images/imodeljs-icon.svg";
+    logo.alt = "";
 
     const showLogos = (ev: Event) => {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;
@@ -3097,11 +3244,11 @@ export class ScreenViewport extends Viewport {
   protected addDecorations(decorations: Decorations): void {
     ScreenViewport.removeAllChildren(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
-    this.view.decorate(context);
-    this.forEachTiledGraphicsProviderTree((ref) => ref.decorate(context));
+    context.addFromDecorator(this.view);
+    this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
     for (const decorator of IModelApp.viewManager.decorators)
-      decorator.decorate(context);
+      context.addFromDecorator(decorator);
   }
 
   /** Change the cursor for this Viewport */

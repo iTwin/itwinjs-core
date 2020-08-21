@@ -8,6 +8,7 @@ import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
+import * as CSS from 'csstype';
 import { FocusEventHandler } from 'react-select/src/types';
 import { formatGroupLabel } from 'react-select/src/builtins';
 import { getOptionLabel } from 'react-select/src/builtins';
@@ -17,6 +18,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { InputActionMeta } from 'react-select/src/types';
 import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
@@ -411,6 +413,9 @@ export enum Corner {
     // (undocumented)
     TopRight = 1
 }
+
+// @internal
+export type CrossAxisArrowKeyFunc = (forward: boolean) => void;
 
 // @public
 export class Cube extends React.PureComponent<CubeProps> {
@@ -819,6 +824,9 @@ export interface FormProps {
 export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
 // @internal
+export function getBestBWContrastColor(hexColor: string): "black" | "white";
+
+// @internal
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
 
 // @internal
@@ -981,10 +989,32 @@ export enum InputStatus {
 export const isHTMLElement: (message: MessageType) => message is HTMLElement;
 
 // @internal
+export function isNavigationKey(key: string): boolean;
+
+// @internal
 export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown>;
 
 // @internal
 export const isReactMessage: (message: MessageType) => message is ReactMessage;
+
+// @internal
+export class ItemKeyboardNavigator {
+    constructor(onFocusItem: (index: number) => void, onActivateItem: (index: number) => void);
+    get allowWrap(): boolean;
+    set allowWrap(v: boolean);
+    get crossAxisArrowKeyHandler(): CrossAxisArrowKeyFunc | undefined;
+    set crossAxisArrowKeyHandler(v: CrossAxisArrowKeyFunc | undefined);
+    handleKeyDownEvent(event: React_2.KeyboardEvent, index: number): void;
+    handleKeyUpEvent(event: React_2.KeyboardEvent, index: number): void;
+    get itemCount(): number;
+    set itemCount(count: number);
+    // (undocumented)
+    onActivateItem: (index: number) => void;
+    // (undocumented)
+    onFocusItem: (index: number) => void;
+    get orientation(): Orientation;
+    set orientation(orientation: Orientation);
+    }
 
 // @public
 export interface LabeledComponentProps {
@@ -1563,6 +1593,7 @@ export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<H
     parse?: ((value: string) => number | null);
     // (undocumented)
     precision?: number | (() => number | null | undefined);
+    setFocus?: boolean;
     // (undocumented)
     snap?: boolean;
     // @internal (undocumented)
@@ -1875,7 +1906,7 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
     componentDidUpdate(prevProps: MainTabsProps): void;
     // @internal (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
@@ -2058,6 +2089,7 @@ export interface ToggleProps extends CommonProps {
     rounded?: boolean;
     setFocus?: boolean;
     showCheckmark?: boolean;
+    title?: string;
 }
 
 // @internal
@@ -2174,6 +2206,10 @@ export interface TreeNodeProps extends CommonProps {
 export interface TreeProps extends CommonProps {
     // (undocumented)
     children?: React.ReactNode;
+    // (undocumented)
+    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
+    // (undocumented)
+    onKeyUp?: React.KeyboardEventHandler<HTMLDivElement>;
     // (undocumented)
     onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
     // (undocumented)
@@ -2293,7 +2329,7 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
 // @internal
 export const useTargeted: (ref: React.RefObject<Element>) => boolean;
 
-// @internal (undocumented)
+// @internal
 export function useWidgetOpacityContext(): WidgetOpacityContextProps;
 
 // @public
@@ -2328,7 +2364,7 @@ export class WidgetElementSet extends Set<React.RefObject<Element>> {
 // @internal
 export const WidgetOpacityContext: React.Context<WidgetOpacityContextProps>;
 
-// @internal (undocumented)
+// @internal
 export interface WidgetOpacityContextProps {
     // (undocumented)
     readonly onElementRef: (elementRef: React.RefObject<Element>) => void;

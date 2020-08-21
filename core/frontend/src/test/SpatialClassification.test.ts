@@ -44,7 +44,7 @@ describe("SpatialClassifiers", () => {
     ];
 
     const sc = new SpatialClassifiers({ classifiers: json });
-    const prevActive = sc.active! as SpatialClassificationProps.Properties;
+    const prevActive = sc.active as SpatialClassificationProps.Properties;
     expect(prevActive).not.to.be.undefined;
     expect(prevActive.isActive).to.be.true;
 

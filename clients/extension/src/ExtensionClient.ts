@@ -239,7 +239,7 @@ export class ExtensionClient extends Client {
         method: "PUT",
         headers: {
           "x-ms-blob-type": "BlockBlob",
-          "Content-Length": file.length.toString(),
+          "Content-Length": file.length.toString(), // eslint-disable-line @typescript-eslint/naming-convention
         },
         body: file,
       });

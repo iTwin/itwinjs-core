@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -18,7 +18,7 @@
     "docs": "betools docs --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
-    "lint": "tslint --project . 1>&2"
+    "lint": "eslint ./src/**/*.ts 1>&2"
   },
   "keywords": [
     "Bentley",
@@ -30,22 +30,24 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.4.2",
+    "@bentley/build-tools": "2.5.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
+    "eslint": "^6.8.0",
     "mocha": "^5.2.0",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "ts-node": "^7.0.1",
     "nyc": "^14.0.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

@@ -8,7 +8,7 @@ import { withTimeout } from "../../ui-core";
 
 describe("withTimeout", () => {
 
-  const WithTimeoutDiv = withTimeout((props) => (<div {...props} />)); // tslint:disable-line:variable-name
+  const WithTimeoutDiv = withTimeout((props) => (<div {...props} />)); // eslint-disable-line @typescript-eslint/naming-convention
 
   it("should render", () => {
     const wrapper = mount(<WithTimeoutDiv timeout={1} onTimeout={() => { }} />);

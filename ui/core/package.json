@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -17,9 +17,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core/file.json --tsIndexFile=./ui-core.ts --onlyJson",
-    "lint": "npm run tslint && npm run eslint",
-    "eslint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "tslint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.{ts,tsx} 1>&2",
     "extract-api": "betools extract-api --entry=ui-core",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
@@ -34,10 +32,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.4.2",
-    "@bentley/geometry-core": "^2.4.2",
-    "@bentley/imodeljs-i18n": "^2.4.2",
-    "@bentley/ui-abstract": "^2.4.2",
+    "@bentley/bentleyjs-core": "^2.5.0",
+    "@bentley/geometry-core": "^2.5.0",
+    "@bentley/imodeljs-i18n": "^2.5.0",
+    "@bentley/ui-abstract": "^2.5.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -46,12 +44,12 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/geometry-core": "2.4.2",
-    "@bentley/build-tools": "2.4.2",
-    "@bentley/bentleyjs-core": "2.4.2",
-    "@bentley/imodeljs-i18n": "2.4.2",
-    "@bentley/ui-abstract": "2.4.2",
-    "@bentley/react-scripts": "3.4.1",
+    "@bentley/geometry-core": "2.5.0",
+    "@bentley/build-tools": "2.5.0",
+    "@bentley/bentleyjs-core": "2.5.0",
+    "@bentley/imodeljs-i18n": "2.5.0",
+    "@bentley/ui-abstract": "2.5.0",
+    "@bentley/react-scripts": "3.4.2",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -63,25 +61,23 @@
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
-    "@types/react": "^16.8.0",
+    "@types/react": "16.9.43",
     "@types/react-autosuggest": "^9.3.11",
     "@types/react-dom": "^16.8.0",
     "@types/react-select": "^3.0.4",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "@types/testing-library__react-hooks": "^3.1.0",
-    "@typescript-eslint/parser": "2.22.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
     "cpx": "^1.5.0",
-    "csstype": "^2.5.7",
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "1.12.1",
     "enzyme-to-json": "^3.3.4",
-    "eslint": "^6.7.2",
-    "eslint-plugin-react-hooks": "^3.0.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
@@ -92,11 +88,10 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
+    "typemoq": "^2.1.0",
     "typescript": "~3.7.4",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "xmlhttprequest": "^1.8.0"
   },
   "//dependencies": [
@@ -107,7 +102,6 @@
     "@bentley/icons-generic-webfont": "^1.0.15",
     "classnames": "^2.2.5",
     "lodash": "^4.17.10",
-    "prop-types": "^15.7.2",
     "react-autosuggest": "^9.4.3",
     "react-compound-slider": "^2.5.0",
     "react-select": "^3.0.4",
@@ -127,5 +121,14 @@
     "branches": 100,
     "functions": 100,
     "lines": 100
+  },
+  "eslintConfig": {
+    "plugins": [
+      "jsx-a11y"
+    ],
+    "extends": [
+      "./node_modules/@bentley/build-tools/.eslintrc.js",
+      "plugin:jsx-a11y/recommended"
+    ]
   }
 }

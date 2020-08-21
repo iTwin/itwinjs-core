@@ -72,7 +72,7 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
   }
 
   private _onOpenSignOut = () => {
-    Backstage.hide(); // tslint:disable-line:deprecation
+    Backstage.hide(); // eslint-disable-line deprecation/deprecation
 
     const manager = UiFramework.backstageManager;
     manager.close();

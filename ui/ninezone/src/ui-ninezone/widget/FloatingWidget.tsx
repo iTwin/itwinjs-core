@@ -20,8 +20,11 @@ import { Widget, WidgetProvider } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 
+type FloatingWidgetEdgeHandle = "left" | "right" | "top" | "bottom";
+type FloatingWidgetCornerHandle = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
+
 /** @internal */
-export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
+export type FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle;
 
 /** @internal */
 export interface FloatingWidgetProps {
@@ -30,7 +33,7 @@ export interface FloatingWidgetProps {
 }
 
 /** @internal */
-export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const { id, bounds } = props.floatingWidget;
   const { minimized } = props.widget;
   const style = React.useMemo(() => {
@@ -63,14 +66,14 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
 });
 
 /** @internal */
-export const FloatingWidgetIdContext = React.createContext<FloatingWidgetState["id"] | undefined>(undefined); // tslint:disable-line: variable-name
+export const FloatingWidgetIdContext = React.createContext<FloatingWidgetState["id"] | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
 
 /** @internal */
-export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // tslint:disable-line: variable-name
+export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 
-const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // tslint:disable-line: no-shadowed-variable variable-name
+const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   assert(floatingWidgetId);
   const item = React.useMemo(() => ({
@@ -94,6 +97,10 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
       <FloatingWidgetHandle handle="top" />
       <FloatingWidgetHandle handle="right" />
       <FloatingWidgetHandle handle="bottom" />
+      <FloatingWidgetHandle handle="topLeft" />
+      <FloatingWidgetHandle handle="topRight" />
+      <FloatingWidgetHandle handle="bottomLeft" />
+      <FloatingWidgetHandle handle="bottomRight" />
     </Widget>
   );
 });
@@ -102,7 +109,7 @@ interface FloatingWidgetHandleProps {
   handle: FloatingWidgetResizeHandle;
 }
 
-const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // tslint:disable-line: no-shadowed-variable variable-name
+const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
   const id = React.useContext(FloatingWidgetIdContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const { handle } = props;
@@ -155,12 +162,22 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
 
 /** @internal */
 export function getResizeBy(handle: FloatingWidgetResizeHandle, offset: PointProps) {
-  if (handle === "left") {
-    return new Rectangle(-offset.x);
-  } else if (handle === "top") {
-    return new Rectangle(0, -offset.y);
-  } else if (handle === "right") {
-    return new Rectangle(0, 0, offset.x);
+  switch (handle) {
+    case "left":
+      return new Rectangle(-offset.x);
+    case "top":
+      return new Rectangle(0, -offset.y);
+    case "right":
+      return new Rectangle(0, 0, offset.x);
+    case "bottom":
+      return new Rectangle(0, 0, 0, offset.y);
+    case "topLeft":
+      return new Rectangle(-offset.x, -offset.y);
+    case "topRight":
+      return new Rectangle(0, -offset.y, offset.x);
+    case "bottomLeft":
+      return new Rectangle(-offset.x, 0, 0, offset.y);
+    case "bottomRight":
+      return new Rectangle(0, 0, offset.x, offset.y);
   }
-  return new Rectangle(0, 0, 0, offset.y);
 }

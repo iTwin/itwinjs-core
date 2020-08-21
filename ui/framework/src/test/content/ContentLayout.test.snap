@@ -6,6 +6,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
   key="fourQuadrantsVertical"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
+  role="presentation"
 >
   <SplitContainer
     contentA={
@@ -83,6 +84,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
   key="ContentLayout-1"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
+  role="presentation"
 >
   <SplitContainer
     contentA={
@@ -160,6 +162,7 @@ exports[`ContentLayout SingleContent renders correctly 1`] = `
   key="SingleContent"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
+  role="presentation"
 >
   <SingleContentContainer
     content={
@@ -177,6 +180,7 @@ exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
   key="TwoHalvesHorizontal"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
+  role="presentation"
 >
   <SplitContainer
     contentA={
@@ -214,6 +218,7 @@ exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
   key="TwoHalvesVertical"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
+  role="presentation"
 >
   <SplitContainer
     contentA={

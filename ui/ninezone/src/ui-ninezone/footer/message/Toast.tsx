@@ -131,14 +131,13 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
     this.setState((prevState) => ({
       ...prevState,
       stage,
-    }),
-      () => {
-        if (this.state.stage === Stage.AnimatingOut) {
-          this.animateOut();
-          return;
-        }
-        this.props.onAnimatedOut && this.props.onAnimatedOut();
-      });
+    }), () => {
+      if (this.state.stage === Stage.AnimatingOut) {
+        this.animateOut();
+        return;
+      }
+      this.props.onAnimatedOut && this.props.onAnimatedOut();
+    });
   }
 
   private animateOut() {

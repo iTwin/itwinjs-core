@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-authorization-client",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "iModel.js Frontend Authorization Client",
   "main": "lib/frontend-authorization-client.js",
   "typings": "lib/frontend-authorization-client",
@@ -15,7 +15,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=frontend-authorization-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/frontend-authorization-client/file.json --tsIndexFile=frontend-authorization-client.ts --onlyJson",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
     "test:integration": "",
     "cover": ""
@@ -34,16 +34,19 @@
     "oidc-client": "^1.9.1"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.4.2",
-    "@bentley/itwin-client": "^2.4.2"
+    "@bentley/bentleyjs-core": "^2.5.0",
+    "@bentley/itwin-client": "^2.5.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.4.2",
-    "@bentley/build-tools": "2.4.2",
-    "@bentley/itwin-client": "2.4.2",
+    "@bentley/bentleyjs-core": "2.5.0",
+    "@bentley/build-tools": "2.5.0",
+    "@bentley/itwin-client": "2.5.0",
     "@types/node": "10.14.1",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
+    "eslint": "^6.8.0",
     "typescript": "~3.7.4"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

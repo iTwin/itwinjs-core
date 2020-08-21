@@ -8,6 +8,8 @@ import * as chaiAsPromised from "chai-as-promised";
 import { AbandonedError, OneAtATimeAction } from "../OneAtATimeAction";
 import { BeDuration } from "../Time";
 
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 const assert = chai.assert;
 const expect = chai.expect;
 

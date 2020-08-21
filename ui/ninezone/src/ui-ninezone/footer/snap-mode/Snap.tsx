@@ -36,10 +36,13 @@ export class Snap extends React.PureComponent<SnapProps> {
       this.props.className);
 
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
         onClick={this.props.onClick}
         className={dialogClassName}
         style={this.props.style}
+        role="button"
+        tabIndex={-1}
       >
         {this.props.icon === undefined ? undefined :
           <div>

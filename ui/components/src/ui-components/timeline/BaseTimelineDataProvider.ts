@@ -85,7 +85,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     if (milestone)
       return milestone;
 
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < milestones.length; i++) {
       if (milestones[i].children) {
         milestone = this.findMilestone(milestoneId, milestones[i].children!);

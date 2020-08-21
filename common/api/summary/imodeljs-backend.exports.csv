@@ -114,8 +114,6 @@ public;ElementRefersToElements
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
-internal;EmitOptions
-internal;EmitStrategy
 public;Entity 
 internal;EventSink
 internal;EventSinkManager
@@ -212,6 +210,7 @@ public;class LinkElement
 public;LinkModel 
 public;LinkPartition 
 internal;MetaDataRegistry
+alpha;MobileAuthorizationClient 
 public;Model 
 public;ModelSelector 
 internal;NativeAppBackend

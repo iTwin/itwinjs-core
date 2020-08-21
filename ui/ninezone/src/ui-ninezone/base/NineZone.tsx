@@ -12,6 +12,7 @@ import { Rectangle, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { CursorType } from "../widget-panels/CursorOverlay";
 import { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";
+import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
 import {
   DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
@@ -35,11 +36,15 @@ export interface NineZoneProps {
 export interface NineZoneLabels {
   dockToolSettingsTitle?: string;
   sendWidgetHomeTitle?: string;
+  moreWidgetsTitle?: string;
+  moreToolSettingsTitle?: string;
+  resizeGripTitle?: string;
+  toolSettingsHandleTitle?: string;
 }
 
 /** @internal future */
 export function NineZone(props: NineZoneProps) {
-  const { children, ...providerProps } = props;
+  const { children, ...providerProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
   const measurerRef = React.useRef<HTMLDivElement>(null);
   const measure = React.useCallback<() => Rectangle>(() => {
     assert(measurerRef.current);
@@ -101,59 +106,59 @@ export function NineZoneProvider(props: NineZoneProviderProps) {
 }
 
 /** @internal */
-export const NineZoneContext = React.createContext<NineZoneState>(null!); // tslint:disable-line: variable-name
+export const NineZoneContext = React.createContext<NineZoneState>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 NineZoneContext.displayName = "nz:NineZoneContext";
 
 /** @internal */
-export const NineZoneDispatchContext = React.createContext<NineZoneDispatch>(null!); // tslint:disable-line: variable-name
+export const NineZoneDispatchContext = React.createContext<NineZoneDispatch>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 NineZoneDispatchContext.displayName = "nz:NineZoneDispatchContext";
 
 /** @internal */
-export const NineZoneLabelsContext = React.createContext<NineZoneLabels | undefined>(undefined); // tslint:disable-line: variable-name
+export const NineZoneLabelsContext = React.createContext<NineZoneLabels | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 NineZoneLabelsContext.displayName = "nz:NineZoneLabelsContext";
 
 /** @internal */
-export const DraggedTabStateContext = React.createContext<DraggedTabState | undefined>(undefined); // tslint:disable-line: variable-name
+export const DraggedTabStateContext = React.createContext<DraggedTabState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 DraggedTabStateContext.displayName = "nz:DraggedTabStateContext";
 
 /** @internal */
-export const DraggedTabContext = React.createContext<boolean>(false); // tslint:disable-line: variable-name
+export const DraggedTabContext = React.createContext<boolean>(false); // eslint-disable-line @typescript-eslint/naming-convention
 DraggedTabContext.displayName = "nz:DraggedTabContext";
 
 /** @internal */
-export const TabsStateContext = React.createContext<TabsState>(null!); // tslint:disable-line: variable-name
+export const TabsStateContext = React.createContext<TabsState>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 TabsStateContext.displayName = "nz:TabsStateContext";
 
 /** @internal */
-export const WidgetsStateContext = React.createContext<WidgetsState>(null!); // tslint:disable-line: variable-name
+export const WidgetsStateContext = React.createContext<WidgetsState>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetsStateContext.displayName = "nz:WidgetsStateContext";
 
 /** @internal */
-export const PanelsStateContext = React.createContext<PanelsState>(null!); // tslint:disable-line: variable-name
+export const PanelsStateContext = React.createContext<PanelsState>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 PanelsStateContext.displayName = "nz:PanelsStateContext";
 
 /** @internal */
-export const FloatingWidgetsStateContext = React.createContext<FloatingWidgetsState>(null!); // tslint:disable-line: variable-name
+export const FloatingWidgetsStateContext = React.createContext<FloatingWidgetsState>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetsStateContext.displayName = "nz:FloatingWidgetsStateContext";
 
 /** @internal */
-export const CursorTypeContext = React.createContext<CursorType | undefined>(undefined); // tslint:disable-line: variable-name
+export const CursorTypeContext = React.createContext<CursorType | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 CursorTypeContext.displayName = "nz:CursorTypeContext";
 
 /** @internal */
-export const WidgetContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+export const WidgetContentNodeContext = React.createContext<React.ReactNode>(null); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetContentNodeContext.displayName = "nz:WidgetContentNodeContext";
 
 /** @internal */
-export const ToolSettingsNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+export const ToolSettingsNodeContext = React.createContext<React.ReactNode>(null); // eslint-disable-line @typescript-eslint/naming-convention
 ToolSettingsNodeContext.displayName = "nz:ToolSettingsNodeContext";
 
 /** @internal */
-export const ToolSettingsStateContext = React.createContext<ToolSettingsState>(null!); // tslint:disable-line: variable-name
+export const ToolSettingsStateContext = React.createContext<ToolSettingsState>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 ToolSettingsStateContext.displayName = "nz:ToolSettingsStateContext";
 
 /** @internal */
-export const MeasureContext = React.createContext<() => Rectangle>(null!); // tslint:disable-line: variable-name
+export const MeasureContext = React.createContext<() => Rectangle>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 MeasureContext.displayName = "nz:MeasureContext";
 
 function CursorTypeProvider(props: { children?: React.ReactNode }) {
@@ -167,7 +172,7 @@ function CursorTypeProvider(props: { children?: React.ReactNode }) {
   else if (draggedPanelSide)
     type = sideToCursorType(draggedPanelSide);
   else if (draggedResizeHandle)
-    type = sideToCursorType(draggedResizeHandle);
+    type = handleToCursorType(draggedResizeHandle);
   return (
     <CursorTypeContext.Provider value={type}>
       {props.children}
@@ -175,7 +180,7 @@ function CursorTypeProvider(props: { children?: React.ReactNode }) {
   );
 }
 
-const Measurer = React.forwardRef<HTMLDivElement>(function Measurer(_, ref) { // tslint:disable-line: variable-name no-shadowed-variable
+const Measurer = React.forwardRef<HTMLDivElement>(function Measurer(_, ref) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const size = React.useRef<{ height?: number, width?: number }>({});
   const dispatch = React.useContext(NineZoneDispatchContext);
   const handleResize = React.useCallback((width, height) => {
@@ -217,6 +222,24 @@ export function sideToCursorType(side: PanelSide): CursorType {
     case "left":
     case "right":
       return "ew-resize";
+  }
+}
+
+/** @internal */
+export function handleToCursorType(handle: FloatingWidgetResizeHandle): CursorType {
+  switch (handle) {
+    case "bottom":
+    case "top":
+      return "ns-resize";
+    case "left":
+    case "right":
+      return "ew-resize";
+    case "topLeft":
+    case "bottomRight":
+      return "nwse-resize";
+    case "topRight":
+    case "bottomLeft":
+      return "nesw-resize";
   }
 }
 

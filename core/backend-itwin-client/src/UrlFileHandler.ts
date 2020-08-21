@@ -21,7 +21,7 @@ import WriteStreamAtomic = require("fs-write-stream-atomic");
  * @internal
  */
 export class UrlFileHandler implements FileHandler {
-  public agent: https.Agent;
+  public agent?: https.Agent;
   protected _uploadMethod = "POST";
 
   constructor() {

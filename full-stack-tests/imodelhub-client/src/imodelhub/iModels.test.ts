@@ -289,8 +289,7 @@ describe("iModelHub iModelsHandler", () => {
       ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
     }
 
-    let imodels: HubIModel[];
-    imodels = await imodelClient.iModels.get(requestContext, projectId, undefined);
+    const imodels: HubIModel[] = await imodelClient.iModels.get(requestContext, projectId, undefined);
     chai.expect(imodels.length).to.be.greaterThan(0);
   });
 

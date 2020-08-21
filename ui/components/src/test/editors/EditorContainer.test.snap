@@ -8,6 +8,7 @@ exports[`<EditorContainer /> renders correctly 1`] = `
   onClick={[Function]}
   onContextMenu={[Function]}
   onKeyDown={[Function]}
+  role="presentation"
   title="abc"
 >
   <TextEditor

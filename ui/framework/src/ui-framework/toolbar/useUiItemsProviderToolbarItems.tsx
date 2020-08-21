@@ -12,6 +12,7 @@ import {
 } from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 /** Hook that returns items from [[ToolbarItemsManager]].
  * @beta
@@ -28,9 +29,12 @@ export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, too
     const uiProviders = uiItemsProviderIds.join("-");
     // istanbul ignore else
     if (providersRef.current !== uiProviders || currentStageRef.current !== stageId) {
+      const frontstageDef = FrontstageManager.findFrontstageDef(stageId);
+      // istanbul ignore next
+      const usage = frontstageDef?.usage ? frontstageDef.usage : StageUsage.General;
       currentStageRef.current = stageId;
       providersRef.current = uiProviders;
-      const toolbarItems = UiItemsManager.getToolbarButtonItems(stageId, StageUsage.General, toolbarUsage, toolbarOrientation);
+      const toolbarItems = UiItemsManager.getToolbarButtonItems(stageId, usage, toolbarUsage, toolbarOrientation);
       const updatedToolbarItems = UiItemsArbiter.updateToolbarButtonItems(toolbarItems);
       manager.loadItems(updatedToolbarItems);
       setItems(manager.items);

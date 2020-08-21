@@ -92,7 +92,7 @@ export enum InitializationState {
  */
 export enum IModelType {
   /** iModel has no type. */
-  Undefined = 0,
+  Undefined = 0, // eslint-disable-line id-blacklist
   /** iModel contains metadata used for other iModel creation. */
   Library = 1,
 }
@@ -623,17 +623,18 @@ export class IModelsHandler {
     if (createOptions.extent)
       this.validateExtent(createOptions.extent);
 
-    if (createOptions.path)
+    if (createOptions.path) {
       createOptions.template = undefined;
 
-    if (typeof window !== "undefined")
-      throw IModelHubClientError.browser();
+      if (typeof window !== "undefined")
+        throw IModelHubClientError.browser();
 
-    if (!this._fileHandler)
-      throw IModelHubClientError.fileHandler();
+      if (!this._fileHandler)
+        throw IModelHubClientError.fileHandler();
 
-    if (!!createOptions.path && (!this._fileHandler.exists(createOptions.path) || this._fileHandler.isDirectory(createOptions.path)))
-      throw IModelHubClientError.fileNotFound();
+      if (!this._fileHandler.exists(createOptions.path) || this._fileHandler.isDirectory(createOptions.path))
+        throw IModelHubClientError.fileNotFound();
+    }
 
     const template = IModelsHandler._defaultCreateOptionsProvider.templateToString(createOptions);
     const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template, createOptions.iModelType, createOptions.extent);

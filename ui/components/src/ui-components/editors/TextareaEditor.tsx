@@ -69,7 +69,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
-    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
@@ -80,7 +80,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
   /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
-      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+      this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
@@ -142,7 +142,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
   }
 
   // private _handleBlur = (_event: React.FocusEvent): void => {
-  //   // tslint:disable-next-line: no-console
+  //   // eslint-disable-next-line no-console
   //   console.log("_handleBlur");
   // }
 

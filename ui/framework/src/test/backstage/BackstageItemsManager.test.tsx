@@ -129,7 +129,7 @@ describe("BackstageItemsManager", () => {
 });
 
 describe("useDefaultBackstageItems", () => {
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const TestHook = (props: { onRender: () => void }) => {
     props.onRender();
     return null;
@@ -191,7 +191,7 @@ describe("useDefaultBackstageItems", () => {
   });
 
   describe("more useDefaultBackstageItems", () => {
-    // tslint:disable-next-line:variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const TestHook2 = (props: { mrg: BackstageItemsManager, onRender: (mrg: BackstageItemsManager) => void }) => {
       props.onRender(props.mrg);
       return null;

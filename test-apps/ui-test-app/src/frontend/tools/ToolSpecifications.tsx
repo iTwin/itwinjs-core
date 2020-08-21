@@ -30,7 +30,7 @@ import { ToolWithSettings } from "./ToolWithSettings";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleStatus = withStatusFieldProps(SampleStatusField);
 
 // Sample UI items provider that dynamically adds ui items
@@ -139,6 +139,7 @@ export class AppTools {
 
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {
+    // eslint-disable-next-line deprecation/deprecation
     return Backstage.backstageToggleCommand;
   }
 
@@ -301,6 +302,7 @@ export class AppTools {
     return span;
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   private static get _reactMessage(): ReactMessage {
     const reactNode = (
       <span>
@@ -481,7 +483,7 @@ export class AppTools {
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: () => {
-        // tslint:disable-next-line:no-floating-promises
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         IModelApp.notifications.openMessageBox(MessageBoxType.Ok,
           message,
           MessageBoxIconType.Information)

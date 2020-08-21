@@ -22,6 +22,7 @@ import { Notifications } from "./Notifications";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
+import { ApplyModelTransformTool } from "./DisplayTransform";
 import { VersionComparisonTool } from "./VersionComparison";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -80,7 +81,7 @@ class PurgeTileTreesTool extends Tool {
     if (undefined !== modelIds && 0 === modelIds.length)
       modelIds = undefined;
 
-    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => { // tslint:disable-line:no-floating-promises
+    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       IModelApp.viewManager.refreshForModifiedModels(modelIds);
     });
 
@@ -97,8 +98,8 @@ class ShutDownTool extends Tool {
 
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
-    IModelApp.shutdown(); // tslint:disable-line:no-floating-promises
-    debugger; // tslint:disable-line:no-debugger
+    IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    debugger; // eslint-disable-line no-debugger
     return true;
   }
 }
@@ -129,6 +130,7 @@ export class DisplayTestApp {
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
+      ApplyModelTransformTool,
       AttachViewTool,
       CloneViewportTool,
       CloseIModelTool,

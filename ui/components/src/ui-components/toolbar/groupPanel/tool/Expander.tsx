@@ -22,7 +22,8 @@ export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" 
 /** Expandable entry of tool group panel. Used in [[GroupColumn]] to select nested Groups.
  * @internal
  */
-export const GroupToolExpander = React.memo<React.FC<GroupToolExpanderProps>>( // tslint:disable-line: variable-name
+// eslint-disable-next-line react/display-name
+export const GroupToolExpander = React.memo<React.FC<GroupToolExpanderProps>>(
   (props: GroupToolExpanderProps) => {
     const { className, ...otherProps } = props;
 

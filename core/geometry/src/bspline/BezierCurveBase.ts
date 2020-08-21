@@ -14,7 +14,7 @@ import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";

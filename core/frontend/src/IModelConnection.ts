@@ -6,9 +6,19 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import {
+  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+} from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, BentleyStatus, BriefcaseProps, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface } from "@bentley/imodeljs-common";
+import {
+  AxisAlignedBox3d, BentleyStatus, BriefcaseProps, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
+  FontMap, FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
+  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
+  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
+  SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams,
+  WipRpcInterface,
+} from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
 import { EntityState } from "./EntityState";
@@ -17,6 +27,7 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
+import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -96,6 +107,9 @@ export abstract class IModelConnection extends IModel {
 
   private _editing: EditingFunctions | undefined;
 
+  /** The RPC routing for this connection.  */
+  public routingContext: IModelRoutingContext = IModelRoutingContext.default;
+
   /** General editing functions
    * @alpha
    */
@@ -118,6 +132,10 @@ export abstract class IModelConnection extends IModel {
 
   /** Type guard for instanceof [[SnapshotConnection]] */
   public isSnapshotConnection(): this is SnapshotConnection { return this instanceof SnapshotConnection; }
+  /** Type guard for instanceof [[StandaloneConnection]]
+   * @internal
+   */
+  public isStandaloneConnection(): this is StandaloneConnection { return this instanceof StandaloneConnection; }
   /** Type guard for instanceof [[BlankConnection]]
    * @beta
    */
@@ -129,6 +147,10 @@ export abstract class IModelConnection extends IModel {
    * @see [[SnapshotConnection.openSnapshot]]
    */
   public get isSnapshot(): boolean { return this.isSnapshotConnection(); }
+  /** True if this is a [[StandaloneConnection]].
+   * @internal
+   */
+  public get isStandalone(): boolean { return this.isStandaloneConnection(); }
   /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).
    * @beta
    */
@@ -176,7 +198,7 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this.fontMap) {
       this.fontMap = new FontMap();
       if (this.isOpen) {
-        const fontProps = JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.getRpcProps())) as FontMapProps;
+        const fontProps = JSON.parse(await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps())) as FontMapProps;
         this.fontMap.addFonts(fontProps.fonts);
       }
     }
@@ -198,7 +220,7 @@ export abstract class IModelConnection extends IModel {
 
     // wait until we get the full list of base classes from backend
     if (this.isOpen) {
-      const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.getRpcProps(), className);
+      const baseClasses = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getClassHierarchy(this.getRpcProps(), className);
 
       // Make sure some other async code didn't register this class while we were await-ing above
       ctor = IModelApp.lookupEntityClass(className) as T | undefined;
@@ -299,7 +321,7 @@ export abstract class IModelConnection extends IModel {
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
 
-    return IModelReadRpcInterface.getClient().queryRows(this.getRpcProps(), ecsql, bindings, limit, quota, priority, restartToken);
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), ecsql, bindings, limit, quota, priority, restartToken);
   }
 
   /** Execute a query and stream its results
@@ -415,7 +437,7 @@ export abstract class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the generated statement is invalid or would return too many rows.
    */
   public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> {
-    return new Set(this.isOpen ? await IModelReadRpcInterface.getClient().queryEntityIds(this.getRpcProps(), params) : undefined);
+    return new Set(this.isOpen ? await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryEntityIds(this.getRpcProps(), params) : undefined);
   }
 
   /** Update the project extents of this iModel.
@@ -434,7 +456,7 @@ export abstract class IModelConnection extends IModel {
     return this.editing.saveChanges(description);
   }
 
-  private _snapRpc = new OneAtATimeAction<SnapResponseProps>((props: SnapRequestProps) => IModelReadRpcInterface.getClient().requestSnap(this.getRpcProps(), IModelApp.sessionId, props));
+  private _snapRpc = new OneAtATimeAction<SnapResponseProps>(async (props: SnapRequestProps) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props));
   /** Request a snap from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
    */
@@ -442,7 +464,7 @@ export abstract class IModelConnection extends IModel {
     return this.isOpen ? this._snapRpc.request(props) : { status: 2 };
   }
 
-  private _toolTipRpc = new OneAtATimeAction<string[]>((id: string) => IModelReadRpcInterface.getClient().getToolTipMessage(this.getRpcProps(), id));
+  private _toolTipRpc = new OneAtATimeAction<string[]>(async (id: string) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id));
   /** Request a tooltip from the backend.
    * @note If another call to this method occurs before preceding call(s) return, all preceding calls will be abandoned - only the most recent will resolve. Therefore callers must gracefully handle Promise rejected with AbandonedError.
    */
@@ -453,12 +475,12 @@ export abstract class IModelConnection extends IModel {
   /** Request element clip containment status from the backend.
    * @beta
    */
-  public async getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return IModelReadRpcInterface.getClient().getGeometryContainment(this.getRpcProps(), requestProps); }
+  public async getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometryContainment(this.getRpcProps(), requestProps); }
 
   /** Request element mass properties from the backend.
    * @beta
    */
-  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClient().getMassProperties(this.getRpcProps(), requestProps); }
+  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps); }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
@@ -638,6 +660,8 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
 
+    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
+
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
@@ -647,17 +671,18 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     const iModelRpcProps: IModelRpcProps = { key: "", contextId, iModelId, changeSetId, openMode }; // WIP: what is the right value for key?
     RpcManager.setIModel(iModelRpcProps);
 
-    const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, openMode);
+    const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, openMode, routingContext);
     requestContext.enter();
 
     const connection = new RemoteBriefcaseConnection(openResponse);
+    connection.routingContext = routingContext;
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
 
-  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelRpcProps, openMode: OpenMode): Promise<IModelConnectionProps> {
+  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelRpcProps, openMode: OpenMode, routingContext: IModelRoutingContext): Promise<IModelConnectionProps> {
     requestContext.enter();
 
     // Try opening the iModel repeatedly accommodating any pending responses from the backend.
@@ -709,9 +734,9 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     let openPromise: Promise<IModelConnectionProps>;
     requestContext.useContextForRpc = true;
     if (openMode === OpenMode.ReadWrite)
-      openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken);
+      openPromise = IModelWriteRpcInterface.getClientForRouting(routingContext.token).openForWrite(iModelToken);
     else
-      openPromise = IModelReadRpcInterface.getClient().openForRead(iModelToken);
+      openPromise = IModelReadRpcInterface.getClientForRouting(routingContext.token).openForRead(iModelToken);
 
     let openResponse: IModelConnectionProps;
     try {
@@ -739,7 +764,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelRpcProps);
 
     try {
-      const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, this.openMode);
+      const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, this.openMode, this.routingContext);
       // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
       this._changeSetId = openResponse.changeSetId;
@@ -769,7 +794,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     requestContext.useContextForRpc = true;
 
-    const closePromise: Promise<boolean> = IModelReadRpcInterface.getClient().close(this.getRpcProps()); // Ensure the method isn't awaited right away.
+    const closePromise: Promise<boolean> = IModelReadRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps()); // Ensure the method isn't awaited right away.
     if (this.eventSource) {
       EventSourceManager.delete(this._fileKey);
     }
@@ -906,11 +931,13 @@ export class SnapshotConnection extends IModelConnection {
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openFile(filePath: string): Promise<SnapshotConnection> {
+    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     RpcManager.setIModel({ iModelId: "undefined", key: filePath });
 
-    const openResponse = await SnapshotIModelRpcInterface.getClient().openFile(filePath);
+    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
     const connection = new SnapshotConnection(openResponse);
+    connection.routingContext = routingContext;
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
@@ -919,11 +946,13 @@ export class SnapshotConnection extends IModelConnection {
    * @note This method is primarily intended for web applications.
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
+    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     RpcManager.setIModel({ iModelId: "undefined", key: fileKey });
 
-    const openResponse = await SnapshotIModelRpcInterface.getClient().openRemote(fileKey);
+    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
     const connection = new SnapshotConnection(openResponse);
+    connection.routingContext = routingContext;
     connection._isRemote = true;
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -941,7 +970,7 @@ export class SnapshotConnection extends IModelConnection {
     this.beforeClose();
     try {
       if (!this.isRemote) {
-        await SnapshotIModelRpcInterface.getClient().close(this.getRpcProps());
+        await SnapshotIModelRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps());
       }
     } finally {
       this._isClosed = true;
@@ -950,8 +979,47 @@ export class SnapshotConnection extends IModelConnection {
   }
 }
 
+/** A connection to a [StandaloneDb]($backend) hosted on the backend.
+ * @internal
+ */
+export class StandaloneConnection extends IModelConnection {
+  /** The Guid that identifies this iModel. */
+  public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for StandaloneConnection
+
+  /** Returns `true` if [[close]] has already been called. */
+  public get isClosed(): boolean { return this._isClosed ? true : false; }
+  private _isClosed?: boolean;
+
+  /** Open an IModelConnection to a standalone iModel.
+   * @note This method is intended for desktop or mobile applications and should not be used for web applications.
+   */
+  public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<StandaloneConnection> {
+    const openResponse = await StandaloneIModelRpcInterface.getClient().openFile(filePath, openMode);
+    Logger.logTrace(loggerCategory, "StandaloneConnection.openFile", () => ({ filePath }));
+    const connection = new StandaloneConnection(openResponse);
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
+  /** Close this StandaloneConnection and the underlying [StandaloneDb]($backend) database file.
+   * @see [[openFile]]
+   */
+  public async close(): Promise<void> {
+    if (this.isClosed) {
+      return;
+    }
+    this.beforeClose();
+    try {
+      await StandaloneIModelRpcInterface.getClient().close(this.getRpcProps());
+    } finally {
+      this._isClosed = true;
+      this.subcategories.onIModelConnectionClose();
+    }
+  }
+}
+
 /** @public */
-export namespace IModelConnection {
+export namespace IModelConnection { // eslint-disable-line no-redeclare
 
   /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
   export interface ViewSpec {
@@ -985,7 +1053,7 @@ export namespace IModelConnection {
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().getModelProps(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getModelProps(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
     }
 
     /** Find a ModelState in the set of loaded Models by ModelId. */
@@ -1032,7 +1100,7 @@ export namespace IModelConnection {
     /** Query for a set of model ranges by ModelIds. */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
@@ -1054,7 +1122,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsTemplate=FALSE ";
       }
-      return IModelReadRpcInterface.getClient().queryModelProps(iModel.getRpcProps(), params);
+      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelProps(iModel.getRpcProps(), params);
     }
 
     /** Asynchronously stream ModelProps using the specified ModelQueryParams. */
@@ -1081,7 +1149,7 @@ export namespace IModelConnection {
     /** Get an array of [[ElementProps]] given one or more element ids. */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().getElementProps(this._iModel.getRpcProps(), [...Id64.toIdSet(arg)]) : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getElementProps(this._iModel.getRpcProps(), [...Id64.toIdSet(arg)]) : [];
     }
 
     /** Get an array  of [[ElementProps]] that satisfy a query
@@ -1090,7 +1158,7 @@ export namespace IModelConnection {
      */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().queryElementProps(iModel.getRpcProps(), params) : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params) : [];
     }
   }
 
@@ -1107,7 +1175,7 @@ export namespace IModelConnection {
         return;
 
       this._loaded = [];
-      const codeSpecArray: any[] = await IModelReadRpcInterface.getClient().getAllCodeSpecs(this._iModel.getRpcProps());
+      const codeSpecArray: any[] = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getAllCodeSpecs(this._iModel.getRpcProps());
       for (const codeSpec of codeSpecArray) {
         this._loaded.push(CodeSpec.createFromJson(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
       }
@@ -1166,7 +1234,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsPrivate=FALSE ";
       }
-      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModel.getRpcProps(), params);
+      const viewProps = await IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params);
       assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
       return viewProps as ViewDefinitionProps[];
     }
@@ -1195,12 +1263,12 @@ export namespace IModelConnection {
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClient().getDefaultViewId(iModel.getRpcProps()) : Id64.invalid;
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getDefaultViewId(iModel.getRpcProps()) : Id64.invalid;
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
-      const viewProps = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.getRpcProps(), viewDefinitionId);
+      const viewProps = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewStateData(this._iModel.getRpcProps(), viewDefinitionId);
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
       if (undefined === ctor)
@@ -1218,7 +1286,7 @@ export namespace IModelConnection {
      * @throws Error if invalid thumbnail.
      */
     public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
-      const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.getRpcProps(), viewId.toString());
+      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
       if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
@@ -1240,7 +1308,7 @@ export namespace IModelConnection {
       const high32 = Id64.getUpperUint32(viewId);
       new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
       val.set(thumbnail.image, 24); // image data at offset 24
-      return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.getRpcProps(), val);
+      return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val);
     }
   }
 }

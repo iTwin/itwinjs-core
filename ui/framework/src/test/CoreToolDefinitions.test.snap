@@ -411,6 +411,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
   toolWidgetDef={
     ToolWidgetDef {
       "_appButton": undefined,
+      "_backstageLabel": "buttons.openBackstageMenu",
       "_classId": undefined,
       "_fillZone": false,
       "_handleSyncUiEvent": [Function],
@@ -422,6 +423,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "_isToolSettings": false,
       "_label": "",
       "_onWidgetStateChanged": undefined,
+      "_preferredPanelSize": undefined,
       "_priority": 0,
       "_restoreTransientState": undefined,
       "_saveTransientState": undefined,

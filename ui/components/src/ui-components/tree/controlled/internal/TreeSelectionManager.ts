@@ -13,7 +13,8 @@ import { MultiSelectionHandler, SelectionHandler, SingleSelectionHandler } from 
 import { SelectionMode } from "../../../common/selection/SelectionModes";
 import { Observable } from "../Observable";
 import { TreeActions } from "../TreeActions";
-import { TreeModelNode, VisibleTreeNodes } from "../TreeModel";
+import { TreeModelNode, VisibleTreeNodes, isTreeModelNode } from "../TreeModel";
+import { isNavigationKey, ItemKeyboardNavigator, Orientation } from "@bentley/ui-core";
 
 /** @internal */
 export interface SelectionReplacementEvent {
@@ -109,12 +110,25 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
         }
 
         const index: number = +(prop as string);
-        const node = _this._getVisibleNodes !== undefined ? _this._getVisibleNodes().getAtIndex(index) : /* istanbul ignore next */ undefined;
-        // TODO: Possible exception if cursor is dragged over a pending node
-        return node !== undefined ? new ItemHandler(node as TreeModelNode) : /* istanbul ignore next */ undefined;
+        let itemHandler: ItemHandler | undefined;
+
+        // istanbul ignore else
+        if (_this._getVisibleNodes !== undefined) {
+          const node = _this.getVisibleNodeAtIndex(_this._getVisibleNodes(), index);
+          // istanbul ignore else
+          if (node)
+            itemHandler = new ItemHandler(node);
+        }
+
+        return itemHandler;
       },
     }) as Array<SingleSelectionHandler<string>>;
     this._itemHandlers = [itemHandlers];
+  }
+
+  private getVisibleNodeAtIndex(nodes: VisibleTreeNodes | undefined, index: number): TreeModelNode | undefined {
+    const foundNode = nodes !== undefined ? nodes.getAtIndex(index) : /* istanbul ignore next */ undefined;
+    return isTreeModelNode(foundNode) ? foundNode : undefined;
   }
 
   public setVisibleNodes(visibleNodes: () => VisibleTreeNodes) {
@@ -188,11 +202,79 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
 
     return [multiSelectionHandler, singleSelectionHandler];
   }
+
+  public onTreeKeyDown(event: React.KeyboardEvent, actions: TreeActions): void {
+    this._onKeyboardEvent(event, actions, true);
+  }
+
+  public onTreeKeyUp(event: React.KeyboardEvent, actions: TreeActions): void {
+    this._onKeyboardEvent(event, actions, false);
+  }
+
+  private _onKeyboardEvent = (e: React.KeyboardEvent, actions: TreeActions, isKeyDown: boolean) => {
+    // istanbul ignore next
+    if (!this._getVisibleNodes)
+      return;
+
+    if (isNavigationKey(e.key)) {
+      const processedNodeId = this._selectionHandler.processedItem;
+      const handleKeyboardSelectItem = (index: number) => {
+        // istanbul ignore next
+        if (!this._getVisibleNodes)
+          return;
+        const node = this.getVisibleNodeAtIndex(this._getVisibleNodes(), index);
+        // istanbul ignore else
+        if (node) {
+          const selectionFunc = this._selectionHandler.createSelectionFunction(...this.createSelectionHandlers(node.id));
+          selectionFunc(e.shiftKey, e.ctrlKey);
+        }
+      };
+      const isExpandable = (node: TreeModelNode): boolean => !node.isLoading && node.numChildren !== 0;
+      const handleKeyboardActivateItem = (_index: number) => {
+        // istanbul ignore else
+        if (this._getVisibleNodes && isIndividualSelection(processedNodeId)) {
+          const node = this._getVisibleNodes().getModel().getNode(processedNodeId);
+          if (node && isExpandable(node)) {
+            if (!node.isExpanded)
+              actions.onNodeExpanded(node.id);
+            else
+              actions.onNodeCollapsed(node.id);
+          }
+        }
+      };
+      const handleCrossAxisArrowKey = (forward: boolean) => {
+        // istanbul ignore else
+        if (this._getVisibleNodes && isIndividualSelection(processedNodeId)) {
+          const node = this._getVisibleNodes().getModel().getNode(processedNodeId);
+          if (node && isExpandable(node)) {
+            if (forward && !node.isExpanded)
+              actions.onNodeExpanded(node.id);
+            else if (!forward && node.isExpanded)
+              actions.onNodeCollapsed(node.id);
+          }
+        }
+      };
+
+      const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
+      itemKeyboardNavigator.orientation = Orientation.Vertical;
+      itemKeyboardNavigator.crossAxisArrowKeyHandler = handleCrossAxisArrowKey;
+      itemKeyboardNavigator.allowWrap = false;
+      itemKeyboardNavigator.itemCount = this._getVisibleNodes().getNumNodes();
+
+      // istanbul ignore else
+      if (isIndividualSelection(processedNodeId)) {
+        const index = this._getVisibleNodes().getIndexOfNode(processedNodeId);
+        isKeyDown ?
+          itemKeyboardNavigator.handleKeyDownEvent(e, index) :
+          itemKeyboardNavigator.handleKeyUpEvent(e, index);
+      }
+    }
+  }
 }
 
 type Selection = string | RangeSelection;
 
-function isIndividualSelection(selection: Selection): selection is string {
+function isIndividualSelection(selection: Selection | undefined): selection is string {
   return typeof (selection) === "string";
 }
 
@@ -212,7 +294,7 @@ class ItemHandler implements SingleSelectionHandler<string> {
   /* istanbul ignore next: noop */
   public deselect() { }
 
-  // tslint:disable-next-line: prefer-get
+  // eslint-disable-next-line rulesdir/prefer-get
   public isSelected(): boolean {
     return this._node.isSelected;
   }

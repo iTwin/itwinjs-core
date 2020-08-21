@@ -319,14 +319,18 @@
     "TreeDemo": "Tree Demo",
     "FeedbackDemo": "Feedback Demo",
     "ActiveSettings": "Active Settings",
-    "ModelCreation": "Create Models"
+    "ModelCreation": "Create Models",
+    "MobxDemoWidget": "Mobx Demo"
   },
   "localFileStage": {
     "localFile": "Local File",
     "selectFile": "Select Local File"
   },
   "statusFields": {
-    "displayStyle": "Display Style",
+    "displayStyle": {
+      "tooltip": "Display Style",
+      "label": "Display"
+    },
     "sampleField": "Sample StatusBar Field",
     "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"

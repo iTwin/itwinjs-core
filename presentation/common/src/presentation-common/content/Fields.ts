@@ -153,7 +153,7 @@ export class Field {
     if (!json)
       return undefined;
     if (typeof json === "string") {
-      // tslint:disable-next-line:deprecation
+      // eslint-disable-next-line deprecation/deprecation
       return JSON.parse(json, Field.reviver);
     }
     if (isPropertiesField(json))
@@ -182,7 +182,7 @@ export class Field {
    * @deprecated Use [[fromJSON]]
    */
   public static reviver(key: string, value: any): any {
-    // tslint:disable-next-line:deprecation
+    // eslint-disable-next-line deprecation/deprecation
     return key === "" ? Field.fromJSON(value) : value;
   }
 
@@ -262,7 +262,7 @@ export class PropertiesField extends Field {
     if (!json)
       return undefined;
     if (typeof json === "string") {
-      // tslint:disable-next-line:deprecation
+      // eslint-disable-next-line deprecation/deprecation
       return JSON.parse(json, Field.reviver);
     }
     const field = Object.create(PropertiesField.prototype);
@@ -372,7 +372,7 @@ export class NestedContentField extends Field {
     if (!json)
       return undefined;
     if (typeof json === "string") {
-      // tslint:disable-next-line:deprecation
+      // eslint-disable-next-line deprecation/deprecation
       return JSON.parse(json, Field.reviver);
     }
     const field = Object.create(NestedContentField.prototype);

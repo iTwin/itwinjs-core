@@ -110,6 +110,9 @@
   &:hover {
     color: $buic-foreground-activehover;
   }
+  &:focus {
+    outline: none;
+  }
 }
 
 .timeline-component.minimized .timeline-settings {

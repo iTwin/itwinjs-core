@@ -9,7 +9,7 @@
 import "./OverflowPanel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, Popup } from "@bentley/ui-core";
 
 /** Properties of [[StatusBarOverflowPanel]] component.
  * @internal
@@ -17,24 +17,30 @@ import { CommonProps } from "@bentley/ui-core";
 export interface StatusBarOverflowPanelProps extends CommonProps {
   /** Panel content. */
   children?: React.ReactNode;
+  onClose: () => void;
+  target: HTMLElement | undefined;
+  open: boolean;
 }
 
-/** Displays overflown tool settings.
+/** Displays overflow status bar items.
  * @internal
  */
-// tslint:disable-next-line: variable-name
-export const StatusBarOverflowPanel = React.forwardRef<HTMLDivElement, StatusBarOverflowPanelProps>((props, ref) => {
+export function StatusBarOverflowPanel(props: StatusBarOverflowPanelProps) {
   const className = classnames(
     "uifw-statusbar-panel",
     props.className,
   );
   return (
-    <div
+    <Popup
       className={className}
-      ref={ref}
+      isOpen={props.open}
+      offset={0}
+      onClose={props.onClose}
       style={props.style}
+      showShadow={true}
+      target={props.target}
     >
       {props.children}
-    </div>
+    </Popup>
   );
-});
+}

@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, Popup } from "@bentley/ui-core";
 import { LineWeightSwatch } from "./Swatch";
 
@@ -89,7 +89,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
   }
 
   public componentDidMount() {
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     // console.log(`WeightPickerButton.componentDidMount focusRef=${this._focusTarget && this._focusTarget.current ? "set" : "unset"}`);
   }
 
@@ -121,10 +121,10 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
   }
 
   private _handleKeyDown = (event: React.KeyboardEvent<any>) => {
-    if (event.key === "Enter") {
+    if (event.key === SpecialKey.Enter) {
       event.preventDefault();
       event.stopPropagation();
-      const weightButton = document.activeElement  as HTMLElement;
+      const weightButton = document.activeElement as HTMLElement;
       // istanbul ignore else
       if (weightButton.tagName === "BUTTON") {
         try {
@@ -143,9 +143,9 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
       }
       this._closePopup();
     } else {
-      if (event.key === "ArrowDown")
+      if (event.key === SpecialKey.ArrowDown)
         this.moveFocusInPopup(false, event);
-      else if (event.key === "ArrowUp")
+      else if (event.key === SpecialKey.ArrowUp)
         this.moveFocusInPopup(true, event);
     }
   }
@@ -158,6 +158,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     return (
       <div className="components-weightpicker-popup-container">
         {title && <h4>{title}</h4>}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
         <ul data-testid="components-weightpicker-popup-lines" className="components-weightpicker-popup-lines" onKeyDown={this._handleKeyDown} ref={this._setWeightContainer}>
           {this.props.weights.map((weight, index) => {
             const classNames = classnames(

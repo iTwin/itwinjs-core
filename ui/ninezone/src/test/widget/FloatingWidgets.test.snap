@@ -13,12 +13,15 @@ exports[`FloatingWidgets should render 1`] = `
     />
     <div
       class="nz-widget-tabs"
+      role="tablist"
     >
       <div
         class="nz-widget-overflow nz-hidden"
       >
         <div
           class="nz-button"
+          role="button"
+          tabindex="-1"
         >
           <div
             class="nz-icon"
@@ -43,6 +46,18 @@ exports[`FloatingWidgets should render 1`] = `
   />
   <div
     class="nz-widget-floatingWidget_handle nz-bottom"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-topLeft"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-topRight"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottomLeft"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottomRight"
   />
 </div>
 `;

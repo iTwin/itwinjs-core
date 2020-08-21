@@ -5,6 +5,7 @@
 import "./InlineEdit.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 
 interface InlineEditProps extends CommonProps {
@@ -30,7 +31,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState) {    // tslint:disable-line: naming-convention
+  public componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState) { // eslint-disable-line @typescript-eslint/naming-convention
     if (prevProps.defaultValue !== this.props.defaultValue) {
       this.setState((_, props) => {
         return { value: props.defaultValue, originalValue: props.defaultValue };
@@ -48,11 +49,11 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   }
 
   private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Escape") {
+    if (event.key === SpecialKey.Escape) {
       this.setState(
         (prevState) => ({ value: prevState.originalValue }),
         () => this._inputRef.current!.select());
-    } else if (event.key === "Enter") {
+    } else if (event.key === SpecialKey.Enter) {
       this._sendChange(this.state.value);
     }
   }

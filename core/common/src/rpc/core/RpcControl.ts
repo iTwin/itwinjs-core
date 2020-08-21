@@ -16,8 +16,6 @@ import { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
 
-// tslint:disable:space-before-function-paren
-
 /** An RPC operation control response.
  * @public
  */

@@ -28,7 +28,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
     };
   }
 
-  // tslint:disable:no-floating-promises (flagged at openMessageBox)
+  /* eslint-disable @typescript-eslint/no-floating-promises */
 
   public render(): JSX.Element {
     // cspell:disable

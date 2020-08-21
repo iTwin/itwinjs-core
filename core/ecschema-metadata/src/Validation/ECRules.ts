@@ -7,21 +7,23 @@
  */
 
 import { ECStringConstants } from "../Constants";
-import { ECClassModifier, PrimitiveType, primitiveTypeToString, SchemaItemType, schemaItemTypeToString } from "../ECObjects";
+import { ECClassModifier, PrimitiveType, primitiveTypeToString, SchemaItemType, schemaItemTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { AnyClass } from "../Interfaces";
 import { ECClass } from "../Metadata/Class";
 import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 import { EntityClass } from "../Metadata/EntityClass";
 import { Enumeration } from "../Metadata/Enumeration";
 import { Mixin } from "../Metadata/Mixin";
-import { AnyProperty, PrimitiveProperty, Property } from "../Metadata/Property";
-import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
+import { AnyProperty, NavigationProperty, PrimitiveProperty, Property } from "../Metadata/Property";
+import { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../Metadata/RelationshipClass";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
-  createRelationshipConstraintDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic, PropertyDiagnostic,
-  RelationshipConstraintDiagnostic, SchemaItemDiagnostic,
+  createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,
+  PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic,
 } from "./Diagnostic";
 import { IRuleSet } from "./Rules";
+import { SchemaGraph } from "./SchemaGraph";
+import { Schema } from "../Metadata/Schema";
 
 const ruleSetName = "ECObjects";
 
@@ -58,7 +60,7 @@ function getCode(code: number): string {
  * - UnitSystem:                1900-1999
  * @beta
  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const DiagnosticCodes = {
   // Class Rule Codes (100-199)
   BaseClassIsSealed: getCode(100),
@@ -67,6 +69,7 @@ export const DiagnosticCodes = {
   // CA Container Rule Codes (500-599)
   CustomAttributeNotOfConcreteClass: getCode(500),
   CustomAttributeSchemaMustBeReferenced: getCode(501),
+  CustomAttributeClassNotFound: getCode(502),
 
   // Enumeration Rule Codes (700-799)
   EnumerationTypeUnsupported: getCode(700),
@@ -93,8 +96,29 @@ export const DiagnosticCodes = {
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
  * @beta
  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const Diagnostics = {
+  /**
+   * EC-001
+   * Required message parameters: schema name, referenced schema name
+   */
+  SupplementalSchemasCannotBeReferenced: createSchemaDiagnosticClass<[string, string]>(getCode(1),
+    "Referenced schema '{1}' of schema '{0}' is a supplemental schema. Supplemental schemas are not allowed to be referenced."),
+
+  /**
+   * EC-002
+   * Required message parameters: schema name, reference schema alias, first schema reference name, second schema reference name.
+   */
+  SchemaRefAliasMustBeUnique: createSchemaDiagnosticClass<[string, string, string, string]>(getCode(2),
+    "Schema '{0}' has multiple schema references ({2}, {3}) with the same alias '{1}', which is not allowed."),
+
+  /**
+   * EC-003
+   * Required message parameters: schema name, cycle text
+   */
+  ReferenceCyclesNotAllowed: createSchemaDiagnosticClass<[string, string]>(getCode(3),
+    "Schema '{0}' has reference cycles: {1}"),
+
   /**
    * EC-100
    * Required message parameters: childClass.FullName, baseClass.FullName
@@ -122,6 +146,13 @@ export const Diagnostics = {
    */
   CustomAttributeSchemaMustBeReferenced: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeSchemaMustBeReferenced,
     "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' whose schema is not referenced by the container's Schema."),
+
+  /**
+   * EC-502
+   * Required message parameters: CustomAttribute container name and CustomAttributeClass name.
+   */
+  CustomAttributeClassNotFound: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeClassNotFound,
+    "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which cannot be found."),
 
   /**
    * EC-700
@@ -157,6 +188,34 @@ export const Diagnostics = {
    */
   IncompatibleUnitPropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string, string, string]>(DiagnosticCodes.IncompatibleUnitPropertyOverride,
     "The ECProperty '{0}.{1}' has a base property '{2}.{1}' with KindOfQuantity '{3}' with persistence unit '{4}' which is not the same as the persistence unit '{5}' of the provided KindOfQuantity '{6}'."),
+
+  /**
+   * EC-1303
+   * Required message parameters: property.fullName, navigation relationship.fullName
+   */
+  NavigationRelationshipMustBeRoot: createPropertyDiagnosticClass<[string, string]>(getCode(1303),
+    "The referenced relationship '{1}', used in NavigationProperty '{0}' is not the root relationship."),
+
+  /**
+   * EC-1304
+   * Required message parameters: property.fullName, navigation relationship.fullName
+   */
+  NavigationTargetMustHaveSingularMultiplicity: createPropertyDiagnosticClass<[string, string, string]>(getCode(1304),
+    "NavigationProperty '{0}' uses the relationship '{1}' that cannot be traversed in the '{2}' direction due to a max multiplicity greater than 1."),
+
+  /**
+   * EC-1305
+   * Required message parameters: property.fullName, navigation relationship.fullName
+   */
+  NavigationRelationshipAbstractConstraintEntityOrMixin: createPropertyDiagnosticClass<[string, string]>(getCode(1305),
+    "The NavigationProperty '{0}', using the relationship '{1}', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin."),
+
+  /**
+   * EC-1306
+   * Required message parameters: class name, property name, navigation relationship.fullName
+   */
+  NavigationClassMustBeAConstraintClassOfRelationship: createPropertyDiagnosticClass<[string, string, string, string]>(getCode(1306),
+    "The class '{0}' of NavigationProperty '{1}' is not supported by the {3} constraint of the referenced relationship '{2}'."),
 
   /**
    * EC-1500
@@ -198,8 +257,12 @@ export const Diagnostics = {
  * All schema validation rules that fall under the category of ECObjects.
  * @beta
  */
-export const ECRuleSet: IRuleSet = { // tslint:disable-line:variable-name
+export const ECRuleSet: IRuleSet = { // eslint-disable-line @typescript-eslint/naming-convention
   name: ruleSetName,
+
+  schemaRules: [
+    validateSchemaReferences,
+  ],
   classRules: [
     baseClassIsSealed,
     baseClassIsOfDifferentType,
@@ -208,6 +271,7 @@ export const ECRuleSet: IRuleSet = { // tslint:disable-line:variable-name
     incompatibleValueTypePropertyOverride,
     incompatibleTypePropertyOverride,
     incompatibleUnitPropertyOverride,
+    validateNavigationProperty,
   ],
   relationshipRules: [
     abstractConstraintMustNarrowBaseConstraints,
@@ -225,10 +289,38 @@ export const ECRuleSet: IRuleSet = { // tslint:disable-line:variable-name
     mixinAppliedToClassMustDeriveFromConstraint,
   ],
   customAttributeInstanceRules: [
-    customAttributeNotOfConcreteClass,
-    customAttributeSchemaMustBeReferenced,
+    validateCustomAttributeInstance,
   ],
 };
+
+/**
+ * Validates schema references against multiple EC rules.
+ * @param schema The schema to validate.
+ */
+export async function* validateSchemaReferences(schema: Schema): AsyncIterable<SchemaDiagnostic<any[]>> {
+  const aliases = new Map();
+  for (const schemaRef of schema.references) {
+    if (schemaRef.customAttributes && schemaRef.customAttributes.has("CoreCustomAttributes.SupplementalSchema"))
+      yield new Diagnostics.SupplementalSchemasCannotBeReferenced(schema, [schema.name, schemaRef.name]);
+
+    if (schema.schemaKey.matches(schemaRef.schemaKey))
+      yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, schema.name + " --> " + schemaRef.name]);
+
+    if (aliases.has(schemaRef.alias)) {
+      const currentRef = aliases.get(schemaRef.alias);
+      yield new Diagnostics.SchemaRefAliasMustBeUnique(schema, [schema.name, schemaRef.alias, currentRef.name, schemaRef.name]);
+    } else {
+      aliases.set(schemaRef.alias, schemaRef);
+    }
+  }
+
+  const graph = new SchemaGraph(schema);
+  const cycles = graph.detectCycles();
+  if (cycles) {
+    const result = cycles.map((cycle) => `${cycle.schema.name} --> ${cycle.refSchema.name}`).join(", ");
+    yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, result]);
+  }
+}
 
 /**
  * EC Rule: Sealed classes cannot be a base class.
@@ -370,6 +462,54 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
   }
 }
 
+/** Validates Navigation Properties. EC Rules: 1303, 1304 */
+export async function* validateNavigationProperty(property: AnyProperty): AsyncIterable<PropertyDiagnostic<any[]>> {
+  if (!property.isNavigation())
+    return;
+
+  const navProp = property as NavigationProperty;
+  const relationship = await navProp.relationshipClass;
+
+  if (relationship.baseClass)
+    yield new Diagnostics.NavigationRelationshipMustBeRoot(property, [property.fullName, relationship.fullName]);
+
+  let thisConstraint: RelationshipConstraint;
+  let thatConstraint: RelationshipConstraint;
+  let navigationClassSide: string;
+  if (navProp.direction === StrengthDirection.Forward) {
+    thisConstraint = relationship.source;
+    thatConstraint = relationship.target;
+    navigationClassSide = "source";
+  } else {
+    thisConstraint = relationship.target;
+    thatConstraint = relationship.source;
+    navigationClassSide = "target";
+  }
+
+  const thatAbstractConstraint = await thatConstraint.abstractConstraint;
+  if (thatAbstractConstraint && thatAbstractConstraint instanceof RelationshipClass) {
+    yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(property, [property.fullName, relationship.fullName]);
+  }
+
+  let concreteClass = false;
+  if (thisConstraint.constraintClasses) {
+    for (const constraintClass of thisConstraint.constraintClasses) {
+      if (constraintClass.fullName === property.class.fullName)
+        concreteClass = true;
+    }
+  }
+
+  if (!concreteClass)
+    yield new Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship(property, [property.class.name, property.name, relationship.fullName, navigationClassSide]);
+
+  if (thatConstraint.multiplicity === RelationshipMultiplicity.oneMany || thatConstraint.multiplicity === RelationshipMultiplicity.zeroMany) {
+    const direction = strengthDirectionToString(navProp.direction);
+    yield new Diagnostics.NavigationTargetMustHaveSingularMultiplicity(property, [property.fullName, relationship.fullName, direction]);
+  }
+
+  return;
+}
+
 /** EC Rule: When overriding a RelationshipClass, the derived abstract constraint must narrow the base constraint classes. */
 export async function* abstractConstraintMustNarrowBaseConstraints(ecClass: RelationshipClass): AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> {
   if (!ecClass.baseClass)
@@ -424,7 +564,7 @@ export async function* abstractConstraintMustExistWithMultipleConstraints(constr
     return;
   }
 
-  const abstractConstraint = getAbstractConstraint(constraint);
+  const abstractConstraint = await getAbstractConstraint(constraint);
   if (abstractConstraint)
     return;
 
@@ -466,8 +606,17 @@ export async function* mixinAppliedToClassMustDeriveFromConstraint(entityClass: 
   return;
 }
 
+/**
+ * Validates a custom attribute instance and yields EC-500, EC-501, and EC-502 rule violations.
+ */
+export async function* validateCustomAttributeInstance(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
+  yield* customAttributeNotOfConcreteClass(container, customAttribute);
+  yield* customAttributeSchemaMustBeReferenced(container, customAttribute);
+  yield* customAttributeClassMustExist(container, customAttribute);
+}
+
 /** EC Rule: CustomAttribute instance must be of a concrete CustomAttributeClass. */
-export async function* customAttributeNotOfConcreteClass(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
+async function* customAttributeNotOfConcreteClass(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
   const schema = container.schema;
   const caClass = await schema.lookupItem(customAttribute.className) as ECClass;
   if (!caClass)
@@ -480,16 +629,24 @@ export async function* customAttributeNotOfConcreteClass(container: CustomAttrib
 }
 
 /** EC Rule: CustomAttribute Schema must be referenced by the container's Schema. */
-export async function* customAttributeSchemaMustBeReferenced(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
+async function* customAttributeSchemaMustBeReferenced(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
   const schema = container.schema;
-  const caSchema = customAttribute.className.split(".")[0];
-  if (caSchema === schema.name)
+  const nameParts = customAttribute.className.split(".");
+  if (nameParts.length === 1 || nameParts[0] === schema.name)
     return;
 
-  if (schema.references.some((s) => s.name === caSchema))
+  if (schema.references.some((s) => s.name === nameParts[0]))
     return;
 
   yield new Diagnostics.CustomAttributeSchemaMustBeReferenced(container, [container.fullName, customAttribute.className]);
+}
+
+/** EC Rule: CustomAttribute instance class must exist. */
+async function* customAttributeClassMustExist(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
+  const schema = container.schema;
+  const caClass = await schema.lookupItem(customAttribute.className) as ECClass;
+  if (!caClass)
+    yield new Diagnostics.CustomAttributeClassNotFound(container, [container.fullName, customAttribute.className]);
 }
 
 async function applyAbstractConstraintMustNarrowBaseConstraints(ecClass: RelationshipClass, constraint: RelationshipConstraint, baseRelationship: RelationshipClass): Promise<SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {

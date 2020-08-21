@@ -9,7 +9,7 @@ import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
 import { Table } from "@bentley/ui-components";
 
-// tslint:disable-next-line:variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface Props {

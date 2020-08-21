@@ -48,7 +48,7 @@ $bottom-position: 4px;
       }
 
       &:focus {
-        outline: none
+        outline: none;
       }
     }
 
@@ -98,6 +98,9 @@ $bottom-position: 4px;
       &:hover {
         color: $buic-foreground-activehover;
       }
+      &:focus {
+        outline: none;
+      }
     }
 
     > .loop-playback {
@@ -106,18 +109,23 @@ $bottom-position: 4px;
       cursor: pointer;
 
       &:hover {
-        color: $buic-foreground-activehover;
+        color: $buic-foreground-primary-tone;
+      }
+      &:focus {
+        outline: none;
       }
     }
 
     > .no-loop-playback {
-      font-size: 16px;
       color: $buic-foreground-body;
-
+      font-size: 16px;
       cursor: pointer;
 
       &:hover {
         color: $buic-foreground-activehover;
+      }
+      &:focus {
+        outline: none;
       }
     }
   }
@@ -356,8 +364,8 @@ $bottom-position: 4px;
     flex-direction: column;
 
     .shadow-settings-color-top {
-      width: 100%;
       height: 150px;
+      margin: 1em;
     }
 
     .shadow-settings-color-bottom {
@@ -367,8 +375,9 @@ $bottom-position: 4px;
       margin-bottom: 10px;
 
       .shadow-settings-color-bottom-left {
-        width: calc(100% - 32px);
+        width: calc(100% - 2em - 32px);
         height: 100%;
+        margin-left: 1em;
         margin-right: 4px;
         display: flex;
         align-items: center;

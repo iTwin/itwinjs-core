@@ -54,7 +54,7 @@ export class PresentationLabelsProvider implements IPresentationLabelsProvider {
     return (await Presentation.presentation.getDisplayLabelDefinition({ imodel: this.imodel, key })).displayValue; // WIP
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private getMemoizedLabel = memoize(this.getLabelInternal, { isMatchingKey: MemoizationHelpers.areLabelRequestsEqual as any });
 
   /**
@@ -69,7 +69,7 @@ export class PresentationLabelsProvider implements IPresentationLabelsProvider {
     return (await Presentation.presentation.getDisplayLabelDefinitions({ imodel: this.imodel, keys })).map((def) => def.displayValue); // WIP
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private getMemoizedLabels = memoize(this.getLabelsInternal, { isMatchingKey: MemoizationHelpers.areLabelsRequestsEqual as any });
 
   /**

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /// <reference types="node" />
 
-declare module 'fs-write-stream-atomic' {
+declare module "fs-write-stream-atomic" {
 
-  import stream = require('stream');
+  import stream = require("stream");
 
   class WriteStreamAtomic extends stream.Writable {
     public constructor(path: string, options?: any);

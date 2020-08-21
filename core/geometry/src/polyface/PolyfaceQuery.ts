@@ -8,7 +8,7 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -88,10 +88,9 @@ export class PolyfaceQuery {
       if (source instanceof Polyface)
         return PolyfaceQuery.sumFacetAreas(source.createVisitor(1));
 
-      const visitor = source as PolyfaceVisitor;
-      visitor.reset();
-      while (visitor.moveToNextFacet()) {
-        s += PolygonOps.sumTriangleAreas(visitor.point.getPoint3dArray());
+      source.reset();
+      while (source.moveToNextFacet()) {
+        s += PolygonOps.sumTriangleAreas(source.point.getPoint3dArray());
       }
     }
     return s;
@@ -107,18 +106,17 @@ export class PolyfaceQuery {
     if (source instanceof Polyface)
       return PolyfaceQuery.sumTetrahedralVolumes(source.createVisitor(0), origin);
     let myOrigin = origin;
-    const visitor = source as PolyfaceVisitor;
     const facetOrigin = Point3d.create();
     const targetA = Point3d.create();
     const targetB = Point3d.create();
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
+    source.reset();
+    while (source.moveToNextFacet()) {
       if (myOrigin === undefined)
-        myOrigin = visitor.point.getPoint3dAtUncheckedPointIndex(0);
-      visitor.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
-      for (let i = 1; i + 1 < visitor.point.length; i++) {
-        visitor.point.getPoint3dAtUncheckedPointIndex(i, targetA);
-        visitor.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
+        myOrigin = source.point.getPoint3dAtUncheckedPointIndex(0);
+      source.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
+      for (let i = 1; i + 1 < source.point.length; i++) {
+        source.point.getPoint3dAtUncheckedPointIndex(i, targetA);
+        source.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
         s += myOrigin.tripleProductToPoints(facetOrigin, targetA, targetB);
       }
     }
@@ -133,7 +131,6 @@ export class PolyfaceQuery {
   public static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal): FacetProjectedVolumeSums {
     if (source instanceof Polyface)
       return PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(source.createVisitor(0), plane);
-    const visitor = source as PolyfaceVisitor;
     const facetOrigin = Point3d.create();
     const targetA = Point3d.create();
     const targetB = Point3d.create();
@@ -148,22 +145,22 @@ export class PolyfaceQuery {
     const singleFacetProducts = Matrix4d.createZero();
     const projectToPlane = plane.getProjectionToPlane();
 
-    visitor.reset();
+    source.reset();
     // For each facet ..
     //   Form triangles from facet origin to each far edge.
     //   Sum signed area and volume contributions
     // each "projectedArea" contribution is twice the area of a triangle.
     // each volume contribution is  3 times the actual volume -- (1/3) of the altitude sums was the centroid altitude.
-    while (visitor.moveToNextFacet()) {
-      visitor.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
+    while (source.moveToNextFacet()) {
+      source.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
       h0 = plane.altitude(facetOrigin);
       singleFacetArea = 0;
       // within a single facets, the singleFacetArea sum is accumulated with signs of individual triangles.
       // For a non-convex facet, this can be a mixture of positive and negative areas.
       // The absoluteProjectedAreaSum contribution is forced positive after the sum for the facet.
-      for (let i = 1; i + 1 < visitor.point.length; i++) {
-        visitor.point.getPoint3dAtUncheckedPointIndex(i, targetA);
-        visitor.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
+      for (let i = 1; i + 1 < source.point.length; i++) {
+        source.point.getPoint3dAtUncheckedPointIndex(i, targetA);
+        source.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
         facetOrigin.crossProductToPoints(targetA, targetB, triangleNormal);
         hA = plane.altitude(targetA);
         hB = plane.altitude(targetB);
@@ -173,8 +170,8 @@ export class PolyfaceQuery {
       }
 
       singleFacetProducts.setZero();
-      visitor.point.multiplyTransformInPlace(projectToPlane);
-      PolygonOps.addSecondMomentAreaProducts(visitor.point, facetOrigin, singleFacetProducts);
+      source.point.multiplyTransformInPlace(projectToPlane);
+      PolygonOps.addSecondMomentAreaProducts(source.point, facetOrigin, singleFacetProducts);
 
       if (singleFacetArea > 0) {
         positiveAreaMomentSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
@@ -200,10 +197,9 @@ export class PolyfaceQuery {
     if (source instanceof Polyface)
       return PolyfaceQuery.sumFacetSecondAreaMomentProducts(source.createVisitor(0), origin);
     const products = Matrix4d.createZero();
-    const visitor = source as PolyfaceVisitor;
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
-      PolygonOps.addSecondMomentAreaProducts(visitor.point, origin, products);
+    source.reset();
+    while (source.moveToNextFacet()) {
+      PolygonOps.addSecondMomentAreaProducts(source.point, origin, products);
     }
     return products;
   }
@@ -212,10 +208,9 @@ export class PolyfaceQuery {
     if (source instanceof Polyface)
       return PolyfaceQuery.sumFacetSecondVolumeMomentProducts(source.createVisitor(0), origin);
     const products = Matrix4d.createZero();
-    const visitor = source as PolyfaceVisitor;
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
-      PolygonOps.addSecondMomentVolumeProducts(visitor.point, origin, products);
+    source.reset();
+    while (source.moveToNextFacet()) {
+      PolygonOps.addSecondMomentVolumeProducts(source.point, origin, products);
     }
     return products;
   }
@@ -259,7 +254,7 @@ export class PolyfaceQuery {
   */
   public static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries: boolean = false): boolean {
     const edges = new IndexedEdgeMatcher();
-    const visitor = source.createVisitor(1) as PolyfaceVisitor;
+    const visitor = source.createVisitor(1);
     visitor.reset();
     while (visitor.moveToNextFacet()) {
       const numEdges = visitor.pointCount - 1;
@@ -281,7 +276,7 @@ export class PolyfaceQuery {
     if (source === undefined)
       return undefined;
     const edges = new IndexedEdgeMatcher();
-    const visitor = source.createVisitor(1) as PolyfaceVisitor;
+    const visitor = source.createVisitor(1);
     visitor.reset();
     while (visitor.moveToNextFacet()) {
       const numEdges = visitor.pointCount - 1;
@@ -383,7 +378,7 @@ export class PolyfaceQuery {
       return this.partitionFacetIndicesByVertexConnectedComponent(polyface.createVisitor(0));
     }
     // The polyface is really a visitor !!!
-    const context = new UnionFindContext(this.visitorClientPointCount (polyface));
+    const context = new UnionFindContext(this.visitorClientPointCount(polyface));
     for (polyface.reset(); polyface.moveToNextFacet();) {
       const firstVertexIndexOnThisFacet = polyface.pointIndex[0];
       for (const vertexIndex of polyface.pointIndex)
@@ -857,7 +852,7 @@ export class PolyfaceQuery {
   * @param mesh mesh to be marked
   */
   public static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle) {
-    const visitor = mesh.createVisitor(1) as PolyfaceVisitor;
+    const visitor = mesh.createVisitor(1);
     const edges = this.createIndexedEdges(visitor);
 
     const pairedEdges: SortableEdgeCluster[] = [];

@@ -13,11 +13,10 @@ import {
 import { Point, Rectangle, Size } from "@bentley/ui-core";
 import { DragManager } from "../ui-ninezone/base/DragManager";
 
-// tslint:disable: completed-docs
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-type NineZoneProviderProps = PartialBy<RealNineZoneProviderProps, "measure" | "state" | "dispatch"> &
+export type NineZoneProviderProps = PartialBy<RealNineZoneProviderProps, "measure" | "state" | "dispatch"> &
   Pick<DragManagerConsumerProps, "dragManagerRef">;
 
 export function NineZoneProvider(props: NineZoneProviderProps) {
@@ -90,4 +89,37 @@ export function setRefValue<T>(ref: React.Ref<T>, value: T) {
   } else if (ref) {
     (ref as React.MutableRefObject<T | null>).current = value;
   }
+}
+
+interface WithOnRenderProps {
+  onRender?(): void;
+}
+
+export const withOnRender = <P extends {}, C>(
+  // tslint:disable-next-line:variable-name
+  Component: React.JSXElementConstructor<P> & C,
+) => {
+  type Props = JSX.LibraryManagedAttributes<C, P & WithOnRenderProps>;
+  return function WithOnRender(props: Props) {
+    const { onRender, ...otherProps } = props;
+    onRender && onRender();
+    return (
+      <Component
+        {...otherProps as any}
+      />
+    );
+  };
+};
+
+interface ContextConsumerProps<T> {
+  context: React.Context<T>;
+  contextRef?: React.RefObject<T>;
+}
+
+export function ContextConsumer<T>(props: ContextConsumerProps<T>) {
+  const context = React.useContext(props.context);
+  if (props.contextRef) {
+    setRefValue(props.contextRef, context);
+  }
+  return <></>;
 }

@@ -58,7 +58,7 @@ export const TestDiagnosticCodes = {
   FailingConstantDiagnostic: getCode(20),
 };
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const TestDiagnostics = {
   FailingSchemaDiagnostic: Diagnostics.createSchemaDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingSchemaDiagnostic,
     "Failed with param {0} {1}"),
@@ -833,4 +833,12 @@ export class PassingRuleSet implements IRuleSet {
   public constantRules = [
     sinon.spy(passingConstantRule),
   ];
+}
+
+export async function toArray(asyncIterable: AsyncIterable<Diagnostics.AnyDiagnostic>): Promise<Diagnostics.AnyDiagnostic []> {
+  const result: Diagnostics.AnyDiagnostic [] = [];
+  for await (const value of asyncIterable) {
+    result.push(value);
+  }
+  return result;
 }

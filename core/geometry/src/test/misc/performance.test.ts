@@ -8,14 +8,14 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {
   const savedFlag = Matrix3d.useCachedInverse;
   const matrix = Matrix3dOps.createRowValues(
     5, 1, 2,
     3, 8, 2,
-    1, -2, 8) as Matrix3d;
+    1, -2, 8);
   // Give result storage a temporary value
   let inverse: Matrix3d = Matrix3d.createIdentity();
 
@@ -23,8 +23,7 @@ function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResul
     Matrix3d.useCachedInverse = true;
   else
     Matrix3d.useCachedInverse = false;
-  const name: string = "Matrix3d inverse "
-    + (usingCache ? "Cache" : "NoCache") + " " + (usingResult ? "preallocate" : "new");
+  const name: string = `Matrix3d inverse ${usingCache ? "Cache" : "NoCache"} ${usingResult ? "preallocate" : "new "}`;
 
   if (usingResult) {
     console.time(name);
@@ -61,7 +60,7 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
       name = "Math_HypotenuseXY";
       console.time(name);
       for (let i = 0; i < numTest; i++) {
-        // tslint:disable-next-line:ban
+        // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5);
       }
       console.timeEnd(name);
@@ -81,7 +80,7 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
       name = "Math_HypotenuseXYZ";
       console.time(name);
       for (let i = 0; i < numTest; i++) {
-        // tslint:disable-next-line:ban
+        // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5, 2);
       }
       console.timeEnd(name);
@@ -101,7 +100,7 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
       name = "Math_HypotenuseXYZW";
       console.time(name);
       for (let i = 0; i < numTest; i++) {
-        // tslint:disable-next-line:ban
+        // eslint-disable-next-line no-restricted-properties
         Math.hypot(10, -5, 2, 7);
       }
       console.timeEnd(name);
@@ -407,7 +406,7 @@ class TimingTests {
     console.timeEnd("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
 
     for (let numReps = 0; numReps < 20; numReps = 3 * numReps + 1) {
-      const name = "Matrix3dOps.multiplyMatrixMatrixdirectAssignment (numReps " + numReps + ")";
+      const name = `Matrix3dOps.multiplyMatrixMatrixdirectAssignment (numReps ${numReps}`;
       console.time(name);
       for (let k = 0; k < numTest; k++)
         matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignmentN(numReps, matrixA, matrixB, matrixD);

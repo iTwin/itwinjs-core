@@ -1,6 +1,0 @@
-{
-  "extends": "@bentley/build-tools/tslint.json",
-  "rules": {
-    "callable-types": false
-  }
-}

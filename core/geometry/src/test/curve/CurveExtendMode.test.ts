@@ -8,7 +8,7 @@ import { CurveExtendMode, CurveExtendOptions } from "../../curve/CurveExtendMode
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("CurveExtendMode", () => {
 

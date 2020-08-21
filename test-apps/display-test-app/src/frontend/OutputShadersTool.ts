@@ -326,7 +326,7 @@ export class OutputShadersTool extends Tool {
   public run(usedFlag: string, typeFlag: string, langFlag: string, outputDir: string): boolean {
     const dsf = IModelApp.renderSystem.debugControl?.debugShaderFiles;
     if (undefined !== dsf && dsf.length > 0)
-      outputShaders(dsf, usedFlag, typeFlag, langFlag, outputDir); // tslint:disable-line:no-floating-promises
+      outputShaders(dsf, usedFlag, typeFlag, langFlag, outputDir); // eslint-disable-line @typescript-eslint/no-floating-promises
     else
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No shaders (did you define SVT_DEBUG_SHADERS?)"));
 

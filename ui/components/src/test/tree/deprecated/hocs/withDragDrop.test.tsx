@@ -16,13 +16,13 @@ import { BeInspireTree } from "../../../../ui-components/tree/deprecated/compone
 import { DEPRECATED_withTreeDragDrop } from "../../../../ui-components/tree/deprecated/hocs/withDragDrop";
 import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("Tree withDragDrop HOC", () => {
 
   afterEach(cleanup);
 
-  const DragDropTree = DEPRECATED_withTreeDragDrop(Tree); // tslint:disable-line:variable-name
+  const DragDropTree = DEPRECATED_withTreeDragDrop(Tree); // eslint-disable-line @typescript-eslint/naming-convention
 
   it("should render", () => {
     const tree = [{ label: PropertyRecord.fromString("Raw Node", "label"), id: "1", description: "node description" }];

@@ -15,13 +15,13 @@ import { Angle } from "../geometry3d/Angle";
 export class Complex implements BeJSONFunctions {
   private _x: number;
   /** Real part */
-  get x(): number { return this._x; }
-  set x(value: number) { this._x = value; }
+  public get x(): number { return this._x; }
+  public set x(value: number) { this._x = value; }
 
   private _y: number;
   /** Imaginary part */
-  get y(): number { return this._y; }
-  set y(value: number) { this._y = value; }
+  public get y(): number { return this._y; }
+  public set y(value: number) { this._y = value; }
 
   public constructor(x: number = 0, y: number = 0) { this._x = x; this._y = y; }
   /** set x and y parts from args. */

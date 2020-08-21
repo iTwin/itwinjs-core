@@ -10,7 +10,7 @@ import * as multiparty from "multiparty";
 import * as FormData from "form-data";
 import { BentleyStatus, HttpServerRequest, IModelError, MobileRpcGateway, MobileRpcProtocol, RpcMultipart, RpcSerializedValue } from "@bentley/imodeljs-common";
 import * as ws from "ws";
-import { Device, DeviceRpc } from "./Device";
+import { MobileDevice } from "./MobileDevice";
 
 let initialized = false;
 
@@ -114,7 +114,7 @@ class MobileRpcServer {
     (global as any).__imodeljsRpcPort = this._port;
 
     if (this._connectionId !== 0) {
-      (Device.currentDevice as DeviceRpc).reconnect!(this._port);
+      MobileDevice.currentDevice.reconnect(this._port);
     }
   }
 
@@ -174,7 +174,7 @@ class MobileRpcServer {
 function setupMobileRpc() {
   let server: MobileRpcServer | null = new MobileRpcServer();
 
-  Device.currentDevice.onEnterBackground.addListener(() => {
+  MobileDevice.currentDevice.onEnterBackground.addListener(() => {
     if (server === null) {
       return;
     }
@@ -183,7 +183,7 @@ function setupMobileRpc() {
     server = null;
   });
 
-  Device.currentDevice.onEnterForeground.addListener(() => {
+  MobileDevice.currentDevice.onEnterForeground.addListener(() => {
     server = new MobileRpcServer();
   });
 

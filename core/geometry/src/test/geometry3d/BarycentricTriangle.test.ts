@@ -11,7 +11,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 // cspell:word subtriangle
 function verifyTriangle(ck: Checker, triangle: BarycentricTriangle) {
   const centroid = triangle.centroid();

@@ -17,7 +17,7 @@ import {
 } from "../../numerics/Polynomials";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console no-trailing-whitespace */
+/* eslint-disable no-console, no-trailing-spaces */
 
 // Toggle for printing in cubic & quartic testers
 const printAll = false;
@@ -55,7 +55,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
       AnalyticRoots.appendQuadraticRoots(Float64Array.from(quadric.coffs), roots);
       if (ck.testPointer(roots) && roots) {
         roots.sort(compare);
-        ck.testExactNumber(roots.length, 1, "SolveQuadric s = [" + i + ", " + i + "]");
+        ck.testExactNumber(roots.length, 1, `SolveQuadric s = [${i}, ${i}]`);
         ck.testCoordinate(roots.atUncheckedIndex(0), i, "Quadratic double root");
       }
     }
@@ -254,13 +254,13 @@ function maxDiffMatchedArrays(target: number[], actual: GrowableFloat64Array) {
   return NumberArray.maxAbsDiff(target, tempArray);
 }
 
-function NewtonStep(coffs: Float64Array, u: number) {
+function newtonStep(coffs: Float64Array, u: number) {
   const f = coffs[0] + u * (coffs[1] + u * (coffs[2] + u * coffs[3]));
   const df = coffs[1] + u * (2.0 * coffs[2] + u * 3.0 * coffs[3]);
   return (f / df);
 }
 
-function NewtonStep4(coffs: Float64Array, u: number) {
+function newtonStep4(coffs: Float64Array, u: number) {
   const f = coffs[0] + u * (coffs[1] + u * (coffs[2] + u * (coffs[3] + u * coffs[4])));
   const df = coffs[1] + u * (2.0 * coffs[2] + u * (3.0 * coffs[3] + u * 4.0 * coffs[4]));
   return f / df;
@@ -289,8 +289,8 @@ describe("AnalyticRoots.SolveCubic", () => {
         ck.testTrue(eMax < (1.0e-14 * (1.0 + NumberArray.maxAbsArray(target))), "root error");
 
         if (Checker.noisy.cubicRoots) {
-          console.log("  (target " + a + ") (b " + b + ")");
-          console.log("  (actual " + a + ") (eMax " + eMax + ")");
+          console.log(`  (target ${a}) (b ${b} + )`);
+          console.log(`  (actual ${actual}) (eMax ${eMax})`);
         }
       }
     }
@@ -308,7 +308,7 @@ describe("AnalyticRoots.SolveCubic", () => {
         const u1 = x0;
         const u2 = x0 + 1;
         if (Checker.noisy.cubicRoots)
-          console.log("\n\n Cubic Roots for ", [u0, u1, u2], { ee: e, x00: x0 });
+          console.log(`Cubic Roots for [${u0}, ${u1}, ${u2}]`, { ee: e, x00: x0 });
 
         const coffs = new Float64Array(4);
         coffs[3] = 1.0;
@@ -330,13 +330,10 @@ describe("AnalyticRoots.SolveCubic", () => {
           if (printAll || (eSafe >= (printTrigger * uMax * uMax / e))) {
             // Check::True (eMax < 1.0e-14 * DoubleOps::MaxAbs (target), "root error");
             console.log("Cubic root variances.  These may be expected behavior under extreme origin conditions");
-            console.log("   (known roots " + target[0] + " " + target[1] + " " + target[2] +
-              ") (eMax " + eMax + ") (eSafe " + eSafe + ")");
-            console.log("   (computed roots " + actual.atUncheckedIndex(0) + " " + actual.atUncheckedIndex(1) + " " + actual.atUncheckedIndex(2) + ")");
-            console.log("   (correction by newton from computed root  " + NewtonStep(coffs, actual.atUncheckedIndex(0)) +
-              " " + NewtonStep(coffs, actual.atUncheckedIndex(1)) + " " + NewtonStep(coffs, actual.atUncheckedIndex(2)) + ")");
-            console.log("   (correction by newton from known root  " + NewtonStep(coffs, target[0]) +
-              " " + NewtonStep(coffs, target[1]) + " " + NewtonStep(coffs, target[2]) + ")");
+            console.log(`   (known roots ${target[0]} ${target[1]} ${target[2]})  (eMax ${eMax}) (eSafe ${eSafe}`);
+            console.log(`   (computed roots ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)}`);
+            console.log(`   (correction by newton from computed root  ${newtonStep(coffs, actual.atUncheckedIndex(0))} ${newtonStep(coffs, actual.atUncheckedIndex(1))} ${newtonStep(coffs, actual.atUncheckedIndex(2))}`);
+            console.log(`   (correction by newton from known root  ${newtonStep(coffs, target[0])} ${newtonStep(coffs, target[1])} ${newtonStep(coffs, target[2])}`);
           }
         }
 
@@ -411,7 +408,7 @@ describe("AnalyticRoots.SolveCubic", () => {
     */
 });
 
-function CheckQuartic(u0: number, u1: number, u2: number, u3: number, tolerance: number, ck: Checker) {
+function checkQuartic(u0: number, u1: number, u2: number, u3: number, tolerance: number, ck: Checker) {
   const coffs = new Float64Array(5);
   coffs[4] = 1.0;
   coffs[3] = - NumberArray.preciseSum([u0, u1, u2, u3]);
@@ -440,23 +437,21 @@ function CheckQuartic(u0: number, u1: number, u2: number, u3: number, tolerance:
   const ok: boolean = ck.testTrue(eMax < tolerance, "quartic root tolerance", eMax, tolerance);
   // Accurate when compared to multiple of 1.0e-8... any higher negative power likely to fail
   if (Checker.noisy.quarticRoots) {
-    console.log("   (actual " + actual.atUncheckedIndex(0) + " " + actual.atUncheckedIndex(1) + " " + actual.atUncheckedIndex(2) + " " + actual.atUncheckedIndex(3) + ")");
-    console.log("   (target " + target[0] + " " + target[1] + " " + target[2] + " " + target[3] + ")");
+    console.log(`   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)})`);
+    console.log(`   (target ${target[0]} ${target[1]} ${target[2]} ${target[3]})`);
 
   }
 
   // Additional testing based on NewtonStep
   for (let step = 0; (step < 10) && (eMax > 1.0e-14); step++) {
     if (!ok || printAll) {
-      console.log("   (actualDX   " + NewtonStep4(coffs, actual.atUncheckedIndex(0)) + " " + NewtonStep4(coffs, actual.atUncheckedIndex(1)) + " " +
-        NewtonStep4(coffs, actual.atUncheckedIndex(2)) + " " + NewtonStep4(coffs, actual.atUncheckedIndex(3)) + ")");
+      console.log(`   (actualDX   ${newtonStep4(coffs, actual.atUncheckedIndex(0))} ${newtonStep4(coffs, actual.atUncheckedIndex(1))} ${newtonStep4(coffs, actual.atUncheckedIndex(2))} ${newtonStep4(coffs, actual.atUncheckedIndex(3))} `);
       for (let k = 0; k < actual.length; k++) {
-        actual.reassign(k, actual.atUncheckedIndex(k) - NewtonStep4(coffs, actual.atUncheckedIndex(k)));
+        actual.reassign(k, actual.atUncheckedIndex(k) - newtonStep4(coffs, actual.atUncheckedIndex(k)));
       }
       eMax = matchRoots(target, actual) / uMax;
       if (!ok || printAll) {
-        console.log("   (actual " + actual.atUncheckedIndex(0) + " " + actual.atUncheckedIndex(1) + " " + actual.atUncheckedIndex(2) + " " + actual.atUncheckedIndex(3) + "   (eMax " +
-          eMax + ")");
+        console.log(`   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)}   (eMax ${eMax}) `);
       }
     }
   }
@@ -467,7 +462,7 @@ describe("AnalyticRoots.CheckQuartic", () => {
 
   it("CheckQuartic.TightTol", () => {
     const tightTol = 1.0e-15;
-    CheckQuartic(0, 1, 2, 3, tightTol, ck);
+    checkQuartic(0, 1, 2, 3, tightTol, ck);
     ck.checkpoint("SolveQuartic");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -475,11 +470,11 @@ describe("AnalyticRoots.CheckQuartic", () => {
   it("CheckQuartic.MediumTol", () => {
     const mediumTol = 1.0e-10;
     for (const delta of [1, 3, 7, 10]) {
-      CheckQuartic(-11, -10, 10, 10 + delta, mediumTol, ck);
+      checkQuartic(-11, -10, 10, 10 + delta, mediumTol, ck);
     }
     // Symmetry with varying speed
     for (const delta of [0.1, 1, 5, 10]) {
-      CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
+      checkQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
       // CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
       // CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
     }
@@ -493,7 +488,7 @@ describe("AnalyticRoots.CheckQuartic", () => {
     const b = 1000.0;
     const e = 1.0;
     for (const factor of [1, 0.1, 3, 6, 100]) {
-      CheckQuartic(a, a + e, b, b + e / factor, looseTol, ck);
+      checkQuartic(a, a + e, b, b + e / factor, looseTol, ck);
       // This has a bad failure for factor ==3 when factor1 is applied.
       // const factor1 = 1.0 / 64;
       // CheckQuartic (a * factor1, (a + e) * factor1, b * factor1, (b + e / factor) * factor1, looseTol, ck);
@@ -689,7 +684,7 @@ it("NickelsA", () => {
           // Easy to confirm that the returned roots are in fact roots.
           // This does NOT confirm that all roots were found.
           for (let i = 0; i < roots.length; i++)
-            ck.testCoordinate(0, cubic.evaluate(roots.atUncheckedIndex (i)), " abcd", a, b, c, d);
+            ck.testCoordinate(0, cubic.evaluate(roots.atUncheckedIndex(i)), " abcd", a, b, c, d);
         }
       }
     }

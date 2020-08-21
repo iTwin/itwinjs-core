@@ -233,6 +233,8 @@ const argv = yargs.strict(true)
       } else
         process.stdout.write(prettyPrint(extensions));
       break;
+    default:
+      throw new Error(`Unknown command: ${command}`);
   }
 
   await IModelHost.shutdown();

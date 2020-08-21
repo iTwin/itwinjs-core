@@ -35,6 +35,21 @@ describe("FrameworkUiAdmin", () => {
     expect(uiAdmin.cursorPosition.y).to.eq(200);
   });
 
+  it("setFocusToHome should set focus to home", () => {
+    const buttonElement = document.createElement("button");
+    document.body.appendChild(buttonElement);
+    buttonElement.focus();
+    let activeElement = document.activeElement as HTMLElement;
+    expect(activeElement === buttonElement).to.be.true;
+    expect(uiAdmin.isFocusOnHome).to.be.false;
+
+    uiAdmin.setFocusToHome();
+    activeElement = document.activeElement as HTMLElement;
+    expect(activeElement === document.body).to.be.true;
+    expect(uiAdmin.isFocusOnHome).to.be.true;
+    document.body.removeChild(buttonElement);
+  });
+
   it("showContextMenu should return true", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
       { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },

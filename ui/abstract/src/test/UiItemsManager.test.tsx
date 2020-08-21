@@ -20,7 +20,7 @@ class TestUiItemsProvider implements UiItemsProvider {
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool", 200, "icon-developer", "simple-test-action-tool",
         (): void => {
-          // tslint:disable-next-line: no-console
+          // eslint-disable-next-line no-console
           console.log("Got Here!");
         });
       return [simpleActionSpec];
@@ -36,7 +36,7 @@ class TestUiItemsProvider implements UiItemsProvider {
       statusBarItems.push(
         AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
           () => {
-            // tslint:disable-next-line: no-console
+            // eslint-disable-next-line no-console
             console.log("Got Here!");
           }));
 

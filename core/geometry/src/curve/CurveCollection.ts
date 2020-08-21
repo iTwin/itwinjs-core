@@ -51,7 +51,7 @@ export abstract class CurveCollection extends GeometryQuery {
   /** Type discriminator. */
   public abstract readonly curveCollectionType: CurveCollectionType;
 
-  /* tslint:disable:variable-name no-empty*/
+  /* eslint-disable @typescript-eslint/naming-convention, no-empty */
   /**  Flag for inner loop status. Only used by `Loop`. */
   public isInner: boolean = false;
   /** Return the sum of the lengths of all contained curves. */
@@ -268,7 +268,7 @@ export abstract class CurveChain extends CurveCollection {
   public primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(index: number, fraction: number, cyclic: boolean = false, result?: CurveLocationDetail): CurveLocationDetail | undefined {
     const primitive = this.cyclicCurvePrimitive(index, cyclic);
     if (primitive) {
-      return  CurveLocationDetail.createCurveEvaluatedFractionPointAndDerivative(primitive, fraction, result);
+      return CurveLocationDetail.createCurveEvaluatedFractionPointAndDerivative(primitive, fraction, result);
     }
     return undefined;
   }
@@ -314,11 +314,11 @@ export class BagOfCurves extends CurveCollection {
     for (child of this.children) {
       if (child instanceof CurvePrimitive) {
         const ls = LineString3d.create();
-        (child as CurvePrimitive).emitStrokes(ls, options);
+        child.emitStrokes(ls, options);
         if (ls)
           clone.children.push(ls);
       } else if (child instanceof CurveCollection) {
-        const childStrokes = (child as CurveCollection).cloneStroked(options);
+        const childStrokes = child.cloneStroked(options);
         if (childStrokes)
           clone.children.push(childStrokes);
       }

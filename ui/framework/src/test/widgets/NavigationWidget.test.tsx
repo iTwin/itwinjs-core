@@ -44,10 +44,10 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidgetDef from WidgetProps", () => {
 
-    const widgetDef = new NavigationWidgetDef(widgetProps); // tslint:disable-line:deprecation
-    expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // tslint:disable-line:deprecation
+    const widgetDef = new NavigationWidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
+    expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // eslint-disable-line deprecation/deprecation
 
-    const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
+    const navigationWidgetDef = widgetDef as NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
 
     const reactNode = navigationWidgetDef.reactNode;
     expect(reactNode).to.not.be.undefined;
@@ -80,7 +80,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should render", () => {
     const wrapper = mount(
-      <NavigationWidget // tslint:disable-line:deprecation
+      <NavigationWidget // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />,
@@ -90,7 +90,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should render correctly", () => {
     shallow(
-      <NavigationWidget // tslint:disable-line:deprecation
+      <NavigationWidget // eslint-disable-line deprecation/deprecation
         id="navigationWidget"
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
@@ -103,7 +103,7 @@ describe("NavigationWidget", () => {
     const vItemList = new ItemList([CoreTools.fitViewCommand]);
 
     const wrapper = mount(
-      <NavigationWidget // tslint:disable-line:deprecation
+      <NavigationWidget // eslint-disable-line deprecation/deprecation
         horizontalItems={hItemList}
         verticalItems={vItemList}
       />,
@@ -113,7 +113,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should support update", () => {
     const wrapper = mount(
-      <NavigationWidget // tslint:disable-line:deprecation
+      <NavigationWidget // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />,
@@ -144,7 +144,7 @@ describe("NavigationWidget", () => {
   }
 
   it("NavigationWidgetDef with invalid navigation aid should throw Error", () => {
-    const def = new NavigationWidgetDef({ // tslint:disable-line:deprecation
+    const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
       navigationAidId: "Aid1",
     });
     ConfigurableUiManager.registerControl("Aid1", TestContentControl);
@@ -153,7 +153,7 @@ describe("NavigationWidget", () => {
   });
 
   it("NavigationWidgetDef should handle updateNavigationAid", () => {
-    const def = new NavigationWidgetDef({ // tslint:disable-line:deprecation
+    const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
       navigationAidId: "Aid1",
     });
     ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);

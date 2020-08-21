@@ -33,7 +33,7 @@ function getUrl(content: any) {
 interface RealityTreeId {
   url: string;
   transform?: Transform;
-  modelId?: Id64String;
+  modelId: Id64String;
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
@@ -65,8 +65,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: RealityTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    const modelId = undefined !== treeId.modelId ? treeId.modelId : iModel.transientIds.next;
-    return RealityModelTileTree.createRealityModelTileTree(treeId.url, iModel, modelId, treeId.transform);
+    return RealityModelTileTree.createRealityModelTileTree(treeId.url, iModel, treeId.modelId, treeId.transform);
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
@@ -346,6 +345,7 @@ export class RealityModelTileTree extends RealityTileTree {
 }
 
 /** @internal */
+// eslint-disable-next-line no-redeclare
 export namespace RealityModelTileTree {
   export interface ReferenceProps {
     url: string;
@@ -394,9 +394,10 @@ export namespace RealityModelTileTree {
       if (undefined !== ecefLocation) {
         const carto = Cartographic.fromEcef(realityToEcef.getOrigin());
         const ypr = YawPitchRollAngles.createFromMatrix3d(rootTransform.matrix);
-        // If the reality model is located in the same region and height then align the cartesian systems as otherwise different origins
-        // will result in a misalignment from the curvature of the earth.
-        if (undefined !== ypr && undefined !== carto && Math.abs(ypr.pitch.degrees) < .5 && Math.abs(ypr.roll.degrees) < .5 && carto.height < 300.0) {
+        // If the reality model is located in the same region and height and their is significant misalighment in their orientation,
+        //  then align the cartesian systems as otherwise different origins
+        // can result in a misalignment from the curvature of the earth. (EWR - large point cloud)
+        if (undefined !== ypr && undefined !== carto && (Math.abs(ypr.pitch.degrees) > 1.0E-6 || Math.abs(ypr.roll.degrees) > 1.0E-6) && carto.height < 300.0) {
           ypr.pitch.setRadians(0);
           ypr.roll.setRadians(0);
           ypr.toMatrix3d(rootTransform.matrix);
@@ -416,12 +417,15 @@ export namespace RealityModelTileTree {
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
  * @internal
  */
-class RealityTreeReference extends RealityModelTileTree.Reference {
-  public readonly treeOwner: TileTreeOwner;
+export class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _name: string;
   private readonly _url: string;
   private readonly _classifier?: SpatialClassifierTileTreeReference;
   private _mapDrapeTree?: TileTreeReference;
+  private _transform?: Transform;
+  private _modelId: Id64String;
+  private _iModel: IModelConnection;
+  public get modelId() { return this._modelId; }
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super();
@@ -432,13 +436,18 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
         transform = tf;
     }
 
-    const treeId = { url: props.url, transform, modelId: props.modelId };
-    this.treeOwner = realityTreeSupplier.getOwner(treeId, props.iModel);
     this._name = undefined !== props.name ? props.name : "";
     this._url = props.url;
+    this._transform = transform;
+    this._iModel = props.iModel;
+    this._modelId = props.modelId ? props.modelId : this._iModel.transientIds.next;
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
+  }
+  public get treeOwner(): TileTreeOwner {
+    const treeId = { url: this._url, transform: this._transform, modelId: this._modelId };
+    return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 
   public get castsShadows() {

@@ -7,7 +7,6 @@ import {
   getDefaultNineZoneStagePanelsManagerProps, NineZoneNestedStagePanelsManager, NineZoneStagePanelsManager, StagePanelType,
 } from "../../ui-ninezone";
 
-// tslint:disable-next-line: completed-docs
 export const getDefaultProps = () => ({
   panels: {
     0: {

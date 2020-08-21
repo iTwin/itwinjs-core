@@ -18,7 +18,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("ConvexClipPlaneSet", () => {
   it("HelloWorld", () => {
@@ -94,6 +94,8 @@ describe("ConvexClipPlaneSet", () => {
     setC.setInvisible(true);
     expect(ck.getNumErrors()).equals(0);
   });
+  // allow XOR etc as property names
+  /* eslint-disable @typescript-eslint/naming-convention */
   it("parser", () => {
     const ck = new Checker();
     const boxA = ConvexClipPlaneSet.createXYBox(1, 2, 3, 5);

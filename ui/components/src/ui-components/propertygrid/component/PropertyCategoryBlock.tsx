@@ -7,6 +7,7 @@
  */
 
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, ExpandableBlock } from "@bentley/ui-core";
 import { PropertyCategory } from "../PropertyDataProvider";
 
@@ -40,12 +41,12 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
   }
 
   private _onKeyPress = (evt: React.KeyboardEvent<HTMLDivElement>) => {
-    /// Prevent page from scrolling when clicking [Space]:
-    if (evt.key === " ") {
+    // Prevent page from scrolling when clicking [Space]:
+    if (evt.key === SpecialKey.Space) {
       evt.preventDefault();
     }
-    /// [Space] and [Enter] toggle the block:
-    if (evt.key === " " || evt.key === "Enter") {
+    // [Space] and [Enter] toggle the block:
+    if (evt.key === SpecialKey.Space || evt.key === SpecialKey.Enter) {
       this.toggleExpansion();
     }
   }

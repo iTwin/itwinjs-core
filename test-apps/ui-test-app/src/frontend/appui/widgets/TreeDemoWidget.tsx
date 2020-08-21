@@ -14,7 +14,7 @@ import { ChildDragLayer } from "./draglayers/ChildDragLayer";
 import { ParentDragLayer } from "./draglayers/ParentDragLayer";
 import { Checkbox } from "@bentley/ui-core";
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const DragDropTree = DEPRECATED_withTreeDragDrop<TreeProps, DemoTreeDragDropType>(DEPRECATED_Tree);
 
 export class TreeDemoWidgetControl extends WidgetControl {

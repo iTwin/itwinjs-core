@@ -14,7 +14,7 @@ import { SafeAreaInsets } from "@bentley/ui-ninezone";
  * Context used to manage safe area (feature used by devices with non-rectangular screens).
  * @alpha
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SafeAreaContext = React.createContext<SafeAreaInsets>(SafeAreaInsets.None);
 
 interface InjectedWithSafeAreaProps {
@@ -25,7 +25,7 @@ interface InjectedWithSafeAreaProps {
  * @alpha
  */
 export const withSafeArea = <P extends InjectedWithSafeAreaProps, C>(
-  // tslint:disable-next-line: variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.JSXElementConstructor<P> & C,
 ) => {
   type Props = JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>;

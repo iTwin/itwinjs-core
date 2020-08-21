@@ -14,6 +14,7 @@ import { CommandItemDef } from "../shared/CommandItemDef";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
+import { UiFramework } from "../UiFramework";
 
 /** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  *  @public @deprecated use ToolWidgetComposer instead
@@ -21,6 +22,7 @@ import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
   private _reactNode: React.ReactNode;
+  private _backstageLabel = UiFramework.translate("buttons.openBackstageMenu");
 
   constructor(props: ToolWidgetProps) {
     super(props);
@@ -56,6 +58,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
           icon={
             <Icon iconSpec={this._appButton.iconSpec} />
           }
+          title={this._appButton.tooltip || this._backstageLabel}
         />
       );
     }
@@ -77,26 +80,26 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
  * @internal
  */
 interface ToolWidgetState {
-  toolWidgetDef: ToolWidgetDef; // tslint:disable-line:deprecation
+  toolWidgetDef: ToolWidgetDef; // eslint-disable-line deprecation/deprecation
 }
 
 /** ToolWidget React component.
  *  @public @deprecated use ToolWidgetComposer instead
  */
-export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> { // tslint:disable-line:deprecation
+export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> { // eslint-disable-line deprecation/deprecation
 
   /** @internal */
   public readonly state: Readonly<ToolWidgetState>;
 
-  constructor(props: ToolWidgetPropsEx) { // tslint:disable-line:deprecation
+  constructor(props: ToolWidgetPropsEx) { // eslint-disable-line deprecation/deprecation
     super(props);
 
-    this.state = { toolWidgetDef: new ToolWidgetDef(props) }; // tslint:disable-line:deprecation
+    this.state = { toolWidgetDef: new ToolWidgetDef(props) }; // eslint-disable-line deprecation/deprecation
   }
 
-  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) { // tslint:disable-line:deprecation
+  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) { // eslint-disable-line deprecation/deprecation
     if (this.props !== prevProps) {
-      this.setState((_, props) => ({ toolWidgetDef: new ToolWidgetDef(props) })); // tslint:disable-line:deprecation
+      this.setState((_, props) => ({ toolWidgetDef: new ToolWidgetDef(props) })); // eslint-disable-line deprecation/deprecation
     }
   }
 
@@ -117,7 +120,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 /** Properties for the Tool Widget React component.
  */
 interface Props extends CommonProps {
-  toolWidgetDef: ToolWidgetDef; // tslint:disable-line:deprecation
+  toolWidgetDef: ToolWidgetDef; // eslint-disable-line deprecation/deprecation
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;

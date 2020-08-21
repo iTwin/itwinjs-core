@@ -24,6 +24,7 @@ describe("useVisibleTreeNodes", () => {
     getModel: () => new MutableTreeModel(),
     getNumNodes: () => 0,
     getNumRootNodes: () => 0,
+    getIndexOfNode: () => -1,
     [Symbol.iterator]: () => [][Symbol.iterator](),
   };
 
@@ -179,7 +180,7 @@ describe("usePagedTreeNodeLoader", () => {
     const firstNodeLoader = result.current;
     rerender({ dataProvider: dataProviderMock, pageSize: 20, modelSource: modelSourceMock.object });
 
-    expect(result.current).to.not.be.deep.eq(firstNodeLoader!);
+    expect(result.current).to.not.be.deep.eq(firstNodeLoader);
   });
 
 });

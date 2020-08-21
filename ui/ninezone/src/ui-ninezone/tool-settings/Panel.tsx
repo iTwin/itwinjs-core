@@ -25,6 +25,7 @@ export interface ToolSettingsOverflowPanelProps extends CommonProps {
 /** Displays overflown tool settings.
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps) {
   const className = classnames(
     "nz-toolSettings-panel",
@@ -37,7 +38,7 @@ export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps)
       offset={0}
       onClose={props.onClose}
       style={props.style}
-      showShadow={false}
+      showShadow={true}
       target={props.target}
     >
       {props.children}

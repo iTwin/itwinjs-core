@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
 import * as faker from "faker";
@@ -141,7 +140,7 @@ describe("FilteredTreeDataProvider", () => {
   describe("getFilteredNodePaths", () => {
 
     it("calls parent data provider", async () => {
-      parentProviderMock.setup((x) => x.getFilteredNodePaths(filter))
+      parentProviderMock.setup(async (x) => x.getFilteredNodePaths(filter))
         .returns(async () => nodePaths)
         .verifiable();
 

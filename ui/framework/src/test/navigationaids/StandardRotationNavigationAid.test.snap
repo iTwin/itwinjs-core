@@ -15,6 +15,7 @@ exports[`StandardRotationNavigationAid <StandardRotationNavigationAid /> renders
         />
       }
       onClick={[Function]}
+      title="standardRotationNavigationAid.title"
     />
   </ExpandableButton>
   <Popup

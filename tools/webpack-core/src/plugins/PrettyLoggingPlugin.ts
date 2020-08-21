@@ -36,7 +36,7 @@ export class PrettyLoggingPlugin {
     this._formatter = formatter || ((s) => s);
   }
 
-  get isInteractive() { return process.stdout.isTTY && this._isWatch; }
+  public get isInteractive() { return process.stdout.isTTY && this._isWatch; }
 
   private clearIfInteractive() {
     if (this.isInteractive) {
@@ -103,7 +103,7 @@ export class PrettyLoggingPlugin {
         this.printHeading("Compiled with warnings", "yellow", elapsed);
       console.log(warnings.join("\n\n"));
       console.log(`\nSearch for the ${chalk.underline(chalk.yellow("keywords"))} to learn more about tslint warnings.`);
-      console.log(`To ignore a tslint warning, add ${chalk.cyan("// tslint-disable-next-line")} to the line before.\n`);
+      console.log(`To ignore an eslint warning, add ${chalk.cyan("// eslint-disable-next-line")} to the line before.\n`);
       if (!this.isInteractive)
         this.printHeading("Compiled with warnings", "yellow", elapsed);
       return false;

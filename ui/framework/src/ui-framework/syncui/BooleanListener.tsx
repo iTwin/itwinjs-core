@@ -86,8 +86,10 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
 
   public render(): React.ReactNode {
     const {
-      children, eventIds, boolFunc, defaultValue, // do not bleed our props
-      ...otherProps /* tslint:disable-line: trailing-comma */ // pass-through props
+      // do not bleed our props
+      children, eventIds, boolFunc, defaultValue, // eslint-disable-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line comma-dangle
+      ...otherProps // pass-through props
     } = this.props as any;
     const boolValue = this.state.boolValue;
 

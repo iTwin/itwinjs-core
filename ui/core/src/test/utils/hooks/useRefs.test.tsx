@@ -17,7 +17,7 @@ describe("useRefs", () => {
       mutableRef = React.useRef<string | null>(null);
       return useRefs(ref, mutableRef, callbackRef);
     });
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current("abc");
     });
 

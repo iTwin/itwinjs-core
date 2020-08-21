@@ -57,6 +57,7 @@ internal;BingMapsImageryLayerProvider
 beta;BlankConnection 
 beta;BlankConnectionProps
 public;class BriefcaseConnection 
+internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
@@ -80,7 +81,7 @@ internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
 internal;createEmptyRenderPlan(): RenderPlan
-internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference
+internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
@@ -89,7 +90,7 @@ internal;CurrentState
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
-public;Decorator
+public;Decorator 
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
@@ -143,7 +144,8 @@ alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureOverrideType
 public;FeatureSymbology
-alpha;AppearanceProvider
+deprecated;Appearance 
+deprecated;AppearanceProps 
 alpha;FeatureTrackingManager
 alpha;FeatureTrackingProps
 alpha;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -158,6 +160,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
+public;FrontendSecurityOptions
 public;Frustum2d
 public;FuzzySearch
 public;FuzzySearchResult
@@ -221,6 +224,7 @@ public;IModelAppOptions
 public;class IModelConnection 
 public;IModelConnection
 internal;IModelFrameLifecycle
+public;IModelRoutingContext
 internal;IModelTile 
 internal;IModelTileContent 
 internal;IModelTileParams 
@@ -284,9 +288,11 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
+alpha;MobileAuthorizationClient 
 internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
+internal;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
@@ -339,6 +345,7 @@ internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
+internal;RealityTreeReference 
 public;RemoteBriefcaseConnection 
 beta;class RenderClipVolume 
 public;RenderContext
@@ -405,6 +412,7 @@ internal;SpatialModelTileTrees
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
+internal;StandaloneConnection 
 public;StandardView
 public;StandardViewId
 public;StandardViewTool 
@@ -431,6 +439,7 @@ internal;TileAvailability
 internal;TileBoundingBoxes
 beta;TileContent
 beta;TiledGraphicsProvider
+beta;TileDrawArgParams
 beta;TileDrawArgs
 beta;TileGraphicType
 beta;TileLoadPriority
@@ -508,6 +517,7 @@ internal;class ViewingToolHandle
 public;ViewManager
 public;class ViewManip 
 public;class Viewport 
+public;ViewportDecorator
 public;class ViewPose
 internal;ViewPose2d 
 internal;ViewPose3d 

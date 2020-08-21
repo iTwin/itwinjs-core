@@ -263,7 +263,7 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
       }
       default: {
         const points: Point2d[] = [];
-        // tslint:disable-next-line:prefer-for-of
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < list.length; i++) {
           points.push(this.getTouchPosition(list[i], vp));
         }
@@ -274,7 +274,7 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
     }
   }
   public static findTouchById(list: TouchList, id: number): Touch | undefined {
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < list.length; i++) {
       if (id === list[i].identifier)
         return list[i];
@@ -773,7 +773,7 @@ export class ToolRegistry {
    * @param modelObj the module to search for subclasses of Tool.
    */
   public registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N) {
-    for (const thisMember in moduleObj) {  // tslint:disable-line: forin
+    for (const thisMember in moduleObj) {  // eslint-disable-line guard-for-in
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
         this.register(thisTool, namespace, i18n);

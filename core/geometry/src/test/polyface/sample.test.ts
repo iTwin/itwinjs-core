@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 
 // import { expect } from "chai";
 // import { Checker } from "../Checker";
@@ -18,15 +18,14 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { ClippedPolyfaceBuilders, PolyfaceClip} from "../../polyface/PolyfaceClip";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { Angle } from "../../geometry3d/Angle";
-import { IndexedPolyface } from "../../polyface/Polyface";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 describe("MeshConstruction", () => {
-/**
- * Example of constructing a plate with holes.
- * * Request by Samuel Powell, Bechtel
- */
+  /**
+   * Example of constructing a plate with holes.
+   * * Request by Samuel Powell, Bechtel
+   */
   it("PlateWithHoles", () => {
     const geometryToSave: GeometryQuery[] = [];
     const a = 10;
@@ -67,8 +66,8 @@ describe("MeshConstruction", () => {
     // generate the holes as mesh clips with swept arcs converted ton ConvexClipPlaneSets . ..
     for (const baseLoop of plateBaseWithHoles.children) {
       if (baseLoop instanceof Loop && baseLoop.children[0] instanceof Arc3d) {
-        const options = StrokeOptions.createForCurves ();
-        options.angleTol = Angle.createDegrees (90);
+        const options = StrokeOptions.createForCurves();
+        options.angleTol = Angle.createDegrees(90);
         const strokes = baseLoop.getPackedStrokes(options)!;
         const clipperA = ConvexClipPlaneSet.createSweptPolyline(strokes.getPoint3dArray(), Vector3d.create(0, 0, 1))!;
         const clipBuilderA = ClippedPolyfaceBuilders.create(true, true, true);
@@ -83,7 +82,7 @@ describe("MeshConstruction", () => {
     }
     // clean up the chicken-scratch clip lines (only visually, no geometry change in the mesh.)
     mesh1.data.compress();
-    PolyfaceQuery.markPairedEdgesInvisible(mesh1 as IndexedPolyface, Angle.createDegrees(1));
+    PolyfaceQuery.markPairedEdgesInvisible(mesh1, Angle.createDegrees(1));
     y0 += yStep;
     GeometryCoreTestIO.captureCloneGeometry(geometryToSave, mesh1, x0, y0);
 

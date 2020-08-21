@@ -13,7 +13,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { prettyPrint } from "../testFunctions";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 // (assume points are distinct ...)
 function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Point3d[]) {
   const rangeA = Range3d.createTransformedArray(frame, points);
@@ -684,9 +684,9 @@ describe("Range3d", () => {
     const r1 = Range1d.createFrom(Range1d.createNull());
     const r2 = Range2d.createFrom(Range2d.createNull());
     const r3 = Range3d.createFrom(Range3d.createNull());
-    ck.testTrue (r1.isNull);
-    ck.testTrue (r2.isNull);
-    ck.testTrue (r3.isNull);
+    ck.testTrue(r1.isNull);
+    ck.testTrue(r2.isNull);
+    ck.testTrue(r3.isNull);
     expect(ck.getNumErrors()).equals(0);
   });
 

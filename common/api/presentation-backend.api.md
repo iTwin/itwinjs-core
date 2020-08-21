@@ -31,7 +31,6 @@ import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
 import { PartialHierarchyModification } from '@bentley/presentation-common';
-import { PartialHierarchyModificationJSON } from '@bentley/presentation-common';
 import { PresentationDataCompareOptions } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
@@ -107,9 +106,9 @@ export class PresentationManager {
     activeLocale: string | undefined;
     activeUnitSystem: PresentationUnitSystem | undefined;
     // @deprecated (undocumented)
-    compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]>;
+    compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
     // @beta
-    compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>>): Promise<PartialHierarchyModification[]>;
+    compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<PartialHierarchyModification[]>;
     // @deprecated
     computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
     // @beta

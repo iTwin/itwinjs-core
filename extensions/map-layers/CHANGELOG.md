@@ -1,6 +1,15 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:10 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:10 GMT
+
+### Updates
+
+- lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
+- Add MapLayersWidgetControl that can be used to specify widget in UI 1.0 FrontstageDef.
+- Switch to ESLint
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

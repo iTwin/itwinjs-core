@@ -25,7 +25,7 @@ import { Subscriber } from "rxjs/internal/Subscriber";
 import { TreeNodeItem } from "../TreeDataProvider";
 import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "./component/BeInspireTree";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /** @internal @deprecated */
 export interface NodeLoadingOrchestratorCallbacks {
@@ -264,7 +264,7 @@ export class NodeLoadingOrchestrator {
 
     const promises = Array.from(take(this._pendingNodeTracker, this._model.props.pageSize!))
       .map(async (node) => this.requestNodeLoad(node));
-    // tslint:disable-next-line:no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     Promise.all(promises).then((loadedNodes) => {
       const collectedLoadedNodes: Array<BeInspireTreeNode<TreeNodeItem>> = [];
       for (const loadedNode of loadedNodes) {
@@ -409,7 +409,7 @@ export class PendingNodeTracker implements Iterable<NodeKey> {
    */
   public [Symbol.iterator](): IterableIterator<NodeKey> {
     /** Concatenates input iterables */
-    // tslint:disable-next-line: no-shadowed-variable
+    // eslint-disable-next-line no-shadow
     function* concat<T>(...iterables: Array<Iterable<T>>) {
       for (const iterable of iterables) {
         for (const value of iterable) {

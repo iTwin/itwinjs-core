@@ -20,7 +20,7 @@ export interface WithOnOutsideClickProps {
  * @public
  */
 export const withOnOutsideClick = <ComponentProps extends {}>(
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
   defaultOnOutsideClick?: (event: MouseEvent) => any,
   useCapture: boolean = true,
@@ -79,7 +79,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     }
 
     public render() {
-      const { onOutsideClick, ...props } = this.props;
+      const { onOutsideClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <div ref={this.ref}>
           <Component {...props as ComponentProps} />

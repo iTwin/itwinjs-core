@@ -9,7 +9,7 @@ import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Omit, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils"; // tslint:disable-line: no-direct-imports
+import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 
@@ -49,7 +49,7 @@ export const defaultNodeMappingFunc: NodeMappingFunc = (node: TreeNodeItem) => {
   // Skip properties 'id', 'parentId' as they contain  internal stuff
   // that callers are most likely not interested in. Otherwise they can supply
   // a custom `NodeMappingFunc` that does return those properties as well.
-  const { id, parentId, ...resultNode } = node;
+  const { id, parentId, ...resultNode } = node; // eslint-disable-line @typescript-eslint/no-unused-vars
   return resultNode;
 };
 
@@ -88,7 +88,7 @@ export class HierarchyBuilder {
     const hierarchy: HierarchyNode[] = [];
     for (const node of nodes) {
       // istanbul ignore next: for some reason coverage tool thinks the below statement is conditional and one of branches is not covered...
-      const { [PRESENTATION_TREE_NODE_KEY]: key, ...nodeNoKey } = (node as TreeNodeItem & { [PRESENTATION_TREE_NODE_KEY]: any });
+      const { [PRESENTATION_TREE_NODE_KEY]: key, ...nodeNoKey } = (node as TreeNodeItem & { [PRESENTATION_TREE_NODE_KEY]: any }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const nodeIndex = hierarchy.push(this._nodeMappingFunc(nodeNoKey)) - 1;
       const childNodes = await dataProvider.getNodes(node);
       if (childNodes.length > 0)

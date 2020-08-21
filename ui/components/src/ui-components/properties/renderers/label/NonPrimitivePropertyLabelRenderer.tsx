@@ -39,6 +39,7 @@ export class NonPrimitivePropertyLabelRenderer extends React.PureComponent<NonPr
         style={PropertyLabelRenderer.getStyle(this.props.offset)}
         className={"components-nonprimitive-property-label-renderer " + (this.props.className ? this.props.className : "")}
         onClick={this._onClick}
+        role="presentation"
       >
         <div className={(this.props.isExpanded ? " components-expanded" : "")}>
           <i className="icon icon-chevron-right" />

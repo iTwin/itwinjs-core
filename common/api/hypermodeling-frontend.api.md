@@ -85,6 +85,8 @@ export class HyperModelingDecorator implements Decorator {
     toggleClipVolume(marker: SectionMarker, enable: boolean): void;
     toggleSection(marker: SectionMarker, enable: boolean): Promise<boolean>;
     updateConfiguration(config: SectionMarkerConfig): void;
+    // @internal (undocumented)
+    readonly useCachedDecorations = true;
     get viewport(): ScreenViewport;
 }
 

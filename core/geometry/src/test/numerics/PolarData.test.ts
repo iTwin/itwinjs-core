@@ -15,7 +15,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 function verifyCompletePolarSinglePoint(ck: Checker, partialData: PolarData, data: PolarData | PolarData[] | undefined, expectGeometry: boolean) {
   if (data === undefined) {
@@ -57,7 +57,7 @@ function verifyPolarConversion(ck: Checker, allGeometry: GeometryQuery[], partia
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYZXYZ(0, 0, ez, a * partialData.theta.cos(), a * partialData.theta.sin(), ez), x, y, z);
   for (const r of result) {
     if (r.state = ConstraintState.singlePoint)
-      GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(Point3d.create(r.x!, r.y!, 0), markerRadius), x, y, z);
+      GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(Point3d.create(r.x, r.y, 0), markerRadius), x, y, z);
   }
   const n1 = ck.getNumErrors();
   if (n1 !== n0)

@@ -36,6 +36,13 @@ describe("UiCore", () => {
     TestUtils.terminateUiCore();
   });
 
+  it("translate should return blank and log error if UiCore not initialized", () => {
+    const spyLogger = sinon.spy(Logger, "logError");
+    expect(UiCore.translate("xyz")).to.eq("");
+    spyLogger.calledOnce.should.true;
+    (Logger.logError as any).restore();
+  });
+
   it("loggerCategory passed null should return 'ui-core'", () => {
     expect(UiCore.loggerCategory(null)).to.eq("ui-core");
   });

@@ -9,7 +9,9 @@
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import {
+  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel,
+} from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
@@ -32,6 +34,7 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { NativeAppRpcImpl } from "./rpc-impl/NativeAppRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
+import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 
@@ -285,7 +288,7 @@ export class IModelHost {
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
     if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
-      console.log("Bypassing version checks for development build"); // tslint:disable-line:no-console
+      console.log("Bypassing version checks for development build"); // eslint-disable-line no-console
       return;
     }
     this._platform = undefined;
@@ -393,7 +396,7 @@ export class IModelHost {
       if (configuration.crashReportingConfig.enableNodeReport) {
         try {
           // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
-          const nodereport = require("node-report/api");
+          const nodereport = require("node-report/api"); // eslint-disable-line @typescript-eslint/no-var-requires
           nodereport.setEvents("exception+fatalerror+apicall");
           nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
           nodereport.setVerbose("yes");
@@ -414,6 +417,7 @@ export class IModelHost {
       IModelTileRpcImpl,
       IModelWriteRpcImpl,
       SnapshotIModelRpcImpl,
+      StandaloneIModelRpcImpl,
       WipRpcImpl,
       DevToolsRpcImpl,
       Editor3dRpcImpl,
@@ -467,8 +471,8 @@ export class IModelHost {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
 
     // Setup the briefcaseCacheDir, defaulting to the the legacy/deprecated value
-    if (configuration.briefcaseCacheDir) // tslint:disable-line:deprecation
-      this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // tslint:disable-line:deprecation
+    if (configuration.briefcaseCacheDir) // eslint-disable-line deprecation/deprecation
+      this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // eslint-disable-line deprecation/deprecation
     else
       this._briefcaseCacheDir = path.join(this._cacheDir, "bc");
   }
@@ -587,7 +591,7 @@ export class Platform {
     if ((typeof (process) !== "undefined") && ("electron" in process.versions)) {
       // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
       try {
-        return require("electron"); // tslint:disable-line:no-var-requires
+        return require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
       } catch (error) { }
     }
     return undefined;
@@ -618,18 +622,12 @@ export class KnownLocations {
 
   /** The directory where the imodeljs-backend assets are stored. */
   public static get packageAssetsDir(): string {
-    const imodeljsMobile = Platform.imodeljsMobile;
-    if (imodeljsMobile !== undefined) {
-      return path.join(process.execPath!, "Assets", "assets");
-    }
-    // Assume that we are running in nodejs
     return path.join(__dirname, "assets");
   }
 
   /** The temporary directory. */
   public static get tmpdir(): string {
-    const imodeljsMobile = Platform.imodeljsMobile;
-    return imodeljsMobile !== undefined ? imodeljsMobile.knownLocations.tempDir : os.tmpdir();
+    return os.tmpdir();
   }
 }
 

@@ -66,6 +66,7 @@ import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
+import { Editor3dRpcInterfaceWriteOptions } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
@@ -75,9 +76,13 @@ import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
 import { ExtensionProps } from '@bentley/extension-client';
 import { Feature } from '@bentley/imodeljs-common';
+import { FeatureAppearance } from '@bentley/imodeljs-common';
+import { FeatureAppearanceProps } from '@bentley/imodeljs-common';
+import { FeatureAppearanceProvider } from '@bentley/imodeljs-common';
 import { FeatureIndex } from '@bentley/imodeljs-common';
 import { FeatureIndexType } from '@bentley/imodeljs-common';
 import { FeatureLogEntry } from '@bentley/usage-logging-client';
+import { FeatureOverrides } from '@bentley/imodeljs-common';
 import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
@@ -153,6 +158,7 @@ import { Matrix4d } from '@bentley/geometry-core';
 import { MeshEdges } from '@bentley/imodeljs-common';
 import { MeshPolyline } from '@bentley/imodeljs-common';
 import { MeshPolylineList } from '@bentley/imodeljs-common';
+import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
@@ -205,7 +211,7 @@ import { RenderTexture } from '@bentley/imodeljs-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RgbColor } from '@bentley/imodeljs-common';
-import { RgbColorProps } from '@bentley/imodeljs-common';
+import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -1440,6 +1446,20 @@ export abstract class BriefcaseConnection extends IModelConnection {
     protected _isClosed?: boolean;
 }
 
+// @internal (undocumented)
+export type CachedDecoration = {
+    type: "graphic";
+    graphicType: GraphicType;
+    graphicOwner: RenderGraphicOwner;
+} | {
+    type: "canvas";
+    canvasDecoration: CanvasDecoration;
+    atFront: boolean;
+} | {
+    type: "html";
+    htmlElement: HTMLElement;
+};
+
 // @internal
 export interface CachedIModelCoordinatesResponseProps {
     missing?: XYZProps[];
@@ -1614,6 +1634,9 @@ export enum ContextMode {
 export class ContextRealityModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     // (undocumented)
+    get appearanceOverrides(): FeatureAppearance | undefined;
+    set appearanceOverrides(overrides: FeatureAppearance | undefined);
+    // (undocumented)
     get classifiers(): SpatialClassifiers | undefined;
     // (undocumented)
     readonly description: string;
@@ -1624,6 +1647,8 @@ export class ContextRealityModelState {
     matches(other: ContextRealityModelState): boolean;
     // (undocumented)
     matchesNameAndUrl(name: string, url: string): boolean;
+    // (undocumented)
+    get modelId(): Id64String | undefined;
     // (undocumented)
     readonly name: string;
     // (undocumented)
@@ -1698,7 +1723,7 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
-export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference;
+export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference;
 
 // @internal (undocumented)
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference;
@@ -1816,6 +1841,8 @@ export class DecorateContext extends RenderContext {
     addCanvasDecoration(decoration: CanvasDecoration, atFront?: boolean): void;
     addDecoration(type: GraphicType, decoration: RenderGraphic): void;
     addDecorationFromBuilder(builder: GraphicBuilder): void;
+    // @internal (undocumented)
+    addFromDecorator(decorator: ViewportDecorator): void;
     addHtmlDecoration(decoration: HTMLElement): void;
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     // @internal (undocumented)
@@ -1846,8 +1873,7 @@ export class Decorations implements IDisposable {
     }
 
 // @public
-export interface Decorator {
-    decorate(context: DecorateContext): void;
+export interface Decorator extends ViewportDecorator {
     getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined;
     getDecorationToolTip?(hit: HitDetail): Promise<HTMLElement | string>;
     onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
@@ -2035,6 +2061,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     detachRealityModelByNameAndUrl(name: string, url: string): void;
     // @internal (undocumented)
     get displayTerrain(): boolean;
+    // @beta
+    dropModelAppearanceOverride(modelId: Id64String): void;
+    // @beta
+    dropRealityModelAppearanceOverride(index: number): void;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
@@ -2055,6 +2085,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
+    // @beta
+    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     get globeMode(): GlobeMode;
@@ -2062,6 +2094,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
     // @internal (undocumented)
     hasAttachedRealityModel(name: string, url: string): boolean;
+    // @beta
+    get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     // @internal (undocumented)
@@ -2070,6 +2104,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
     // @internal (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    // @beta
+    get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
     // @internal
@@ -2085,6 +2121,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get overlayMap(): MapTileTreeReference;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
+    // @beta
+    overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
+    // @beta
+    overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
@@ -2332,7 +2372,9 @@ export class ElementEditor3d {
     restart(): Promise<void>;
     static start(iModelConnection: IModelConnection): Promise<ElementEditor3d>;
     startModifyingElements(elementIds: Id64Array): Promise<void>;
-    write(): Promise<void>;
+    write(opts?: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
+    writeReturningIds(): Promise<Id64Array>;
+    writeReturningProps(wantGeom?: boolean): Promise<GeometricElement3dProps[]>;
 }
 
 // @public (undocumented)
@@ -2450,13 +2492,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     clearNeverDrawnElements(vp: Viewport): boolean;
     clearOverriddenElements(vp: Viewport, key?: number): boolean;
     // @internal (undocumented)
-    protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance;
-    createDefaultAppearance(): FeatureSymbology.Appearance;
+    protected createAppearanceFromKey(key: number): FeatureAppearance;
+    createDefaultAppearance(): FeatureAppearance;
     createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
-    get defaultAppearance(): FeatureSymbology.Appearance | undefined;
-    set defaultAppearance(appearance: FeatureSymbology.Appearance | undefined);
-    emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean): boolean;
-    emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean, clearSelection?: boolean): boolean;
+    get defaultAppearance(): FeatureAppearance | undefined;
+    set defaultAppearance(appearance: FeatureAppearance | undefined);
+    emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean): boolean;
+    emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean, clearSelection?: boolean): boolean;
     fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean;
     static get(vp: Viewport): EmphasizeElements | undefined;
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
@@ -2498,7 +2540,7 @@ export interface EmphasizeElementsProps {
     // (undocumented)
     appearanceOverride?: AppearanceOverrideProps[];
     // (undocumented)
-    defaultAppearance?: FeatureSymbology.AppearanceProps;
+    defaultAppearance?: FeatureAppearanceProps;
     // (undocumented)
     isAlwaysDrawnExclusive?: boolean;
     // (undocumented)
@@ -2734,138 +2776,18 @@ export enum FeatureOverrideType {
 
 // @public
 export namespace FeatureSymbology {
-    export class Appearance implements AppearanceProps {
-        static readonly defaults: Appearance;
-        readonly emphasized?: true | undefined;
-        // (undocumented)
-        equals(other: Appearance): boolean;
-        extendAppearance(base: Appearance): Appearance;
-        // (undocumented)
-        static fromJSON(props?: AppearanceProps): Appearance;
-        static fromRgb(color: ColorDef): Appearance;
-        static fromRgba(color: ColorDef): Appearance;
-        static fromSubCategoryOverride(ovr: SubCategoryOverride): Appearance;
-        static fromTransparency(transparencyValue: number): Appearance;
-        readonly ignoresMaterial?: true | undefined;
-        // (undocumented)
-        get isFullyTransparent(): boolean;
-        readonly linePixels?: LinePixels;
-        readonly nonLocatable?: true | undefined;
-        // (undocumented)
-        get overridesLinePixels(): boolean;
-        // (undocumented)
-        get overridesRgb(): boolean;
-        // (undocumented)
-        get overridesSymbology(): boolean;
-        // (undocumented)
-        get overridesTransparency(): boolean;
-        // (undocumented)
-        get overridesWeight(): boolean;
-        readonly rgb?: RgbColor;
-        // (undocumented)
-        toJSON(): AppearanceProps;
-        readonly transparency?: number;
-        readonly weight?: number;
+    // @deprecated (undocumented)
+    export class Appearance extends FeatureAppearance {
     }
-    export interface AppearanceProps {
-        emphasized?: true | undefined;
-        ignoresMaterial?: true | undefined;
-        linePixels?: LinePixels;
-        nonLocatable?: true | undefined;
-        rgb?: RgbColorProps;
-        transparency?: number;
-        weight?: number;
+    // @deprecated (undocumented)
+    export interface AppearanceProps extends FeatureAppearanceProps {
     }
-    // @alpha
-    export interface AppearanceProvider {
-        getFeatureAppearance(overrides: Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
-    }
-    export class Overrides {
+    export class Overrides extends FeatureOverrides {
         constructor(view?: ViewState | Viewport);
-        // @internal (undocumented)
-        get alwaysDrawn(): Id64.Uint32Set;
-        // @internal
-        protected readonly _alwaysDrawn: Id64.Uint32Set;
-        // @beta
-        alwaysDrawnIgnoresSubCategory: boolean;
-        // @internal
-        readonly animationNodeOverrides: Map<number, Appearance>;
-        // @internal
-        protected _constructions: boolean;
-        get defaultOverrides(): Appearance;
-        // @internal
-        protected _defaultOverrides: Appearance;
-        // @internal
-        protected _dimensions: boolean;
-        // @internal
-        protected readonly _elementOverrides: Id64.Uint32Map<Appearance>;
-        // @alpha
-        getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
-        // @internal
-        protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): Appearance | undefined;
-        // @internal (undocumented)
-        protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): Appearance | undefined;
-        getElementOverridesById(id: Id64String): Appearance | undefined;
-        getFeatureAppearance(feature: Feature, modelId: Id64String, type?: BatchType): Appearance | undefined;
-        // @internal (undocumented)
-        protected getModelOverrides(idLo: number, idHi: number): Appearance | undefined;
-        getModelOverridesById(id: Id64String): Appearance | undefined;
-        // @internal (undocumented)
-        protected getSubCategoryOverrides(idLo: number, idHi: number): Appearance | undefined;
-        getSubCategoryOverridesById(id: Id64String): Appearance | undefined;
-        // @internal
-        getSubCategoryPriority(idLo: number, idHi: number): number;
-        // @internal
-        ignoreSubCategory: boolean;
         // @internal
         initFromView(view: ViewState): void;
         // @internal
         initFromViewport(viewport: Viewport): void;
-        // @internal (undocumented)
-        protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
-        isAlwaysDrawnExclusive: boolean;
-        // @internal (undocumented)
-        isClassVisible(geomClass: GeometryClass): boolean;
-        isFeatureVisible(feature: Feature): boolean;
-        // @internal (undocumented)
-        protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean;
-        isSubCategoryIdVisible(id: Id64String): boolean;
-        // @internal
-        isSubCategoryVisible(idLo: number, idHi: number): boolean;
-        // @internal (undocumented)
-        isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean;
-        get lineWeights(): boolean;
-        // @internal
-        protected _lineWeights: boolean;
-        // @internal
-        protected readonly _modelOverrides: Id64.Uint32Map<Appearance>;
-        // @internal
-        protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
-        // @internal (undocumented)
-        get neverDrawn(): Id64.Uint32Set;
-        // @internal
-        protected readonly _neverDrawn: Id64.Uint32Set;
-        // @internal
-        readonly neverDrawnAnimationNodes: Set<number>;
-        overrideAnimationNode(id: number, app: Appearance): void;
-        overrideElement(id: Id64String, app: Appearance, replaceExisting?: boolean): void;
-        overrideModel(id: Id64String, app: Appearance, replaceExisting?: boolean): void;
-        overrideSubCategory(id: Id64String, app: Appearance, replaceExisting?: boolean): void;
-        // @internal
-        protected _patterns: boolean;
-        setAlwaysDrawn(id: Id64String): void;
-        setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory?: boolean): void;
-        setAnimationNodeNeverDrawn(id: number): void;
-        setDefaultOverrides(appearance: Appearance, replaceExisting?: boolean): void;
-        setNeverDrawn(id: Id64String): void;
-        setNeverDrawnSet(ids: Id64Set): void;
-        setVisibleSubCategory(id: Id64String): void;
-        // @internal
-        protected readonly _subCategoryOverrides: Id64.Uint32Map<Appearance>;
-        // @internal
-        protected readonly _subCategoryPriorities: Id64.Uint32Map<number>;
-        // @internal
-        protected readonly _visibleSubCategories: Id64.Uint32Set;
         }
 }
 
@@ -3050,7 +2972,8 @@ export enum FrontendLoggerCategory {
     FeatureTracking = "imodeljs-frontend.FeatureTracking",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
-    IOSAuthorizationClient = "imodeljs-frontend.IOSAuthorizationClient",
+    MobileAuthorizationClient = "imodeljs-frontend.MobileAuthorizationClient",
+    NativeApp = "imodeljs-frontend.NativeApp",
     // (undocumented)
     Package = "imodeljs-frontend"
 }
@@ -3058,6 +2981,15 @@ export enum FrontendLoggerCategory {
 // @public
 export class FrontendRequestContext extends ClientRequestContext {
     constructor(activityId?: string);
+}
+
+// @public
+export interface FrontendSecurityOptions {
+    readonly csrfProtection?: {
+        readonly enabled: boolean;
+        readonly cookieName?: string;
+        readonly headerName?: string;
+    };
 }
 
 // @public
@@ -3399,7 +3331,7 @@ export interface GraphicBranchFrustum {
 // @internal
 export interface GraphicBranchOptions {
     // (undocumented)
-    appearanceProvider?: FeatureSymbology.AppearanceProvider;
+    appearanceProvider?: FeatureAppearanceProvider;
     // (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     // (undocumented)
@@ -3927,6 +3859,7 @@ export class IModelApp {
     static get renderSystem(): RenderSystem;
     // @internal (undocumented)
     static requestNextAnimation(): void;
+    static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
     static get settings(): SettingsAdmin;
     static shutdown(): Promise<void>;
@@ -3966,6 +3899,7 @@ export interface IModelAppOptions {
     quantityFormatter?: QuantityFormatter;
     // @internal (undocumented)
     renderSys?: RenderSystem | RenderSystem.Options;
+    security?: FrontendSecurityOptions;
     // @internal (undocumented)
     sessionId?: GuidString;
     settings?: SettingsAdmin;
@@ -4027,6 +3961,10 @@ export abstract class IModelConnection extends IModel {
     isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
+    // @internal
+    get isStandalone(): boolean;
+    // @internal
+    isStandaloneConnection(): this is StandaloneConnection;
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal
@@ -4045,6 +3983,7 @@ export abstract class IModelConnection extends IModel {
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    routingContext: IModelRoutingContext;
     saveChanges(description?: string): Promise<void>;
     readonly selectionSet: SelectionSet;
     // @internal (undocumented)
@@ -4118,6 +4057,22 @@ export class IModelFrameLifecycle {
     static readonly onChangeCameraView: BeEvent<(data: FrameCameraViewData) => void>;
     // (undocumented)
     static readonly onRenderOpaque: BeEvent<(data: FrameRenderData) => void>;
+}
+
+// @public
+export class IModelRoutingContext {
+    // (undocumented)
+    get active(): boolean;
+    // (undocumented)
+    static get current(): IModelRoutingContext | undefined;
+    // (undocumented)
+    static readonly default: IModelRoutingContext;
+    // (undocumented)
+    static for(token: RpcRoutingToken): IModelRoutingContext;
+    // (undocumented)
+    route<T>(handler: () => T): T;
+    // (undocumented)
+    readonly token: RpcRoutingToken;
 }
 
 // @internal
@@ -5484,6 +5439,20 @@ export enum MessageBoxValue {
 // @internal
 export function metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number;
 
+// @alpha
+export class MobileAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: MobileAuthorizationClientConfiguration);
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    get isAuthorized(): boolean;
+    // (undocumented)
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+}
+
 // @internal
 export namespace MockRender {
     export class App {
@@ -5629,6 +5598,12 @@ export interface ModalOptions {
 export interface ModalReturn {
     modal: HTMLDivElement;
     stop: (_ev: Event) => void;
+}
+
+// @internal
+export interface ModelDisplayTransformProvider {
+    // (undocumented)
+    getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
 }
 
 // @public
@@ -5973,11 +5948,6 @@ export class OrbitGtTileTree extends TileTree {
 export namespace OrbitGtTileTree {
     // (undocumented)
     export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
-    // (undocumented)
-    export abstract class Reference extends TileTreeReference {
-        // (undocumented)
-        abstract get classifiers(): SpatialClassifiers | undefined;
-    }
     // (undocumented)
     export interface ReferenceProps {
         // (undocumented)
@@ -6600,6 +6570,29 @@ export interface RealityTileTreeParams extends TileTreeParams {
     // (undocumented)
     readonly yAxisUp?: boolean;
 }
+
+// @internal
+export class RealityTreeReference extends RealityModelTileTree.Reference {
+    constructor(props: RealityModelTileTree.ReferenceProps);
+    // (undocumented)
+    addToScene(context: SceneContext): void;
+    // (undocumented)
+    get castsShadows(): boolean;
+    // (undocumented)
+    get classifiers(): SpatialClassifiers | undefined;
+    // (undocumented)
+    collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    discloseTileTrees(trees: TileTreeSet): void;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    // (undocumented)
+    protected get _isLoadingComplete(): boolean;
+    // (undocumented)
+    get modelId(): string;
+    // (undocumented)
+    get treeOwner(): TileTreeOwner;
+    }
 
 // @public
 export class RemoteBriefcaseConnection extends BriefcaseConnection {
@@ -7475,7 +7468,7 @@ export class ScreenViewport extends Viewport {
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
-    pickCanvasDecoration(pt: XAndY): import("./imodeljs-frontend").CanvasDecoration | undefined;
+    pickCanvasDecoration(pt: XAndY): CanvasDecoration | undefined;
     // @alpha
     pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): {
         plane: Plane3dByOriginAndUnitNormal;
@@ -8125,6 +8118,14 @@ export class SpriteLocation implements CanvasDecoration {
     get isActive(): boolean;
     readonly position: Point3d;
     }
+
+// @internal
+export class StandaloneConnection extends IModelConnection {
+    close(): Promise<void>;
+    get iModelId(): GuidString;
+    get isClosed(): boolean;
+    static openFile(filePath: string, openMode?: OpenMode): Promise<StandaloneConnection>;
+}
 
 // @public
 export class StandardView {
@@ -8938,11 +8939,31 @@ export interface TiledGraphicsProvider {
 }
 
 // @beta
+export interface TileDrawArgParams {
+    // (undocumented)
+    clipVolume: RenderClipVolume | undefined;
+    // (undocumented)
+    context: SceneContext;
+    // (undocumented)
+    location: Transform;
+    // (undocumented)
+    now: BeTimePoint;
+    // (undocumented)
+    parentsAndChildrenExclusive: boolean;
+    // (undocumented)
+    symbologyOverrides: FeatureSymbology.Overrides | undefined;
+    // (undocumented)
+    tree: TileTree;
+    // (undocumented)
+    viewFlagOverrides: ViewFlagOverrides;
+}
+
+// @beta
 export class TileDrawArgs {
-    constructor(context: SceneContext, location: Transform, tree: TileTree, now: BeTimePoint, viewFlagOverrides: ViewFlagOverrides, clip?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides);
+    constructor(params: TileDrawArgParams);
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
-    clipVolume?: RenderClipVolume;
+    clipVolume: RenderClipVolume | undefined;
     readonly context: SceneContext;
     // @internal (undocumented)
     drape?: RenderTextureDrape;
@@ -8951,7 +8972,7 @@ export class TileDrawArgs {
     // @internal (undocumented)
     drawGraphicsWithType(graphicType: TileGraphicType, graphics: GraphicBranch): void;
     // @internal (undocumented)
-    static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlagOverrides, clip?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides): TileDrawArgs;
+    static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlagOverrides, clipVolume?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides): TileDrawArgs;
     get frustumPlanes(): FrustumPlanes;
     protected _frustumPlanes?: FrustumPlanes;
     getPixelSize(tile: Tile): number;
@@ -8978,10 +8999,12 @@ export class TileDrawArgs {
     // @internal (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     readonly readyTiles: Set<Tile>;
+    get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
     // @alpha
     get tileSizeModifier(): number;
     readonly tree: TileTree;
     readonly viewClip?: ClipVector;
+    get viewFlagOverrides(): ViewFlagOverrides;
     viewingSpace: ViewingSpace;
     // @internal (undocumented)
     get worldToViewMap(): Map4d;
@@ -10438,6 +10461,8 @@ export class ViewManager {
     get grabCursor(): string;
     // (undocumented)
     inDynamicsMode: boolean;
+    // @beta
+    invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void;
     invalidateDecorationsAllViews(): void;
     // @internal (undocumented)
     invalidateScenes(): void;
@@ -10612,6 +10637,8 @@ export abstract class Viewport implements IDisposable {
     // @internal
     protected constructor(target: RenderTarget);
     // @internal (undocumented)
+    addCachedDecoration(decorator: ViewportDecorator, decoration: CachedDecoration): void;
+    // @internal (undocumented)
     protected addDecorations(_decorations: Decorations): void;
     addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     // @internal (undocumented)
@@ -10678,6 +10705,9 @@ export abstract class Viewport implements IDisposable {
     // (undocumented)
     dispose(): void;
     dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
+    dropModelAppearanceOverride(id: Id64String): void;
+    // @beta
+    dropRealityModelAppearanceOverride(index: number): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @beta
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
@@ -10711,6 +10741,8 @@ export abstract class Viewport implements IDisposable {
     getAuxCoordOrigin(result?: Point3d): Point3d;
     // (undocumented)
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
+    // @internal (undocumented)
+    getCachedDecorations(decorator: ViewportDecorator): CachedDecoration[] | undefined;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @beta
@@ -10735,6 +10767,8 @@ export abstract class Viewport implements IDisposable {
     // @beta
     get insideClipColor(): ColorDef | undefined;
     set insideClipColor(color: ColorDef | undefined);
+    // @beta
+    invalidateCachedDecorations(decorator: ViewportDecorator): void;
     // @internal (undocumented)
     invalidateController(): void;
     invalidateDecorations(): void;
@@ -10797,6 +10831,9 @@ export abstract class Viewport implements IDisposable {
     set outsideClipColor(color: ColorDef | undefined);
     // @beta
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
+    overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
+    // @beta
+    overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @beta
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;
@@ -10831,6 +10868,8 @@ export abstract class Viewport implements IDisposable {
     setFlashed(id: string | undefined, duration: number): void;
     // (undocumented)
     setLightSettings(settings: LightSettings): void;
+    // @internal
+    setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void;
     setNeverDrawn(ids: Id64Set): void;
     // @internal (undocumented)
     setRedrawPending(): void;
@@ -10906,6 +10945,12 @@ export abstract class Viewport implements IDisposable {
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions): void;
+}
+
+// @public
+export interface ViewportDecorator {
+    decorate(context: DecorateContext): void;
+    readonly useCachedDecorations?: true;
 }
 
 // @public
@@ -11089,6 +11134,11 @@ export abstract class ViewState extends ElementState {
     getGridSpacing(): XAndY;
     // (undocumented)
     getGridsPerRef(): number;
+    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
+    // @internal (undocumented)
+    getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+    // @internal
+    getModelElevation(_modelId: Id64String): number;
     abstract getOrigin(): Point3d;
     abstract getRotation(): Matrix3d;
     // @internal (undocumented)
@@ -11121,6 +11171,9 @@ export abstract class ViewState extends ElementState {
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions): void;
     // @alpha
     get maxGlobalScopeFactor(): number;
+    // @internal
+    get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined;
+    set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined);
     get name(): string;
     // @internal (undocumented)
     outputStatusMessage(status: ViewStatus): ViewStatus;
@@ -11263,6 +11316,8 @@ export abstract class ViewState3d extends ViewState {
     getLensAngle(): Angle;
     // @internal (undocumented)
     getModelClip(modelId: Id64String): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    getModelElevation(modelId: Id64String): number;
     // (undocumented)
     getOrigin(): Point3d;
     // (undocumented)

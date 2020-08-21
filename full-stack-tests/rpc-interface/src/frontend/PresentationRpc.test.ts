@@ -15,10 +15,12 @@ import * as getFilteredNodePaths from "./rulesets/NodePaths/getFilteredNodePaths
 import * as getNodePaths from "./rulesets/NodePaths/getNodePaths.json";
 import { TestContext } from "./setup/TestContext";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("PresentationRpcInterface tests", () => {
   let iModel: IModelConnection;
   let ruleset: Ruleset;
-  let client: PresentationRpcInterface; // tslint:disable-line:no-unused-variable
+  let client: PresentationRpcInterface; // eslint-disable-line @typescript-eslint/no-unused-vars
 
   before(async function () {
     const testContext = await TestContext.instance();

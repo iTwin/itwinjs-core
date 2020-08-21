@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable:no-direct-imports
-// tslint:disable:deprecation
+/* eslint-disable @typescript-eslint/promise-function-async, deprecation/deprecation */
 
 import { expect } from "chai";
 import sinon from "sinon";

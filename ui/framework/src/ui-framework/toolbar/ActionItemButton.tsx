@@ -15,6 +15,7 @@ import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
  * @public
@@ -33,8 +34,8 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 
   // Parent Component can only modify the isEnable state if the actionItem.isEnabled value is set to true.
   return {
-    isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled, // tslint:disable-line:deprecation
-    isVisible: props.actionItem.isVisible, // tslint:disable-line:deprecation
+    isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled, // eslint-disable-line deprecation/deprecation
+    isVisible: props.actionItem.isVisible, // eslint-disable-line deprecation/deprecation
     isActive: undefined !== props.actionItem.isActive ? props.actionItem.isActive : /* istanbul ignore next */ false,
   };
 };
@@ -68,18 +69,18 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
       refreshState = true;
     }
 
-    if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0) // tslint:disable-line:deprecation
-      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
+    if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
 
     if (refreshState) {
-      if (this.props.actionItem.stateFunc) // tslint:disable-line:deprecation
-        newState = this.props.actionItem.stateFunc(newState); // tslint:disable-line:deprecation
+      if (this.props.actionItem.stateFunc) // eslint-disable-line deprecation/deprecation
+        newState = this.props.actionItem.stateFunc(newState); // eslint-disable-line deprecation/deprecation
 
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         // update actionItem as it hold the 'truth' for all state
         /* istanbul ignore else */
-        if (undefined !== newState.isVisible) // tslint:disable-line:deprecation
-          this.props.actionItem.isVisible = newState.isVisible; // tslint:disable-line:deprecation
+        if (undefined !== newState.isVisible) // eslint-disable-line deprecation/deprecation
+          this.props.actionItem.isVisible = newState.isVisible; // eslint-disable-line deprecation/deprecation
 
         /* istanbul ignore else */
         if (undefined !== newState.isActive)
@@ -124,7 +125,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       KeyboardShortcutManager.setFocusToHome();
     }
   }

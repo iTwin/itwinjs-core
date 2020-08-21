@@ -29,6 +29,8 @@ import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { DrawingModel } from "../Model";
 
+/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+
 /** Class for simple test timing */
 export class Timer {
   private _label: string;
@@ -42,7 +44,7 @@ export class Timer {
 
     const stop = new Date();
     const elapsed = stop.getTime() - this._start.getTime();
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     console.log(`${this._label}: ${elapsed}ms`);
   }
 }
@@ -373,15 +375,15 @@ export class IModelTestUtils {
     Logger.setLevelDefault(LogLevel.Error);
 
     if (process.env.imjs_test_logging_config === undefined) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log(`You can set the environment variable imjs_test_logging_config to point to a logging configuration json file.`);
     }
     const loggingConfigFile: string = process.env.imjs_test_logging_config || path.join(__dirname, "logging.config.json");
 
     if (IModelJsFs.existsSync(loggingConfigFile)) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log(`Setting up logging levels from ${loggingConfigFile}`);
-      // tslint:disable-next-line:no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       Logger.configureLevels(require(loggingConfigFile));
     }
   }
@@ -430,7 +432,7 @@ export class IModelTestUtils {
 
   public static createJobSubjectElement(iModel: IModelDb, name: string): Subject {
     const subj = Subject.create(iModel, iModel.elements.getRootSubject().id, name);
-    subj.setJsonProperty("Subject", { Job: name });
+    subj.setJsonProperty("Subject", { Job: name }); // eslint-disable-line @typescript-eslint/naming-convention
     return subj;
   }
 

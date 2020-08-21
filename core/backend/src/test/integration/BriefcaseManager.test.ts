@@ -8,7 +8,7 @@ import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
 import { BriefcaseStatus, ClientRequestContext, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { Briefcase as HubBriefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client";
+import { BriefcaseQuery, Briefcase as HubBriefcase, HubIModel } from "@bentley/imodelhub-client";
 import { BriefcaseDownloader, BriefcaseProps, IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -331,21 +331,21 @@ describe("BriefcaseManager (#integration)", () => {
 
     // Test legacy 1.0 cache location
     await IModelHost.shutdown();
-    config.briefcaseCacheDir = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"); // tslint:disable-line:deprecation
+    config.briefcaseCacheDir = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"); // eslint-disable-line deprecation/deprecation
     await IModelHost.startup(config);
-    let expectedDir = path.join(path.normalize(config.briefcaseCacheDir), cacheSubDir); // tslint:disable-line:deprecation
-    assert.strictEqual(expectedDir, (BriefcaseManager as any).cacheDir); // tslint:disable-line:deprecation
+    let expectedDir = path.join(path.normalize(config.briefcaseCacheDir), cacheSubDir); // eslint-disable-line deprecation/deprecation
+    assert.strictEqual(expectedDir, (BriefcaseManager as any).cacheDir); // eslint-disable-line deprecation/deprecation
 
     // Test 2.0 cache default location
     await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // tslint:disable-line:deprecation
+    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
     await IModelHost.startup(config);
     expectedDir = path.join(IModelHost.cacheDir, "bc", cacheSubDir);
     assert.strictEqual(expectedDir, (BriefcaseManager as any).cacheDir);
 
     // Test 2.0 custom cache location
     await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // tslint:disable-line:deprecation
+    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
     config.cacheDir = KnownLocations.tmpdir;
     await IModelHost.startup(config);
     expectedDir = path.join(KnownLocations.tmpdir, "bc", cacheSubDir);
@@ -353,7 +353,7 @@ describe("BriefcaseManager (#integration)", () => {
 
     // Restore defaults
     await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // tslint:disable-line:deprecation
+    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
     config.cacheDir = undefined;
     await IModelHost.startup(config);
   });

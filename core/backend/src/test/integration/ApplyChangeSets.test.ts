@@ -39,7 +39,7 @@ describe("ApplyChangeSets (#integration)", () => {
   };
 
   it("should test all change set operations after downloading iModel from the hub  (#integration)", async () => {
-    console.log(`Downloading/Uploading iModels to/from ${iModelRootDir}`); // tslint:disable-line:no-console
+    console.log(`Downloading/Uploading iModels to/from ${iModelRootDir}`); // eslint-disable-line no-console
 
     const requestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 

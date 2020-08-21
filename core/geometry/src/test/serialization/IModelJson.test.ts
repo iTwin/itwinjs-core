@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-/* tslint:disable:no-console trailing-comma object-literal-key-quotes*/
+/* eslint-disable no-console, comma-dangle, quote-props */
 // Requires for grabbing json object from external file
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
@@ -27,8 +27,8 @@ const iModelJsonSamplesDirectory = "./src/test/iModelJsonSamples/fromGC/";
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(GeometryCoreTestIO.outputRootDirectory))
   fs.mkdirSync(GeometryCoreTestIO.outputRootDirectory);
-GeometryCoreTestIO.outputRootDirectory = GeometryCoreTestIO.outputRootDirectory + "/";
-const iModelJsonOutputFolderPath = GeometryCoreTestIO.outputRootDirectory + "iModelJsonSamples";
+GeometryCoreTestIO.outputRootDirectory = `${GeometryCoreTestIO.outputRootDirectory}/`;
+const iModelJsonOutputFolderPath = `${GeometryCoreTestIO.outputRootDirectory}iModelJsonSamples`;
 if (!fs.existsSync(GeometryCoreTestIO.outputRootDirectory))
   fs.mkdirSync(GeometryCoreTestIO.outputRootDirectory);
 if (!fs.existsSync(iModelJsonOutputFolderPath))
@@ -50,11 +50,11 @@ function saveJson(jsv: object, counter: { [key: string]: any }) {
     }
   }
 }
-/** For each property of data:  save the value in a file name `prefix+propertyName+".json"` */
+/** For each property of data:  save the value in a file name `prefix + propertyName + ".json"` */
 function savePropertiesAsSeparateFiles(folderPath: string, prefix: string, data: { [key: string]: any }) {
   for (const property in data) {
     if (data.hasOwnProperty(property)) {
-      const filename = folderPath + "/" + prefix + property + ".imjs";
+      const filename = `${folderPath}/${prefix}${property}.imjs`;
       fs.writeFileSync(filename, JSON.stringify(data[property])); // prettyPrint(data[property]));
     }
   }
@@ -94,10 +94,12 @@ function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy
       const g1 = IModelJson.Reader.parse(imData) as GeometryQuery;
       if (!g1 || !g.isAlmostEqual(g1)) {
         ck.announceError("IModelJson round trip error", g, prettyPrint(imData), prettyPrint(g1));
+        IModelJson.Reader.parse(imData);
         console.log("*********** round trip data *********");
         console.log(prettyPrint(g));
         console.log(prettyPrint(imData));
         console.log(prettyPrint(g1));
+        g.isAlmostEqual(g1);
         console.log("=====================================");
 
         const imData1 = IModelJson.Writer.toIModelJson(g);
@@ -247,7 +249,7 @@ describe("CreateIModelJsonSamples", () => {
           continue;
         Checker.noisy.printJSONFailure = true;
         const data = fs.readFileSync(currFile, "utf8");
-        if (Checker.noisy.ReportRoundTripFileNames)
+        if (Checker.noisy.reportRoundTripFileNames)
           console.log(currFile);
         let jsonObject1;
         if (data.length > 0) {
@@ -260,19 +262,21 @@ describe("CreateIModelJsonSamples", () => {
           const geometryQuery1 = IModelJson.Reader.parse(jsonObject1);
           const jsonObject2 = IModelJson.Writer.toIModelJson(geometryQuery1);
           if (compareObj.compare(jsonObject1, jsonObject2)) {
-            if (Checker.noisy.printJSONSuccess) { console.log("PASS: " + i); }
+            if (Checker.noisy.printJSONSuccess) { console.log(`PASS: ${i}`); }
             numValuePassed++;
           } else {
             ck.announceError("imjs => GeometryQuery =>imjs round trip failure", currFile);
+            console.log("jsonObject1:", prettyPrint(jsonObject1));
+            console.log("jsonObject2:", prettyPrint(jsonObject2));
             const jsonObject3 = IModelJson.Writer.toIModelJson(geometryQuery1);
             compareObj.compare(jsonObject1, jsonObject3);
-            if (Checker.noisy.printJSONFailure) { console.log("FAIL: " + i); console.log(compareObj.errorTracker); }
+            if (Checker.noisy.printJSONFailure) { console.log(`FAIL: ${i}`); console.log(compareObj.errorTracker); }
           }
         }
       }
       if (Checker.noisy.printJSONSuccess) {
-        console.log(" imjs => geometry files from " + sourceDirectory);
-        console.log("*************** " + numValuePassed + " files passed out of " + numItems + " checked");
+        console.log(` imjs => geometry files from ${sourceDirectory}`);
+        console.log(`*************** ${numValuePassed} files passed out of ${numItems} checked`);
       }
     }
     ck.checkpoint("BSIJSON.ParseIMJS");

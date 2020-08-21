@@ -31,7 +31,7 @@ export class ConnectivityInformationProvider implements IConnectivityInformation
   public constructor() {
     if (IModelApp.isNativeApp) {
       this._unsubscribeFromInternetConnectivityChangedEvent = NativeApp.onInternetConnectivityChanged.addListener(this.onNativeAppInternetConnectivityChanged);
-      // tslint:disable-next-line: no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       NativeApp.checkInternetConnectivity().then((status: InternetConnectivityStatus) => {
         if (undefined === this._currentStatus)
           this._currentStatus = status;
@@ -45,7 +45,7 @@ export class ConnectivityInformationProvider implements IConnectivityInformation
     this._unsubscribeFromInternetConnectivityChangedEvent && this._unsubscribeFromInternetConnectivityChangedEvent();
   }
 
-  // tslint:disable-next-line: naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onNativeAppInternetConnectivityChanged = (status: InternetConnectivityStatus) => {
     if (this._currentStatus === status)
       return;

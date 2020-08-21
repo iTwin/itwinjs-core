@@ -8,6 +8,8 @@
 
 import { Guid, GuidString } from "./Id";
 
+// cSpell:ignore csrf
+
 /** The data properties of ClientRequestContext.
  * @public
  */
@@ -96,6 +98,7 @@ export interface SerializedClientRequestContext {
   sessionId: string;
   authorization?: string;
   userId?: string;
+  csrfToken?: { headerName: string, headerValue: string };
 }
 
 /** Used by Logger to set ClientRequestContext metadata

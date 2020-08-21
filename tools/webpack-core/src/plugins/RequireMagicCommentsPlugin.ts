@@ -5,12 +5,12 @@
 import { Compiler } from "webpack";
 import { getSourcePosition } from "../utils/paths";
 
-// tslint:disable:no-var-requires variable-name
+/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const CommonJsRequireDependency = require("webpack/lib/dependencies/CommonJsRequireDependency");
 const RequireHeaderDependency = require("webpack/lib/dependencies/RequireHeaderDependency");
 const RequireResolveDependency = require("webpack/lib/dependencies/RequireResolveDependency");
 const RequireResolveHeaderDependency = require("webpack/lib/dependencies/RequireResolveHeaderDependency");
-// tslint:enable:no-var-requires variable-name
+/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 interface MagicCommentHandlerConfig {
   test: string | RegExp;

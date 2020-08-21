@@ -17,8 +17,8 @@ import { IModelSession } from "./IModelSession";
 
 declare const PACKAGE_VERSION: string;
 
-// tslint:disable no-console
-// tslint:disable:ter-indent
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/indent */
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;

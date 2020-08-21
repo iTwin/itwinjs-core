@@ -19,7 +19,7 @@ import { Schema } from "./Schema";
  * @beta
  */
 export class CustomAttributeClass extends ECClass {
-  public readonly schemaItemType!: SchemaItemType.CustomAttributeClass; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.CustomAttributeClass; // eslint-disable-line
   protected _containerType?: CustomAttributeContainerType;
 
   get containerType(): CustomAttributeContainerType {

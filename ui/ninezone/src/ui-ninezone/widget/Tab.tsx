@@ -19,6 +19,7 @@ import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabsEntryContext } from "./Tabs";
 import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
+import { WidgetOverflowContext } from "./Overflow";
 
 /** Properties of [[WidgetTab]] component.
  * @internal
@@ -33,10 +34,11 @@ export interface WidgetTabProps {
 /** Component that displays a tab in a side panel widget.
  * @internal
  */
-export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const { tab } = props;
   const { id } = tab;
   const widgetTabsEntryContext = React.useContext(WidgetTabsEntryContext);
+  const overflowContext = React.useContext(WidgetOverflowContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const side = React.useContext(PanelSideContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
@@ -57,6 +59,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     const position = bounds.topLeft();
     const size = widgetContext.measure();
     const widgetSize = restrainInitialWidgetSize(size, nzBounds.getSize());
+    overflowContext && overflowContext.close();
     handleDragStart({
       initialPointerPosition: initialPointerPosition.current,
       widgetSize,
@@ -71,16 +74,18 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     });
     dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
-  }, [dispatch, floatingWidgetId, handleDragStart, measure, side, widgetContext, widgetId, id]);
+  }, [dispatch, floatingWidgetId, handleDragStart, measure, side, widgetContext, widgetId, id, overflowContext]);
   const handleClick = React.useCallback(() => {
+    overflowContext && overflowContext.close();
     dispatch({
       type: "WIDGET_TAB_CLICK",
       side,
       widgetId,
       id,
     });
-  }, [dispatch, widgetId, id, side]);
+  }, [dispatch, widgetId, id, side, overflowContext]);
   const handleDoubleClick = React.useCallback(() => {
+    overflowContext && overflowContext.close();
     dispatch({
       type: "WIDGET_TAB_DOUBLE_CLICK",
       side,
@@ -88,7 +93,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
       floatingWidgetId,
       id,
     });
-  }, [dispatch, floatingWidgetId, widgetId, id, side]);
+  }, [dispatch, floatingWidgetId, widgetId, id, side, overflowContext]);
   const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
     initialPointerPosition.current = new Point(args.clientX, args.clientY);
     dragStartTimer.current.start();
@@ -119,7 +124,6 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
   const doubleClickTimer = React.useRef(new Timer(300));
   const initialPointerPosition = React.useRef<Point>();
   const clickCount = React.useRef(0);
-
   React.useEffect(() => {
     const timer = dragStartTimer.current;
     timer.setOnExecute(handleTabDragStart);
@@ -156,6 +160,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     <div
       className={className}
       ref={refs}
+      role="tab"
     >
       <span title={tab.label}>{tab.label}</span>
       {!widgetTabsEntryContext && <div className="nz-icon" />}

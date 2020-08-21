@@ -28,6 +28,7 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64 } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
+import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelClient } from '@bentley/imodelhub-client';
@@ -390,7 +391,7 @@ export type BaseLayerProps = MapLayerProps | ColorDefProps;
 // @alpha
 export type BaseLayerSettings = MapLayerSettings | ColorDef;
 
-// @beta
+// @public
 export enum BatchType {
     PlanarClassifier = 2,
     Primary = 0,
@@ -1377,6 +1378,8 @@ export abstract class ContentIdProvider {
 
 // @public
 export interface ContextRealityModelProps {
+    // @beta
+    appearanceOverrides?: FeatureAppearanceProps;
     // @beta (undocumented)
     classifiers?: SpatialClassificationProps.Properties[];
     // (undocumented)
@@ -1446,6 +1449,9 @@ export interface DecorationGeometryProps {
 
 // @alpha
 export const defaultDesktopAuthorizationClientExpiryBuffer: number;
+
+// @alpha
+export const defaultMobileAuthorizationClientExpiryBuffer: number;
 
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
@@ -1547,6 +1553,11 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
 }
 
 // @beta
+export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
+    modelId?: Id64String;
+}
+
+// @beta
 export interface DisplayStyleOverridesOptions {
     includeAll?: true;
     includeBackgroundMap?: true;
@@ -1583,23 +1594,30 @@ export class DisplayStyleSettings {
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
     dropExcludedElement(id: Id64String): void;
+    dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
+    // @internal (undocumented)
+    equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean;
     // @internal (undocumented)
     equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
     get excludedElements(): Set<Id64String>;
+    getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
+    get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
     // @alpha
     get mapImagery(): MapImagerySettings;
     set mapImagery(mapImagery: MapImagerySettings);
+    get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
     get monochromeColor(): ColorDef;
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
     // @internal (undocumented)
     readonly onOverridesApplied: BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>;
+    overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
@@ -1630,6 +1648,8 @@ export interface DisplayStyleSettingsProps {
     excludedElements?: Id64String[];
     // @alpha
     mapImagery?: MapImageryProps;
+    // @beta
+    modelOvr?: DisplayStyleModelAppearanceProps[];
     monochromeColor?: ColorDefProps;
     monochromeMode?: MonochromeMode;
     // @beta
@@ -1860,7 +1880,25 @@ export abstract class Editor3dRpcInterface extends RpcInterface {
     // (undocumented)
     startModifyingElements(_tokenProps: IModelRpcProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void>;
     // (undocumented)
-    writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
+    writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString, _opts: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
+}
+
+// @alpha (undocumented)
+export interface Editor3dRpcInterfaceWriteOptions {
+    returnPropsOptions?: Editor3dRpcInterfaceWriteReturnPropsOptions;
+    returnType?: Editor3dRpcInterfaceWriteReturnType;
+}
+
+// @alpha (undocumented)
+export interface Editor3dRpcInterfaceWriteReturnPropsOptions {
+    geometry?: boolean;
+}
+
+// @alpha (undocumented)
+export enum Editor3dRpcInterfaceWriteReturnType {
+    Ids = 1,
+    None = 0,
+    Props = 2
 }
 
 // @beta
@@ -1925,6 +1963,14 @@ export type ElementAlignedBox3d = Range3d;
 export interface ElementAspectProps extends EntityProps {
     // (undocumented)
     element: RelatedElementProps;
+}
+
+// @alpha
+export interface ElementGeometryChange {
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    range?: Range3dProps;
 }
 
 // @public
@@ -2022,6 +2068,9 @@ export namespace Events {
         onBriefcaseDownloadProgress = "download-progress";
         const // (undocumented)
         onInternetConnectivityChanged = "onInternetConnectivityChanged";
+        const // (undocumented)
+        onUserStateChanged = "onUserStateChanged";
+        const modelGeometryChanges = "modelGeometryChanges";
     }
 }
 
@@ -2050,6 +2099,70 @@ export class Feature {
     get isUndefined(): boolean;
     // (undocumented)
     readonly subCategoryId: string;
+}
+
+// @public
+export class FeatureAppearance implements FeatureAppearanceProps {
+    protected constructor(props: FeatureAppearanceProps);
+    get anyOverridden(): boolean;
+    clone(changedProps: FeatureAppearanceProps): FeatureAppearance;
+    cloneProps(changedProps: FeatureAppearanceProps): FeatureAppearanceProps;
+    static readonly defaults: FeatureAppearance;
+    // (undocumented)
+    readonly emphasized?: true | undefined;
+    // (undocumented)
+    equals(other: FeatureAppearance): boolean;
+    extendAppearance(base: FeatureAppearance): FeatureAppearance;
+    // (undocumented)
+    static fromJSON(props?: FeatureAppearanceProps): FeatureAppearance;
+    static fromRgb(color: ColorDef): FeatureAppearance;
+    static fromRgba(color: ColorDef): FeatureAppearance;
+    static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
+    static fromTransparency(transparencyValue: number): FeatureAppearance;
+    // (undocumented)
+    readonly ignoresMaterial?: true | undefined;
+    // (undocumented)
+    get isFullyTransparent(): boolean;
+    // (undocumented)
+    readonly linePixels?: LinePixels;
+    // (undocumented)
+    readonly nonLocatable?: true | undefined;
+    // (undocumented)
+    get overridesLinePixels(): boolean;
+    // (undocumented)
+    get overridesNonLocatable(): boolean;
+    // (undocumented)
+    get overridesRgb(): boolean;
+    // (undocumented)
+    get overridesSymbology(): boolean;
+    // (undocumented)
+    get overridesTransparency(): boolean;
+    // (undocumented)
+    get overridesWeight(): boolean;
+    // (undocumented)
+    readonly rgb?: RgbColor;
+    // (undocumented)
+    toJSON(): FeatureAppearanceProps;
+    // (undocumented)
+    readonly transparency?: number;
+    // (undocumented)
+    readonly weight?: number;
+}
+
+// @public
+export interface FeatureAppearanceProps {
+    emphasized?: true | undefined;
+    ignoresMaterial?: true | undefined;
+    linePixels?: LinePixels;
+    nonLocatable?: true | undefined;
+    rgb?: RgbColorProps;
+    transparency?: number;
+    weight?: number;
+}
+
+// @beta
+export interface FeatureAppearanceProvider {
+    getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
 // @internal
@@ -2087,6 +2200,91 @@ export enum FeatureIndexType {
     // (undocumented)
     Uniform = 1
 }
+
+// @public
+export class FeatureOverrides {
+    constructor();
+    // @internal (undocumented)
+    get alwaysDrawn(): Id64.Uint32Set;
+    // @internal
+    protected readonly _alwaysDrawn: Id64.Uint32Set;
+    // @beta
+    alwaysDrawnIgnoresSubCategory: boolean;
+    // @internal
+    readonly animationNodeOverrides: Map<number, FeatureAppearance>;
+    // @internal
+    protected _constructions: boolean;
+    get defaultOverrides(): FeatureAppearance;
+    // @internal
+    protected _defaultOverrides: FeatureAppearance;
+    // @internal
+    protected _dimensions: boolean;
+    // @internal
+    protected readonly _elementOverrides: Id64.Uint32Map<FeatureAppearance>;
+    // @alpha
+    getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+    // @internal
+    protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): FeatureAppearance | undefined;
+    // @internal (undocumented)
+    protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined;
+    getElementOverridesById(id: Id64String): FeatureAppearance | undefined;
+    getFeatureAppearance(feature: Feature, modelId: Id64String, type?: BatchType): FeatureAppearance | undefined;
+    // @internal (undocumented)
+    protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined;
+    getModelOverridesById(id: Id64String): FeatureAppearance | undefined;
+    // @internal (undocumented)
+    protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined;
+    getSubCategoryOverridesById(id: Id64String): FeatureAppearance | undefined;
+    // @internal
+    getSubCategoryPriority(idLo: number, idHi: number): number;
+    // @internal
+    ignoreSubCategory: boolean;
+    // @internal (undocumented)
+    protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
+    isAlwaysDrawnExclusive: boolean;
+    // @internal (undocumented)
+    isClassVisible(geomClass: GeometryClass): boolean;
+    isFeatureVisible(feature: Feature): boolean;
+    // @internal (undocumented)
+    protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean;
+    isSubCategoryIdVisible(id: Id64String): boolean;
+    // @internal
+    isSubCategoryVisible(idLo: number, idHi: number): boolean;
+    // @internal (undocumented)
+    isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean;
+    get lineWeights(): boolean;
+    // @internal
+    protected _lineWeights: boolean;
+    // @internal
+    protected readonly _modelOverrides: Id64.Uint32Map<FeatureAppearance>;
+    // @internal
+    protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
+    // @internal (undocumented)
+    get neverDrawn(): Id64.Uint32Set;
+    // @internal
+    protected readonly _neverDrawn: Id64.Uint32Set;
+    // @internal
+    readonly neverDrawnAnimationNodes: Set<number>;
+    overrideAnimationNode(id: number, app: FeatureAppearance): void;
+    overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @internal
+    protected _patterns: boolean;
+    setAlwaysDrawn(id: Id64String): void;
+    setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory?: boolean): void;
+    setAnimationNodeNeverDrawn(id: number): void;
+    setDefaultOverrides(appearance: FeatureAppearance, replaceExisting?: boolean): void;
+    setNeverDrawn(id: Id64String): void;
+    setNeverDrawnSet(ids: Id64Set): void;
+    setVisibleSubCategory(id: Id64String): void;
+    // @internal
+    protected readonly _subCategoryOverrides: Id64.Uint32Map<FeatureAppearance>;
+    // @internal
+    protected readonly _subCategoryPriorities: Id64.Uint32Map<number>;
+    // @internal
+    protected readonly _visibleSubCategories: Id64.Uint32Set;
+    }
 
 // @beta
 export class FeatureTable extends IndexMap<Feature> {
@@ -3271,6 +3469,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]>;
     static getClient(): IModelReadRpcInterface;
+    static getClientForRouting(token: RpcRoutingToken): IModelReadRpcInterface;
     // (undocumented)
     getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String>;
     // (undocumented)
@@ -3371,6 +3570,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
     static getClient(): IModelWriteRpcInterface;
+    static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface;
     // (undocumented)
     getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
     // (undocumented)
@@ -3807,6 +4007,14 @@ export class MeshPolylineList extends Array<MeshPolyline> {
     constructor(...args: MeshPolyline[]);
 }
 
+// @alpha
+export interface MobileAuthorizationClientConfiguration {
+    clientId: string;
+    expiryBuffer?: number;
+    redirectUri: string;
+    scope: string;
+}
+
 // @beta (undocumented)
 export type MobileRpcChunks = Array<string | Uint8Array>;
 
@@ -3901,6 +4109,15 @@ export class ModelClipGroups {
     toJSON(): ModelClipGroupProps[];
 }
 
+// @alpha
+export interface ModelGeometryChanges {
+    deleted?: Id64String[];
+    inserted?: ElementGeometryChange[];
+    modelId: Id64String;
+    range?: Range3dProps;
+    updated?: ElementGeometryChange[];
+}
+
 // @public
 export interface ModelProps extends EntityProps {
     // (undocumented)
@@ -3939,6 +4156,10 @@ export enum MonochromeMode {
 
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
+    authGetAccessToken(): Promise<string>;
+    authInitialize(_issuer: string, _config: any): Promise<void>;
+    authSignIn(): Promise<void>;
+    authSignOut(): Promise<void>;
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_key: BriefcaseKey): Promise<void>;
@@ -3955,21 +4176,13 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
     requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean>;
     requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps>;
-    // (undocumented)
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
-    // (undocumented)
     storageKeys(_storageId: string): Promise<string[]>;
-    // (undocumented)
     storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void>;
-    // (undocumented)
     storageMgrNames(): Promise<string[]>;
-    // (undocumented)
     storageMgrOpen(_storageId: string): Promise<string>;
-    // (undocumented)
     storageRemove(_storageId: string, _key: string): Promise<void>;
-    // (undocumented)
     storageRemoveAll(_storageId: string): Promise<void>;
-    // (undocumented)
     storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
 }
 
@@ -5144,9 +5357,7 @@ export abstract class RpcConfiguration {
     // @alpha (undocumented)
     allowAttachedInterfaces: boolean;
     static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void;
-    static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: {
-        new (): RpcConfiguration;
-    }): void;
+    static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: new () => RpcConfiguration): void;
     // @alpha (undocumented)
     attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     // @internal (undocumented)
@@ -5159,9 +5370,7 @@ export abstract class RpcConfiguration {
     static disableRoutingValidation: boolean;
     static initializeInterfaces(configuration: RpcConfiguration): void;
     abstract readonly interfaces: () => RpcInterfaceDefinition[];
-    static obtain<T extends RpcConfiguration>(configurationConstructor: {
-        new (): T;
-    }): T;
+    static obtain<T extends RpcConfiguration>(configurationConstructor: new () => T): T;
     // @internal (undocumented)
     onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void;
     // @internal (undocumented)
@@ -5913,6 +6122,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     // (undocumented)
     close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
     static getClient(): SnapshotIModelRpcInterface;
+    static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface;
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
@@ -6014,6 +6224,17 @@ export namespace SpatialClassificationProps {
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     // (undocumented)
     modelSelectorId: Id64String;
+}
+
+// @internal
+export abstract class StandaloneIModelRpcInterface extends RpcInterface {
+    // (undocumented)
+    close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
+    static getClient(): StandaloneIModelRpcInterface;
+    static readonly interfaceName = "StandaloneIModelRpcInterface";
+    static interfaceVersion: string;
+    // (undocumented)
+    openFile(_filePath: string, _openMode: OpenMode): Promise<IModelConnectionProps>;
 }
 
 // @internal
@@ -7191,7 +7412,9 @@ export class WebAppRpcRequest extends RpcRequest {
     protected send(): Promise<number>;
     static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
     protected setHeader(name: string, value: string): void;
-    }
+    protected supplyFetch(): typeof fetch;
+    protected supplyRequest(): typeof Request;
+}
 
 // @internal
 export abstract class WipRpcInterface extends RpcInterface {

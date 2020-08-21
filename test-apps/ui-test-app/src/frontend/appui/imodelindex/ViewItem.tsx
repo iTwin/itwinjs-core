@@ -15,7 +15,7 @@ class ThumbnailCache {
   /** Caches thumbnails */
   public static async getThumbnail(iModelConnection: IModelConnection | undefined, viewProps: ViewDefinitionProps) {
     const viewId = viewProps.id!;
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     console.log(`Retrieving thumbnail for iModel=${iModelConnection!.name} view=${viewId}`);
 
     if (ThumbnailCache._thumbnails.has(viewId.toString()))
@@ -26,7 +26,7 @@ class ThumbnailCache {
         thumbnail = await iModelConnection.views.getThumbnail(viewProps.id!);
       } catch {
         if (!thumbnail) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log("Failed to obtain a thumbnail from the iModel");
         }
       }

@@ -46,21 +46,21 @@ class TestNestedFrontstage extends FrontstageProvider {
         topLeft={
           <Zone defaultState={ZoneState.Open} allowsMerging={true} applicationData={{ key: "value" }}
             widgets={[
-              <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
+              <Widget isFreeform={true} element={<FrontstageToolWidget />} />, // eslint-disable-line react/jsx-key
             ]}
           />
         }
         topCenter={
           <Zone
             widgets={[
-              <Widget isToolSettings={true} />,
+              <Widget isToolSettings={true} />, // eslint-disable-line react/jsx-key
             ]}
           />
         }
         bottomCenter={
           <Zone
             widgets={[
-              <Widget id="statusBar" isStatusBar={true} iconSpec="icon-placeholder" labelKey="App:widgets.StatusBar"
+              <Widget id="statusBar" isStatusBar={true} iconSpec="icon-placeholder" labelKey="App:widgets.StatusBar" // eslint-disable-line react/jsx-key
                 control={AppStatusBarWidgetControl} applicationData={{ key: "value" }} />,
             ]}
           />
@@ -73,7 +73,7 @@ class TestNestedFrontstage extends FrontstageProvider {
 class FrontstageToolWidget extends React.Component {
   public render() {
     return (
-      <ToolWidget // tslint:disable-line:deprecation
+      <ToolWidget // eslint-disable-line deprecation/deprecation
         appButton={NestedFrontstage.backToPreviousFrontstageCommand}
       />
     );

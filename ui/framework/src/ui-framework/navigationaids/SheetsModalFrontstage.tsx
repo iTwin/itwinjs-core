@@ -225,7 +225,8 @@ export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
     );
 
     return (
-      <div className={className} onClick={this._onClick} onMouseDown={this._onMouseDown} onMouseLeave={this._onMouseLeave} >
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+      <div className={className} onClick={this._onClick} onMouseDown={this._onMouseDown} onMouseLeave={this._onMouseLeave} role="button" tabIndex={-1} >
         {label}
         <div className="sheet-image-container">
           <div className={iconClassName} />

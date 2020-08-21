@@ -8,11 +8,11 @@ import * as path from "path";
 import { Compiler } from "webpack";
 import { getAppRelativePath, getSourcePosition, paths } from "../utils/paths";
 
-// tslint:disable:no-var-requires variable-name
+/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
 const WebpackError = require("webpack/lib/WebpackError");
 const ModuleDependencyWarning = require("webpack/lib/ModuleDependencyWarning");
-// tslint:enable:no-var-requires variable-name
+/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 class MissingExternalWarning extends WebpackError {
   constructor(pkgName: string) {

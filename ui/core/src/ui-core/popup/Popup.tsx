@@ -10,7 +10,7 @@ import "./Popup.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { FocusTrap } from "../focustrap/FocusTrap";
 import { CommonProps } from "../utils/Props";
 
@@ -177,8 +177,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (this.props.isPinned)
       return;
 
-    if (event.key === "Escape" || event.key === "Enter") {
-      this._onClose(event.key === "Enter");
+    if (event.key === SpecialKey.Escape || event.key === SpecialKey.Enter) {
+      this._onClose(event.key === SpecialKey.Enter);
     }
   }
 
@@ -283,7 +283,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const scrollX = (window.scrollX !== undefined) ? window.scrollX : /* istanbul ignore next */ window.pageXOffset;
 
     // const popupRect = this._popup.getBoundingClientRect();
-    const targetRect = target!.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
 
     const { popupWidth, popupHeight } = this._getPopupDimensions();
 

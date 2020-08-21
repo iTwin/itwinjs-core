@@ -15,6 +15,7 @@ import { FileHandler } from '@bentley/itwin-client';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
+import { HttpRequestOptions } from '@bentley/itwin-client';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
@@ -33,8 +34,20 @@ import { WsgInstance } from '@bentley/itwin-client';
 import { WsgQuery } from '@bentley/itwin-client';
 import { WsgRequestOptions } from '@bentley/itwin-client';
 
+// @beta
+export function addApplicationVersion(version: string): HttpRequestOptionsTransformer;
+
+// @beta
+export function addCsrfHeader(headerName?: string, cookieName?: string): HttpRequestOptionsTransformer;
+
+// @beta
+export function addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer;
+
 // @internal
 export function addSelectApplicationData(query: RequestQueryOptions): void;
+
+// @internal
+export function addSelectBCVAccessKey(query: RequestQueryOptions): void;
 
 // @internal
 export function addSelectFileAccessKey(query: RequestQueryOptions): void;
@@ -76,6 +89,10 @@ export class Briefcase extends WsgInstance {
     acquiredDate?: string;
     applicationId?: string;
     applicationName?: string;
+    bcvAccessKeyAccount?: string;
+    bcvAccessKeyContainer?: string;
+    bcvAccessKeyDbName?: string;
+    bcvAccessKeySAS?: string;
     briefcaseId?: number;
     changeSetIdOnDevice?: string;
     deviceName?: string;
@@ -131,6 +148,7 @@ export class BriefcaseQuery extends WsgQuery {
     getId(): number | undefined;
     ownedByMe(): this;
     selectApplicationData(): this;
+    selectBCVAccessKey(): this;
     selectDownloadUrl(): this;
 }
 
@@ -226,6 +244,10 @@ export enum ChangesType {
 
 // @alpha
 export class Checkpoint extends WsgInstance {
+    bcvAccessKeyAccount?: string;
+    bcvAccessKeyContainer?: string;
+    bcvAccessKeyDbName?: string;
+    bcvAccessKeySAS?: string;
     createdDate?: string;
     downloadUrl?: string;
     fileDescription?: string;
@@ -248,6 +270,7 @@ export class CheckpointQuery extends WsgQuery {
     byChangeSetId(changeSetId: string): this;
     nearestCheckpoint(targetChangeSetId: string): this;
     precedingCheckpoint(targetChangeSetId: string): this;
+    selectBCVAccessKey(): this;
     selectDownloadUrl(): this;
 }
 
@@ -485,6 +508,9 @@ export type GlobalEventType =
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
+// @beta
+export type HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void;
+
 // @alpha
 export class HubCode extends CodeBase {
     value?: string;
@@ -562,24 +588,26 @@ export class IModelBaseHandler extends WsgClient {
     getCustomRequestOptions(): CustomRequestOptions;
     // (undocumented)
     getFileHandler(): FileHandler | undefined;
-    getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
-    getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]>;
+    getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     protected getRelyingPartyUrl(): string;
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     protected getUrlSearchKey(): string;
-    postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;
-    postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]>;
-    postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]>;
+    postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
+    postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     // (undocumented)
     static readonly searchKey: string;
+    protected setupHttpOptions(options?: HttpRequestOptions): HttpRequestOptions;
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
+    use(func: HttpRequestOptionsTransformer): void;
 }
 
 // @beta
 export abstract class IModelClient {
-    constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler);
+    constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler, applicationVersion?: string);
     // @internal
     get briefcases(): BriefcaseHandler;
     get changeSets(): ChangeSetHandler;
@@ -604,6 +632,7 @@ export abstract class IModelClient {
     setFileHandler(fileHandler: FileHandler): void;
     // @alpha
     get thumbnails(): ThumbnailHandler;
+    use(transformer: HttpRequestOptionsTransformer): void;
     // @alpha
     get users(): UserInfoHandler;
     get versions(): VersionHandler;
@@ -668,7 +697,7 @@ export class IModelHandler {
 
 // @beta
 export class IModelHubClient extends IModelClient {
-    constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler);
+    constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler, applicationVersion?: string);
     // @internal
     get permissions(): PermissionHandler;
 }

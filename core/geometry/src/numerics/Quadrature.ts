@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Geometry } from "../Geometry";
+
 /** @packageDocumentation
  * @module Numerics
  */
@@ -143,8 +145,32 @@ return 4;
     for (let i = 0; i < n; i++)sum += ww[i] * f(xx[i]);
     return sum;
   }
-
+  /**
+   * Do a Guass quadrature integral for a (number)=>number function over an interval, with caller specified sub-interval count and
+   * @param x0 start of overall interval
+   * @param x1 end of overall interval
+   * @param f function to evaluate
+   * @param numInterval number of internal intervals
+   * @param numGauss number of gauss points.    must be supported by GaussMapper, i.e. 1,2,3,4,5
+   */
+  public static doGaussIntegral(x0: number, x1: number, f: (x: number) => number, numInterval: number, numGauss: number = 5) {
+    const mapper = new GaussMapper(numGauss);
+    if (numInterval < 1)
+      numInterval = 1;
+    const df = 1.0 / numInterval;
+    let sum = 0;
+    for (let i = 1; i <= numInterval; i++) {
+      const xA = Geometry.interpolate(x0, (i - 1) * df, x1);
+      const xB = i === numInterval ? x1 : Geometry.interpolate(x0, (i) * df, x1);
+      const n = mapper.mapXAndW(xA, xB);
+      for (let k = 0; k < n; k++) {
+        sum += mapper.gaussW[k] * f(mapper.gaussX[k]);
+      }
+    }
+    return sum;
+  }
 }
+
 /**
  * This class carries public members as needed for users to have gauss points that are used
  * in the callers loops.

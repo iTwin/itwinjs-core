@@ -12,11 +12,12 @@ import * as React from "react";
 import { ContextMenu } from "../contextmenu/ContextMenu";
 import { Icon, IconSpec } from "../icons/IconComponent";
 import { CommonProps } from "../utils/Props";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 // TODO: implement
 /** @internal */
 export enum SplitButtonActionType {
-  ContextMenu,
+  ContextMenu, // eslint-disable-line no-shadow
   List,
 }
 
@@ -81,10 +82,19 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
         tabIndex={0}
         onKeyUp={this._handleKeyUp}
         ref={this._buttonRef}
+        role="button"
       >
-        <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}>{icon} {this.props.label}</div>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}
+          role="button" tabIndex={-1}
+        >
+          {icon} {this.props.label}
+        </div>
         <div className={classnames("core-split-button-divider", this.props.drawBorder && "core-split-button-border")} />
-        <div className={"core-split-button-arrow"} ref={this._arrowElement} onClick={this._handleArrowClick}>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <div className={"core-split-button-arrow"} ref={this._arrowElement} onClick={this._handleArrowClick}
+          role="button" tabIndex={-1}
+        >
           <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} />
           <ContextMenu
             ref={(el) => { this._menu = el; }}
@@ -102,9 +112,9 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   }
 
   private _handleKeyUp = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === SpecialKey.Enter) {
       this.props.onExecute && this.props.onExecute();
-    } else if (event.key === "ArrowDown" && !this.state.expanded) {
+    } else if (event.key === SpecialKey.ArrowDown && !this.state.expanded) {
       this._closing = false;
       this._open();
     } else {

@@ -2,6 +2,30 @@
   "name": "@bentley/imodelhub-client",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/imodelhub-client_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added applicationVersion parameter to iModelHubClient constructor that will be used in all requests."
+          },
+          {
+            "comment": "Added iModelHub ClientAPIs for BlockCacheVfs checkpoints"
+          },
+          {
+            "comment": "Added a way to change headers for all requests"
+          },
+          {
+            "comment": "Remove special code handling for mobile."
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/imodelhub-client_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

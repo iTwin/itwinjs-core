@@ -13,7 +13,7 @@ import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 /**
  * Context to build a grid with
  * * XY Coordinates are in a grid within specified range.
@@ -138,7 +138,7 @@ class SampleGridBuilder {
             // general cubic bezier on 4 control values a0,a1,a2,a3 is
             // v^3 a0 + 3 v^2 u a1 + 3 v u^2 a2 + u^3 a3
             // here a0 = a1 = 1, a2 = a3 = 0
-            f = v * v * ( v + 3 * u);
+            f = v * v * (v + 3 * u);
             this.setGridZToMax(iMid + i, jMid + j, zNew * f);
           }
         }

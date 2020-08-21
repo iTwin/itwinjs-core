@@ -14,6 +14,8 @@ import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 chai.should();
 
 function mockCreateEventSubscription(imodelId: GuidString, eventTypes: EventType[]) {

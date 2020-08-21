@@ -28,10 +28,10 @@ interface VisibilityTreeComponentProps {
     modelsTree: {
       selectionMode?: SelectionMode;
       selectionPredicate?: ModelsTreeSelectionPredicate;
-    },
+    };
     categoriesTree: {
       allViewports?: boolean;
-    },
+    };
   };
 }
 
@@ -39,9 +39,10 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
   const { imodel, activeView, enablePreloading } = props;
   const modelsTreeProps = props.config?.modelsTree;
   const categoriesTreeProps = props.config?.categoriesTree;
+  const selectLabel = IModelApp.i18n.translate("UiFramework:visibilityWidget.options");
   return (
     <div className="ui-test-app-visibility-widget">
-      <SelectableContent defaultSelectedContentId="models-tree">
+      <SelectableContent defaultSelectedContentId="models-tree" selectAriaLabel={selectLabel}>
         {[{
           id: "models-tree",
           label: IModelApp.i18n.translate("UiFramework:visibilityWidget.modeltree"),

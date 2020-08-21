@@ -16,10 +16,10 @@ import { RpcRequestContext } from "./RpcRequestContext";
 import { RpcRoutingToken } from "./RpcRoutingToken";
 
 /** @public */
-export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration };
+export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration }; // eslint-disable-line @typescript-eslint/prefer-function-type
 
 /** @alpha */
-export interface RpcRoutingMap extends RpcConfigurationSupplier { configurations: Map<number, RpcConfigurationSupplier>; }
+export interface RpcRoutingMap extends RpcConfigurationSupplier { configurations: Map<number, RpcConfigurationSupplier> }
 
 /** @alpha */
 export namespace RpcRoutingMap {
@@ -66,7 +66,7 @@ export abstract class RpcConfiguration {
   }
 
   /** Sets the configuration supplier for an RPC interface class for a given routing. */
-  public static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: { new(): RpcConfiguration }): void {
+  public static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: new () => RpcConfiguration): void {
     if (!definition.prototype.configurationSupplier) {
       RpcConfiguration.assign(definition, RpcRoutingMap.create());
     }
@@ -84,7 +84,7 @@ export abstract class RpcConfiguration {
   }
 
   /** Obtains the instance of an RPC configuration class. */
-  public static obtain<T extends RpcConfiguration>(configurationConstructor: { new(): T }): T {
+  public static obtain<T extends RpcConfiguration>(configurationConstructor: new () => T): T {
     let instance = (configurationConstructor as any)[INSTANCE] as T;
     if (!instance)
       instance = (configurationConstructor as any)[INSTANCE] = new configurationConstructor();

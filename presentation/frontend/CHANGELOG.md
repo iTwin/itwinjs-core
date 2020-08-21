@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Fri, 14 Aug 2020 16:34:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2020 20:57:10 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 20 Aug 2020 20:57:10 GMT
+
+### Updates
+
+- Add ability to compare hierarchies based on rulesets or ruleset variables.
+- Add a `RulesetManager.onRulesetModified` event that's raised when rulesets are modified.
+- Add a `RulesetVariablesManager.onVariableChanged` event that's raised when ruleset variables are changed.
+- Switch to ESLint
 
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT

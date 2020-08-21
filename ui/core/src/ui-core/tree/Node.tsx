@@ -20,8 +20,8 @@ import { ExpansionToggle } from "./ExpansionToggle";
  * @beta
  */
 export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"> & {
-  onChange: (checked: boolean) => void,
-  onClick: (e: React.MouseEvent) => void,
+  onChange: (checked: boolean) => void;
+  onClick: (e: React.MouseEvent) => void;
 };
 
 /** Type for node Checkbox renderer
@@ -128,6 +128,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
     );
 
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
         className={className}
         style={this.props.style}
@@ -136,6 +137,8 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         onMouseDown={this.props.onMouseDown}
         onMouseUp={this.props.onMouseUp}
         onMouseMove={this.props.onMouseMove}
+        role="treeitem"
+        tabIndex={-1}
       >
         <div
           className="contents"

@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -782,7 +781,7 @@ describe("SelectionManager", () => {
 
     beforeEach(() => {
       const providerMock = moq.Mock.ofType<HiliteSetProvider>();
-      providerMock.setup((x) => x.getHiliteSet(moq.It.isAny())).returns(async () => ({}));
+      providerMock.setup(async (x) => x.getHiliteSet(moq.It.isAny())).returns(async () => ({}));
       factory = sinon.stub(HiliteSetProvider, "create").returns(providerMock.object);
     });
 

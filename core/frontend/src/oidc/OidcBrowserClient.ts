@@ -64,7 +64,7 @@ class OidcClientLogger implements IOidcClientLogger {
 
   /** Initializes forwarding of OidcClient logs to the Bentley Logger */
   public static initializeLogger() {
-    OidcClientLog.logger = new OidcClientLogger(); // tslint:disable-line:deprecation
+    OidcClientLog.logger = new OidcClientLogger(); // eslint-disable-line deprecation/deprecation
     this.initializeLevel();
   }
 
@@ -85,7 +85,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
   private _redirectPath: string;
 
   /** Constructor */
-  public constructor(private _configuration: OidcFrontendClientConfiguration) { // tslint:disable-line:deprecation
+  public constructor(private _configuration: OidcFrontendClientConfiguration) { // eslint-disable-line deprecation/deprecation
     super();
     const redirectUri: URL = new URL(this._configuration.redirectUri);
     this._redirectPath = redirectUri.pathname;
@@ -107,7 +107,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
 
     // Initialize user manager and logging
     await this.createUserManager(requestContext);
-    OidcClientLogger.initializeLogger(); // tslint:disable-line:deprecation
+    OidcClientLogger.initializeLogger(); // eslint-disable-line deprecation/deprecation
 
     if (this.getIsRedirecting()) {
       // Handle redirection to extract the accessToken
@@ -229,7 +229,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
       return;
 
     // Attempt an interactive signin - returns a promise to redirect
-    await this._userManager!.signinRedirect({
+    await this._userManager.signinRedirect({
       data: {
         successRedirectUrl: successRedirectUrl || window.location.href,
       },
@@ -295,7 +295,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     this._userManager.events.removeUserUnloaded(this._onUserUnloaded);
     this._userManager.events.removeSilentRenewError(this._onSilentRenewError);
     this._userManager.events.removeUserSignedOut(this._onUserSignedOut);
-    OidcClientLogger.reset(); // tslint:disable-line:deprecation
+    OidcClientLogger.reset(); // eslint-disable-line deprecation/deprecation
     this._userManager = undefined;
   }
 
@@ -319,6 +319,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
    * @internal
    */
   protected async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
+    /* eslint-disable @typescript-eslint/naming-convention */
     const userManagerSettings: UserManagerSettings = {
       authority: this._configuration.authority || await this.getUrl(requestContext),
       client_id: this._configuration.clientId,
@@ -337,6 +338,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
       monitorSession: false,
       silentRequestTimeout: 20000,
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
     return userManagerSettings;
   }
 

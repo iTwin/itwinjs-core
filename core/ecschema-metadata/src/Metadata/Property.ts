@@ -464,7 +464,7 @@ export class NavigationProperty extends Property {
   get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
 
   public getRelationshipClassSync(): RelationshipClass | undefined {
-    if (!this._relationshipClass)
+    if (!this._relationshipClass) // eslint-disable-line @typescript-eslint/no-misused-promises
       return undefined;
 
     return this.class.schema.lookupItemSync(this._relationshipClass);
@@ -515,7 +515,7 @@ export abstract class ArrayProperty extends Property {
   get maxOccurs() { return this._maxOccurs; }
 }
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
   return class extends Base {
     protected _minOccurs: number = 0;

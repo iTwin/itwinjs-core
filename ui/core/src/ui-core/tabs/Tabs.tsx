@@ -58,12 +58,20 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   constructor(props: MainTabsProps) {
     super(props);
 
+    const activeIndex = this.validateActiveIndex(props.activeIndex);
     this.state = {
-      activeIndex: props.activeIndex ?? 0,
+      activeIndex,
     };
 
     props.labels.forEach(() => this._anchorRefs.push(React.createRef<HTMLAnchorElement>()));
     this._itemKeyboardNavigator = new ItemKeyboardNavigator(this._handleFocusItem, this._activateTab);
+  }
+
+  private validateActiveIndex(idx?: number): number {
+    let activeIndex = 0;
+    if (idx && idx >= 0 && idx < this.props.labels.length)
+      activeIndex = idx;
+    return activeIndex;
   }
 
   /** @internal */
@@ -76,8 +84,30 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   public componentDidUpdate(prevProps: MainTabsProps) {
     if (prevProps.labels !== this.props.labels)
       this._itemKeyboardNavigator.itemCount = this.props.labels.length;
+
     if (prevProps.orientation !== this.props.orientation)
       this._itemKeyboardNavigator.orientation = this.props.orientation;
+
+    if (prevProps.activeIndex !== this.props.activeIndex) {
+      let hadFocus = false;
+      const element = this._anchorRefs[this.state.activeIndex].current;
+      // istanbul ignore else
+      if (element && document.activeElement === element)
+        hadFocus = true;
+      const activeIndex = this.validateActiveIndex(this.props.activeIndex);
+
+      this.setState(
+        () => ({ activeIndex }),
+        () => {
+          // istanbul ignore else
+          if (hadFocus) {
+            const newElement = this._anchorRefs[activeIndex].current;
+            // istanbul ignore else
+            if (newElement)
+              newElement.focus();
+          }
+        });
+    }
   }
 
   private _handleFocusItem = (index: number) => {
@@ -92,17 +122,17 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   }
 
   /** Handle keydown on tabs */
-  private _handleKeydownEvent(event: React.KeyboardEvent, index: number) {
-    this._itemKeyboardNavigator.handleKeydownEvent(event, index);
+  private _handleKeyDownEvent(event: React.KeyboardEvent, index: number) {
+    this._itemKeyboardNavigator.handleKeyDownEvent(event, index);
   }
 
   /** Handle keyup on tabs */
-  private _handleKeyupEvent(event: React.KeyboardEvent, index: number) {
-    this._itemKeyboardNavigator.handleKeyupEvent(event, index);
+  private _handleKeyUpEvent(event: React.KeyboardEvent, index: number) {
+    this._itemKeyboardNavigator.handleKeyUpEvent(event, index);
   }
 
   private _activateTab = (index: number) => {
-    this.props.onClickLabel && this.props.onClickLabel(index);  // tslint:disable-line: deprecation
+    this.props.onClickLabel && this.props.onClickLabel(index);  // eslint-disable-line deprecation/deprecation
     this.props.onActivateTab && this.props.onActivateTab(index);
     this.setState({ activeIndex: index });
   }
@@ -126,11 +156,13 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
             role="tab"
             aria-selected={index === this.state.activeIndex}
           >
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a ref={this._anchorRefs[index]}
               tabIndex={index === this.state.activeIndex ? 0 : -1}
               onClick={() => this._handleTabClick(index)}
-              onKeyDown={(event) => this._handleKeydownEvent(event, index)}
-              onKeyUp={(event) => this._handleKeyupEvent(event, index)}
+              onKeyDown={(event) => this._handleKeyDownEvent(event, index)}
+              onKeyUp={(event) => this._handleKeyUpEvent(event, index)}
+              role="button"
             >
               {label}
             </a>

@@ -23,7 +23,7 @@ class TestDiagnosticReporter extends FormatDiagnosticReporter {
 }
 
 describe("DiagnosticReporters tests", () => {
-  (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
+  (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
   let testSchema: Schema;
   let testSchemaItem: EntityClass;

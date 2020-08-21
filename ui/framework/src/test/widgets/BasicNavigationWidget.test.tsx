@@ -99,7 +99,7 @@ describe("BasicNavigationWidget", () => {
     sandbox.stub(ContentViewManager, "getActiveContentControl").returns(contentControlMock.object);
 
     const wrapper = mount(<BasicNavigationWidget />);
-    // tslint:disable-next-line: no-console
+    // eslint-disable-next-line no-console
     // console.log(wrapper.debug());
     wrapper.unmount();
   });

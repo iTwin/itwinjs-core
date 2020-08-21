@@ -5,7 +5,7 @@
 import * as path from "path";
 import { Configuration } from "webpack";
 
-// tslint:disable-next-line:no-var-requires variable-name
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention
 const OptionsDefaulter: any = require("webpack/lib/OptionsDefaulter");
 
 const isProductionLikeMode = (options: Configuration) => {

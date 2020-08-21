@@ -10,10 +10,10 @@ export interface BrowserFileSelector {
 }
 
 // Only want the following imports if we are using electron and not a browser -----
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 let remote: any;
 if (ElectronRpcConfiguration.isElectron) {
-  // tslint:disable-next-line:no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   remote = require("electron").remote;
 }
 
@@ -31,6 +31,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
   if (ElectronRpcConfiguration.isElectron)
     return selectForElectron();
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   if (undefined === selector || !document.createEvent) {
     const filename = prompt("Enter absolute filename:");
     return null !== filename ? filename : undefined;

@@ -109,6 +109,7 @@ export class LightingEditor {
     span.style.display = "flex";
     parent.appendChild(span);
     const intensityInput = this.addIntensityInput(span, "Solar", this._vp.lightSettings?.solar.intensity ?? 0, (intensity) => this.updateSettings({ solar: { intensity } }));
+    intensityInput.style.marginRight = "0.67em";
 
     const dirInput = createTextBox({
       label: "Direction: ",
@@ -132,11 +133,12 @@ export class LightingEditor {
           tb.value = formatSunDirection(dir);
         }
       },
-    }).textbox;
+    });
+    dirInput.div.style.marginRight = "0.67em";
 
     const cb = this.addCheckBox("Always", (alwaysEnabled: boolean) => {
       this.updateSettings({ solar: { alwaysEnabled } });
-    }, span).checkbox;
+    }, span);
 
     this._updates.push((_view: ViewState) => {
       const lights = this._vp.lightSettings;
@@ -144,8 +146,8 @@ export class LightingEditor {
         return;
 
       intensityInput.value = lights.solar.intensity.toString();
-      dirInput.value = formatSunDirection(lights.solar.direction);
-      cb.checked = lights.solar.alwaysEnabled;
+      dirInput.textbox.value = formatSunDirection(lights.solar.direction);
+      cb.checkbox.checked = lights.solar.alwaysEnabled;
     });
   }
 
@@ -157,6 +159,7 @@ export class LightingEditor {
     const lights = this._vp.lightSettings;
     const portrait = this.addIntensityInput(span, "Portrait", lights?.portraitIntensity ?? 0, (intensity) => this.updateSettings({ portrait: { intensity } }));
     const specular = this.addIntensityInput(span, "Specular", lights?.specularIntensity ?? 0, (specularIntensity) => this.updateSettings({ specularIntensity }));
+    portrait.style.marginRight = "0.67em";
 
     this._updates.push((_view: ViewState) => {
       const settings = this._vp.lightSettings;
@@ -199,6 +202,7 @@ export class LightingEditor {
 
     const hemi = this._vp.lightSettings?.hemisphere;
     const intensityInput = this.addIntensityInput(span, "Hemisphere", hemi?.intensity ?? 0, (intensity) => this.updateSettings({ hemisphere: { intensity } }));
+    intensityInput.style.marginRight = "0.67em";
 
     const skyInput = createColorInput({
       parent: span,
@@ -210,6 +214,7 @@ export class LightingEditor {
         this.updateSettings({ hemisphere: { upperColor: RgbColor.fromColorDef(ColorDef.create(newSky)) } });
       },
     }).input;
+    skyInput.style.marginRight = "0.67em";
 
     const groundInput = createColorInput({
       parent: span,

@@ -515,8 +515,8 @@ export class QBufferHandle3d extends BufferHandle {
   }
 }
 
-const enum DataType {
-  Undefined,
+const enum DataType {// eslint-disable-line no-restricted-syntax
+  Undefined, // eslint-disable-line id-blacklist
   Mat3,
   Mat4,
   Float,

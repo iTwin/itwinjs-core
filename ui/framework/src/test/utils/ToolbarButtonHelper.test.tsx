@@ -71,7 +71,7 @@ describe("Locate Toolbar items", () => {
 
   it("Find item in horizontal and vertical toolbars.", () => {
     const component = render(
-      <ToolWidget // tslint:disable-line:deprecation
+      <ToolWidget // eslint-disable-line deprecation/deprecation
         appButton={backstageToggleCommand}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
@@ -83,7 +83,7 @@ describe("Locate Toolbar items", () => {
 
     const dumpDocument = false;
     if (dumpDocument) {
-      // tslint:disable-next-line: no-console
+      // eslint-disable-next-line no-console
       console.log(prettyDOM(document.documentElement));
     }
 

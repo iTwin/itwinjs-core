@@ -401,4 +401,25 @@ describe("TreeEventDispatcher", () => {
 
   });
 
+  describe("Keyboard Events", () => {
+    const keyEventMock = moq.Mock.ofType<React.KeyboardEvent>();
+
+    beforeEach(() => {
+      keyEventMock.reset();
+    });
+
+    it("calls selection manager onTreeKeyDown", () => {
+      const spy = sinon.spy(selectionManager, "onTreeKeyDown");
+      dispatcher.onTreeKeyDown(keyEventMock.object);
+      expect(spy).to.be.called;
+    });
+
+    it("calls selection manager onTreeKeyUp", () => {
+      const spy = sinon.spy(selectionManager, "onTreeKeyUp");
+      dispatcher.onTreeKeyUp(keyEventMock.object);
+      expect(spy).to.be.called;
+    });
+
+  });
+
 });

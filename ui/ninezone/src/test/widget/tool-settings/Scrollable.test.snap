@@ -25,6 +25,8 @@ exports[`<ScrollableToolSettings /> renders correctly with bottom indicator 1`] 
     <div
       className="nz-triangle"
       onClick={[Function]}
+      role="button"
+      tabIndex={-1}
     />
   </div>
 </div>
@@ -44,6 +46,8 @@ exports[`<ScrollableToolSettings /> renders correctly with top indicator 1`] = `
     <div
       className="nz-triangle"
       onClick={[Function]}
+      role="button"
+      tabIndex={-1}
     />
   </div>
 </div>

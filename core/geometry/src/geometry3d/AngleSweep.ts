@@ -288,7 +288,7 @@ export class AngleSweep implements BeJSONFunctions {
     if (!json)
       this.setStartEndRadians(); // default full circle
     else if (json instanceof AngleSweep)
-      this.setFrom(json as AngleSweep);
+      this.setFrom(json);
     else if (Geometry.isNumberArray(json.degrees, 2))
       this.setStartEndDegrees(json.degrees[0], json.degrees[1]);
     else if (Geometry.isNumberArray(json.radians, 2))

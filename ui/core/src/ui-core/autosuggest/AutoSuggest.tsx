@@ -10,6 +10,7 @@ import "./AutoSuggest.scss";
 import * as React from "react";
 import * as ReactAutosuggest from "react-autosuggest";
 import { Logger } from "@bentley/bentleyjs-core";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "../utils/Props";
 import { UiCore } from "../UiCore";
 
@@ -131,8 +132,8 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     if (typeof this.props.options === "function")
       return this.props.options(value);
 
-    if (this.props.getSuggestions)              // tslint:disable-line: deprecation
-      return this.props.getSuggestions(value);  // tslint:disable-line: deprecation
+    if (this.props.getSuggestions)              // eslint-disable-line deprecation/deprecation
+      return this.props.getSuggestions(value);  // eslint-disable-line deprecation/deprecation
 
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
@@ -170,17 +171,17 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
   private _handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
-      case "Enter":
+      case SpecialKey.Enter:
         // istanbul ignore else
         if (this.props.onPressEnter)
           this.props.onPressEnter(e);
         break;
-      case "Escape":
+      case SpecialKey.Escape:
         // istanbul ignore else
         if (this.props.onPressEscape)
           this.props.onPressEscape(e);
         break;
-      case "Tab":
+      case SpecialKey.Tab:
         // istanbul ignore else
         if (this.props.onPressTab)
           this.props.onPressTab(e);
@@ -207,9 +208,9 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
   public render(): JSX.Element {
     const { inputValue, suggestions } = this.state;
-    const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions,
-      onPressEnter, onPressEscape, onPressTab, onInputFocus, getLabel,
-      getSuggestions, // tslint:disable-line: deprecation
+    const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions, // eslint-disable-line @typescript-eslint/no-unused-vars
+      onPressEnter, onPressEscape, onPressTab, onInputFocus, getLabel, // eslint-disable-line @typescript-eslint/no-unused-vars
+      getSuggestions, // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-unused-vars
       ...props } = this.props;
     const inputPlaceholder = (!inputValue) ? placeholder : undefined;
 
@@ -223,6 +224,8 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     };
 
     return (
+      // The onKeyDown event handler is only being used to capture bubbled events
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
       <div className={this.props.className} style={this.props.style} onKeyDown={this._handleKeyDown}>
         <ReactAutosuggest
           theme={this._theme}

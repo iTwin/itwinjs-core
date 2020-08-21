@@ -195,5 +195,5 @@ function mapStateToProps(state: any) {
  * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
  * This Field React component is Redux connected.
  * @public
- */ // tslint:disable-next-line:variable-name
+ */ // eslint-disable-next-line @typescript-eslint/naming-convention
 export const SnapModeField = connect(mapStateToProps, mapDispatch)(SnapModeFieldComponent);

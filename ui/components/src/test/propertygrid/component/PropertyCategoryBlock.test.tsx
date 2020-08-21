@@ -7,6 +7,7 @@ import { mount } from "enzyme";
 import * as React from "react";
 import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
 import { PropertyCategory } from "../../../ui-components/propertygrid/PropertyDataProvider";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("PropertyCategoryBlock", () => {
   let category: PropertyCategory;
@@ -64,11 +65,11 @@ describe("PropertyCategoryBlock", () => {
     const header = categoryBlock.find(".header");
 
     toggled = false;
-    header.simulate("keyPress", { key: " ", which: 32 });
+    header.simulate("keyPress", { key: SpecialKey.Space });
     expect(toggled).to.be.true;
 
     toggled = false;
-    header.simulate("keyPress", { key: "Enter", which: 13 });
+    header.simulate("keyPress", { key: SpecialKey.Enter });
     expect(toggled).to.be.true;
   });
 

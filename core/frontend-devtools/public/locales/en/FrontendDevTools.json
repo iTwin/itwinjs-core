@@ -210,6 +210,45 @@
     "SaveRealityModelTool": {
       "keyin": "fdt save reality properties"
     },
+    "SetRealityModelColorTool": {
+      "keyin": "fdt set reality model color"
+    },
+    "SetRealityModelTransparencyTool": {
+      "keyin": "fdt set reality model transparency"
+    },
+    "SetRealityModelLocateTool": {
+      "keyin": "fdt set reality model locatable"
+    },
+    "SetRealityModelEmphasizedTool": {
+      "keyin": "fdt set reality model emphasized"
+    },
+    "SetModelColorTool": {
+      "keyin": "fdt set model color"
+    },
+    "SetModelTransparencyTool": {
+      "keyin": "fdt set model transparency"
+    },
+    "SetModelLocateTool": {
+      "keyin": "fdt set model locatable"
+    },
+    "SetModelEmphasizedTool": {
+      "keyin": "fdt set model emphasized"
+    },
+    "SetModelLineWeightTool": {
+      "keyin": "fdt set model line weight"
+    },
+    "SetModelLineCodeTool": {
+      "keyin": "fdt set model line code"
+    },
+    "SetModelIgnoresMaterialsTool": {
+      "keyin": "fdt set model ignores materials"
+    },
+    "ClearRealityModelAppearanceOverrides": {
+      "keyin": "fdt clear reality model overrides"
+    },
+    "ClearModelAppearanceOverrides": {
+      "keyin": "fdt clear model overrides"
+    },
     "ToggleViewAttachments": {
       "keyin": "fdt attachments"
     },

@@ -611,7 +611,6 @@ export namespace Id64 {
     export function isValid(id: Id64String): boolean;
     const invalid = "0";
     export function isValidId64(id: string): boolean;
-    // @internal (undocumented)
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
     export function sizeOf(arg: Id64Arg): number;
@@ -1227,6 +1226,11 @@ export interface SerializedClientRequestContext {
     applicationVersion: string;
     // (undocumented)
     authorization?: string;
+    // (undocumented)
+    csrfToken?: {
+        headerName: string;
+        headerValue: string;
+    };
     // (undocumented)
     id: string;
     // (undocumented)

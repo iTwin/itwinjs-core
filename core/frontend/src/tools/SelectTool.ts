@@ -287,7 +287,7 @@ export class SelectionTool extends PrimitiveTool {
     if (undefined === ev.viewport)
       return;
 
-    const vp = context.viewport!;
+    const vp = context.viewport;
     const bestContrastIsBlack = (ColorDef.black === vp.getContrastToBackgroundColor());
     const crossingLine = (SelectionMethod.Line === this.selectionMethod || (SelectionMethod.Pick === this.selectionMethod && BeButton.Reset === ev.button));
     const overlapSelection = (crossingLine || this.useOverlapSelection(ev));
@@ -387,15 +387,15 @@ export class SelectionTool extends PrimitiveTool {
       switch (this.selectionMode) {
         case SelectionMode.Replace:
           if (!ev.isControlKey)
-            this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement); // tslint:disable-line:no-floating-promises
+            this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement); // eslint-disable-line @typescript-eslint/no-floating-promises
           else
-            this.processSelection(contents, SelectionProcessing.InvertElementInSelection); // tslint:disable-line:no-floating-promises
+            this.processSelection(contents, SelectionProcessing.InvertElementInSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
           break;
         case SelectionMode.Add:
-          this.processSelection(contents, SelectionProcessing.AddElementToSelection); // tslint:disable-line:no-floating-promises
+          this.processSelection(contents, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
           break;
         case SelectionMode.Remove:
-          this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection); // tslint:disable-line:no-floating-promises
+          this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
           break;
       }
     }, true);
@@ -485,15 +485,15 @@ export class SelectionTool extends PrimitiveTool {
 
       switch (this.selectionMode) {
         case SelectionMode.Replace:
-          this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement); // tslint:disable-line:no-floating-promises
+          this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement); // eslint-disable-line @typescript-eslint/no-floating-promises
           break;
 
         case SelectionMode.Add:
-          this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection); // tslint:disable-line:no-floating-promises
+          this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
           break;
 
         case SelectionMode.Remove:
-          this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection); // tslint:disable-line:no-floating-promises
+          this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
           break;
       }
       return EventHandled.Yes;
@@ -528,11 +528,11 @@ export class SelectionTool extends PrimitiveTool {
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.selectionMode || undefined !== nextHit)
-          this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection); // tslint:disable-line:no-floating-promises
+          this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
-          this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection); // tslint:disable-line:no-floating-promises
+          this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
         return EventHandled.Yes;
       }
     }
@@ -540,7 +540,7 @@ export class SelectionTool extends PrimitiveTool {
     if (EventHandled.Yes === await this.selectDecoration(ev, IModelApp.accuSnap.currHit))
       return EventHandled.Yes;
 
-    IModelApp.accuSnap.resetButton(); // tslint:disable-line:no-floating-promises
+    IModelApp.accuSnap.resetButton(); // eslint-disable-line @typescript-eslint/no-floating-promises
     return EventHandled.Yes;
   }
 

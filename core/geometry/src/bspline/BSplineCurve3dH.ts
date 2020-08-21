@@ -15,7 +15,7 @@ import { Geometry } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
@@ -94,10 +94,9 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     } else if (controlPoints[0] instanceof Point4d) {
       for (const p of (controlPoints as Point4d[])) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; curve._bcurve.packedData[i++] = p.w; }
     } else if (controlPoints instanceof Float64Array) {
-      const qPoles = controlPoints as Float64Array;
-      const numQ = qPoles.length;
+      const numQ = controlPoints.length;
       for (let k = 0; k < numQ; k++) {
-        curve._bcurve.packedData[k] = qPoles[k];
+        curve._bcurve.packedData[k] = controlPoints[k];
       }
     } else {
       return undefined;

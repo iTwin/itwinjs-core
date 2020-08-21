@@ -5,7 +5,7 @@
 
 // import { expect } from "chai";
 import * as g from "../../geometry-core";
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 import { Checker } from "../Checker";
 import { SimpleFactory } from "../SimpleFactory";
 

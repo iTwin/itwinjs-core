@@ -21,8 +21,8 @@ import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecifi
  */
 export enum ChildNodeSpecificationTypes {
   // hierarchy specifications
-  DEPRECATED_AllInstanceNodes = "AllInstanceNodes", // tslint:disable-line: naming-convention
-  DEPRECATED_AllRelatedInstanceNodes = "AllRelatedInstanceNodes", // tslint:disable-line: naming-convention
+  DEPRECATED_AllInstanceNodes = "AllInstanceNodes", // eslint-disable-line @typescript-eslint/naming-convention
+  DEPRECATED_AllRelatedInstanceNodes = "AllRelatedInstanceNodes", // eslint-disable-line @typescript-eslint/naming-convention
   RelatedInstanceNodes = "RelatedInstanceNodes",
   InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
   CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
@@ -120,8 +120,8 @@ export interface DefaultGroupingPropertiesContainer {
  * Navigation rule specifications that define what content the rule results in.
  * @public
  */
-export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // tslint:disable-line:deprecation
-  DEPRECATED_AllRelatedInstanceNodesSpecification | // tslint:disable-line:deprecation
+export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
+  DEPRECATED_AllRelatedInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
   CustomNodeSpecification |
   InstanceNodesOfSpecificClassesSpecification |
   RelatedInstanceNodesSpecification |

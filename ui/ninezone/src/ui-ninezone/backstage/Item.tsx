@@ -45,10 +45,12 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
       this.props.className);
 
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <li
         className={className}
         onClick={this.props.onClick}
         style={this.props.style}
+        role="menuitem"
       >
         <div className="nz-icon">{this.props.icon}</div>
         <div>

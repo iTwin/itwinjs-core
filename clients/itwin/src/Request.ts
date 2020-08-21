@@ -249,10 +249,10 @@ const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (re
   Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
 };
 
-const logRequest = (req: sarequest.SuperAgentRequest) => {
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentRequest => {
   const startTime = new Date().getTime();
-  req.on("response", logResponse(req, startTime));
-  return req;
+  return req.on("response", logResponse(req, startTime));
 };
 
 // @todo The purpose of this wrapper is to allow us to easily replace this with another
@@ -294,7 +294,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
     sareq = sareq.set(options.headers);
 
   if (requestContext.activityId !== "")
-    sareq.set(requestIdHeaderName, requestContext.activityId);
+    sareq = sareq.set(requestIdHeaderName, requestContext.activityId);
 
   let queryStr: string = "";
   let fullUrl: string = "";
@@ -332,18 +332,18 @@ export async function request(requestContext: ClientRequestContext, url: string,
     sareq = sareq.redirects(0);
 
   if (options.buffer)
-    sareq.buffer(options.buffer);
+    sareq = sareq.buffer(options.buffer);
 
   if (options.parser)
-    sareq.parse(options.parser);
+    sareq = sareq.parse(options.parser);
 
   if (options.agent)
-    sareq.agent(options.agent);
+    sareq = sareq.agent(options.agent);
   else if (RequestGlobalOptions.httpsProxy)
-    sareq.agent(RequestGlobalOptions.httpsProxy);
+    sareq = sareq.agent(RequestGlobalOptions.httpsProxy);
 
   if (options.progressCallback) {
-    sareq.on("progress", (event: sarequest.ProgressEvent) => {
+    sareq = sareq.on("progress", (event: sarequest.ProgressEvent) => {
       if (event) {
         options.progressCallback!({
           loaded: event.loaded,

@@ -72,6 +72,8 @@ export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     const iconSpec = this.props.checked ? this.props.imageOn : this.props.imageOff;
 
     return (
+      /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+      /* eslint-disable-next-line jsx-a11y/click-events-have-key-events */
       <label className={checkBoxClass} style={this.props.style} onClick={this._onLabelClick} title={this.props.tooltip}>
         <input type="checkbox" className={this.props.inputClassName} style={this.props.inputStyle}
           checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick} />

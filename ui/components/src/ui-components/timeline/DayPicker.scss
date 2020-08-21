@@ -47,6 +47,10 @@
     font-size: 12px;
     user-select: none;
     width: 40px;
+
+    &:focus {
+      outline: none;
+    }
   }
 
   .next-month {

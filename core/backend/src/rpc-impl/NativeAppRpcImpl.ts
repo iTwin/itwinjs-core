@@ -10,17 +10,20 @@
 import { ClientRequestContext, Config, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
   BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelProps, IModelRpcProps, IModelVersion, InternetConnectivityStatus,
-  NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager, StorageValue,
+  MobileAuthorizationClientConfiguration, NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager,
+  StorageValue,
   TileTreeContentIds,
 } from "@bentley/imodeljs-common";
+import { EmitStrategy } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ProgressCallback, ProgressInfo } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { EmitStrategy, EventSinkManager } from "../EventSink";
+import { EventSinkManager } from "../EventSink";
 import { BriefcaseDb } from "../IModelDb";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { NativeAppStorage } from "../NativeAppStorage";
 import { cancelTileContentRequests } from "./IModelTileRpcImpl";
+import { MobileDevice } from "../MobileDevice";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -269,5 +272,43 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async storageRemoveAll(storageId: string): Promise<void> {
     const storage = NativeAppStorage.find(storageId)!;
     storage.removeAll();
+  }
+
+  /**
+   * Causing signIn on the backend
+   */
+  public async authSignIn(): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    return MobileDevice.currentDevice.signIn(requestContext);
+  }
+
+  /**
+   * Causing signOut on the backend
+   */
+  public async authSignOut(): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    return MobileDevice.currentDevice.signOut(requestContext);
+  }
+
+  /**
+   * Read access token and perform silent refresh as necessary
+   */
+  public async authGetAccessToken(): Promise<string> {
+    const requestContext = ClientRequestContext.current;
+    const accessToken = await MobileDevice.currentDevice.getAccessToken(requestContext);
+    return JSON.stringify(accessToken);
+  }
+
+  /**
+   * Initialize oidc client with configuration
+   */
+  public async authInitialize(issuer: string, config: MobileAuthorizationClientConfiguration): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    await MobileDevice.currentDevice.authInit(requestContext, {
+      issuerUrl: issuer,
+      clientId: config.clientId,
+      redirectUrl: config.redirectUri,
+      scope: config.scope,
+    });
   }
 }

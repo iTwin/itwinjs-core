@@ -12,7 +12,7 @@ export class ErrorHandling {
     IModelApp.notifications.outputMessage(msg);
 
     if (ToolAdmin.exceptionOptions.launchDebugger) {
-      // tslint:disable-next-line:no-debugger
+      // eslint-disable-next-line no-debugger
       debugger;
     }
   }
@@ -28,7 +28,7 @@ export class ErrorHandling {
       const owner = JSON.parse(ownerStr);
       if (owner.Bridge !== undefined)
         return owner.Bridge;
-    } catch (err) {
+    } catch (e) {
     }
     return ownerStr;
   }

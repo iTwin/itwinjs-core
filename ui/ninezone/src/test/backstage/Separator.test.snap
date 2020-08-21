@@ -3,5 +3,6 @@
 exports[`<BackstageSeparator /> renders correctly 1`] = `
 <li
   className="nz-backstage-separator"
+  role="separator"
 />
 `;

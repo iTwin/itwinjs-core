@@ -33,11 +33,14 @@ export class TitleBarButton extends React.PureComponent<TitleBarButtonProps> {
       this.props.className);
 
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div
         className={className}
         onClick={this.props.onClick}
         style={this.props.style}
         title={this.props.title}
+        role="button"
+        tabIndex={-1}
       >
         {this.props.children}
       </div>

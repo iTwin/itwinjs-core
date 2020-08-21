@@ -95,7 +95,7 @@ class FractionalNumeric {
  * @alpha
  */
 export class Formatter {
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private static FPV_MINTHRESHOLD = 1.0e-14;
 
   private static isNegligible(value: number): boolean { return (Math.abs(value) < Formatter.FPV_MINTHRESHOLD); }
@@ -192,7 +192,7 @@ export class Formatter {
     // Caller will deal with appending +||-||() value sign as specified by formatting options so just format positive value
     let posMagnitude = Math.abs(magnitude);
 
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < spec.unitConversions.length; i++) {
       const currentLabel = spec.unitConversions[i].label;
       const unitConversion = spec.unitConversions[i].conversion;
@@ -236,7 +236,7 @@ export class Formatter {
     const isSci = ((posMagnitude > 1.0e12) || spec.format.type === FormatType.Scientific);
     const isDecimal = (isSci || spec.format.type === FormatType.Decimal);
     const isFractional = (!isDecimal && spec.format.type === FormatType.Fractional);
-    /*const usesStops = spec.format.type === FormatType.Station;*/
+    /* const usesStops = spec.format.type === FormatType.Station; */
     const isPrecisionZero = spec.format.precision === DecimalPrecision.Zero;
     const isKeepSingleZero = spec.format.hasFormatTraitSet(FormatTraits.KeepSingleZero);
     const precisionScale = Math.pow(10.0, spec.format.precision);

@@ -31,7 +31,7 @@ const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
  */
 export class BufferedStream extends Transform {
   private _buffer?: Buffer;
-  private _bufferPointer: number;
+  private _bufferPointer: number = 0;
   private _bufferSize: number;
   public constructor(bufferSize: number) {
     super();
@@ -51,7 +51,7 @@ export class BufferedStream extends Transform {
    * @param encoding Encoding type of chunk if chunk is string.
    * @param callback A callback function (optionally with an error argument and data) to be called after the supplied chunk has been processed.
    */
-  public _transform(chunk: any, encoding: string, callback: TransformCallback): void {   // tslint:disable-line
+  public _transform(chunk: any, encoding: string, callback: TransformCallback): void {   // eslint-disable-line
     if (encoding !== "buffer" && encoding !== "binary")
       throw new TypeError(`Encoding '${encoding}' is not supported.`);
 
@@ -96,7 +96,7 @@ export class BufferedStream extends Transform {
    * This will be called when there is no more written data to be consumed, but before the 'end' event is emitted signaling the end of the Readable stream.
    * @param callback A callback function (optionally with an error argument and data) to be called when remaining data has been flushed.
    */
-  public _flush(callback: TransformCallback): void {   // tslint:disable-line
+  public _flush(callback: TransformCallback): void {   // eslint-disable-line
     if (!this._buffer) {
       callback();
       return;
@@ -113,7 +113,7 @@ export class BufferedStream extends Transform {
  */
 export class AzureFileHandler implements FileHandler {
   /** @internal */
-  public agent: https.Agent;
+  public agent?: https.Agent;
   private _threshold: number;
   private _useDownloadBuffer: boolean | undefined;
 
@@ -370,8 +370,8 @@ export class AzureFileHandler implements FileHandler {
       method: "PUT",
       headers: {
         "x-ms-blob-type": "BlockBlob",
-        "Content-Type": "application/octet-stream",
-        "Content-Length": buffer.length,
+        "Content-Type": "application/octet-stream", // eslint-disable-line @typescript-eslint/naming-convention
+        "Content-Length": buffer.length, // eslint-disable-line @typescript-eslint/naming-convention
       },
       body: buffer,
       progressCallback: callback,
@@ -422,8 +422,8 @@ export class AzureFileHandler implements FileHandler {
       const options: RequestOptions = {
         method: "PUT",
         headers: {
-          "Content-Type": "application/xml",
-          "Content-Length": blockList.length,
+          "Content-Type": "application/xml", // eslint-disable-line @typescript-eslint/naming-convention
+          "Content-Length": blockList.length, // eslint-disable-line @typescript-eslint/naming-convention
         },
         body: blockList,
         agent: this.agent,

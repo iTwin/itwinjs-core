@@ -138,7 +138,7 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
               onRightClick={propertyRecord.value.valueFormat === PropertyValueFormat.Primitive ? this.props.onPropertyRightClicked : undefined}
               onContextMenu={this.props.onPropertyContextMenu}
               columnRatio={this.props.columnRatio}
-              // tslint:disable-next-line: deprecation
+              // eslint-disable-next-line deprecation/deprecation
               onColumnRatioChanged={this.props.onColumnChanged}
               propertyValueRendererManager={this.props.propertyValueRendererManager}
               isEditing={key === this.props.editingPropertyKey}

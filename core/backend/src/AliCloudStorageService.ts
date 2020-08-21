@@ -17,7 +17,7 @@ declare class OSS {
   public putStream(name: string, source: Readable, options: OSS.PutStreamOptions): Promise<void>;
 }
 
-declare namespace OSS {
+declare namespace OSS { // eslint-disable-line no-redeclare
   interface SignatureUrlOptions {
     expires: number;
   }
@@ -66,7 +66,7 @@ export class AliCloudStorageService extends CloudStorageService {
 
   public async listContainer(name: string, marker: string, count: number): Promise<string[]> {
     this._client.useBucket(name);
-    const query = await this._client.list({ "marker": marker, "max-keys": count }, {});
+    const query = await this._client.list({ marker, "max-keys": count }, {});
     return query.objects ? query.objects.map((o) => o.name) : [];
   }
 
@@ -83,6 +83,7 @@ export class AliCloudStorageService extends CloudStorageService {
     const putOptions = {
       mime: (options && options.type) ? options.type : "application/octet-stream",
       headers: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "Cache-Control": (options && options.cacheControl) ? options.cacheControl : "private, max-age=31536000, immutable",
       },
     } as OSS.PutStreamOptions;

@@ -87,7 +87,7 @@ export class ClassRegistry {
    * @param schema The schema for all found classes
    */
   public static registerModule(moduleObj: any, schema: typeof Schema) {
-    for (const thisMember in moduleObj) {// tslint:disable-line: forin
+    for (const thisMember in moduleObj) { // eslint-disable-line guard-for-in
       const thisClass = moduleObj[thisMember];
       if (thisClass.prototype instanceof Entity)
         this.register(thisClass, schema);

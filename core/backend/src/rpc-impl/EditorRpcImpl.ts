@@ -10,7 +10,7 @@
 import { ClientRequestContext, GuidString, Id64Array } from "@bentley/bentleyjs-core";
 import { Point3d, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  BentleyError, Editor3dRpcInterface, GeometricElement3dProps, IModelRpcProps, IModelStatus, RpcInterface, RpcManager,
+  BentleyError, Editor3dRpcInterface, Editor3dRpcInterfaceWriteOptions, GeometricElement3dProps, IModelRpcProps, IModelStatus, RpcInterface, RpcManager,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { GeometricElement3dEditor } from "../ElementEditor";
@@ -38,8 +38,8 @@ export class Editor3dRpcImpl extends RpcInterface implements Editor3dRpcInterfac
     IModelHost.elementEditors.delete(editorId);
   }
 
-  public async writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, editorId: GuidString): Promise<void> {
-    getEditor(editorId).writeAllChangesToBriefcase();
+  public async writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, editorId: GuidString, opts: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void> {
+    return getEditor(editorId).writeAllChangesToBriefcase(opts);
   }
 
   public async startModifyingElements(_tokenProps: IModelRpcProps, editorId: GuidString, elementIds: Id64Array): Promise<void> {
@@ -48,7 +48,8 @@ export class Editor3dRpcImpl extends RpcInterface implements Editor3dRpcInterfac
   }
 
   public async createElement(_tokenProps: IModelRpcProps, editorId: GuidString, props: GeometricElement3dProps, origin?: Point3d, angles?: YawPitchRollAngles, geometry?: any): Promise<void> {
-    getEditor(editorId).createElement(props, origin, angles, geometry);
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    return getEditor(editorId).createElement(requestContext, props, origin, angles, geometry);
   }
 
   public async applyTransform(_tokenProps: IModelRpcProps, editorId: GuidString, transformProps: TransformProps) {

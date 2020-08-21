@@ -121,7 +121,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
 
   /** @internal */
   public render(): React.ReactNode {
-    const { items, x, y, opened, initialHidden, onClose, onShowHideChange, ...props } = this.props;
+    const { items, x, y, opened, initialHidden, onClose, onShowHideChange, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
       <GlobalContextMenu
         x={x}

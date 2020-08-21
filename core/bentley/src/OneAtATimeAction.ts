@@ -30,7 +30,7 @@ class PromiseWithAbandon<T> {
   public async init(msg: string): Promise<T> { return new Promise<T>((resolve, reject) => { this.abandon = () => reject(new AbandonedError(msg)); this._resolve = resolve; }); }
 
   /** Call the [[run]] method supplied to the ctor to start the underlying Promise. */
-  public start() { this._run(...this._args).then((val) => this._resolve(val)); } // tslint:disable-line:no-floating-promises
+  public start() { this._run(...this._args).then((val) => this._resolve(val)); } // eslint-disable-line @typescript-eslint/no-floating-promises
 }
 
 /**

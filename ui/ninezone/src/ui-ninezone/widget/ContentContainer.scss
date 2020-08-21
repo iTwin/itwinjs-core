@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 .nz-widget-content-container {
-  flex-grow: 1;
-  flex-basis: 0;
+  flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
   position: relative;
+  display: flex;
 
   &.nz-minimized {
+    flex-basis: 0;
     overflow: hidden;
+    width: 0;
   }
 }

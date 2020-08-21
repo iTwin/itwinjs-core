@@ -63,6 +63,7 @@ describe("ECJsonTypeMap", () => {
   let seedTypedECDbInstance: TestClass;
 
   before((done: Mocha.Done): any => {
+    /* eslint-disable @typescript-eslint/naming-convention */
     seedUntypedWsgInstance = {
       instanceId: "TestWsgInstanceId",
       schemaName: "Test_Schema",
@@ -111,6 +112,7 @@ describe("ECJsonTypeMap", () => {
         },
       ],
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     seedUntypedECDbInstance = {
       id: "TestECDbInstanceId",
@@ -184,6 +186,7 @@ describe("ECJsonTypeMap", () => {
       public arrayProperty2?: string[];
     }
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     const expectedUntypedWsgInstance = {
       instanceId: "TestWsgInstanceId",
       schemaName: "Test_Schema",
@@ -206,6 +209,7 @@ describe("ECJsonTypeMap", () => {
         },
       ],
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     const expectedTypedInstance: TestClassMultipleRelationshipDescriptors = new TestClassMultipleRelationshipDescriptors();
     expectedTypedInstance.className = expectedUntypedWsgInstance.className;
@@ -236,6 +240,7 @@ describe("ECJsonTypeMap", () => {
       public relatedStringProperty6: string;
     }
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     const expectedUntypedWsgInstance = {
       instanceId: "TestWsgInstanceId",
       schemaName: "Test_Schema",
@@ -256,6 +261,7 @@ describe("ECJsonTypeMap", () => {
         },
       ],
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     const expectedTypedInstance: NegativeTestClass = new NegativeTestClass();
     expectedTypedInstance.className = expectedUntypedWsgInstance.className;

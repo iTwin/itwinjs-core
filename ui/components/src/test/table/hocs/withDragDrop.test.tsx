@@ -17,7 +17,7 @@ import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataPr
 
 describe("Table withDragDrop HOC", () => {
 
-  const DragDropTable = withTableDragDrop(Table); // tslint:disable-line:variable-name
+  const DragDropTable = withTableDragDrop(Table); // eslint-disable-line @typescript-eslint/naming-convention
 
   afterEach(cleanup);
 
@@ -82,7 +82,7 @@ describe("Table withDragDrop HOC", () => {
   it("should return DragDrop row when renderRow is called", async () => {
     const dataProviderMock = createDataProvider(10);
     const root = ReactTestUtils.renderIntoDocument(<DragDropTable dataProvider={dataProviderMock} dragProps={{ objectType: "test" }} />) as any;
-    const row = root.renderRow(await dataProviderMock.getRow(0), { rows: {} }); // tslint:disable-line:variable-name
+    const row = root.renderRow(await dataProviderMock.getRow(0), { rows: {} }); // eslint-disable-line @typescript-eslint/naming-convention
     render(row);
   });
   describe("Drag callbacks", () => {

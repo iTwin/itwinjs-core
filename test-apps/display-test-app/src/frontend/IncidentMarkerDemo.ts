@@ -31,7 +31,7 @@ class IncidentMarker extends Marker {
   // when someone clicks on our marker, open a message box with the severity of the incident.
   public onMouseButton(ev: BeButtonEvent): boolean {
     if (ev.button === BeButton.Data && ev.isDown)
-      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 
@@ -157,7 +157,7 @@ export class IncidentMarkerDemo {
     } catch (err) {
       const msg = "Could not load image " + src;
       Logger.logError("IncidentDemo", msg);
-      console.log(msg); // tslint:disable-line: no-console
+      console.log(msg); // eslint-disable-line no-console
     }
     return undefined;
   }
@@ -192,8 +192,11 @@ export class IncidentMarkerDemo {
   }
 
   public constructor(extents: AxisAlignedBox3d) {
-    this.loadAll(extents); // tslint:disable-line: no-floating-promises
+    this.loadAll(extents); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
+
+  /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
+  public readonly useCachedDecorations = true;
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
   public decorate(context: DecorateContext) {
@@ -209,7 +212,7 @@ export class IncidentMarkerDemo {
     if (!this._awaiting) {
       this._awaiting = true;
       this._loading.then(() => {
-        context.viewport.invalidateDecorations();
+        context.viewport.invalidateCachedDecorations(this);
         this._awaiting = false;
       }).catch(() => undefined);
     }

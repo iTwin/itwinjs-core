@@ -137,7 +137,7 @@ export namespace Id64 {
   }
 
   // Used when constructing local ID portion of Id64String. Performance optimization.
-  const _localIdPrefixByLocalIdLength = [
+  const _localIdPrefixByLocalIdLength = [ // eslint-disable-line @typescript-eslint/naming-convention
     "0000000000",
     "000000000",
     "00000000",
@@ -172,7 +172,7 @@ export namespace Id64 {
   }
 
   // Used as a buffer when converting a pair of 32-bit integers to an Id64String. Significant performance optimization.
-  const _scratchCharCodes = [
+  const _scratchCharCodes = [ // eslint-disable-line @typescript-eslint/naming-convention
     0x30, // "0"
     0x78, // "x"
     0x30, // "0"
@@ -254,7 +254,9 @@ export namespace Id64 {
     return String.fromCharCode(..._scratchCharCodes);
   }
 
-  /** @internal */
+  /** Returns true if the inputs represent two halves of a valid 64-bit Id.
+   * @see [[Id64.Uint32Pair]].
+   */
   export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean {
     // Detect local ID of zero
     return 0 !== lowBytes || 0 !== (highBytes & 0x000000ff);
@@ -262,6 +264,7 @@ export namespace Id64 {
 
   /** Represents an unsigned 64-bit integer as a pair of unsigned 32-bit integers.
    * @see [[Id64.getUint32Pair]]
+   * @see [[Id64.isValidUint32Pair]]
    */
   export interface Uint32Pair {
     /** The lower 4 bytes of the 64-bit integer. */

@@ -105,7 +105,7 @@ export class RpcInvocation {
       this.result = this.reject(error);
     }
 
-    this.fulfillment = this.result.then(async (value) => this._threw ? this.fulfillRejected(value) : this.fulfillResolved(value), (reason) => this.fulfillRejected(reason));
+    this.fulfillment = this.result.then(async (value) => this._threw ? this.fulfillRejected(value) : this.fulfillResolved(value), async (reason) => this.fulfillRejected(reason));
   }
 
   private handleUnknownOperation(error: any): boolean {

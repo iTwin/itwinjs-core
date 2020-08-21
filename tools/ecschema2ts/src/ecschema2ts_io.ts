@@ -130,7 +130,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
     const referenceSchemaKeys: SchemaKey[] = [];
 
     // unfortunately, for-of loop cannot work with HTMLCollectionOf<Element> type here
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < referenceDocuments.length; ++i) {
       const element = referenceDocuments[i];
       const name = this.getRequiredXmlAttribute(element, "name",

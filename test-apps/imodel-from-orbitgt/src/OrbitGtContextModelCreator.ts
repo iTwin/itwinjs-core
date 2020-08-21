@@ -52,8 +52,8 @@ export class OrbitGtContextIModelCreator {
 
       // wrap a caching layer (16 MB) around the blob file
       const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
-      const blobFile: PageCachedFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, 128 * 1024/*pageSize*/, 128/*maxPageCount*/);
-      const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true/*lazyLoading*/);
+      const blobFile: PageCachedFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, 128 * 1024 /* pageSize */, 128 /* maxPageCount */);
+      const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true/* lazyLoading */);
 
       let fileCrs = fileReader.getFileCRS();
       if (fileCrs == null)

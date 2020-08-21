@@ -6,7 +6,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { NavigationValue } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
-// tslint:disable:no-console
+/* eslint-disable no-console */
 
 async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void> {
   {

@@ -21,7 +21,7 @@ export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T> {
  * This interface ensures that consumers are not required to have rxjs as dependency.
  * @public
  */
-export interface Observable<T> extends Subscribable<T> { }
+export interface Observable<T> extends Subscribable<T> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * Subscribable interface compatible with [rxjs](https://github.com/ReactiveX/rxjs)
@@ -32,7 +32,7 @@ export interface Subscribable<T> {
   subscribe(observer?: Observer<T>): Subscription;
   subscribe(next: null | undefined, error: null | undefined, complete: () => void): Subscription;
   subscribe(next: null | undefined, error: (error: any) => void, complete?: () => void): Subscription;
-  subscribe(next: (value: T) => void, error: null | undefined, complete: () => void): Subscription;
+  subscribe(next: (value: T) => void, error: null | undefined, complete: () => void): Subscription; // eslint-disable-line @typescript-eslint/unified-signatures
   subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void): Subscription;
 }
 

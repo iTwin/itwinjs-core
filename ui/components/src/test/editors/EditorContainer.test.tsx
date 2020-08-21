@@ -9,6 +9,7 @@ import * as React from "react";
 import sinon from "sinon";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("<EditorContainer />", () => {
   it("should render", () => {
@@ -79,7 +80,7 @@ describe("<EditorContainer />", () => {
     expect(inputNode.length).to.eq(1);
 
     inputNode.simulate("blur");
-    inputNode.simulate("keyDown", { keyCode: 37 }); // left arrow key
+    inputNode.simulate("keyDown", { key: SpecialKey.ArrowLeft }); // left arrow key
     inputNode.simulate("click");
     inputNode.simulate("contextMenu");
   });

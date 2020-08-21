@@ -21,7 +21,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { UiFramework } from "../UiFramework";
 import { NavigationAidControl } from "./NavigationAidControl";
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const NZ_ContainedTray = withContainIn(NZ_Tray);
 
 /** A 3D Standard Rotation Navigation Aid control.
@@ -54,6 +54,8 @@ interface StandardRotationNavigationAidState {
  * @alpha
  */
 export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
+  private _title = UiFramework.translate("standardRotationNavigationAid.title");
+
   /** @internal */
   public readonly state: Readonly<StandardRotationNavigationAidState>;
 
@@ -113,6 +115,7 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
               <span className={classnames("three-d-icon", "icon", this.state.list[this.state.selected].iconClassName)} />
             }
             onClick={this._toggleIsExpanded}
+            title={this._title}
           >
           </NZ_Icon>
         </NZ_Expandable>

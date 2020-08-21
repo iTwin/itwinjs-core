@@ -6,7 +6,7 @@ import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { calculateSolarAngles, degToRad } from "./SolarCalculate";
 
-// tslint:disable:no-console
+/* eslint-disable no-console, no-shadow */
 
 enum IoTDeviceType {
   TemperatureSensor,
@@ -291,8 +291,8 @@ class Site {
   public buildings: Building[];
   constructor() {
     this.name = "",
-      this.id = "",
-      this.buildings = [];
+    this.id = "",
+    this.buildings = [];
   }
 }
 

@@ -286,7 +286,7 @@ export class SchemaComparer {
       return;
 
     if (mixinA.appliesTo) {
-      const appliesToA = mixinA.appliesTo ? mixinA.appliesTo.fullName : undefined;
+      const appliesToA = mixinA.appliesTo.fullName;
       const appliesToB = mixinB ? mixinB.appliesTo ? mixinB.appliesTo.fullName : undefined : undefined;
       if (appliesToA !== appliesToB)
         await this._reporter.reportMixinDelta(mixinA, "appliesTo", appliesToA, appliesToB, this._compareDirection);
@@ -741,9 +741,9 @@ export class SchemaComparer {
         promises.push(this._reporter.reportPropertyDelta(propertyA, "direction", dirA, dirB, this._compareDirection));
       }
 
-      if (propertyA.relationshipClass) {
+      if (propertyA.relationshipClass) { // eslint-disable-line @typescript-eslint/no-misused-promises
         const relationshipClassB = propertyB && propertyB.isNavigation() ? propertyB.relationshipClass : undefined;
-        const relA = propertyA.relationshipClass ? propertyA.relationshipClass.fullName : undefined;
+        const relA = propertyA.relationshipClass.fullName;
         const relB = relationshipClassB ? relationshipClassB.fullName : undefined;
         if (relA !== relB)
           promises.push(this._reporter.reportPropertyDelta(propertyA, "relationshipClass", relA, relB, this._compareDirection));

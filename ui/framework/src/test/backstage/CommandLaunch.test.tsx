@@ -29,9 +29,9 @@ describe("Backstage", () => {
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
-      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // tslint:disable-line:deprecation
+      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // eslint-disable-line deprecation/deprecation
         stateFuncRun = true;
-        return { ...state, isEnabled: false } as BackstageItemState; // tslint:disable-line:deprecation
+        return { ...state, isEnabled: false } as BackstageItemState; // eslint-disable-line deprecation/deprecation
       };
       const wrapper = mount(
         <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"

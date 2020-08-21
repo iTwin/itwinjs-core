@@ -14,12 +14,60 @@ import {
   NewBadge, NumericInput, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile,
   Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch } from "@bentley/ui-components";
+import { ModalDialogManager } from "@bentley/ui-framework";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
+import { SampleAppIModelApp } from "../../..";
+import { Logger } from "@bentley/bentleyjs-core";
 
-// tslint:disable: no-console
+/* eslint-disable no-console */
+
+export function ColorPickerToggle() {
+  const [colorDialogTitle] = React.useState("Select Color");
+  const [selectedColor, setSelectedColor] = React.useState(ColorDef.red);
+  const handleBackgroundColorDialogOk = React.useCallback((newColorDef: ColorDef) => {
+    ModalDialogManager.closeDialog();
+    setSelectedColor(newColorDef);
+  }, []);
+
+  const handleBackgroundColorDialogCancel = React.useCallback(() => {
+    ModalDialogManager.closeDialog();
+  }, []);
+
+  const presetColors = React.useRef(
+    [
+      ColorDef.create(ColorByName.red),
+      ColorDef.create(ColorByName.orange),
+      ColorDef.create(ColorByName.yellow),
+      ColorDef.create(ColorByName.green),
+      ColorDef.create(ColorByName.blue),
+      ColorDef.create(ColorByName.indigo),
+      ColorDef.create(ColorByName.violet),
+      ColorDef.create(ColorByName.black),
+      ColorDef.create(ColorByName.white),
+      ColorDef.create(ColorByName.cyan),
+      ColorDef.create(ColorByName.fuchsia),
+      ColorDef.create(ColorByName.tan),
+      ColorDef.create(ColorByName.gray),
+      ColorDef.create(ColorByName.brown),
+      ColorDef.create(ColorByName.purple),
+      ColorDef.create(ColorByName.olive),
+    ]);
+
+  const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
+    e.preventDefault();
+    ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
+      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
+  }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
+
+  return (
+    <ColorSwatch className="map-manager-base-item-color" colorDef={selectedColor} round={false} onColorPick={handleBgColorClick} />
+  );
+}
 
 /** Creates a Component Example */
 export const createComponentExample = (title: string, description: string | undefined, content: React.ReactNode): ComponentExampleProps => {
@@ -50,7 +98,16 @@ export class ComponentExamplesProvider {
         createComponentExample("Large Disabled Button", "Button with disabled and size={ButtonSize.Large} props", <Button disabled size={ButtonSize.Large}>Disabled Button</Button>),
         createComponentExample("Large Blue Button", "Button with ButtonType.Blue and size={ButtonSize.Large}", <Button buttonType={ButtonType.Blue} size={ButtonSize.Large}>Blue Button</Button>),
         createComponentExample("Large Hollow Button", "Button with ButtonType.Hollow and size={ButtonSize.Large}", <Button buttonType={ButtonType.Hollow} size={ButtonSize.Large}>Hollow Button</Button>),
-        createComponentExample("Underlined Button", "UnderlinedButton component", <UnderlinedButton>Underlined Button</UnderlinedButton>),
+        createComponentExample("Underlined Button", "UnderlinedButton component",
+          <UnderlinedButton
+            onActivate={() => Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `UnderlinedButton activated`)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `UnderlinedButton clicked`);
+            }}>
+            Underlined Button
+          </UnderlinedButton>),
       ],
     };
   }
@@ -73,6 +130,25 @@ export class ComponentExamplesProvider {
             <CheckListBoxItem label="Item 3" />
             <CheckListBoxItem label="Item 4" />
           </CheckListBox>),
+      ],
+    };
+  }
+
+  private static get colorSamples(): ComponentExampleCategory {
+    const colorDef = ColorDef.blue;
+    const handleColorPick = (color: ColorDef) => {
+      console.log(`color picked: ${color.toRgbaString()}`);
+    };
+
+    return {
+      title: "Color Controls",
+      examples: [
+        createComponentExample("Color Swatch", undefined,
+          <ColorSwatch colorDef={colorDef} onColorPick={handleColorPick} />),
+        createComponentExample("Color Picker Button", undefined,
+          <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} />),
+        createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
+        createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} />),
       ],
     };
   }
@@ -146,6 +222,15 @@ export class ComponentExamplesProvider {
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
         createComponentExample("Image Checkbox", "ImageCheckbox with SVG fonts", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
+
+        createComponentExample("Input Described By", "Input with aria-describedby",
+          <div>
+            <label htmlFor="phone">Phone</label>
+            <Input id="phone" name="phone" type="tel"
+              pattern="^(\(?0[1-9]{1}\)?)?[0-9 -]*$"
+              aria-describedby="phone-desc" />
+            <p id="phone-desc">For example, (02) 1234 1234</p>
+          </div>),
       ],
     };
   }
@@ -181,6 +266,7 @@ export class ComponentExamplesProvider {
       title: "SearchBox",
       examples: [
         createComponentExample("SearchBox", undefined,
+          // eslint-disable-next-line no-console
           <SearchBox placeholder="Search" onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
       ],
     };
@@ -329,13 +415,13 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Normal Tile", undefined,
           <Tile title="Normal Tile" icon="icon-placeholder">
-            <a>Link 1</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
-            <a>Link 2</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
+            <a>Link 1</a>
+            <a>Link 2</a>
           </Tile>),
         createComponentExample("Featured Tile", undefined,
           <FeaturedTile title="Featured Tile" icon="icon-placeholder">
-            <a>Link 1</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
-            <a>Link 2</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
+            <a>Link 1</a>
+            <a>Link 2</a>
           </FeaturedTile>),
         createComponentExample("Minimal Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),
         createComponentExample("Featured Minimal Tile", undefined, <MinimalFeaturedTile title="Minimal Featured Tile" icon="icon-placeholder" />),
@@ -398,6 +484,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.badgeSamples,
       ComponentExamplesProvider.buttonSamples,
       ComponentExamplesProvider.checkListBoxSamples,
+      ComponentExamplesProvider.colorSamples,
       ComponentExamplesProvider.contextMenuSample,
       ComponentExamplesProvider.expandableListBlockSamples,
       ComponentExamplesProvider.inputsSamples,

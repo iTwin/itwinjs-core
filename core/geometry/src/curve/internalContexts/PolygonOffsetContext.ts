@@ -9,7 +9,7 @@
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Arc3d } from "../Arc3d";
@@ -396,7 +396,7 @@ class Joint {
    * * If trim fractions indicate the primitive must disappear, replace the joint pair by a new joint pointing at surrounding primitives
    * @param start
    */
-  public static removeDegeneratePrimitives(start: Joint, options: JointOptions, maxTest: number): { newStart: Joint; numJointRemoved: number } {
+  public static removeDegeneratePrimitives(start: Joint, options: JointOptions, maxTest: number): { newStart: Joint, numJointRemoved: number } {
     /*
     if (Checker.noisy.PolygonOffset)
       console.log("\nENTER removeDegenerates");

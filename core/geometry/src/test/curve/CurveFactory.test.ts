@@ -22,7 +22,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 
 describe("CurveFactory", () => {
   it("CreateFilletsOnLineString", () => {
@@ -198,7 +198,7 @@ describe("PipeConnections", () => {
     const pipeRadius = 0.20;
     const bendRadius = 0.50;
     for (const filename of ["pipeLinesApril2020"]) {
-      const stringData = fs.readFileSync(ppePathInputDirector + filename + ".imjs", "utf8");
+      const stringData = fs.readFileSync(`${ppePathInputDirector}${filename}.imjs`, "utf8");
       if (stringData) {
         const jsonData = JSON.parse(stringData);
         const fragments = IModelJson.Reader.parse(jsonData);

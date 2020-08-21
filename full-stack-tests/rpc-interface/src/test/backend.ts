@@ -16,7 +16,7 @@ import { getRpcInterfaces, Settings } from "../common/Settings";
 IModelJsConfig.init(true, true, Config.App);
 const settings = new Settings(process.env);
 
-// tslint:disable-next-line:no-floating-promises
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
   RpcConfiguration.developmentMode = true;
 
@@ -34,6 +34,6 @@ const settings = new Settings(process.env);
   const port = 5011;
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   console.log("Web backend for full-stack-tests listening on port " + port);
 })();

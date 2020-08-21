@@ -1,6 +1,6 @@
 {
   "name": "@bentley/logger-config",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "Logger configuration",
   "main": "lib/logger-config.js",
   "typings": "lib/logger-config",
@@ -12,7 +12,7 @@
     "cover": "",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/logger-config/file.json --tsIndexFile=./logger-config.ts --onlyJson",
     "extract-api": "betools extract-api --entry=logger-config",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": ""
   },
   "author": {
@@ -29,24 +29,26 @@
     "iModel"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.4.2",
+    "@bentley/bentleyjs-core": "^2.5.0",
     "bunyan": "^1.8.12",
     "bunyan-seq": "^0.2.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.4.2",
-    "@bentley/build-tools": "2.4.2",
+    "@bentley/bentleyjs-core": "2.5.0",
+    "@bentley/build-tools": "2.5.0",
     "@types/bunyan": "^1.8.4",
     "@types/bunyan-seq": "^0.2.0",
     "@types/node": "10.14.1",
     "bunyan": "^1.8.12",
     "bunyan-seq": "^0.2.0",
+    "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+  }
 }

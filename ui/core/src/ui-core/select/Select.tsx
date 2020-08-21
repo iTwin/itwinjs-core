@@ -60,6 +60,7 @@ export function Select(props: SelectProps) {
     isInitialMount.current = false;
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { value: selectValue, required, options, setFocus, className, defaultValue, ...otherProps } = props as any; // pluck off values that will be explicitly set below
   const showPlaceholder = React.useMemo(() => props.placeholder && (!selectValue || selectValue === placeholderValue.current) && !defaultValue, [defaultValue, selectValue, props.placeholder]);
   const isRequired = React.useMemo(() => showPlaceholder || required, [required, showPlaceholder]);

@@ -3,12 +3,15 @@
 exports[`WidgetTabs should overflow all tabs in horizontal minimized widget 1`] = `
 <div
   class="nz-widget-tabs"
+  role="tablist"
 >
   <div
     class="nz-widget-overflow"
   >
     <div
       class="nz-button"
+      role="button"
+      tabindex="-1"
     >
       <div
         class="nz-icon"
@@ -21,12 +24,14 @@ exports[`WidgetTabs should overflow all tabs in horizontal minimized widget 1`] 
 exports[`WidgetTabs should render 1`] = `
 <div
   class="nz-widget-tabs"
+  role="tablist"
 >
   <div
     class="nz-widget-tabTarget nz-hidden"
   />
   <div
     class="nz-widget-tab nz-first nz-last"
+    role="tab"
   >
     <span
       title=""
@@ -40,6 +45,8 @@ exports[`WidgetTabs should render 1`] = `
   >
     <div
       class="nz-button"
+      role="button"
+      tabindex="-1"
     >
       <div
         class="nz-icon"
@@ -52,12 +59,15 @@ exports[`WidgetTabs should render 1`] = `
 exports[`WidgetTabs should render overflow panel 1`] = `
 <div
   class="nz-widget-tabs"
+  role="tablist"
 >
   <div
     class="nz-widget-overflow"
   >
     <div
       class="nz-button"
+      role="button"
+      tabindex="-1"
     >
       <div
         class="nz-icon"
@@ -70,12 +80,14 @@ exports[`WidgetTabs should render overflow panel 1`] = `
 exports[`WidgetTabs should render with active tab 1`] = `
 <div
   class="nz-widget-tabs"
+  role="tablist"
 >
   <div
     class="nz-widget-tabTarget nz-hidden"
   />
   <div
     class="nz-widget-tab nz-active nz-first nz-last"
+    role="tab"
   >
     <span
       title=""
@@ -89,6 +101,8 @@ exports[`WidgetTabs should render with active tab 1`] = `
   >
     <div
       class="nz-button"
+      role="button"
+      tabindex="-1"
     >
       <div
         class="nz-icon"

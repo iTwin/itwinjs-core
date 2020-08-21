@@ -7,7 +7,7 @@
  */
 
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Vector3d, XAndY } from "@bentley/geometry-core";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { SnapRequestProps } from "@bentley/imodeljs-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -108,7 +108,7 @@ export class TouchCursor implements CanvasDecoration {
     if (!this._isDragging || !this.setPosition(ev.viewport, ev.point))
       return false;
     ev.viewPoint = this._offsetPosition;
-    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 
@@ -137,7 +137,7 @@ export class TouchCursor implements CanvasDecoration {
       if (!this.setPosition(ev.viewport, ev.point))
         return false;
       ev.viewPoint = this._offsetPosition;
-      IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+      IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
       return false;
     }
     ev.viewPoint = this._offsetPosition;
@@ -154,7 +154,7 @@ export class TouchCursor implements CanvasDecoration {
     if (!touchCursor.setPosition(ev.viewport, ev.point) && !touchCursor.setPosition(ev.viewport, ev.viewport.view.getCenter()))
       return undefined;
     ev.viewPoint = touchCursor._offsetPosition;
-    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
     return touchCursor;
   }
 }
@@ -704,8 +704,23 @@ export class AccuSnap implements Decorator {
       return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
     };
 
-    const snap = new SnapDetail(thisHit, result.snapMode!, result.heat!, result.snapPoint!);
-    snap.setCurvePrimitive(parseCurve(result.curve), undefined, result.geomType);
+    // If this hit is from a plan projection model, apply the model's elevation to the snap point for display.
+    let snapPoint = result.snapPoint!;
+    const elevation = undefined !== thisHit.modelId ? thisHit.viewport.view.getModelElevation(thisHit.modelId) : 0;
+    if (0 !== elevation) {
+      const adjustedSnapPoint = Point3d.fromJSON(snapPoint);
+      adjustedSnapPoint.z += elevation;
+      snapPoint = adjustedSnapPoint;
+    }
+
+    const snap = new SnapDetail(thisHit, result.snapMode!, result.heat!, snapPoint);
+
+    // Apply model's elevation to curve for display.
+    let transform;
+    if (0 !== elevation)
+      transform = Transform.createTranslationXYZ(0, 0, elevation);
+
+    snap.setCurvePrimitive(parseCurve(result.curve), transform, result.geomType);
     if (undefined !== result.parentGeomType)
       snap.parentGeomType = result.parentGeomType;
     if (undefined !== result.hitPoint)
@@ -1051,7 +1066,7 @@ export class TentativeOrAccuSnap {
 }
 
 /** @public */
-export namespace AccuSnap {
+export namespace AccuSnap { // eslint-disable-line no-redeclare
   export class ToolState {
     public enabled = false;
     public locate = false;

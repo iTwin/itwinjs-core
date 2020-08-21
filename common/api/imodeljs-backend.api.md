@@ -64,6 +64,7 @@ import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
+import { EmitOptions } from '@bentley/imodeljs-native';
 import { EntityMetaData } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
@@ -115,6 +116,7 @@ import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
+import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
@@ -1802,22 +1804,6 @@ export class EmbeddedFileLink extends LinkElement {
     static get className(): string;
 }
 
-// @internal
-export interface EmitOptions {
-    // (undocumented)
-    strategy: EmitStrategy;
-}
-
-// @internal
-export enum EmitStrategy {
-    // (undocumented)
-    NoDuplicateEvents = 2,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    PurgeOlderEvents = 1
-}
-
 // @public
 export class Entity implements EntityProps {
     // @internal
@@ -3169,6 +3155,20 @@ export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
     }
+
+// @alpha
+export class MobileAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: MobileAuthorizationClientConfiguration);
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    get isAuthorized(): boolean;
+    // (undocumented)
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+}
 
 // @public
 export class Model extends Entity implements ModelProps {

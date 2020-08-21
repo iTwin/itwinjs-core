@@ -10,6 +10,8 @@ import "./AlphaSlider.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Properties for the [[AlphaSlider]] React component
  * @beta
@@ -28,6 +30,7 @@ export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, 
  */
 export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
   private _container: HTMLDivElement | null = null;
+  private _transparencyLabel = UiComponents.translate("color.transparency");
 
   /** @internal */
   constructor(props: AlphaSliderProps) {
@@ -40,12 +43,12 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
 
     let x = 0;
     if ("pageX" in e) {
-      x = (e as React.MouseEvent<HTMLDivElement>).pageX;
+      x = e.pageX;
     } else {
       // istanbul ignore if
       if (undefined === e.touches)
         return undefined;
-      x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
+      x = e.touches[0].pageX;
     }
     // istanbul ignore if
     if (undefined === x)
@@ -53,12 +56,12 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
 
     let y = 0;
     if ("pageY" in e) {
-      y = (e as React.MouseEvent<HTMLDivElement>).pageY;
+      y = e.pageY;
     } else {
       // istanbul ignore if
       if (undefined === e.touches)
         return;
-      y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
+      y = e.touches[0].pageY;
     }
     // istanbul ignore if
     if (undefined === y)
@@ -121,19 +124,19 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
 
   private _onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     let newTransparency: number | undefined;
-    if (evt.key === "ArrowLeft" || evt.key === "ArrowDown") {
+    if (evt.key === SpecialKey.ArrowLeft || evt.key === SpecialKey.ArrowDown) {
       newTransparency = this.props.alpha - (evt.ctrlKey ? .1 : .05);
-    } else if (evt.key === "ArrowRight" || evt.key === "ArrowUp") {
+    } else if (evt.key === SpecialKey.ArrowRight || evt.key === SpecialKey.ArrowUp) {
       newTransparency = this.props.alpha + (evt.ctrlKey ? .1 : .05);
-    } else if (evt.key === "PageDown") {
+    } else if (evt.key === SpecialKey.PageDown) {
       newTransparency = this.props.alpha - (evt.ctrlKey ? .5 : .25);
-    } else if (evt.key === "PageUp") {
+    } else if (evt.key === SpecialKey.PageUp) {
       newTransparency = this.props.alpha + (evt.ctrlKey ? .5 : .25);
-    } else if (evt.key === "Home") {
+    } else if (evt.key === SpecialKey.Home) {
       newTransparency = 0;
     } else {
       // istanbul ignore else
-      if (evt.key === "End") {
+      if (evt.key === SpecialKey.End) {
         newTransparency = 1;
       }
     }
@@ -166,18 +169,15 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
       this.props.className,
     );
 
-    const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
-      left: `${(this.props.alpha * 100)}%`,
-    } : {
-      left: `0px`,
-      top: `${-(this.props.alpha * 100) + 100}%`,
-    };
+    const pointerStyle: React.CSSProperties = this.props.isHorizontal ?
+      { left: `${(this.props.alpha * 100)}%` } :
+      { left: `0px`, top: `${-(this.props.alpha * 100) + 100}%` };
 
     return (
       <div className={containerClasses} style={this.props.style} data-testid="alpha-container">
         <div
           data-testid="alpha-slider"
-          role="slider" aria-label="Transparency"
+          role="slider" aria-label={this._transparencyLabel}
           aria-valuemin={0} aria-valuemax={1} aria-valuenow={this.props.alpha}
           className="components-alpha-slider"
           ref={(container) => this._container = container}

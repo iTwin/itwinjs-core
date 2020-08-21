@@ -14,6 +14,7 @@ import { HalfEdge } from "./Graph";
 import { NodeXYZUV } from "./HalfEdgeNodeXYZUV";
 import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export enum RayClassification {
   RC_NoHits,
   RC_TargetOnVertex,
@@ -22,6 +23,7 @@ export enum RayClassification {
   RC_TargetBefore,
   RC_TargetAfter,
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export class PointSearchContext {
   private _tol: number;
@@ -36,11 +38,10 @@ export class PointSearchContext {
   }
   // From given edge start point
   // The edgeHit is reused as the result.
-  public reAimFromEdge
-    (
-      edgeHit: HalfEdgePositionDetail,
-      ray: Ray3d,
-      targetDistance: number): HalfEdgePositionDetail {
+  public reAimFromEdge(
+    edgeHit: HalfEdgePositionDetail,
+    ray: Ray3d,
+    targetDistance: number): HalfEdgePositionDetail {
     const nodeA = edgeHit.node!;
     const dataA = NodeXYZUV.createNodeAndRayOrigin(nodeA, ray);
     const dataB = NodeXYZUV.createNodeAndRayOrigin(nodeA.edgeMate, ray);
@@ -90,13 +91,13 @@ export class PointSearchContext {
         ) {
           result = edgeHit.resetAsVertex(dataB.node);
         } else {
-          edgeHit.resetAsUnknown ();
+          edgeHit.resetAsUnknown();
           result = this.panic();
         }
       }
     } else {
       // Both vertices are to same side of the line.   This can't happen for edge point between nodes.
-      edgeHit.resetAsUnknown ();
+      edgeHit.resetAsUnknown();
       result = this.panic();
     }
     return result;
@@ -104,11 +105,10 @@ export class PointSearchContext {
 
   // From given edge start point, pick vertex or edge side for proceeding along ray.
   // RAY IS ASSUMED TO START AT THE VERTEX PRECISELY !!!!
-  public reAimFromVertex
-    (
-      searchBase: HalfEdgePositionDetail,
-      ray: Ray3d,
-      targetDistance: number): HalfEdgePositionDetail {
+  public reAimFromVertex(
+    searchBase: HalfEdgePositionDetail,
+    ray: Ray3d,
+    targetDistance: number): HalfEdgePositionDetail {
     const vertexNode = searchBase.node;
     let result;
     let outboundEdge = vertexNode!;
@@ -165,13 +165,13 @@ export class PointSearchContext {
 
   // Visit all edges around face.
   // reset lastBefore and firstAfter describing progress towards target distance on ray.
-  public reAimAroundFace
-    (
-      faceNode: HalfEdge,
-      ray: Ray3d,
-      targetDistance: number,  // !< distance to target point
-      lastBefore: HalfEdgePositionDetail,   // CALLER CREATED -- reset as first hit on negative side of ray.
-      firstAfter: HalfEdgePositionDetail): RayClassification {  // ! CALLER CREATED -- reset as first hit on positive side of ray.
+  public reAimAroundFace(
+    faceNode: HalfEdge,
+    ray: Ray3d,
+    targetDistance: number,  // !< distance to target point
+    lastBefore: HalfEdgePositionDetail,   // CALLER CREATED -- reset as first hit on negative side of ray.
+    firstAfter: HalfEdgePositionDetail): RayClassification {  // ! CALLER CREATED -- reset as first hit on positive side of ray.
+
     lastBefore.resetAsUndefinedWithTag(-Number.MAX_VALUE);
     firstAfter.resetAsUndefinedWithTag(Number.MAX_VALUE);
     const data0 = NodeXYZUV.createNodeAndRayOrigin(faceNode, ray);

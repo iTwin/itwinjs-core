@@ -15,7 +15,7 @@ import { NumericFilterRule, NumericFilterType } from "../DataGridFilterParser";
 
 /** @internal */
 export interface NumericFilterProps {
-  onChange: (args: { filterTerm: any; column: ReactDataGridColumn; }) => void;
+  onChange: (args: { filterTerm: any, column: ReactDataGridColumn }) => void;
   column: ReactDataGridColumn;
   placeholder?: string;
 }
@@ -39,12 +39,7 @@ export class NumericFilter extends React.Component<NumericFilterProps> {
     const list = value.split(",");
     if (list.length > 0) {
       // handle each value with comma
-      for (const key in list) {
-        if (!list.hasOwnProperty(key)) {
-          continue;
-        }
-
-        const obj = list[key];
+      list.forEach((obj) => {
         if (obj.indexOf("-") > 0) { // handle dash
           const begin = parseInt(obj.split("-")[0], 10);
           const end = parseInt(obj.split("-")[1], 10);
@@ -59,7 +54,7 @@ export class NumericFilter extends React.Component<NumericFilterProps> {
           const numericValue = parseInt(obj, 10);
           rules.push({ type: NumericFilterType.ExactMatch, value: numericValue });
         }
-      }
+      });
     }
     return rules;
   }

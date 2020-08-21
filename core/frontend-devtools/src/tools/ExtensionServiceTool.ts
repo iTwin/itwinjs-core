@@ -43,7 +43,7 @@ export class ExtensionServiceTool extends Tool {
     const contextName: string = args.slice(1).join(" ");
 
     if (args[0] === "project" || args[0] === "asset") {
-      ExtensionServiceTool.runWithName(contextName, args[0]).catch();
+      ExtensionServiceTool.runWithName(contextName, args[0]).catch(() => { });
       return true;
     }
 

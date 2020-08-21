@@ -61,9 +61,9 @@ const applyPlanarClassificationColor = `
   if (kClassifierDisplay_On == param)
     classColor = baseColor;
   else if (!isClassified || kClassifierDisplay_Dimmed == param)
-    classColor = vec4(baseColor.rgb * dimScale, 1.0);
+    classColor = vec4(baseColor.rgb * dimScale, baseColor.a);
   else if (kClassifierDisplay_Hilite == param)
-    classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
+    classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), baseColor.a);
   else {
     if (colorTexel.b > colorTexel.a) {
       discard;
@@ -71,8 +71,8 @@ const applyPlanarClassificationColor = `
     }
 
     // NB: colorTexel contains pre-multiplied alpha. We know it is greater than zero from above.
-    float alpha = colorTexel.a;
-    vec3 rgb = colorTexel.rgb / alpha;
+    float alpha = colorTexel.a * baseColor.a;
+    vec3 rgb = colorTexel.rgb / colorTexel.a;
     rgb = mix(baseColor.rgb, rgb, colorMix);
     classColor = vec4(rgb, alpha);
   }

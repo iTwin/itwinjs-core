@@ -40,23 +40,23 @@ export class Format implements FormatProps {
     this._name = name;
   }
 
-  get name(): string { return this._name; }
-  get roundFactor(): number { return this._roundFactor; }
-  get type(): FormatType { return this._type; }
-  get precision(): DecimalPrecision | FractionalPrecision { return this._precision; }
-  get minWidth(): number | undefined { return this._minWidth; }
-  get scientificType(): ScientificType | undefined { return this._scientificType; }
-  get showSignOption(): ShowSignOption { return this._showSignOption; }
-  get decimalSeparator(): string { return this._decimalSeparator; }
-  get thousandSeparator(): string { return this._thousandSeparator; }
-  get uomSeparator(): string { return this._uomSeparator; }
-  get stationSeparator(): string { return this._stationSeparator; }
-  get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
-  get formatTraits(): FormatTraits { return this._formatTraits; }
-  get spacer(): string | undefined { return this._spacer; }
-  get includeZero(): boolean | undefined { return this._includeZero; }
-  get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
-  get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
+  public get name(): string { return this._name; }
+  public get roundFactor(): number { return this._roundFactor; }
+  public get type(): FormatType { return this._type; }
+  public get precision(): DecimalPrecision | FractionalPrecision { return this._precision; }
+  public get minWidth(): number | undefined { return this._minWidth; }
+  public get scientificType(): ScientificType | undefined { return this._scientificType; }
+  public get showSignOption(): ShowSignOption { return this._showSignOption; }
+  public get decimalSeparator(): string { return this._decimalSeparator; }
+  public get thousandSeparator(): string { return this._thousandSeparator; }
+  public get uomSeparator(): string { return this._uomSeparator; }
+  public get stationSeparator(): string { return this._stationSeparator; }
+  public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
+  public get formatTraits(): FormatTraits { return this._formatTraits; }
+  public get spacer(): string | undefined { return this._spacer; }
+  public get includeZero(): boolean | undefined { return this._includeZero; }
+  public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
+  public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
 
   // parse and toString methods
   public static scientificTypeToString(scientificType: ScientificType): string {
@@ -268,7 +268,6 @@ export class Format implements FormatProps {
   }
 
   private async createUnit(unitsProvider: UnitsProvider, name: string, label?: string): Promise<void> {
-    let newUnit: UnitProps | undefined;
     if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
       throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
     for (const unit of this.units!) {
@@ -276,7 +275,7 @@ export class Format implements FormatProps {
       if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
         throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
     }
-    newUnit = await unitsProvider.findUnit(name);
+    const newUnit: UnitProps = await unitsProvider.findUnit(name);
     if (!newUnit || !newUnit.isValid)
       throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
     this.units!.push([newUnit, label]);
@@ -476,10 +475,10 @@ export class FormatterSpec {
     if (conversions) this._conversions = conversions;
   }
 
-  get name(): string { return this._name; }
+  public get name(): string { return this._name; }
   /** Returns an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
-  get unitConversions(): UnitConversionSpec[] { return this._conversions; }
-  get format(): Format { return this._format; }
+  public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
+  public get format(): Format { return this._format; }
 
   /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make

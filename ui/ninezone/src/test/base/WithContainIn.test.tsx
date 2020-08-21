@@ -11,7 +11,7 @@ import { containHorizontally, containVertically } from "../../ui-ninezone/base/W
 import { createBoundingClientRect } from "../Utils";
 
 const component = () => <div></div>;
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ContainedComponent = withContainIn(component);
 
 describe("<WithContainIn />", () => {

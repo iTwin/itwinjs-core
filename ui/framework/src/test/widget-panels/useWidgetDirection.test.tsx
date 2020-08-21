@@ -11,7 +11,7 @@ describe("useWidgetDirection", () => {
   it("should return 'vertical'", () => {
     const nineZone = createNineZoneState();
     const { result } = renderHook(() => useWidgetDirection(), {
-      wrapper: ({ children }) => (
+      wrapper: ({ children }) => ( // eslint-disable-line react/display-name
         <NineZoneContext.Provider value={nineZone}>
           {children}
         </NineZoneContext.Provider>
@@ -25,7 +25,7 @@ describe("useWidgetDirection", () => {
     nineZone = addPanelWidget(nineZone, "top", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
     const { result } = renderHook(() => useWidgetDirection(), {
-      wrapper: ({ children }) => (
+      wrapper: ({ children }) => ( // eslint-disable-line react/display-name
         <NineZoneContext.Provider value={nineZone}>
           <TabIdContext.Provider value="t1">
             {children}

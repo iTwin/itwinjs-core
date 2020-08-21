@@ -11,6 +11,8 @@ exports[`<ResizeGrip /> renders correctly 1`] = `
   <div
     className="nz-grip"
     onClick={[Function]}
+    role="button"
+    tabIndex={-1}
   />
 </PointerCaptor>
 `;

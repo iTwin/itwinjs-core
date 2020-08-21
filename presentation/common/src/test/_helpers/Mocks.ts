@@ -6,7 +6,7 @@ import * as moq from "typemoq";
 import { Keys, KeySet } from "../../presentation-common";
 
 export * from "typemoq";
-const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
+const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 /**
  * Should be called if mock.object is used to resolve a Promise. Otherwise
  * typemoq tries to handle 'then' method of the mocked object and the promise

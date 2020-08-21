@@ -12,7 +12,7 @@
  *
  * The asynchronous operation behind a DelayedPromise will start when any of the following occurs:
  *  - The DelayedPromise is `await`ed.
- *  - A callback is attached via `.then()` or `.catch()`.
+ *  - A callback is attached via `.then()` or `.catch(() => { })`.
  *  - The asynchronous operation is explicitly started via `.start()`
  *
  * Just as normal Promises will never return to their pending state once fulfilled or rejected,
@@ -105,7 +105,7 @@ export interface DelayedPromiseWithPropsConstructor {
    *              as if they were readonly properties of the DelayedPromiseWithProps object being constructed.
    * @param startCallback The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
    */
-  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>;
+  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
 }
 
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
@@ -113,7 +113,7 @@ export interface DelayedPromiseWithPropsConstructor {
 /**
  * @beta
  */
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
   constructor(props: TProps, cb: () => Promise<TPayload>) {
     super(cb);

@@ -386,6 +386,7 @@ describe("iModel", () => {
     const specular = 0.9;
     const reflect = 0.3;
     const reflectColor = [255, 0, 127];
+    /* eslint-disable @typescript-eslint/naming-convention */
     const textureMapProps: TextureMapProps = {
       pattern_angle: 3.0,
       pattern_u_flip: false,
@@ -397,6 +398,7 @@ describe("iModel", () => {
       pattern_weight: 0.5,
       TextureId: "test_textureid",
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     const renderMaterialParams = new RenderMaterialElement.Params(testPaletteName);
     renderMaterialParams.description = testDescription;
@@ -461,6 +463,7 @@ describe("iModel", () => {
 
     const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
       {
         paletteName: "TestPaletteName",
@@ -471,6 +474,7 @@ describe("iModel", () => {
           pattern_scalemode: TextureMapUnits.Relative,
         },
       });
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     /** Create a simple flat mesh with 4 points (2x2) */
     const width = imodel5.projectExtents.xLength() * 0.2;
@@ -703,7 +707,7 @@ describe("iModel", () => {
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed
   it("should produce an array of rows", () => {
-    const rows: any[] = IModelTestUtils.executeQuery(imodel1, `SELECT * FROM ${Category.classFullName}`); // tslint:disable-line: deprecation
+    const rows: any[] = IModelTestUtils.executeQuery(imodel1, `SELECT * FROM ${Category.classFullName}`); // eslint-disable-line deprecation/deprecation
     assert.exists(rows);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
@@ -1294,9 +1298,7 @@ describe("iModel", () => {
 
     const testImodel = imodel2;
 
-    let modeledElementId: Id64String;
-    let newModelId: Id64String;
-    [modeledElementId, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+    const [modeledElementId, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
 
     const newModelPersist = testImodel.models.getModel(newModelId);
 
@@ -1456,8 +1458,7 @@ describe("iModel", () => {
     testImodel.getMetaData("TestBim:TestPhysicalObject");
 
     // Create a new physical model
-    let newModelId: Id64String;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
@@ -1596,10 +1597,10 @@ describe("iModel", () => {
     });
 
     let callbackcount = 0;
-    testPromise.then(() => { // tslint:disable-line:no-floating-promises
+    testPromise.then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       ++callbackcount;
     });
-    testPromise.then(() => { // tslint:disable-line:no-floating-promises
+    testPromise.then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       ++callbackcount;
     });
 

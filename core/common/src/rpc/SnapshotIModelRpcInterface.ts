@@ -11,6 +11,7 @@ import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { RpcOperation } from "./core/RpcOperation";
 import { RpcRequestTokenSupplier_T } from "./core/RpcRequest";
+import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
 const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefined", key: req.parameters[0] });
 
@@ -21,6 +22,9 @@ const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefi
 export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   /** Returns the SnapshotIModelRpcInterface client instance for the frontend. */
   public static getClient(): SnapshotIModelRpcInterface { return RpcManager.getClientForInterface(SnapshotIModelRpcInterface); }
+
+  /** Returns the SnapshotIModelRpcInterface client instance for a custom RPC routing configuration. */
+  public static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface { return RpcManager.getClientForInterface(SnapshotIModelRpcInterface, token); }
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "SnapshotIModelRpcInterface";

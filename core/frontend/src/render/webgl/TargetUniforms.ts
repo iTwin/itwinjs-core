@@ -38,7 +38,7 @@ class PixelWidthFactor {
       uniform.setUniform1f(this._factor);
   }
 
-  private compute(frustumUniforms: FrustumUniforms, width: number, height: number, scale: { x: number; y: number; }): void {
+  private compute(frustumUniforms: FrustumUniforms, width: number, height: number, scale: { x: number, y: number }): void {
     desync(this);
 
     const frustumPlanes = frustumUniforms.planes;

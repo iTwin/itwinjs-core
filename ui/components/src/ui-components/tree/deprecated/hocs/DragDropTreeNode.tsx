@@ -14,7 +14,7 @@ import { withDragSource, WithDragSourceProps } from "../../../dragdrop/withDragS
 import { withDropTarget, WithDropTargetProps } from "../../../dragdrop/withDropTarget";
 import { TreeDragDropType } from "./withDragDrop";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /** Properties for the [[DragDropTreeNodeComponent]] React component */
 /** @internal @deprecated  */
@@ -44,7 +44,7 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
     hoverMode: HoverMode.On,
   };
   public render() {
-    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropNodeProps;
+    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropNodeProps; // eslint-disable-line @typescript-eslint/no-unused-vars
     const mode = this.state.hoverMode;
     const classes = classnames(
       "node-drop-target",

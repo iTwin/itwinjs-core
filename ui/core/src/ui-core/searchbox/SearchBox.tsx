@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { UiCore } from "../UiCore";
 import { CommonProps } from "../utils/Props";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Properties for [[SearchBox]] component
  * @public
@@ -64,6 +65,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         "icon-close": !emptyString,
       },
     );
+    const buttonTitle = UiCore.translate(emptyString ? "general.search" : "general.clear");
     return (
       <div className={searchClassName} style={this.props.style}>
         <input
@@ -73,10 +75,11 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           onKeyDown={this._handleKeyDown}
           onPaste={this._trackChange}
           onCut={this._trackChange}
-          placeholder={this.props.placeholder ? this.props.placeholder : UiCore.translate("searchbox.search")}
+          placeholder={this.props.placeholder ? this.props.placeholder : UiCore.translate("general.search")}
           role="searchbox"
         ></input>
-        <div className="core-searchbox-button" onClick={this._handleIconClick}>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <div className="core-searchbox-button" onClick={this._handleIconClick} role="button" tabIndex={-1} title={buttonTitle}>
           <span className={iconClassName} />
         </div>
       </div>
@@ -106,12 +109,12 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
 
   private _handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
-      case "Escape":
+      case SpecialKey.Escape:
         // istanbul ignore else
         if (this.props.onEscPressed)
           this.props.onEscPressed();
         break;
-      case "Enter":
+      case SpecialKey.Enter:
         // istanbul ignore else
         if (this.props.onEnterPressed)
           this.props.onEnterPressed();

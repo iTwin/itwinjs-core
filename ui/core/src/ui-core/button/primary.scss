@@ -12,17 +12,14 @@
 
   @include uicore-buttons-button;
 
-  border-color:       $uicore-green;
-  background-color:   $uicore-green;
-  color:              $uicore-white;
+  background:         $buic-accessory-success;
+  color:              $buic-accessory-hollow;
 
   &:hover {
-    border-color:       $uicore-green-5;
     background-color:   $uicore-green-5;
   }
 
   &:active {
-    border-color:       $uicore-green-4;
     background-color:   $uicore-green-4;
   }
 }

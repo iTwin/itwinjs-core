@@ -8,6 +8,8 @@ import { BriefcaseProps, IModelError, IModelStatus } from "@bentley/imodeljs-com
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
   return TestUtility.getAccessToken(userCredentials);
 }
@@ -55,7 +57,7 @@ const cred = {
   password: Config.App.getString("imjs_test_regular_user_password"),
 };
 
-getUserAccessToken(cred).then((_accessToken: AccessToken) => { // tslint:disable-line:no-floating-promises
+getUserAccessToken(cred).then((_accessToken: AccessToken) => { // eslint-disable-line @typescript-eslint/no-floating-promises
 });
 
 configureIModel();

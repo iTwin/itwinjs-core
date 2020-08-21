@@ -10,7 +10,7 @@ import "./ContextMenu.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType, SpecialKey } from "@bentley/ui-abstract";
 import { BadgeUtilities } from "../badge/BadgeUtilities";
 import { CommonProps } from "../utils/Props";
 import { Omit } from "../utils/typeUtils";
@@ -167,8 +167,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   public render(): JSX.Element {
     const {
-      opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect,
-      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ...props } = this.props;
+      opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, // eslint-disable-line @typescript-eslint/no-unused-vars
+      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const renderDirection = parentMenu === undefined ? this.state.direction : direction;
 
     if (this._lastChildren !== children || this._lastDirection !== renderDirection || this._lastSelectedIndex !== this.state.selectedIndex) {
@@ -182,6 +182,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
     return (
       <div
+        role="presentation"
         className={classNames}
         onKeyUp={this._handleKeyUp}
         onClick={this._handleClick}
@@ -191,6 +192,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         <DivWithOutsideClick onOutsideClick={this._handleOnOutsideClick}>
           <div
             ref={this._menuRef}
+            role="menu"
             tabIndex={0}
             data-testid="core-context-menu-container"
             className={classnames("core-context-menu-container",
@@ -377,7 +379,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       }
     }
 
-    if (event.keyCode === 37) /*<Left>*/ {
+    if (event.key === SpecialKey.ArrowLeft) {
       event.stopPropagation();
       if (this.props.parentMenu && this.props.parentSubmenu) {
         this.props.parentSubmenu.close();
@@ -387,17 +389,17 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         this.props.onEsc(event);
     }
 
-    if (event.keyCode === 27/*<Esc>*/) {
+    if (event.key === SpecialKey.Escape) {
       // istanbul ignore else
       if (this.props.onEsc)
         this.props.onEsc(event);
     }
 
-    if ((event.keyCode === 13 /*<Return>*/ || event.keyCode === 39 /*<Right>*/) && this._selectedElement) {
+    if ((event.key === SpecialKey.Enter || event.key === SpecialKey.ArrowRight) && this._selectedElement) {
       event.stopPropagation();
 
       // istanbul ignore else
-      if (event.keyCode === 13 || /* istanbul ignore next */ this._selectedElement instanceof ContextSubMenu) {
+      if (event.key === SpecialKey.Enter || /* istanbul ignore next */ this._selectedElement instanceof ContextSubMenu) {
         // istanbul ignore else
         if (this._selectedElement.select)
           this._selectedElement.select();
@@ -405,18 +407,18 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     }
 
     let { selectedIndex } = this.state;
-    if (event.keyCode === 38 /*<Up>*/ || event.keyCode === 40/*<Down>*/) {
+    if (event.key === SpecialKey.ArrowUp || event.key === SpecialKey.ArrowDown) {
       event.stopPropagation();
       if (selectedIndex === -1) {
         selectedIndex = 0;
       } else {
-        if (event.keyCode === 38) /*<Up>*/ {
+        if (event.key === SpecialKey.ArrowUp) {
           if (this.state.selectedIndex === 0)
             selectedIndex = this._length - 1;
           else
             selectedIndex--;
         }
-        if (event.keyCode === 40) /*<Down>*/ {
+        if (event.key === SpecialKey.ArrowDown) {
           if (this.state.selectedIndex === this._length - 1)
             selectedIndex = 0;
           else
@@ -494,13 +496,13 @@ export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProp
   }
 
   public render(): React.ReactNode {
-    const { x, y, identifier, contextMenuComponent, ...props } = this.props;
+    const { x, y, identifier, contextMenuComponent, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const positioningStyle: React.CSSProperties = {
       left: x,
       top: y,
     };
 
-    const CtxMenu = contextMenuComponent || ContextMenu; // tslint:disable-line:variable-name
+    const CtxMenu = contextMenuComponent || ContextMenu; // eslint-disable-line @typescript-eslint/naming-convention
 
     return ReactDOM.createPortal(
       <div className="core-context-menu-global" style={positioningStyle}>
@@ -556,6 +558,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   /** @internal */
   public readonly state: Readonly<ContextMenuItemState> = {};
   public render(): JSX.Element {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, onHotKeyParsed, badgeType, ...props } = this.props;
     const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
 
@@ -577,7 +580,11 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         className={classnames("core-context-menu-item", className,
           disabled && "core-context-menu-disabled",
           isSelected && "core-context-menu-is-selected")
-        }>
+        }
+        role="menuitem"
+        tabIndex={isSelected ? 0 : -1}
+        aria-disabled={disabled}
+      >
         <div className={classnames("core-context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
           {typeof icon !== "string" ? icon : undefined}
         </div>
@@ -640,7 +647,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   }
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.keyCode === 13 && this.props.onSelect !== undefined) {
+    if (event.key === SpecialKey.Enter && this.props.onSelect !== undefined) {
       this.props.onSelect(event);
     }
   }
@@ -710,9 +717,9 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   public render(): JSX.Element {
     const {
       label,
-      opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu,
-      onSelect, icon, disabled, onHover, isSelected, onHotKeyParsed,
-      children, onClick, className, badgeType, ...props } = this.props;
+      opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu, // eslint-disable-line @typescript-eslint/no-unused-vars
+      onSelect, icon, disabled, onHover, isSelected, onHotKeyParsed, // eslint-disable-line @typescript-eslint/no-unused-vars
+      children, onClick, className, badgeType, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
     const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
     const renderDirection = this.state.direction;
@@ -722,11 +729,13 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       this._lastLabel = label;
     }
     return (
+      // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       <div className={classnames("core-context-submenu", ContextMenu.getCSSClassNameFromDirection(renderDirection), className)}
         onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}
         data-testid="core-context-submenu"
         {...props} >
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div
           onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
@@ -735,6 +744,10 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
             disabled && "core-context-menu-disabled",
             isSelected && "core-context-menu-is-selected")}
           data-testid="core-context-submenu-container"
+          role="menuitem"
+          tabIndex={isSelected ? 0 : -1}
+          aria-disabled={disabled}
+          aria-haspopup={true}
         >
           <div className={classnames("core-context-menu-icon", "icon", icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>

@@ -17,7 +17,9 @@ import {
 } from "@bentley/ui-components";
 import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Orientation } from "@bentley/ui-core";
 
-// tslint:disable-next-line:variable-name naming-convention
+/* eslint-disable deprecation/deprecation */
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SamplePropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 export interface Props {
@@ -61,7 +63,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
   private _onPropertyContextMenu = (args: PropertyGridContextMenuArgs) => {
     args.event.persist();
     this.setState({ contextMenu: args });
-    // tslint:disable-next-line:no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.buildContextMenu(args);
   }
   private _onContextMenuOutsideClick = () => {
@@ -77,14 +79,14 @@ export default class PropertiesWidget extends React.Component<Props, State> {
       if (Presentation.favoriteProperties.has(field)) {
         items.push({
           key: "remove-favorite",
-          onSelect: () => this._onRemoveFavorite(field),
+          onSelect: async () => this._onRemoveFavorite(field),
           title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.remove-favorite.description"),
           label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.remove-favorite.label"),
         });
       } else {
         items.push({
           key: "add-favorite",
-          onSelect: () => this._onAddFavorite(field),
+          onSelect: async () => this._onAddFavorite(field),
           title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.add-favorite.description"),
           label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.add-favorite.label"),
         });
@@ -136,7 +138,8 @@ export default class PropertiesWidget extends React.Component<Props, State> {
   private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
     const { dataProvider } = this.state;
     const { property } = props;
-    const field = useAsyncValue(React.useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const field = useAsyncValue(React.useMemo(async () => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
 
     return (
       <div>
@@ -197,7 +200,7 @@ class FavoriteActionButton extends React.Component<{ field: Field }> {
   }
 
   private _onActionButtonClicked = () => {
-    this.toggleFavoriteProperty(); // tslint:disable-line:no-floating-promises
+    this.toggleFavoriteProperty(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private async toggleFavoriteProperty() {

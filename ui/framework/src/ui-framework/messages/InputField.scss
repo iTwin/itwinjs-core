@@ -66,12 +66,13 @@
     color: $buic-foreground-muted;
     cursor: pointer;
 
+    &:active,
     &:hover {
       color: $buic-foreground-activehover;
     }
 
-    &:active {
-      color: $buic-foreground-activehover;
+    &:focus {
+      outline: none;
     }
 
     .icon {

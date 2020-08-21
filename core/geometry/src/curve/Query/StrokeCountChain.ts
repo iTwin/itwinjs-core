@@ -417,50 +417,48 @@ export class StrokeCountSection {
    * @returns true if structures are compatible.
    */
   public static extendDistanceRangeBetweenStrokes(strokeA: AnyCurve, strokeB: AnyCurve, rangeToExtend: Range1d): boolean {
-    if (!strokeA.isSameGeometryClass(strokeB))
-      return false;
     if (strokeA instanceof LineString3d) {
-      if (!(strokeB instanceof LineString3d))
-        return false;
-      if (strokeA.numPoints() === strokeB.numPoints()) {
-        const n = strokeA.numPoints();
-        const pointA = Point3d.create();
-        const pointB = Point3d.create();
-        const allPointA = strokeA.packedPoints;
-        const allPointB = strokeB.packedPoints;
+      if (strokeB instanceof LineString3d) {
+        if (strokeA.numPoints() === strokeB.numPoints()) {
+          const n = strokeA.numPoints();
+          const pointA = Point3d.create();
+          const pointB = Point3d.create();
+          const allPointA = strokeA.packedPoints;
+          const allPointB = strokeB.packedPoints;
 
-        for (let i = 0; i < n; i++) {
-          allPointA.getPoint3dAtCheckedPointIndex(i, pointA);
-          allPointB.getPoint3dAtCheckedPointIndex(i, pointB);
-          rangeToExtend.extendX(pointA.distance(pointB));
+          for (let i = 0; i < n; i++) {
+            allPointA.getPoint3dAtCheckedPointIndex(i, pointA);
+            allPointB.getPoint3dAtCheckedPointIndex(i, pointB);
+            rangeToExtend.extendX(pointA.distance(pointB));
+          }
+          return true;
         }
-        return true;
       }
     } else if (strokeA instanceof ParityRegion) {
-      if (!(strokeB instanceof ParityRegion))
-        return false;
-      const childrenA = strokeA.children;
-      const childrenB = strokeB.children;
-      const n = childrenA.length;
-      if (n === childrenB.length) {
-        for (let i = 0; i < n; i++) {
-          if (!this.extendDistanceRangeBetweenStrokes(childrenA[i], childrenB[i], rangeToExtend))
-            return false;
+      if (strokeB instanceof ParityRegion) {
+        const childrenA = strokeA.children;
+        const childrenB = strokeB.children;
+        const n = childrenA.length;
+        if (n === childrenB.length) {
+          for (let i = 0; i < n; i++) {
+            if (!this.extendDistanceRangeBetweenStrokes(childrenA[i], childrenB[i], rangeToExtend))
+              return false;
+          }
+          return true;
         }
-        return true;
       }
     } else if (strokeA instanceof CurveChain) {
-      if (!(strokeB instanceof CurveChain))
-        return false;
-      const childrenA = strokeA.children;
-      const childrenB = strokeB.children;
-      const n = childrenA.length;
-      if (n === childrenB.length) {
-        for (let i = 0; i < n; i++) {
-          if (!this.extendDistanceRangeBetweenStrokes(childrenA[i], childrenB[i], rangeToExtend))
-            return false;
+      if (strokeB instanceof CurveChain) {
+        const childrenA = strokeA.children;
+        const childrenB = strokeB.children;
+        const n = childrenA.length;
+        if (n === childrenB.length) {
+          for (let i = 0; i < n; i++) {
+            if (!this.extendDistanceRangeBetweenStrokes(childrenA[i], childrenB[i], rangeToExtend))
+              return false;
+          }
+          return true;
         }
-        return true;
       }
     }
     return false;

@@ -19,7 +19,7 @@ describe("Slider", () => {
     expect(component.queryByTestId("core-slider-min")).to.not.exist;
     expect(component.queryByTestId("core-slider-max")).to.not.exist;
     expect(component.queryByTestId("core-slider-ticks")).to.not.exist;
-    expect(component.container.querySelector(".disabled")).to.be.null;
+    expect(component.container.querySelector(".core-disabled")).to.be.null;
   });
 
   it("should render with showMinMax", () => {

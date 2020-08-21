@@ -3,7 +3,7 @@
     "streetsidesoftware.code-spell-checker",
     "msjsdiag.debugger-for-chrome",
     "dbaeumer.vscode-eslint",
-    "ms-vscode.vscode-typescript-tslint-plugin",
+    "dbaeumer.vscode-eslint",
     "davidanson.vscode-markdownlint",
     "mike-co.import-sorter"
   ]

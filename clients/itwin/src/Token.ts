@@ -121,6 +121,7 @@ export class AccessToken {
     accessToken.initFromTokenString(tokenStr);
     return accessToken;
   }
+
   private static generateProperTokenType(tokenStr: string): any {
     for (const key in TokenPrefixToTypeContainer.tokenPrefixToConstructorDict) {
       if (tokenStr.startsWith(key)) {
@@ -129,6 +130,7 @@ export class AccessToken {
     }
     throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
   }
+
   /**
    * Creates a strongly typed AccessToken object from an untyped JSON with the same properties as [[AccessToken]]
    * @param jsonObj

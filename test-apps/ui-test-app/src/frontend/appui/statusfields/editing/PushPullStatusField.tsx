@@ -57,7 +57,7 @@ class SyncManager {
         this.onStateChange.raiseEvent();
 
         // Once the initial state of the briefcase is known, register for events announcing new changesets
-        const changeSetSubscription = await IModelApp.iModelClient.events.subscriptions.create(requestContext, iModelId, ["ChangeSetPostPushEvent"]);
+        const changeSetSubscription = await IModelApp.iModelClient.events.subscriptions.create(requestContext, iModelId, ["ChangeSetPostPushEvent"]); // eslint-disable-line deprecation/deprecation
 
         IModelApp.iModelClient.events.createListener(requestContext, async () => requestContext.accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
           if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
@@ -200,11 +200,11 @@ export class PushPullStatusField extends React.Component<StatusFieldProps, PushP
         isInFooterMode={this.props.isInFooterMode}
       >
         <div id="simple-editor-app-statusFields-pushPull-buttons">
-          <div title={pushTitleTxt} onClick={() => SyncManager.syncChanges(true)}>
+          <div title={pushTitleTxt} onClick={async () => SyncManager.syncChanges(true)}>
             <Icon iconSpec={pushIcon} />
           </div>
           <span> </span>
-          <div title={pullTitleTxt} onClick={() => SyncManager.syncChanges(false)}>
+          <div title={pullTitleTxt} onClick={async () => SyncManager.syncChanges(false)}>
             {pullChangeCount}<Icon iconSpec={pullIcon} />
           </div>
         </div>

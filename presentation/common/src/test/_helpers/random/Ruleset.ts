@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable-next-line
+// eslint-disable-next-line
 const RulesetSchema = require("../../../../Ruleset.schema.json");
 import { Ruleset } from "../../../presentation-common";
 
@@ -26,7 +26,7 @@ const fixEmptyStrings = (obj: any) => {
 };
 
 export const createRandomRuleset = async () => {
-  const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
+  const jsf = require("json-schema-faker"); // eslint-disable-line @typescript-eslint/no-var-requires
   jsf.option({
     optionalsProbability: 0.8,
     maxItems: 5,

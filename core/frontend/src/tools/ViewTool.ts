@@ -38,6 +38,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 import { ToolSettings } from "./ToolSettings";
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
+/* eslint-disable no-restricted-syntax */
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -71,6 +72,8 @@ const enum ViewManipPriority {
 }
 
 const enum NavigateMode { Pan = 0, Look = 1, Travel = 2 }
+
+/* eslint-enable no-restricted-syntax */
 
 // dampen an inertia vector according to tool settings
 const inertialDampen = (pt: Vector3d) => {
@@ -456,7 +459,7 @@ export abstract class ViewManip extends ViewTool {
     const ev = inputEv.clone();
     this.viewHandles.onWheel(ev); // notify handles that wheel has rolled.
 
-    IModelApp.toolAdmin.processWheelEvent(ev, false); // tslint:disable-line:no-floating-promises
+    IModelApp.toolAdmin.processWheelEvent(ev, false); // eslint-disable-line @typescript-eslint/no-floating-promises
     return EventHandled.Yes;
   }
 
@@ -475,7 +478,7 @@ export abstract class ViewManip extends ViewTool {
     this.isDragging = true;
 
     if (0 === this.nPts)
-      this.onDataButtonDown(ev); // tslint:disable-line:no-floating-promises
+      this.onDataButtonDown(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return EventHandled.Yes;
   }
@@ -1029,10 +1032,10 @@ abstract class HandleWithInertia extends ViewingToolHandle implements Animator {
     // get the fraction of the inertia duration that remains. The decay is a combination of the number of iterations (see damping below)
     // and time. That way the handle slows down even if the framerate is lower.
     const remaining = ((this._end.milliseconds - BeTimePoint.now().milliseconds) / this._duration.milliseconds);
-    const pt = this._lastPtNpc!.plusScaled(this._inertiaVec, remaining);
+    const pt = this._lastPtNpc.plusScaled(this._inertiaVec, remaining);
 
     // if we're not moving any more, or if the duration has elapsed, we're done
-    if (remaining <= 0 || (this._lastPtNpc!.minus(pt).magnitudeSquared() < .000001)) {
+    if (remaining <= 0 || (this._lastPtNpc.minus(pt).magnitudeSquared() < .000001)) {
       this.viewTool.viewport!.saveViewUndo();
       return true; // remove this as the animator
     }
@@ -2644,7 +2647,7 @@ export class FitViewTool extends ViewTool {
       this.provideToolAssistance();
 
     if (this.viewport)
-      this.doFit(this.viewport, this.oneShot, this.doAnimate, this.isolatedOnly); // tslint:disable-line:no-floating-promises
+      this.doFit(this.viewport, this.oneShot, this.doAnimate, this.isolatedOnly); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   public async doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, isolatedOnly = true): Promise<boolean> {
@@ -2688,13 +2691,13 @@ export class ViewGlobeSatelliteTool extends ViewTool {
   private _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
     const carto = eyeToCartographicOnGlobe(viewport);
     if (carto !== undefined) {
-      (async () => {
+      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
         let elevationOffset = 0;
         const elevation = await queryTerrainElevationOffset(viewport, carto);
         if (elevation !== undefined)
           elevationOffset = elevation;
         return this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
-      })().catch();
+      })().catch(() => { });
     }
     return true;
   }
@@ -2739,13 +2742,13 @@ export class ViewGlobeBirdTool extends ViewTool {
   private _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
     const carto = eyeToCartographicOnGlobe(viewport);
     if (carto !== undefined) {
-      (async () => {
+      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
         let elevationOffset = 0;
         const elevation = await queryTerrainElevationOffset(viewport, carto);
         if (elevation !== undefined)
           elevationOffset = elevation;
         return this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
-      })().catch();
+      })().catch(() => { });
     }
     return true;
   }
@@ -2795,7 +2798,7 @@ export class ViewGlobeLocationTool extends ViewTool {
     if (this._globalLocation === undefined) {
       const locationString = args.join(" ");
       const bingLocationProvider = new BingLocationProvider();
-      (async () => {
+      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
         this._globalLocation = await bingLocationProvider.getLocation(locationString);
         if (this._globalLocation !== undefined) {
           const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
@@ -2806,7 +2809,7 @@ export class ViewGlobeLocationTool extends ViewTool {
           }
           this._doLocationView();
         }
-      })().catch();
+      })().catch(() => { });
     }
 
     if (this._globalLocation !== undefined)
@@ -2863,7 +2866,7 @@ export class ViewGlobeIModelTool extends ViewTool {
     if (viewport && (viewport.view instanceof ViewState3d)) {
       const extents = viewport.view.iModel.projectExtents;
       const center = viewport.view.iModel.projectExtents.center;
-      const view3d = viewport.view as ViewState3d;
+      const view3d = viewport.view;
       const cartographicCenter = view3d.rootToCartographic(center);
       if (cartographicCenter !== undefined) {
         const cartographicArea = rangeToCartographicArea(view3d, extents);
@@ -2963,7 +2966,7 @@ export class WindowAreaTool extends ViewTool {
       this._secondPtWorld.setFrom(ev.point);
       this.doManipulation(ev, false);
       this.onReinitialize();
-      this.viewport!.invalidateDecorations();
+      this.viewport.invalidateDecorations();
     } else {
       this._firstPtWorld.setFrom(ev.point);
       this._secondPtWorld.setFrom(this._firstPtWorld);
@@ -3193,7 +3196,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   public interrupt() { }
 
   constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
-    super(startEv.viewport!, 0, true, false);
+    super(startEv.viewport, 0, true, false);
     this.onStart(ev);
   }
 

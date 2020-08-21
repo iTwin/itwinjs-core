@@ -18,6 +18,8 @@ import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
 import { Timeline } from "./Timeline";
 
+// cspell:ignore millisec
+
 const slowSpeed = 60 * 1000;
 const mediumSpeed = 20 * 1000;
 const fastSpeed = 10 * 1000;
@@ -283,14 +285,17 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     const { totalDuration } = this.state;
     return (
       <>
-        <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick} ></span>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+        <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick}
+          role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
+        ></span>
         <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={RelativePosition.BottomRight}>
           {!alwaysMinimized && hasDates && <ContextMenuItem name={expandName} onClick={this._onModeChanged} />}
           <ContextMenuItem name={this._repeatLabel} checked={this.state.repeat} onClick={this._onRepeatChanged} />
           <ContextMenuItem isSeparator={true} />
-          <ContextMenuItem name={UiComponents.i18n.translate("UiComponents:timeline.slow")} checked={totalDuration === slowSpeed} onClick={this._onSetTotalDuration.bind(this, slowSpeed)} />
-          <ContextMenuItem name={UiComponents.i18n.translate("UiComponents:timeline.medium")} checked={totalDuration === mediumSpeed} onClick={this._onSetTotalDuration.bind(this, mediumSpeed)} />
-          <ContextMenuItem name={UiComponents.i18n.translate("UiComponents:timeline.fast")} checked={totalDuration === fastSpeed} onClick={this._onSetTotalDuration.bind(this, fastSpeed)} />
+          <ContextMenuItem name={UiComponents.translate("timeline.slow")} checked={totalDuration === slowSpeed} onClick={this._onSetTotalDuration.bind(this, slowSpeed)} />
+          <ContextMenuItem name={UiComponents.translate("timeline.medium")} checked={totalDuration === mediumSpeed} onClick={this._onSetTotalDuration.bind(this, mediumSpeed)} />
+          <ContextMenuItem name={UiComponents.translate("timeline.fast")} checked={totalDuration === fastSpeed} onClick={this._onSetTotalDuration.bind(this, fastSpeed)} />
         </ContextMenu>
       </>
     );
@@ -309,9 +314,13 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       <div data-testid="timeline-component" className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")} >
         <div className="header">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
-          <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward} />
-          <PlayerButton className="play-button-step" icon="icon-media-controls-circular-play" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
-          <PlayerButton className="play-forward" icon="icon-caret-right" onClick={this._onForward} />
+          <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward}
+            title={UiComponents.translate("timeline.backward")} />
+          <PlayerButton className="play-button-step" icon="icon-media-controls-circular-play"
+            isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause}
+            title={UiComponents.translate("timeline.step")} />
+          <PlayerButton className="play-forward" icon="icon-caret-right" onClick={this._onForward}
+            title={UiComponents.translate("timeline.backward")} />
           <span className="current-date">{currentDate.toLocaleDateString()}</span>
           {!miniMode && this._renderSettings()}
         </div>

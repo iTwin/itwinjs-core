@@ -50,7 +50,7 @@ import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 // cspell:word bagof
-/* tslint:disable: object-literal-key-quotes no-console*/
+/* eslint-disable no-console*/
 /**
  * `ImodelJson` namespace has classes for serializing and deserialization json objects
  * @public
@@ -1243,21 +1243,21 @@ export namespace IModelJson {
   export class Writer extends GeometryHandler {
     /** Convert strongly typed instance to tagged json */
     public handleLineSegment3d(data: LineSegment3d): any {
-      return { "lineSegment": [data.point0Ref.toJSON(), data.point1Ref.toJSON()] };
+      return { lineSegment: [data.point0Ref.toJSON(), data.point1Ref.toJSON()] };
     }
     /** Convert strongly typed instance to tagged json */
     public handleCoordinateXYZ(data: CoordinateXYZ): any {
-      return { "point": data.point.toJSON() };
+      return { point: data.point.toJSON() };
     }
 
     /** Convert strongly typed instance to tagged json */
     public handleArc3d(data: Arc3d): any {
       return {
-        "arc": {
-          "center": data.center.toJSON(),
-          "vectorX": data.vector0.toJSON(),
-          "vectorY": data.vector90.toJSON(),
-          "sweepStartEnd": [data.sweep.startDegrees, data.sweep.endDegrees],
+        arc: {
+          center: data.center.toJSON(),
+          vectorX: data.vector0.toJSON(),
+          vectorY: data.vector90.toJSON(),
+          sweepStartEnd: [data.sweep.startDegrees, data.sweep.endDegrees],
         },
       };
     }
@@ -1331,7 +1331,7 @@ export namespace IModelJson {
         value.startRadius = 0;
         value.endRadius = data.nominalR1;
         value.length = data.nominalL1;
-        return { "transitionSpiral": value };
+        return { transitionSpiral: value };
 
       } else if (data instanceof IntegratedSpiral3d) {
         // TODO: HANDLE NONRIGID TRANSFORM !!
@@ -1350,6 +1350,7 @@ export namespace IModelJson {
         // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
 
         // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
+        // EXCEPT do not omit final radius .. readers want it?
         if (originalProperties !== undefined && originalProperties.numDefinedProperties() === 4) {
           if (originalProperties.radius0 !== undefined)
             value.startRadius = data.radius01.x0;
@@ -1361,6 +1362,8 @@ export namespace IModelJson {
             value.endBearing = data.bearing01.endAngle.toJSON();
           if (originalProperties.curveLength !== undefined)
             value.length = data.curveLength();
+          if (value.endRadius === undefined)
+            value.endRadius = data.radius01.x1;
         } else {
           // uh oh ... no original data, but the spiral itself knows all 5 values.  We don't know which to consider primary.
           // DECISION -- put everything out, let readers make sense if they can. (It should be consistent ?)
@@ -1370,7 +1373,7 @@ export namespace IModelJson {
           value.endBearing = data.bearing01.endAngle.toJSON();
           value.length = data.curveLength();
         }
-        return { "transitionSpiral": value };
+        return { transitionSpiral: value };
       }
       return undefined;
     }
@@ -1392,23 +1395,23 @@ export namespace IModelJson {
         && Geometry.isSameCoordinate(vectorX.magnitude(), 1.0)
         && Geometry.isSameCoordinate(vectorY.magnitude(), 1.0)) {
         return {
-          "cylinder": {
-            "capped": data.capped,
-            "start": data.getCenterA().toJSON(),
-            "end": data.getCenterB().toJSON(),
-            "radius": radiusA,
+          cylinder: {
+            capped: data.capped,
+            start: data.getCenterA().toJSON(),
+            end: data.getCenterB().toJSON(),
+            radius: radiusA,
           },
         };
       } else {
         const coneProps: ConeProps = {
-          "capped": data.capped,
-          "start": data.getCenterA().toJSON(),
-          "end": data.getCenterB().toJSON(),
-          "startRadius": data.getRadiusA(),
-          "endRadius": data.getRadiusB(),
+          capped: data.capped,
+          start: data.getCenterA().toJSON(),
+          end: data.getCenterB().toJSON(),
+          startRadius: data.getRadiusA(),
+          endRadius: data.getRadiusB(),
         };
         Writer.insertOrientationFromXYVectors(coneProps, vectorX, vectorY, false);
-        return { "cone": coneProps };
+        return { cone: coneProps };
       }
     }
 
@@ -1424,7 +1427,7 @@ export namespace IModelJson {
       const rZ = zData.mag;
       if (xData.v && zData.v) {
         const value: SphereProps = {
-          "center": data.cloneCenter().toJSON(),
+          center: data.cloneCenter().toJSON(),
         };
         if (!(data.getConstructiveFrame()!).matrix.isIdentity)
           value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
@@ -1442,7 +1445,7 @@ export namespace IModelJson {
         }
         if (!fullSweep)
           value.latitudeStartEnd = latitudeSweep.toJSON();
-        return { "sphere": value };
+        return { sphere: value };
       }
       return undefined;
     }
@@ -1460,16 +1463,16 @@ export namespace IModelJson {
         sweep.setRadians(-sweep.radians);
       }
       const value: TorusPipeProps = {
-        "center": data.cloneCenter().toJSON(),
-        "majorRadius": radiusA,
-        "minorRadius": radiusB,
-        "xyVectors": [vectorX.toJSON(), vectorY.toJSON()],
+        center: data.cloneCenter().toJSON(),
+        majorRadius: radiusA,
+        minorRadius: radiusB,
+        xyVectors: [vectorX.toJSON(), vectorY.toJSON()],
       };
       if (!sweep.isFullCircle) {
         value.sweepAngle = sweep.degrees;
         value.capped = data.capped;
       }
-      return { "torusPipe": value };
+      return { torusPipe: value };
 
     }
 
@@ -1479,7 +1482,7 @@ export namespace IModelJson {
       const pointsB = [];
       if (pointsA)
         for (const p of pointsA) pointsB.push(p.toJSON());
-      return { "lineString": pointsB };
+      return { lineString: pointsB };
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1488,31 +1491,31 @@ export namespace IModelJson {
       const pointsB = [];
       if (pointsA)
         for (const p of pointsA) pointsB.push(p.toJSON());
-      return { "pointString": pointsB };
+      return { pointString: pointsB };
     }
 
     /** Convert strongly typed instance to tagged json */
     public handlePath(data: Path): any {
-      return { "path": this.collectChildren(data) };
+      return { path: this.collectChildren(data) };
     }
     /** Convert strongly typed instance to tagged json */
     public handleLoop(data: Loop): any {
-      return { "loop": this.collectChildren(data) };
+      return { loop: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
     public handleParityRegion(data: ParityRegion): any {
-      return { "parityRegion": this.collectChildren(data) };
+      return { parityRegion: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
     public handleUnionRegion(data: UnionRegion): any {
-      return { "unionRegion": this.collectChildren(data) };
+      return { unionRegion: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
     public handleBagOfCurves(data: BagOfCurves): any {
-      return { "bagOfCurves": this.collectChildren(data) };
+      return { bagOfCurves: this.collectChildren(data) };
     }
 
     private collectChildren(data: CurveCollection): any[] {
@@ -1536,10 +1539,10 @@ export namespace IModelJson {
         && curves
         && capped !== undefined) {
         return {
-          "linearSweep": {
-            "contour": curves.dispatchToGeometryHandler(this),
-            "capped": capped,
-            "vector": extrusionVector.toJSON(),
+          linearSweep: {
+            contour: curves.dispatchToGeometryHandler(this),
+            capped,
+            vector: extrusionVector.toJSON(),
           },
         };
       }
@@ -1558,9 +1561,9 @@ export namespace IModelJson {
           jsonContours.push(this.emit(c));
         }
         return {
-          "ruledSweep": {
-            "contour": jsonContours,
-            "capped": capped,
+          ruledSweep: {
+            contour: jsonContours,
+            capped,
           },
         };
       }
@@ -1574,12 +1577,12 @@ export namespace IModelJson {
       const capped = data.capped;
       const sweepAngle = data.getSweep();
       return {
-        "rotationalSweep": {
-          "axis": axisRay.direction.toJSON(),
-          "contour": curves.dispatchToGeometryHandler(this),
-          "capped": capped,
-          "center": axisRay.origin.toJSON(),
-          "sweepAngle": sweepAngle.degrees,
+        rotationalSweep: {
+          axis: axisRay.direction.toJSON(),
+          contour: curves.dispatchToGeometryHandler(this),
+          capped,
+          center: axisRay.origin.toJSON(),
+          sweepAngle: sweepAngle.degrees,
         },
       };
     }
@@ -1587,12 +1590,12 @@ export namespace IModelJson {
     /** Convert strongly typed instance to tagged json */
     public handleBox(box: Box): any {
       const out: any = {
-        "box": {
-          "baseOrigin": box.getBaseOrigin().toJSON(),
-          "baseX": box.getBaseX(),
-          "baseY": box.getBaseY(),
-          "capped": box.capped,
-          "topOrigin": box.getTopOrigin().toJSON(),
+        box: {
+          baseOrigin: box.getBaseOrigin().toJSON(),
+          baseX: box.getBaseX(),
+          baseY: box.getBaseY(),
+          capped: box.capped,
+          topOrigin: box.getTopOrigin().toJSON(),
         },
       };
       Writer.insertXYOrientation(out.box, box.getVectorX(), box.getVectorY(), true);
@@ -1718,7 +1721,7 @@ export namespace IModelJson {
       contents.point = points;
       contents.pointIndex = pointIndex;
 
-      return { "indexedMesh": contents };
+      return { indexedMesh: contents };
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1738,11 +1741,11 @@ export namespace IModelJson {
         knots[0] = knots[rightIndex - degree] - knotPeriod;
         knots[knots.length - 1] = knots[leftIndex + degree] + knotPeriod;
         return {
-          "bcurve": {
-            "points": poles,
-            "knots": knots,
-            "closed": true,
-            "order": curve.order,
+          bcurve: {
+            points: poles,
+            knots,
+            closed: true,
+            order: curve.order,
           },
         };
       } else if (curve.isClosable === BSplineWrapMode.OpenByRemovingKnots) {
@@ -1765,20 +1768,20 @@ export namespace IModelJson {
         knots.push(rightKnot);
         knots.push(rawKnots[leftIndex + 1] + knotPeriod);
         return {
-          "bcurve": {
-            "points": poles,
-            "knots": knots,
-            "closed": true,
-            "order": curve.order,
+          bcurve: {
+            points: poles,
+            knots,
+            closed: true,
+            order: curve.order,
           },
         };
       } else {
         return {
-          "bcurve": {
-            "points": curve.copyPoints(),
-            "knots": curve.copyKnots(true),
-            "closed": false,
-            "order": curve.order,
+          bcurve: {
+            points: curve.copyPoints(),
+            knots: curve.copyKnots(true),
+            closed: false,
+            order: curve.order,
           },
         };
       }
@@ -1791,11 +1794,11 @@ export namespace IModelJson {
       for (let i = 0; i < order; i++) knots.push(0.0);
       for (let i = 0; i < order; i++) knots.push(1.0);
       return {
-        "bcurve": {
-          "points": curve.copyPolesAsJsonArray(),
-          "knots": knots,
-          "closed": false,
-          "order": curve.order,
+        bcurve: {
+          points: curve.copyPolesAsJsonArray(),
+          knots,
+          closed: false,
+          order: curve.order,
         },
       };
     }
@@ -1816,20 +1819,20 @@ export namespace IModelJson {
         knots[0] = knots[rightIndex - degree] - knotPeriod;
         knots[knots.length - 1] = knots[leftIndex + degree] + knotPeriod;
         return {
-          "bcurve": {
-            "points": poles,
-            "knots": knots,
-            "closed": true,
-            "order": curve.order,
+          bcurve: {
+            points: poles,
+            knots,
+            closed: true,
+            order: curve.order,
           },
         };
       } else {
         return {
-          "bcurve": {
-            "points": curve.copyPoints(),
-            "knots": curve.copyKnots(true),
-            "closed": false,
-            "order": curve.order,
+          bcurve: {
+            points: curve.copyPoints(),
+            knots: curve.copyKnots(true),
+            closed: false,
+            order: curve.order,
           },
         };
       }
@@ -1857,24 +1860,24 @@ export namespace IModelJson {
           grid.push(stringer);
         }
         return {
-          "bsurf": {
-            "points": grid,
-            "uKnots": surface.copyKnots(0, true),
-            "vKnots": surface.copyKnots(1, true),
-            "orderU": surface.orderUV(0),
-            "orderV": surface.orderUV(1),
-            "closedU": periodicU,
-            "closedV": periodicV,
+          bsurf: {
+            points: grid,
+            uKnots: surface.copyKnots(0, true),
+            vKnots: surface.copyKnots(1, true),
+            orderU: surface.orderUV(0),
+            orderV: surface.orderUV(1),
+            closedU: periodicU,
+            closedV: periodicV,
           },
         };
       } else {
         return {
-          "bsurf": {
-            "points": surface.getPointArray(false),
-            "uKnots": surface.copyKnots(0, true),
-            "vKnots": surface.copyKnots(1, true),
-            "orderU": surface.orderUV(0),
-            "orderV": surface.orderUV(1),
+          bsurf: {
+            points: surface.getPointArray(false),
+            uKnots: surface.copyKnots(0, true),
+            vKnots: surface.copyKnots(1, true),
+            orderU: surface.orderUV(0),
+            orderV: surface.orderUV(1),
           },
         };
       }
@@ -1887,11 +1890,11 @@ export namespace IModelJson {
       for (let i = 0; i < order; i++) knots.push(0.0);
       for (let i = 0; i < order; i++) knots.push(1.0);
       return {
-        "bcurve": {
-          "points": curve.copyPolesAsJsonArray(),
-          "knots": knots,
-          "closed": false,
-          "order": curve.order,
+        bcurve: {
+          points: curve.copyPolesAsJsonArray(),
+          knots,
+          closed: false,
+          order: curve.order,
         },
       };
     }
@@ -1900,12 +1903,12 @@ export namespace IModelJson {
     public handleBSplineSurface3dH(surface: BSplineSurface3dH): any {
       const data = surface.getPointGridJSON();
       return {
-        "bsurf": {
-          "points": data.points,
-          "uKnots": surface.copyKnots(0, true),
-          "vKnots": surface.copyKnots(1, true),
-          "orderU": surface.orderUV(0),
-          "orderV": surface.orderUV(1),
+        bsurf: {
+          points: data.points,
+          uKnots: surface.copyKnots(0, true),
+          vKnots: surface.copyKnots(1, true),
+          orderU: surface.orderUV(0),
+          orderV: surface.orderUV(1),
         },
       };
     }

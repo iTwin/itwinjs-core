@@ -34,7 +34,7 @@ import { UiFramework } from "../UiFramework";
 import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
 
 // istanbul ignore next
-const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable
+const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
   return (
     <>
@@ -131,7 +131,7 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
 }
 
 /** @internal */
-export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // tslint:disable-line: variable-name no-shadowed-variable
+export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const frontstageDef = useActiveFrontstageDef();
   if (!frontstageDef)
     return null;
@@ -173,6 +173,10 @@ export function useLabels() {
   return React.useMemo<NineZoneLabels>(() => ({
     dockToolSettingsTitle: UiFramework.translate("widget.tooltips.dockToolSettings"),
     sendWidgetHomeTitle: UiFramework.translate("widget.tooltips.sendHome"),
+    moreWidgetsTitle: UiFramework.translate("widget.tooltips.moreWidgets"),
+    moreToolSettingsTitle: UiFramework.translate("widget.tooltips.moreToolSettings"),
+    resizeGripTitle: UiFramework.translate("widget.tooltips.resizeGrip"),
+    toolSettingsHandleTitle: UiFramework.translate("widget.tooltips.toolSettingsHandle"),
   }), []);
 }
 
@@ -191,6 +195,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
     const label = getWidgetLabel(widget.label);
     state = addTab(state, widgetId, widget.id, {
       label,
+      preferredPanelWidgetSize: widget.preferredPanelSize,
     });
   }
   return state;
@@ -331,12 +336,12 @@ export function addPanelWidgets(
       }
       case "top": {
         state = addWidgets(state, frontstageDef.topPanel?.widgetDefs || [], side, "topStart");
-        state = addWidgets(state, frontstageDef.topMostPanel?.widgetDefs || [], side, "topEnd"); // tslint:disable-line: deprecation
+        state = addWidgets(state, frontstageDef.topMostPanel?.widgetDefs || [], side, "topEnd"); // eslint-disable-line deprecation/deprecation
         break;
       }
       case "bottom": {
         state = addWidgets(state, frontstageDef.bottomPanel?.widgetDefs || [], side, "bottomStart");
-        state = addWidgets(state, frontstageDef.bottomMostPanel?.widgetDefs || [], side, "bottomEnd"); // tslint:disable-line: deprecation
+        state = addWidgets(state, frontstageDef.bottomMostPanel?.widgetDefs || [], side, "bottomEnd"); // eslint-disable-line deprecation/deprecation
         break;
       }
     }
@@ -384,7 +389,7 @@ function getPanelMaxSize(maxSizeSpec: StagePanelMaxSizeSpec, panel: PanelSide, n
   return maxSizeSpec.percentage / 100 * size;
 }
 
-const stateVersion = 6; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 7; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
@@ -421,13 +426,21 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
     ], [frontstageDef.rightPanel?.panelState]);
     stateDraft.panels.top.collapsed = isPanelCollapsed([], [
       frontstageDef.topPanel?.panelState,
-      frontstageDef.topMostPanel?.panelState, // tslint:disable-line: deprecation
+      frontstageDef.topMostPanel?.panelState, // eslint-disable-line deprecation/deprecation
     ]);
     stateDraft.panels.bottom.collapsed = isPanelCollapsed([], [
       frontstageDef.bottomPanel?.panelState,
-      frontstageDef.bottomMostPanel?.panelState, // tslint:disable-line: deprecation
+      frontstageDef.bottomMostPanel?.panelState, // eslint-disable-line deprecation/deprecation
     ]);
+
+    const topCenterDef = frontstageDef.topCenter;
+    const toolSettingsWidgetDef = topCenterDef?.getSingleWidgetDef();
+    if (toolSettingsWidgetDef) {
+      const toolSettingsTab = stateDraft.tabs[toolSettingsTabId];
+      toolSettingsTab.preferredPanelWidgetSize = toolSettingsWidgetDef.preferredPanelSize;
+    }
   });
+
   return nineZone;
 }
 
@@ -630,7 +643,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
       }
       frontstageDef.nineZoneState = initializeNineZoneState(frontstageDef);
     }
-    fetchFrontstageState(); // tslint:disable-line: no-floating-promises
+    fetchFrontstageState(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [frontstageDef]);
 }
 
@@ -737,7 +750,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     const listener = (args: FrontstageEventArgs) => {
       // TODO: track restoring frontstages to support workflows:  i.e. prevent loading frontstage OR saving layout when delete is pending
-      uiSettings.deleteSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(args.frontstageDef.id)); // tslint:disable-line: no-floating-promises
+      uiSettings.deleteSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(args.frontstageDef.id)); // eslint-disable-line @typescript-eslint/no-floating-promises
       if (frontstageDef.id === args.frontstageDef.id) {
         args.frontstageDef.nineZoneState = initializeNineZoneState(frontstageDef);
       } else {
@@ -785,10 +798,10 @@ export function useItemsManager(frontstageDef: FrontstageDef) {
         state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.widgetDefs, initialState), "right", 2);
 
         state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.widgetDefs, initialState), "top", 0);
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.topMostPanel?.widgetDefs, initialState), "top", 1); // tslint:disable-line: deprecation
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.topMostPanel?.widgetDefs, initialState), "top", 1); // eslint-disable-line deprecation/deprecation
 
         state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.widgetDefs, initialState), "bottom", 0);
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomMostPanel?.widgetDefs, initialState), "bottom", 1); // tslint:disable-line: deprecation
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomMostPanel?.widgetDefs, initialState), "bottom", 1); // eslint-disable-line deprecation/deprecation
 
         frontstageDef.nineZoneState = state;
       }

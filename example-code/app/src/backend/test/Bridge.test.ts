@@ -73,7 +73,7 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, proj
   try {
     const existingid = await queryIModelByName(requestContext, projectId, name);
     if (existingid !== undefined && !!existingid.id)
-      BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, existingid.id!); // tslint:disable-line:no-floating-promises
+      BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, existingid.id!); // eslint-disable-line @typescript-eslint/no-floating-promises
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code

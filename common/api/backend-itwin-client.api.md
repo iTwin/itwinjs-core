@@ -39,7 +39,7 @@ export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientCo
 export class AzureFileHandler implements FileHandler {
     constructor(useDownloadBuffer?: boolean, threshold?: number);
     // (undocumented)
-    agent: https.Agent;
+    agent?: https.Agent;
     basename(filePath: string): string;
     downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
@@ -95,7 +95,7 @@ export type DelegationAuthorizationClientConfiguration = BackendAuthorizationCli
 // @internal
 export class LocalhostHandler implements FileHandler {
     // (undocumented)
-    agent: https.Agent;
+    agent?: https.Agent;
     basename(filePath: string): string;
     downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
     exists(filePath: string): boolean;
@@ -132,7 +132,7 @@ export class StorageServiceFileHandler extends UrlFileHandler {
 export class UrlFileHandler implements FileHandler {
     constructor();
     // (undocumented)
-    agent: https.Agent;
+    agent?: https.Agent;
     basename(filePath: string): string;
     // (undocumented)
     downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;

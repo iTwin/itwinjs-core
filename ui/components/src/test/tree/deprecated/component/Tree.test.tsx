@@ -28,7 +28,7 @@ import { ResolvablePromise, waitForUpdate } from "../../../test-helpers/misc";
 import TestUtils from "../../../TestUtils";
 import { TestTreeDataProvider } from "../../TestDataFactories";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 describe("Tree", () => {
 
@@ -44,9 +44,9 @@ describe("Tree", () => {
   };
 
   type NodeElement = HTMLElement & {
-    contentArea: HTMLElement,
-    expansionToggle: HTMLElement | undefined,
-    checkbox: HTMLInputElement | undefined,
+    contentArea: HTMLElement;
+    expansionToggle: HTMLElement | undefined;
+    checkbox: HTMLInputElement | undefined;
   };
   const getNode = (label: string): NodeElement => {
     const result = renderedTree.getAllByTestId(TreeComponentTestId.Node).reduce<NodeElement[]>((list: NodeElement[], node) => {
@@ -380,14 +380,14 @@ describe("Tree", () => {
           expect(selectionLoadFinishedListener).to.not.be.called;
 
           // resolve the 'b' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for second intermediate selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["b"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
           expect(selectionLoadFinishedListener).to.not.be.called;
 
           // resolve the 'c' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for the final selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["c"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(2, 2, sinon.match.func);
@@ -436,21 +436,21 @@ describe("Tree", () => {
           expect(selectionLoadFinishedListener).to.not.be.called;
 
           // resolve the 'b' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 3);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 3); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for intermediate selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["b", "y"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 3, sinon.match.func);
           expect(selectionLoadFinishedListener).to.not.be.called;
 
           // resolve the 'c' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for intermediate selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["c"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(2, 3, sinon.match.func);
           expect(selectionLoadFinishedListener).to.not.be.called;
 
           // resolve the 'z' grandchild promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("z"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("z"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for the final selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["z"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(3, 3, sinon.match.func);
@@ -482,14 +482,14 @@ describe("Tree", () => {
           expect(selectionLoadCanceledListener).to.not.be.called;
 
           // resolve the 'b' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for second intermediate selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["b"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
           expect(selectionLoadCanceledListener).to.be.calledOnce;
 
           // resolve the 'c' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to NOT be called for the final selection as the operation was canceled
           nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(3));
           expect(selectionLoadProgressListener.callCount).to.eq(3);
@@ -517,7 +517,7 @@ describe("Tree", () => {
           expect(selectionLoadCanceledListener).to.not.be.called;
 
           // resolve the 'b' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for second intermediate selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["b"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
@@ -528,7 +528,7 @@ describe("Tree", () => {
           expect(selectionLoadCanceledListener).to.be.calledOnce;
 
           // resolve the 'c' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to NOT be called for the final selection as the operation was canceled
           nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(4));
           expect(selectionLoadProgressListener.callCount).to.eq(3);
@@ -555,7 +555,7 @@ describe("Tree", () => {
           expect(selectionLoadCanceledListener).to.not.be.called;
 
           // resolve the 'b' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for the intermediate selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["b"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
@@ -567,7 +567,7 @@ describe("Tree", () => {
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(0, 1, sinon.match.func);
 
           // resolve the 'c' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for the final selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["c"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 1, sinon.match.func);
@@ -595,7 +595,7 @@ describe("Tree", () => {
           expect(selectionLoadCanceledListener).to.not.be.called;
 
           // resolve the 'b' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("b"), renderSpy, 2); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to be called for second intermediate selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["b"])), false), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
@@ -608,7 +608,7 @@ describe("Tree", () => {
           expect(selectionLoadCanceledListener).to.be.calledOnce;
 
           // resolve the 'c' child promise and wait for re-render
-          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy);
+          await waitForUpdate(() => dataProvider.resolveDelayedLoad("c"), renderSpy); // eslint-disable-line @typescript-eslint/promise-function-async
           // expect the callback to NOT be called for the final selection as the operation was canceled
           nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(3));
           expect(selectionLoadProgressListener.callCount).to.eq(3);
@@ -821,16 +821,16 @@ describe("Tree", () => {
 
         // select a node
         const node0a = getNode("0-a");
-        await waitForUpdate(() => fireEvent.click(node0a!.contentArea), renderSpy);
+        await waitForUpdate(() => fireEvent.click(node0a.contentArea), renderSpy);
         expect(getSelectedNodes().length).to.eq(1);
 
         // collapse its parent
         const node0 = getNode("0");
-        await waitForUpdate(() => fireEvent.click(node0!.expansionToggle!), renderSpy);
+        await waitForUpdate(() => fireEvent.click(node0.expansionToggle!), renderSpy);
         expect(getSelectedNodes().length).to.eq(0);
 
         // expand the parent
-        await waitForUpdate(() => fireEvent.click(node0!.expansionToggle!), renderSpy);
+        await waitForUpdate(() => fireEvent.click(node0.expansionToggle!), renderSpy);
         expect(getSelectedNodes().length).to.eq(1);
       });
 
@@ -1135,7 +1135,7 @@ describe("Tree", () => {
           sinon.match({ node: { id: "1" }, newState: CheckBoxState.On }),
         ]));
 
-      await waitForUpdate(() => dataProvider.resolveDelayedLoad("0-1"), renderSpy, 5);
+      await waitForUpdate(() => dataProvider.resolveDelayedLoad("0-1"), renderSpy, 5); // eslint-disable-line @typescript-eslint/promise-function-async
       expect(checkboxClickSpy.secondCall).to.have.been.calledWithExactly(
         sinon.match([
           sinon.match({ node: { id: "0-1" }, newState: CheckBoxState.On }),
@@ -1463,7 +1463,7 @@ describe("Tree", () => {
 
       expect(node.style.height).is.not.null;
 
-      expect(+node.style.height!.replace("px", "")).to.equal(76);
+      expect(+node.style.height.replace("px", "")).to.equal(76);
     });
 
     it("renders rows with a different height when rowHeight prop is set to function", async () => {
@@ -1490,8 +1490,8 @@ describe("Tree", () => {
       expect(nodes[1].style.height).is.not.null;
       expect(nodes[1].innerHTML.includes("with-description")).is.not.null;
 
-      expect(+nodes[0].style.height!.replace("px", "")).to.equal(20);
-      expect(+nodes[1].style.height!.replace("px", "")).to.equal(40);
+      expect(+nodes[0].style.height.replace("px", "")).to.equal(20);
+      expect(+nodes[1].style.height.replace("px", "")).to.equal(40);
     });
 
     it("renders row heights with default function if rowHeight prop is not provided", async () => {
@@ -1516,8 +1516,8 @@ describe("Tree", () => {
       expect(nodes[1].style.height).is.not.null;
       expect(nodes[1].innerHTML.includes("with-description")).is.not.null;
 
-      expect(+nodes[0].style.height!.replace("px", "")).to.equal(25);
-      expect(+nodes[1].style.height!.replace("px", "")).to.equal(44);
+      expect(+nodes[0].style.height.replace("px", "")).to.equal(25);
+      expect(+nodes[1].style.height.replace("px", "")).to.equal(44);
     });
   });
 
@@ -1616,7 +1616,7 @@ describe("Tree", () => {
       const node = (await interfaceProvider.getNodes())[1];
       await waitForUpdate(() => {
         node.label = PropertyRecord.fromString("test");
-        interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
+        interfaceProvider.onTreeNodeChanged?.raiseEvent([node]);
       }, renderNodesSpy);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
       expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
@@ -1635,7 +1635,7 @@ describe("Tree", () => {
       const node = (await interfaceProvider.getNodes())[0];
       await waitForUpdate(() => {
         node.label = PropertyRecord.fromString("test");
-        interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
+        interfaceProvider.onTreeNodeChanged?.raiseEvent([node]);
       }, renderNodesSpy);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
       expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
@@ -1657,7 +1657,7 @@ describe("Tree", () => {
       setReverseOrder(true);
 
       await waitForUpdate(() => {
-        interfaceProvider.onTreeNodeChanged!.raiseEvent([undefined]);
+        interfaceProvider.onTreeNodeChanged?.raiseEvent([undefined]);
       }, renderSpy, 1);
       expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
       expect(getFlatList()).to.deep.eq(["1", "0", "0-b", "0-a"]);
@@ -1673,19 +1673,19 @@ describe("Tree", () => {
         id: "test",
         label: PropertyRecord.fromString("test"),
       };
-      interfaceProvider.onTreeNodeChanged!.raiseEvent(node);
+      interfaceProvider.onTreeNodeChanged?.raiseEvent(node);
       expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
     });
 
     it("subscribes to `onTreeNodeChanged` on mount", () => {
       renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
-      expect(interfaceProvider.onTreeNodeChanged!.numberOfListeners).to.eq(1);
+      expect(interfaceProvider.onTreeNodeChanged?.numberOfListeners).to.eq(1);
     });
 
     it("unsubscribes from `onTreeNodeChanged` on unmount", () => {
       renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       renderedTree.unmount();
-      expect(interfaceProvider.onTreeNodeChanged!.numberOfListeners).to.eq(0);
+      expect(interfaceProvider.onTreeNodeChanged?.numberOfListeners).to.eq(0);
     });
 
     it("subscribes to `onTreeNodeChanged` on provider change", async () => {
@@ -1695,7 +1695,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       }, renderSpy);
-      expect(interfaceProvider.onTreeNodeChanged!.numberOfListeners).to.eq(1);
+      expect(interfaceProvider.onTreeNodeChanged?.numberOfListeners).to.eq(1);
     });
 
     it("unsubscribes from `onTreeNodeChanged` on provider change", async () => {
@@ -1705,7 +1705,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree {...defaultProps} dataProvider={methodProvider} />);
       }, renderSpy);
-      expect(interfaceProvider.onTreeNodeChanged!.numberOfListeners).to.eq(0);
+      expect(interfaceProvider.onTreeNodeChanged?.numberOfListeners).to.eq(0);
     });
 
   });
@@ -1713,15 +1713,15 @@ describe("Tree", () => {
   describe("scrolling to highlighted nodes", () => {
 
     const methodOverrides = {
-      scrollTo: Element.prototype.scrollTo,
+      scrollTo: Element.prototype.scrollTo, // eslint-disable-line @typescript-eslint/unbound-method
       getComputedStyle: window.getComputedStyle,
     };
     const scrollToSpy = sinon.spy();
 
     beforeEach(() => {
       scrollToSpy.resetHistory();
-      Element.prototype.scrollTo = scrollToSpy;
-      // tslint:disable-next-line:only-arrow-functions
+      Element.prototype.scrollTo = scrollToSpy; // eslint-disable-line @typescript-eslint/unbound-method
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       window.getComputedStyle = function (elt: Element, pseudoElt?: string | null | undefined) {
         const result = methodOverrides.getComputedStyle.call(window, elt, pseudoElt);
         result.overflow = "auto";
@@ -1730,7 +1730,7 @@ describe("Tree", () => {
     });
 
     afterEach(() => {
-      Element.prototype.scrollTo = methodOverrides.scrollTo;
+      Element.prototype.scrollTo = methodOverrides.scrollTo; // eslint-disable-line @typescript-eslint/unbound-method
       window.getComputedStyle = methodOverrides.getComputedStyle;
     });
 

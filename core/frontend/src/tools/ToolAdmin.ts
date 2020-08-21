@@ -36,7 +36,7 @@ export enum StartOrResume { Start = 1, Resume = 2 }
 /** @alpha */
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
-const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
+const enum MouseButton { Left = 0, Middle = 1, Right = 2 } // eslint-disable-line no-restricted-syntax
 
 /** Class that maintains the state of tool settings properties for the current session
  * @internal
@@ -372,7 +372,7 @@ export class ToolAdmin {
       Logger.logError(FrontendLoggerCategory.Package + ".unhandledException", msg);
 
     if (opts.launchDebugger) // this does nothing if the debugger window is not already opened
-      debugger; // tslint:disable-line:no-debugger
+      debugger; // eslint-disable-line no-debugger
 
     if (!opts.alertBox)
       return;
@@ -591,7 +591,7 @@ export class ToolAdmin {
         current.lastTouchStart = ev;
         IModelApp.accuSnap.onTouchStart(ev);
         if (undefined !== tool)
-          tool.onTouchStart(ev); // tslint:disable-line:no-floating-promises
+          tool.onTouchStart(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
         return;
       }
 
@@ -609,7 +609,7 @@ export class ToolAdmin {
         if (ev.touchEvent.timeStamp - current.lastTouchStart.touchEvent.timeStamp > (2.0 * ToolSettings.doubleTapTimeout.milliseconds))
           return; // Too much time has passed from touchstart to be considered a tap...
 
-        // tslint:disable-next-line:prefer-for-of
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < ev.touchEvent.changedTouches.length; i++) {
           const currTouch = ev.touchEvent.changedTouches[i];
           const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchEvent.targetTouches, currTouch.identifier);
@@ -633,7 +633,8 @@ export class ToolAdmin {
         if (undefined === current.touchTapTimer) {
           current.touchTapTimer = Date.now();
           current.touchTapCount = 1;
-          ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this); // tslint:disable-line: no-floating-promises
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/unbound-method
+          ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
         } else if (undefined !== current.touchTapCount) {
           current.touchTapCount++;
         }
@@ -644,13 +645,13 @@ export class ToolAdmin {
         current.lastTouchStart = undefined;
         IModelApp.accuSnap.onTouchCancel(ev);
         if (undefined !== tool)
-          tool.onTouchCancel(ev); // tslint:disable-line:no-floating-promises
+          tool.onTouchCancel(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
         return;
       }
 
       case "touchmove": {
         if (!IModelApp.accuSnap.onTouchMove(ev) && undefined !== tool)
-          tool.onTouchMove(ev); // tslint:disable-line:no-floating-promises
+          tool.onTouchMove(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
 
         if (undefined === current.lastTouchStart)
           return;
@@ -658,7 +659,7 @@ export class ToolAdmin {
         if (ev.touchEvent.timeStamp - current.lastTouchStart.touchEvent.timeStamp < ToolSettings.touchMoveDelay.milliseconds)
           return;
 
-        // tslint:disable-next-line:prefer-for-of
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < ev.touchEvent.changedTouches.length; ++i) {
           const currTouch = ev.touchEvent.changedTouches[i];
           const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchEvent.targetTouches, currTouch.identifier);
@@ -679,7 +680,7 @@ export class ToolAdmin {
             return;
 
           if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, touchStart))
-            this.idleTool.onTouchMoveStart(ev, touchStart); // tslint:disable-line:no-floating-promises
+            this.idleTool.onTouchMoveStart(ev, touchStart); // eslint-disable-line @typescript-eslint/no-floating-promises
           return;
         }
         return;
@@ -942,7 +943,7 @@ export class ToolAdmin {
     }
 
     if (tool) {
-      tool.onMouseMotion(ev); // tslint:disable-line:no-floating-promises
+      tool.onMouseMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
       this.updateDynamics(ev);
     }
 
@@ -1722,7 +1723,7 @@ export class WheelEventProcessor {
 /**
  * @public
  */
-export namespace ToolAdmin {
+export namespace ToolAdmin { // eslint-disable-line no-redeclare
 
   /**
    * Active settings that placement tools will use.

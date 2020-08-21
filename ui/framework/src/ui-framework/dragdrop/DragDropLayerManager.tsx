@@ -129,7 +129,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
 
     const dragSourceArgs = item! as DragSourceArguments;
 
-    const LayerElement = DragDropLayerManager.getActiveLayer() || (dragSourceArgs && dragSourceArgs.defaultDragLayer); // tslint:disable-line:variable-name
+    const LayerElement = DragDropLayerManager.getActiveLayer() || (dragSourceArgs && dragSourceArgs.defaultDragLayer); // eslint-disable-line @typescript-eslint/naming-convention
     if (!this._dragging || !LayerElement)
       return null;
 
@@ -166,5 +166,5 @@ const collect = (monitor: DragLayerMonitor) => ({
  * This component must be placed on a root DOM node at the bottom to render DragLayers properly.
  * @beta
  */
-export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}> =  // tslint:disable-line:variable-name
+export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}> =  // eslint-disable-line @typescript-eslint/naming-convention
   DragLayer<DragDropLayerRendererProps>(collect)(DragDropLayerRendererComponent);

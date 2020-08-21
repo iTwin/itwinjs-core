@@ -10,7 +10,7 @@ import "./SheetNavigationAid.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { ViewIdChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { UiComponents, ViewIdChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { CommonProps, Spinner, SpinnerSize } from "@bentley/ui-core";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
@@ -134,7 +134,11 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   public render(): React.ReactNode {
     const name = (this.state.sheetData.length > 0) ? /* istanbul ignore next */ this.state.sheetData[this.state.index].name : "";
     const sheet = UiFramework.translate("general.sheet");
-    const ofStr = UiFramework.translate("general.of");
+    const ofStr = UiComponents.translate("general.of");
+    const leftIndex = this.state.index === 0 ? this.state.sheetData.length - 1 : /* istanbul ignore next */ this.state.index - 1;
+    const rightIndex = this.state.index >= this.state.sheetData.length - 1 ? 0 : /* istanbul ignore next */this.state.index + 1;
+    const leftTitle = this.state.sheetData[leftIndex] ? /* istanbul ignore next */ this.state.sheetData[leftIndex].name : undefined;
+    const rightTitle = this.state.sheetData[rightIndex] ? /* istanbul ignore next */ this.state.sheetData[rightIndex].name : undefined;
 
     let content: React.ReactNode;
     // istanbul ignore if
@@ -142,11 +146,19 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
       content = (
         <>
           <div className="sheet-title">{sheet}</div>
-          <div className="sheet-name" title={name} onClick={this._handleOnClickSheetName}>{name}</div>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+          <div className="sheet-name" title={name} onClick={this._handleOnClickSheetName}
+            role="button" tabIndex={-1}>
+            {name}
+          </div>
           <div className="sheet-container">
-            <div className="sheet-caret icon icon-caret-left" onClick={this._handleOnClickLeftArrow} />
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+            <div className="sheet-caret icon icon-caret-left" onClick={this._handleOnClickLeftArrow}
+              role="button" tabIndex={-1} title={leftTitle} />
             <div>{this.state.index + 1} {ofStr} {this.state.sheetData.length}</div>
-            <div className="sheet-caret icon icon-caret-right" onClick={this._handleOnClickRightArrow} />
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+            <div className="sheet-caret icon icon-caret-right" onClick={this._handleOnClickRightArrow}
+              role="button" tabIndex={-1} title={rightTitle} />
           </div>
         </>
       );

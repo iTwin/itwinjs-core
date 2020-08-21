@@ -11,6 +11,8 @@ export * from "./ui-abstract/UiItemsArbiter";
 export * from "./ui-abstract/backstage/BackstageItem";
 export * from "./ui-abstract/backstage/BackstageItemsManager";
 
+export * from "./ui-abstract/common/KeyboardKey";
+
 export * from "./ui-abstract/dialogs/DialogItem";
 export * from "./ui-abstract/dialogs/DialogItemsManager";
 export * from "./ui-abstract/dialogs/UiDataProvider";
@@ -62,6 +64,10 @@ export * from "./ui-abstract/widget/WidgetState";
 /**
  * @docs-group-description Backstage
  * Abstractions used by ui-framework package to create and manage the display Backstage menu items.
+ */
+/**
+ * @docs-group-description Common
+ * Common enums and functions used throughout the UI packages.
  */
 /**
  * @docs-group-description Dialog

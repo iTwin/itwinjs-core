@@ -20,12 +20,12 @@ describe("DefaultNavigationWidget", () => {
   });
 
   it("DefaultNavigationWidget should render", () => {
-    const wrapper = mount(<DefaultNavigationWidget />); // tslint:disable-line:deprecation
+    const wrapper = mount(<DefaultNavigationWidget />); // eslint-disable-line deprecation/deprecation
     wrapper.unmount();
   });
 
   it("DefaultNavigationWidget should render correctly", () => {
-    shallow(<DefaultNavigationWidget />).should.matchSnapshot(); // tslint:disable-line:deprecation
+    shallow(<DefaultNavigationWidget />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
   });
 
   it("DefaultNavigationWidget with suffix and prefix items should render correctly", () => {
@@ -57,7 +57,7 @@ describe("DefaultNavigationWidget", () => {
       label: "test-h2-tool",
     });
 
-    shallow(<DefaultNavigationWidget prefixVerticalItems={new ItemList([testV1Def])} suffixVerticalItems={new ItemList([testV2Def])} // tslint:disable-line:deprecation
+    shallow(<DefaultNavigationWidget prefixVerticalItems={new ItemList([testV1Def])} suffixVerticalItems={new ItemList([testV2Def])} // eslint-disable-line deprecation/deprecation
       prefixHorizontalItems={new ItemList([testH1Def])} suffixHorizontalItems={new ItemList([testH2Def])} />).should.matchSnapshot();
   });
 

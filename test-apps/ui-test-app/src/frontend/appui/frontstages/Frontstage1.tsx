@@ -15,6 +15,8 @@ import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl 
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
 
+/* eslint-disable react/jsx-key */
+
 function RightPanel() {
   const [collapsed, setCollapsed] = React.useState(true);
   const direction = useWidgetDirection();

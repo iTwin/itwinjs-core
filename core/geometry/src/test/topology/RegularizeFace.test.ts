@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 
 import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -263,7 +263,7 @@ describe("Regularize", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeC");
-    ck.testExactNumber(0, hardLoops.length, "See RegularizationC.HardLoops for " + hardLoops.length + "regularization failure cases ");
+    ck.testExactNumber(0, hardLoops.length, `See RegularizationC.HardLoops for ${hardLoops.length} regularization failure cases `);
     GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -385,7 +385,7 @@ function testRegularize(
         if (!RegularizationContext.isMonotoneFace(f))
           numBad++;
       }
-      console.log(" nonMonotone faces " + numBad + " of " + nonMonotoneFaces.length);
+      console.log(` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`);
       GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(range.fractionToPoint(r0, r0, 0), range.fractionToPoint(r1, r1, 0)), dx + bx, dy, 0.0);
       dumpEdges = true;
     }
@@ -458,7 +458,7 @@ function testFullGraphRegularize(
         if (!RegularizationContext.isMonotoneFace(f))
           numBad++;
       }
-      console.log(" nonMonotone faces " + numBad + " of " + nonMonotoneFaces.length);
+      console.log(` nonMonotone faces ${numBad} of ${nonMonotoneFaces.length}`);
       GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(range.fractionToPoint(r0, r0, 0), range.fractionToPoint(r1, r1, 0)), dx + bx, dy, 0.0);
       dumpEdges = true;
     }
@@ -542,7 +542,7 @@ it("RegularizeSpiralBand", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeSpiralBand");
-  ck.testExactNumber(0, hardLoops.length, "See RegularizationSpiralBand.HardLoops for " + hardLoops.length + "regularization failure cases ");
+  ck.testExactNumber(0, hardLoops.length, `See RegularizationSpiralBand.HardLoops for ${hardLoops.length} regularization failure cases `);
   GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
   expect(ck.getNumErrors()).equals(0);
 });

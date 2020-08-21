@@ -6,8 +6,8 @@
     "outDir": "./lib"
   },
   "include": [
-    "./src/backend/*.ts",
-    "./src/common/*.ts"
+    "./src/backend/**/*.ts",
+    "./src/common/**/.ts"
   ],
   "exclude": [
     "lib",

@@ -36,7 +36,8 @@ export interface ToolbarButtonItemProps extends CommonProps {
 /** Toolbar item component. Used in [[Toolbar]] component.
  * @beta
  */
-export const ToolbarButtonItem = React.memo<React.FC<ToolbarButtonItemProps>>( // tslint:disable-line: variable-name
+// eslint-disable-next-line react/display-name
+export const ToolbarButtonItem = React.memo<React.FC<ToolbarButtonItemProps>>(
   (props: ToolbarButtonItemProps) => {
     const className = classnames(
       "components-toolbar-button-item",

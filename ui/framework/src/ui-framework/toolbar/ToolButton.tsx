@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
+import { ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon } from "@bentley/ui-core";
 import { getToolbarItemProps, Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -43,8 +43,8 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       this._label = UiFramework.i18n.translate(props.labelKey);
 
     this.state = {
-      isVisible: undefined !== props.isVisible ? props.isVisible : true, // tslint:disable-line:deprecation
-      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true, // tslint:disable-line:deprecation
+      isVisible: undefined !== props.isVisible ? props.isVisible : true, // eslint-disable-line deprecation/deprecation
+      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true, // eslint-disable-line deprecation/deprecation
       isActive: undefined !== props.isActive ? props.isActive : false,
       isPressed: undefined !== props.isPressed ? props.isPressed : false,
     };
@@ -63,12 +63,12 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       refreshState = true;
     }
 
-    if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // tslint:disable-line:deprecation
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
+    if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
 
     if (refreshState) {
-      if (this.props.stateFunc) // tslint:disable-line:deprecation
-        newState = this.props.stateFunc(newState); // tslint:disable-line:deprecation
+      if (this.props.stateFunc) // eslint-disable-line deprecation/deprecation
+        newState = this.props.stateFunc(newState); // eslint-disable-line deprecation/deprecation
 
       // istanbul ignore else
       if ((this.state.isActive !== newState.isActive) ||
@@ -105,7 +105,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
-    if (e.key === "Escape") {
+    if (e.key === SpecialKey.Escape) {
       KeyboardShortcutManager.setFocusToHome();
     }
   }

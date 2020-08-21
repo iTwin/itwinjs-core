@@ -18,13 +18,13 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  *
  * @public
  */
-export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew; // tslint:disable-line:deprecation
+export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew; // eslint-disable-line deprecation/deprecation
 
 /**
  * @public
  * @deprecated Use `ContentRelatedInstancesSpecificationNew`. Will be removed in iModel.js 3.0
  */
-export interface DEPRECATED_ContentRelatedInstancesSpecification extends ContentSpecificationBase { // tslint:disable-line: naming-convention class-name
+export interface DEPRECATED_ContentRelatedInstancesSpecification extends ContentSpecificationBase { // eslint-disable-line @typescript-eslint/naming-convention
   /** Used for serializing to JSON. */
   specType: ContentSpecificationTypes.ContentRelatedInstances;
 

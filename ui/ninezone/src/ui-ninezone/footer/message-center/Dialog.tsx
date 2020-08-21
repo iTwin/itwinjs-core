@@ -51,7 +51,7 @@ export class MessageCenterDialog extends React.PureComponent<MessageCenterDialog
           </TitleBar>
         }
       >
-        <div className="nz-tabs">
+        <div className="nz-tabs" role="tablist">
           {this.props.tabs}
         </div>
         <div className="nz-messages">

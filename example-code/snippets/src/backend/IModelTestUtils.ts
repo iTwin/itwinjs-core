@@ -107,4 +107,4 @@ export class IModelTestUtils {
 }
 
 // Start the backend
-IModelTestUtils.startupIModelHost(); // tslint:disable-line:no-floating-promises
+IModelTestUtils.startupIModelHost(); // eslint-disable-line @typescript-eslint/no-floating-promises

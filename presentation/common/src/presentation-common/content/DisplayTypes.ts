@@ -14,7 +14,7 @@
  */
 export enum DefaultContentDisplayTypes {
   /** Unknown content type. */
-  Undefined = "Undefined",
+  Undefined = "Undefined", // eslint-disable-line id-blacklist
 
   /** Grid or table view content type. By default adds [[ContentFlags.ShowLabels]] flag. */
   Grid = "Grid",

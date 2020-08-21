@@ -11,7 +11,7 @@
  * @public
  * @deprecated Use `PropertySpecification` instead. Will be removed in iModel.js 3.0
  */
-export interface DEPRECATED_PropertiesDisplaySpecification { // tslint:disable-line: naming-convention class-name
+export interface DEPRECATED_PropertiesDisplaySpecification { // eslint-disable-line @typescript-eslint/naming-convention
   /** List of ECProperty names which should be hidden or shown */
   propertyNames: string[];
 

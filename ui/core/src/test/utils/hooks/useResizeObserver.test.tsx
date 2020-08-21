@@ -19,7 +19,7 @@ describe("useResizeObserver", () => {
     const spy = sandbox.spy(ResizeObserverModule.ResizeObserver.prototype, "observe");
     const { result } = renderHook(() => useResizeObserver());
     const element = document.createElement("div");
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(element);
     });
     spy.calledOnceWithExactly(element).should.true;
@@ -29,10 +29,10 @@ describe("useResizeObserver", () => {
     const spy = sandbox.spy(ResizeObserverModule.ResizeObserver.prototype, "unobserve");
     const { result } = renderHook(() => useResizeObserver());
     const element = document.createElement("div");
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(element);
     });
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(null);
     });
     spy.calledOnceWithExactly(element).should.true;
@@ -43,7 +43,7 @@ describe("useResizeObserver", () => {
     const spy = sandbox.spy();
     const { result } = renderHook(() => useResizeObserver(spy));
     const element = document.createElement("div");
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(element);
     });
 
@@ -63,7 +63,7 @@ describe("useResizeObserver", () => {
     const spy = sandbox.spy();
     const { result } = renderHook(() => useResizeObserver(spy));
     const element = document.createElement("div");
-    act(() => {
+    act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       result.current(element);
     });
 

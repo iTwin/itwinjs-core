@@ -4,6 +4,7 @@ exports[`<PointerCaptor /> renders correctly 1`] = `
 <div
   className="nz-base-pointerCaptor"
   onPointerDown={[Function]}
+  role="presentation"
 >
   <div
     className="nz-overlay"
@@ -15,6 +16,7 @@ exports[`<PointerCaptor /> should respect isPointerDown prop over state 1`] = `
 <div
   className="nz-base-pointerCaptor nz-captured"
   onPointerDown={[Function]}
+  role="presentation"
 >
   <div
     className="nz-overlay"

@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.23.2",
+  "rushVersion": "5.30.3",
   "pnpmVersion": "4.12.5",
   "nodeSupportedVersionRange": ">=10.16.0 <13.0.0",
   "projectFolderMinDepth": 2,
@@ -464,6 +464,12 @@
     {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@bentley/ui-test-extension",
+      "projectFolder": "test-apps/ui-test-extension",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

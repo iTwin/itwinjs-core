@@ -53,8 +53,8 @@ export class HyperModeling {
   /** @internal */
   public static resources?: Resources;
   private static _markerHandler?: SectionMarkerHandler;
-  private static _markerConfig: SectionMarkerConfig = { };
-  private static _graphicsConfig: SectionGraphicsConfig = { };
+  private static _markerConfig: SectionMarkerConfig = {};
+  private static _graphicsConfig: SectionGraphicsConfig = {};
 
   /** Invoke this method to initialize the hypermodeling package for use. Your *must* await the result before using any of this package's APIs.
    * Typically an application would invoke this after [IModelApp.startup]($frontend), e.g.,
@@ -99,10 +99,10 @@ export class HyperModeling {
    * @see [[HyperModeling.updateConfiguration]] for overriding specific aspects of the configuration.
    */
   public static replaceConfiguration(config?: HyperModelingConfig): void {
-    config = config ?? { };
+    config = config ?? {};
     this._markerHandler = config.markerHandler ?? new SectionMarkerHandler();
-    this._markerConfig = config.markers ? { ...config.markers } : { };
-    this._graphicsConfig = config.graphics ? { ...config.graphics } : { };
+    this._markerConfig = config.markers ? { ...config.markers } : {};
+    this._graphicsConfig = config.graphics ? { ...config.graphics } : {};
   }
 
   /** Overrides specific aspects of the current package configuration. Any field that is not `undefined` will be replaced in the current configuration;

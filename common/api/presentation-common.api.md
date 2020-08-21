@@ -115,8 +115,8 @@ export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
 }
 
 // @public
-export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // tslint:disable-line:deprecation
-DEPRECATED_AllRelatedInstanceNodesSpecification | // tslint:disable-line:deprecation
+export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
+DEPRECATED_AllRelatedInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
 CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;
 
 // @public
@@ -605,7 +605,9 @@ export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
 // @public
 export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     className: string;
+    // @deprecated
     groupingValue: any;
+    groupingValues: any[];
     propertyName: string;
     // (undocumented)
     type: StandardNodeTypes.ECPropertyGroupingNode;
@@ -1470,17 +1472,18 @@ export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDelet
 export const PRESENTATION_COMMON_ROOT: string;
 
 // @alpha
-export interface PresentationDataCompareOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {
+    // (undocumented)
+    expandedNodeKeys?: TNodeKey[];
     // (undocumented)
     prev: {
-        rulesetOrId: Ruleset | string;
-    } | {
-        rulesetVariables: RulesetVariable[];
+        rulesetOrId?: Ruleset | string;
+        rulesetVariables?: RulesetVariable[];
     };
 }
 
 // @alpha
-export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<PresentationDataCompareOptions<never>>;
+export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<PresentationDataCompareOptions<any, NodeKeyJSON>>;
 
 // @public
 export class PresentationError extends BentleyError {
@@ -1999,7 +2002,7 @@ export class RpcRequestsHandler implements IDisposable {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
-    compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps>): Promise<PartialHierarchyModificationJSON[]>;
+    compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]>;
     // (undocumented)
     computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
     // (undocumented)

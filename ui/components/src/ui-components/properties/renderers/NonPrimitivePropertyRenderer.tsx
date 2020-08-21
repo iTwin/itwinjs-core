@@ -7,7 +7,6 @@
  */
 
 import "./NonPrimitivePropertyRenderer.scss";
-import _ from "lodash";
 import * as React from "react";
 import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
 import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer";
@@ -106,7 +105,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
         orientation={this.props.orientation}
         columnRatio={this.props.columnRatio}
         actionButtonRenderers={this.props.actionButtonRenderers}
-        // tslint:disable-next-line: deprecation
+        // eslint-disable-next-line deprecation/deprecation
         onColumnRatioChanged={this.props.onColumnRatioChanged}
         width={this.props.width}
         isResizeHandleHovered={this.props.isResizeHandleHovered}
@@ -126,7 +125,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
     else
       items = this.getArrayProperties((this.props.propertyRecord.value as ArrayValue).items);
 
-    const { children, indentation, ...props } = this.props;
+    const { children, indentation, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
       <>
         {this.props.isCollapsible

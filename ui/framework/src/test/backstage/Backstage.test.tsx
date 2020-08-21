@@ -27,90 +27,90 @@ describe("Backstage", () => {
 
   describe("<Backstage />", () => {
     it("should render - isVisible", () => {
-      const wrapper = mount(<Backstage isVisible={true} />); // tslint:disable-line:deprecation
+      const wrapper = mount(<Backstage isVisible={true} />); // eslint-disable-line deprecation/deprecation
       wrapper.unmount();
     });
 
     it("should render - !isVisible", () => {
-      const wrapper = mount(<Backstage isVisible={false} />); // tslint:disable-line:deprecation
+      const wrapper = mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
       wrapper.unmount();
     });
 
     it("renders correctly - isVisible", () => {
-      shallow(<Backstage isVisible={true} />).dive().should.matchSnapshot(); // tslint:disable-line:deprecation
+      shallow(<Backstage isVisible={true} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
     });
 
     it("renders correctly - !isVisible", () => {
-      shallow(<Backstage isVisible={false} />).dive().should.matchSnapshot(); // tslint:disable-line:deprecation
+      shallow(<Backstage isVisible={false} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
     });
 
     it("renders correctly with header", () => {
-      shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot(); // tslint:disable-line:deprecation
+      shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
     });
 
     it("renders correctly with UserInfo", () => {
-      shallow(<Backstage userInfo={mockUserInfo()} />).dive().should.matchSnapshot(); // tslint:disable-line:deprecation
+      shallow(<Backstage userInfo={mockUserInfo()} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
     });
 
     it("with child items", () => {
       const commandHandler = () => { };
       shallow(
-        // tslint:disable-next-line:deprecation
+        // eslint-disable-next-line deprecation/deprecation
         <Backstage isVisible={true}>
           <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />
           <SeparatorBackstageItem />
           <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
           <SeparatorBackstageItem />
           <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
-        </Backstage>, // tslint:disable-line:deprecation
+        </Backstage>, // eslint-disable-line deprecation/deprecation
       ).dive().should.matchSnapshot();
     });
 
     it("should show", () => {
-      const wrapper = mount(<Backstage isVisible={false} />); // tslint:disable-line:deprecation
-      expect(Backstage.isBackstageVisible).to.be.false; // tslint:disable-line:deprecation
-      Backstage.show(); // tslint:disable-line:deprecation
-      expect(Backstage.isBackstageVisible).to.be.true; // tslint:disable-line:deprecation
+      const wrapper = mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
+      Backstage.show(); // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
       wrapper.unmount();
     });
 
     it("should hide", () => {
-      const wrapper = mount(<Backstage isVisible={true} />); // tslint:disable-line:deprecation
-      expect(Backstage.isBackstageVisible).to.be.true; // tslint:disable-line:deprecation
-      Backstage.hide(); // tslint:disable-line:deprecation
-      expect(Backstage.isBackstageVisible).to.be.false; // tslint:disable-line:deprecation
+      const wrapper = mount(<Backstage isVisible={true} />); // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
+      Backstage.hide(); // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
       wrapper.unmount();
     });
 
     it("should toggle", () => {
-      const wrapper = mount(<Backstage isVisible={false} />); // tslint:disable-line:deprecation
-      expect(Backstage.isBackstageVisible).to.be.false; // tslint:disable-line:deprecation
+      const wrapper = mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
 
-      const toggleCommand = Backstage.backstageToggleCommand; // tslint:disable-line:deprecation
+      const toggleCommand = Backstage.backstageToggleCommand; // eslint-disable-line deprecation/deprecation
       toggleCommand.execute();
-      expect(Backstage.isBackstageVisible).to.be.true; // tslint:disable-line:deprecation
+      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
 
       toggleCommand.execute();
-      expect(Backstage.isBackstageVisible).to.be.false; // tslint:disable-line:deprecation
+      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
 
       wrapper.unmount();
     });
 
     it("should show by updating isVisible prop", () => {
-      const wrapper = mount(<Backstage isVisible={false} />); // tslint:disable-line:deprecation
-      expect(Backstage.isBackstageVisible).to.be.false; // tslint:disable-line:deprecation
+      const wrapper = mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
       wrapper.setProps({ isVisible: true });
-      expect(Backstage.isBackstageVisible).to.be.true; // tslint:disable-line:deprecation
+      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
       wrapper.unmount();
     });
 
     it("should close when clicking the overlay", () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(<Backstage isVisible={true} onClose={spyMethod} />); // tslint:disable-line:deprecation
-      expect(Backstage.isBackstageVisible).to.be.true; // tslint:disable-line:deprecation
+      const wrapper = mount(<Backstage isVisible={true} onClose={spyMethod} />); // eslint-disable-line deprecation/deprecation
+      expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
       const overlay = wrapper.find("div.nz-backstage-backstage_overlay");
       overlay.simulate("click");
-      expect(Backstage.isBackstageVisible).to.be.false; // tslint:disable-line:deprecation
+      expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
       expect(spyMethod.calledOnce).to.be.true;
       wrapper.unmount();
     });

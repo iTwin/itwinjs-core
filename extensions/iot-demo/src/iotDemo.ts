@@ -146,7 +146,7 @@ export abstract class IoTAnimation {
 
         const elementId: Id64String | undefined = this._elementMap!.get(reading.id);
         if (undefined === elementId) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log(`reading[${readingNumber}] of sequence[${stepNumber} includes a space id that does not match any element`);
           continue;
         }

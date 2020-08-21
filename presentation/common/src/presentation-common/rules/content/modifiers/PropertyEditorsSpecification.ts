@@ -11,7 +11,7 @@
  * @public
  * @deprecated Use `PropertySpecification` instead. Will be removed in iModel.js 3.0
  */
-export interface DEPRECATED_PropertyEditorsSpecification extends PropertyEditorSpecification { // tslint:disable-line: naming-convention class-name
+export interface DEPRECATED_PropertyEditorsSpecification extends PropertyEditorSpecification { // eslint-disable-line @typescript-eslint/naming-convention
   /** Name of the property which custom editor should be used for */
   propertyName: string;
 }

@@ -30,7 +30,7 @@ export abstract class EmphasizeElementsTool extends Tool {
   }
 }
 
-const enum OverrideType {
+const enum OverrideType { // eslint-disable-line no-restricted-syntax
   None = 0,
   Color = 1 << 0,
   Emphasis = 1 << 1,

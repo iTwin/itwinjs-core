@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -50,11 +49,11 @@ describe("HiliteSetProvider", () => {
     });
 
     it("registers ruleset only on first call", async () => {
-      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.never());
+      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.never());
       await provider.getHiliteSet(new KeySet());
-      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
+      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
       await provider.getHiliteSet(new KeySet());
-      rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
+      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
     });
 
     it("memoizes result", async () => {
@@ -79,6 +78,7 @@ describe("HiliteSetProvider", () => {
     it("creates result for transient element keys", async () => {
       const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
 
+      // eslint-disable-next-line deprecation/deprecation
       presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet()))).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey]));

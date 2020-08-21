@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { BeEvent, Config, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, Config, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   BriefcaseDownloader, BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelVersion, InternetConnectivityStatus,
   NativeAppRpcInterface, OverriddenBy, RequestBriefcaseProps, RpcRegistry, StorageValue,
@@ -17,7 +17,7 @@ import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./Fron
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { LocalBriefcaseConnection } from "./IModelConnection";
 import { NativeAppLogger } from "./NativeAppLogger";
-
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 /**
  * This should be called instead of IModelApp.startup() for native apps.
  * @internal
@@ -34,10 +34,7 @@ export class NativeApp {
     RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
     await NativeAppRpcInterface.getClient().overrideInternetConnectivity(by, status);
   }
-  private constructor() {
-    EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => { NativeApp.onMemoryWarning.raiseEvent(); });
-    EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, (args: any) => { NativeApp.onInternetConnectivityChanged.raiseEvent(args.status); });
-  }
+  private constructor() { }
   private static hookBrowserConnectivityEvents() {
     if (typeof window === "object" && window.ononline && window.onoffline) {
       window.addEventListener("online", this._onOnline);
@@ -59,6 +56,7 @@ export class NativeApp {
     return NativeApp.setConnectivity(OverriddenBy.User, status);
   }
   public static async startup(opts?: IModelAppOptions) {
+    Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
     if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
       throw new IModelError(IModelStatus.BadArg, "NativeAppRpcInterface must be registered");
     }
@@ -72,9 +70,21 @@ export class NativeApp {
       RequestGlobalOptions.online = window.navigator.onLine;
       await NativeApp.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
+    EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => {
+      Logger.logWarning(FrontendLoggerCategory.NativeApp, "Low memory warning");
+      if (NativeApp.onMemoryWarning.numberOfListeners === 0) {
+        alert("Low memory warning");
+      }
+      NativeApp.onMemoryWarning.raiseEvent();
+    });
+    EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, (args: any) => {
+      Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
+      NativeApp.onInternetConnectivityChanged.raiseEvent(args.status);
+    });
   }
 
   public static async shutdown() {
+    EventSourceManager.global.clear();
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
     await IModelApp.shutdown();

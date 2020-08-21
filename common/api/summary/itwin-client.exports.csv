@@ -19,6 +19,7 @@ internal;ECJsonTypeMap
 beta;FileHandler
 internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
 internal;getJson(requestContext: ClientRequestContext, url: string): Promise
+beta;HttpRequestOptions
 beta;ImsAuthorizationClient 
 beta;IncludePrefix
 beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext

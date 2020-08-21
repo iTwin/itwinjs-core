@@ -43,6 +43,7 @@ export * from "./ui-core/enums/TimeFormat";
 export * from "./ui-core/expandable/ExpandableList";
 export * from "./ui-core/expandable/ExpandableBlock";
 
+export * from "./ui-core/focus/ItemKeyboardNavigator";
 export * from "./ui-core/focustrap/FocusTrap";
 
 export * from "./ui-core/form/Field";
@@ -150,6 +151,7 @@ export * from "./ui-core/utils/Size";
 export * from "./ui-core/utils/Timer";
 export * from "./ui-core/utils/UiEvent";
 export * from "./ui-core/utils/flattenChildren";
+export * from "./ui-core/utils/getBestBWContrastColor";
 export * from "./ui-core/utils/getCssVariable";
 export * from "./ui-core/utils/getDisplayName";
 export * from "./ui-core/utils/getUserColor";

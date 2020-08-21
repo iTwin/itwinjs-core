@@ -6,7 +6,7 @@
  * @module Core
  */
 
-// tslint:disable:naming-convention
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Enum of logging namespaces used by Presentation library.
  * Use `@bentley/bentleyjs-core/Logger` to enable logging for these namespaces.
@@ -33,4 +33,4 @@ export enum LoggingNamespaces {
   ECPresentation_RulesEngine_RulesetVariables = "ECPresentation.RulesEngine.RulesetVariables",
 }
 
-// tslint:enable:naming-convention
+/* eslint-enable @typescript-eslint/naming-convention */

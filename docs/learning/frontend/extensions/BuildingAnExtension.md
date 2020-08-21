@@ -13,7 +13,7 @@ However, if the host app's UI framework is known then an Extension can freely us
 The 3 most important parts of any Extension are,
 
 1. The [initialization](#initializing-an-extension) of the Extension with the HostApp
-1. The `onLoad` and `onExecute` implementation, explained [here](#extension-startup)
+1. The `onLoad` and `onExecute` implementation, explained [below](#extension-startup)
 1. [Building the Extension](#building-an-extension)
 
 ### Initializing an Extension

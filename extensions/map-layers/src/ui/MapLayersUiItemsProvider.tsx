@@ -25,7 +25,7 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
         id: "map-layers:mapLayersWidget",
         label: MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.Label"),
         icon: "icon-map",
-        getWidgetContent: () => <MapLayersWidget />,
+        getWidgetContent: () => <MapLayersWidget />, // eslint-disable-line react/display-name
       });
     }
     return widgets;

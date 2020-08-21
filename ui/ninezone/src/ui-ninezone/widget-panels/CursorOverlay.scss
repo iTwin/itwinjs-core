@@ -5,6 +5,8 @@
 @import "~@bentley/ui-core/lib/ui-core/z-index";
 
 $nz-cursors: (
+  nwse-resize,
+  nesw-resize,
   ew-resize,
   ns-resize,
   grabbing,

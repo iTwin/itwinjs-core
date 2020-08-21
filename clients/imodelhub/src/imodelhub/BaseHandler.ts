@@ -7,11 +7,13 @@
  */
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import {
-  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, RequestOptions, RequestQueryOptions, WsgClient,
-  WsgInstance, WsgRequestOptions,
+  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestOptions,
+  RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions,
 } from "@bentley/itwin-client";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { IModelHubError } from "./Errors";
+
+const applicationVersionHeaderName = "Application-Version";
 
 /**
  * Provides default options for iModelHub requests.
@@ -26,6 +28,42 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 }
 
 /**
+ * This type allows modifying HttpRequestOptions that are sent for every request.
+ * @beta
+ */
+export type HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void;
+
+/**
+ * This function when used on IModelClient adds specified header to every request.
+ * @beta
+ */
+export function addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer {
+  return (options: HttpRequestOptions) => {
+    if (!options.headers)
+      options.headers = {};
+    options.headers[name] = valueFactory();
+  };
+}
+
+/**
+ * This function when used on IModelClient adds specified application version header to every request.
+ * @beta
+ */
+export function addApplicationVersion(version: string) {
+  return addHeader(applicationVersionHeaderName, () => version);
+}
+
+/**
+ * This function when used on IModelClient adds CSRF header to every request.
+ * @beta
+ */
+export function addCsrfHeader(headerName: string = "X-XSRF-TOKEN", cookieName: string = "XSRF-TOKEN"): HttpRequestOptionsTransformer {
+  return addHeader(headerName, () => {
+    return document.cookie.split("; ").find((r) => r.startsWith(`${cookieName}=`))!.split("=")[1];
+  });
+}
+
+/**
  * This class acts as the WsgClient for other iModelHub Handlers.
  * @beta
  */
@@ -37,6 +75,7 @@ export class IModelBaseHandler extends WsgClient {
   protected _agent: any;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
+  private _httpRequestOptionsTransformers: HttpRequestOptionsTransformer[] = [];
 
   /**
    * Create an instance of IModelBaseHandler.
@@ -45,11 +84,8 @@ export class IModelBaseHandler extends WsgClient {
   public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super("sv1.1");
     this._fileHandler = fileHandler;
-    const isMobile = typeof (self) !== "undefined" && (self as any).imodeljsMobile;
-    if (!(typeof window === "undefined") && !isMobile) {
-      // tslint:disable-next-line:no-var-requires
-      this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
-    }
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
   }
 
   public formatContextIdForUrl(contextId: string) { return contextId; }
@@ -66,6 +102,29 @@ export class IModelBaseHandler extends WsgClient {
       this._defaultIModelHubOptionsProvider = new DefaultIModelHubRequestOptionsProvider(this._agent);
 
     return this._defaultIModelHubOptionsProvider.assignOptions(options);
+  }
+
+  /**
+   * Populates HTTP request options with additional data.
+   * @param options Options that need to be populated.
+   * @returns Options populated with additional data.
+   */
+  protected setupHttpOptions(options?: HttpRequestOptions): HttpRequestOptions {
+    const httpOptions: HttpRequestOptions = { ...options };
+
+    for (const transformer of this._httpRequestOptionsTransformers) {
+      transformer(httpOptions);
+    }
+
+    return httpOptions;
+  }
+
+  /**
+   * Adds a method that will be called for every request to modify HttpRequestOptions.
+   * @param func Method that will be used to modify HttpRequestOptions.
+   */
+  public use(func: HttpRequestOptionsTransformer) {
+    this._httpRequestOptionsTransformers.push(func);
   }
 
   /**
@@ -143,16 +202,17 @@ export class IModelBaseHandler extends WsgClient {
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Strongly typed instance to be posted.
    * @param requestOptions WSG options for the request.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns The posted instance that's returned back from the server.
    */
-  public async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
+  public async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
     if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
       requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
     }
-    return super.postInstance<T>(requestContext, typedConstructor, relativeUrlPath, instance, requestOptions);
+    return super.postInstance<T>(requestContext, typedConstructor, relativeUrlPath, instance, requestOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**
@@ -162,10 +222,11 @@ export class IModelBaseHandler extends WsgClient {
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instances Strongly typed instances to be posted.
    * @param requestOptions WSG options for the request.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns The posted instances that's returned back from the server.
    */
-  public async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
-    return super.postInstances(requestContext, typedConstructor, relativeUrlPath, instances, requestOptions);
+  public async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+    return super.postInstances(requestContext, typedConstructor, relativeUrlPath, instances, requestOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**
@@ -174,10 +235,11 @@ export class IModelBaseHandler extends WsgClient {
    * @param typedConstructor Used to construct the resulting instances from the response.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  public async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
-    return super.getInstances(requestContext, typedConstructor, relativeUrlPath, queryOptions);
+  public async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+    return super.getInstances(requestContext, typedConstructor, relativeUrlPath, queryOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**
@@ -187,10 +249,11 @@ export class IModelBaseHandler extends WsgClient {
    * @param chunkedQueryContext Chunked query context
    * @param typedConstructor Constructor function for the type
    * @param queryOptions Query options.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  public async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]> {
-    return super.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions);
+  public async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+    return super.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**
@@ -199,10 +262,11 @@ export class IModelBaseHandler extends WsgClient {
    * @param typedConstructor Used to construct the resulting instances from the response.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  public async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
-    return super.postQuery(requestContext, typedConstructor, relativeUrlPath, queryOptions);
+  public async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+    return super.postQuery(requestContext, typedConstructor, relativeUrlPath, queryOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**

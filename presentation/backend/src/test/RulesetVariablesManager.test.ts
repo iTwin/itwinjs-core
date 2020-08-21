@@ -82,7 +82,7 @@ describe("RulesetVariablesManager", () => {
       const result = manager.getValue(variableId, VariableValueTypes.Id64);
       addonMock.verifyAll();
       expect(typeof result).to.eq("string");
-      expect(result as Id64String).to.eq(value);
+      expect(result).to.eq(value);
     });
 
     it("calls addon's getRulesetVariableValue with Id64[]", async () => {

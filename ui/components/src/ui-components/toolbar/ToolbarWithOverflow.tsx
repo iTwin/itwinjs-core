@@ -23,6 +23,7 @@ import { PopupItem } from "./PopupItem";
 import { PopupItemsPanel } from "./PopupItemsPanel";
 import { PopupItemWithDrag } from "./PopupItemWithDrag";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
+import { UiComponents } from "../UiComponents";
 
 /** Describes the data needed to insert a custom framework-specific button into an ToolbarWithOverflow.
  * @beta
@@ -110,7 +111,7 @@ export interface ToolbarOverflowContextProps {
  * Context used by Toolbar component to provide Direction to child components.
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ToolbarWithOverflowDirectionContext = React.createContext<ToolbarOverflowContextProps>({
   expandsTo: Direction.Bottom,
   direction: OrthogonalDirection.Horizontal,
@@ -264,6 +265,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const useHeight = (expandsTo === Direction.Right || expandsTo === Direction.Left);
   const [isOverflowPanelOpen, setIsOverflowPanelOpen] = React.useState(false);
   const [popupPanelCount, setPopupPanelCount] = React.useState(0);
+  const overflowTitle = React.useRef(UiComponents.translate("toolbar.overflow"));
   const isMounted = React.useRef(false);
   React.useEffect(() => {
     isMounted.current = true;
@@ -278,7 +280,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
         return;
       setPopupPanelCount((prev) => {
         const nextCount = isOpening ? (prev + 1) : (prev - 1);
-        // tslint:disable-next-line: no-console
+        // eslint-disable-next-line no-console
         // console.log(`new popup count = ${nextCount}`);
         return nextCount < 0 ? 0 : nextCount;
       });
@@ -372,6 +374,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
             </OverflowItemsContainer>
           </ToolbarOverflowPanel>
         }
+        title={overflowTitle.current}
       />
     </ToolbarItemContext.Provider>);
   }, [handleClick, handleClose, handleOverflowResize, isOverflowPanelOpen, expandsTo, overflowPanelItems, useHeight]);
@@ -403,6 +406,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
           ref={refs}
           style={props.style}
           onKeyDown={props.onKeyDown}
+          role="presentation"
         >
           <ToolbarItems
             className="components-items"
@@ -575,7 +579,7 @@ export interface ToolbarItemContextArgs {
 /** Interface toolbars use to define context for its items.
  * @internal
  */
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ToolbarItemContext = React.createContext<ToolbarItemContextArgs>(null!);
 
 /** @internal */

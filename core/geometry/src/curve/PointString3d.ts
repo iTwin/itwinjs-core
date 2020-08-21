@@ -16,7 +16,7 @@ import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { GeometryQuery } from "./GeometryQuery";
 
-/* tslint:disable:variable-name no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
 /**
  * A PointString3d is an array of points.

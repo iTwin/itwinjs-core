@@ -27,7 +27,7 @@ const PAGING_SIZE = 20;
  * Presentation rules used by ControlledCategoriesTree
  * @internal
  */
-export const RULESET_CATEGORIES: Ruleset = require("./Categories.json"); // tslint:disable-line: no-var-requires
+export const RULESET_CATEGORIES: Ruleset = require("./Categories.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /**
  * Properties for the [[CategoryTree]] component
@@ -94,7 +94,7 @@ export function CategoryTree(props: CategoryTreeProps) {
   const visibilityHandler = useCategoryVisibilityHandler(viewManager, props.iModel, categories, currentActiveView, allViewports, categoryVisibilityHandler);
 
   React.useEffect(() => {
-    setViewType(currentActiveView); // tslint:disable-line: no-floating-promises
+    setViewType(currentActiveView); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [currentActiveView]);
 
   const eventHandler = useDisposable(React.useCallback(() => new VisibilityTreeEventHandler({
@@ -138,7 +138,7 @@ export function CategoryTree(props: CategoryTreeProps) {
  * application must set up the Redux store and include the FrameworkReducer.
  * @beta
  */
-export const IModelConnectedCategoryTree = connectIModelConnection(null, null)(CategoryTree); // tslint:disable-line:variable-name
+export const IModelConnectedCategoryTree = connectIModelConnection(null, null)(CategoryTree); // eslint-disable-line @typescript-eslint/naming-convention
 
 function useCategoryVisibilityHandler(viewManager: ViewManager, imodel: IModelConnection, categories: Category[], activeView?: Viewport, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
   return useDisposable(React.useCallback(

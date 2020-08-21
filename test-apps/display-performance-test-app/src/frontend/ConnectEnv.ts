@@ -15,7 +15,7 @@ async function getProjectByName(requestContext: AuthorizedClientRequestContext, 
   try {
     project = await _connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });
   } catch (e) {
-    console.log(`Project with name "${projectName}" does not exist`); // tslint:disable-line:no-console
+    console.log(`Project with name "${projectName}" does not exist`); // eslint-disable-line no-console
     return undefined;
   }
 

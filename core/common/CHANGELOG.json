@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@bentley/imodeljs-common_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Introduce IModelApp security options (including CSRF protection)."
+          },
+          {
+            "comment": "Allow WebAppRpcRequest consumers to supply custom fetch and Request."
+          },
+          {
+            "comment": "Move types from FeatureSymbology namespace from imodeljs-frontend to imodeljs-common."
+          },
+          {
+            "comment": "Use IModelRoutingContext"
+          },
+          {
+            "comment": "Added mobile oidc client"
+          },
+          {
+            "comment": "Support reality model transparency"
+          },
+          {
+            "comment": "element editor"
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.2",
       "tag": "@bentley/imodeljs-common_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",

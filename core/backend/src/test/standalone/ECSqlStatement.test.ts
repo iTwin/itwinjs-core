@@ -11,7 +11,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
-/* tslint:disable:ter-indent */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 async function query(ecdb: ECDb, ecsql: string, args: any[] | object, limit?: number, callback?: (row: any) => void) {
   ecdb.saveChanges();
@@ -39,12 +39,12 @@ function blobEqual(lhs: any, rhs: any) {
 }
 
 describe("ECSqlStatement", () => {
-  const _outDir = KnownTestLocations.outputDir;
+  const outDir = KnownTestLocations.outputDir;
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
 
   it("Asynchronous step and stepForInsert Methods", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "asyncmethodtest.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "asyncmethodtest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -62,7 +62,7 @@ describe("ECSqlStatement", () => {
     });
   });
   it("Primary Key Binding through array", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindingTest.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "bindingTest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -97,7 +97,7 @@ describe("ECSqlStatement", () => {
     });
   });
   it.skip("Null string accessor", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
+    await using(ECDbTestHelper.createECDb(outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
       await ecdb.withPreparedStatement(`VALUES(NULL)`, async (stmt: ECSqlStatement) => {
         stmt.step();
@@ -107,7 +107,7 @@ describe("ECSqlStatement", () => {
     });
   });
   it("Paging Resultset", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -147,7 +147,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("Paging use cache statement queryRows()", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -178,7 +178,7 @@ describe("ECSqlStatement", () => {
     });
   });
   it("Restart query", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "cancelquery.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "cancelquery.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -229,7 +229,7 @@ describe("ECSqlStatement", () => {
     });
   });
   it("Paging use cache statement query()", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -247,19 +247,19 @@ describe("ECSqlStatement", () => {
       ecdb.saveChanges();
       // check if varying page number does not require prepare new statements
       ecdb.clearStatementCache();
-      for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) {
+      for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) { // eslint-disable-line @typescript-eslint/no-unused-vars
         let rowNo = 1;
         for await (const row of ecdb.query("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", [123, 30])) {
           assert.equal(row.n, rowNo);
           rowNo = rowNo + 1;
         }
         assert.equal(rowNo, 28); // expect all rows
-        assert.equal(0, ecdb.getCachedStatementCount()); // there must be single cached statement used with differetn size pages.
+        assert.equal(0, ecdb.getCachedStatementCount()); // there must be single cached statement used with different size pages.
       }
     });
   });
   it("Concurrent Query Binding", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -288,7 +288,7 @@ describe("ECSqlStatement", () => {
     });
   });
   it("HextoId-IdToHex", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -309,7 +309,7 @@ describe("ECSqlStatement", () => {
     });
   });
   it("Bind BeGuid", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="guid" typeName="binary" extendedTypeName="BeGuid"/>
@@ -396,7 +396,7 @@ describe("ECSqlStatement", () => {
     });
   });
   it("Bind Ids", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
+    await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
 
       assert.isTrue(ecdb.isOpen);
 
@@ -460,7 +460,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("Bind numeric and date strings", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindnumericanddatestrings.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "bindnumericanddatestrings.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>
@@ -757,7 +757,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("Bind Numbers", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindnumbers.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "bindnumbers.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECEntityClass typeName="Foo" modifier="Sealed">
       <ECProperty propertyName="D" typeName="double"/>
@@ -1231,7 +1231,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("Bind Primitives", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindprimitives.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "bindprimitives.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
   <ECStructClass typeName="MyStruct" modifier="Sealed">
       <ECProperty propertyName="Bl" typeName="binary"/>
@@ -1406,7 +1406,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("Bind Structs", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindstructs.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "bindstructs.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="MyStruct" modifier="Sealed">
         <ECProperty propertyName="Bl" typeName="binary"/>
@@ -1500,7 +1500,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("Bind Arrays", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindarrays.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "bindarrays.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="Location" modifier="Sealed">
         <ECProperty propertyName="City" typeName="string"/>
@@ -1601,7 +1601,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("Bind Navigation", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindnavigation.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "bindnavigation.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECEntityClass typeName="Parent" modifier="Sealed">
       <ECProperty propertyName="Code" typeName="string"/>
@@ -1711,7 +1711,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("BindRange3d", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "bindrange3d.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "bindrange3d.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="Range" typeName="binary"/>
@@ -1743,7 +1743,7 @@ describe("ECSqlStatement", () => {
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios
      with and without statement cache to test that stuff works fine */
   it("ECSqlBinder life time", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "ecsqlbinderlifetime.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "ecsqlbinderlifetime.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECStructClass typeName="Address" modifier="Sealed">
       <ECProperty propertyName="Street" typeName="string"/>
@@ -1826,7 +1826,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("GetRow with Primitives", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "getprimitives.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "getprimitives.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECEntityClass typeName="Foo" modifier="Sealed">
         <ECProperty propertyName="Bl" typeName="binary"/>
@@ -1982,7 +1982,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("GetRow with NavigationProperties and Relationships", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "getnavandrels.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "getnavandrels.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECEntityClass typeName="Parent" modifier="Sealed">
           <ECProperty propertyName="Code" typeName="string"/>
@@ -2120,7 +2120,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("getRow with Structs", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "getstructs.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "getstructs.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="MyStruct" modifier="Sealed">
         <ECProperty propertyName="Bl" typeName="binary"/>
@@ -2239,7 +2239,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("HexStr SQL function", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "hexstrfunction.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "hexstrfunction.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
        <ECEntityClass typeName="Foo" modifier="Sealed">
         <ECProperty propertyName="Bl" typeName="binary"/>
@@ -2329,7 +2329,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("ECEnums", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "ecenums.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "ecenums.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEnumeration typeName="Status" backingTypeName="int" isStrict="true">
           <ECEnumerator name="On" value="1" />
@@ -2438,7 +2438,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("ORed ECEnums", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "oredecenums.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "oredecenums.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEnumeration typeName="Color" backingTypeName="int" isStrict="true">
           <ECEnumerator name="Red" value="1" />
@@ -2577,8 +2577,9 @@ describe("ECSqlStatement", () => {
         assert.isFalse(caTypeVal.isNull);
         assert.isTrue(caTypeVal.columnInfo.isEnum());
         assert.equal(caTypeVal.getInteger(), 160);
-        assert.deepEqual(caTypeVal.getEnum(), [{ schema: "ECDbMeta", name: "ECCustomAttributeContainerType", key: "PrimitiveProperty", value: 32 },
-        { schema: "ECDbMeta", name: "ECCustomAttributeContainerType", key: "PrimitiveArrayProperty", value: 128 }]);
+        assert.deepEqual(caTypeVal.getEnum(), [
+          { schema: "ECDbMeta", name: "ECCustomAttributeContainerType", key: "PrimitiveProperty", value: 32 },
+          { schema: "ECDbMeta", name: "ECCustomAttributeContainerType", key: "PrimitiveArrayProperty", value: 128 }]);
       });
       assert.equal(await query(ecdb, "SELECT CustomAttributeContainerType caType FROM meta.ECClassDef WHERE Type=meta.ECClassType.CustomAttribute AND Name='DateTimeInfo'", [ids.unmatched], undefined, (row: any) => {
         assert.equal(row.caType, 160);
@@ -2587,7 +2588,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("should get NativeSql", async () => {
-    await using(ECDbTestHelper.createECDb(_outDir, "asyncmethodtest.ecdb",
+    await using(ECDbTestHelper.createECDb(outDir, "asyncmethodtest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
           <ECProperty propertyName="n" typeName="int"/>

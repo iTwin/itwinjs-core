@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import React from "react";
 import * as sinon from "sinon";
-import { IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, PropertyRecord } from "@bentley/ui-abstract";
+import { IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { CustomNumberEditor } from "../../ui-components/editors/CustomNumberEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
@@ -49,7 +49,7 @@ describe("<CustomNumberEditor />", () => {
       expect(displayValue).to.be.equal("7.78");
       spyOnCommit();
     }
-    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal) as PropertyRecord;
+    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     // renderedComponent.debug();
     const inputField = renderedComponent.getByTestId("components-customnumber-editor") as HTMLInputElement;
@@ -88,7 +88,7 @@ describe("<CustomNumberEditor />", () => {
       spyOnCommit();
     }
 
-    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal) as PropertyRecord;
+    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal);
     // add size and width params for testing
     if (propertyRecord.property.editor && propertyRecord.property.editor.params) {
       const inputEditorSizeParams: InputEditorSizeParams = {
@@ -112,7 +112,7 @@ describe("<CustomNumberEditor />", () => {
     expect(spyOnCommit).to.be.calledOnce;
 
     // trigger componentDidUpdate processing
-    const newPropertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal) as PropertyRecord;
+    const newPropertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
     renderedComponent.rerender(<EditorContainer propertyRecord={newPropertyRecord} title="abc" onCommit={handleBadKeyinCommit} onCancel={() => { }} />);
 
     // handle bad value processing
@@ -123,7 +123,7 @@ describe("<CustomNumberEditor />", () => {
   });
 
   it("EditorContainer with readonly CustomNumberPropertyEditor", async () => {
-    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal) as PropertyRecord;
+    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
     propertyRecord.isReadonly = true;
     propertyRecord.isDisabled = true;
 
@@ -152,7 +152,7 @@ describe("<CustomNumberEditor />", () => {
   });
 
   it("test with no editor params", async () => {
-    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal) as PropertyRecord;
+    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
     propertyRecord.property.editor!.params!.splice(0, 1);
 
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);

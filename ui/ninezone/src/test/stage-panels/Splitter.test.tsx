@@ -110,9 +110,9 @@ describe("<Splitter />", () => {
 
     sut.setProps({
       children: [
-        <div />,
-        <div />,
-        <div />,
+        <div />, // eslint-disable-line react/jsx-key
+        <div />, // eslint-disable-line react/jsx-key
+        <div />, // eslint-disable-line react/jsx-key
       ],
     });
 

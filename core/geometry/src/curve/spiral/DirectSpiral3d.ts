@@ -17,17 +17,26 @@ import { Transform } from "../../geometry3d/Transform";
 import { LineString3d } from "../LineString3d";
 import { StrokeOptions } from "../StrokeOptions";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
-import { ClothoidSeriesRLEvaluator, CzechSpiralEvaluator, DirectHalfCosineSpiralEvaluator } from "./ClothoidSeries";
+import { ClothoidSeriesRLEvaluator } from "./ClothoidSeries";
+import { CzechSpiralEvaluator } from "./CzechSpiralEvaluator";
+import { DirectHalfCosineSpiralEvaluator } from "./DirectHalfCosineSpiralEvaluator";
+import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator";
 import { XYCurveEvaluator } from "./XYCurveEvaluator";
 import { TransitionSpiral3d } from "./TransitionSpiral3d";
 import { Angle } from "../../geometry3d/Angle";
 /**
- * ClothoidSeriesSpiral3d implements an approximate clothoid spiral, using integrated sine and cosine series truncated to term count given to the constructor.
- * * Typical names with various term counts are:
- *   * Arema, ChineseCubic -- 2 terms of each series.
- *   * JapaneseCubic - 1 term of each series
- * @beta
- */
+* DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have "direct" xy calculations without the integrations required
+* for IntegratedSpiral3d.
+* * Each DirectSpiral3d carries an XYCurveEvaluator to give it specialized behavior.
+* * Direct spirals that flow through serialization to native imodel02 are create with these static methods:
+*   * createArema
+*   * createJapaneseCubic
+*   * createAustralianRail
+*   * createDirectHalfCosine
+*   * createChineseCubic
+*   * createCzechCubic
+* @public
+*/
 export class DirectSpiral3d extends TransitionSpiral3d {
 
   /** String name for schema properties */
@@ -72,22 +81,28 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     this._nominalR1 = nominalR1;
     this._evaluator = evaluator;
     this._globalStrokes = LineString3d.create();
+    this._activeStrokes = LineString3d.create();
     // initialize for compiler -- but this will be recomputed in refreshComputeProperties ...
     this.refreshComputedProperties();
   }
-  /** Recompute strokes */
-  public refreshComputedProperties() {
-    this._globalStrokes.clear();
-    const sweepRadians = this.nominalL1 / (2.0 * this.nominalR1);
-    const radiansStep = 0.02;
-    const numInterval = StrokeOptions.applyAngleTol(undefined, 4, sweepRadians, radiansStep);
-    this._globalStrokes.ensureEmptyUVParams();
-    this._globalStrokes.ensureEmptyFractions();
-    const distances = this._globalStrokes.packedUVParams!;
+  /**
+   * Compute stroke data in an interval.
+   * @param strokes strokes to clear and refill.
+   * @param fraction0 start fraction
+   * @param fraction1 end fraction
+   */
+  private computeStrokes(strokes: LineString3d, fractionA: number, fractionB: number, numInterval: number) {
+    if (numInterval < 1)
+      numInterval = 1;
+    strokes.clear();
+    strokes.ensureEmptyUVParams();
+    strokes.ensureEmptyFractions();
+    const distances = strokes.packedUVParams!;
+    const nominalIntervalLength = Math.abs(fractionB - fractionA) * this._nominalL1;
     for (let i = 0; i <= numInterval; i++) {
-      const fraction = i / numInterval;
-      const nominalDistanceAlong = fraction * this._nominalL1;
-      this._globalStrokes.packedPoints.pushXYZ(this._evaluator.fractionToX(fraction),
+      const fraction = Geometry.interpolate(fractionA, i / numInterval, fractionB);
+      const nominalDistanceAlong = fraction * nominalIntervalLength;
+      strokes.packedPoints.pushXYZ(this._evaluator.fractionToX(fraction),
         this._evaluator.fractionToY(fraction), 0);
       distances.pushXY(fraction, nominalDistanceAlong); // the second distance will be updated below
     }
@@ -102,6 +117,18 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       fraction0 = fraction1;
       trueDistance0 = trueDistance1;
     }
+
+  }
+  /** Recompute strokes */
+  public refreshComputedProperties() {
+    const sweepRadians = this.nominalL1 / (2.0 * this.nominalR1);
+    const radiansStep = 0.02;
+    const numInterval = StrokeOptions.applyAngleTol(undefined, 4, sweepRadians, radiansStep);
+    this.computeStrokes(this._globalStrokes, 0, 1, numInterval);
+    const numActiveInterval = Math.ceil(this._activeFractionInterval.absoluteDelta() * numInterval);
+    this._activeStrokes = LineString3d.create();
+    this.computeStrokes(this._activeStrokes, this._activeFractionInterval.x0, this._activeFractionInterval.x1,
+      numActiveInterval);
   }
   /**
    * Create a spiral object which uses numXTerm terms from the clothoid X series and numYTerm from the clothoid Y series.
@@ -166,13 +193,41 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       nominalL1, nominalR1,
       activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
   }
+  /**
+   * Create a czech cubic.
+   * This is y= m*x^3 with
+   * * x any point on the x axis
+   * * `fraction` along the spiral goes to `x = fraction * L`
+   * * m is gamma / (6RL)
+   *    * 1/(6RL) is the leading term of the sine series.
+   *    * `gamma = 2R/sqrt (4RR-LL)` pushes y up a little bit to simulate the lost series terms.
+   * @param localToWorld
+   * @param nominalL1
+   * @param nominalR1
+   * @param activeInterval
+   */
+  public static createAustralianRail(
+    localToWorld: Transform,
+    nominalL1: number,
+    nominalR1: number,
+    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    const evaluator = AustralianRailCorpXYEvaluator.create(nominalL1, nominalR1);
+    if (evaluator === undefined)
+      return undefined;
+    return new DirectSpiral3d(
+      localToWorld.clone(),
+      "AustralianRailCorp",
+      undefined,
+      nominalL1, nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+  }
 
   public static createDirectHalfCosine(
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
     activeInterval?: Segment1d): DirectSpiral3d | undefined {
-    return new this(localToWorld, "DirectHalfCosine", undefined, nominalL1, nominalR1, activeInterval,
+    return new this(localToWorld, "HalfCosine", undefined, nominalL1, nominalR1, activeInterval,
       new DirectHalfCosineSpiralEvaluator(nominalL1, nominalR1));
   }
   public static createArema(
@@ -231,10 +286,12 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       return this.createChineseCubic(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "JapaneseCubic"))
       return this.createJapaneseCubic(localToWorld, arcLength, radius1, activeInterval);
-    if (Geometry.equalStringNoCase(spiralType, "DirectHalfCosine"))
+    if (Geometry.equalStringNoCase(spiralType, "HalfCosine"))
       return this.createDirectHalfCosine(localToWorld, arcLength, radius1, activeInterval);
     if (Geometry.equalStringNoCase(spiralType, "Czech"))
       return this.createCzechCubic(localToWorld, arcLength, radius1, activeInterval);
+    if (Geometry.equalStringNoCase(spiralType, "AustralianRailCorp"))
+      return this.createAustralianRail(localToWorld, arcLength, radius1, activeInterval);
     return undefined;
   }
   /** Deep clone of this spiral */
@@ -279,12 +336,12 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    * The tangent vector of a true clothoid is length 1 everywhere, so simple proportion of nominalL1 is a good approximation.
    */
   public quickLength() {
-    const distanceData = this._globalStrokes!.packedUVParams!;
+    const distanceData = this._globalStrokes.packedUVParams!;
     const n = distanceData.length;
     return distanceData.getYAtUncheckedPointIndex(n - 1);
   }
   /** Return length of the spiral.
-   * * NEEDS WORK
+   * * True length is stored at back of uvParams . . .
    */
   public curveLength() { return this.quickLength(); }
   /** Test if `other` is an instance of `TransitionSpiral3d` */
@@ -322,7 +379,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       numStroke = options.applyMaxEdgeLength(numStroke, this.quickLength());
       numStroke = options.applyMinStrokesPerPrimitive(numStroke);
     } else {
-      numStroke = StrokeOptions.applyAngleTol(undefined, 4, nominalRadians);
+      numStroke = StrokeOptions.applyAngleTol(undefined, 4, nominalRadians, 0.02);
     }
     numStroke = Math.ceil(this._activeFractionInterval.absoluteDelta() * numStroke);
     return numStroke;
@@ -390,5 +447,4 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     }
     return false;
   }
-
 }

@@ -19,7 +19,7 @@ describe("DragDropRow", () => {
 
   afterEach(cleanup);
 
-  const DragDropObjectRow = DragDropRow<DragDropObject>(); // tslint:disable-line:variable-name
+  const DragDropObjectRow = DragDropRow<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
   it("should render", () => {
     render(<DragDropObjectRow />);
   });

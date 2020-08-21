@@ -12,7 +12,7 @@ import * as React from "react";
 import { Button, ButtonProps, ButtonType, Omit } from "@bentley/ui-core";
 
 /** @alpha */
-export interface SquareButtonProps extends Omit<ButtonProps, "size" | "buttonType"> { }
+export interface SquareButtonProps extends Omit<ButtonProps, "size" | "buttonType"> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /** @alpha */
 export class SquareButton extends React.PureComponent<SquareButtonProps> {

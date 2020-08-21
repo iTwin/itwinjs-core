@@ -80,7 +80,7 @@ export class TentativePoint {
   public showTentative(): void {
     if (this.isSnapped) {
       IModelApp.viewManager.invalidateDecorationsAllViews();
-      IModelApp.accuSnap.displayToolTip(this._viewPoint, this.viewport!, undefined); // tslint:disable-line:no-floating-promises
+      IModelApp.accuSnap.displayToolTip(this._viewPoint, this.viewport!, undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
     } else {
       this.viewport!.invalidateDecorations();
     }
@@ -214,7 +214,7 @@ export class TentativePoint {
     const promise = this.getSnap(newSearch);
     this._tentativePromise = promise;
 
-    promise.then((newSnap) => { // tslint:disable-line:no-floating-promises
+    promise.then((newSnap) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       // Ignore response if we're no longer interested in this tentative.
       if (this._tentativePromise === promise) {
         this._tentativePromise = undefined;

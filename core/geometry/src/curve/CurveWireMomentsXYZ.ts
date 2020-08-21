@@ -54,7 +54,7 @@ export class CurveWireMomentsXYZ implements IStrokeHandler {
         fraction = this._gaussMapper.gaussX[k];
         const ray = cp.fractionToPointAndDerivative(fraction)!;
         scaleFactor = this._gaussMapper.gaussW[k] * ray.direction.magnitude();
-        this._activeMomentData!.accumulateScaledOuterProduct(ray.origin, scaleFactor);
+        this._activeMomentData.accumulateScaledOuterProduct(ray.origin, scaleFactor);
       }
     }
   }
@@ -66,7 +66,7 @@ export class CurveWireMomentsXYZ implements IStrokeHandler {
     _numStrokes: number,
     _fraction0: number,
     _fraction1: number): void {
-    this._activeMomentData!.accumulateLineMomentsXYZ(point0, point1);
+    this._activeMomentData.accumulateLineMomentsXYZ(point0, point1);
   }
   public announcePointTangent(_xyz: Point3d, _fraction: number, _tangent: Vector3d): void {
     // umm ... this should not happen.  We need to know intervals. The other functions should have prevented this.

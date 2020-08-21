@@ -14,9 +14,9 @@ import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQ
  */
 export enum ContextType {
   Unknown,
-  Team = 1,
-  Asset = 2,
-  Project = 3,
+  Team = 1, // eslint-disable-line no-shadow
+  Asset = 2, // eslint-disable-line no-shadow
+  Project = 3, // eslint-disable-line no-shadow
 }
 
 /** The iTwin context. Currently supported context types are [[Project]] and [[Asset]].
@@ -31,7 +31,7 @@ export class Context extends WsgInstance {
   public name?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Number")
-  public number?: string;
+  public number?: string; // eslint-disable-line id-blacklist
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UltimateRefId")
   public ultimateRefId?: string;

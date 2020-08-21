@@ -123,7 +123,7 @@ interface State {
 #### render() method
 
 ```tsx
-<ColorPickerButton activeColor={this.state.color} onColorPick={this._handleColorChange} />
+<ColorPickerButton initialColor={this.state.color} onColorPick={this._handleColorChange} />
 ```
 
 #### Handler Function

@@ -42,7 +42,7 @@ import {
 } from "./BeInspireTree";
 import { TreeNode, TreeNodeProps } from "./Node";
 
-// tslint:disable:deprecation
+/* eslint-disable deprecation/deprecation */
 
 /** Type for nodesSelected callback
  * @internal @deprecated
@@ -235,7 +235,7 @@ interface TreeState {
  * @public
  * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
-// tslint:disable-next-line: class-name
+// eslint-disable-next-line @typescript-eslint/class-name-casing, @typescript-eslint/naming-convention
 export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
   private _mounted: boolean = false;
@@ -262,9 +262,9 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     this._selectionHandler.onItemsSelectedCallback = this._onNodesSelected;
     this._selectionHandler.onItemsDeselectedCallback = this._onNodesDeselected;
 
-    const model = DEPRECATED_Tree.createModel(props);
-    const nodeLoadingOrchestrator = DEPRECATED_Tree.createNodeLoadingOrchestrator(model, props);
-    const nodeEventManager = DEPRECATED_Tree.createNodeEventManager(nodeLoadingOrchestrator, model, props);
+    const model = DEPRECATED_Tree.createModel(props); // eslint-disable-line @typescript-eslint/naming-convention
+    const nodeLoadingOrchestrator = DEPRECATED_Tree.createNodeLoadingOrchestrator(model, props); // eslint-disable-line @typescript-eslint/naming-convention
+    const nodeEventManager = DEPRECATED_Tree.createNodeEventManager(nodeLoadingOrchestrator, model, props); // eslint-disable-line @typescript-eslint/naming-convention
 
     this.state = {
       prev: {
@@ -287,7 +287,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
   private static createModel(props: TreeProps) {
     return new BeInspireTree<TreeNodeItem>({
       dataProvider: props.dataProvider,
-      mapPayloadToInspireNodeConfig: DEPRECATED_Tree.inspireNodeFromTreeNodeItem,
+      mapPayloadToInspireNodeConfig: DEPRECATED_Tree.inspireNodeFromTreeNodeItem, // eslint-disable-line @typescript-eslint/naming-convention
       pageSize: props.pageSize,
       disposeChildrenOnCollapse: props.disposeChildrenOnCollapse,
     });
@@ -400,10 +400,10 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
     // in case provider changed, have to re-create `model` and reset `modelReady`
     if (providerChanged) {
-      derivedState.model = DEPRECATED_Tree.createModel(props);
+      derivedState.model = DEPRECATED_Tree.createModel(props); // eslint-disable-line @typescript-eslint/naming-convention
       derivedState.modelReady = false;
-      derivedState.nodeLoadingOrchestrator = DEPRECATED_Tree.createNodeLoadingOrchestrator(derivedState.model, props);
-      derivedState.nodeEventManager = DEPRECATED_Tree.createNodeEventManager(derivedState.nodeLoadingOrchestrator, derivedState.model, props);
+      derivedState.nodeLoadingOrchestrator = DEPRECATED_Tree.createNodeLoadingOrchestrator(derivedState.model, props); // eslint-disable-line @typescript-eslint/naming-convention
+      derivedState.nodeEventManager = DEPRECATED_Tree.createNodeEventManager(derivedState.nodeLoadingOrchestrator, derivedState.model, props); // eslint-disable-line @typescript-eslint/naming-convention
     } else {
       const modelBecameReady = (modelReadyChanged && state.modelReady);
       if (modelBecameReady || selectedNodesChanged) {
@@ -417,7 +417,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       }
 
       if (props.bulkCheckboxActionsDisabled !== state.prev.bulkCheckboxActionsDisabled) {
-        derivedState.nodeEventManager = DEPRECATED_Tree.createNodeEventManager(derivedState.nodeLoadingOrchestrator, derivedState.model, props);
+        derivedState.nodeEventManager = DEPRECATED_Tree.createNodeEventManager(derivedState.nodeLoadingOrchestrator, derivedState.model, props); // eslint-disable-line @typescript-eslint/naming-convention
       }
     }
 
@@ -433,7 +433,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     if (this.state.cellEditingEngine && !this.state.cellEditingEngine.hasSubscriptions)
       this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
 
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleCheckboxes(this.state.prev, this.props);
 
     /* istanbul ignore next */
@@ -502,7 +502,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
     }
 
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleCheckboxes(prevProps, this.props);
 
     /* istanbul ignore next */
@@ -530,7 +530,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     model.on(BeInspireTreeEvent.NodeCollapsed, this._onNodeCollapsed);
     model.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    // tslint:disable-next-line:no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     model.ready.then(async () => {
       if (model === this.state.model)
         await this._onModelReady();
@@ -615,7 +615,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     if (children.length > 0) {
       this.state.model.updateNodesSelection(toNodes(children), this.props.selectedNodes);
       if (this.props.checkboxInfo) {
-        // tslint:disable-next-line: no-floating-promises
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.state.model.updateNodesCheckboxes(toNodes(children), this.props.checkboxInfo);
       }
     }
@@ -638,7 +638,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     this.state.model.updateNodesSelection(nodes, this.props.selectedNodes);
 
     if (this.props.checkboxInfo) {
-      // tslint:disable-next-line: no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.state.model.updateNodesCheckboxes(nodes, this.props.checkboxInfo);
     }
   }
@@ -670,13 +670,14 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
   }
 
   private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
-    using((this.state.model.pauseRendering() as any), async () => {
+    using((this.state.model.pauseRendering() as any), async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
       for (const item of items) {
         if (item) {
           // specific node needs to be reloaded
           const node = this.state.model.node(item.id);
           if (node) {
             const wasExpanded = node.expanded();
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             node.assign(DEPRECATED_Tree.inspireNodeFromTreeNodeItem(item, DEPRECATED_Tree.inspireNodeFromTreeNodeItem, node));
             if (wasExpanded)
               await node.loadChildren();
@@ -697,7 +698,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     this._selectionHandler.completeDragAction();
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get nodesSelectionHandlers(): Array<SingleSelectionHandler<BeInspireTreeNode<TreeNodeItem>>> {
     if (!this._nodesSelectionHandlers) {
       this._nodesSelectionHandlers = [];
@@ -800,7 +801,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     this.state.nodeEventManager.setCheckboxState(node, newState);
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private defaultRenderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
     return (
       <TreeNode
@@ -913,7 +914,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
       if (!node.payload) {
         if (!isScrolling) {
-          // tslint:disable-next-line:no-floating-promises
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.state.model.requestNodeLoad(toNode(node.getParent()), node.placeholderIndex!);
         }
         return (

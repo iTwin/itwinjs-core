@@ -20,7 +20,7 @@ import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SweepContour } from "../../solid/SweepContour";
-import { HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
@@ -35,7 +35,7 @@ function rotateArray(data: Point3d[], index0: number) {
   return out;
 }
 
-/* tslint:disable: no-console */
+/* eslint-disable no-console */
 describe("Triangulation", () => {
   it("NullTriangulations", () => {
     const ck = new Checker();
@@ -174,7 +174,7 @@ describe("Triangulation", () => {
     for (const degrees of [0, 10, 30, 95, -20]) {
       let y0 = 0.0;
       for (const numPhase of [1, 3, 7, 15]) {
-        const name = "SquareWave" + degreeCount + "." + numPhase;
+        const name = `SquareWave ${degreeCount}.${numPhase}`;
         degreeCount++;
         const pointA = Point3d.create(1.5 * numPhase, 0, 0);
         const yShiftVector = Vector3d.create(0, 2, 0);
@@ -281,7 +281,7 @@ describe("MonotoneFaces", () => {
       // Sample.creatVerticalStaggerPolygon(7, 0, 0, -6, ax, ay, -0.5, 0),
     ]) {
       const segmentA = Sample.convertPointsToSegments(loopA);
-      testGraphFromSegments(ck, id * 30, segmentA, true, "LoopA" + id++, false);
+      testGraphFromSegments(ck, id * 30, segmentA, true, `LoopA${id++}`, false);
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -648,11 +648,11 @@ describe("Triangulation", () => {
 
         sweepContour!.emitFacets(builder, false);
         const polyface = builder.claimPolyface(true);
-        if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, "Triangle count in arrow " + counter0 + "." + counter1 + " needParams" + needParams)
-          || Checker.noisy.ACSArrows) {
-          console.log(" Triangulation From Start index " + startIndex, " (needParams " + needParams + ")");
-          console.log("   arrow parameter " + a);
-          console.log("    Facet Count " + polyface.facetCount, " case " + counter0 + "." + counter1);
+        if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, `Triangle count in arrow ${counter0}.${counter1}   needParams${needParams}`)
+          || Checker.noisy.acsArrows) {
+          console.log(` Triangulation From Start index ${startIndex} needParams ${needParams} `);
+          console.log(`   arrow parameter ${a}`);
+          console.log(`    Facet Count ${polyface.facetCount} counter0 ${counter0}   counter1 ${counter1}`);
           console.log(prettyPrint(arrowPoints));
           const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
           console.log(prettyPrint(jsPolyface));
@@ -745,7 +745,7 @@ describe("Triangulation", () => {
     // multiple pinch points:
     const x0 = 960;
     const y0 = 3616;
-    for (const touchAllPointsOnReturn  of [true, false]) {
+    for (const touchAllPointsOnReturn of [true, false]) {
       for (const numPinch of [2, 3, 5]) {
         const points = [];
         points.push({ x: x0, y: y0 });

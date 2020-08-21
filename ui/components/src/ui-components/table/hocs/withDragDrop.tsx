@@ -41,12 +41,12 @@ export interface TableDragDropProps<DragDropObject = any> {
  * A HOC component that adds drag and drop functionality to the supplied table component.
  * @beta
  */
-// tslint:disable-next-line: variable-name naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function withTableDragDrop<P extends TableProps, DragDropObject extends TableDragDropType>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableDragDropProps<DragDropObject>> {
 
   type CombinedProps = P & TableDragDropProps<DragDropObject>;
 
-  // tslint:disable-next-line:variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   return class WithDragAndDrop extends React.Component<CombinedProps> {
 
     public static get displayName() { return `WithDragAndDrop(${getDisplayName(TableComponent)})`; }
@@ -114,7 +114,7 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
 
     public renderRow = (item: RowItem, props: TableRowProps): React.ReactNode => {
       const baseNode = this.props.renderRow ? /* istanbul ignore next */ this.props.renderRow(item, props) : <TableRow key={item.key} {...props} />;
-      const DDRow = DragDropRow<DragDropObject>(); // tslint:disable-line:variable-name
+      const DDRow = DragDropRow<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
       return (
         <DDRow
           key={item.key}
@@ -127,8 +127,8 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
       );
     }
     public render() {
-      const { dragProps, dropProps, renderNode, ...tableProps } = this.props as any;
-      const DragDropWrapper = withDropTarget<TableWrapperProps, DragDropObject>(TableWrapper); // tslint:disable-line:variable-name
+      const { dragProps, dropProps, renderNode, ...tableProps } = this.props as any; // eslint-disable-line @typescript-eslint/no-unused-vars
+      const DragDropWrapper = withDropTarget<TableWrapperProps, DragDropObject>(TableWrapper); // eslint-disable-line @typescript-eslint/naming-convention
       return (
         <DragDropWrapper
           dropStyle={{ height: "100%" }}

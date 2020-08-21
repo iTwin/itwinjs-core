@@ -39,7 +39,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
    */
   public handleLineSegment3d(segment0: LineSegment3d): any {
     if (this._geometry1 instanceof LineSegment3d) {
-      const segment1 = this._geometry1 as LineSegment3d;
+      const segment1 = this._geometry1;
       return LineSegment3d.create(
         segment0.startPoint().interpolate(this._fraction, segment1.startPoint()),
         segment0.endPoint().interpolate(this._fraction, segment1.endPoint()));
@@ -53,7 +53,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
    */
   public handleLineString3d(ls0: LineString3d): any {
     if (this._geometry1 instanceof LineString3d) {
-      const ls1 = this._geometry1 as LineString3d;
+      const ls1 = this._geometry1;
       if (ls0.numPoints() === ls1.numPoints()) {
         const numPoints = ls0.numPoints();
         const ls = LineString3d.create();
@@ -100,7 +100,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
    */
   public handleArc3d(arc0: Arc3d): any {
     if (this._geometry1 instanceof Arc3d) {
-      const arc1 = this._geometry1 as Arc3d;
+      const arc1 = this._geometry1;
       return Arc3d.create(
         arc0.center.interpolate(this._fraction, arc1.center),
         arc0.vector0.interpolate(this._fraction, arc1.vector0),

@@ -1,8 +1,0 @@
-{
-  "extends": "@bentley/build-tools/tslint.json",
-  "linterOptions": {
-    "exclude": [
-      "**/*.json"
-    ]
-  }
-}

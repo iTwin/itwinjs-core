@@ -394,7 +394,7 @@ export class ViewFlags {
  * @public
  */
 export enum ViewFlagPresence {
-  RenderMode,
+  RenderMode, // eslint-disable-line no-shadow
   Dimensions,
   Patterns,
   Weights,
@@ -551,7 +551,7 @@ export class ViewFlagOverrides {
   }
 
   public toJSON(): ViewFlagOverridesProps {
-    const props: ViewFlagOverridesProps = { };
+    const props: ViewFlagOverridesProps = {};
     this.applyFlags(props);
     return props;
   }

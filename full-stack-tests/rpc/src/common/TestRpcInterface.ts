@@ -42,7 +42,7 @@ export abstract class ZeroMajorRpcInterface extends RpcInterface {
   }
 }
 
-// tslint:disable-next-line:no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TokenValues extends IModelRpcProps { }
 
 export abstract class TestRpcInterface extends RpcInterface {
@@ -80,7 +80,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async op8(_x: number, _y: number): Promise<{ initializer: number; sum: number }> {
+  public async op8(_x: number, _y: number): Promise<{ initializer: number, sum: number }> {
     return this.forward(arguments);
   }
 
@@ -113,6 +113,22 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public async op16(_token: IModelRpcProps, _values: TokenValues): Promise<boolean> {
+    return this.forward(arguments);
+  }
+
+  public async startCSRFTest(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async stopCSRFTest(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async csrfTestEnabled(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async csrfTestDisabled(): Promise<void> {
     return this.forward(arguments);
   }
 }

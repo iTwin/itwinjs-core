@@ -21,7 +21,7 @@ export interface LabeledTextareaProps extends TextareaProps, LabeledComponentPro
  */
 export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
   public render(): JSX.Element {
-    const { label, status, className, style,
+    const { label, status, className, style, // eslint-disable-line @typescript-eslint/no-unused-vars
       inputClassName, inputStyle,
       labelClassName, labelStyle,
       message, messageClassName, messageStyle,

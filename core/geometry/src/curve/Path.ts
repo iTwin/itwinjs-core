@@ -23,7 +23,7 @@ import { StrokeOptions } from "./StrokeOptions";
  * @public
  */
 export class Path extends CurveChain {
-   /** String name for schema properties */
+  /** String name for schema properties */
   public readonly curveCollectionType = "path";
 
   /** Test if `other` is an instance of `Path` */

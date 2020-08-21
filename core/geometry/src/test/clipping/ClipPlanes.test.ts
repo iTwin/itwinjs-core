@@ -38,7 +38,7 @@ import { LinearSweep } from "../../solid/LinearSweep";
 import { Cone } from "../../solid/Cone";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 
-/* tslint:disable:no-console no-trailing-whitespace */
+/* eslint-disable no-console, no-trailing-spaces */
 
 Checker.noisy.clipPlane = false;
 /**
@@ -233,7 +233,7 @@ describe("ClipPlane", () => {
         if (Checker.noisy.clipPlane) {
           console.log("Points:");
           console.log(array);
-          console.log("Expected crossings: " + numExpectedCrossings);
+          console.log({ "expected crossings: ": numExpectedCrossings });
           console.log("Crossings:");
           console.log(crossings);
         }
@@ -638,10 +638,8 @@ describe("CurveClips", () => {
     const outputShiftY = 10.0;
 
     let xCount = 0;
-    let clipper: Clipper;
-    let clipLine: Point3d[];
-    clipLine = Sample.createRectangle(-2, -1, 2, 1, 0, true);
-    clipper = ConvexClipPlaneSet.createXYPolyLineInsideLeft(clipLine);
+    const clipLine: Point3d[] = Sample.createRectangle(-2, -1, 2, 1, 0, true);
+    const clipper: Clipper = ConvexClipPlaneSet.createXYPolyLineInsideLeft(clipLine);
 
     for (const curve of curves) {
       const transform0 = Transform.createTranslationXYZ(xCount * outputShiftX, 0, 0);

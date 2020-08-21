@@ -34,7 +34,7 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
     private _useViewportMap?: boolean;
 
     constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs) {
-      super(args.context, args.location, args.tree, args.now, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
+      super(args);
     }
 
     public get frustumPlanes(): FrustumPlanes {

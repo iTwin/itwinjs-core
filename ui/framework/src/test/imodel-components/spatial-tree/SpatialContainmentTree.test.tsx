@@ -8,9 +8,10 @@ import * as sinon from "sinon";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks"; // tslint:disable-line: no-direct-imports
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { Presentation, PresentationManager, RulesetManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { cleanup, render, waitForElement } from "@testing-library/react";
@@ -35,8 +36,7 @@ describe("SpatialContainmentTree", () => {
   describe("<SpatialContainmentTree />", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
-    const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-    const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
+    let presentationManagerMock: moq.IMock<PresentationManager>;
     let dataProvider: IPresentationTreeDataProvider;
 
     const createKey = (id: string): ECInstancesNodeKey => {
@@ -49,9 +49,6 @@ describe("SpatialContainmentTree", () => {
 
     beforeEach(() => {
       cleanup();
-
-      presentationManagerMock.reset();
-      rulesetManagerMock.reset();
 
       dataProvider = {
         imodel: imodelMock.object,
@@ -71,8 +68,8 @@ describe("SpatialContainmentTree", () => {
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
       Presentation.setSelectionManager(selectionManagerMock.object);
-      presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
-      presentationManagerMock.setup((x) => x.onHierarchyUpdate).returns(() => new BeEvent());
+
+      presentationManagerMock = mockPresentationManager().presentationManager;
       Presentation.setPresentationManager(presentationManagerMock.object);
     });
 

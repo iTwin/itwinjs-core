@@ -159,7 +159,7 @@ describe("TableDataProvider", async () => {
       provider.filterExpression = `${columns[0].key} = "Properties_60InstancesWithUrl2"`;
       expect(await provider.getRowsCount()).to.eq(1);
       const row = await provider.getRow(0);
-      const rowKey = InstanceKey.fromJSON(JSON.parse(row!.key));
+      const rowKey = InstanceKey.fromJSON(JSON.parse(row.key));
       expect(rowKey.id).to.eq(Id64.fromString(instances.physicalModel.id!));
     });
 

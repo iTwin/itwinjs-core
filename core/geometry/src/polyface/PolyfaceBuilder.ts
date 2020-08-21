@@ -50,7 +50,7 @@ import { BoxTopology } from "./BoxTopology";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 
-/* tslint:disable:variable-name prefer-for-of*/
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/prefer-for-of */
 /**
  * A FacetSector
  * * initially holds coordinate data for a place where xyz and sectionDerivative are known
@@ -95,7 +95,7 @@ class FacetSector {
       this.uv.setFrom(other.uv);
     this.uvIndex = other.uvIndex;
     if (this.sectionDerivative)
-      this.sectionDerivative.setFrom(other.sectionDerivative!);
+      this.sectionDerivative.setFrom(other.sectionDerivative);
   }
   /** access xyz, derivative from given arrays.
    * * ASSUME corresponding defined conditions
@@ -110,7 +110,7 @@ class FacetSector {
     this.normalIndex = -1;
     this.uvIndex = -1;
     if (this.sectionDerivative !== undefined && packedDerivatives !== undefined)
-      packedDerivatives!.getVector3dAtCheckedVectorIndex(i, this.sectionDerivative);
+      packedDerivatives.getVector3dAtCheckedVectorIndex(i, this.sectionDerivative);
   }
   private static suppressSmallUnitVectorComponents(uvw: XYZ) {
     const tol = 1.0e-15;
@@ -133,8 +133,8 @@ class FacetSector {
     if (sectorA.sectionDerivative && sectorB.sectionDerivative) {
       const vectorAB = FacetSector._edgeVector;
       Vector3d.createStartEnd(sectorA.xyz, sectorB.xyz, vectorAB);
-      sectorA.sectionDerivative!.crossProduct(vectorAB, sectorA.normal);
-      sectorB.sectionDerivative!.crossProduct(vectorAB, sectorB.normal);
+      sectorA.sectionDerivative.crossProduct(vectorAB, sectorA.normal);
+      sectorB.sectionDerivative.crossProduct(vectorAB, sectorB.normal);
       sectorA.normal!.normalizeInPlace();
       sectorB.normal!.normalizeInPlace();
       FacetSector.suppressSmallUnitVectorComponents(sectorA.normal!);
@@ -991,16 +991,15 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d) {
     if (contour instanceof LineString3d) {
-      const ls = contour as LineString3d;
       let pointA = Point3d.create();
       let pointB = Point3d.create();
       let indexA0 = 0;
       let indexA1 = 0;
       let indexB0 = 0;
       let indexB1 = 0;
-      const n = ls.numPoints();
+      const n = contour.numPoints();
       for (let i = 0; i < n; i++) {
-        pointA = ls.pointAt(i, pointA)!;
+        pointA = contour.pointAt(i, pointA)!;
         pointB = pointA.plus(vector, pointB);
         indexA1 = this.findOrAddPoint(pointA);
         indexB1 = this.findOrAddPoint(pointB);
@@ -1153,12 +1152,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.createIndicesInLineString(strokeB, vB);
       this.addBetweenLineStringsWithStoredIndices(strokeA, strokeB);
     } else if (stroke0 instanceof ParityRegion) {
-      for (let i = 0; i < stroke0.children.length; i++) {
+      for (let i = 0; i < stroke0.children.length; i++) {  // eslint-disable-line @typescript-eslint/prefer-for-of
         this.addBetweenRotatedStrokeSets(stroke0.children[i], transformA, vA, transformB, vB);
       }
     } else if (stroke0 instanceof CurveChain) {
       const chainA = stroke0.children;
-      for (let i = 0; i < chainA.length; i++) {
+      for (let i = 0; i < chainA.length; i++) { // eslint-disable-line @typescript-eslint/prefer-for-of
         const cpA = chainA[i];
         if (cpA instanceof LineString3d) {
           this.addBetweenRotatedStrokeSets(cpA, transformA, vA, transformB, vB);
@@ -1199,7 +1198,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let stroke0: AnyCurve | undefined;
     let stroke1: AnyCurve;
     const sectionMaps = [];
-    for (let i = 0; i < contours.length; i++) {
+    for (let i = 0; i < contours.length; i++) { // eslint-disable-line @typescript-eslint/prefer-for-of
       sectionMaps.push(StrokeCountSection.createForParityRegionOrChain(contours[i].curves, this._options));
     }
     if (StrokeCountSection.enforceStrokeCountCompatibility(sectionMaps)) {

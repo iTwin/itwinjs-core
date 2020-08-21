@@ -15,7 +15,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
  * @public
  * @deprecated Use `InstanceNodesOfSpecificClassesSpecification`. Will be removed in iModel.js 3.0
  */
-export interface DEPRECATED_AllInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // tslint:disable-line: naming-convention class-name
+export interface DEPRECATED_AllInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // eslint-disable-line @typescript-eslint/naming-convention
   /** Used for serializing to JSON. */
   specType: ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes;
 

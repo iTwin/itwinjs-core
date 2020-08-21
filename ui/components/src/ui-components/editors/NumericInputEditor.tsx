@@ -72,7 +72,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
-    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
@@ -83,7 +83,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
   /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
-      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+      this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
@@ -155,7 +155,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
         defaultValue={this.state.value}
         onBlur={this.props.onBlur}
         onChange={this._updateValue}
-        autoFocus={this.props.setFocus && !this.state.isDisabled}
+        setFocus={this.props.setFocus && !this.state.isDisabled}
       />
     );
   }

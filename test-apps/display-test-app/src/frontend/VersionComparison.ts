@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { ColorDef, RgbColor } from "@bentley/imodeljs-common";
+import { ColorDef, FeatureAppearance, RgbColor } from "@bentley/imodeljs-common";
 import {
   ChangeFlags, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialModelState, SpatialModelTileTrees,
   SpatialViewState, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, Viewport,
@@ -50,7 +50,7 @@ async function determineChangedElems(iModel: IModelConnection, revision: IModelC
 }
 
 const changedTransparency = 16; // NB: This will appear more transparent due to use of "fade-out" mode (flat alpha weight).
-const unchangedAppearance = FeatureSymbology.Appearance.fromJSON({
+const unchangedAppearance = FeatureAppearance.fromJSON({
   rgb: new RgbColor(80, 80, 80),
   transparency: 0.7,
   nonLocatable: true,
@@ -109,7 +109,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     // closing the iModel will do this - but let's not wait.
     this.iModel.tiles.purge(BeTimePoint.now());
 
-    this.iModel.close(); // tslint:disable-line no-floating-promises
+    this.iModel.close(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   public static async create(vp: Viewport): Promise<Provider | undefined> {
@@ -144,11 +144,11 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     for (const elem of this.changedElems.deleted)
       overrides.setNeverDrawn(elem);
 
-    const inserted = FeatureSymbology.Appearance.fromRgba(ColorDef.from(0, 0xff, 0, changedTransparency));
+    const inserted = FeatureAppearance.fromRgba(ColorDef.from(0, 0xff, 0, changedTransparency));
     for (const elem of this.changedElems.inserted)
       overrides.overrideElement(elem, inserted);
 
-    const updated = FeatureSymbology.Appearance.fromRgba(ColorDef.from(0, 0x7f, 0xff, changedTransparency));
+    const updated = FeatureAppearance.fromRgba(ColorDef.from(0, 0x7f, 0xff, changedTransparency));
     for (const elem of this.changedElems.updated)
       overrides.overrideElement(elem, updated);
   }
@@ -161,7 +161,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     ovrs.setAlwaysDrawnSet(this.changedElems.deleted, true, false); // really "only-drawn" - only draw our deleted elements - unless their subcategory is turned off.
 
     const red = ColorDef.from(0xff, 0, 0, changedTransparency);
-    ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgba(red));
+    ovrs.setDefaultOverrides(FeatureAppearance.fromRgba(red));
 
     return ovrs;
   }
@@ -269,7 +269,7 @@ export class VersionComparisonTool extends Tool {
   public run(_args: any[]): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
-      emulateVersionComparison(vp); // tslint:disable-line:no-floating-promises
+      emulateVersionComparison(vp); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }

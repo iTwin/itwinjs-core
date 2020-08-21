@@ -14,8 +14,6 @@ import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
 import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
-// tslint:disable:ban-types
-
 /** @internal */
 export const REGISTRY = Symbol.for("@bentley/imodeljs-common/RpcRegistry");
 
@@ -206,7 +204,7 @@ export class RpcRegistry {
 
   private interceptOperation(proxy: RpcInterface, operation: string) {
     const clientFunction = (proxy as any)[operation];
-    // tslint:disable-next-line:only-arrow-functions
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     (proxy as any)[operation] = function () {
       const args = Array.from(arguments);
       args.push(operation);

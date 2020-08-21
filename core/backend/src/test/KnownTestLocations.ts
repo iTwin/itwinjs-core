@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
+import * as os from "os";
 import { Platform } from "../IModelHost";
 
 export class KnownTestLocations {
@@ -14,9 +15,8 @@ export class KnownTestLocations {
 
   /** The directory where tests can write. */
   public static get outputDir(): string {
-    const imodeljsMobile = Platform.imodeljsMobile;
-    if (imodeljsMobile !== undefined) {
-      return imodeljsMobile.knownLocations.tempDir;
+    if (Platform.isMobile) {
+      return path.join(os.tmpdir(), "output");
     }
 
     // Assume that we are running in nodejs

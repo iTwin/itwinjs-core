@@ -122,7 +122,7 @@ export class BackgroundMapSettings {
     // Handle deprecated TerrainProps.nonLocatable:
     // - If TerrainProps.nonLocatable=true and terrain is on, terrain is not locatable.
     // - Otherwise, use BackgroundMapProps.nonLocatable.
-    if (this.applyTerrain && !this.terrainSettings.locatable) // tslint:disable-line:deprecation
+    if (this.applyTerrain && !this.terrainSettings.locatable) // eslint-disable-line deprecation/deprecation
       return false;
 
     return this._locatable;
@@ -149,7 +149,7 @@ export class BackgroundMapSettings {
   }
 
   public toJSON(): BackgroundMapProps {
-    const props: BackgroundMapProps = { };
+    const props: BackgroundMapProps = {};
     if (0 !== this.groundBias)
       props.groundBias = this.groundBias;
     if ("BingProvider" !== this.providerName)
@@ -186,7 +186,7 @@ export class BackgroundMapSettings {
   public equals(other: BackgroundMapSettings): boolean {
     return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
       && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.globeMode === other.globeMode
-        && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
+      && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.

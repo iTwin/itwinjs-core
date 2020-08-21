@@ -1430,6 +1430,9 @@ export class CurveFactory {
     static createArcPointTangentPoint(pointA: Point3d, tangentA: Vector3d, pointB: Point3d): Arc3d | undefined;
     static createArcPointTangentRadius(pointA: Point3d, tangentA: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep): Arc3d | undefined;
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
+    static createLineSpiralArcSpiralLine(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, lengthA: number, lengthB: number, arcRadius: number): GeometryQuery[] | undefined;
+    static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
+    static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
     static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[];
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
@@ -1526,6 +1529,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     endCut?: CurveLocationDetail;
     endPoint(result?: Point3d): Point3d;
     fractionAndDistanceToPointOnTangent(fraction: number, distance: number): Point3d;
+    fractionToCurvature(fraction: number): number | undefined;
     fractionToFrenetFrame(fraction: number, result?: Transform): Transform | undefined;
     abstract fractionToPoint(fraction: number, result?: Point3d): Point3d;
     abstract fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
@@ -1605,13 +1609,13 @@ export class DeepCompare {
         [key: string]: any;
     };
     typeCounts: {
-        "numbers": number;
-        "arrays": number;
-        "functions": number;
-        "objects": number;
-        "strings": number;
-        "booleans": number;
-        "undefined": number;
+        numbers: number;
+        arrays: number;
+        functions: number;
+        objects: number;
+        strings: number;
+        booleans: number;
+        undefined: number;
     };
 }
 
@@ -1654,7 +1658,7 @@ export class Degree4PowerPolynomial {
     static fromRootsAndC4(root0: number, root1: number, root2: number, root3: number, c4?: number): Degree4PowerPolynomial;
 }
 
-// @beta
+// @public
 export class DirectSpiral3d extends TransitionSpiral3d {
     constructor(localToWorld: Transform, spiralType: string | undefined, originalProperties: TransitionConditionalProperties | undefined, nominalL1: number, nominalR1: number, activeFractionInterval: Segment1d | undefined, evaluator: XYCurveEvaluator);
     get activeStrokes(): LineString3d;
@@ -1663,6 +1667,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     // (undocumented)
     static createArema(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    static createAustralianRail(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     // (undocumented)
     static createChineseCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createCzechCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
@@ -1696,8 +1701,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     tryTransformInPlace(transformA: Transform): boolean;
 }
 
-// @beta
-export type DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine";
+// @public
+export type DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesterAustralian" | "Czech";
 
 // @public
 export enum DuplicateFacetClusterSelector {
@@ -2671,7 +2676,7 @@ export class IndexedXYZCollectionPolygonOps {
     static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: IndexedReadWriteXYZCollection, xyzPositive: IndexedReadWriteXYZCollection, xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d): void;
     }
 
-// @beta
+// @public
 export class IntegratedSpiral3d extends TransitionSpiral3d {
     get activeStrokes(): LineString3d;
     bearing01: AngleSweep;
@@ -2689,7 +2694,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     endPoint(): Point3d;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     fractionToBearingRadians(activeFraction: number): number;
-    fractionToCurvature(activeFraction: number): number;
+    fractionToCurvature(activeFraction: number): number | undefined;
     fractionToFrenetFrame(activeFraction: number, result?: Transform): Transform;
     fractionToPoint(activeFraction: number, result?: Point3d): Point3d;
     fractionToPointAnd2Derivatives(activeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
@@ -2709,7 +2714,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     tryTransformInPlace(transformA: Transform): boolean;
 }
 
-// @beta
+// @public
 export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine";
 
 // @public
@@ -4155,6 +4160,7 @@ export class PowerPolynomial {
 
 // @internal
 export class Quadrature {
+    static doGaussIntegral(x0: number, x1: number, f: (x: number) => number, numInterval: number, numGauss?: number): number;
     static readonly gaussW1Interval01: Float64Array;
     static readonly gaussW2Interval01: Float64Array;
     static readonly gaussW3Interval01: Float64Array;
@@ -5116,12 +5122,12 @@ export type TransformProps = number[][] | number[] | {
     matrix: Matrix3dProps;
 };
 
-// @beta
+// @public
 export abstract class TransitionSpiral3d extends CurvePrimitive {
     protected constructor(spiralType: string | undefined, localToWorld: Transform, activeFractionInterval: Segment1d | undefined, designProperties: TransitionConditionalProperties | undefined);
-    // (undocumented)
     get activeFractionInterval(): Segment1d;
     protected _activeFractionInterval: Segment1d;
+    abstract get activeStrokes(): LineString3d;
     protected applyRigidPartOfTransform(transformA: Transform): {
         rigidAxes: Matrix3d;
         scale: number;
@@ -5131,7 +5137,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     static curvatureToRadius(curvature: number): number;
     get designProperties(): TransitionConditionalProperties | undefined;
     protected _designProperties: TransitionConditionalProperties | undefined;
-    // (undocumented)
+    static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number;
     get localToWorld(): Transform;
     protected _localToWorld: Transform;
     static radius0LengthSweepRadiansToRadius1(radius0: number, arcLength: number, sweepRadians: number): number;

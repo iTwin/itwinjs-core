@@ -87,14 +87,14 @@ export const [
    * Context of [[TreeRenderer]] provider.
    * @beta
    */
-  // tslint:disable-next-line: variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   TreeRendererContextProvider,
 
   /**
    * Context of [[TreeRenderer]] consumer.
    * @beta
    */
-  // tslint:disable-next-line: variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   TreeRendererContextConsumer,
 
   /**
@@ -170,9 +170,10 @@ export function TreeRenderer(props: TreeRendererProps) {
 
       index++;
     }
-    variableSizeListRef.current!.scrollToItem(index);
+    variableSizeListRef.current.scrollToItem(index);
   }, [nodeHighlightingProps]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // eslint-disable-next-line react/display-name
   const innerElementType = React.useCallback(React.forwardRef(({ style, ...rest }: ListChildComponentProps, ref: React.Ref<HTMLDivElement>) => (
     <div
       ref={ref}
@@ -181,9 +182,17 @@ export function TreeRenderer(props: TreeRendererProps) {
     />
   )), []);
 
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+    props.treeActions.onTreeKeyDown(e);
+  }, [props.treeActions]);
+
+  const handleKeyUp = React.useCallback((e: React.KeyboardEvent) => {
+    props.treeActions.onTreeKeyUp(e);
+  }, [props.treeActions]);
+
   return (
     <TreeRendererContextProvider value={rendererContext}>
-      <CoreTree ref={coreTreeRef} className="components-controlledTree">
+      <CoreTree ref={coreTreeRef} className="components-controlledTree" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
         <AutoSizer>
           {({ width, height }: Size) => {
             onTreeSizeChanged(width);
@@ -217,7 +226,7 @@ function getNodeKey(node: TreeModelNode | TreeModelNodePlaceholder): string {
   return `${node.parentId || ""}-${node.childIndex}`;
 }
 
-const Node = React.memo<React.FC<ListChildComponentProps>>( // tslint:disable-line: variable-name
+const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-line @typescript-eslint/naming-convention
   (props: ListChildComponentProps) => {
     const { index, style } = props;
 
@@ -316,7 +325,7 @@ function createContextWithMandatoryProvider<T>(
     <P>(component: React.ComponentType<P>) => T,
   ] {
   const context = React.createContext<T>(undefined as any as T);
-  // tslint:disable-next-line: variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function useContextWithoutDefaultValue<P>(ConsumingComponent: React.ComponentType<P>) {
     const value = React.useContext(context);
     /* istanbul ignore if */

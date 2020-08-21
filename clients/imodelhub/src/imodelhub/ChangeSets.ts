@@ -355,17 +355,17 @@ class DownloadProgress {
   }
 
   /** Gets total changeSets size to download. */
-  get totalSize(): number {
+  public get totalSize(): number {
     return this._totalSize;
   }
 
   /** Gets currently downloaded changeSets size. */
-  get downloadedSize(): number {
+  public get downloadedSize(): number {
     return this._downloadedSize;
   }
 
   /** Sets currently downloaded changeSets size. */
-  set downloadedSize(value: number) {
+  public set downloadedSize(value: number) {
     this._downloadedSize = value;
   }
 }

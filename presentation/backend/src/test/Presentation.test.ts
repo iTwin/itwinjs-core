@@ -51,7 +51,7 @@ describe("Presentation", () => {
       it("sets unused client lifetime provided through props", () => {
         Presentation.initialize({ unusedClientLifetime: faker.random.number() });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
-        expect(storage.props.valueLifetime).to.eq((Presentation.initProps! as PresentationPropsDeprecated).unusedClientLifetime); // tslint:disable-line:deprecation
+        expect(storage.props.valueLifetime).to.eq((Presentation.initProps! as PresentationPropsDeprecated).unusedClientLifetime); // eslint-disable-line deprecation/deprecation
       });
 
       describe("getRequestTimeout", () => {

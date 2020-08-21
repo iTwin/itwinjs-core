@@ -30,7 +30,7 @@ describe("<FocusTrap />", () => {
     const clock = sandbox.useFakeTimers();
 
     render(<FocusTrap active={true} returnFocusOnDeactivate={false}>
-      <div id="test" tabIndex={0} />
+      <div id="test" role="button" tabIndex={0} />
     </FocusTrap>);
 
     clock.tick(1000);
@@ -45,7 +45,7 @@ describe("<FocusTrap />", () => {
     const spyLogger = sinon.spy(Logger, "logError");
 
     render(<FocusTrap initialFocusElement=".test" active={true} returnFocusOnDeactivate={false}>
-      <div id="test" tabIndex={0} />
+      <div id="test" tabIndex={0} role="button" />
     </FocusTrap>);
 
     clock.tick(1000);
@@ -59,9 +59,9 @@ describe("<FocusTrap />", () => {
     const clock = sandbox.useFakeTimers();
 
     const component = render(<FocusTrap active={true} returnFocusOnDeactivate={false}>
-      <div id="test1" tabIndex={0} />
-      <div id="test2" tabIndex={0} />
-      <div id="test3" tabIndex={0} />
+      <div id="test1" tabIndex={0} role="button" />
+      <div id="test2" tabIndex={0} role="button" />
+      <div id="test3" tabIndex={0} role="button" />
     </FocusTrap>);
 
     clock.tick(1000);
@@ -79,9 +79,9 @@ describe("<FocusTrap />", () => {
     const clock = sandbox.useFakeTimers();
 
     const component = render(<FocusTrap active={true} returnFocusOnDeactivate={false}>
-      <div id="test1" tabIndex={0} />
-      <div id="test2" tabIndex={0} />
-      <div id="test3" tabIndex={0} />
+      <div id="test1" tabIndex={0} role="button" />
+      <div id="test2" tabIndex={0} role="button" />
+      <div id="test3" tabIndex={0} role="button" />
     </FocusTrap>);
 
     clock.tick(1000);

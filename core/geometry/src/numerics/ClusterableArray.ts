@@ -317,7 +317,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * @param data points to cluster.
    */
   public static clusterPoint3dArray(data: Point3d[], tolerance: number = Geometry.smallMetricDistance):
-    PackedPointsWithIndex {
+  PackedPointsWithIndex {
     const clusterArray = new ClusterableArray(3, 0, data.length);
     data.forEach((p: Point3d) => {
       clusterArray.addDirect(p.x, p.y, p.z);
@@ -376,7 +376,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * @param data points to cluster.
    */
   public static clusterGrowablePoint3dArray(source: GrowableXYZArray, tolerance: number = Geometry.smallMetricDistance):
-    PackedPointsWithIndex {
+  PackedPointsWithIndex {
     const clusterArray = new ClusterableArray(3, 0, source.length);
     const p = Point3d.create();
     const numSourcePoint = source.length;

@@ -58,7 +58,7 @@ export class FeatureTrackingManager {
   public track(props: FeatureTrackingProps) {
     Logger.logInfo(loggerCategory, `Tracking Feature:${props.featureName}`, () => ({ ...props }));
     const entry = this.trackFeature(props);
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     if (undefined !== entry) this._client.queueLog(entry);
   }
 }

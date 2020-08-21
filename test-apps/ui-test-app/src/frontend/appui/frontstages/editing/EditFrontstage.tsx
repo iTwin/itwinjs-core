@@ -23,6 +23,8 @@ import { ModelCreationWidget } from "../../widgets/editing/ModelCreationWidget";
 import { NavigationTreeWidgetControl } from "../../widgets/NavigationTreeWidget";
 import { VisibilityTreeWidgetControl } from "../../widgets/VisibilityTreeWidget";
 
+/* eslint-disable react/jsx-key */
+
 export class EditFrontstage extends FrontstageProvider {
   public static stageId = "EditFrontstage";
 

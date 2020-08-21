@@ -286,7 +286,7 @@ export abstract class RpcRequest<TResponse = any> {
       this._connecting = true;
       RpcRequest._activeRequests.set(this.id, this);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
-      this._sending = new Cancellable(this.setHeaders().then(() => this.send()));
+      this._sending = new Cancellable(this.setHeaders().then(async () => this.send()));
       this.operation.policy.sentCallback(this);
 
       const response = await this._sending.promise;
@@ -392,7 +392,7 @@ export abstract class RpcRequest<TResponse = any> {
         throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
 
       resubmitted = true;
-      this.submit(); // tslint:disable-line:no-floating-promises
+      this.submit(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }, (reason: any) => this.reject(reason));
     return;
   }
@@ -488,6 +488,9 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (headerNames.userId && headerValues.userId)
       this.setHeader(headerNames.userId, headerValues.userId);
+
+    if (headerValues.csrfToken)
+      this.setHeader(headerValues.csrfToken.headerName, headerValues.csrfToken.headerValue);
   }
 
   private setStatus(status: RpcRequestStatus): void {

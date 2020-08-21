@@ -32,6 +32,10 @@
 
     > .nz-triangle {
       cursor: pointer;
+
+      &:focus {
+        outline: none;
+      }
     }
 
     &:not(.nz-bottom) {

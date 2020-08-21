@@ -97,7 +97,7 @@ class DropDown {
 
     const icon = createTestAppIcon(props.iconUnicode);
     icon.addEventListener("click", () => {
-      toolBar.toggle(index); // tslint:disable-line:no-floating-promises
+      toolBar.toggle(index); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
 
     if (undefined !== props.tooltip)

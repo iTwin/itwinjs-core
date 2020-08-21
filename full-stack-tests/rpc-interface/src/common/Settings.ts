@@ -7,7 +7,7 @@ import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, I
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
-// tslint:disable:ter-indent
+/* eslint-disable @typescript-eslint/indent */
 
 export interface Backend {
   version: string;
@@ -81,9 +81,9 @@ export class Settings {
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
     if (!isFrontend && undefined === env.TF_BUILD) {
-      const path = require("path");
-      const dotenv = require("dotenv");
-      const dotenvExpand = require("dotenv-expand");
+      const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
+      const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+      const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
       // First check in process.cwd() for the config
       let result = dotenv.config();
       if (result.error) {
@@ -109,7 +109,7 @@ export class Settings {
 
     // Parse environment
     if (undefined !== process.env.ENVIRONMENT)
-      this.env = parseInt(process.env.ENVIRONMENT, 0);
+      this.env = parseInt(process.env.ENVIRONMENT, 10);
 
     // Parse OIDC
     if (undefined === process.env.OIDC_CLIENT_ID)

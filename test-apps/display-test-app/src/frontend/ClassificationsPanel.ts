@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
-import {
-  ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu,
-} from "@bentley/frontend-devtools";
+import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@bentley/frontend-devtools";
 import { CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import {
   ContextRealityModelState, DisplayStyle3dState, findAvailableRealityModels, IModelApp, SpatialClassifiers, SpatialModelState, SpatialViewState,
@@ -104,7 +102,12 @@ export class ClassificationsPanel extends ToolBarDropDown {
     }
 
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
-    const available = await findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", range);
+    let available;
+    try {
+      available = await findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", range);
+    } catch (_error) {
+      available = new Array<ContextRealityModelProps>();
+    }
     for (const entry of available) {
       const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;
       createCheckBox({

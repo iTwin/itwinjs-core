@@ -44,7 +44,7 @@ const initialState: ConfigurableUiState = {
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
  * @public
  */
-export const ConfigurableUiActions = {   // tslint:disable-line:variable-name
+export const ConfigurableUiActions = {   // eslint-disable-line @typescript-eslint/naming-convention
   setSnapMode: (snapMode: number) => createAction(ConfigurableUiActionId.SetSnapMode, snapMode),
   setTheme:
     // istanbul ignore next

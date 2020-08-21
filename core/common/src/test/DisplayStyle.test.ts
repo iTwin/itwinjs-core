@@ -14,7 +14,7 @@ import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 
 describe("DisplayStyleSettings", () => {
-  interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps; }
+  interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }
 
   it("round-trips plan projection settings", () => {
     const roundTrip = (planProjections: SettingsMap | undefined) => {
@@ -66,7 +66,7 @@ describe("DisplayStyleSettings", () => {
       let count = 0;
       const iter = settings.planProjectionSettings;
       if (undefined !== iter)
-        for (const _entry of iter)
+        for (const _entry of iter) // eslint-disable-line @typescript-eslint/no-unused-vars
           ++count;
 
       return count;
@@ -187,7 +187,7 @@ describe("DisplayStyleSettings overrides", () => {
       terrainSettings: {
         exaggeration: 2.5,
         heightOrigin: -42,
-        nonLocatable: true, // tslint:disable-line:deprecation
+        nonLocatable: true, // eslint-disable-line deprecation/deprecation
         heightOriginMode: 0,
       },
     },
@@ -229,6 +229,15 @@ describe("DisplayStyleSettings overrides", () => {
       style: "0xaaa",
       weight: 10,
       transp: 0.5,
+    }],
+    modelOvr: [{
+      modelId: "0x789",
+      weight: 10,
+      linePixels: 4262526480,
+      rgb: { r: 0, g: 255, b: 0 },
+      transparency: 0.5,
+      nonLocatable: true,
+      emphasized: true,
     }],
     excludedElements: ["0x4", "0x8", "0x10"],
     contextRealityModels: [{
@@ -358,6 +367,19 @@ describe("DisplayStyleSettings overrides", () => {
         style: "0xbbb",
         weight: 20,
         transp: 0.7,
+      }],
+    });
+
+    test({
+      viewflags,
+      modelOvr: [{
+        modelId: "0x789",
+        weight: 10,
+        linePixels: 4262526480,
+        rgb: { r: 0, g: 255, b: 0 },
+        transparency: 0.5,
+        nonLocatable: true,
+        emphasized: true,
       }],
     });
 

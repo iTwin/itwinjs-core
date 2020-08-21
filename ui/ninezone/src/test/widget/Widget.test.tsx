@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
-  PanelWidget, Widget, WidgetIdContext, WidgetStateContext,
+  PanelStateContext, PanelWidget, Widget, WidgetIdContext, WidgetStateContext,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";
@@ -31,9 +31,11 @@ describe("PanelWidget", () => {
           state={nineZone}
           dispatch={dispatch}
         >
-          <PanelSideContext.Provider value="left">
-            <PanelWidget widgetId="w1" />
-          </PanelSideContext.Provider>
+          <PanelStateContext.Provider value={nineZone.panels.left}>
+            <PanelSideContext.Provider value="left">
+              <PanelWidget widgetId="w1" />
+            </PanelSideContext.Provider>
+          </PanelStateContext.Provider>
         </NineZoneProvider>,
       );
 
@@ -60,9 +62,11 @@ describe("PanelWidget", () => {
           state={nineZone}
           dispatch={dispatch}
         >
-          <PanelSideContext.Provider value="left">
-            <PanelWidget widgetId="w1" />
-          </PanelSideContext.Provider>
+          <PanelStateContext.Provider value={nineZone.panels.left}>
+            <PanelSideContext.Provider value="left">
+              <PanelWidget widgetId="w1" />
+            </PanelSideContext.Provider>
+          </PanelStateContext.Provider>
         </NineZoneProvider>,
       );
 
@@ -99,9 +103,11 @@ describe("PanelWidget", () => {
           state={nineZone}
           dispatch={dispatch}
         >
-          <PanelSideContext.Provider value="left">
-            <PanelWidget widgetId="w1" />
-          </PanelSideContext.Provider>
+          <PanelStateContext.Provider value={nineZone.panels.left}>
+            <PanelSideContext.Provider value="left">
+              <PanelWidget widgetId="w1" />
+            </PanelSideContext.Provider>
+          </PanelStateContext.Provider>
         </NineZoneProvider>,
       );
 
@@ -130,9 +136,11 @@ describe("PanelWidget", () => {
       <NineZoneProvider
         state={nineZone}
       >
-        <PanelSideContext.Provider value="left">
-          <PanelWidget widgetId="w1" />
-        </PanelSideContext.Provider>
+        <PanelStateContext.Provider value={nineZone.panels.left}>
+          <PanelSideContext.Provider value="left">
+            <PanelWidget widgetId="w1" />
+          </PanelSideContext.Provider>
+        </PanelStateContext.Provider>
       </NineZoneProvider>,
     );
 

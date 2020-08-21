@@ -78,7 +78,7 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
           ],
         ];
 
-        // tslint:disable-next-line:prefer-for-of
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let j = 0; j < propData[i].length; j++) {
           this.addProperty(propData[i][j], i);
         }
@@ -161,7 +161,7 @@ export class HorizontalPropertyGridWidgetControl2 extends WidgetControl {
 
     this.reactNode = (
       <ScrollableWidgetContent
-        children={<HorizontalPropertyGridWidget style={{ overflow: "unset" }} />}
+        children={<HorizontalPropertyGridWidget style={{ overflow: "unset" }} />} // eslint-disable-line react/no-children-prop
       />
     );
   }

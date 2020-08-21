@@ -38,9 +38,9 @@ export class ParserSpec {
   }
 
   /** Returns an array of UnitConversionSpecs for each unit label that may be used in the input string. */
-  get unitConversions(): UnitConversionSpec[] { return this._conversions; }
-  get format(): Format { return this._format; }
-  get outUnit(): UnitProps { return this._outUnit; }
+  public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
+  public get format(): Format { return this._format; }
+  public get outUnit(): UnitProps { return this._outUnit; }
 
   /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
@@ -195,7 +195,7 @@ export class Parser {
       skipCodes.push(uomSeparatorToIgnore);
     }
 
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < str.length; i++) {
       const charCode = str.charCodeAt(i);
       if (Parser.isDigitOrDecimalSeparator(charCode, format)) {
@@ -383,7 +383,7 @@ export class Parser {
           if (-1 !== conversion.parseLabels.findIndex((lbl) => lbl === label))
             return conversion.conversion;
         } else {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.log("ERROR: Parser expects to find parseLabels array populate with all possible unit labels for the unit.");
         }
       }
@@ -480,11 +480,11 @@ export class Parser {
       return { status: QuantityStatus.UnableToGenerateParseTokens };
 
     if (Parser._log) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log(`Parse tokens`);
       let i = 0;
       for (const token of tokens) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`  [${i++}] isNumber=${token.isNumber} isString=${token.isString} token=${token.value}`);
       }
     }
@@ -525,7 +525,7 @@ export class Parser {
 
     const outUnit = await unitsProvider.findUnitByName(outUnitName);
     if (!outUnit || !outUnit.name || 0 === outUnit.name.length) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.log(`[Parser.createUnitConversionSpecs] ERROR: Unable to locate out unit ${outUnitName}.`);
       return unitConversionSpecs;
     }
@@ -533,7 +533,7 @@ export class Parser {
     for (const potentialParseUnit of potentialParseUnits) {
       const unit = await unitsProvider.findUnitByName(potentialParseUnit.unitName);
       if (!unit || !unit.name || 0 === unit.name.length) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`[Parser.createUnitConversionSpecs] ERROR: Unable to locate potential unit ${potentialParseUnit.unitName}.`);
         continue;
       }

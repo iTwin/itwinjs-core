@@ -65,7 +65,7 @@ export interface ISchemaChanges {
 /**
  * Allows an ISchemaChanges implementation to be dynamically constructed in addChangeToMap.
  */
-interface SchemaChangesConstructor { new(schema: Schema, ecTypeName: string): ISchemaChanges; }
+interface SchemaChangesConstructor { new(schema: Schema, ecTypeName: string): ISchemaChanges } // eslint-disable-line @typescript-eslint/prefer-function-type
 
 /**
  * An ISchemaChange implementation meant to be used as the base class

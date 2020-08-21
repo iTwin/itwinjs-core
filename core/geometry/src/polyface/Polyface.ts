@@ -8,7 +8,7 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty*/
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
@@ -384,8 +384,8 @@ export class IndexedPolyface extends Polyface {
    */
   public addNormalXYZ(x: number, y: number, z: number): number {
     if (!this.data.normal) this.data.normal = new GrowableXYZArray();
-    this.data.normal!.pushXYZ(x, y, z);
-    return this.data.normal!.length - 1;
+    this.data.normal.pushXYZ(x, y, z);
+    return this.data.normal.length - 1;
   }
 
   /** Add a color

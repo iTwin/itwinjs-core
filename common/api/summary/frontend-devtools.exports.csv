@@ -25,6 +25,8 @@ alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
 beta;ClearIsolatedElementsTool 
+beta;ClearModelAppearanceOverrides 
+beta;ClearRealityModelAppearanceOverrides 
 alpha;ColorInput
 alpha;ColorInputHandler = (value: string) => void
 alpha;ColorInputProps
@@ -90,6 +92,7 @@ alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
 alpha;class OverrideSubCategoryPriorityTool 
 beta;parseArgs(args: string[]): ToolArgs
+beta;parseBoolean(arg: string | undefined): boolean | undefined
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
 beta;ProjectExtentsDecoration
 alpha;RadioBox
@@ -110,6 +113,17 @@ beta;serializeViewState(view: ViewState): ViewStateProps
 internal;SetAASamplesTool 
 alpha;SetAspectRatioSkewTool 
 alpha;SetMapBaseTool 
+beta;SetModelColorTool 
+beta;SetModelEmphasizedTool 
+beta;SetModelIgnoresMaterialsTool 
+beta;SetModelLineCodeTool 
+beta;SetModelLineWeightTool 
+beta;SetModelLocateTool 
+beta;SetModelTransparencyTool 
+beta;SetRealityModelColorTool 
+beta;SetRealityModelEmphasizedTool 
+beta;SetRealityModelLocateTool 
+beta;SetRealityModelTransparencyTool 
 beta;ShowTileVolumesTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void

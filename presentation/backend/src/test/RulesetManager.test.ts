@@ -117,7 +117,7 @@ describe("RulesetManager", () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
       addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => JSON.stringify([{ ruleset, hash }])).verifiable();
-      const result = await manager.get(ruleset.id);
+      const result = manager.get(ruleset.id);
       const eventSpy = sinon.spy(manager, "remove");
 
       expect(result).to.not.be.undefined;

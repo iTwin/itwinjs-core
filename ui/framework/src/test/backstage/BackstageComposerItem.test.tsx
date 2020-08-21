@@ -13,25 +13,23 @@ import {
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import TestUtils from "../TestUtils";
 
-// tslint:disable-next-line: completed-docs
-export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageActionItem => ({ // tslint:disable-line:deprecation
+export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
   execute: () => { },
   groupPriority: 100,
   id: "Action",
   itemPriority: 50,
   label: "Custom Label",
-  type: BackstageItemType.ActionItem, // tslint:disable-line:deprecation
+  type: BackstageItemType.ActionItem, // eslint-disable-line deprecation/deprecation
   ...item ? item : {},
 });
 
-// tslint:disable-next-line: completed-docs
-export const getStageLauncherItem = (item?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({ // tslint:disable-line:deprecation
+export const getStageLauncherItem = (item?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({ // eslint-disable-line deprecation/deprecation
   groupPriority: 100,
   id: "Stage",
   itemPriority: 50,
   label: "Custom Label",
   stageId: "stage-1",
-  type: BackstageItemType.StageLauncher, // tslint:disable-line:deprecation
+  type: BackstageItemType.StageLauncher, // eslint-disable-line deprecation/deprecation
   ...item ? item : {},
 });
 

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-devtools",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/frontend-devtools.js",
   "imodeljsSharedLibrary": true,
@@ -11,7 +11,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
     "extract-api": "betools extract-api --entry=frontend-devtools",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""
   },
@@ -31,28 +31,30 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodeljs-frontend": "2.4.2",
-    "@bentley/imodeljs-i18n": "2.4.2",
-    "@bentley/imodeljs-common": "2.4.2",
-    "@bentley/bentleyjs-core": "2.4.2",
-    "@bentley/geometry-core": "2.4.2",
-    "@bentley/itwin-client": "2.4.2",
-    "@bentley/context-registry-client": "2.4.2",
+    "@bentley/imodeljs-frontend": "2.5.0",
+    "@bentley/imodeljs-i18n": "2.5.0",
+    "@bentley/imodeljs-common": "2.5.0",
+    "@bentley/bentleyjs-core": "2.5.0",
+    "@bentley/geometry-core": "2.5.0",
+    "@bentley/itwin-client": "2.5.0",
+    "@bentley/context-registry-client": "2.5.0",
     "file-saver": "^2.0.2"
   },
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.4.2",
+    "@bentley/build-tools": "2.5.0",
     "@types/node": "10.14.1",
     "@types/file-saver": "^2.0.1",
     "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2"
+    "typescript": "~3.7.4"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
     "all": true
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
   }
 }

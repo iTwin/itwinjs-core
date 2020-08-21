@@ -9,7 +9,7 @@
 import "./Calculator.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
+import { OnCancelFunc, OnNumberCommitFunc, SpecialKey } from "@bentley/ui-abstract";
 import { Button, ButtonType, CommonProps, Icon, IconInput, Input, Omit, SvgSprite } from "@bentley/ui-core";
 import backspaceIcon from "./backspace.svg?sprite";
 import { CalculatorEngine, CalculatorOperator } from "./CalculatorEngine";
@@ -120,7 +120,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
   }
 
   public render() {
-    const { className, resultIcon, onOk, onCancel, initialValue, ...props } = this.props;
+    const { className, resultIcon, onOk, onCancel, initialValue, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const classNames = classnames(
       "uifw-calculator",
@@ -133,6 +133,8 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
       <Input value={this.state.displayValue} readOnly={true} />;
 
     return (
+      // The event handler is only being used to capture bubbled events
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
       <div {...props} ref={this._mainDiv} tabIndex={-1} className={classNames} onKeyDown={this._handleKeyDown}>
         <div className="uifw-calculator-top">
           {topSection}
@@ -177,39 +179,39 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
         break;
       case "c":
       case "C":
-      case "Clear":
+      case SpecialKey.Clear:
         this._onOperatorButtonClick(CalculatorOperator.Clear);
         break;
-      case "Escape":
+      case SpecialKey.Escape:
         this._cancel();
         break;
-      case "Backspace":
+      case SpecialKey.Backspace:
         this._onOperatorButtonClick(CalculatorOperator.Backspace);
         break;
       case "/":
-      case "Divide":
+      case SpecialKey.Divide:
         this._onOperatorButtonClick(CalculatorOperator.Divide);
         break;
       case "*":
-      case "Multiply":
+      case SpecialKey.Multiply:
         this._onOperatorButtonClick(CalculatorOperator.Multiply);
         break;
       case "-":
-      case "Subtract":
+      case SpecialKey.Subtract:
         this._onOperatorButtonClick(CalculatorOperator.Subtract);
         break;
       case "+":
-      case "Add":
+      case SpecialKey.Add:
         this._onOperatorButtonClick(CalculatorOperator.Add);
         break;
       case ".":
-      case "Decimal":
+      case SpecialKey.Decimal:
         this._onOperatorButtonClick(CalculatorOperator.Decimal);
         break;
       case "=":
         this._onOperatorButtonClick(CalculatorOperator.Equals);
         break;
-      case "Enter":
+      case SpecialKey.Enter:
         if (!this._equalsClicked)
           this._onOperatorButtonClick(CalculatorOperator.Equals);
         this._ok();
@@ -286,7 +288,7 @@ class ValueButton extends React.PureComponent<ValueButtonProps> {
   }
 
   public render() {
-    const { className, keyChar, onClick, ...props } = this.props;
+    const { className, keyChar, onClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const itemClassNames = classnames(
       "uifw-calculator-item",
@@ -315,7 +317,7 @@ class OperatorButton extends React.PureComponent<OperatorButtonProps> {
   }
 
   public render() {
-    const { className, children, operator, onClick, ...props } = this.props;
+    const { className, children, operator, onClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const itemClassNames = classnames(
       "uifw-calculator-item",

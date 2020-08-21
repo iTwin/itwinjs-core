@@ -62,7 +62,7 @@ export class RpcRequestsHandler implements IDisposable {
   public dispose() {
   }
 
-  // tslint:disable-next-line:naming-convention
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
 
   private injectClientId<T>(options: T): PresentationRpcRequestOptions<T> {
@@ -107,7 +107,7 @@ export class RpcRequestsHandler implements IDisposable {
 
   public async getNodesCount(options: ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>): Promise<number> {
     return this.request<number, ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>>(
-      this.rpcClient, this.rpcClient.getNodesCount, options); // tslint:disable-line:deprecation - false positive
+      this.rpcClient, this.rpcClient.getNodesCount, options); // eslint-disable-line deprecation/deprecation
   }
   public async getPagedNodes(options: Paged<ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>>): Promise<PagedResponse<NodeJSON>> {
     return this.request<PagedResponse<NodeJSON>, Paged<ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>>>(
@@ -130,11 +130,11 @@ export class RpcRequestsHandler implements IDisposable {
 
   public async getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON>): Promise<DescriptorJSON | undefined> {
     return this.request<DescriptorJSON | undefined, ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON>>(
-      this.rpcClient, this.rpcClient.getContentDescriptor, options); // tslint:disable-line:deprecation - false positive
+      this.rpcClient, this.rpcClient.getContentDescriptor, options); // eslint-disable-line deprecation/deprecation
   }
   public async getContentSetSize(options: ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>): Promise<number> {
     return this.request<number, ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>(
-      this.rpcClient, this.rpcClient.getContentSetSize, options); // tslint:disable-line:deprecation - false positive
+      this.rpcClient, this.rpcClient.getContentSetSize, options); // eslint-disable-line deprecation/deprecation
   }
   public async getPagedContent(options: Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>) {
     return this.request<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined, Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>>(
@@ -156,7 +156,7 @@ export class RpcRequestsHandler implements IDisposable {
 
   public async getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON> {
     return this.request<LabelDefinitionJSON, DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>, any>(
-      this.rpcClient, this.rpcClient.getDisplayLabelDefinition, options); // tslint:disable-line:deprecation - false positive
+      this.rpcClient, this.rpcClient.getDisplayLabelDefinition, options); // eslint-disable-line deprecation/deprecation
   }
   public async getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<PagedResponse<LabelDefinitionJSON>> {
     return this.request<PagedResponse<LabelDefinitionJSON>, DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON>, any>(
@@ -171,8 +171,8 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.computeSelection, options, ids, scopeId);
   }
-  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps>): Promise<PartialHierarchyModificationJSON[]> {
-    return this.request<PartialHierarchyModificationJSON[], PresentationDataCompareOptions<IModelRpcProps>>(
+  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]> {
+    return this.request<PartialHierarchyModificationJSON[], PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>>(
       this.rpcClient, this.rpcClient.compareHierarchies, options);
   }
 }

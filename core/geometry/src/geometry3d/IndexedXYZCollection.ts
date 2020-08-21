@@ -10,7 +10,7 @@
 // import { Point2d } from "./Geometry2d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d } from "./Range";
-/* tslint:disable:variable-name jsdoc-format no-empty */
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { XYAndZ } from "./XYZProps";
 
 class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {

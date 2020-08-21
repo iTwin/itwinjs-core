@@ -16,7 +16,7 @@ interface Props {
   rulesetId: string;
 }
 
-// tslint:disable-next-line: variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const Tree: React.FC<Props> = (props: Props) => {
   const dataProvider = useDataProvider(props.imodel, props.rulesetId);
   const modelSource = useTreeModelSource(dataProvider);

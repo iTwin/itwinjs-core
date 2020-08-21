@@ -14,7 +14,7 @@ import { StatusBarContext } from "./StatusBar";
  * @beta
  */
 export const withMessageCenterFieldProps = <P extends MessageCenterFieldProps, C>(
-  // tslint:disable-next-line: variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.JSXElementConstructor<P> & C,
 ) => {
   type InjectedProps = Pick<MessageCenterFieldProps, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">;

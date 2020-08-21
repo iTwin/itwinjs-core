@@ -10,11 +10,8 @@
 
 import * as React from "react";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
-import { ColorDef, HSVColor } from "@bentley/imodeljs-common";
-import { ColorSwatch } from "./Swatch";
-import { HueSlider } from "./HueSlider";
-import { SaturationPicker } from "./SaturationPicker";
-import "./ColorPickerDialog.scss";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorPickerPanel } from "./ColorPickerPanel";
 
 /** Properties for the [[ColorPickerDialog]] React component
  * @beta
@@ -31,30 +28,21 @@ export interface ColorPickerDialogProps {
  * Color Picker Dialog to use as modal dialog.
  * @beta
  */
-// istanbul ignore next
 export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps) {
-  const [bgColor, setBgColor] = React.useState(color);
+  const [activeColor, setActiveColor] = React.useState(color);
   const dialogContainer = React.useRef<HTMLDivElement>(null);
 
   const handleOk = React.useCallback(() => {
-    onOkResult(bgColor);
-  }, [onOkResult, bgColor]);
+    onOkResult(activeColor);
+  }, [onOkResult, activeColor]);
   const handleCancel = React.useCallback(() => {
+    // istanbul ignore else
     if (onCancelResult)
       onCancelResult();
   }, [onCancelResult]);
 
-  const handlePresetColorPick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
-    e.preventDefault();
-    setBgColor(newColor);
-  }, []);
-
-  const handleHueOrSaturationChange = React.useCallback((newHsvColor: HSVColor) => {
-    // for a ColorDef to be created from hsv s can't be 0
-    if (newHsvColor.s === 0)
-      newHsvColor = newHsvColor.clone(undefined, 0.5);
-
-    setBgColor(newHsvColor.toColorDef());
+  const handleColorChange = React.useCallback((newColorDef: ColorDef) => {
+    setActiveColor(newColorDef);
   }, []);
 
   const buttonCluster = React.useMemo(() => [
@@ -62,15 +50,9 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
     { type: DialogButtonType.Cancel, onClick: handleCancel },
   ], [handleCancel, handleOk]);
 
-  const colorSwatchStyle: React.CSSProperties = {
-    width: `100%`,
-    height: `100%`,
-  };
-
   return (
     <div ref={dialogContainer}>
       <Dialog
-        style={{ zIndex: 21000 }}
         title={dialogTitle}
         opened={true}
         resizable={true}
@@ -79,30 +61,10 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
         buttonCluster={buttonCluster}
         onClose={handleCancel}
         onEscape={handleCancel}
-        minHeight={120}
+        minHeight={340}
         maxWidth={400}
       >
-        <div>
-          <div className="components-colorpicker-dialog">
-            <div className="components-colorpicker-dialog-top">
-              <SaturationPicker hsv={bgColor.toHSV()} onSaturationChange={handleHueOrSaturationChange} />
-            </div>
-            <div className="components-colorpicker-dialog-bottom">
-              <div className="components-colorpicker-dialog-bottom-left">
-                <HueSlider hsv={bgColor.toHSV()} onHueChange={handleHueOrSaturationChange} isHorizontal={true} />
-              </div>
-              <div className="components-colorpicker-dialog-bottom-right">
-                <ColorSwatch style={colorSwatchStyle} colorDef={bgColor} round={false} />
-              </div>
-            </div>
-          </div>
-          {
-            colorPresets && colorPresets.length &&
-            <div className="components-colorpicker-dialog-presets">
-              {colorPresets.map((preset, index) => <ColorSwatch className="components-colorpicker-dialog-swatch" key={index} colorDef={preset} round={false} onColorPick={handlePresetColorPick} />)}
-            </div>
-          }
-        </div>
+        <ColorPickerPanel activeColor={activeColor} colorPresets={colorPresets} onColorChange={handleColorChange} />
       </Dialog>
     </div >
   );

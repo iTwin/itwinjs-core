@@ -5,7 +5,6 @@
 import { getDefaultZonesManagerProps, WidgetZoneId, ZonesManagerProps } from "../../ui-ninezone";
 import { getDefaultProps as getDefaultNestedStagePanelsProps } from "./NestedStagePanels.test";
 
-// tslint:disable: completed-docs
 export namespace NineZoneManagerTestProps {
   export const defaultProps = {
     nested: getDefaultNestedStagePanelsProps(),

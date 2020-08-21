@@ -87,14 +87,14 @@ describe("LinkHandler", () => {
     it("rendered anchor tag container's onClick event will not trigger on anchor click", () => {
       const parentOnClickSpy = sinon.spy();
 
-      const anchor = render(<div onClick={parentOnClickSpy}>{renderLinks("Example text", record)}</div>);
+      const anchor = render(<div onClick={parentOnClickSpy} role="presentation">{renderLinks("Example text", record)}</div>);
 
       expect(parentOnClickSpy).to.have.not.been.called;
       fireEvent.click(anchor.container.getElementsByClassName("core-underlined-button")[0]);
       expect(parentOnClickSpy).to.have.not.been.called;
     });
 
-    it("returns text split up into achor tags when text matcher is provided", () => {
+    it("returns text split up into anchor tags when text matcher is provided", () => {
       record.links!.matcher = () => [{ start: 0, end: 2 }, { start: 4, end: 6 }, { start: 7, end: 12 }];
 
       let anchor = render(<>{renderLinks("Example text", record)}</>);

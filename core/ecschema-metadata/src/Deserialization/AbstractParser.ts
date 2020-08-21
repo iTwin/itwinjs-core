@@ -57,4 +57,5 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
 }
 
 /** @internal */
-export interface AbstractParserConstructor<TSchema, TItem = any, TProperty = TItem> { new(obj: Readonly<TSchema>): AbstractParser<TItem, TProperty>; }
+// eslint-disable-next-line @typescript-eslint/prefer-function-type
+export interface AbstractParserConstructor<TSchema, TItem = any, TProperty = TItem> { new(obj: Readonly<TSchema>): AbstractParser<TItem, TProperty> }

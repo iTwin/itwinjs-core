@@ -16,11 +16,11 @@ export interface ViewDefinitionSelectorProps {
 export interface RulesetSelectorState {
   availableViewDefinitions?: string[];
 }
-export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProps) {
+export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProps) { // eslint-disable-line @typescript-eslint/naming-convention
   const [availableViewDefinitions, setAvailableViewDefinitions] = React.useState<Array<{ id: Id64String, class: string, label: string }> | undefined>();
   React.useEffect(() => {
     setAvailableViewDefinitions([]);
-    // tslint:disable-next-line: no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     MyAppFrontend.getViewDefinitions(props.imodel).then(setAvailableViewDefinitions);
   }, [props.imodel]);
   const onViewDefinitionSelected = props.onViewDefinitionSelected;

@@ -15,7 +15,7 @@ export function useUiSettingsContext(): UiSettings {
 }
 
 /** @internal */
-export const UiSettingsContext = React.createContext<UiSettings>(new LocalUiSettings()); // tslint:disable-line: variable-name
+export const UiSettingsContext = React.createContext<UiSettings>(new LocalUiSettings()); // eslint-disable-line @typescript-eslint/naming-convention
 UiSettingsContext.displayName = "uifw:UiSettingsContext";
 
 /** Properties for the [[UiSettingsProvider]] component.
@@ -32,7 +32,7 @@ export interface UiSettingsProviderProps {
 export function UiSettingsProvider(props: UiSettingsProviderProps) {
   return (
     <UiSettingsContext.Provider
-      children={props.children}
+      children={props.children} // eslint-disable-line react/no-children-prop
       value={props.uiSettings}
     />
   );

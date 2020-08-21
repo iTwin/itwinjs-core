@@ -82,7 +82,7 @@ export class ExampleForm extends React.Component {
         <Dialog title={this._title}
           opened={true}
           onClose={() => this.handleCancel()}>
-          <Form handleFormSubmit={(values: FieldValues) => this.handleSubmit(values)}
+          <Form handleFormSubmit={async (values: FieldValues) => this.handleSubmit(values)}
             fields={fields}
           />
         </Dialog>

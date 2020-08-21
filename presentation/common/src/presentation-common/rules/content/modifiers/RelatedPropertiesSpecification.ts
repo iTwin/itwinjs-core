@@ -47,14 +47,14 @@ export enum RelatedPropertiesSpecialValues {
  * Sub-specification to include additional related instance properties
  * @public
  */
-export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew; // tslint:disable-line:deprecation
+export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew; // eslint-disable-line deprecation/deprecation
 
 /**
  * Sub-specification to include additional related instance properties.
  * @public
  * @deprecated Use `RelatedPropertiesSpecificationNew`. Will be removed in iModel.js 3.0
  */
-export interface DEPRECATED_RelatedPropertiesSpecification { // tslint:disable-line: naming-convention class-name
+export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-line @typescript-eslint/naming-convention
   /**
    * Specifications of ECRelationshipClasses. Optional if [[relatedClasses]] is specified.
    */

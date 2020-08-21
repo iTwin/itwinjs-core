@@ -23,7 +23,7 @@ export class RulesetRegistrationHelper implements IDisposable {
   public constructor(ruleset: Ruleset | string) {
     this._rulesetId = (typeof ruleset === "string") ? ruleset : ruleset.id;
     if (typeof ruleset === "object") {
-      this.registerRuleset(ruleset); // tslint:disable-line: no-floating-promises
+      this.registerRuleset(ruleset); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
@@ -45,7 +45,7 @@ export class RulesetRegistrationHelper implements IDisposable {
   }
 
   private async registerRuleset(ruleset: Ruleset) {
-    this._registeredRuleset = await Presentation.presentation.rulesets().add(ruleset);
+    this._registeredRuleset = await Presentation.presentation.rulesets().add(ruleset instanceof RegisteredRuleset ? ruleset.toJSON() : ruleset);
     if (this._isDisposed) {
       // ensure we don't keep a hanging registered ruleset if the instance
       // gets disposed before the ruleset finishes registration

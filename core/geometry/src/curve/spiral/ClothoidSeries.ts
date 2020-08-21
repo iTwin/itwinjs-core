@@ -16,6 +16,7 @@ import { SimpleNewton } from "../../numerics/Newton";
  * * Number of x and y terms to use.
  * * constant for theta=c * x * x
  *    * This value is c=1/(2 R L)  for curve length L measured from inflection to point with radius R.
+ * @internal
  */
 export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
   public numXTerms: number;
@@ -100,7 +101,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     let alpha = s;
     let m = 1;
     let n = 5;
-    for (let i = 1; i <= numTerms; i++) {
+    for (let i = 1; i < numTerms; i++) {
       alpha *= beta / (m * (m + 1));
       result += alpha / n;
       m += 2;
@@ -122,7 +123,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     let alpha = q1 * s;
     let m = 2;
     let n = 7;
-    for (let i = 1; i <= numTerms; i++) {
+    for (let i = 1; i < numTerms; i++) {
       alpha *= beta / (m * (m + 1));
       result += alpha / n;
       m += 2;
@@ -138,13 +139,14 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     // new Term = old Term * beta / (m(m+1))
     const s = fraction * this.nominalLength1;
     let result = 1;
-    if (numTerms < 2)
+    if (numTerms < 2) {
       return result * this.nominalLength1;
+    }
     const q1 = s * s * this.constantDiv2LR;
     const beta = - q1 * q1;
     let alpha = 1.0;
     let m = 1;
-    for (let i = 1; i <= numTerms; i++) {
+    for (let i = 1; i < numTerms; i++) {
       alpha *= beta / (m * (m + 1));
       result += alpha;
       m += 2;
@@ -166,7 +168,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     const beta = - q1 * q1;
     let alpha = q1;
     let m = 2;
-    for (let i = 1; i <= numTerms; i++) {
+    for (let i = 1; i < numTerms; i++) {
       alpha *= beta / (m * (m + 1));
       result += alpha;
       m += 2;
@@ -178,8 +180,11 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     // DX is "cosine"
     // DDX is "- sine" series times chain rule dTheta/ds = 2 * s * this.constantDivLR
     const s = fraction * this.nominalLength1;
+
+    const dTheta = 2 * this.constantDiv2LR * s;
     const sine = this.fractionToDYGo(fraction, numTerms - 1);
-    return -2 * sine * s * this.constantDiv2LR * this.nominalLength1;
+    const resultA = (- dTheta * sine * this.nominalLength1);
+    return resultA;
   }
   public fractionToDDYGo(fraction: number, numTerms: number): number {
     // DY is "sine"
@@ -225,198 +230,5 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     if (fraction1 === undefined)
       return undefined;
     return fraction1;
-  }
-}
-/**
- * @internal
- */
-export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
-  public nominalLength1: number;
-  public nominalRadius1: number;
-  private _c: number;
-  private _c1: number;
-  private _c2: number;
-  public constructor(length1: number, radius1: number) {
-    super();
-    this.nominalLength1 = length1;
-    this.nominalRadius1 = radius1;
-    const pi = Math.PI;
-    this._c1 = 1.0 / (2.0 * pi * pi);
-    this._c2 = 0.25;
-    this._c = 0.0;    // TO BE UPDATED BELOW
-    this.updateConstants();
-  }
-
-  private updateConstants() {
-    this._c = this.nominalLength1 * this.nominalLength1 / this.nominalRadius1;
-  }
-  public scaleInPlace(scaleFactor: number) {
-    this.nominalLength1 *= scaleFactor;
-    this.nominalRadius1 *= scaleFactor;
-    this.updateConstants();
-  }
-  /** return a deep copy of the evaluator */
-  public clone(): DirectHalfCosineSpiralEvaluator { return new DirectHalfCosineSpiralEvaluator(this.nominalLength1, this.nominalRadius1); }
-  /** Member by member matchup ... */
-  public isAlmostEqual(other: any): boolean {
-    if (other instanceof DirectHalfCosineSpiralEvaluator) {
-      return Geometry.isSameCoordinate(this.nominalLength1, other.nominalLength1)
-        && Geometry.isSameCoordinate(this.nominalRadius1, other.nominalRadius1);
-      // remark: c,c1,c2 are computed, need not be tested.
-    }
-    return false;
-  }
-  /** Evaluate X at fractional position. */
-  public fractionToX(fraction: number): number { return fraction * this.nominalLength1; }
-  /** Evaluate Y at fractional position. */
-  public fractionToY(fraction: number): number {
-    const theta = fraction * Math.PI;
-    return this._c * (this._c2 * fraction * fraction - this._c1 * (1.0 - Math.cos(theta)));
-  }
-  /** Evaluate derivative of X with respect to fraction at fractional position. */
-  public fractionToDX(_fraction: number): number { return this.nominalLength1; }
-
-  /** Evaluate derivative of Y with respect to fraction at fractional position. */
-  public fractionToDY(fraction: number): number {
-    const pi = Math.PI;
-    const theta = fraction * pi;
-    return this._c * (2.0 * this._c2 * fraction - this._c1 * pi * Math.sin(theta));
-  }
-  /** Evaluate second derivative of X with respect to fraction at fractional position. */
-  public fractionToDDX(_fraction: number): number { return 0.0; }
-
-  /** Evaluate third derivative of Y with respect to fraction at fractional position. */
-  public fractionToDDY(fraction: number): number {
-    const pi = Math.PI;
-    const theta = fraction * pi;
-    return this._c * (2.0 * this._c2 - this._c1 * pi * pi * Math.cos(theta));
-  }
-  /** Evaluate second derivative of X with respect to fraction at fractional position. */
-  public fractionToD3X(_fraction: number): number { return 0.0; }
-
-  /** Evaluate third derivative of Y with respect to fraction at fractional position. */
-  public fractionToD3Y(fraction: number): number {
-    const pi = Math.PI;
-    const theta = fraction * pi;
-    return this._c * this._c1 * pi * pi * pi * Math.sin(theta);
-  }
-
-  /** Return the magnitude of the first vector at fractional coordinate. */
-  public fractionToTangentMagnitude(fraction: number): number {
-    return Geometry.hypotenuseXY(this.fractionToDX(fraction), this.fractionToDY(fraction));
-
-  }
-  /** Invert the fractionToX function for given X. */
-  public xToFraction(x: number): number | undefined {
-    const fraction0 = x / this.nominalLength1;
-    const fraction1 = SimpleNewton.runNewton1D(fraction0,
-      (f: number) => (this.fractionToX(f) - x),
-      (f: number) => this.fractionToDX(f));
-    if (fraction1 === undefined)
-      return undefined;
-    return fraction1;
-
-  }
-}
-
-/**
- * Create a czech cubic.
- * This is y= m*x^3 with
- * * x any point on the x axis
- * * `fraction` along the spiral goes to `x = fraction * L`
- * * m is gamma / (6RL)
- *    * 1/(6RL) is the leading term of the sine series.
- *    * `gamma = 2R/sqrt (4RR-LL)` pushes y up a little bit to simulate the lost series terms.
- * @param localToWorld
- * @param nominalL1
- * @param nominalR1
- * @param activeInterval
- * @internal
- */
-export class CzechSpiralEvaluator extends XYCurveEvaluator {
-  public nominalLength1: number;
-  public nominalRadius1: number;
-  private _cubicConstant: number;
-
-  /** Constructor is private for verification of L < 2R !!!! */
-  private constructor(length1: number, radius1: number) {
-    super();
-    this.nominalLength1 = length1;
-    this.nominalRadius1 = radius1;
-    this._cubicConstant = 1.0;
-    this.updateConstants();
-  }
-  /**
-   * Return the scale factor between simple x^3 / (6RL) cubic and the czech correction.
-   * @param length1
-   * @param radius1
-   */
-  public static gammaConstant(length1: number, radius1: number): number | undefined {
-    return 2.0 * radius1 / Math.sqrt(4.0 * radius1 * radius1 - length1 * length1);
-  }
-  private updateConstants() {
-    let gamma = CzechSpiralEvaluator.gammaConstant(this.nominalLength1, this.nominalRadius1);
-    // In the private update method, the LR values should have been vetted.
-    if (gamma === undefined)
-      gamma = 1;
-    this._cubicConstant = gamma / (6.0 * this.nominalRadius1 * this.nominalLength1);
-  }
-
-  public static create(length1: number, radius1: number): CzechSpiralEvaluator | undefined {
-    if (length1 > 2 * radius1)
-      return undefined;
-    return new CzechSpiralEvaluator(length1, radius1);
-  }
-
-  public scaleInPlace(scaleFactor: number) {
-    this.nominalLength1 *= scaleFactor;
-    this.nominalRadius1 *= scaleFactor;
-    this.updateConstants();
-  }
-  /** return a deep copy of the evaluator */
-  public clone(): CzechSpiralEvaluator { return new CzechSpiralEvaluator(this.nominalLength1, this.nominalRadius1); }
-  /** Member by member matchup ... */
-  public isAlmostEqual(other: any): boolean {
-    if (other instanceof CzechSpiralEvaluator) {
-      return Geometry.isSameCoordinate(this.nominalLength1, other.nominalLength1)
-        && Geometry.isSameCoordinate(this.nominalRadius1, other.nominalRadius1);
-      // remark: c,c1,c2 are computed, need not be tested.
-    }
-    return false;
-  }
-  /** Evaluate X at fractional position. */
-  public fractionToX(fraction: number): number { return fraction * this.nominalLength1; }
-  /** Evaluate Y at fractional position. */
-  public fractionToY(fraction: number): number { const x = this.fractionToX(fraction); return this._cubicConstant * x * x * x; }
-  /** Evaluate derivative of X with respect to fraction at fractional position. */
-  public fractionToDX(_fraction: number): number { return this.nominalLength1; }
-
-  /** Evaluate derivative of Y with respect to fraction at fractional position. */
-  public fractionToDY(fraction: number): number {
-    const x = this.fractionToX(fraction);
-    const dx = this.fractionToDX(fraction);   // chain rule effect on x.
-    return this._cubicConstant * 3.0 * x * x * dx;
-  }
-  /** Evaluate second derivative of X with respect to fraction at fractional position. */
-  public fractionToDDX(_fraction: number): number { return 0.0; }
-
-  /** Evaluate third derivative of Y with respect to fraction at fractional position. */
-  public fractionToDDY(fraction: number): number {
-    const x = this.fractionToX(fraction);
-    const dx = this.fractionToDX(fraction);   // chain rule effect on x.
-    return this._cubicConstant * 6.0 * x * dx * dx;
-  }
-  /** Evaluate second derivative of X with respect to fraction at fractional position. */
-  public fractionToD3X(_fraction: number): number { return 0.0; }
-
-  /** Evaluate third derivative of Y with respect to fraction at fractional position. */
-  public fractionToD3Y(fraction: number): number {
-    const dx = this.fractionToDX(fraction);   // chain rule effect on x.
-    return this._cubicConstant * 6.0 * dx * dx * dx;
-  }
-
-  /** Invert the fractionToX function for given X. */
-  public xToFraction(x: number): number | undefined {
-    return x / this.nominalLength1;
   }
 }

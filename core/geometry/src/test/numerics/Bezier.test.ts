@@ -21,7 +21,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // import { prettyPrint } from "./testFunctions";
-/* tslint:disable:no-console */
+/* eslint-disable no-console */
 describe("Bezier", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
@@ -147,14 +147,14 @@ describe("BezierRoots", () => {
         for (const r of rootsA) {
           const bezier0 = bezier.clone();
           const bezier10 = bezier.clone();
-          const remainder = (bezier as UnivariateBezier).deflateRoot(r);
+          const remainder = bezier.deflateRoot(r);
           ck.testCoordinate(0, remainder, "remainder after deflation");
           const bezier1 = UnivariateBezier.createProduct(bezier, new Order2Bezier(-r, 1 - r));
           const delta = BezierCoffs.maxAbsDiff(bezier0, bezier1);
           if (ck.testTrue(delta !== undefined))
             ck.testCoordinate(0, delta!, "deflate and re-multiply round trip.");
           // another time around for debug convenience.  . .
-          const remainder1 = (bezier10 as UnivariateBezier).deflateRoot(r);
+          const remainder1 = bezier10.deflateRoot(r);
           ck.testExactNumber(remainder, remainder1);
         }
       }
@@ -244,7 +244,7 @@ describe("BezierRoots", () => {
         for (let i = 0; i < numOther; i++)
           coffs.push(2 * i + i * i);
         const bezierA = UnivariateBezier.createCoffs(coffs);
-        const bezierB = bezierA.clone() as UnivariateBezier;
+        const bezierB = bezierA.clone();
         for (let numDeflate = 1; numDeflate <= numZero; numDeflate++) {
           bezierB.deflateLeft();
           for (const u of [0, 0.1, 0.35, 0.5, 0.75, 1]) {
@@ -271,7 +271,7 @@ describe("BezierRoots", () => {
           coffs.push(0);
 
         const bezierA = UnivariateBezier.createCoffs(coffs);
-        const bezierB = bezierA.clone() as UnivariateBezier;
+        const bezierB = bezierA.clone();
         for (let numDeflate = 1; numDeflate <= numZero; numDeflate++) {
           bezierB.deflateRight();
           for (const u of [0, 0.1, 0.35, 0.5, 0.75, 1]) {
@@ -402,11 +402,11 @@ describe("PascalCoefficients", () => {
         const range0A = testPoints0.range();
         const range1A = testPoints1.range();
         range1A.scaleAboutCenterInPlace(0.99999);
-        ck.testTrue(range0.containsRange(range0A), "Direct range " + order);
-        ck.testTrue(range1.containsRange(range1A), "Transformed range " + order);
+        ck.testTrue(range0.containsRange(range0A), `Direct range ${order}`);
+        ck.testTrue(range1.containsRange(range1A), `Transformed range ${order}`);
         allData.push(bezier.clone());
         allData.push(Box.createRange(range0, false));
-        allData.push(testPoints0!);
+        allData.push(testPoints0);
         bezier.tryTransformInPlace(transform);
         allData.push(bezier.clone());
         allData.push(Box.createRange(range1, false)!);
@@ -491,7 +491,7 @@ describe("PascalCoefficients", () => {
     ck.testCoordinate(0.0, bezier1.deflateRoot(0.5), " order=0 bezier deflation");
     bezier1.allocateOrder(5);
     ck.testExactNumber(5, bezier1.order);
-    bezier1.allocateOrder (10);
+    bezier1.allocateOrder(10);
     ck.testExactNumber(10, bezier1.order);
 
     bezier1.allocateOrder(5);

@@ -115,7 +115,7 @@ interface ExportObjArgs {
   output: string;
 }
 
-(async () => {
+(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
     Yargs.usage("Export an OBJ from an existing BIM file.");
     Yargs.required("input", "The input BIM");
@@ -129,4 +129,4 @@ interface ExportObjArgs {
   } catch (error) {
     process.stdout.write(error.message + "\n" + error.stack);
   }
-})(); // tslint:disable-line:no-floating-promises
+})();

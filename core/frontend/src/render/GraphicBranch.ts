@@ -19,7 +19,7 @@ export interface GraphicBranchFrustum {
 
 import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { HiddenLine, ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
+import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
@@ -89,7 +89,7 @@ export interface GraphicBranchOptions {
   hline?: HiddenLine.Settings;
   iModel?: IModelConnection;
   frustum?: GraphicBranchFrustum;
-  appearanceProvider?: FeatureSymbology.AppearanceProvider;
+  appearanceProvider?: FeatureAppearanceProvider;
 }
 
 /** Clip/Transform for a branch that are varied over time.

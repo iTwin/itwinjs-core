@@ -584,14 +584,17 @@ export class ViewClipByShapeTool extends ViewClipTool {
     if (0 === this._points.length)
       return;
 
+    if (undefined === this._matrix)
+      return;
+
     const hints = new AccuDrawHintBuilder();
     hints.setOrigin(this._points[this._points.length - 1]);
     if (1 === this._points.length) {
-      hints.setRotation(this._matrix!.inverse()!);
+      hints.setRotation(this._matrix.inverse()!);
       hints.setModeRectangular();
     } else if (this._points.length > 1 && !(this._points[this._points.length - 1].isAlmostEqual(this._points[this._points.length - 2]))) {
       const xVec = Vector3d.createStartEnd(this._points[this._points.length - 2], this._points[this._points.length - 1]);
-      const zVec = this._matrix!.getColumn(2);
+      const zVec = this._matrix.getColumn(2);
       const matrix = Matrix3d.createRigidFromColumns(xVec, zVec, AxisOrder.XZY);
       if (undefined !== matrix)
         hints.setRotation(matrix.inverse()!); // Rotate AccuDraw x axis to last segment preserving current up vector...
@@ -607,7 +610,10 @@ export class ViewClipByShapeTool extends ViewClipTool {
     for (const pt of this._points)
       points.push(pt.clone());
 
-    const normal = this._matrix!.getColumn(2);
+    if (undefined === this._matrix)
+      return points;
+
+    const normal = this._matrix.getColumn(2);
     let currentPt = EditManipulator.HandleUtils.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
     if (undefined === currentPt)
       currentPt = ev.point.clone();
@@ -690,7 +696,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix!.getColumn(2), ev.viewport!, true);
+      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }
@@ -855,7 +861,7 @@ export class ViewClipByElementTool extends ViewClipTool {
       let useSelection = true;
       this.targetView.iModel.selectionSet.elements.forEach((val) => { if (Id64.isInvalid(val) || Id64.isTransient(val)) useSelection = false; });
       if (useSelection) {
-        this.doClipToSelectedElements(this.targetView); // tslint:disable-line:no-floating-promises
+        this.doClipToSelectedElements(this.targetView); // eslint-disable-line @typescript-eslint/no-floating-promises
         return;
       }
     }
@@ -1187,7 +1193,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       return;
     this._clipId = this.iModel.transientIds.next;
     this.updateDecorationListener(true);
-    this._removeViewCloseListener = IModelApp.viewManager.onViewClose.addListener(this.onViewClose, this);
+    this._removeViewCloseListener = IModelApp.viewManager.onViewClose.addListener(this.onViewClose, this); // eslint-disable-line @typescript-eslint/unbound-method
     if (undefined !== this._clipEventHandler && this._clipEventHandler.selectOnCreate())
       this.iModel.selectionSet.replace(this._clipId);
   }
@@ -1258,11 +1264,11 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 
   private createClipShapeControls(): boolean {
-    if (undefined === this._clipShape)
+    if (undefined === this._clipShape || undefined === this._clipShapeExtents)
       return false;
 
-    const shapePtsLo = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents!.low);
-    const shapePtsHi = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents!.high);
+    const shapePtsLo = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents.low);
+    const shapePtsHi = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents.high);
     const shapeArea = PolygonOps.centroidAreaNormal(shapePtsLo);
     if (undefined === shapeArea)
       return false;
@@ -1487,7 +1493,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 
   public isClipShapeAlignedWithWorldUp(extents?: Range1d): boolean {
-    if (undefined === this._clipShape)
+    if (undefined === this._clipShape || undefined === this._clipShapeExtents)
       return false;
 
     const plane = this.getWorldUpPlane(this._clipView);
@@ -1497,8 +1503,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (undefined === extents)
       return true;
 
-    const zLow = Point3d.create(0.0, 0.0, this._clipShapeExtents!.low);
-    const zHigh = Point3d.create(0.0, 0.0, this._clipShapeExtents!.high);
+    const zLow = Point3d.create(0.0, 0.0, this._clipShapeExtents.low);
+    const zHigh = Point3d.create(0.0, 0.0, this._clipShapeExtents.high);
 
     if (undefined !== this._clipShape.transformFromClip) {
       this._clipShape.transformFromClip.multiplyPoint3d(zLow, zLow);
@@ -1626,7 +1632,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
             }
           }
         } else if (undefined !== this._controls[iFace].floatingOrigin && EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].floatingOrigin!, vp, 0.1)) {
-          this._controls[iFace].origin.setFrom(this._controls[iFace].floatingOrigin!);
+          this._controls[iFace].origin.setFrom(this._controls[iFace].floatingOrigin);
           this._controls[iFace].floatingOrigin = undefined;
         }
       }

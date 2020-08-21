@@ -108,19 +108,19 @@ import {
   Zones,
 } from "@bentley/ui-ninezone";
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const TooltipWithTimeout = withTimeout(Tooltip);
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroupContained = withContainIn(withOnOutsideClick(Group, undefined, false));
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const NestedToolGroupContained = withContainIn(withOnOutsideClick(NestedGroup, undefined, false));
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ItemWithDragInteraction = withDragInteraction(Item);
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroupSelectionContext = React.createContext(false);
 ToolGroupSelectionContext.displayName = "nzdemo:ToolGroupSelectionContext";
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
   <Button
     buttonType={ButtonType.Blue}
@@ -128,7 +128,7 @@ const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
   />
 );
 
-// tslint:disable-next-line:variable-name
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const HollowButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
   <Button
     buttonType={ButtonType.Hollow}
@@ -1864,7 +1864,7 @@ interface ToolZoneToolbarProps {
 
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
-    // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
+    // eslint-disable-next-line object-shorthand
     children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
@@ -3219,7 +3219,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
         break;
       }
       default: {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.log(`Activated: ${toolIdToActivate}`);
         break;
       }

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-/* tslint:disable:no-console trailing-comma object-literal-key-quotes*/
+/* eslint-disable no-console, comma-dangle, quote-props */
 // Requires for grabbing json object from external file
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
@@ -49,7 +49,7 @@ let outputFolderPath = "./src/test/output";
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(outputFolderPath))
   fs.mkdirSync(outputFolderPath);
-outputFolderPath = outputFolderPath + "/";
+outputFolderPath = `${outputFolderPath}/`;
 if (!fs.existsSync(outputFolderPath))
   fs.mkdirSync(outputFolderPath);
 
@@ -76,7 +76,7 @@ function isDifferentTypeName(obj: object, noisy: boolean = false): boolean {
   return true;
 }
 
-function exercise_go(obj: any, noisy: boolean): number {
+function exerciseGo(obj: any, noisy: boolean): number {
   let errors = 0;
   if (noisy) {
     console.log("**");
@@ -93,7 +93,7 @@ function exercise_go(obj: any, noisy: boolean): number {
       errors++;
       console.log("clone failure ", obj);
     }
-    const gq = obj as GeometryQuery;
+    const gq = obj;
     // heavy object ... method fulfillment assured by inheritance.
     let imjsObject = IModelJson.Writer.toIModelJson(gq);
     if (!imjsObject) {
@@ -120,7 +120,7 @@ function exercise_go(obj: any, noisy: boolean): number {
         }
       }
     }
-  } else if (!(obj as BeJSONFunctions).toJSON) {
+  } else if (!obj.toJSON) {
     console.log("\n   **** not BSIJSONValues ***", obj);
     bsiJsonPunchList.push({ toJSONNotSupported: obj });
     errors++;
@@ -149,7 +149,7 @@ function exercise_go(obj: any, noisy: boolean): number {
   return errors;
 }
 function exercise(obj: any, noisy: boolean = Checker.noisy.bsiJSON): number {
-  return exercise_go(obj, noisy);
+  return exerciseGo(obj, noisy);
 }
 describe("BSIJSON.ExerciseAllTypes", () => {
   const ck = new Checker();
@@ -457,7 +457,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
 
 function exerciseBSIJSONValuesQuick(name: string, obj: any) {
   if (Checker.noisy.bsiJsonValuesQuick && obj as BeJSONFunctions) {
-    console.log("\n" + name, " toJSON():");
+    console.log(`${name}.toJSON():`);
     console.log(obj.toJSON());
   }
 }
@@ -512,7 +512,7 @@ describe("ExerciseGeometryHandler", () => {
     ck.testUndefined(tempHandler.handleIndexedPolyface(IndexedPolyface.create()));
     ck.testUndefined(tempHandler.handleTransitionSpiral(
       IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1), AngleSweep.create360(), Segment1d.create(0, 1),
-      Transform.createIdentity())!));
+        Transform.createIdentity())!));
     ck.testUndefined(tempHandler.handleSphere(Sample.createSpheres()[0]));
     ck.testUndefined(tempHandler.handleCone(Sample.createCones()[0]));
     ck.testUndefined(tempHandler.handleBox(Sample.createBoxes()[0]));

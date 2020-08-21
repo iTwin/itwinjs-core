@@ -893,7 +893,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
   /** double dispatch handler for strongly typed linestring.. */
   public handleLineString3d(lsA: LineString3d): any {
     if (this._geometryB instanceof LineString3d) {
-      const lsB = this._geometryB as LineString3d;
+      const lsB = this._geometryB;
       const pointA0 = CurveCurveIntersectXY._workPointAA0;
       const pointA1 = CurveCurveIntersectXY._workPointAA1;
       const pointB0 = CurveCurveIntersectXY._workPointBB0;

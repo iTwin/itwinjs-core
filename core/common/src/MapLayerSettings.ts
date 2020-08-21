@@ -144,7 +144,7 @@ export class MapLayerSettings {
   public readonly isBase: boolean;
   public readonly userName?: string;
   public readonly password?: string;
-  // tslint:disable-next-line: no-unnecessary-initializer
+  // eslint-disable-next-line no-undef-init
   private constructor(url: string, name: string, formatId: string = "WMS", visible = true, jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0, transparentBackground = true, isBase = false, userName?: string, password?: string) {
     this.formatId = formatId;
     this.name = name;

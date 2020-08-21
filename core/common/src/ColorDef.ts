@@ -187,7 +187,7 @@ export class ColorDef {
 
           break;
       }
-      // tslint:disable-next-line:no-conditional-assignment
+      // eslint-disable-next-line no-cond-assign
     } else if (m = /^\#([a-f0-9]+)$/.exec(val)) {  // hex color
       const hex = m[1];
       const size = hex.length;
