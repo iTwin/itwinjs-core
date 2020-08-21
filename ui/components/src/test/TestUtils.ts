@@ -62,7 +62,7 @@ export class TestUtils {
     return new PropertyRecord(v, pd);
   }
 
-  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo) {
+  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo, autoExpand?: boolean) {
     const value: PrimitiveValue = {
       displayValue,
       value: rawValue,
@@ -80,10 +80,13 @@ export class TestUtils {
 
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
+    if (property.autoExpand !== undefined)
+      property.autoExpand = autoExpand;
+
     return property;
   }
 
-  public static createArrayProperty(name: string, items?: PropertyRecord[]) {
+  public static createArrayProperty(name: string, items?: PropertyRecord[], autoExpand?: boolean) {
     if (!items)
       items = [];
 
@@ -100,10 +103,11 @@ export class TestUtils {
     };
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
+    property.autoExpand = autoExpand;
     return property;
   }
 
-  public static createStructProperty(name: string, members?: { [name: string]: PropertyRecord }) {
+  public static createStructProperty(name: string, members?: { [name: string]: PropertyRecord }, autoExpand?: boolean) {
     if (!members)
       members = {};
 
@@ -119,6 +123,7 @@ export class TestUtils {
     };
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
+    property.autoExpand = autoExpand;
     return property;
   }
 

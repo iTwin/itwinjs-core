@@ -136,7 +136,9 @@
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.5",
     "rxjs": "^6.5.2",
-    "ts-key-enum": "^2.0.0"
+    "ts-key-enum": "^2.0.0",
+    "shortid": "~2.2.15",
+    "@types/shortid": "~0.0.29"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardTypeNames } from "../../ui-abstract";
+import { ArrayValue, PrimitiveValue, StructValue } from "../../ui-abstract/properties/Value";
 
 const value1: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 3 };
 const value2: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 10 };
@@ -49,4 +50,51 @@ describe("PropertyRecord", () => {
 
   });
 
+  describe("getChildrenRecords", () => {
+    it("should return empty array for primitive record", () => {
+      const arrayValue: PrimitiveValue = {
+        valueFormat: PropertyValueFormat.Primitive,
+        value: "value",
+        displayValue: "display value",
+      };
+
+      const record = new PropertyRecord(arrayValue, getPropertyDescription());
+
+      expect(record.getChildrenRecords()).to.deep.equal([]);
+    });
+
+    it("should return array children for array record", () => {
+      const arrayValue: ArrayValue = {
+        valueFormat: PropertyValueFormat.Array,
+        items: [
+          PropertyRecord.fromString("ArrayChild1"),
+          PropertyRecord.fromString("ArrayChild2"),
+        ],
+        itemsTypeName: StandardTypeNames.String,
+      };
+
+      const record = new PropertyRecord(arrayValue, getPropertyDescription());
+
+      expect(record.getChildrenRecords()).to.deep.equal(arrayValue.items);
+    });
+
+    it("should return members children for struct record", () => {
+      const structChildren: PropertyRecord[] = [
+        PropertyRecord.fromString("StructChild1"),
+        PropertyRecord.fromString("StructChild2"),
+      ];
+
+      const structValue: StructValue = {
+        valueFormat: PropertyValueFormat.Struct,
+        members: {
+          StructChild1: structChildren[0],
+          StructChild2: structChildren[1],
+        },
+      };
+
+      const record = new PropertyRecord(structValue, getPropertyDescription());
+
+      expect(record.getChildrenRecords()).to.deep.equal(structChildren);
+    });
+  });
 });

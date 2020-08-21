@@ -15,7 +15,7 @@ import {
   makeObservableCallback, NodeKey, NodeLoadingOrchestrator, NodeSet, onCancelation, PendingNodeTracker,
 } from "../../../ui-components/tree/deprecated/NodeLoadingOrchestrator";
 import { ResolvablePromise } from "../../test-helpers/misc";
-import { extractSequence, waitForUnsubscription } from "../ObservableTestHelpers";
+import { extractSequence, waitForUnsubscription } from "../../common/ObservableTestHelpers";
 import { initializeTree, TestTreeDataProvider } from "../TestDataFactories";
 
 /* eslint-disable deprecation/deprecation */

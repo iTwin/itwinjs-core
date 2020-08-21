@@ -701,6 +701,7 @@ export class PropertyRecord {
         [key: string]: any;
     };
     static fromString(value: string, descriptionOrName?: PropertyDescription | string): PropertyRecord;
+    getChildrenRecords(): PropertyRecord[];
     isDisabled?: boolean;
     isMerged?: boolean;
     isReadonly?: boolean;

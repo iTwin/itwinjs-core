@@ -11,13 +11,13 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyCategoryBlock } from "../../../ui-components";
 import { PropertyGrid } from "../../../ui-components/propertygrid/component/PropertyGrid";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
+import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -13,14 +13,14 @@ import {
 import { Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
-  ActionButtonRendererProps, PropertyCategory, PropertyData, PropertyGrid, PropertyGridContextMenuArgs, useAsyncValue,
+  ActionButtonRendererProps, PropertyCategory, PropertyData, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
 import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Orientation } from "@bentley/ui-core";
 
 /* eslint-disable deprecation/deprecation */
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const SamplePropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
+const SamplePropertyGrid = propertyGridWithUnifiedSelection(VirtualizedPropertyGridWithDataProvider);
 
 export interface Props {
   imodel: IModelConnection;

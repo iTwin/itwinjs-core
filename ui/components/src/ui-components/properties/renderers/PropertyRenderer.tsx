@@ -11,11 +11,12 @@ import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { UiComponents } from "../../UiComponents";
-import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
+import { PropertyValueRendererManager } from "../ValueRendererManager";
 import { ActionButtonRenderer } from "./ActionButtonRenderer";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
 import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyGridColumnInfo } from "./PropertyGridColumns";
+import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 
 /** Properties shared by all renderers and PropertyView
  * @public
@@ -97,24 +98,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
   }
 
   public static getLabelOffset(indentation?: number, orientation?: Orientation, width?: number, columnRatio?: number, minColumnLabelWidth?: number): number {
-    if (!indentation)
-      return 0;
-
-    const maxIndent = 17;
-    const minIndent = 6;
-    if (orientation !== Orientation.Horizontal || !width || !columnRatio || !minColumnLabelWidth)
-      return indentation * maxIndent;
-
-    const currentSize = Math.ceil(width * columnRatio);
-    const shrinkThreshold = minColumnLabelWidth + (maxIndent * indentation);
-    if (currentSize >= shrinkThreshold)
-      return indentation * maxIndent;
-
-    const minShrink = minColumnLabelWidth + minIndent + (maxIndent * (indentation - 1));
-    if (currentSize <= minShrink)
-      return minIndent + this.getLabelOffset(indentation - 1, orientation, width, columnRatio, minColumnLabelWidth);
-
-    return currentSize - minColumnLabelWidth;
+    return CommonPropertyRenderer.getLabelOffset(indentation, orientation, width, columnRatio, minColumnLabelWidth);
   }
 
   private updateDisplayValue(props: PropertyRendererProps) {
@@ -123,18 +107,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
       return;
     }
 
-    const rendererContext: PropertyValueRendererContext = {
-      orientation: this.props.orientation,
-      containerType: PropertyContainerType.PropertyPane,
-    };
-    const renderer = this.props.propertyValueRendererManager ?? PropertyValueRendererManager.defaultManager;
-
-    let displayValue = renderer.render(props.propertyRecord, rendererContext);
-
-    // Align value with label if orientation is vertical
-    if (this.props.orientation === Orientation.Vertical)
-      displayValue = <span style={{ paddingLeft: PropertyRenderer.getLabelOffset(this.props.indentation, this.props.orientation) }}>{displayValue}</span>;
-
+    const displayValue = CommonPropertyRenderer.createNewDisplayValue(props.orientation, props.propertyRecord, props.indentation, props.propertyValueRendererManager);
     this.setState({ displayValue });
   }
 

@@ -879,6 +879,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "shortid",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "sinon",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },

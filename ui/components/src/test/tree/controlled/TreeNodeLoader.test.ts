@@ -19,7 +19,7 @@ import {
 import {
   ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
 } from "../../../ui-components/tree/TreeDataProvider";
-import { extractSequence } from "../ObservableTestHelpers";
+import { extractSequence } from "../../common/ObservableTestHelpers";
 import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
 
 /* eslint-disable @typescript-eslint/promise-function-async */

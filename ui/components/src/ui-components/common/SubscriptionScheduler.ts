@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tree
+ * @module Common
  */
 
 import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";

@@ -34,7 +34,6 @@ interface PropertyViewState {
  * @public
  */
 export class PropertyView extends React.Component<PropertyViewProps, PropertyViewState> {
-
   constructor(props: PropertyViewProps) {
     super(props);
     this.state = {

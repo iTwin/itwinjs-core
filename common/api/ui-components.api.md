@@ -727,6 +727,27 @@ export interface BreadcrumbUpdateEventArgs {
     oldDataProvider: TreeDataProvider;
 }
 
+// @alpha
+export interface CategorizedPropertyItem extends FlatGridItemBase {
+    // (undocumented)
+    readonly derivedRecord: PropertyRecord;
+    // (undocumented)
+    readonly parentCategorySelectionKey: string;
+    // (undocumented)
+    readonly parentSelectionKey: string;
+    // (undocumented)
+    readonly type: CategorizedPropertyTypes;
+}
+
+// @alpha
+export type CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct;
+
+// @alpha
+export interface CategoryRecordsDict {
+    // (undocumented)
+    [categoryName: string]: PropertyRecord[];
+}
+
 // @beta @deprecated
 export class CellEditingEngine {
     constructor(props: EditableTreeProps);
@@ -904,6 +925,34 @@ export interface ColumnDescription {
 export interface ColumnFilterDescriptor extends FilterDescriptor {
     distinctFilter: DistinctValuesFilterDescriptor;
     fieldFilter: FieldFilterDescriptor;
+}
+
+// @public
+export interface CommonPropertyGridProps extends CommonProps {
+    // @beta
+    actionButtonRenderers?: ActionButtonRenderer[];
+    actionButtonWidth?: number;
+    // @beta
+    horizontalOrientationMinWidth?: number;
+    // @beta
+    isOrientationFixed?: boolean;
+    // @beta
+    isPropertyEditingEnabled?: boolean;
+    isPropertyHoverEnabled?: boolean;
+    isPropertySelectionEnabled?: boolean;
+    isPropertySelectionOnRightClickEnabled?: boolean;
+    minLabelWidth?: number;
+    minValueWidth?: number;
+    onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
+    // @beta
+    onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
+    // @beta
+    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+    onPropertySelectionChanged?: (property: PropertyRecord) => void;
+    // @beta
+    onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
+    orientation?: Orientation;
+    propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 // @public
@@ -1723,6 +1772,53 @@ export enum FilterRenderer {
     Text = 4
 }
 
+// @alpha
+export type FlatGridItem = CategorizedPropertyItem | GridCategoryItem;
+
+// @alpha
+export interface FlatGridItemBase {
+    // (undocumented)
+    readonly depth: number;
+    // (undocumented)
+    getChildren(): FlatGridItem[];
+    // (undocumented)
+    getDescendantsAndSelf(): FlatGridItem[];
+    // (undocumented)
+    getLastVisibleDescendantOrSelf(): FlatGridItem;
+    // (undocumented)
+    getVisibleDescendantsAndSelf(): FlatGridItem[];
+    // (undocumented)
+    readonly isExpanded: boolean;
+    // (undocumented)
+    readonly isLastInRootCategory: boolean;
+    // (undocumented)
+    readonly key: string;
+    // (undocumented)
+    readonly label: string;
+    // (undocumented)
+    readonly lastInNumberOfCategories: number;
+    // (undocumented)
+    readonly parentCategorySelectionKey: string | undefined;
+    // (undocumented)
+    readonly parentSelectionKey: string | undefined;
+    // (undocumented)
+    readonly selectionKey: string;
+    // (undocumented)
+    readonly type: FlatGridItemType;
+}
+
+// @alpha
+export enum FlatGridItemType {
+    // (undocumented)
+    Array = 2,
+    // (undocumented)
+    Category = 0,
+    // (undocumented)
+    Primitive = 1,
+    // (undocumented)
+    Struct = 3
+}
+
 // @public
 export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
@@ -1739,6 +1835,16 @@ export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | und
 
 // @internal (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
+
+// @alpha
+export interface GridCategoryItem extends FlatGridItemBase {
+    // (undocumented)
+    readonly derivedCategory: PropertyCategory;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly type: FlatGridItemType.Category;
+}
 
 // @internal (undocumented)
 export function GroupPopupItem({ item, addGroupSeparator }: {
@@ -1926,6 +2032,89 @@ export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
     children?: TreeNodeItem[];
 }
 
+// @alpha
+export interface IMutableCategorizedPropertyItem extends IMutableFlatPropertyGridItem {
+    // (undocumented)
+    readonly derivedRecord: PropertyRecord;
+    // (undocumented)
+    readonly parentCategorySelectionKey: string;
+    // (undocumented)
+    readonly parentSelectionKey: string;
+    // (undocumented)
+    readonly type: CategorizedPropertyTypes;
+}
+
+// @alpha
+export type IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem;
+
+// @alpha
+export interface IMutableFlatPropertyGridItem {
+    // (undocumented)
+    readonly depth: number;
+    // (undocumented)
+    getChildren(): IMutableFlatGridItem[];
+    // (undocumented)
+    getDescendantsAndSelf(): IMutableFlatGridItem[];
+    // (undocumented)
+    getLastVisibleDescendantOrSelf(): IMutableFlatGridItem;
+    // (undocumented)
+    getVisibleDescendantsAndSelf(): IMutableFlatGridItem[];
+    // (undocumented)
+    isExpanded: boolean;
+    // (undocumented)
+    isLastInRootCategory: boolean;
+    // (undocumented)
+    readonly key: string;
+    // (undocumented)
+    readonly label: string;
+    // (undocumented)
+    lastInNumberOfCategories: number;
+    // (undocumented)
+    readonly parentCategorySelectionKey: string | undefined;
+    // (undocumented)
+    readonly parentSelectionKey: string | undefined;
+    // (undocumented)
+    readonly selectionKey: string;
+    // (undocumented)
+    readonly type: FlatGridItemType;
+}
+
+// @alpha
+export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
+    // (undocumented)
+    derivedCategory: PropertyCategory;
+    // (undocumented)
+    getChildCategories(): IMutableGridCategoryItem[];
+    // (undocumented)
+    getDescendantCategoriesAndSelf(): IMutableGridCategoryItem[];
+    // (undocumented)
+    isRootCategory: boolean;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    type: FlatGridItemType.Category;
+}
+
+// @alpha
+export interface IMutableGridItemFactory {
+    // (undocumented)
+    createCategorizedProperty: (record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string) => IMutableCategorizedPropertyItem;
+    // (undocumented)
+    createGridCategory: (category: PropertyCategory, recordsDict: CategoryRecordsDict, parentSelectionKey?: string, depth?: number) => IMutableGridCategoryItem;
+}
+
+// @alpha
+export interface IMutablePropertyGridModel {
+    // (undocumented)
+    getFlatGrid: () => IMutableFlatGridItem[];
+    // (undocumented)
+    getItem: (selectionKey: string) => IMutableFlatGridItem;
+    // (undocumented)
+    getRootCategories: () => IMutableGridCategoryItem[];
+    // (undocumented)
+    getVisibleFlatGrid: () => IMutableFlatGridItem[];
+}
+
 // @internal
 export class InlineEdit extends React.Component<InlineEditProps, InlineEditState> {
     constructor(props: InlineEditProps);
@@ -1989,6 +2178,36 @@ export class IntTypeConverter extends NumericTypeConverterBase {
 export interface IPropertyDataProvider {
     getData: (() => Promise<PropertyData>);
     onDataChanged: PropertyDataChangeEvent;
+}
+
+// @alpha
+export interface IPropertyGridEventHandler {
+    // (undocumented)
+    onExpansionToggled: (selectionKey: string) => void;
+}
+
+// @alpha
+export interface IPropertyGridModel {
+    // (undocumented)
+    getFlatGrid: () => FlatGridItem[];
+    // (undocumented)
+    getItem: (selectionKey: string) => FlatGridItem;
+    // (undocumented)
+    getRootCategories: () => GridCategoryItem[];
+    // (undocumented)
+    getVisibleFlatGrid: () => FlatGridItem[];
+}
+
+// @alpha (undocumented)
+export interface IPropertyGridModelSource {
+    // (undocumented)
+    getModel(): IPropertyGridModel | undefined;
+    // (undocumented)
+    modifyModel(callback: (model: IMutablePropertyGridModel) => void): void;
+    // (undocumented)
+    onModelChanged: PropertyGridModelChangeEvent;
+    // (undocumented)
+    setPropertyData: (data: PropertyData) => void;
 }
 
 // @public
@@ -2183,6 +2402,53 @@ export interface MultiSelectionHandler<TItem> {
     updateSelection: (selections: TItem[], deselections: TItem[]) => void;
 }
 
+// @alpha
+export class MutableCategorizedArrayProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
+    constructor(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, gridItemFactory: IMutableGridItemFactory, overrideName?: string, overrideDisplayLabel?: string);
+    // (undocumented)
+    getChildren(): IMutableFlatGridItem[];
+    // (undocumented)
+    get type(): FlatGridItemType.Array;
+}
+
+// @alpha
+export class MutableCategorizedPrimitiveProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
+    constructor(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string);
+    // (undocumented)
+    getChildren(): IMutableFlatGridItem[];
+    // (undocumented)
+    get isExpanded(): boolean;
+    set isExpanded(_: boolean);
+    // (undocumented)
+    get type(): FlatGridItemType.Primitive;
+}
+
+// @alpha
+export abstract class MutableCategorizedProperty extends MutableFlatPropertyGridItem implements Partial<IMutableCategorizedPropertyItem> {
+    constructor(type: CategorizedPropertyTypes, record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string);
+    get derivedRecord(): PropertyRecord;
+    // (undocumented)
+    getSelf(): IMutableFlatGridItem;
+    // (undocumented)
+    get label(): string;
+    // (undocumented)
+    get parentCategorySelectionKey(): string;
+    // (undocumented)
+    get parentSelectionKey(): string;
+    get selectionKey(): string;
+    // (undocumented)
+    abstract type: CategorizedPropertyTypes;
+    }
+
+// @alpha
+export class MutableCategorizedStructProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
+    constructor(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, gridItemFactory: IMutableGridItemFactory, overrideName?: string, overrideDisplayLabel?: string);
+    // (undocumented)
+    getChildren(): IMutableFlatGridItem[];
+    // (undocumented)
+    get type(): FlatGridItemType.Struct;
+}
+
 // @beta
 export interface MutableCheckBoxInfo extends CheckBoxInfo {
     // (undocumented)
@@ -2194,6 +2460,101 @@ export interface MutableCheckBoxInfo extends CheckBoxInfo {
     // (undocumented)
     tooltip?: string;
 }
+
+// @alpha
+export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropertyGridItem {
+    // (undocumented)
+    [immerable]: boolean;
+    constructor(_depth: number, _parentSelectionKey: string | undefined, _parentCategorySelectionKey: string | undefined);
+    // (undocumented)
+    get depth(): number;
+    // (undocumented)
+    abstract getChildren(): IMutableFlatGridItem[];
+    // (undocumented)
+    protected getDescendants(): IMutableFlatGridItem[];
+    getDescendantsAndSelf(): IMutableFlatGridItem[];
+    // (undocumented)
+    getLastVisibleDescendantOrSelf(): IMutableFlatGridItem;
+    // (undocumented)
+    abstract getSelf(): IMutableFlatGridItem;
+    getVisibleDescendantsAndSelf(): IMutableFlatGridItem[];
+    // (undocumented)
+    get isExpanded(): boolean;
+    set isExpanded(value: boolean);
+    // (undocumented)
+    protected _isExpanded: boolean;
+    // @internal
+    get isLastInRootCategory(): boolean;
+    set isLastInRootCategory(value: boolean);
+    // (undocumented)
+    protected _isLastInRootCategory: boolean;
+    // (undocumented)
+    readonly key: string;
+    // (undocumented)
+    abstract label: string;
+    // @internal
+    get lastInNumberOfCategories(): number;
+    set lastInNumberOfCategories(value: number);
+    // (undocumented)
+    protected _lastInNumberOfCategories: number;
+    // (undocumented)
+    get parentCategorySelectionKey(): string | undefined;
+    // (undocumented)
+    get parentSelectionKey(): string | undefined;
+    // (undocumented)
+    abstract selectionKey: string;
+    // (undocumented)
+    abstract type: FlatGridItemType;
+}
+
+// @alpha
+export class MutableGridCategory extends MutableFlatPropertyGridItem implements IMutableGridCategoryItem {
+    constructor(_category: PropertyCategory, recordsDict: CategoryRecordsDict, gridItemFactory: IMutableGridItemFactory, parentSelectionKey?: string, depth?: number);
+    // (undocumented)
+    get derivedCategory(): PropertyCategory;
+    // (undocumented)
+    getChildCategories(): IMutableGridCategoryItem[];
+    // (undocumented)
+    getChildren(): IMutableFlatGridItem[];
+    getDescendantCategoriesAndSelf(): IMutableGridCategoryItem[];
+    // (undocumented)
+    getSelf(): this;
+    get isRootCategory(): boolean;
+    // (undocumented)
+    get label(): string;
+    // @internal
+    get lastInNumberOfCategories(): number;
+    set lastInNumberOfCategories(value: number);
+    // (undocumented)
+    get name(): string;
+    // (undocumented)
+    get selectionKey(): string;
+    // (undocumented)
+    get type(): FlatGridItemType.Category;
+}
+
+// @alpha
+export class MutableGridItemFactory implements IMutableGridItemFactory {
+    // (undocumented)
+    protected createArrayProperty(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string): MutableCategorizedArrayProperty;
+    createCategorizedProperty(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string): IMutableCategorizedPropertyItem;
+    createGridCategory(category: PropertyCategory, recordsDict: CategoryRecordsDict, parentSelectionKey?: string, depth?: number): IMutableGridCategoryItem;
+    // (undocumented)
+    protected createPrimitiveProperty(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string): MutableCategorizedPrimitiveProperty;
+    // (undocumented)
+    protected createStructProperty(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string): MutableCategorizedStructProperty;
+}
+
+// @alpha
+export class MutablePropertyGridModel implements IPropertyGridModel, IMutablePropertyGridModel {
+    // (undocumented)
+    [immerable]: boolean;
+    constructor(propertyData: PropertyData, _gridItemFactory: IMutableGridItemFactory);
+    getFlatGrid(): IMutableFlatGridItem[];
+    getItem(selectionKey: string): IMutableFlatGridItem;
+    getRootCategories(): IMutableGridCategoryItem[];
+    getVisibleFlatGrid(): IMutableFlatGridItem[];
+    }
 
 // @beta
 export interface MutableTableDataProvider extends TableDataProvider {
@@ -2721,36 +3082,62 @@ export interface PropertyGridCategory {
     propertyCount: number;
 }
 
+// @internal (undocumented)
+export class PropertyGridCommons {
+    // (undocumented)
+    static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick?: (property: PropertyRecord, text: string) => void): void;
+    // (undocumented)
+    static getCurrentOrientation(width: number, preferredOrientation?: Orientation, isOrientationFixed?: boolean, horizontalOrientationMinWidth?: number): Orientation;
+    }
+
 // @public
 export interface PropertyGridContextMenuArgs {
-    event: React.MouseEvent;
+    event: React_2.MouseEvent;
     propertyRecord: PropertyRecord;
 }
 
+// @alpha
+export class PropertyGridEventHandler {
+    constructor(_modelSource: IPropertyGridModelSource);
+    onExpansionToggled: (selectionKey: string) => void;
+}
+
+// @internal (undocumented)
+export type PropertyGridEventsRelatedProps = Pick<PropertyListProps, "onPropertyClicked" | "onPropertyRightClicked" | "onPropertyContextMenu" | "onEditCommit" | "onEditCancel" | "selectedPropertyKey" | "editingPropertyKey"> & Pick<CommonPropertyGridProps, "isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertyHoverEnabled" | "isPropertyEditingEnabled">;
+
+// @internal
+export class PropertyGridEventsRelatedPropsSupplier extends React.Component<PropertyGridEventsRelatedPropsSupplierProps, PropertyGridEventsRelatedPropsSupplierState> {
+    constructor(props: PropertyGridEventsRelatedPropsSupplierProps);
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface PropertyGridEventsRelatedPropsSupplierProps extends Pick<CommonPropertyGridProps, "onPropertyContextMenu" | "isPropertyHoverEnabled" | "isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertySelectionOnRightClickEnabled" | "onPropertySelectionChanged" | "isPropertyEditingEnabled" | "onPropertyUpdated"> {
+    // (undocumented)
+    children: (context: PropertyGridEventsRelatedProps) => React.ReactNode;
+}
+
+// @alpha
+export class PropertyGridModelChangeEvent extends BeEvent<PropertyGridModelChangeListener> {
+}
+
+// @alpha
+export type PropertyGridModelChangeListener = () => void;
+
+// @alpha
+export class PropertyGridModelSource implements IPropertyGridModelSource {
+    constructor(_gridFactory: IMutableGridItemFactory);
+    getModel(): IPropertyGridModel | undefined;
+    modifyModel(callback: (model: IMutablePropertyGridModel) => void): void;
+    onModelChanged: PropertyGridModelChangeEvent;
+    // (undocumented)
+    setPropertyData(data: PropertyData): void;
+}
+
 // @public
-export interface PropertyGridProps extends CommonProps {
-    // @beta
-    actionButtonRenderers?: ActionButtonRenderer[];
+export interface PropertyGridProps extends CommonPropertyGridProps {
     dataProvider: IPropertyDataProvider;
-    // @beta
-    horizontalOrientationMinWidth?: number;
-    // @beta
-    isOrientationFixed?: boolean;
-    // @beta
-    isPropertyEditingEnabled?: boolean;
-    isPropertyHoverEnabled?: boolean;
-    isPropertySelectionEnabled?: boolean;
-    isPropertySelectionOnRightClickEnabled?: boolean;
-    onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
-    // @beta
-    onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
-    // @beta
-    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
-    onPropertySelectionChanged?: (property: PropertyRecord) => void;
-    // @beta
-    onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
-    orientation?: Orientation;
-    propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 // @internal (undocumented)
@@ -2915,9 +3302,6 @@ export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivEleme
     hsv: HSVColor;
     onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
 }
-
-// @internal
-export function scheduleSubscription<T>(scheduler: SubscriptionScheduler<T>): (source: Observable_2<T>) => Observable_2<T>;
 
 // @internal
 export class Scrubber extends React.Component<ScrubberProps> {
@@ -3461,12 +3845,6 @@ export interface Subscription extends Unsubscribable {
     readonly closed: boolean;
     // (undocumented)
     unsubscribe(): void;
-}
-
-// @internal
-export class SubscriptionScheduler<T> {
-    constructor();
-    scheduleSubscription(source: Observable_2<T>): Observable_2<T>;
 }
 
 // @public
@@ -4526,8 +4904,39 @@ export interface Unsubscribable {
 // @beta
 export const useAsyncValue: <T extends any>(value: T | PromiseLike<T>) => T | undefined;
 
+// @alpha
+export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (() => Promise<TReturn>)): {
+    value: TReturn | undefined;
+    inProgress: boolean;
+};
+
 // @beta
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
+
+// @alpha
+export function usePropertyData(props: {
+    dataProvider: IPropertyDataProvider;
+    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+}): {
+    value: import("../PropertyDataProvider").PropertyData | undefined;
+    inProgress: boolean;
+};
+
+// @alpha
+export function usePropertyGridEventHandler(props: {
+    modelSource: IPropertyGridModelSource;
+}): PropertyGridEventHandler;
+
+// @alpha
+export function usePropertyGridModel(props: {
+    modelSource: IPropertyGridModelSource;
+}): IPropertyGridModel | undefined;
+
+// @alpha
+export function usePropertyGridModelSource(props: {
+    dataProvider: IPropertyDataProvider;
+    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+}): PropertyGridModelSource;
 
 // @internal (undocumented)
 export function useToolbarPopupContext(): ToolbarPopupContextProps;
@@ -4554,6 +4963,14 @@ export const
  * @beta
  */
 useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
+
+// @internal
+export const
+/**
+ * Context of [[VirtualizedPropertyGrid]] provider.
+ * @internal
+ */
+useVirtualizedPropertyGridContext: <P>(component: React.ComponentType<P>) => VirtualizedPropertyGridContext;
 
 // @beta
 export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes;
@@ -4667,6 +5084,86 @@ export interface ViewRotationChangeEventArgs {
 
 // @public
 export type ViewStateProp = ViewState | (() => ViewState);
+
+// @alpha
+export class VirtualizedPropertyGrid extends React.Component<VirtualizedPropertyGridProps, VirtualizedPropertyGridState> {
+    // @internal
+    constructor(props: VirtualizedPropertyGridProps);
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: VirtualizedPropertyGridProps): void;
+    // @internal (undocumented)
+    static getDerivedStateFromProps(props: VirtualizedPropertyGridProps, state: VirtualizedPropertyGridState): VirtualizedPropertyGridState | null;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
+
+// @internal
+export interface VirtualizedPropertyGridContext {
+    // (undocumented)
+    gridContext: {
+        style?: React.CSSProperties;
+        className?: string;
+        listWidth: number;
+        orientation: Orientation;
+        actionButtonRenderers?: ActionButtonRenderer[];
+        propertyValueRendererManager?: PropertyValueRendererManager;
+        isPropertyHoverEnabled?: boolean;
+        isPropertySelectionEnabled?: boolean;
+        selectedPropertyKey?: string;
+        onPropertyClicked?: (property: PropertyRecord, key?: string) => void;
+        onPropertyRightClicked?: (property: PropertyRecord, key?: string) => void;
+        onPropertyContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
+        editingPropertyKey?: string;
+        onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
+        onEditCancel?: () => void;
+        columnRatio?: number;
+        onColumnChanged?: (ratio: number) => void | RatioChangeResult;
+        isResizeHandleHovered?: boolean;
+        onResizeHandleHoverChanged?: (isHovered: boolean) => void;
+        isResizeHandleBeingDragged?: boolean;
+        onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
+        columnInfo?: PropertyGridColumnInfo;
+    };
+    // (undocumented)
+    gridEventHandler: IPropertyGridEventHandler;
+    // (undocumented)
+    gridItems: FlatGridItem[];
+    // (undocumented)
+    gridModel: IPropertyGridModel;
+}
+
+// @internal
+export const
+/**
+ * Context of [[VirtualizedPropertyGrid]] provider.
+ * @internal
+ */
+VirtualizedPropertyGridContextConsumer: React.ExoticComponent<React.ConsumerProps<VirtualizedPropertyGridContext>>;
+
+// @internal
+export const
+/**
+ * Context of [[VirtualizedPropertyGrid]] provider.
+ * @internal
+ */
+VirtualizedPropertyGridContextProvider: React.ProviderExoticComponent<React.ProviderProps<VirtualizedPropertyGridContext>>;
+
+// @alpha
+export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
+    // (undocumented)
+    eventHandler: IPropertyGridEventHandler;
+    // (undocumented)
+    model: IPropertyGridModel;
+}
+
+// @alpha
+export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element;
+
+// @alpha
+export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
+    // (undocumented)
+    dataProvider: IPropertyDataProvider;
+}
 
 // @beta
 export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNodePlaceholder> {

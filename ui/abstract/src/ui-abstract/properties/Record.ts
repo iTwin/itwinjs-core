@@ -63,6 +63,23 @@ export class PropertyRecord {
     return new PropertyRecord(newValue, this.property);
   }
 
+  /** Gets this property record value children records */
+  public getChildrenRecords(): PropertyRecord[] {
+    switch (this.value.valueFormat) {
+      case PropertyValueFormat.Primitive:
+        return [];
+      case PropertyValueFormat.Struct:
+        return Object.values(this.value.members);
+      case PropertyValueFormat.Array:
+        return this.value.items;
+      /* istanbul ignore next */
+      default:
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        const unhandledFormat: never = this.value!.valueFormat;
+        throw new Error(`Failed getting PropertyRecord children because of unhandled value format: ${unhandledFormat}`);
+    }
+  }
+
   /** Creates a PropertyRecord based on a value string and an optional property description or name */
   public static fromString(value: string, descriptionOrName?: PropertyDescription | string): PropertyRecord {
     let description: PropertyDescription;

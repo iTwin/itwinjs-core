@@ -15,9 +15,9 @@ import { asyncScheduler } from "rxjs/internal/scheduler/async";
 import { queueScheduler } from "rxjs/internal/scheduler/queue";
 import { ObservableInput, SchedulerLike } from "rxjs/internal/types";
 import sinon from "sinon";
-import { scheduleSubscription, SubscriptionScheduler } from "../../../../ui-components/tree/controlled/internal/SubscriptionScheduler";
-import { ResolvablePromise } from "../../../test-helpers/misc";
-import { extractSequence, waitForUnsubscription } from "../../ObservableTestHelpers";
+import { scheduleSubscription, SubscriptionScheduler } from "../../ui-components/common/SubscriptionScheduler";
+import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers";
+import { ResolvablePromise } from "../test-helpers/misc";
 
 async function expectSequence<T>(expectedSequence: T[], observable: Observable<T>): Promise<void> {
   const actualSequence = await extractSequence(observable);
