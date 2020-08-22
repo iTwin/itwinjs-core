@@ -3,18 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using } from "@bentley/bentleyjs-core";
-import { GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, DomainOptions, ElementProps,
-  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
-  IModel, IModelError, IModelStatus, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps,
-  SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
+import {
+  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
+} from "@bentley/bentleyjs-core";
+import {
+  GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
+  GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, ModelProps,
+  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
+} from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import {
   AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
   ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
@@ -2071,6 +2076,41 @@ describe("iModel", () => {
     assert.isFalse(imodel1.containsClass(":Element"));
     assert.isFalse(imodel1.containsClass("BisCore:InvalidClassName"));
     assert.isFalse(imodel1.containsClass("InvalidSchemaName:Element"));
+  });
+
+  it("should clear UserLabel", () => {
+    // type coercion reminder!
+    const s: string = "";
+    assert.isTrue(s === "");
+    assert.isFalse(s ? true : false);
+
+    // insert element with an undefined UserLabel
+    const elementProps: DefinitionElementProps = {
+      classFullName: SpatialCategory.classFullName,
+      model: IModel.dictionaryId,
+      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategory"),
+    };
+    const elementId = imodel1.elements.insertElement(elementProps);
+    let element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.isUndefined(element.userLabel);
+
+    // update element with a defined UserLabel
+    element.userLabel = "UserLabel";
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.userLabel, "UserLabel");
+
+    // update UserLabel to undefined
+    element.userLabel = undefined;
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.userLabel, "UserLabel"); // NOTE: UserLabel is not cleared in this case!
+
+    // update UserLabel to ""
+    element.userLabel = "";
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.isUndefined(element.userLabel);
   });
 });
 

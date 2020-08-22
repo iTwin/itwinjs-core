@@ -193,9 +193,9 @@ export class Element extends Entity implements ElementProps {
       val.code = this.code;
 
     val.model = this.model;
+    val.userLabel = this.userLabel;
     if (this.parent) val.parent = this.parent;
     if (this.federationGuid) val.federationGuid = this.federationGuid;
-    if (this.userLabel) val.userLabel = this.userLabel;
     if (Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
     return val;
