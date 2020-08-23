@@ -4,6 +4,7 @@
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
+  "license": "MIT",
   "scripts": {
     "prebuild": "npm run pseudolocalize && npm run copy:assets",
     "build": "npm run prebuild && tsc 1>&2 && npm run build:extension",
@@ -16,6 +17,10 @@
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
     "test": ""
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/map-layers"
+  },
   "keywords": [
     "iModel",
     "BIM",
@@ -26,7 +31,6 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "license": "MIT",
   "devDependencies": {
     "@bentley/build-tools": "2.6.0-dev.4",
     "@bentley/extension-webpack-tools": "2.6.0-dev.4",
