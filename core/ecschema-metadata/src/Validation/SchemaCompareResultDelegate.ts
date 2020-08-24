@@ -51,7 +51,7 @@ export class SchemaCompareResultDelegate {
       this._schemaBChanges = new SchemaChanges(schemaB);
   }
 
-  get schemaChangeReporters(): ISchemaCompareReporter[] {
+  public get schemaChangeReporters(): ISchemaCompareReporter[] {
     return this._schemaChangeReporters;
   }
 

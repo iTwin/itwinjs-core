@@ -199,7 +199,7 @@ export abstract class BaseSchemaChanges implements ISchemaChanges {
 
   /** Gets the schema to which these changes are associated. */
   public get schema(): Schema {
-    return this._schema as Schema;
+    return this._schema;
   }
 
   /**
@@ -292,7 +292,7 @@ export class SchemaChanges extends BaseSchemaChanges {
    * @param schema The schema containing the changes.
    */
   constructor(schema: Schema) {
-    super(schema as Schema, schema.name);
+    super(schema, schema.name);
   }
 
   /** Gets the MissingSchemaReferences collection. */
@@ -1034,10 +1034,10 @@ export class PropertyValueChange extends BaseSchemaChange {
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
     if (this.diagnostic.ecDefinition instanceof SchemaItem)
-      return this.diagnostic.ecDefinition as SchemaItem;
+      return this.diagnostic.ecDefinition;
 
     if (this.diagnostic.ecDefinition instanceof Schema)
-      return this.diagnostic.ecDefinition as Schema;
+      return this.diagnostic.ecDefinition;
 
     if (this.diagnostic.ecDefinition instanceof Property)
       return this.diagnostic.ecDefinition.class;
@@ -1074,13 +1074,13 @@ export class CustomAttributeContainerChange extends BaseSchemaChange {
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
     if (this.diagnostic.ecDefinition instanceof SchemaItem)
-      return this.diagnostic.ecDefinition as SchemaItem;
+      return this.diagnostic.ecDefinition;
 
     if (this.diagnostic.ecDefinition instanceof Property)
       return this.diagnostic.ecDefinition.class;
 
     if (this.diagnostic.ecDefinition instanceof Schema)
-      return this.diagnostic.ecDefinition as Schema;
+      return this.diagnostic.ecDefinition;
 
     if (this.diagnostic.ecDefinition instanceof RelationshipConstraint)
       return this.diagnostic.ecDefinition.relationshipClass;

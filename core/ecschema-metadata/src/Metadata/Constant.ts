@@ -36,10 +36,10 @@ export class Constant extends SchemaItem {
     this._numerator = 1.0;
   }
 
-  get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
-  get definition(): string { return this._definition; }
-  get numerator(): number { return this._numerator; }
-  get denominator(): number { return this._denominator; }
+  public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
+  public get definition(): string { return this._definition; }
+  public get numerator(): number { return this._numerator; }
+  public get denominator(): number { return this._denominator; }
 
   /**
    * Save this Constants properties to an object for serializing to JSON.
@@ -49,7 +49,7 @@ export class Constant extends SchemaItem {
   public toJSON(standalone: boolean, includeSchemaVersion: boolean): ConstantProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     if (this.phenomenon !== undefined)
-      schemaJson.phenomenon = this.phenomenon!.fullName;
+      schemaJson.phenomenon = this.phenomenon.fullName;
     schemaJson.definition = this.definition;
     if (this.numerator !== undefined)
       schemaJson.numerator = this.numerator;

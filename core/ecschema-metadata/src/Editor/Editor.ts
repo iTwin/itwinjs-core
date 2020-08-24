@@ -123,9 +123,9 @@ export class SchemaContextEditor {
     await schema.addReference(refSchema);
     const diagnostics = Rules.validateSchemaReferences(schema);
 
-    const result: SchemaEditResults = {errorMessage: ""};
+    const result: SchemaEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {
-      result.errorMessage += diagnostic.code + ": " + diagnostic.messageText + "\r\n";
+      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
     }
 
     if (result.errorMessage) {
@@ -151,9 +151,9 @@ export class SchemaContextEditor {
 
     const diagnostics = Rules.validateCustomAttributeInstance(schema, customAttribute);
 
-    const result: SchemaEditResults = {errorMessage: ""};
+    const result: SchemaEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {
-      result.errorMessage += diagnostic.code + ": " + diagnostic.messageText + "\r\n";
+      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
     }
 
     if (result.errorMessage) {
@@ -1005,7 +1005,7 @@ export namespace Editors {
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
       if (unitProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
-      const newUnit = (await schema.createUnit(unitProps.name)) as Unit;
+      const newUnit = (await schema.createUnit(unitProps.name));
       if (newUnit === undefined) {
         return { errorMessage: `Failed to create class ${unitProps.name} in schema ${schemaKey.toString(true)}.` };
       }
@@ -1042,7 +1042,7 @@ export namespace Editors {
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
       if (phenomenonProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
-      const newPhenomenon = (await schema.createPhenomenon(phenomenonProps.name)) as Phenomenon;
+      const newPhenomenon = (await schema.createPhenomenon(phenomenonProps.name));
       if (newPhenomenon === undefined) {
         return { errorMessage: `Failed to create class ${phenomenonProps.name} in schema ${schemaKey.toString(true)}.` };
       }

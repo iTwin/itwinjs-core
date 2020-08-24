@@ -23,7 +23,7 @@ describe("BisCore Cache test", () => {
       </ECSchema>`;
 
     const expectedSchemaString =
-`import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
+      `import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
 import * as elementsModule from "./MyDomainElements";
 
 export class MyDomain extends Schema {
@@ -41,7 +41,7 @@ export class MyDomain extends Schema {
 }\n\n`;
 
     const expectedElementString =
-`import { SpatialLocationElement, IModelDb } from "@bentley/imodeljs-backend";
+      `import { SpatialLocationElement, IModelDb } from "@bentley/imodeljs-backend";
 import { GeometricElement3dProps } from "@bentley/imodeljs-common";
 
 export class Building extends SpatialLocationElement {
@@ -53,7 +53,7 @@ export class Building extends SpatialLocationElement {
 }\n\n`;
 
     const schemaLocator = new SchemaXmlFileLocater();
-    schemaLocator.addSchemaSearchPath(utils.getAssetsDir() + "schema3.2");
+    schemaLocator.addSchemaSearchPath(`${utils.getAssetsDir()}schema3.2`);
     const context = new SchemaContext();
     context.addLocater(schemaLocator);
 

@@ -60,6 +60,6 @@ export function writeCoverageData(coverageData: any): void {
     throw new Error(`Cannot save coverage data - nyc temp directory "${nycTempDirAbsolute}" does not exist.`);
 
   // Use uuid/v4 to generate a unique filename, just like `nyc` does.
-  const coverageFileName = path.join(nycTempDirAbsolute, uuid.v4() + ".json");
+  const coverageFileName = path.join(nycTempDirAbsolute, `${uuid.v4()}.json`);
   fs.writeFileSync(coverageFileName, JSON.stringify(coverageData));
 }

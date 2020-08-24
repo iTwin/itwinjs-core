@@ -27,6 +27,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // cspell:ignore chrsz binl
+/* eslint-disable prefer-template,@typescript-eslint/naming-convention */
 class Msg {
   private _data: number[];
 

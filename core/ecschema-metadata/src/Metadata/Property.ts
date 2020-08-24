@@ -54,31 +54,31 @@ export abstract class Property implements CustomAttributeContainerProps {
   public isEnumeration(): this is AnyEnumerationProperty { return PropertyTypeUtils.isEnumeration(this._type); }
   public isNavigation(): this is NavigationProperty { return PropertyTypeUtils.isNavigation(this._type); }
 
-  get name() { return this._name.name; }
+  public get name() { return this._name.name; }
 
-  get class() { return this._class; }
+  public get class() { return this._class; }
 
-  get label() { return this._label; }
+  public get label() { return this._label; }
 
-  get description() { return this._description; }
+  public get description() { return this._description; }
 
-  get isReadOnly() { return this._isReadOnly || false; }
+  public get isReadOnly() { return this._isReadOnly || false; }
 
-  get priority() { return this._priority || 0; }
+  public get priority() { return this._priority || 0; }
 
-  get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
+  public get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
 
-  get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
+  public get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
 
-  get propertyType() { return this._type; }
+  public get propertyType() { return this._type; }
 
-  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+  public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   /** Returns the name in the format 'ClassName.PropertyName'. */
-  get fullName(): string { return this._class.name + "." + this.name; }
+  public get fullName(): string { return `${this._class.name}.${this.name}`; }
 
   /** Returns the schema of the class holding the property. */
-  get schema(): Schema { return this._class.schema; }
+  public get schema(): Schema { return this._class.schema; }
 
   public getCategorySync(): PropertyCategory | undefined {
     if (!this._category)
@@ -238,7 +238,7 @@ export abstract class Property implements CustomAttributeContainerProps {
       customAttributes = new Map<string, CustomAttribute>([...baseCustomAttributes, ...customAttributes]);
     }
 
-    return customAttributes!;
+    return customAttributes;
   }
 }
 
@@ -250,11 +250,11 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
   protected _minValue?: number;
   protected _maxValue?: number;
 
-  get extendedTypeName() { return this._extendedTypeName; }
-  get minLength() { return this._minLength; }
-  get maxLength() { return this._maxLength; }
-  get minValue() { return this._minValue; }
-  get maxValue() { return this._maxValue; }
+  public get extendedTypeName() { return this._extendedTypeName; }
+  public get minLength() { return this._minLength; }
+  public get maxLength() { return this._maxLength; }
+  public get minValue() { return this._minValue; }
+  public get maxValue() { return this._maxValue; }
 
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
     super(ecClass, name, type);
@@ -326,7 +326,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
 
 /** @beta */
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
-  get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
+  public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
@@ -365,7 +365,7 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   protected _enumeration?: LazyLoadedEnumeration;
 
-  get enumeration(): LazyLoadedEnumeration | undefined { return this._enumeration; }
+  public get enumeration(): LazyLoadedEnumeration | undefined { return this._enumeration; }
 
   /**
    * Save this EnumerationProperty's properties to an object for serializing to JSON.
@@ -419,7 +419,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 export class StructProperty extends Property {
   protected _structClass: StructClass;
 
-  get structClass(): StructClass { return this._structClass; }
+  public get structClass(): StructClass { return this._structClass; }
 
   constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, PropertyType.Struct);
@@ -461,7 +461,7 @@ export class NavigationProperty extends Property {
   protected _relationshipClass: LazyLoadedRelationshipClass;
   protected _direction: StrengthDirection;
 
-  get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
+  public get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
 
   public getRelationshipClassSync(): RelationshipClass | undefined {
     if (!this._relationshipClass) // eslint-disable-line @typescript-eslint/no-misused-promises
@@ -470,7 +470,7 @@ export class NavigationProperty extends Property {
     return this.class.schema.lookupItemSync(this._relationshipClass);
   }
 
-  get direction() { return this._direction; }
+  public get direction() { return this._direction; }
 
   /**
    * Save this NavigationProperty's properties to an object for serializing to JSON.
@@ -511,8 +511,8 @@ export abstract class ArrayProperty extends Property {
   protected _minOccurs: number = 0;
   protected _maxOccurs?: number = INT32_MAX;
 
-  get minOccurs() { return this._minOccurs; }
-  get maxOccurs() { return this._maxOccurs; }
+  public get minOccurs() { return this._minOccurs; }
+  public get maxOccurs() { return this._maxOccurs; }
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -521,8 +521,8 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
     protected _minOccurs: number = 0;
     protected _maxOccurs: number = INT32_MAX;
 
-    get minOccurs() { return this._minOccurs; }
-    get maxOccurs() { return this._maxOccurs; }
+    public get minOccurs() { return this._minOccurs; }
+    public get maxOccurs() { return this._maxOccurs; }
 
     constructor(...args: any[]) {
       super(...args);

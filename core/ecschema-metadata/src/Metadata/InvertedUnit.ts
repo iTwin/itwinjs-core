@@ -32,8 +32,8 @@ export class InvertedUnit extends SchemaItem {
     this.schemaItemType = SchemaItemType.InvertedUnit;
   }
 
-  get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
-  get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
+  public get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
+  public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
   /**
    * Save this InvertedUnit's properties to an object for serializing to JSON.

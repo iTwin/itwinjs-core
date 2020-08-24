@@ -301,11 +301,11 @@ export class XmlParser extends AbstractParser<Element> {
     else
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
 
-    let _isStrict: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
-    if (_isStrict === undefined)
-      _isStrict = "true";
+    let isStrictString: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
+    if (isStrictString === undefined)
+      isStrictString = "true";
 
-    const isStrict = this.parseBoolean(_isStrict,
+    const isStrict = this.parseBoolean(isStrictString,
       `The Enumeration ${this._currentItemFullName} has an invalid 'isStrict' attribute. It should either be "true" or "false".`);
 
     const enumeratorElements = this.getElementChildrenByTagName(xmlElement, "ECEnumerator");
@@ -315,12 +315,12 @@ export class XmlParser extends AbstractParser<Element> {
       const name = this.getRequiredAttribute(element, "name",
         `The Enumeration ${this._currentItemFullName} has an enumerator that is missing the required attribute 'name'.`);
 
-      const _value = this.getRequiredAttribute(element, "value",
+      const valueString = this.getRequiredAttribute(element, "value",
         `The Enumeration ${this._currentItemFullName} has an enumerator that is missing the required attribute 'value'.`);
-      let value: string | number = _value;
+      let value: string | number = valueString;
 
       if (PrimitiveType.Integer === tempBackingType) {
-        const numericValue = parseInt(_value, 10);
+        const numericValue = parseInt(valueString, 10);
         if (isNaN(numericValue))
           throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Enumeration ${this._currentItemFullName} of type "int" has an enumerator with a non-integer value.`);
         value = numericValue;
@@ -348,16 +348,16 @@ export class XmlParser extends AbstractParser<Element> {
   public parseKindOfQuantity(xmlElement: Element): KindOfQuantityProps {
     const itemProps = this.getSchemaItemProps(xmlElement);
 
-    const _relativeError = this.getRequiredAttribute(xmlElement, "relativeError",
+    const relativeErrorString = this.getRequiredAttribute(xmlElement, "relativeError",
       `The KindOfQuantity ${this._currentItemFullName} is missing the required 'relativeError' attribute.`);
-    const relativeError = parseFloat(_relativeError);
+    const relativeError = parseFloat(relativeErrorString);
     if (isNaN(relativeError))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'relativeError' attribute. It should be a numeric value.`);
 
-    const _presentationUnits = this.getOptionalAttribute(xmlElement, "presentationUnits");
+    const presentationUnitsString = this.getOptionalAttribute(xmlElement, "presentationUnits");
     let presentationUnits: string[] | undefined;
-    if (_presentationUnits)
-      presentationUnits = this.getQualifiedPresentationUnits(_presentationUnits.split(";"));
+    if (presentationUnitsString)
+      presentationUnits = this.getQualifiedPresentationUnits(presentationUnitsString.split(";"));
 
     let persistenceUnit = this.getRequiredAttribute(xmlElement, "persistenceUnit",
       `The KindOfQuantity ${this._currentItemFullName} is missing the required 'persistenceUnit' attribute.`);
@@ -374,9 +374,9 @@ export class XmlParser extends AbstractParser<Element> {
   public parsePropertyCategory(xmlElement: Element): PropertyCategoryProps {
     const itemProps = this.getSchemaItemProps(xmlElement);
 
-    const _priority = this.getRequiredAttribute(xmlElement, "priority",
+    const priorityString = this.getRequiredAttribute(xmlElement, "priority",
       `The PropertyCategory ${this._currentItemFullName} is missing the required 'priority' attribute.`);
-    const priority = parseInt(_priority, 10);
+    const priority = parseInt(priorityString, 10);
     if (isNaN(priority))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The PropertyCategory ${this._currentItemFullName} has an invalid 'priority' attribute. It should be a numeric value.`);
 
@@ -482,9 +482,9 @@ export class XmlParser extends AbstractParser<Element> {
       `The Format ${this._currentItemFullName} has an invalid 'minWidth' attribute. It should be a numeric value.`);
     const showSignOption = this.getOptionalAttribute(xmlElement, "showSignOption");
 
-    const _formatTraits = this.getRequiredAttribute(xmlElement, "formatTraits",
+    const formatTraitsString = this.getRequiredAttribute(xmlElement, "formatTraits",
       `The Format ${this._currentItemFullName} is missing the required 'formatTraits' attribute.`);
-    const formatTraits = _formatTraits.split("|");
+    const formatTraits = formatTraitsString.split("|");
 
     const decimalSeparator = this.getOptionalAttribute(xmlElement, "decimalSeparator");
     const thousandSeparator = this.getOptionalAttribute(xmlElement, "thousandSeparator");
@@ -503,10 +503,10 @@ export class XmlParser extends AbstractParser<Element> {
 
       const spacer = this.getOptionalAttribute(compositeElement, "spacer");
 
-      const _includeZero = this.getOptionalAttribute(compositeElement, "includeZero");
+      const includeZeroString = this.getOptionalAttribute(compositeElement, "includeZero");
       let includeZero: boolean | undefined;
-      if (_includeZero) {
-        includeZero = this.parseBoolean(_includeZero,
+      if (includeZeroString) {
+        includeZero = this.parseBoolean(includeZeroString,
           `The Format ${this._currentItemFullName} has a Composite with an invalid 'includeZero' attribute. It should be either "true" or "false".`);
       }
 
@@ -699,10 +699,10 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private getOptionalFloatAttribute(xmlElement: Element, attributeName: string, parseErrorMsg: string): number | undefined {
-    const _result = this.getOptionalAttribute(xmlElement, attributeName);
+    const resultString = this.getOptionalAttribute(xmlElement, attributeName);
     let result: number | undefined;
-    if (_result) {
-      result = parseFloat(_result);
+    if (resultString) {
+      result = parseFloat(resultString);
       if (isNaN(result))
         throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
     }
@@ -710,10 +710,10 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private getOptionalIntAttribute(xmlElement: Element, attributeName: string, parseErrorMsg: string): number | undefined {
-    const _result = this.getOptionalAttribute(xmlElement, attributeName);
+    const resultString = this.getOptionalAttribute(xmlElement, attributeName);
     let result: number | undefined;
-    if (_result) {
-      result = parseInt(_result, 10);
+    if (resultString) {
+      result = parseInt(resultString, 10);
       if (isNaN(result))
         throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
     }
@@ -721,9 +721,9 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private parseBoolean(text: string, parseErrorMsg: string): boolean {
-    const _text = text.toLowerCase();
-    if ("true" === _text) return true;
-    else if ("false" === _text) return false;
+    const textString = text.toLowerCase();
+    if ("true" === textString) return true;
+    else if ("false" === textString) return false;
     else throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
   }
 
@@ -817,9 +817,9 @@ export class XmlParser extends AbstractParser<Element> {
     const roleLabel = this.getRequiredAttribute(xmlElement, "roleLabel",
       `The ${constraintName} is missing the required 'roleLabel' attribute.`);
 
-    const _polymorphic = this.getRequiredAttribute(xmlElement, "polymorphic",
+    const polymorphicString = this.getRequiredAttribute(xmlElement, "polymorphic",
       `The ${constraintName} is missing the required 'polymorphic' attribute.`);
-    const polymorphic = this.parseBoolean(_polymorphic,
+    const polymorphic = this.parseBoolean(polymorphicString,
       `The ${constraintName} has an invalid 'polymorphic' attribute. It should either be "true" or "false".`);
 
     let abstractConstraint = this.getOptionalAttribute(xmlElement, "abstractConstraint");
@@ -875,10 +875,10 @@ export class XmlParser extends AbstractParser<Element> {
     const label = this.getOptionalAttribute(xmlElement, "displayLabel");
     const description = this.getOptionalAttribute(xmlElement, "description");
 
-    const _readOnly = this.getOptionalAttribute(xmlElement, "readOnly");
+    const readOnlyString = this.getOptionalAttribute(xmlElement, "readOnly");
     let isReadOnly: boolean | undefined;
-    if (_readOnly) {
-      isReadOnly = this.parseBoolean(_readOnly,
+    if (readOnlyString) {
+      isReadOnly = this.parseBoolean(readOnlyString,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'readOnly' attribute. It should be either "true" or "false".`);
     }
 
@@ -887,10 +887,10 @@ export class XmlParser extends AbstractParser<Element> {
     const priority = this.getOptionalIntAttribute(xmlElement, "priority",
       `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'priority' attribute. It should be a numeric value.`);
 
-    const _inherited = this.getOptionalAttribute(xmlElement, "inherited");
+    const inheritedString = this.getOptionalAttribute(xmlElement, "inherited");
     let inherited: boolean | undefined;
-    if (_inherited) {
-      inherited = this.parseBoolean(_inherited,
+    if (inheritedString) {
+      inherited = this.parseBoolean(inheritedString,
         `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'inherited' attribute. It should be either "true" or "false".`);
     }
 
@@ -989,14 +989,14 @@ export class XmlParser extends AbstractParser<Element> {
     if (!ns) {
       assert(this._schemaName !== undefined);
       assert(this._schemaVersion !== undefined);
-      ns = this._schemaName + "." + this._schemaVersion;
+      ns = `${this._schemaName}.${this._schemaVersion}`;
     }
 
-    if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecXmlVersion!))
+    if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecXmlVersion))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.`);
 
     const schemaNameParts = ns.split(".");
-    const className = schemaNameParts[0] + "." + xmlCustomAttribute.tagName;
+    const className = `${schemaNameParts[0]}.${xmlCustomAttribute.tagName}`;
     const properties = this.getElementChildren(xmlCustomAttribute);
 
     const provider = (caClass: CustomAttributeClass) => {
@@ -1035,7 +1035,7 @@ export class XmlParser extends AbstractParser<Element> {
         if (!enumeration)
           throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The Enumeration class '${propertyClass.enumeration.fullName}' could not be found.`);
       }
-      const primitiveType = enumeration && enumeration.type ? enumeration.type : (propertyClass as PrimitiveProperty).primitiveType;
+      const primitiveType = enumeration && enumeration.type ? enumeration.type : (propertyClass).primitiveType;
       return this.readPrimitivePropertyValue(propElement, primitiveType);
     }
 
@@ -1199,7 +1199,7 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
-    const regEx = new RegExp("^" + ECXML_URI + "\\.([0-9]+)\\.([0-9]+)$");
+    const regEx = new RegExp(`^${ECXML_URI}\\.([0-9]+)\\.([0-9]+)$`);
     const match = xmlNamespace.match(regEx);
     if (!match)
       return;
@@ -1212,12 +1212,12 @@ export class XmlParser extends AbstractParser<Element> {
   private getQualifiedTypeName(rawTypeName: string): string {
     const nameParts = rawTypeName.split(":");
     if (nameParts.length !== 2)
-      return this._schemaName + "." + rawTypeName;
+      return `${this._schemaName}.${rawTypeName}`;
 
     if (nameParts[0].toLowerCase() === this._schemaAlias.toLowerCase())
-      return this._schemaName + "." + nameParts[1];
+      return `${this._schemaName}.${nameParts[1]}`;
     if (this._schemaReferenceNames.has(nameParts[0].toLowerCase()))
-      return this._schemaReferenceNames.get(nameParts[0].toLowerCase()) + "." + nameParts[1];
+      return `${this._schemaReferenceNames.get(nameParts[0].toLowerCase())}.${nameParts[1]}`;
 
     throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `No valid schema found for alias ${nameParts[0]}`);
   }
@@ -1240,7 +1240,7 @@ export class XmlParser extends AbstractParser<Element> {
           const verticalSlashIdx = presentationUnitFormats[i].indexOf("|");
           const overrideFormat = this.getQualifiedTypeName(presentationUnitFormats[i].slice(0, verticalSlashIdx));
           const formatLabel = presentationUnitFormats[i].slice(verticalSlashIdx);
-          qualifiedPresentation += "[" + overrideFormat + formatLabel + "]";
+          qualifiedPresentation += `[${overrideFormat}${formatLabel}]`;
         }
       }
 

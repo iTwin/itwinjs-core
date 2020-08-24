@@ -95,7 +95,7 @@ export class IModelHubError extends WsgError {
       deepAssign(error, wsgError);
       error.errorNumber = errorId;
 
-      if (IModelHubError.requiresExtendedData(error.errorNumber!)) {
+      if (IModelHubError.requiresExtendedData(error.errorNumber)) {
         error.copyExtendedData();
       }
       if (log)

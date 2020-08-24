@@ -29,7 +29,7 @@ export class IModelJsConfig {
    */
   private static getConfiguration(repositoryRootDir: string, overrideConfigName?: string): any {
     const fileExtension = ".json5";
-    const defaultConfigFile = path.join(repositoryRootDir, "default" + fileExtension);
+    const defaultConfigFile = path.join(repositoryRootDir, `default${fileExtension}`);
     if (!fs.existsSync(defaultConfigFile))
       throw new Error(`Could not find default${fileExtension} at ${repositoryRootDir}.`);
 

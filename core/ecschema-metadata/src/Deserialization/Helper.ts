@@ -575,7 +575,7 @@ export class SchemaReadHelper<T = unknown> {
     const formatProps = this._parser.parseFormat(rawFormat);
 
     if (undefined !== formatProps.composite) {
-      const formatUnits = formatProps.composite.units!;
+      const formatUnits = formatProps.composite.units;
       for (const unit of formatUnits) {
         this.findSchemaItemSync(unit.name, true);
       }

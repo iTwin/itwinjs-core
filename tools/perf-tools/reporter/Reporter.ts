@@ -45,7 +45,7 @@ export class Reporter {
   public exportCSV(fileName: string) {
     let finalReport: string = "";
     if (!fileName.endsWith(".csv")) {
-      fileName = fileName + ".csv";
+      fileName = `${fileName}.csv`;
     }
     if (!fs.existsSync(fileName)) {
       finalReport += "TestSuite,TestName,ValueDescription,Value,Date,Info\n";

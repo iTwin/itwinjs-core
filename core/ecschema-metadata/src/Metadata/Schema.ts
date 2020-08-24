@@ -83,40 +83,40 @@ export class Schema implements CustomAttributeContainerProps {
     }
   }
 
-  get schemaKey() {
+  public get schemaKey() {
     if (undefined === this._schemaKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
     return this._schemaKey;
   }
 
-  get name() { return this.schemaKey.name; }
+  public get name() { return this.schemaKey.name; }
 
-  get readVersion() { return this.schemaKey.readVersion; }
+  public get readVersion() { return this.schemaKey.readVersion; }
 
-  get writeVersion() { return this.schemaKey.writeVersion; }
+  public get writeVersion() { return this.schemaKey.writeVersion; }
 
-  get minorVersion() { return this.schemaKey.minorVersion; }
+  public get minorVersion() { return this.schemaKey.minorVersion; }
 
-  get alias() {
+  public get alias() {
     if (this._alias === undefined || this._alias === null) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not have the required 'alias' attribute.`);
     } else { return this._alias; }
   }
 
-  get label() { return this._label; }
+  public get label() { return this._label; }
 
-  get description() { return this._description; }
+  public get description() { return this._description; }
 
-  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+  public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   /** Returns the schema name. */
-  get fullName() { return this.schemaKey.name; }
+  public get fullName() { return this.schemaKey.name; }
 
   /** Returns the schema. */
-  get schema(): Schema { return this; }
+  public get schema(): Schema { return this; }
 
-  /** Returns the schema context. */
-  get context(): SchemaContext { return this._context; }
+  /** Returns the schema context this schema is within. */
+  public get context(): SchemaContext { return this._context; }
 
   /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to

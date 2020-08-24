@@ -29,7 +29,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
   public loadSchema(schemaPath: string, schemaText?: string): Schema {
     schemaText = schemaText || this.readUtf8FileToStringSync(schemaPath);
     if (!schemaText)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "Unable to locate schema XML file at " + schemaPath);
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaPath}`);
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const key = this.getSchemaKey(schemaText);
@@ -69,7 +69,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     if (!candidates || candidates.length === 0)
       return undefined;
 
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1]; // eslint-disable-line @typescript-eslint/unbound-method
     const alias = this.getSchemaAlias(maxCandidate.schemaText!);
     const schema = new Schema(context, maxCandidate, alias) as T;
     context.addSchemaSync(schema);

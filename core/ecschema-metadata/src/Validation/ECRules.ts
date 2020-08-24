@@ -13,8 +13,7 @@ import { ECClass } from "../Metadata/Class";
 import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 import { EntityClass } from "../Metadata/EntityClass";
 import { Enumeration } from "../Metadata/Enumeration";
-import { Mixin } from "../Metadata/Mixin";
-import { AnyProperty, NavigationProperty, PrimitiveProperty, Property } from "../Metadata/Property";
+import { AnyProperty, PrimitiveProperty, Property } from "../Metadata/Property";
 import { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../Metadata/RelationshipClass";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
@@ -28,7 +27,7 @@ import { Schema } from "../Metadata/Schema";
 const ruleSetName = "ECObjects";
 
 function getCode(code: number): string {
-  return ruleSetName + "-" + code;
+  return `${ruleSetName}-${code}`;
 }
 
 /**
@@ -60,7 +59,7 @@ function getCode(code: number): string {
  * - UnitSystem:                1900-1999
  * @beta
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
+/* eslint-disable @typescript-eslint/naming-convention */
 export const DiagnosticCodes = {
   // Class Rule Codes (100-199)
   BaseClassIsSealed: getCode(100),
@@ -96,7 +95,6 @@ export const DiagnosticCodes = {
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
  * @beta
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const Diagnostics = {
   /**
    * EC-001
@@ -257,7 +255,7 @@ export const Diagnostics = {
  * All schema validation rules that fall under the category of ECObjects.
  * @beta
  */
-export const ECRuleSet: IRuleSet = { // eslint-disable-line @typescript-eslint/naming-convention
+export const ECRuleSet: IRuleSet = {
   name: ruleSetName,
 
   schemaRules: [
@@ -293,6 +291,8 @@ export const ECRuleSet: IRuleSet = { // eslint-disable-line @typescript-eslint/n
   ],
 };
 
+/* eslint-enable @typescript-eslint/naming-convention */
+
 /**
  * Validates schema references against multiple EC rules.
  * @param schema The schema to validate.
@@ -304,7 +304,7 @@ export async function* validateSchemaReferences(schema: Schema): AsyncIterable<S
       yield new Diagnostics.SupplementalSchemasCannotBeReferenced(schema, [schema.name, schemaRef.name]);
 
     if (schema.schemaKey.matches(schemaRef.schemaKey))
-      yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, schema.name + " --> " + schemaRef.name]);
+      yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, `${schema.name} --> ${schemaRef.name}`]);
 
     if (aliases.has(schemaRef.alias)) {
       const currentRef = aliases.get(schemaRef.alias);
@@ -335,7 +335,7 @@ export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<Class
   if (baseClass.modifier !== ECClassModifier.Sealed)
     return;
 
-  yield new Diagnostics.BaseClassIsSealed(ecClass, [ecClass.fullName, baseClass!.fullName]);
+  yield new Diagnostics.BaseClassIsSealed(ecClass, [ecClass.fullName, baseClass.fullName]);
 }
 
 /**
@@ -352,7 +352,7 @@ export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncItera
     return;
 
   const itemType = schemaItemTypeToString(baseClass.schemaItemType);
-  yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass!.fullName, itemType]);
+  yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass.fullName, itemType]);
 }
 
 /** EC Rule: When overriding a class primitive property, the child and base property must be of the same type (string, number, etc...). */
@@ -467,7 +467,7 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
   if (!property.isNavigation())
     return;
 
-  const navProp = property as NavigationProperty;
+  const navProp = property;
   const relationship = await navProp.relationshipClass;
 
   if (relationship.baseClass)
@@ -693,7 +693,7 @@ async function applyConstraintClassesDeriveFromAbstractContraint(ecClass: Relati
     const constraintClass = await classPromise;
 
     if (constraintClass.schemaItemType === SchemaItemType.Mixin && abstractConstraint.schemaItemType === SchemaItemType.EntityClass) {
-      if (!await (constraintClass as Mixin).applicableTo(abstractConstraint as EntityClass)) {
+      if (!await (constraintClass).applicableTo(abstractConstraint as EntityClass)) {
         const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
         return new Diagnostics.ConstraintClassesDeriveFromAbstractContraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
       }

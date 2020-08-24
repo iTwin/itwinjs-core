@@ -47,13 +47,10 @@ export class RelationshipClass extends ECClass {
     this._target = new RelationshipConstraint(this, RelationshipEnd.Target);
   }
 
-  get strength() { return this._strength; }
-
-  get strengthDirection() { return this._strengthDirection; }
-
-  get source() { return this._source; }
-
-  get target() { return this._target; }
+  public get strength() { return this._strength; }
+  public get strengthDirection() { return this._strengthDirection; }
+  public get source() { return this._source; }
+  public get target() { return this._target; }
 
   /**
    *
@@ -153,21 +150,21 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     this._roleLabel = roleLabel;
   }
 
-  get multiplicity() { return this._multiplicity; }
-  get polymorphic() { return this._polymorphic; }
-  get roleLabel() { return this._roleLabel; }
-  get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
-  get relationshipClass() { return this._relationshipClass; }
-  get relationshipEnd() { return this._relationshipEnd; }
-  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+  public get multiplicity() { return this._multiplicity; }
+  public get polymorphic() { return this._polymorphic; }
+  public get roleLabel() { return this._roleLabel; }
+  public get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
+  public get relationshipClass() { return this._relationshipClass; }
+  public get relationshipEnd() { return this._relationshipEnd; }
+  public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   /** Returns the constraint name, ie. 'RelationshipName.Source/Target' */
-  get fullName() { return this._relationshipClass.name + ":" + this.isSource ? "Source" : "Target"; }
+  public get fullName() { return `${this._relationshipClass.name}:${this.isSource ? "Source" : "Target"}`; }
 
   /** Returns the schema of the RelationshipClass. */
-  get schema(): Schema { return this._relationshipClass.schema; }
+  public get schema(): Schema { return this._relationshipClass.schema; }
 
-  get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
+  public get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
     if (this._abstractConstraint)
       return this._abstractConstraint;
 
@@ -177,14 +174,14 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     return this._abstractConstraint;
   }
 
-  set abstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined) {
+  public set abstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined) {
     this._abstractConstraint = abstractConstraint;
   }
 
   /**
    * True if this RelationshipConstraint is the Source relationship end.
    */
-  get isSource(): boolean { return this.relationshipEnd === RelationshipEnd.Source; }
+  public get isSource(): boolean { return this.relationshipEnd === RelationshipEnd.Source; }
 
   /**
    * Adds the provided class as a constraint class to this constraint.
@@ -416,8 +413,8 @@ export class RelationshipMultiplicity {
     if (matches === null || matches.length !== 3)
       return undefined;
 
-    const lowerLimit = parseInt(matches[1], undefined);
-    const upperLimit = matches[2] === "*" ? INT32_MAX : parseInt(matches[2], undefined);
+    const lowerLimit = parseInt(matches[1], 10);
+    const upperLimit = matches[2] === "*" ? INT32_MAX : parseInt(matches[2], 10);
     if (0 === lowerLimit && 1 === upperLimit)
       return RelationshipMultiplicity.zeroOne;
     else if (0 === lowerLimit && INT32_MAX === upperLimit)
@@ -444,9 +441,8 @@ export class RelationshipMultiplicity {
  * An abstract class used for schema editing.
  */
 export abstract class MutableRelationshipClass extends RelationshipClass {
-
-  get source() { return this._source as MutableRelationshipConstraint; }
-  get target() { return this._target as MutableRelationshipConstraint; }
+  public get source() { return this._source as MutableRelationshipConstraint; }
+  public get target() { return this._target as MutableRelationshipConstraint; }
   public abstract setStrength(strength: StrengthType): void;
   public abstract setStrengthDirection(direction: StrengthDirection): void;
   public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;

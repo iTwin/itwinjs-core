@@ -91,7 +91,7 @@ export class PermissionHandler {
       requestContext.enter();
     }
 
-    const imodelPermissions = await this._rbacClient.getObjectPermissions(requestContext, iModelId, PermissionHandler._objectTypeId!);
+    const imodelPermissions = await this._rbacClient.getObjectPermissions(requestContext, iModelId, PermissionHandler._objectTypeId);
     requestContext.enter();
 
     return PermissionHandler.parseIModelHubPermissions(imodelPermissions);

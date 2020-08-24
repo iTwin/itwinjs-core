@@ -220,7 +220,7 @@ export class VersionEvent extends IModelHubEvent {
 
 type EventConstructor = (new () => IModelHubEvent);
 /** Get constructor from EventType name. */
-function ConstructorFromEventType(type: IModelHubEventType): EventConstructor {
+function constructorFromEventType(type: IModelHubEventType): EventConstructor {
   switch (type) {
     case IModelHubEventType.LockEvent:
       return LockEvent;
@@ -248,8 +248,9 @@ function ConstructorFromEventType(type: IModelHubEventType): EventConstructor {
  * @returns Appropriate event object.
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ParseEvent(response: Response) {
-  const constructor: EventConstructor = ConstructorFromEventType(response.header["content-type"]);
+  const constructor: EventConstructor = constructorFromEventType(response.header["content-type"]);
   const event = new constructor();
   event.fromJson(response.body);
   return event;
@@ -428,7 +429,7 @@ export class EventHandler extends EventBaseHandler {
     let url: string = `${baseAddress}/Subscriptions/${subscriptionId}/messages/head`;
 
     if (timeout) {
-      url = url + `?timeout=${timeout}`;
+      url = `${url}?timeout=${timeout}`;
     }
 
     return url;

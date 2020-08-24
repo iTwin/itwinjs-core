@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { Client as OpenIdClient, Issuer } from "openid-client";
+import { Issuer, Client as OpenIdClient } from "openid-client";
 import { BeDuration, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";

@@ -294,7 +294,7 @@ export class Format implements FormatProps {
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
     else if (!Number.isInteger(jsonObj.precision)) // must be an integer
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'precision' attribute. It should be an integer.`);
-    this._precision = Format.parsePrecision(jsonObj.precision, this.name, this._type as FormatType);
+    this._precision = Format.parsePrecision(jsonObj.precision, this.name, this._type);
 
     if (this.type === FormatType.Scientific) {
       if (undefined === jsonObj.scientificType) // if format type is scientific and scientific type is undefined, throw
@@ -421,7 +421,7 @@ export class Format implements FormatProps {
    */
   public toJson() {
     const schemaJson: { [value: string]: any } = {};
-    schemaJson.type = Format.formatTypeToString(this.type!);
+    schemaJson.type = Format.formatTypeToString(this.type);
     schemaJson.precision = this.precision;
     schemaJson.roundFactor = this.roundFactor;
     if (undefined !== this.minWidth) schemaJson.minWidth = this.minWidth;

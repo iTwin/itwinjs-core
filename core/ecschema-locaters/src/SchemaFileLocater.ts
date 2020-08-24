@@ -130,7 +130,7 @@ export abstract class SchemaFileLocater {
    * @param format The type of file that the schema key refers to. json or xml
    */
   private addCandidateNoExtSchemaKey(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
-    const fullPath = path.join(schemaPath, schemaName + ".ecschema." + format);
+    const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
     // If the file does not exist, end
     if (!fs.existsSync(fullPath)) return;
@@ -161,7 +161,7 @@ export abstract class SchemaFileLocater {
 
     const result = new glob.GlobSync(fullPath, { sync: true });
     for (const match of result.found) {
-      let fileName = path.basename(match, (".ecschema." + format));
+      let fileName = path.basename(match, (`.ecschema.${format}`));
       // TODO: should this be moved or handled elsewhere?
       // Handles two version file names - SchemaKey.parseString supports only 3 version names.
       if (/[^\d]\.\d?\d\.\d?\d$/.test(fileName)) {
@@ -197,17 +197,17 @@ export abstract class SchemaFileLocater {
     const minorVersion = desiredKey.minorVersion.toString();
 
     if (matchType === SchemaMatchType.Latest) {
-      twoVersionSuffix = (".*.*.ecschema." + format);
-      threeVersionSuffix = (".*.*.*.ecschema." + format);
+      twoVersionSuffix = (`.*.*.ecschema.${format}`);
+      threeVersionSuffix = (`.*.*.*.ecschema.${format}`);
     } else if (matchType === SchemaMatchType.LatestWriteCompatible) {
-      twoVersionSuffix = formatString(".{0}.*.ecschema." + format, padStartEx(readVersion, 2, "0"));
-      threeVersionSuffix = formatString(".{0}.{1}.*.ecschema." + format, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"));
+      twoVersionSuffix = formatString(`.{0}.*.ecschema.${format}`, padStartEx(readVersion, 2, "0"));
+      threeVersionSuffix = formatString(`.{0}.{1}.*.ecschema.${format}`, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"));
     } else if (matchType === SchemaMatchType.LatestReadCompatible) {
-      twoVersionSuffix = formatString(".{0}.*.ecschema." + format, padStartEx(readVersion, 2, "0"));
-      threeVersionSuffix = formatString(".{0}.*.*.ecschema." + format, padStartEx(readVersion, 2, "0"));
+      twoVersionSuffix = formatString(`.{0}.*.ecschema.${format}`, padStartEx(readVersion, 2, "0"));
+      threeVersionSuffix = formatString(`.{0}.*.*.ecschema.${format}`, padStartEx(readVersion, 2, "0"));
     } else {
-      twoVersionSuffix = formatString(".{0}.{1}.ecschema." + format, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"));
-      threeVersionSuffix = formatString(".{0}.{1}.{2}.ecschema." + format, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"), padStartEx(minorVersion, 2, "0"));
+      twoVersionSuffix = formatString(`.{0}.{1}.ecschema.${format}`, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"));
+      threeVersionSuffix = formatString(`.{0}.{1}.{2}.ecschema.${format}`, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"), padStartEx(minorVersion, 2, "0"));
     }
 
     const twoVersionExpression = desiredKey.name + twoVersionSuffix;

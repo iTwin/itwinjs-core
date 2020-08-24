@@ -77,7 +77,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
       ? decode(tokenSet.access_token, { json: true, complete: false })
       : undefined;
     this._accessToken = AccessToken.fromTokenResponseJson(tokenSet, userProfile);
-    return this._accessToken!;
+    return this._accessToken;
   }
 
   /**

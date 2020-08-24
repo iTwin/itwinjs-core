@@ -674,7 +674,7 @@ export class ChangeSetHandler {
     postChangeSet.downloadUrl = undefined;
     postChangeSet.isUploaded = true;
 
-    const confirmChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, postChangeSet.id!), postChangeSet);
+    const confirmChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, postChangeSet.id), postChangeSet);
     requestContext.enter();
 
     changeSet.isUploaded = true;

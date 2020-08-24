@@ -337,7 +337,7 @@ describe("Ids", () => {
     assert.isFalse(Guid.isV4Guid(v1));
     assert.isTrue(Guid.isV4Guid(v4));
 
-    assert.equal(JSON.stringify(v4), '"' + v4 + '"');
+    assert.equal(JSON.stringify(v4), `"${v4}"`);
     assert.isFalse(Guid.isGuid("0x123"));
     assert.isFalse(Guid.isGuid("badstuff"));
     assert.isFalse(Guid.isGuid("3d04156c-4faa-4eac-b20e-353a9e6c0183d")); // too long
