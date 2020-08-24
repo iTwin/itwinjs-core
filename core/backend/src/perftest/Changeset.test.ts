@@ -11,7 +11,7 @@ import { Code, ColorDef, GeometryStreamProps, IModel, IModelError, IModelVersion
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { BriefcaseManager, ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb } from "../imodeljs-backend";
+import { BriefcaseManager, ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, SpatialCategory, StandaloneDb } from "../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
 import { KnownTestLocations } from "../test/KnownTestLocations";
@@ -73,7 +73,7 @@ async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientReques
   // get the time of applying a meta data change on an imodel
   const startTime = new Date().getTime();
   const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
-  rootEl.userLabel = rootEl.userLabel + "changed";
+  rootEl.userLabel = `${rootEl.userLabel}changed`;
   iModelPullAndPush.elements.updateElement(rootEl);
   await iModelPullAndPush.concurrencyControl.request(requestContext);
   iModelPullAndPush.saveChanges("user changes root subject of the imodel");
@@ -98,7 +98,7 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
   // Find or create a SpatialCategory.
-  const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+  const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
@@ -293,8 +293,8 @@ describe("ImodelChangesetPerformance", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!fs.existsSync(KnownTestLocations.outputDir))
+      fs.mkdirSync(KnownTestLocations.outputDir);
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     projectId = configData.basicTest.projectId;
     imodelId = configData.basicTest.imodelId;
@@ -347,8 +347,8 @@ describe("ImodelChangesetPerformance big datasets", () => {
 
   before(async () => {
     iModelRootDir = configData.rootDir;
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!fs.existsSync(KnownTestLocations.outputDir))
+      fs.mkdirSync(KnownTestLocations.outputDir);
   });
   function getChangesetSummary(changeSets: ChangeSet[]): {} {
     const schemaChanges = changeSets.filter((obj) => obj.changesType === ChangesType.Schema);
@@ -369,7 +369,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
   }
 
   async function downloadChangesets(requestContext: AuthorizedClientRequestContext, imodelId: string, changeSets: ChangeSet[], downloadDir: string) {
-    if (IModelJsFs.existsSync(downloadDir))
+    if (fs.existsSync(downloadDir))
       fs.removeSync(downloadDir);
     // get first changeset as betweenChangeSets skips the first entry
     const csQuery1 = new ChangeSetQuery();
@@ -379,9 +379,9 @@ describe("ImodelChangesetPerformance big datasets", () => {
     for (let j = 0; j <= changeSets.length; j = j + incr) {
       const csQuery = new ChangeSetQuery();
       if ((j + incr) < changeSets.length)
-        csQuery.betweenChangeSets(changeSets[j].id!, changeSets[j + incr].id!);
+        csQuery.betweenChangeSets(changeSets[j].id!, changeSets[j + incr].id);
       else
-        csQuery.betweenChangeSets(changeSets[j].id!, changeSets[changeSets.length - 1].id!);
+        csQuery.betweenChangeSets(changeSets[j].id!, changeSets[changeSets.length - 1].id);
       csQuery.selectDownloadUrl();
 
       requestContext.enter();
@@ -391,8 +391,8 @@ describe("ImodelChangesetPerformance big datasets", () => {
   async function setupIModel(modelInfo: any) {
     const downloadDir: string = path.join(iModelRootDir, modelInfo.modelName);
     // if folder exists, we'll just use the local copy
-    if (!IModelJsFs.existsSync(downloadDir)) {
-      IModelJsFs.mkdirSync(downloadDir);
+    if (!fs.existsSync(downloadDir)) {
+      fs.mkdirSync(downloadDir);
     }
     const requestContext: AuthorizedClientRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
@@ -401,19 +401,19 @@ describe("ImodelChangesetPerformance big datasets", () => {
     if (!iModel)
       throw new Error(`IModel with id ${modelInfo.modelId} not found`);
 
-    IModelJsFs.writeFileSync(path.join(downloadDir, "imodel.json"), JSON.stringify(iModel, undefined, 4));
+    fs.writeFileSync(path.join(downloadDir, "imodel.json"), JSON.stringify(iModel, undefined, 4));
 
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, modelInfo.modelId);
-    IModelJsFs.writeFileSync(path.join(downloadDir, "changeSets.json"), JSON.stringify(changeSets, undefined, 4));
+    fs.writeFileSync(path.join(downloadDir, "changeSets.json"), JSON.stringify(changeSets, undefined, 4));
 
     const query = new VersionQuery();
     query.orderBy("createdDate");
     const namedVers: Version[] = await BriefcaseManager.imodelClient.versions.get(requestContext, modelInfo.modelId, query);
-    IModelJsFs.writeFileSync(path.join(downloadDir, "namedVersions.json"), JSON.stringify(namedVers, undefined, 4));
+    fs.writeFileSync(path.join(downloadDir, "namedVersions.json"), JSON.stringify(namedVers, undefined, 4));
 
     const query2 = new CheckpointQuery();
     const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, modelInfo.modelId, query2);
-    IModelJsFs.writeFileSync(path.join(downloadDir, "checkPoints.json"), JSON.stringify(checkpoints, undefined, 4));
+    fs.writeFileSync(path.join(downloadDir, "checkPoints.json"), JSON.stringify(checkpoints, undefined, 4));
 
     const modelSummary = {
       iModelInfo: modelInfo,
@@ -427,25 +427,25 @@ describe("ImodelChangesetPerformance big datasets", () => {
         latest: checkpoints[0],
       },
     };
-    IModelJsFs.writeFileSync(path.join(downloadDir, "summary.json"), JSON.stringify(modelSummary, undefined, 4));
+    fs.writeFileSync(path.join(downloadDir, "summary.json"), JSON.stringify(modelSummary, undefined, 4));
 
     // now download the seed file, if not there
     const seedPathname = path.join(downloadDir, "seed", modelInfo.modelName!.concat(".bim"));
-    if (!IModelJsFs.existsSync(seedPathname))
+    if (!fs.existsSync(seedPathname))
       await BriefcaseManager.imodelClient.iModels.download(requestContext, modelInfo.modelId, seedPathname);
 
     // now download changesets. first check if there are some, then download only newer ones
     const csDir = path.join(downloadDir, "changeSets");
-    if (!IModelJsFs.existsSync(csDir)) {
+    if (!fs.existsSync(csDir)) {
       await downloadChangesets(requestContext, modelInfo.modelId, changeSets, csDir);
     } else {
       // delete the temp files
-      const tempFiles = IModelJsFs.readdirSync(csDir).filter((fileName) => !fileName.endsWith(".cs"));
+      const tempFiles = fs.readdirSync(csDir).filter((fileName) => !fileName.endsWith(".cs"));
       for (const tempFile of tempFiles) {
-        IModelJsFs.removeSync(path.join(csDir, tempFile));
+        fs.removeSync(path.join(csDir, tempFile));
       }
 
-      const csFiles = IModelJsFs.readdirSync(csDir).filter((fileName) => fileName.endsWith(".cs"));
+      const csFiles = fs.readdirSync(csDir).filter((fileName) => fileName.endsWith(".cs"));
       // if more than 80% files are there, download the missing ones
       if ((csFiles.length / changeSets.length) > 0.8) {
         // download missing changeset files
@@ -521,7 +521,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
         }
         if (apply) {
           // eslint-disable-next-line no-console
-          console.log("For iModel: " + ds.modelName + ": Applying changeset: " + (j + 1).toString() + " / " + endNum.toString());
+          console.log(`For iModel: ${ds.modelName}: Applying changeset: ${(j + 1).toString()} / ${endNum.toString()}`);
           requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
           const startTime = new Date().getTime();
           await iModelDb.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(cs.wsgId));
@@ -568,7 +568,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
       const results = HubUtility.getApplyChangeSetTime(iModelDir, csStart, csEnd);
 
       const changeSetJsonPathname = path.join(iModelDir, "changeSets.json");
-      const jsonStr = IModelJsFs.readFileSync(changeSetJsonPathname) as string;
+      const jsonStr = fs.readFileSync(changeSetJsonPathname).toString();
       const changeSetsJson = JSON.parse(jsonStr);
 
       const changesetsInfo = [];
@@ -585,7 +585,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
           type: ChangesType[csDetail[0].changesType],
           desc: csDetail[0].description,
         };
-        const stats = getStats(path.join(iModelDir, "changeSets", result.csId + ".cs"));
+        const stats = getStats(path.join(iModelDir, "changeSets", `${result.csId}.cs`));
         reporter.addEntry("ImodelChangesetPerformance", "ApplyChangesetLocal", "Time(s)", result.time, { csNum: result.csNum, csDetail: csInfo, csStats: stats, modelDetail: modelInfo });
       }
       reporter.exportCSV(csvPath);
@@ -609,16 +609,16 @@ describe("ImodelChangesetPerformance own data", () => {
   const schemaName: string = schemaDetail.name;
   const baseClassName: string = schemaDetail.baseName;
   const hier: number = schemaDetail.hierarchy;
-  const className: string = baseClassName + "Sub" + (hier - 1).toString();
+  const className: string = `${baseClassName}Sub${(hier - 1).toString()}`;
 
   async function setupLocalIModel(projId: string, modelId: string, localPath: string) {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projId, modelId, SyncMode.FixedVersion, IModelVersion.named(seedVersionName));
     iModelDb.close();
-    if (IModelJsFs.existsSync(localPath))
-      IModelJsFs.unlinkSync(localPath);
+    if (fs.existsSync(localPath))
+      fs.unlinkSync(localPath);
     const bc = BriefcaseManager.findBriefcaseByKey(iModelDb.briefcaseKey);
-    IModelJsFs.copySync(bc!.pathname, localPath);
+    fs.copySync(bc!.pathname, localPath);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     const status = nativeDb.openIModel(localPath, OpenMode.ReadWrite);
@@ -646,15 +646,15 @@ describe("ImodelChangesetPerformance own data", () => {
     Logger.setLevel("HubUtility", LogLevel.Info);
     // Logger.setLevel("Performance", LogLevel.Info);
 
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-    if (!IModelJsFs.existsSync(outDir))
-      IModelJsFs.mkdirSync(outDir);
+    if (!fs.existsSync(KnownTestLocations.outputDir))
+      fs.mkdirSync(KnownTestLocations.outputDir);
+    if (!fs.existsSync(outDir))
+      fs.mkdirSync(outDir);
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     for (const opSize of opSizes) {
       for (const baseName of baseNames) {
-        const iModelName = iModelNameBase + baseName + "_" + opSize.toString();
+        const iModelName = `${iModelNameBase + baseName}_${opSize.toString()}`;
         const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
         if (iModels.length === 0) {
           // create iModel and push changesets 1) with schema 2) with 1M records of PerfElementSub3 3) insert of opSize for actual testing
@@ -665,7 +665,7 @@ describe("ImodelChangesetPerformance own data", () => {
 
           const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);
           const sxml: string = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);
-          IModelJsFs.writeFileSync(schemaPathname, sxml);
+          fs.writeFileSync(schemaPathname, sxml);
 
           iModelDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
           await iModelDb.importSchemas(requestContext, [schemaPathname]).catch(() => { });
@@ -684,7 +684,7 @@ describe("ImodelChangesetPerformance own data", () => {
 
           requestContext.enter();
           for (let m = 0; m < dbSize; ++m) {
-            const elementProps = PerfTestUtility.initElemProps(`${schemaName}:${className}`, iModelDb, newModelId, spatialCategoryId!);
+            const elementProps = PerfTestUtility.initElemProps(`${schemaName}:${className}`, iModelDb, newModelId, spatialCategoryId);
             const geomElement = iModelDb.elements.createElement(elementProps);
             const id = iModelDb.elements.insertElement(geomElement);
             assert.isTrue(Id64.isValidId64(id), "insert failed");
@@ -707,7 +707,7 @@ describe("ImodelChangesetPerformance own data", () => {
           switch (baseName) {
             case "I": // create changeset with insert operation
               for (let m = 0; m < opSize; ++m) {
-                const elementProps = PerfTestUtility.initElemProps(`${schemaName}:${className}`, iModelDb, newModelId, spatialCategoryId!);
+                const elementProps = PerfTestUtility.initElemProps(`${schemaName}:${className}`, iModelDb, newModelId, spatialCategoryId);
                 const geomElement = iModelDb.elements.createElement(elementProps);
                 const id = iModelDb.elements.insertElement(geomElement);
                 assert.isTrue(Id64.isValidId64(id), "insert failed");
@@ -773,13 +773,13 @@ describe("ImodelChangesetPerformance own data", () => {
   });
   it("InsertChangeset", async () => {
     for (const opSize of opSizes) {
-      const iModelName = iModelNameBase + "I_" + opSize.toString();
+      const iModelName = `${iModelNameBase}I_${opSize.toString()}`;
       const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
         // eslint-disable-next-line no-console
         console.log(`Downloading iModel ${iModelName} from iModelHub.`);
-        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_insert.bim");
+        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, `${iModelName}_insert.bim`);
         await setupLocalIModel(projectId, iModel.id!, iModelPathname);
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
@@ -807,13 +807,13 @@ describe("ImodelChangesetPerformance own data", () => {
   });
   it("DeleteChangeset", async () => {
     for (const opSize of opSizes) {
-      const iModelName = iModelNameBase + "D_" + opSize.toString();
+      const iModelName = `${iModelNameBase}D_${opSize.toString()}`;
       const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
         // eslint-disable-next-line no-console
         console.log(`Downloading iModel ${iModelName} from iModelHub.`);
-        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_delete.bim");
+        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, `${iModelName}_delete.bim`);
         await setupLocalIModel(projectId, iModel.id!, iModelPathname);
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
@@ -840,13 +840,13 @@ describe("ImodelChangesetPerformance own data", () => {
   });
   it("UpdateChangeset", async () => {
     for (const opSize of opSizes) {
-      const iModelName = iModelNameBase + "U_" + opSize.toString();
+      const iModelName = `${iModelNameBase}U_${opSize.toString()}`;
       const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
         // eslint-disable-next-line no-console
         console.log(`Downloading iModel ${iModelName} from iModelHub.`);
-        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_update.bim");
+        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, `${iModelName}_update.bim`);
         await setupLocalIModel(projectId, iModel.id!, iModelPathname);
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file

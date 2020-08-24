@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
+import * as fs from "fs-extra";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelHubError } from "@bentley/imodelhub-client";
 import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -20,7 +21,7 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
   // Create a new physical model.
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
   // Find or create a SpatialCategory.
-  const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+  const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
   // Reserve all of the codes that are required by the new model and category.
@@ -43,8 +44,8 @@ describe("ElementAspectPerformance", () => {
   let iModelDbHub: BriefcaseDb;
 
   before(async () => {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!fs.existsSync(KnownTestLocations.outputDir))
+      fs.mkdirSync(KnownTestLocations.outputDir);
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     const projectId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;
@@ -95,7 +96,7 @@ describe("ElementAspectPerformance", () => {
       // update simple element with no aspect
       const startTime2 = new Date().getTime();
       const returnEle1 = iModelDb.elements.getElement(eleId);
-      returnEle1.userLabel = returnEle1.userLabel + "updated";
+      returnEle1.userLabel = `${returnEle1.userLabel}updated`;
       iModelDb.elements.updateElement(returnEle1);
       const endTime2 = new Date().getTime();
       const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
@@ -163,7 +164,7 @@ describe("ElementAspectPerformance", () => {
       // update element with unique aspect
       const startTime2 = new Date().getTime();
       const returnEle2 = iModelDb.elements.getElement(eleId);
-      returnEle1.userLabel = returnEle1.userLabel + "updated";
+      returnEle1.userLabel = `${returnEle1.userLabel}updated`;
       iModelDb.elements.updateElement(returnEle1);
       const aspects = iModelDb.elements.getAspects(returnEle2.id, aspectProps.classFullName) as TestAspect[];
       aspects[0].testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
@@ -243,7 +244,7 @@ describe("ElementAspectPerformance", () => {
       // update element with multi aspect
       const startTime2 = new Date().getTime();
       const returnEle2 = iModelDb.elements.getElement(eleId);
-      returnEle2.userLabel = returnEle2.userLabel + "updated";
+      returnEle2.userLabel = `${returnEle2.userLabel}updated`;
       iModelDb.elements.updateElement(returnEle2);
       const aspects1: ElementAspect[] = iModelDb.elements.getAspects(returnEle2.id, aspectProps.classFullName);
       (aspects1[foundIndex] as any).testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
