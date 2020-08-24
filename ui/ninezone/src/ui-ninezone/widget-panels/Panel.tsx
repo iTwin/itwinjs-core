@@ -144,7 +144,7 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
             );
           })}
         </div>
-        <WidgetPanelGrip />
+        {panel.resizable && <WidgetPanelGrip />}
       </div>
     </div>
   );

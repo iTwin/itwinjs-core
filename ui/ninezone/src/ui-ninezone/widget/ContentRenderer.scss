@@ -5,3 +5,13 @@
 .nz-widget-contentRenderer {
   flex: 1 1 auto;
 }
+
+.nz-widget-panelWidget {
+  &.nz-horizontal {
+    .nz-minimized {
+      .nz-widget-contentRenderer {
+        position: absolute;
+      }
+    }
+  }
+}

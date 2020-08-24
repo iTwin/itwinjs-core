@@ -34,13 +34,13 @@ internal;ContentNodeContext: React.Context
 internal;ContentZoneId = 5
 internal;createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial
 internal;createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial
-internal;createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState
+internal;createHorizontalPanelState(side: HorizontalPanelSide, args?: Partial
 internal;createNineZoneState(args?: Partial
-internal;createPanelsState(): PanelsState
+internal;createPanelsState(args?: Partial
 internal;createPanelState(side: PanelSide):
 internal;createTabsState(args?: Partial
 internal;createTabState(id: TabState["id"], args?: Partial
-internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
+internal;createVerticalPanelState(side: VerticalPanelSide, args?: Partial
 internal;createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial
 internal;Css
 internal;CssProperties

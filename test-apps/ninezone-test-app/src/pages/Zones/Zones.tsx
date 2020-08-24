@@ -30,6 +30,8 @@ import {
   PanelSide,
   findTab,
   NineZoneContext,
+  createPanelsState,
+  createHorizontalPanelState,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -314,7 +316,13 @@ export default function Zones() {
   const { settings, remove, removeFromStart, add, addToStart, update } = useSettings();
   const settingsStr = React.useMemo(() => JSON.stringify(settings), [settings]);
   const [state, dispatch] = React.useReducer(NineZoneStateReducer, {}, () => {
-    let initialState = createNineZoneState();
+    let initialState = createNineZoneState({
+      panels: createPanelsState({
+        top: createHorizontalPanelState("top", {
+          resizable: false,
+        }),
+      }),
+    });
     initialState = addPanelWidget(initialState, "left", "topLeft", ["topLeft_1", "topLeft_2", "topLeft_3", "topLeft_4"]);
     initialState = addPanelWidget(initialState, "left", "centerLeft", ["centerLeft_1"]);
     initialState = addPanelWidget(initialState, "left", "bottomLeft", ["bottomLeft_1"]);

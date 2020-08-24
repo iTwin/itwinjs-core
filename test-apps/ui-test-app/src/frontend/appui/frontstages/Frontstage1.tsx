@@ -6,7 +6,8 @@ import * as React from "react";
 import { TimelineComponent } from "@bentley/ui-components";
 import {
   ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, WidgetStateChangedEventArgs, Zone, ZoneLocation, ZoneState,
+  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, WidgetStateChangedEventArgs, Zone, ZoneLocation,
+  ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -14,12 +15,23 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
+import { connect } from "react-redux";
+import { RootState } from "../..";
 
 /* eslint-disable react/jsx-key */
 
-function RightPanel() {
+function RightPanelComponent(props: { frameworkVersion: string }) {
+  if (props.frameworkVersion === "1")
+    return <RightPanel1 />;
+  return <RightPanel2 />;
+}
+
+function mapStateToRightPanelComponentProps(state: RootState) {
+  return { frameworkVersion: state.sampleAppState.frameworkVersion };
+}
+
+function RightPanel1(props: { children?: React.ReactNode }) {
   const [collapsed, setCollapsed] = React.useState(true);
-  const direction = useWidgetDirection();
   const [state, setState] = React.useState(() => {
     const frontstageDef = FrontstageManager.activeFrontstageDef!;
     const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
@@ -45,7 +57,6 @@ function RightPanel() {
         panel.size = size;
         setCollapsed((prev) => !prev);
       }}>{collapsed ? "<" : ">"}</button>
-      <p>{direction}</p>
       <button onClick={() => {
         const frontstageDef = FrontstageManager.activeFrontstageDef!;
         frontstageDef.restoreLayout();
@@ -72,9 +83,20 @@ function RightPanel() {
         widgetDef.expand();
       }}>Expand</button>
       <p>{state}</p>
+      {props.children}
     </>
   );
 }
+
+function RightPanel2() {
+  const direction = useWidgetDirection();
+  return <RightPanel1>
+    <p>{direction}</p>
+  </RightPanel1>
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const RightPanel = connect(mapStateToRightPanelComponentProps)(RightPanelComponent);
 
 function SampleTimelineComponent() {
   const duration = 20 * 1000;

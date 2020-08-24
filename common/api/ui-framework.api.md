@@ -1753,6 +1753,7 @@ export const expandWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -1764,6 +1765,7 @@ export const expandWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -1775,6 +1777,7 @@ export const expandWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -1787,6 +1790,7 @@ export const expandWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -2794,7 +2798,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState;
 
 // @internal (undocumented)
-export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide): NineZoneState;
+export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState;
 
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
@@ -3164,7 +3168,7 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     // (undocumented)
     static get Key_Separator(): number;
     render(): JSX.Element;
-}
+    }
 
 // @beta
 export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
@@ -4318,6 +4322,7 @@ export const setPanelSize: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4329,6 +4334,7 @@ export const setPanelSize: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4340,6 +4346,7 @@ export const setPanelSize: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4352,6 +4359,7 @@ export const setPanelSize: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4433,6 +4441,7 @@ export const setWidgetLabel: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4444,6 +4453,7 @@ export const setWidgetLabel: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4455,6 +4465,7 @@ export const setWidgetLabel: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4467,6 +4478,7 @@ export const setWidgetLabel: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4545,6 +4557,7 @@ export const setWidgetState: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4556,6 +4569,7 @@ export const setWidgetState: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4567,6 +4581,7 @@ export const setWidgetState: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4579,6 +4594,7 @@ export const setWidgetState: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4721,6 +4737,7 @@ export const showWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4732,6 +4749,7 @@ export const showWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4743,6 +4761,7 @@ export const showWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4755,6 +4774,7 @@ export const showWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;

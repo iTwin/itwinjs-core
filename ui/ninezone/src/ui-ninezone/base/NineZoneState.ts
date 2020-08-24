@@ -125,6 +125,7 @@ export interface PanelState {
   readonly maxSize: number;
   readonly minSize: number;
   readonly pinned: boolean;
+  readonly resizable: boolean;
   readonly side: PanelSide;
   readonly size: number | undefined;
   readonly widgets: ReadonlyArray<WidgetState["id"]>;
@@ -761,12 +762,13 @@ function setWidgetActiveTabId(
 }
 
 /** @internal */
-export function createPanelsState(): PanelsState {
+export function createPanelsState(args?: Partial<PanelsState>): PanelsState {
   return {
     bottom: createHorizontalPanelState("bottom"),
     left: createVerticalPanelState("left"),
     right: createVerticalPanelState("right"),
     top: createHorizontalPanelState("top"),
+    ...args,
   };
 }
 
@@ -894,6 +896,7 @@ export function createPanelState(side: PanelSide) {
     maxSize: 600,
     minSize: 200,
     pinned: true,
+    resizable: true,
     side,
     size: undefined,
     widgets: [],
@@ -902,20 +905,22 @@ export function createPanelState(side: PanelSide) {
 }
 
 /** @internal */
-export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState {
+export function createVerticalPanelState(side: VerticalPanelSide, args?: Partial<VerticalPanelState>): VerticalPanelState {
   return {
     ...createPanelState(side),
     side,
+    ...args,
   };
 }
 
 /** @internal */
-export function createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState {
+export function createHorizontalPanelState(side: HorizontalPanelSide, args?: Partial<HorizontalPanelState>): HorizontalPanelState {
   return {
     ...createPanelState(side),
     minSize: 100,
     side,
     span: true,
+    ...args,
   };
 }
 

@@ -207,13 +207,13 @@ export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Pa
 export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial<FloatingWidgetState>): FloatingWidgetState;
 
 // @internal (undocumented)
-export function createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState;
+export function createHorizontalPanelState(side: HorizontalPanelSide, args?: Partial<HorizontalPanelState>): HorizontalPanelState;
 
 // @internal
 export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneState;
 
 // @internal (undocumented)
-export function createPanelsState(): PanelsState;
+export function createPanelsState(args?: Partial<PanelsState>): PanelsState;
 
 // @internal (undocumented)
 export function createPanelState(side: PanelSide): {
@@ -222,6 +222,7 @@ export function createPanelState(side: PanelSide): {
     maxSize: number;
     minSize: number;
     pinned: boolean;
+    resizable: boolean;
     side: PanelSide;
     size: undefined;
     widgets: never[];
@@ -235,7 +236,7 @@ export function createTabsState(args?: Partial<TabsState>): TabsState;
 export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState;
 
 // @internal (undocumented)
-export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState;
+export function createVerticalPanelState(side: VerticalPanelSide, args?: Partial<VerticalPanelState>): VerticalPanelState;
 
 // @internal (undocumented)
 export function createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial<WidgetState>): WidgetState;
@@ -1559,6 +1560,8 @@ export interface PanelState {
     readonly minSize: number;
     // (undocumented)
     readonly pinned: boolean;
+    // (undocumented)
+    readonly resizable: boolean;
     // (undocumented)
     readonly side: PanelSide;
     // (undocumented)

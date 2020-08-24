@@ -255,7 +255,7 @@ beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
-internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide): NineZoneState
+internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
 alpha;InputEditorCommitHandler
 alpha;InputEditorPopup 
 alpha;InputEditorPopupProps 

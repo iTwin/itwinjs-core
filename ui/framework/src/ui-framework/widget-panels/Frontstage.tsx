@@ -379,17 +379,18 @@ export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult)
 }
 
 /** @internal */
-export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide) {
-  nineZone = addPanelWidgets(nineZone, frontstageDef, panel);
-  const key = getPanelDefKey(panel);
+export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide) {
+  nineZone = addPanelWidgets(nineZone, frontstageDef, panelSide);
+  const key = getPanelDefKey(panelSide);
   const panelDef = frontstageDef[key];
   nineZone = produce(nineZone, (draft) => {
-    const draftPanel = draft.panels[panel];
-    draftPanel.size = panelDef?.size;
-    draftPanel.minSize = panelDef?.minSize ?? draftPanel.minSize;
-    draftPanel.pinned = panelDef?.pinned ?? draftPanel.pinned;
+    const panel = draft.panels[panelSide];
+    panel.size = panelDef?.size;
+    panel.minSize = panelDef?.minSize ?? panel.minSize;
+    panel.pinned = panelDef?.pinned ?? panel.pinned;
+    panel.resizable = panelDef?.resizable ?? panel.resizable;
     if (panelDef?.maxSizeSpec) {
-      draftPanel.maxSize = getPanelMaxSize(panelDef.maxSizeSpec, panel, nineZone.size);
+      panel.maxSize = getPanelMaxSize(panelDef.maxSizeSpec, panelSide, nineZone.size);
     }
   });
   return nineZone;
@@ -403,7 +404,7 @@ function getPanelMaxSize(maxSizeSpec: StagePanelMaxSizeSpec, panel: PanelSide, n
   return maxSizeSpec.percentage / 100 * size;
 }
 
-const stateVersion = 10; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 11; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
