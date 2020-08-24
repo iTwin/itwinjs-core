@@ -8,8 +8,8 @@
 
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, ClipUtilities, Constant, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Transform, Vector2d,
-  Vector3d, XAndY, YawPitchRollAngles,
+  Angle, AngleSweep, Arc3d, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d,
+  Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import { Cartographic, ColorDef, Frustum, LinePixels, Npc, NpcCenter } from "@bentley/imodeljs-common";
 import {
@@ -28,7 +28,7 @@ import {
 } from "../ViewGlobalLocation";
 import { Animator, CoordSystem, DepthPointSource, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
-import { ViewState3d, ViewStatus } from "../ViewState";
+import { ViewPose, ViewState3d, ViewStatus } from "../ViewState";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
@@ -36,6 +36,7 @@ import {
 } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 import { ToolSettings } from "./ToolSettings";
+import { Pixel } from "../render/Pixel";
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 /* eslint-disable no-restricted-syntax */
@@ -84,7 +85,7 @@ const inertialDampen = (pt: Vector3d) => {
  * @public
  */
 export abstract class ViewTool extends InteractiveTool {
-  public static translate(val: string) { return CoreTools.translate("View." + val); }
+  public static translate(val: string) { return CoreTools.translate(`View.${val}`); }
 
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
@@ -293,7 +294,7 @@ export class ViewHandleArray {
 export abstract class ViewManip extends ViewTool {
   /** @internal */
   public viewHandles: ViewHandleArray;
-  public frustumValid = false;
+  public frustumValid = false; // unused
   public readonly targetCenterWorld = new Point3d();
   public inHandleModify = false;
   public isDragging = false;
@@ -304,6 +305,8 @@ export abstract class ViewManip extends ViewTool {
   public forcedHandle = ViewHandleType.None;
   /** @internal */
   protected _depthPreview?: { testPoint: Point3d, pickRadius: number, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, isDefaultDepth: boolean, sourceId?: string };
+  /** @internal */
+  protected _startPose?: ViewPose;
 
   constructor(viewport: ScreenViewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
     super(viewport);
@@ -416,7 +419,7 @@ export abstract class ViewManip extends ViewTool {
     this.nPts = 0;
     this.inHandleModify = false;
     this.inDynamicUpdate = false;
-    this.frustumValid = false;
+    this._startPose = undefined;
 
     this.viewHandles.onReinitialize();
   }
@@ -625,10 +628,12 @@ export abstract class ViewManip extends ViewTool {
 
     const vp = this.viewport;
     if (undefined !== vp) {
-      vp.synchWithView();
-
-      if (restorePrevious)
-        vp.doUndo(ScreenViewport.animation.time.normal);
+      if (restorePrevious && this._startPose) {
+        vp.view.applyPose(this._startPose);
+        vp.animateFrustumChange();
+      } else {
+        vp.synchWithView();
+      }
 
       vp.invalidateDecorations();
     }
@@ -697,7 +702,6 @@ export abstract class ViewManip extends ViewTool {
   public processFirstPoint(ev: BeButtonEvent) {
     const forcedHandle = this.forcedHandle;
     this.forcedHandle = ViewHandleType.None;
-    this.frustumValid = false;
 
     if (this.viewHandles.testHit(ev.viewPoint, forcedHandle)) {
       this.inHandleModify = true;
@@ -706,7 +710,7 @@ export abstract class ViewManip extends ViewTool {
       if (undefined !== handle && !handle.firstPoint(ev))
         return false;
     }
-
+    this._startPose = this.viewport ? this.viewport.view.savePose() : undefined;
     return true;
   }
 
@@ -1875,6 +1879,11 @@ abstract class ViewNavigate extends AnimatedHandle {
 /** ViewingToolHandle for looking around and moving through a model using mouse+wasd or on-screen control sticks for touch */
 class ViewLookAndMove extends ViewNavigate {
   private _navigateMotion: NavigateMotion;
+  private _lastCollision = 0;
+  private _lastReadPt = new Point3d();
+  private _lastReference?: Plane3dByOriginAndUnitNormal;
+  private _lastContour?: LineString3d;
+  private _currentContour?: LineString3d;
   protected readonly _positionInput = new Vector3d();
   protected readonly _accumulator = new Vector3d();
   protected _lastMovement?: XAndY;
@@ -1985,7 +1994,6 @@ class ViewLookAndMove extends ViewNavigate {
     else
       this._lastMovement = this._lastPtView.vectorTo(ev.viewPoint).scale(2.0); // ev.movement isn't available for button event created from touch event...
     this._accumulator.setZero();
-    this.removeClickListener(); // Ignore click after start drag...
 
     return super.doManipulation(ev);
   }
@@ -2059,6 +2067,258 @@ class ViewLookAndMove extends ViewNavigate {
     return input;
   }
 
+  private computeCollisionData(vp: Viewport, eyePt: Point3d): void {
+    const contourLine = LineString3d.create();
+    const viewPt = vp.npcToView(NpcCenter);
+    const pts: Point2d[] = [];
+    pts[0] = new Point2d(Math.floor(viewPt.x + 0.5), vp.viewRect.top);
+    pts[1] = new Point2d(pts[0].x + 1, vp.viewRect.bottom);
+    const range = Range2d.createArray(pts);
+
+    let detectStepUp = false;
+    const rect = new ViewRect();
+    rect.initFromRange(range);
+    vp.readPixels(rect, Pixel.Selector.GeometryAndDistance, (pixels) => {
+      if (undefined === pixels)
+        return;
+
+      const sRange = Range2d.createNull();
+      sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.low.x), vp.cssPixelsToDevicePixels(range.low.y)));
+      sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.high.x), vp.cssPixelsToDevicePixels(range.high.y)));
+
+      const testPoint = Point2d.create(sRange.low.x);
+      for (testPoint.y = sRange.high.y; testPoint.y >= sRange.low.y; --testPoint.y) {
+        const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+        if (pixel.distanceFraction < 0)
+          continue; // No geometry at location...
+
+        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y);
+        if (undefined === hitPointWorld)
+          continue;
+
+        if (0 === contourLine.numPoints()) {
+          if (undefined === this._lastReference) {
+            const refPt = (ToolSettings.walkDetectFloor ? eyePt.plusScaled(Vector3d.unitZ(), -ToolSettings.walkEyeHeight) : hitPointWorld);
+            this._lastReference = Plane3dByOriginAndUnitNormal.create(refPt, Vector3d.unitZ());
+            detectStepUp = ToolSettings.walkDetectFloor;
+          } else if (undefined !== this._lastContour && this._lastContour.numPoints() > 1) {
+            let fractLo, fractHi;
+            const forwardDir = Vector3d.unitZ().crossProduct(vp.view.getXVector());
+            const yPlaneHi = Plane3dByOriginAndUnitNormal.create(hitPointWorld, forwardDir);
+
+            if (undefined !== yPlaneHi) {
+              yPlaneHi.getNormalRef().scaleInPlace(-1);
+              yPlaneHi.getOriginRef().addScaledInPlace(yPlaneHi.getNormalRef(), Constant.oneCentimeter * 5);
+
+              const resultHi: CurveLocationDetail[] = [];
+              this._lastContour.appendPlaneIntersectionPoints(yPlaneHi, resultHi);
+
+              for (const intsecHi of resultHi) {
+                if ((undefined === fractHi || intsecHi.fraction < fractHi) && intsecHi.point.distance(hitPointWorld) < ToolSettings.walkEyeHeight)
+                  fractHi = intsecHi.fraction;
+              }
+
+              if (undefined !== fractHi) {
+                const yPlaneLo = yPlaneHi.clone();
+                yPlaneLo.getOriginRef().addScaledInPlace(yPlaneLo.getNormalRef(), ToolSettings.walkEyeHeight * 2);
+
+                const resultLo: CurveLocationDetail[] = [];
+                this._lastContour.appendPlaneIntersectionPoints(yPlaneLo, resultLo);
+
+                for (const intsecLo of resultLo) {
+                  if (undefined === fractLo || intsecLo.fraction < fractLo)
+                    fractLo = intsecLo.fraction;
+                }
+
+                if (undefined === fractLo && yPlaneHi.altitude(this._lastContour.startPoint()) > 0)
+                  fractLo = 0; // Include from start if last path was shorter than requested section...
+              }
+            }
+
+            if (undefined !== fractLo && undefined !== fractHi && fractHi > fractLo) {
+              // Keep section of last contour to account for loosing sight of what is underfoot while moving forward...
+              const partialCurve = this._lastContour.clonePartialCurve(fractLo, fractHi);
+              if (undefined !== partialCurve && partialCurve instanceof LineString3d)
+                contourLine.addPoints(partialCurve.packedPoints)
+            } else {
+              // Moved too far from last contour...
+              detectStepUp = true;
+            }
+          }
+        } else if (contourLine.numPoints() > 1) {
+          const startPt = contourLine.packedPoints.getPoint3dAtUncheckedPointIndex(contourLine.numPoints() - 2);
+          const testPt = contourLine.packedPoints.getPoint3dAtUncheckedPointIndex(contourLine.numPoints() - 1);
+
+          const fraction = testPt.fractionOfProjectionToLine(startPt, hitPointWorld, 0.0);
+          const closePoint = startPt.interpolate(fraction, hitPointWorld);
+
+          if (closePoint.isAlmostEqual(testPt, 1.0e-5)) {
+            // Colinear point, extent segment...
+            contourLine.packedPoints.setAtCheckedPointIndex(contourLine.numPoints() - 1, hitPointWorld);
+            continue;
+          }
+        }
+
+        contourLine.addPoint(hitPointWorld);
+      }
+    }, true);
+
+    // Use single point to denote "no geometry found" until movement is detected...
+    if (0 === contourLine.numPoints()) {
+      contourLine.addPoint(this._lastReadPt);
+    } else if (detectStepUp && undefined !== this._lastReference) {
+      const start = contourLine.startPoint();
+      const forwardDir = Vector3d.unitZ().crossProduct(vp.view.getXVector());
+      const stepPlane = Plane3dByOriginAndUnitNormal.create(start.plusScaled(forwardDir, ToolSettings.walkStepHeight), forwardDir);
+
+      const resultStep: CurveLocationDetail[] = [];
+      if (undefined !== stepPlane)
+        contourLine.appendPlaneIntersectionPoints(stepPlane, resultStep);
+
+      let stepPt;
+      for (const intsecStep of resultStep) {
+        if (undefined === stepPt || intsecStep.point.z > stepPt.z)
+          stepPt = intsecStep.point;
+      }
+
+      if (undefined !== stepPt) {
+        const xyDist = start.distanceXY(stepPt);
+        const zDist = stepPt.z - start.z;
+        const slope = (0.0 === xyDist ? Math.PI : Math.atan(zDist / xyDist));
+
+        if (slope > Angle.createDegrees(10.0).radians && slope < Angle.createDegrees(50.0).radians) {
+          const slopeRay = Ray3d.create(start, Vector3d.createStartEnd(stepPt, start));
+          const slopePt = Point3d.create();
+
+          if (undefined !== slopeRay.intersectionWithPlane(this._lastReference, slopePt)) {
+            contourLine.reverseInPlace();
+            contourLine.addPoint(slopePt);
+            contourLine.reverseInPlace();
+          }
+        }
+      }
+    }
+
+    this._currentContour = contourLine;
+    if (ToolSettings.walkDetectFloor)
+      this._lastContour = this._currentContour;
+  }
+
+  private checkForCollision(vp: Viewport, motion: NavigateMotion, positionInput: Vector3d): number {
+    if (!ToolSettings.walkCollisions)
+      return 0;
+
+    const view = vp.view;
+    if (!view.is3d() || !view.isCameraOn)
+      return 0;
+
+    if (undefined !== this._currentContour) {
+      const pixelSize = vp.pixelsFromInches(0.75);
+      const viewPt = vp.npcToView(NpcCenter);
+      const readPt = vp.worldToView(this._lastReadPt);
+      if (viewPt.distanceXY(readPt) > pixelSize)
+        this._currentContour = undefined;
+      if (0.0 !== positionInput.y)
+        this._lastReference = undefined; // Choose a new reference plane after elevation change...
+    }
+
+    const eyePt = view.getEyePoint();
+
+    if (undefined === this._currentContour && positionInput.z > 0.0) {
+      vp.viewToNpc(vp.npcToView(NpcCenter), this._lastReadPt);
+      this._lastReadPt.z = ViewManip.getFocusPlaneNpc(vp);
+      vp.npcToWorld(this._lastReadPt, this._lastReadPt);
+
+      // Rotate view to look straight down...
+      // const frust = vp.getWorldFrustum();
+      // const saveFrustum = frust.clone();
+
+      // const viewUp = vp.view.getYVector();
+      // const viewDir = vp.view.getZVector(); viewDir.scaleInPlace(-1);
+      // const worldUp = Vector3d.unitZ();
+      // const viewAngle = worldUp.angleTo(viewUp).radians;
+
+      // const pitchAngle = Angle.createRadians((-Math.PI / 2) - (viewDir.z < 0 ? -viewAngle : viewAngle));
+      // const pitchMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
+      // const pitchTimesView = pitchMatrix.multiplyMatrixMatrix(vp.rotation);
+
+      // const invViewRot = vp.rotation.inverse()!;
+      // const inverseViewTimesPitchTimesView = invViewRot.multiplyMatrixMatrix(pitchTimesView);
+      // const transform = Transform.createFixedPointAndMatrix(view.getEyePoint(), inverseViewTimesPitchTimesView);
+
+      // frust.multiply(transform);
+      // vp.setupViewFromFrustum(frust);
+      // this.computeCollisionData(vp, eyePt);
+      // vp.setupViewFromFrustum(saveFrustum);
+
+      this.computeCollisionData(vp, eyePt);
+    }
+
+    if (undefined === this._currentContour || this._currentContour.numPoints() < 2 || positionInput.z <= 0.0)
+      return 0;
+
+    const newEyePt = motion.transform.multiplyPoint3d(eyePt);
+    const planeY = Plane3dByOriginAndUnitNormal.create(eyePt, vp.view.getYVector());
+    const resultY: CurveLocationDetail[] = [];
+    const nIntersectY = planeY ? this._currentContour.appendPlaneIntersectionPoints(planeY, resultY) : 0;
+    const padDist = Constant.oneMeter * 0.5; // stop well before point directly underfoot to avoid clipping through walls...
+
+    if (0 !== nIntersectY) {
+      let resultVec;
+      for (const intsec of resultY) {
+        const resultNpc = vp.worldToNpc(intsec.point);
+        if (resultNpc.z >= 1 || resultNpc.z <= 0)
+          continue;
+
+        const hitVec = Vector3d.createStartEnd(newEyePt, intsec.point);
+        if (undefined === resultVec)
+          resultVec = hitVec;
+        else if (hitVec.magnitude() < resultVec.magnitude())
+          resultVec.setFrom(hitVec);
+      }
+
+      if (undefined !== resultVec) {
+        const eyeVec = Vector3d.createStartEnd(eyePt, newEyePt);
+        if (eyeVec.dotProduct(resultVec) <= 0.0 || resultVec.magnitude() < padDist)
+          return 1; // Stay put, high barrier...
+      }
+    }
+
+    if (!ToolSettings.walkDetectFloor || undefined === this._lastReference)
+      return 0;
+
+    const forwardDir = Vector3d.unitZ().crossProduct(vp.view.getXVector());
+    const planeZ = Plane3dByOriginAndUnitNormal.create(newEyePt, forwardDir);
+    const resultZ: CurveLocationDetail[] = [];
+    const nIntersectZ = planeZ ? this._currentContour.appendPlaneIntersectionPoints(planeZ, resultZ) : 0;
+
+    if (0 !== nIntersectZ) {
+      const heightPt = Point3d.create();
+      const maintainHeight = Vector3d.create();
+
+      for (const intsec of resultZ) {
+        if (intsec.point.z > newEyePt.z)
+          continue; // Ignore overhead point...
+
+        const refPt = this._lastReference.projectPointToPlane(intsec.point);
+        const offset = Vector3d.createStartEnd(refPt, intsec.point);
+
+        if (offset.magnitude() > maintainHeight.magnitude()) {
+          heightPt.setFrom(intsec.point);
+          maintainHeight.setFrom(offset);
+        }
+      }
+
+      if (maintainHeight.magnitude() >= ToolSettings.walkStepHeight && maintainHeight.dotProduct(this._lastReference.getNormalRef()) > 0)
+        return 2; // Stay put, low barrier...
+
+      const moveTransform = Transform.createTranslation(maintainHeight);
+      motion.transform.multiplyTransformTransform(moveTransform, motion.transform);
+      this._lastReference.getOriginRef().setFrom(heightPt);
+    }
+    return 0;
+  }
+
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const vp = this.viewTool.viewport;
     if (undefined === vp)
@@ -2081,6 +2341,11 @@ class ViewLookAndMove extends ViewNavigate {
     if (0.0 === angularInput.magnitude() && 0.0 === positionInput.magnitude() && undefined === this._lastMovement)
       return;
 
+    this.removeClickListener(); // Ignore click after modification starts (either from mouse or keys)...
+    const current = IModelApp.toolAdmin.currentInputState;
+    if (!this._havePointerLock && InputSource.Mouse === current.inputSource && !current.isDragging(BeButton.Data))
+      current.onStartDrag(BeButton.Data); // Treat data down -> navigate key -> data up the same as a drag...
+
     if (undefined !== this._lastMovement) {
       if (motion.moveAndMouseLook(this._accumulator, positionInput, this._lastMovement, true))
         this._lastMovement = undefined;
@@ -2088,7 +2353,12 @@ class ViewLookAndMove extends ViewNavigate {
       motion.moveAndLook(positionInput, angularInput.x, angularInput.y, true);
     }
 
-    return motion;
+    const prevCollision = this._lastCollision;
+    this._lastCollision = this.checkForCollision(vp, motion, positionInput);
+    if (this._lastCollision !== prevCollision)
+      vp.invalidateDecorations();
+
+    return this._lastCollision ? undefined : motion;
   }
 
   protected enableDynamicUpdate(vp: ScreenViewport): void {
@@ -2113,6 +2383,23 @@ class ViewLookAndMove extends ViewNavigate {
       return false;
     this._speedChangeStartTime = Date.now();
     return true;
+  }
+
+  private toggleCollisions(): void {
+    ToolSettings.walkCollisions = !ToolSettings.walkCollisions;
+    this._lastCollision = 0;
+    this._lastReference = this._lastContour = this._currentContour = undefined;
+    if (this.viewTool.viewport)
+      this.viewTool.viewport.invalidateDecorations();
+  }
+
+  private toggleDetectFloor(): void {
+    ToolSettings.walkDetectFloor = !ToolSettings.walkDetectFloor;
+    if (ToolSettings.walkDetectFloor && !ToolSettings.walkCollisions)
+      return this.toggleCollisions();
+    this._lastReference = this._lastContour = this._currentContour = undefined;
+    if (this.viewTool.viewport)
+      this.viewTool.viewport.invalidateDecorations();
   }
 
   public onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): boolean {
@@ -2145,6 +2432,14 @@ class ViewLookAndMove extends ViewNavigate {
       case "arrowdown":
       case "s":
         this._positionInput.z = Geometry.clamp(this._positionInput.z + (wentDown ? -1.0 : 1.0), -1.0, 1.0);
+        return true;
+      case "c":
+        if (wentDown)
+          this.toggleCollisions();
+        return true;
+      case "z":
+        if (wentDown)
+          this.toggleDetectFloor();
         return true;
       default:
         return false;
@@ -2316,6 +2611,74 @@ class ViewLookAndMove extends ViewNavigate {
     if (!hasFocus || context.viewport !== this.viewTool.viewport)
       return;
 
+    // if (undefined !== this._currentContour && this._currentContour.numPoints() > 0) {
+    //   const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    //   const color = context.viewport.getContrastToBackgroundColor();
+
+    //   builder.setSymbology(color, color, 8);
+
+    //   if (this._currentContour.numPoints() > 1)
+    //     builder.addLineString(this._currentContour.points);
+    //   else
+    //     builder.addPointString(this._currentContour.points);
+
+    //   builder.setSymbology(ColorDef.blue, color, 15);
+    //   builder.addPointString([this._lastReadPt]);
+
+    //   if (this._lastReference) {
+    //     builder.setSymbology(ColorDef.green, color, 15);
+    //     builder.addPointString([this._lastReference.getOriginRef()]);
+    //   }
+
+    //   context.addDecorationFromBuilder(builder);
+    // }
+
+    if (ToolSettings.walkCollisions && this.viewTool.inDynamicUpdate) {
+      const position = this._anchorPtView.clone();
+      position.x = Math.floor(position.x) + 0.5;
+      position.y = Math.floor(position.y) + 0.5;
+
+      const drawCollisionArrows = (ctx: CanvasRenderingContext2D) => {
+        const arrowSize = 20;
+        const addArrow = (angle: number) => {
+          const end = arrowSize;
+          const start = end / 2;
+          const mid = start / 2;
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.moveTo(start, 0);
+          ctx.lineTo(end, 0);
+          ctx.moveTo(start, 0);
+          ctx.lineTo(start + mid, mid);
+          ctx.moveTo(start, 0);
+          ctx.lineTo(start + mid, -mid);
+          ctx.stroke();
+          ctx.rotate(-angle);
+        }
+
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+        addArrow(0);
+        addArrow(Math.PI);
+
+        ctx.strokeStyle = (1 === this._lastCollision ? "red" : "white");
+        ctx.lineWidth = 1;
+        addArrow(0);
+        addArrow(Math.PI);
+
+        if (ToolSettings.walkDetectFloor) {
+          ctx.strokeStyle = "black";
+          ctx.lineWidth = 5;
+          addArrow(-Math.PI / 2);
+          ctx.strokeStyle = (2 === this._lastCollision ? "red" : "white");
+          ctx.lineWidth = 1;
+          addArrow(-Math.PI / 2);
+        }
+      };
+      context.addCanvasDecoration({ position, drawDecoration: drawCollisionArrows });
+    }
+
     const positionL = this.getTouchStartPosition(this._touchStartL);
     const positionR = this.getTouchStartPosition(this._touchStartR);
 
@@ -2356,8 +2719,6 @@ class ViewLookAndMove extends ViewNavigate {
       ctx.arc(isLeft ? offsetL.x : offsetR.x, isLeft ? offsetL.y : offsetR.y, innerRadius, 0, 2 * Math.PI);
       ctx.stroke();
       ctx.fill();
-
-      // ### TODO: Show something to indicate handle operation...
     };
 
     const drawDecorationL = (ctx: CanvasRenderingContext2D) => { drawDecoration(ctx, true); };
@@ -2536,6 +2897,7 @@ export class LookAndMoveTool extends ViewManip {
     mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.arrowKeyboardInfo, ViewTool.translate("LookAndMove.Inputs.WalkKeys"), false));
     mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["Q", "E"]), ViewTool.translate("LookAndMove.Inputs.ElevateKeys"), false));
     mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["\u21de", "\u21df"]), ViewTool.translate("LookAndMove.Inputs.ElevateKeys"), false));
+    mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["C", "Z"]), ViewTool.translate("LookAndMove.Inputs.CollideKeys"), true)); // Show as new option...
 
     mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.shiftKeyboardInfo, ViewTool.translate("LookAndMove.Inputs.SpeedIncrease"), false));
     mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.ctrlKeyboardInfo, ViewTool.translate("LookAndMove.Inputs.SpeedDecrease"), false));
@@ -3555,12 +3917,10 @@ export class SetupCameraTool extends PrimitiveTool {
     return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public decorate(context: DecorateContext): void {
-    if (!this._haveEyePt || undefined === this.viewport || !this.viewport.view.is3d() || this.viewport.view.iModel !== context.viewport.view.iModel)
+  public static drawCameraFrustum(context: DecorateContext, vp: ScreenViewport, eyePtWorld: Point3d, targetPtWorld: Point3d, eyeSnapPtWorld?: Point3d, targetSnapPtWorld?: Point3d) {
+    if (!vp.view.is3d() || vp.view.iModel !== context.viewport.view.iModel)
       return;
 
-    const eyePtWorld = this.getAdjustedEyePoint();
-    const targetPtWorld = this.getAdjustedTargetPoint();
     const zVec = Vector3d.createStartEnd(eyePtWorld, targetPtWorld);
     const focusDist = zVec.normalizeWithLength(zVec).mag;
     if (focusDist <= Constant.oneMillimeter) // eye and target are too close together
@@ -3575,14 +3935,14 @@ export class SetupCameraTool extends PrimitiveTool {
 
     const lensAngle = ToolSettings.walkCameraAngle;
     const extentX = Math.tan(lensAngle.radians / 2.0) * focusDist;
-    const extentY = extentX * (this.viewport.view.extents.y / this.viewport.view.extents.x);
+    const extentY = extentX * (vp.view.extents.y / vp.view.extents.x);
 
     const pt1 = targetPtWorld.plusScaled(xVec, -extentX); pt1.plusScaled(yVec, extentY, pt1);
     const pt2 = targetPtWorld.plusScaled(xVec, extentX); pt2.plusScaled(yVec, extentY, pt2);
     const pt3 = targetPtWorld.plusScaled(xVec, extentX); pt3.plusScaled(yVec, -extentY, pt3);
     const pt4 = targetPtWorld.plusScaled(xVec, -extentX); pt4.plusScaled(yVec, -extentY, pt4);
 
-    const color = this.viewport.getContrastToBackgroundColor();
+    const color = vp.getContrastToBackgroundColor();
     const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
 
     builderHid.setSymbology(color, color, ViewHandleWeight.Bold);
@@ -3595,18 +3955,18 @@ export class SetupCameraTool extends PrimitiveTool {
     builderHid.addLineString([eyePtWorld, pt4]);
     builderHid.addLineString([pt1, pt2, pt3, pt4, pt1]);
 
-    if (this.useCameraHeight)
-      builderHid.addLineString([this._eyePtWorld, eyePtWorld]);
-    if (this.useTargetHeight)
-      builderHid.addLineString([this._targetPtWorld, targetPtWorld]);
+    if (eyeSnapPtWorld)
+      builderHid.addLineString([eyeSnapPtWorld, eyePtWorld]);
+    if (targetSnapPtWorld)
+      builderHid.addLineString([targetSnapPtWorld, targetPtWorld]);
 
     builderHid.setSymbology(color, color, ViewHandleWeight.FatDot);
     builderHid.addPointString([eyePtWorld, targetPtWorld]);
 
-    if (this.useCameraHeight)
-      builderHid.addPointString([this._eyePtWorld]);
-    if (this.useTargetHeight)
-      builderHid.addPointString([this._targetPtWorld]);
+    if (eyeSnapPtWorld)
+      builderHid.addPointString([eyeSnapPtWorld]);
+    if (targetSnapPtWorld)
+      builderHid.addPointString([targetSnapPtWorld]);
 
     context.addDecorationFromBuilder(builderHid);
 
@@ -3633,6 +3993,12 @@ export class SetupCameraTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderVis);
   }
 
+  public decorate(context: DecorateContext): void {
+    if (!this._haveEyePt || undefined === this.viewport)
+      return;
+    SetupCameraTool.drawCameraFrustum(context, this.viewport, this.getAdjustedEyePoint(), this.getAdjustedTargetPoint(), this.useCameraHeight ? this._eyePtWorld : undefined, this.useTargetHeight ? this._targetPtWorld : undefined);
+  }
+
   public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
   private doManipulation(): void {
@@ -3650,7 +4016,7 @@ export class SetupCameraTool extends PrimitiveTool {
     if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
       return;
 
-    vp.synchWithView();
+    vp.synchWithView({ animateFrustumChange: true });
   }
 
   private _useCameraHeightValue: DialogItemValue = { value: false };
@@ -3767,5 +4133,117 @@ export class SetupCameraTool extends PrimitiveTool {
     toolSettings.push({ value: this._cameraHeightValue, property: this._getCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 2 }, lockProperty: useCameraHeight });
     toolSettings.push({ value: this._targetHeightValue, property: this._getTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 }, lockProperty: useTargetHeight });
     return toolSettings;
+  }
+}
+
+/** A tool that sets a walk tool starting position by a floor point and look direction. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
+ * @beta
+ */
+export class SetupWalkCameraTool extends PrimitiveTool {
+  public static toolId = "View.SetupWalkCamera";
+  public static iconSpec = "icon-camera-location";
+  public viewport?: ScreenViewport;
+  protected _haveEyePt: boolean = false;
+  protected _eyePtWorld: Point3d = Point3d.create();
+  protected _targetPtWorld: Point3d = Point3d.create();
+
+  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
+  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onUnsuspend(): void { this.provideToolAssistance(); }
+  protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); this.provideToolAssistance(); }
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) this.onReinitialize(); else this.exitTool(); return EventHandled.Yes; }
+
+  /** @beta */
+  protected provideToolAssistance(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(this._haveEyePt ? "SetupWalkCamera.Prompts.NextPoint" : "SetupWalkCamera.Prompts.FirstPoint"));
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+
+    const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
+    const rejectMsg = CoreTools.translate(this._haveEyePt ? "ElementSet.Inputs.Restart" : "ElementSet.Inputs.Exit");
+    if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rejectMsg, false, ToolAssistanceInputMethod.Mouse));
+
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
+
+  public onRestartTool(): void {
+    const tool = new SetupWalkCameraTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+
+  protected getAdjustedEyePoint() { return this._eyePtWorld.plusScaled(Vector3d.unitZ(), ToolSettings.walkEyeHeight); }
+  protected getAdjustedTargetPoint() { return Point3d.create(this._targetPtWorld.x, this._targetPtWorld.y, this.getAdjustedEyePoint().z); }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined === ev.viewport) {
+      return EventHandled.Yes;
+    } else if (undefined === this.viewport) {
+      if (!ev.viewport.view.allow3dManipulations())
+        return EventHandled.Yes;
+      this.viewport = ev.viewport;
+    } else if (this.viewport.view.iModel !== ev.viewport.view.iModel) {
+      if (this._haveEyePt)
+        return EventHandled.Yes;
+      this.viewport = ev.viewport;
+      return EventHandled.Yes;
+    }
+
+    if (this._haveEyePt) {
+      this._targetPtWorld.setFrom(ev.point);
+      this.doManipulation();
+      this.onReinitialize();
+    } else {
+      this._eyePtWorld.setFrom(ev.point);
+      this._targetPtWorld.setFrom(this._eyePtWorld);
+      this._haveEyePt = true;
+      this.setupAndPromptForNextAction();
+    }
+
+    return EventHandled.Yes;
+  }
+
+  public async onMouseMotion(ev: BeButtonEvent) {
+    if (!this._haveEyePt)
+      return;
+    this._targetPtWorld.setFrom(ev.point);
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
+
+  public decorate(context: DecorateContext): void {
+    if (!this._haveEyePt || undefined === this.viewport)
+      return;
+    SetupCameraTool.drawCameraFrustum(context, this.viewport, this.getAdjustedEyePoint(), this.getAdjustedTargetPoint(), this._eyePtWorld, this._targetPtWorld);
+  }
+
+  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+
+  private doManipulation(): void {
+    const vp = this.viewport;
+    if (undefined === vp)
+      return;
+
+    const view = vp.view;
+    if (!view.is3d() || !view.allow3dManipulations())
+      return;
+
+    const eyePtWorld = this.getAdjustedEyePoint();
+    const targetPtWorld = this.getAdjustedTargetPoint();
+    const lensAngle = ToolSettings.walkCameraAngle;
+    if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
+      return;
+
+    vp.synchWithView({ animateFrustumChange: true });
   }
 }

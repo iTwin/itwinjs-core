@@ -7723,6 +7723,8 @@ export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
     decorateSuspended(context: DecorateContext): void;
     // (undocumented)
+    static drawCameraFrustum(context: DecorateContext, vp: ScreenViewport, eyePtWorld: Point3d, targetPtWorld: Point3d, eyeSnapPtWorld?: Point3d, targetSnapPtWorld?: Point3d): void;
+    // (undocumented)
     protected _eyePtWorld: Point3d;
     // (undocumented)
     protected getAdjustedEyePoint(): Point3d;
@@ -7771,6 +7773,52 @@ export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
     get useTargetHeight(): boolean;
     set useTargetHeight(option: boolean);
+    // (undocumented)
+    viewport?: ScreenViewport;
+}
+
+// @beta
+export class SetupWalkCameraTool extends PrimitiveTool {
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected _eyePtWorld: Point3d;
+    // (undocumented)
+    protected getAdjustedEyePoint(): Point3d;
+    // (undocumented)
+    protected getAdjustedTargetPoint(): Point3d;
+    // (undocumented)
+    protected _haveEyePt: boolean;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    protected provideToolAssistance(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected _targetPtWorld: Point3d;
+    // (undocumented)
+    static toolId: string;
     // (undocumented)
     viewport?: ScreenViewport;
 }
@@ -9548,8 +9596,16 @@ export class ToolSettings {
     };
     static viewToolPickRadiusInches: number;
     static walkCameraAngle: Angle;
+    // @beta
+    static walkCollisions: boolean;
+    // @beta
+    static walkDetectFloor: boolean;
     static walkEnforceZUp: boolean;
+    // @beta
+    static walkEyeHeight: number;
     static walkRequestPointerLock: boolean;
+    // @beta
+    static walkStepHeight: number;
     static walkVelocity: number;
     static wheelLineFactor: number;
     static wheelPageFactor: number;
@@ -10619,6 +10675,8 @@ export abstract class ViewManip extends ViewTool {
     setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean): void;
     // @internal (undocumented)
     startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled>;
+    // @internal (undocumented)
+    protected _startPose?: ViewPose;
     // (undocumented)
     targetCenterLocked: boolean;
     // (undocumented)
