@@ -15,22 +15,11 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
-import { connect } from "react-redux";
-import { RootState } from "../..";
 
 /* eslint-disable react/jsx-key */
 
-function RightPanelComponent(props: { frameworkVersion: string }) {
-  if (props.frameworkVersion === "1")
-    return <RightPanel1 />;
-  return <RightPanel2 />;
-}
-
-function mapStateToRightPanelComponentProps(state: RootState) {
-  return { frameworkVersion: state.sampleAppState.frameworkVersion };
-}
-
-function RightPanel1(props: { children?: React.ReactNode }) {
+function RightPanel() {
+  const direction = useWidgetDirection();
   const [collapsed, setCollapsed] = React.useState(true);
   const [state, setState] = React.useState(() => {
     const frontstageDef = FrontstageManager.activeFrontstageDef!;
@@ -83,20 +72,10 @@ function RightPanel1(props: { children?: React.ReactNode }) {
         widgetDef.expand();
       }}>Expand</button>
       <p>{state}</p>
-      {props.children}
+      <p>{direction}</p>
     </>
   );
 }
-
-function RightPanel2() {
-  const direction = useWidgetDirection();
-  return <RightPanel1>
-    <p>{direction}</p>
-  </RightPanel1>
-}
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const RightPanel = connect(mapStateToRightPanelComponentProps)(RightPanelComponent);
 
 function SampleTimelineComponent() {
   const duration = 20 * 1000;
