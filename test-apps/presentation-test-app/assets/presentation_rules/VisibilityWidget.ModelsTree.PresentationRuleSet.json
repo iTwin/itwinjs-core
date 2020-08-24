@@ -55,7 +55,7 @@
               }
             }
           ],
-          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\" AND this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\"",
           "hideNodesInHierarchy": true,
           "groupByClass": false,
           "groupByLabel": false
@@ -75,7 +75,7 @@
               }
             }
           ],
-          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") = NULL AND ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") <> \"Hierarchy\" AND this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") = NULL AND ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") <> \"Hierarchy\"",
           "hideIfNoChildren": true,
           "groupByClass": false,
           "groupByLabel": false
@@ -133,7 +133,7 @@
               "isRequired": true
             }
           ],
-          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "(parent.ECInstanceId = partition.Parent.Id OR json_extract(parent.JsonProperties, \"$.Subject.Model.TargetPartition\") = printf(\"0x%x\", partition.ECInstanceId)) AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
           "hasChildren": "Always",
           "groupByClass": false,
           "groupByLabel": false
@@ -164,7 +164,7 @@
               "isRequired": true
             }
           ],
-          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "instanceFilter": "(parent.ECInstanceId = partition.Parent.Id OR json_extract(parent.JsonProperties, \"$.Subject.Model.TargetPartition\") = printf(\"0x%x\", partition.ECInstanceId)) AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
           "hideNodesInHierarchy": true,
           "hasChildren": "Always",
           "groupByClass": false,
@@ -243,6 +243,7 @@
               }
             ]
           ],
+          "suppressSimilarAncestorsCheck": true,
           "groupByClass": false,
           "groupByLabel": false
         }
