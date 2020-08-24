@@ -179,6 +179,8 @@ internal;placementToPosition(placement: TooltipPlacement | undefined): RelativeP
 internal;Point 
 public;PointProps
 public;Popup 
+alpha;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
+alpha;PopupContextMenuProps 
 public;PopupProps 
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 
@@ -234,7 +236,6 @@ public;TextareaProps
 public;TextProps 
 beta;ThemedSelect(props: ThemedSelectProps): JSX.Element
 beta;ThemedSelectProps =
-internal;TildeFinder
 beta;Tile 
 internal;TileDefaultProps = Pick
 beta;TileProps 

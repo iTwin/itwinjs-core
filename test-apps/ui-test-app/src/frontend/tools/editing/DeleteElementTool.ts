@@ -107,7 +107,7 @@ export class DeleteElementTool extends PrimitiveToolEx {
       const msg = new NotifyMessageDetails(OutputMessagePriority.Info, `${ids.length} elements deleted`, "", OutputMessageType.Toast, OutputMessageAlert.None);
       IModelApp.notifications.outputMessage(msg);
     } catch (err) {
-      const msg = new NotifyMessageDetails(OutputMessagePriority.Error, "Delete failed - " + err.toString(), err.toString());
+      const msg = new NotifyMessageDetails(OutputMessagePriority.Error, `Delete failed - ${err.toString()}`, err.toString());
       IModelApp.notifications.outputMessage(msg);
     }
   }

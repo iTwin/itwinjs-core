@@ -343,7 +343,8 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     badgeType?: BadgeType;
     disabled?: boolean;
-    icon?: string | React.ReactNode;
+    icon?: IconSpec;
+    iconRight?: IconSpec;
     // (undocumented)
     isSelected?: boolean;
     // @internal (undocumented)
@@ -1433,6 +1434,31 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
+// @alpha
+export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
+
+// @alpha
+export interface PopupContextMenuProps extends CommonProps {
+    ariaLabel?: string;
+    autoflip?: boolean;
+    children?: React.ReactNode;
+    edgeLimit?: boolean;
+    hotkeySelect?: boolean;
+    isOpen: boolean;
+    left?: number;
+    offset?: number;
+    onClose?: () => void;
+    onEnter?: () => void;
+    onEsc?: (event: React.KeyboardEvent) => void;
+    onOpen?: () => void;
+    onOutsideClick?: (e: MouseEvent) => void;
+    onSelect?: (event: React.MouseEvent | undefined) => void;
+    position?: RelativePosition;
+    selectedIndex?: number;
+    target?: HTMLElement | null;
+    top?: number;
+}
+
 // @public
 export interface PopupProps extends CommonProps {
     ariaLabel?: string;
@@ -2019,14 +2045,6 @@ export type ThemedSelectProps = {
     tabSelectsValue?: boolean;
     value?: ValueType<OptionType>;
 };
-
-// @internal
-export class TildeFinder {
-    static findAfterTilde: (node: React.ReactNode) => {
-        character: string | undefined;
-        node: React.ReactNode;
-    };
-}
 
 // @beta
 export class Tile extends React.Component<TileProps> {

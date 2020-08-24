@@ -121,7 +121,7 @@ export class Frontstage2 extends FrontstageProvider {
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
 class FrontstageToolWidget extends React.Component {
-  private _horizontalToolbar =
+  private _horizontalToolbar = (
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
@@ -137,9 +137,10 @@ class FrontstageToolWidget extends React.Component {
           />
         </>
       }
-    />;
+    />
+  );
 
-  private _verticalToolbar =
+  private _verticalToolbar = (
     <Toolbar
       expandsTo={Direction.Right}
       items={
@@ -151,7 +152,8 @@ class FrontstageToolWidget extends React.Component {
           />
         </>
       }
-    />;
+    />
+  );
 
   public render() {
     return (
@@ -168,7 +170,7 @@ class FrontstageToolWidget extends React.Component {
  */
 class FrontstageNavigationWidget extends React.Component {
 
-  private _horizontalToolbar =
+  private _horizontalToolbar = (
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
@@ -178,9 +180,9 @@ class FrontstageNavigationWidget extends React.Component {
           <ToolButton toolId="item7" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item7" />
         </>
       }
-    />;
+    />);
 
-  private _verticalToolbar =
+  private _verticalToolbar = (
     <Toolbar
       expandsTo={Direction.Right}
       items={
@@ -188,7 +190,7 @@ class FrontstageNavigationWidget extends React.Component {
           <ToolButton toolId="item8" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item8" />
         </>
       }
-    />;
+    />);
 
   public render() {
     return (

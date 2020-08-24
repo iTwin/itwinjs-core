@@ -174,7 +174,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       viewDefProps.forEach((viewProp: ViewDefinitionProps) => {
         // TODO: We may need to change this code to use the base class somehow since that property was deleted.
         if (this.props.showSheetViews) {
-          if (ViewsList.isSheet(viewProp.classFullName!)) {
+          if (ViewsList.isSheet(viewProp.classFullName)) {
             _viewDefProps3d.push(viewProp);
           }
         } else {
@@ -259,7 +259,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
     });
 
     if (isFiltering && views.length === 0) {
-      const message = "No views matching '" + this.state.filter + "'.";
+      const message = `No views matching '${this.state.filter}'.`;
       return (
         <div className="view-list-nosearchresults" style={{ fontStyle: "italic" }}>{message}</div>
       );

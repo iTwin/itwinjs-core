@@ -186,7 +186,7 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
     const { type, label, description, parentId, dataProvider, children, icon, ...rest } = args.dataObject;
     let id = "";
     if (args.dropEffect === DropEffects.Copy) {
-      id = Math.round(Math.random() * 1e14) + "";
+      id = `${Math.round(Math.random() * 1e14)}`;
     } else if ((args.dropEffect === DropEffects.Move || args.dropEffect === DropEffects.Link) &&
       "id" in args.dataObject && args.dataObject.id !== undefined) {
       id = args.dataObject.id;
@@ -204,11 +204,12 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               value: label,
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: label,
-            }, {
-            name: "label",
-            displayLabel: "label",
-            typename: "text",
-          }),
+            },
+            {
+              name: "label",
+              displayLabel: "label",
+              typename: "text",
+            }),
         },
         {
           key: "type", record: new PropertyRecord(
@@ -216,11 +217,12 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
               value: type,
               valueFormat: PropertyValueFormat.Primitive,
               displayValue: type,
-            }, {
-            name: "type",
-            displayLabel: "type",
-            typename: "text",
-          }),
+            },
+            {
+              name: "type",
+              displayLabel: "type",
+              typename: "text",
+            }),
         },
         {
           key: "description", record: new PropertyRecord({

@@ -76,13 +76,13 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
   private getFilteredIModels(): IModelInfo[] {
     let iModels: IModelInfo[] = [];
     if (this.props.iModels) {
-      iModels = this.props.iModels!.filter((iModel) => iModel.name.toLowerCase().includes(this.state.filter.toLowerCase()));
+      iModels = this.props.iModels.filter((iModel) => iModel.name.toLowerCase().includes(this.state.filter.toLowerCase()));
     }
     return iModels;
   }
 
   private renderIModel(iModelInfo: IModelInfo) {
-    const size = Math.floor(Math.random() * 100).toString() + " MB";
+    const size = `${Math.floor(Math.random() * 100).toString()} MB`;
     // const checked = Math.random() > .5;
     return (
       <tr key={iModelInfo.wsgId}>

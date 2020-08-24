@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, IModelViewportControl as UIFW_IModelViewportControl, IModelViewportControlOptions, ViewSelector,
-  ViewUtilities,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, IModelViewportControlOptions,
+  IModelViewportControl as UIFW_IModelViewportControl, ViewSelector, ViewUtilities,
 } from "@bentley/ui-framework";
 // uncomment following to test overriding default view overlay
 // import { ScreenViewport } from "@bentley/imodeljs-frontend";
@@ -104,7 +104,7 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
       ctx.font = "10px Arial";
       ctx.fillStyle = "white";
       ctx.textAlign = "center";
-      const text = "Mouse Info:  X: " + canvasX + " Y: " + canvasY + " Down: " + isMouseDown;
+      const text = `Mouse Info:  X: ${canvasX} Y: ${canvasY} Down: ${isMouseDown}`;
       ctx.fillText(text, canvas.width / 2, canvas.height / 2);
     }
   }

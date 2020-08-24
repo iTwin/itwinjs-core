@@ -45,5 +45,5 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   const port = Number(process.env.PORT || 3001);
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
-  Logger.logInfo(loggerCategory, "Web backend for ui-test-app listening on port " + port);
+  Logger.logInfo(loggerCategory, `Web backend for ui-test-app listening on port ${port}`);
 }

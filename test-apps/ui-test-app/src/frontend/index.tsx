@@ -59,7 +59,8 @@ import { FrontendApplicationInsightsClient } from "@bentley/frontend-application
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx hypermodeling testapp urlps
+// cSpell:ignore toggledraginteraction toggleframeworkversion setdraginteraction setframeworkversion
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
@@ -91,7 +92,6 @@ const initialState: SampleAppState = {
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
@@ -106,7 +106,7 @@ class SampleAppAccuSnap extends AccuSnap {
   public getActiveSnapModes(): SnapMode[] {
     const snaps: SnapMode[] = [];
     if (SampleAppIModelApp.store.getState().frameworkState) {
-      const snapMode = SampleAppIModelApp.store.getState().frameworkState!.configurableUiState.snapMode;
+      const snapMode = SampleAppIModelApp.store.getState().frameworkState.configurableUiState.snapMode;
       if ((snapMode & SnapMode.Bisector) === SnapMode.Bisector as number) snaps.push(SnapMode.Bisector);
       if ((snapMode & SnapMode.Center) === SnapMode.Center as number) snaps.push(SnapMode.Center);
       if ((snapMode & SnapMode.Intersection) === SnapMode.Intersection as number) snaps.push(SnapMode.Intersection);
@@ -419,14 +419,14 @@ export class SampleAppIModelApp {
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const project = await (new ContextRegistryClient()).getProject(requestContext, {
         $select: "*",
-        $filter: "Name+eq+'" + projectName + "'",
+        $filter: `Name+eq+'${projectName}'`,
       });
 
       const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.wsgId, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId!]);
+        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId]);
       } else {
         // open to the IModelIndex frontstage
         await SampleAppIModelApp.showIModelIndex(project.wsgId, iModel.wsgId);
@@ -529,9 +529,7 @@ function mapFrameworkVersionStateToProps(state: RootState) {
   return { frameworkVersion: state.sampleAppState.frameworkVersion };
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
 class SampleAppViewer extends React.Component<any, { authorized: boolean }> {

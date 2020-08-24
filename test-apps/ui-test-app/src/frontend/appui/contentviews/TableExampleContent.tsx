@@ -173,7 +173,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       });
       row.cells.push({
         key: this._columns[1].key,
-        record: createPropertyRecord("Title " + i, this._columns[1], StandardTypeNames.String),
+        record: createPropertyRecord(`Title ${i}`, this._columns[1], StandardTypeNames.String),
       });
       row.cells.push({
         key: this._columns[2].key,

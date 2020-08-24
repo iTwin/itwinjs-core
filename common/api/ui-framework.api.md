@@ -2900,7 +2900,7 @@ export abstract class ItemDefBase {
     // (undocumented)
     iconElement?: React.ReactNode;
     // (undocumented)
-    iconSpec?: string | ConditionalStringValue | React.ReactNode;
+    iconSpec?: IconSpec;
     // (undocumented)
     abstract get id(): string;
     // (undocumented)
@@ -3288,6 +3288,8 @@ export class MenuItem extends ItemDefBase {
     constructor(props: MenuItemProps, onSelection?: () => void);
     // (undocumented)
     get actionItem(): ActionButtonItemDef | undefined;
+    // (undocumented)
+    iconRightSpec?: IconSpec;
     // (undocumented)
     get id(): string;
     // (undocumented)

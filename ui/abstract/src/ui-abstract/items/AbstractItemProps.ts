@@ -26,7 +26,7 @@ export interface CommonItemProps {
   description?: string;
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
   icon?: string;
-  /** optional data to used by item implementor. */
+  /** optional data to be used by item implementor. */
   readonly internalData?: Map<string, any>;
 
   /** if true component will be hidden - defaults to false */

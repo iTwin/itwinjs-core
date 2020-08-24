@@ -27,27 +27,26 @@ interface ComponentExamplesPageProps {
 
 /** ComponentExamplesPage displaying the component examples.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: ComponentExamplesPageProps) => {
-  const _themeTitle: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeTitle");
-  const _themeDescription: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeDescription");
+  const themeTitle: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeTitle");
+  const themeDescription: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeDescription");
 
   const [activeIndex, setActiveIndex] = React.useState(0);
 
-  const _onThemeChange = () => {
-    const theme = _isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
+  const onThemeChange = () => {
+    const theme = isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
     UiFramework.setColorTheme(theme);
   };
 
-  const _isLightTheme = (): boolean => {
+  const isLightTheme = (): boolean => {
     return (UiFramework.getColorTheme() === ColorTheme.Light);
   };
 
-  const isLightTheme = _isLightTheme();
+  const isOn = isLightTheme();
   const darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
   const lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
 
-  const _handleActivateTab = (index: number) => {
+  const handleActivateTab = (index: number) => {
     setActiveIndex(index);
   };
 
@@ -56,15 +55,15 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
       <div className="component-examples-categories">
         <VerticalTabs
           labels={props.categories.map((category: ComponentExampleCategory) => category.title)}
-          activeIndex={activeIndex} onActivateTab={_handleActivateTab} />
+          activeIndex={activeIndex} onActivateTab={handleActivateTab} />
       </div>
       <div className="component-examples-items">
-        <ComponentExample title={_themeTitle} description={_themeDescription}
+        <ComponentExample title={themeTitle} description={themeDescription}
           content={
             <>
               {darkLabel}
               &nbsp;
-              <Toggle isOn={isLightTheme} showCheckmark={false} onChange={_onThemeChange} />
+              <Toggle isOn={isOn} showCheckmark={false} onChange={onThemeChange} />
               &nbsp;
               {lightLabel}
             </>
@@ -90,7 +89,6 @@ export interface ComponentExampleProps extends CommonProps {
 }
 
 /** Component Example component */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const ComponentExample: React.FC<ComponentExampleProps> = (props: ComponentExampleProps) => {
   const { title, description, content } = props;
   return (

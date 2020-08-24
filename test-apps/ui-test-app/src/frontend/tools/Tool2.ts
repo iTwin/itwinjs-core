@@ -58,10 +58,12 @@ export class Tool2 extends PrimitiveTool {
     const instructionT1 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Tap on something", false, ToolAssistanceInputMethod.Touch);
     const instructionT2 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, "Tap on something then drag", false, ToolAssistanceInputMethod.Touch);
 
-    const section1 = ToolAssistance.createSection([
-      instruction1, instruction2, instruction3, instruction4, instruction5, instruction6, instruction7, instruction8,
-      instruction9, instruction10, instruction11, instruction12, instruction13, instruction14, instruction15,
-      instructionT1, instructionT2],
+    const section1 = ToolAssistance.createSection(
+      [
+        instruction1, instruction2, instruction3, instruction4, instruction5, instruction6, instruction7, instruction8,
+        instruction9, instruction10, instruction11, instruction12, instruction13, instruction14, instruction15,
+        instructionT1, instructionT2,
+      ],
       ToolAssistance.inputsLabel);
 
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);

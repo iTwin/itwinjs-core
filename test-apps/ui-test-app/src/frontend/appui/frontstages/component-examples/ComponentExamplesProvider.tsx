@@ -23,6 +23,7 @@ import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { Logger } from "@bentley/bentleyjs-core";
+import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 
 /* eslint-disable no-console */
 
@@ -159,6 +160,7 @@ export class ComponentExamplesProvider {
       title: "ContextMenu",
       examples: [
         createComponentExample("ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
+        createComponentExample("Popup with ContextMenu", undefined, <SamplePopupContextMenu />),
       ],
     };
   }
@@ -271,7 +273,7 @@ export class ComponentExamplesProvider {
         createComponentExample("ProgressBar with height", "height of 8", <ProgressBar percent={50} barHeight={8} />),
         createComponentExample("Indeterminate ProgressBar", "indeterminate prop", <ProgressBar indeterminate />),
         createComponentExample("ProgressBar with label", "labelLeft prop", <ProgressBar percent={25} labelLeft="Centered Label" />),
-        createComponentExample("ProgressBar with label", "labelLeft prop", <ProgressBar percent={75} labelLeft="Loading..." labelRight="75%" />),
+        createComponentExample("ProgressBar with labels", "labelLeft & labelRight props", <ProgressBar percent={75} labelLeft="Loading..." labelRight="75%" />),
       ],
     };
   }

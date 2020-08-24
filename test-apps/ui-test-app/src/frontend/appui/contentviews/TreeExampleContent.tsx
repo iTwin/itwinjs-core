@@ -99,12 +99,12 @@ const createNodes = (n: number, label: string, levels: number, hierarchy: Simple
     return;
   const nodes: DelayLoadedTreeNodeItem[] = [];
   for (let i = 0; i < n; i++) {
-    const nodeLabel = label + "-" + i.toString();
+    const nodeLabel = `${label}-${i.toString()}`;
     nodes[i] = {
       id: nodeLabel,
       label: PropertyRecord.fromString(nodeLabel),
       hasChildren: levels > 1,
-      description: nodeLabel + " description",
+      description: `${nodeLabel} description`,
       parentId,
       isEditable: true,
     };

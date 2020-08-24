@@ -17,6 +17,8 @@ import { MoveElementTool } from "./MoveElementTool";
 import { PlaceBlockTool } from "./PlaceBlockTool";
 import { PlaceLineStringTool } from "./PlaceLineStringTool";
 
+// cSpell:ignore appuiprovider
+
 // Sample UI items provider that dynamically adds ui items
 class AppItemsProvider implements UiItemsProvider {
   public readonly id = "AnotherStatusBarItemProvider";
@@ -267,7 +269,7 @@ export class EditTools {
         IModelApp.notifications.openMessageBox(MessageBoxType.Ok,
           message,
           MessageBoxIconType.Information)
-          .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
+          .then((value: MessageBoxValue) => { window.alert(`Closing message box ... value is ${value}`); });
       },
     });
   }
@@ -286,7 +288,7 @@ export class EditTools {
         const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
           message,
           MessageBoxIconType.Warning);
-        window.alert("Closing message box ... value is " + value);
+        window.alert(`Closing message box ... value is ${value}`);
       },
     });
   }

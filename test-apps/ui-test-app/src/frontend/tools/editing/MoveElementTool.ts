@@ -11,6 +11,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { PrimitiveToolEx } from "./PrimitiveToolEx";
 
+// cSpell:ignore xlat tprops
+
 export class MoveElementTool extends PrimitiveToolEx {
   public static toolId = "MoveElement";
   private _useSelection = false;

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AbstractMenuItemProps, UiError } from "@bentley/ui-abstract";
-import { ContextMenuItem, ContextSubMenu } from "@bentley/ui-core";
+import { ContextMenuItem, ContextSubMenu, IconSpec } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CommandItemDef } from "./CommandItemDef";
@@ -36,6 +36,7 @@ export class MenuItem extends ItemDefBase {
     this._id = props.id;
     this._submenu = new Array<MenuItem>();
     this._onSelection = onSelection;
+
     if (props.item) {
       this._actionItem = new CommandItemDef(props.item);
 
@@ -54,6 +55,8 @@ export class MenuItem extends ItemDefBase {
     } else {
       throw new UiError(UiFramework.loggerCategory(this), `Either 'item' or 'submenu' must be specified for '${props.id}'.`);
     }
+
+    this.iconRightSpec = props.iconRight;
   }
 
   public get id(): string { return this._id; }
@@ -65,6 +68,8 @@ export class MenuItem extends ItemDefBase {
   public get actionItem(): ActionButtonItemDef | undefined {
     return this._actionItem;
   }
+
+  public iconRightSpec?: IconSpec;
 
   public itemPicked(): void {
     setTimeout(() => {
@@ -110,12 +115,13 @@ export class MenuItemHelpers {
     let node: React.ReactNode = null;
     const label = item.label;
     const iconSpec = item.iconSpec;
+    const iconRightSpec = item.iconRightSpec;
     const badgeType = item.badgeType;
 
     if (item.actionItem) {
       const sel = () => item.itemPicked();
       node = (
-        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} badgeType={badgeType}>
+        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} iconRight={iconRightSpec} badgeType={badgeType}>
           {label}
         </ContextMenuItem>
       );

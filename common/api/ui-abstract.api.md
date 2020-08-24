@@ -19,6 +19,7 @@ export interface AbstractActionItemProps extends CommonItemProps, CommandHandler
 
 // @beta
 export interface AbstractMenuItemProps extends CommonItemProps {
+    iconRight?: string;
     id: string;
     item?: AbstractActionItemProps;
     submenu?: AbstractMenuItemProps[];

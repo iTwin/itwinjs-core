@@ -32,12 +32,13 @@ describe("MenuItem", () => {
 
   it("should handle label & icon correctly", () => {
     const menuItem = new MenuItem({
-      id: "test", label: "test label", icon: "icon-placeholder", item: { label: "wrong label", icon: "wrong icon", execute: () => { } },
+      id: "test", label: "test label", icon: "icon-placeholder", iconRight: "icon-checkmark", item: { label: "wrong label", icon: "wrong icon", execute: () => { } },
     });
 
     expect(menuItem.id).to.eq("test");
     expect(menuItem.label).to.eq("test label");
     expect(menuItem.iconSpec).to.eq("icon-placeholder");
+    expect(menuItem.iconRightSpec).to.eq("icon-checkmark");
   });
 
   it("should create a valid submenu", () => {
@@ -107,7 +108,7 @@ describe("MenuItem", () => {
   it("createMenuItemNodes should create a valid MenuItem", () => {
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", badgeType: BadgeType.New, item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
+        id: "test", badgeType: BadgeType.New, item: { label: "test label", icon: "icon-placeholder", execute: () => { } }, iconRight: "icon-checkmark",
       },
     ];
 
@@ -120,6 +121,8 @@ describe("MenuItem", () => {
     const wrapper = mount(<div>{menuItemNodes}</div>);
     expect(wrapper.find(ContextMenuItem).length).to.eq(1);
     expect(wrapper.find(".core-badge").length).to.eq(1);
+    expect(wrapper.find(".icon-placeholder").length).to.eq(1)
+    expect(wrapper.find(".icon-checkmark").length).to.eq(1)
 
     wrapper.unmount();
   });

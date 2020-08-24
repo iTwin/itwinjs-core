@@ -20,7 +20,6 @@ import {
 import { FooterSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
-// cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
 import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
@@ -29,6 +28,8 @@ import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
+
+// cSpell:ignore appui appuiprovider
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleStatus = withStatusFieldProps(SampleStatusField);
@@ -487,7 +488,7 @@ export class AppTools {
         IModelApp.notifications.openMessageBox(MessageBoxType.Ok,
           message,
           MessageBoxIconType.Information)
-          .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
+          .then((value: MessageBoxValue) => { window.alert(`Closing message box ... value is ${value}`); });
       },
     });
   }
@@ -506,7 +507,7 @@ export class AppTools {
         const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
           message,
           MessageBoxIconType.Warning);
-        window.alert("Closing message box ... value is " + value);
+        window.alert(`Closing message box ... value is ${value}`);
       },
     });
   }

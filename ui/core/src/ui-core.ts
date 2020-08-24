@@ -26,6 +26,12 @@ export * from "./ui-core/button/UnderlinedButton";
 export * from "./ui-core/checklistbox/CheckListBox";
 
 export * from "./ui-core/contextmenu/ContextMenu";
+export * from "./ui-core/contextmenu/ContextMenuDirection";
+export * from "./ui-core/contextmenu/ContextMenuDivider";
+export * from "./ui-core/contextmenu/ContextMenuItem";
+export * from "./ui-core/contextmenu/ContextSubMenu";
+export * from "./ui-core/contextmenu/GlobalContextMenu";
+export * from "./ui-core/contextmenu/PopupContextMenu";
 
 export * from "./ui-core/cube/Cube";
 

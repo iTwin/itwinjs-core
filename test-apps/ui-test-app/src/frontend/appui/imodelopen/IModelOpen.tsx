@@ -98,7 +98,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
     this.setState({
-      prompt: "Opening '" + iModelInfo.name + "'...",
+      prompt: `Opening '${iModelInfo.name}'...`,
       isLoadingiModel: true,
     }, () => {
       if (this.props.onIModelSelected)

@@ -183,7 +183,7 @@ export class ViewsFrontstage extends FrontstageProvider {
     // first find an appropriate layout
     const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
     if (!contentLayoutProps) {
-      throw (Error("Could not find layout ContentLayoutProps when number of viewStates=" + this.viewStates.length));
+      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
     }
 
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
@@ -434,7 +434,7 @@ class AdditionalTools {
   private _tool4 = () => {
     const details = new NotifyMessageDetails(this._tool4Priority, this._tool4Message, this._tool4Detailed, OutputMessageType.Pointer);
     const wrapper = ConfigurableUiManager.getWrapperElement();
-    details.setPointerTypeDetails(wrapper!, { x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
+    details.setPointerTypeDetails(wrapper, { x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
     IModelApp.notifications.outputMessage(details);
     document.addEventListener("keyup", this._handleTool4Keypress);
     document.addEventListener("mousemove", this._handleTool4MouseMove);
@@ -551,7 +551,7 @@ class AdditionalTools {
 
   private openViewportDialog(): void {
     this._viewportDialogCnt++;
-    const id = "ViewportDialog_" + this._viewportDialogCnt.toString();
+    const id = `ViewportDialog_${this._viewportDialogCnt.toString()}`;
 
     const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
 
@@ -704,14 +704,14 @@ class AdditionalTools {
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
               dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </div>
+            </div>
             {false && <ViewportWidget projectName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
             <div>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
               dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </div>
+            </div>
           </ScrollView>
         </div>,
     });

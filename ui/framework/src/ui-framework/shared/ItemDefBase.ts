@@ -10,6 +10,7 @@ import * as React from "react";
 import { BadgeType, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ItemProps } from "./ItemProps";
+import { IconSpec } from "@bentley/ui-core";
 
 /** Base state for any 'stateful' React component
  * @public
@@ -47,7 +48,7 @@ export abstract class ItemDefBase {
   /** @deprecated - use condition instead */
   public stateSyncIds: string[] = [];
 
-  public iconSpec?: string | ConditionalStringValue | React.ReactNode;
+  public iconSpec?: IconSpec;
   public iconElement?: React.ReactNode;
 
   public static initializeDef(me: ItemDefBase, itemProps: ItemProps): void {

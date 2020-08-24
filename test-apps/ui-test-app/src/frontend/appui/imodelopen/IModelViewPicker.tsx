@@ -39,7 +39,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
   }
 
   public render() {
-    let name: string | undefined = this.props.view.code!.value;
+    let name: string | undefined = this.props.view.code.value;
     if (!name)
       return undefined;
     let lastIndex: number;

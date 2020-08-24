@@ -101,7 +101,7 @@ export class PlaceLineStringTool extends PrimitiveToolEx {
     }
     const geomProps = GeomJson.Writer.toIModelJson(primitive);
 
-    const model = this.targetModelId!;
+    const model = this.targetModelId;
     const category = this.targetCategory;
 
     const props3d: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };

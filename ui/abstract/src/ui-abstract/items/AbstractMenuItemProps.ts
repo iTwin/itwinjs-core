@@ -18,4 +18,8 @@ export interface AbstractMenuItemProps extends CommonItemProps {
   item?: AbstractActionItemProps;
   /** Nested array of item props. Either 'item' or 'submenu' must be specified. */
   submenu?: AbstractMenuItemProps[];
+  /** Icon to display on right side of the menu item.
+   * Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id.
+   */
+  iconRight?: string;
 }

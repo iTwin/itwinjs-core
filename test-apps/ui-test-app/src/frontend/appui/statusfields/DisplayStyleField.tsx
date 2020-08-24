@@ -90,10 +90,11 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
     if (!this.state.viewport)
       return;
 
-    this.state.viewport!.displayStyle = this.state.displayStyles.get(event.target.value)!.clone();
-    this.state.viewport!.invalidateScene();
-    this.state.viewport!.synchWithView();
-    this.forceUpdate();
+    const viewport = this.state.viewport;
+    viewport.displayStyle = this.state.displayStyles.get(event.target.value)!.clone();
+    viewport.invalidateScene();
+    viewport.synchWithView();
+    this.setState({ viewport });
   }
 
   public render(): React.ReactNode {

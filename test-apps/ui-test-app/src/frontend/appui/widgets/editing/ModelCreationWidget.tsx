@@ -64,7 +64,7 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
       await viewport.addViewedModels([modelId]);
       ActiveSettingsManager.onModelCreated(modelId, modelName, true);
 
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, modelName + " created."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelName} created.`));
 
       this.modelName = "";
       this.setState((prev) => ({ ...prev, haveName: false }));

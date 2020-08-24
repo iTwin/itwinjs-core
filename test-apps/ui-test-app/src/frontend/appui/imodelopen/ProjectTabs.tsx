@@ -38,7 +38,7 @@ export class ProjectTab extends React.Component<TabProps> {
 
   public renderIndicator() {
     const percentageOffset = this.props.selectedTabIndex! * 100;
-    const translate = "translate(0," + percentageOffset + "%)";
+    const translate = `translate(0,${percentageOffset}%)`;
     const translateStyle: React.CSSProperties = { transform: translate };
 
     return (

@@ -25,7 +25,7 @@ export class LocalFileSupport {
     let iModelConnection: IModelConnection | undefined;
 
     try {
-      const filePath = SampleAppIModelApp.testAppConfiguration?.snapshotPath + "/" + fileName;
+      const filePath = `${SampleAppIModelApp.testAppConfiguration?.snapshotPath}/${fileName}`;
 
       // open the imodel
       Logger.logInfo("LocalFileSupport", `SnapshotConnection.openFile path=${filePath}`);

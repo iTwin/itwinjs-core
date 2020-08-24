@@ -17,7 +17,7 @@ import { FooterIndicator } from "@bentley/ui-ninezone";
 import { ErrorHandling } from "../../../api/ErrorHandling";
 
 function translate(prompt: string) {
-  return IModelApp.i18n.translate("SampleApp:statusFields." + prompt);
+  return IModelApp.i18n.translate(`SampleApp:statusFields.${prompt}`);
 }
 
 interface PushPullState {
@@ -61,7 +61,7 @@ class SyncManager {
 
         IModelApp.iModelClient.events.createListener(requestContext, async () => requestContext.accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
           if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
-            this.state.changesOnServer.push(receivedEvent.changeSetId!);
+            this.state.changesOnServer.push(receivedEvent.changeSetId);
             this.onStateChange.raiseEvent();
           }
         });
@@ -190,7 +190,7 @@ export class PushPullStatusField extends React.Component<StatusFieldProps, PushP
 
     const mustPull = this.mustPull;
     const pullIcon = mustPull ? "icon icon-arrow-down" : "icon icon-blank";
-    const pullChangeCount = (this.state.changesOnServer.length !== 0) ? this.state.changesOnServer.length + "" : "";
+    const pullChangeCount = (this.state.changesOnServer.length !== 0) ? `${this.state.changesOnServer.length}` : "";
     const pullTitleTxt = translate(mustPull ? "pullButtonTitle" : "pullButtonDisabledTitle");
 
     return (
