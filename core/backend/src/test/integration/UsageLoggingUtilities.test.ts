@@ -77,7 +77,7 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
       exceptionThrown = true;
     }
 
-    assert.isTrue(exceptionThrown, "Expected usage log posted without product version to be rejected");
+    assert.isFalse(exceptionThrown, "Expected user usage log posted without product version to accepted with a default value productVersion");
   });
 
   it("Post usage log - invalid usage type (#integration)", async function (this: Mocha.Context) {
@@ -180,7 +180,7 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
       exceptionThrown = true;
     }
 
-    assert.isTrue(exceptionThrown, "Attempting to track feature logs without a product version should throw an exception.");
+    assert.isFalse(exceptionThrown, "Expected feature usage log posted without product version to accepted with a default value productVersion");
   });
 
   it("Post feature log - with both startDate and endDate (#integration)", async function (this: Mocha.Context) {
