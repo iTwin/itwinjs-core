@@ -8,7 +8,7 @@
 
 import { SnapMode } from "@bentley/imodeljs-frontend";
 import { ActionsUnion, createAction } from "../redux/redux-ts";
-import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
+import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
 
 // cSpell:ignore configurableui snapmode toolprompt
 
@@ -37,7 +37,7 @@ export interface ConfigurableUiState {
 const initialState: ConfigurableUiState = {
   snapMode: SnapMode.NearestKeypoint as number,
   toolPrompt: "",
-  theme: COLOR_THEME_DEFAULT,
+  theme: SYSTEM_PREFERRED_COLOR_THEME,
   widgetOpacity: WIDGET_OPACITY_DEFAULT,
 };
 

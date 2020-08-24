@@ -27,7 +27,7 @@ import { FrameworkState } from "./redux/FrameworkState";
 import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from "./redux/SessionState";
 import { StateManager } from "./redux/StateManager";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
-import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
+import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
@@ -408,7 +408,7 @@ export class UiFramework {
 
   /** @public */
   public static getColorTheme(): string {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : /* istanbul ignore next */ COLOR_THEME_DEFAULT;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : /* istanbul ignore next */ SYSTEM_PREFERRED_COLOR_THEME;
   }
 
   /** @public */

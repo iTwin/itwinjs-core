@@ -19,7 +19,13 @@ export enum ColorTheme {
   Dark = "dark",
 }
 
+/** System preferred color theme.
+ * @public
+ */
+export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
+
 /** The default color theme.
+ * @deprecated SYSTEM_PREFERRED_COLOR_THEME is used as a default color theme.
  * @public
  */
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;

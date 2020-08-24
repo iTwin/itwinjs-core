@@ -31,6 +31,7 @@
     "settings": "Settings",
     "light": "Light",
     "dark": "Dark",
+    "systemPreferred": "System preferred",
     "themeTitle": "Theme",
     "themeDescription": "Toggle the theme between light and dark",
     "autoHideTitle": "Auto-Hide UI",

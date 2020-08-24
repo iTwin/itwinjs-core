@@ -758,7 +758,7 @@ export enum ClassGroupingOption {
 // @beta
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
 
 // @public
@@ -5360,6 +5360,9 @@ export enum SyncUiEventId {
     WidgetStateChanged = "widgetstatechanged",
     WorkflowActivated = "workflowactivated"
 }
+
+// @public
+export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
 
 // @public
 export interface TargetChangeHandler {
