@@ -1269,9 +1269,7 @@ export function MessageRenderer(props: MessageRendererProps): JSX.Element | null
 
 // @beta
 export interface MessageRendererProps extends ClassNameProps {
-    // (undocumented)
     message: MessageType;
-    // (undocumented)
     useSpan?: boolean;
 }
 

@@ -99,7 +99,7 @@ exports[`PopupManager PopupRenderer PopupRenderer should render HTMLElement 1`] 
                     <div
                       dangerouslySetInnerHTML={
                         Object {
-                          "__html": "<html><head></head><body><div class=\\"test-element\\">Hello World!</div></body></html>",
+                          "__html": "<div class=\\"test-element\\">Hello World!</div>",
                         }
                       }
                     />
