@@ -341,7 +341,7 @@ export class AzureFileHandler implements FileHandler {
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
 
       if (!(err instanceof UserCancelledError))
-        Logger.logError(loggerCategory, `Error downloading file`);
+        Logger.logWarning(loggerCategory, `Error downloading file: ${err}`);
       throw err;
     }
     if (fileSize && fs.existsSync(downloadToPathname)) {
