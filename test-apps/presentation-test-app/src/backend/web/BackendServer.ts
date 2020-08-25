@@ -17,5 +17,5 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   const port = Number(process.env.PORT || 3001);
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
-  console.log("Web backend for presentation-test-app listening on port " + port);
+  console.log(`Web backend for presentation-test-app listening on port ${port}`);
 }

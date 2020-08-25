@@ -15,7 +15,7 @@ import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-co
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import GridWidget from "../grid-widget/GridWidget";
 import IModelSelector from "../imodel-selector/IModelSelector";
-import PropertiesWidget from "../properties-widget/PropertiesWidget";
+import { PropertiesWidget } from "../properties-widget/PropertiesWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
 import { TreeWidget } from "../tree-widget/TreeWidget";
 import UnitSystemSelector from "../unit-system-selector/UnitSystemSelector";
@@ -90,7 +90,7 @@ export default class App extends React.Component<{}, State> {
     for (let i = 0; i < size; ++i)
       rowPromises.push(provider.getRow(i));
     const rows = await Promise.all(rowPromises);
-    const keys = rows.map((r) => provider.getRowKey(r!));
+    const keys = rows.map((r) => provider.getRowKey(r));
     Presentation.selection.addToSelection("app", provider.imodel, keys);
   }
 

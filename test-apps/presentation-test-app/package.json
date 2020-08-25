@@ -83,12 +83,31 @@
     "not <0.2%"
   ],
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js",
+    "extends": [
+      "./node_modules/@bentley/build-tools/.eslintrc.js"
+    ],
     "parserOptions": {
       "project": [
         "tsconfig.json",
         "tsconfig.backend.json"
       ]
+    },
+    "rules": {
+      "@typescript-eslint/naming-convention": [
+        "warn",
+        {
+          "selector": "function",
+          "format": [
+            "camelCase",
+            "PascalCase"
+          ]
+        }
+      ]
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
     }
   }
 }
