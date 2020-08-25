@@ -23,6 +23,7 @@ import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { DndComponentClass } from 'react-dnd';
 import { EnumerationChoice } from '@bentley/ui-abstract';
 import { Face } from '@bentley/ui-core';
+import { GenericUiEventArgs } from '@bentley/ui-abstract';
 import { GlobalContextMenuProps } from '@bentley/ui-core';
 import { GlobalDialogProps } from '@bentley/ui-core';
 import { GroupButton } from '@bentley/ui-abstract';
@@ -4184,6 +4185,22 @@ export interface TimelineDataProvider {
 export enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
+}
+
+// @beta
+export enum TimelinePausePlayAction {
+    // (undocumented)
+    Pause = 1,
+    // (undocumented)
+    Play = 2,
+    // (undocumented)
+    Toggle = 0
+}
+
+// @beta
+export interface TimelinePausePlayArgs extends GenericUiEventArgs {
+    // (undocumented)
+    timelineAction: TimelinePausePlayAction;
 }
 
 // @internal

@@ -9,11 +9,11 @@
 import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { GenericUiEventArgs, RelativePosition, UiAdmin } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { InlineEdit } from "./InlineEdit";
-import { Milestone, PlaybackSettings } from "./interfaces";
+import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
 import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
 import { Timeline } from "./Timeline";
@@ -38,6 +38,7 @@ interface TimelineComponentProps {
   onJump?: (forward: boolean) => void; // callback triggered when backward/forward buttons are pressed
   onSettingsChange?: (arg: PlaybackSettings) => void; // callback triggered when a setting is changed
   alwaysMinimized?: boolean; // always display in miniMode with no expand menu
+  componentId?: string; // must be set to use TimelineComponentEvents
 }
 
 interface TimelineComponentState {
@@ -60,6 +61,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   private _expandLabel: string = "Expand";
   private _minimizeLabel: string = "Minimize";
   private _repeatLabel: string = "Repeat";
+  private _removeListener?: () => void;
+
 
   constructor(props: TimelineComponentProps) {
     super(props);
@@ -76,9 +79,15 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this._expandLabel = UiComponents.translate("timeline.expand");
     this._minimizeLabel = UiComponents.translate("timeline.minimize");
     this._repeatLabel = UiComponents.translate("timeline.repeat");
+    // istanbul ignore else
+    if (this.props.componentId) { // can't handle an event if we have no id
+      this._removeListener = UiAdmin.onGenericUiEvent.addListener(this._handleTimelinePausePlayEvent);
+    }
   }
 
   public componentWillUnmount() {
+    if (this._removeListener)
+      this._removeListener();
     window.cancelAnimationFrame(this._requestFrame);
     this._unmounted = true;
   }
@@ -89,6 +98,32 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     }
   }
 
+  private _handleTimelinePausePlayEvent = (args: GenericUiEventArgs): void => {
+    const timelineArgs = args as TimelinePausePlayArgs;
+    // istanbul ignore else
+    if (!timelineArgs || this.props.componentId !== timelineArgs.uiComponentId || timelineArgs.timelineAction === undefined)
+      return;
+
+    let startPlaying: boolean;
+    switch (timelineArgs.timelineAction) {
+      case TimelinePausePlayAction.Play:
+        startPlaying = true;
+        break;
+      case TimelinePausePlayAction.Pause:
+        startPlaying = false;
+        break;
+      case TimelinePausePlayAction.Toggle:
+        startPlaying = !this.state.isPlaying;
+        break;
+      // istanbul ignore next
+      default:
+        return; // throw error?
+    }
+    if (startPlaying)
+      this._onPlay()
+    else
+      this._onPause();
+  }
   // user clicked backward button
   private _onBackward = () => {
     // istanbul ignore else

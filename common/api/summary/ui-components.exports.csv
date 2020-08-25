@@ -408,6 +408,8 @@ internal;Timeline
 alpha;TimelineComponent 
 alpha;TimelineDataProvider
 alpha;TimelineDateDisplay
+beta;TimelinePausePlayAction
+beta;TimelinePausePlayArgs 
 internal;TimelineProps 
 alpha;TimelineScale
 beta;ToggleEditor 

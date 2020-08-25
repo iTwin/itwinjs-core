@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { TimelineComponent } from "@bentley/ui-components";
+import { TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-components";
 import {
   ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
   NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, WidgetStateChangedEventArgs, Zone, ZoneLocation,
@@ -15,6 +15,7 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
+import { UiAdmin } from "@bentley/ui-abstract";
 
 /* eslint-disable react/jsx-key */
 
@@ -92,6 +93,7 @@ function SampleTimelineComponent() {
         minimized={true}
         showDuration={true}
         alwaysMinimized={true}
+        componentId={"sampleApp-sampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
       />
     </div>
   );
@@ -281,6 +283,17 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  /** Command to send pause/play toggle to the SampleTimelineComponent */
+  private get _pausePlayTimeline() {
+    return new CommandItemDef({
+      iconSpec: "icon-snow",
+      labelKey: "SampleApp:buttons.toggleTimelinePlay",
+      execute: async () => {
+        const eventArgs: TimelinePausePlayArgs = { uiComponentId: "sampleApp-sampleTimeline", timelineAction: TimelinePausePlayAction.Toggle };
+        UiAdmin.sendUiEvent(eventArgs);
+      },
+    })
+  }
   private _horizontalToolbar = (
     <Toolbar
       expandsTo={Direction.Bottom}
@@ -291,6 +304,7 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={AppTools.item2} />
           <ActionItemButton actionItem={this._openNestedFrontstage1} />
           <ActionItemButton actionItem={this._switchLayout} />
+          <ActionItemButton actionItem={this._pausePlayTimeline} />
         </>
       }
     />

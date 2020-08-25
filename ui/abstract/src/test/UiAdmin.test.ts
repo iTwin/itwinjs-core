@@ -172,4 +172,12 @@ describe("UiAdmin", () => {
     uiAdmin.setFocusToHome();
   });
 
+  it("sendUiEvent calls event handler", () => {
+    const spyOnHandler = sinon.spy();
+    UiAdmin.onGenericUiEvent.addListener(spyOnHandler);
+    UiAdmin.sendUiEvent({uiComponentId:"TestId"});
+    UiAdmin.onGenericUiEvent.removeListener(spyOnHandler);
+    expect(spyOnHandler.calledOnce).to.be.true;
+  });
+
 });

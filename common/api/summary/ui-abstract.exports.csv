@@ -46,6 +46,8 @@ beta;EditorPosition
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
 public;FunctionKey
+beta;GenericUiEvent 
+beta;GenericUiEventArgs
 internal;getClassName: (obj: any) => string
 beta;GroupButton 
 beta;IconDefinition

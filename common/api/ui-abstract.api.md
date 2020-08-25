@@ -448,6 +448,16 @@ export enum FunctionKey {
     F9 = "F9"
 }
 
+// @beta
+export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> {
+}
+
+// @beta
+export interface GenericUiEventArgs {
+    // (undocumented)
+    uiComponentId: string;
+}
+
 // @internal
 export const getClassName: (obj: any) => string;
 
@@ -1115,9 +1125,11 @@ export class UiAdmin {
     hideMenuButton(_id: string): boolean;
     hideToolbar(): boolean;
     get isFocusOnHome(): boolean;
+    static readonly onGenericUiEvent: GenericUiEvent;
     // @internal (undocumented)
     onInitialized(): void;
     openToolSettingsPopup(_dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
+    static sendUiEvent(args: GenericUiEventArgs): void;
     setFocusToHome(): void;
     showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;

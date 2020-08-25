@@ -15,6 +15,20 @@ import { Primitives } from "./properties/PrimitiveTypes";
 import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
 import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
+
+
+/** The Generic UI Event args contains information useful for any UI message
+ * @beta
+ */
+export interface GenericUiEventArgs {
+  uiComponentId: string;
+}
+
+/** The GenericUiEvent is the base event class for UI events that target a specific component, as identified in uiComponentId.
+ * @beta
+ */
+export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> {}
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
@@ -207,5 +221,12 @@ export class UiAdmin {
 
   /** Closes the Tool Settings Ui popup. */
   public closeToolSettingsPopup(): boolean { return false; }
+
+  /** Send a UI event */
+  public static sendUiEvent(args: GenericUiEventArgs){
+    UiAdmin.onGenericUiEvent.emit(args);
+  }
+  /** GenericUiEvent  */
+  public static readonly onGenericUiEvent = new GenericUiEvent();
 
 }

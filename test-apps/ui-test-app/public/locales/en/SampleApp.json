@@ -175,7 +175,8 @@
     "showContextMenu": "Show Context Menu",
     "showToolbar": "Show Toolbar",
     "showHTMLElement": "Show HTML Element",
-    "clearMessages": "Clear Messages"
+    "clearMessages": "Clear Messages",
+    "toggleTimelinePlay": "Toggle Timeline Pause/Play"
   },
   "tools": {
     "ToolWithSettings": {

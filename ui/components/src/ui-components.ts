@@ -245,6 +245,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
  * Classes and components for working with a Table.
  */
 /**
+ * @docs-group-description Timeline
+ * Classes and components that provide a timeline
+ */
+/**
  * @docs-group-description Toolbar
  * Functions and components that provide a Toolbar.
  */
