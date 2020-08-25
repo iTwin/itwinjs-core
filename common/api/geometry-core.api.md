@@ -2154,6 +2154,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     pushAll(points: Point3d[]): void;
     pushFrom(p: any): void;
     pushFromGrowableXYZArray(source: GrowableXYZArray, sourceIndex?: number): number;
+    pushFront(toPush: XYAndZ): void;
+    pushFrontXYZ(x: number, y: number, z: number): void;
     pushInterpolatedFromGrowableXYZArray(source: GrowableXYZArray, i: number, fraction: number, j: number): void;
     pushWrap(numWrap: number): void;
     pushXYZ(x: number, y: number, z: number): void;

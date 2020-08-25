@@ -208,6 +208,38 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this._data[index + 2] = z;
     this._xyzInUse++;
   }
+  /** Shift all data forward to make space for numPoints at the front.
+   * * Leading (3*numPoints) doubles are left with prior contents.
+   * * _xyzInUse count is increased
+  */
+  private shiftForward(numPoints: number) {
+    if (numPoints <= 0)
+      return;
+    let newCapacity = this.length + numPoints;  // in POINTS
+    if (newCapacity > this._xyzCapacity) {
+      newCapacity = Math.max(4, 2 * this._xyzCapacity);
+      this.ensureCapacity(newCapacity);
+    }
+    const numAddedDouble = 3 * numPoints;
+    const lastIndex = this._xyzInUse * 3;
+    this._data.copyWithin(numAddedDouble, 0, lastIndex);
+    this._xyzInUse += numPoints;
+  }
+  /** prepend a new point with given x,y,z
+   * * Remark: this copies all content forward.
+   */
+  public pushFrontXYZ(x: number, y: number, z: number) {
+    this.shiftForward(1);
+    this._data[0] = x;
+    this._data[1] = y;
+    this._data[2] = z;
+  }
+  /** prepend a new point at the front of the array.
+   *
+   */
+  public pushFront(toPush: XYAndZ) {
+    this.pushFrontXYZ(toPush.x, toPush.y, toPush.z);
+  }
 
   /** move the coordinates at fromIndex to toIndex.
    * * No action if either index is invalid.

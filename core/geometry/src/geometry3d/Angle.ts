@@ -23,9 +23,9 @@ export class Angle implements BeJSONFunctions {
   public static readonly piRadians = 3.14159265358979310000e+000;
   /** maximal accuracy value of 2*pi (360 degrees), in radians */
   public static readonly pi2Radians = 6.28318530717958620000e+000;
-  /** scale factor for converting degrees to radians */
-  public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
   /** scale factor for converting radians to degrees */
+  public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
+  /** scale factor for converting degrees to radians */
   public static readonly radiansPerDegree = (Angle.piOver4Radians / 45.0);
   /** maximal accuracy value of pi/12 ( 15 degrees), in radians */
   public static readonly piOver12Radians = 0.26179938779914943653855361527329;

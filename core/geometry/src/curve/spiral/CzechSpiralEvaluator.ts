@@ -8,6 +8,7 @@
  */
 import { Geometry } from "../../Geometry";
 import { CubicEvaluator } from "./CubicEvaluator";
+import { SimpleNewton } from "../../numerics/Newton";
 /**
  * Czech cubic.
  * This is y= m*x^3 with
@@ -70,5 +71,39 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
         && Geometry.isSameCoordinate(this.nominalRadius1, other.nominalRadius1);
     }
     return false;
+  }
+  /**
+   * Return a (fast but mediocre) approximation of spiral length as a function of x axis position.
+   * * This x-to-distance relation is not as precise as the CurvePrimitive method moveSignedDistanceFromFraction.
+   * * It is supported here for users interested in replicating the Czech distance mapping rather than the more accurate CurvePrimitive measurements.
+   * @param x distance along the x axis.
+   */
+  public xToCzechApproximateDistance(x: number): number {
+    const l2 = this.nominalLength1 * this.nominalLength1;
+    const r2 = this.nominalRadius1 * this.nominalRadius1;
+    const Q = 4.0 * r2 - l2;
+    const xx = x * x;
+    return x * (1.0 + xx * xx / (10.0 * Q * l2));
+  }
+  /**
+   * Return the inverse of the `distanceAlongXToCzechApproximateDistance` function.
+   * * The undefined result can only occur for distances outside the usual spirals.
+   * @param s (approximate) distance along the spiral.
+   *
+   */
+  public czechApproximateDistanceToX(d: number): number | undefined {
+    const l2 = this.nominalLength1 * this.nominalLength1;
+    const r2 = this.nominalRadius1 * this.nominalRadius1;
+    const Q = 4.0 * r2 - l2;
+    const a = 1.0 / (10.0 * Q * l2);
+    return SimpleNewton.runNewton1D(d,
+      (x: number) => {
+        const xx = x * x;
+        return x * (1.0 + xx * xx * a) - d
+      },
+      (x: number) => {
+        const xx = x * x;
+        return 1.0 + 5 * xx * xx * a;
+      });
   }
 }
