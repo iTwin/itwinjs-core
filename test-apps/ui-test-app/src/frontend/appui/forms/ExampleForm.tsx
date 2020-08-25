@@ -16,8 +16,7 @@ export class ExampleForm extends React.Component {
   private _pickListLabel = "Picker";
 
   public static open() {
-    const form = new ExampleForm({});
-    ModalDialogManager.openDialog(form.render());
+    ModalDialogManager.openDialog(<ExampleForm />);
   }
 
   protected async handleSubmit(values: FieldValues): Promise<void> {

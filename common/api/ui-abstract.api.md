@@ -19,7 +19,7 @@ export interface AbstractActionItemProps extends CommonItemProps, CommandHandler
 
 // @beta
 export interface AbstractMenuItemProps extends CommonItemProps {
-    iconRight?: string;
+    iconRight?: string | ConditionalStringValue;
     id: string;
     item?: AbstractActionItemProps;
     submenu?: AbstractMenuItemProps[];
@@ -260,15 +260,15 @@ export interface CommonBackstageItem extends ProvidedItem {
 export interface CommonItemProps {
     applicationData?: any;
     badgeType?: BadgeType;
-    description?: string;
-    icon?: string;
+    description?: string | ConditionalStringValue;
+    icon?: string | ConditionalStringValue;
     readonly internalData?: Map<string, any>;
     isActive?: boolean;
     isDisabled?: boolean | ConditionalBooleanValue;
     isHidden?: boolean | ConditionalBooleanValue;
     isPressed?: boolean;
-    label?: string;
-    tooltip?: string;
+    label?: string | ConditionalStringValue;
+    tooltip?: string | ConditionalStringValue;
 }
 
 // @beta

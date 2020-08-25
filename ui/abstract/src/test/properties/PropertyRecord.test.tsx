@@ -80,15 +80,15 @@ describe("PropertyRecord", () => {
 
     it("should return members children for struct record", () => {
       const structChildren: PropertyRecord[] = [
-        PropertyRecord.fromString("StructChild1"),
-        PropertyRecord.fromString("StructChild2"),
+        PropertyRecord.fromString("structChild1"),
+        PropertyRecord.fromString("structChild2"),
       ];
 
       const structValue: StructValue = {
         valueFormat: PropertyValueFormat.Struct,
         members: {
-          StructChild1: structChildren[0],
-          StructChild2: structChildren[1],
+          structChild1: structChildren[0],
+          structChild2: structChildren[1],
         },
       };
 

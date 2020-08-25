@@ -7,6 +7,7 @@
  */
 
 import { AbstractActionItemProps, CommonItemProps } from "./AbstractItemProps";
+import { ConditionalStringValue } from "./ConditionalStringValue";
 
 /** Properties for a Menu item
  * @beta
@@ -21,5 +22,5 @@ export interface AbstractMenuItemProps extends CommonItemProps {
   /** Icon to display on right side of the menu item.
    * Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id.
    */
-  iconRight?: string;
+  iconRight?: string | ConditionalStringValue;
 }
