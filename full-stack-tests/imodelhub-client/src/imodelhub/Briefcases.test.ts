@@ -203,7 +203,8 @@ describe("iModelHub BriefcaseHandler", () => {
     utils.expectMatchesExpectedUrlScheme(briefcase.downloadUrl);
   });
 
-  it("should retrieve BlockCacheVfs AccessKey for a Briefcase", async () => {
+  // BlockCache not in QA, make unit tests until they can be reenabled as integration tests
+  it("should retrieve BlockCacheVfs AccessKey for a Briefcase (#unit)", async () => {
     mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), false, false, true);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectBCVAccessKey()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);

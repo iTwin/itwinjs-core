@@ -96,6 +96,12 @@ jobs:
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
+    workingDirectory: 'full-stack-tests/imodelhub-client'
+    displayName: 'Run iModelHub Client Full Stack Tests'
+    enabled: false
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
     workingDirectory: 'full-stack-tests/rpc-interface'
     displayName: 'Run RPC Interface Full Stack Tests'
     condition: succeededOrFailed()
@@ -190,6 +196,14 @@ jobs:
     inputs:
       testResultsFiles: 'full-stack-tests/core/lib/test/junit_results.xml'
       testRunTitle: 'Core - Integration Tests - $(Node_Version)'
+    enabled: false
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: 'Publish iModelHub Client Integration Test Results'
+    inputs:
+      testResultsFiles: 'full-stack-tests/imodelhub-client/lib/test/junit_results.xml'
+      testRunTitle: 'iModelHub Client - Integration Tests - $(Node_Version)'
     enabled: false
     condition: succeededOrFailed()
 

@@ -97,7 +97,8 @@ describe("iModelHub CheckpointHandler", () => {
     progressTracker.check();
   });
 
-  it("should query and retrieve BlockCacheVfs Checkpoint container SAS token", async () => {
+  // BlockCache not in QA, make unit tests until they can be reenabled as integration tests
+  it("should query and retrieve BlockCacheVfs Checkpoint container SAS token (#unit)", async () => {
     mockGetCheckpoint(imodelId, `?$select=*,FileAccessKey-forward-BCVAccessKey.*`, mockCheckpoint("", false, true));
     const checkpoints = await iModelClient.checkpoints.get(requestContext, imodelId, new CheckpointQuery().selectBCVAccessKey());
     chai.assert(checkpoints);
