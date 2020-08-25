@@ -1,6 +1,13 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Thu, 20 Aug 2020 20:57:09 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Aug 2020 18:13:04 GMT and should not be manually modified.
+
+## 2.5.1
+Mon, 24 Aug 2020 18:13:04 GMT
+
+### Updates
+
+- Fix issue with eslintrc config
 
 ## 2.5.0
 Thu, 20 Aug 2020 20:57:09 GMT

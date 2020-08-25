@@ -7,7 +7,7 @@
 // npm lint script uses an alternative configuration provided in package.json
 
 const rulesDirPlugin = require("eslint-plugin-rulesdir");
-rulesDirPlugin.RULES_DIR = "./node_modules/@bentley/build-tools/src/eslint-rules";
+rulesDirPlugin.RULES_DIR = "./node_modules/@bentley/build-tools/eslint-rules";
 module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: {

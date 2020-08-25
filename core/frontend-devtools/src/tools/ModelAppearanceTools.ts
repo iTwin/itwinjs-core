@@ -19,7 +19,8 @@ function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: Fea
     vp.view.forEachModel((model) => {
       if (name === undefined || model.name === name) {
         changed = true;
-        vp.overrideModelAppearance(model.id, FeatureAppearance.fromJSON(overrides));
+        const existingOverrides = vp.getModelAppearanceOverride(model.id);
+        vp.overrideModelAppearance(model.id, existingOverrides ? existingOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides));
       }
     });
 

@@ -1,11 +1,11 @@
 {
   "name": "@bentley/extension-webpack-tools",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Configuration and scripts for iModel.js Extensions.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/extension-webpack-tools"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/extension-webpack"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -25,7 +25,7 @@
   "types": "./index.d.ts",
   "dependencies": {
     "@babel/core": "7.7.4",
-    "@bentley/webpack-tools-core": "2.5.0",
+    "@bentley/webpack-tools-core": "2.5.1",
     "@svgr/webpack": "4.3.3",
     "babel-loader": "8.1.0",
     "babel-plugin-named-asset-import": "^0.3.5",

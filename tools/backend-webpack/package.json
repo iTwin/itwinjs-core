@@ -1,11 +1,11 @@
 {
   "name": "@bentley/backend-webpack-tools",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Configuration and scripts for iModel.js agents and backends.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/backend-webpack-tools"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/backend-webpack"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -23,7 +23,7 @@
     "backend-webpack-tools": "./bin/backend-webpack-tools.js"
   },
   "dependencies": {
-    "@bentley/webpack-tools-core": "2.5.0",
+    "@bentley/webpack-tools-core": "2.5.1",
     "case-sensitive-paths-webpack-plugin": "^2.1.2",
     "chalk": "^3.0.0",
     "concurrently": "^3.6.1",

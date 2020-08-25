@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { FeatureAppearanceProps, RgbColorProps } from "@bentley/imodeljs-common";
+import { FeatureAppearanceProps, RgbColorProps, FeatureAppearance } from "@bentley/imodeljs-common";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
@@ -67,7 +67,8 @@ export class SaveRealityModelTool extends Tool {
 }
 
 function changeRealityModelAppearanceOverrides(vp: Viewport, overrides: FeatureAppearanceProps, index: number): boolean {
-  return vp.displayStyle.overrideRealityModelAppearance(index, overrides);
+  const existingOverrides = vp.getRealityModelAppearanceOverride(index);
+  return vp.overrideRealityModelAppearance(index, existingOverrides ? existingOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides));
 }
 
 

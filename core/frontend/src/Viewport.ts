@@ -14,7 +14,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction, ElementProps,
   FeatureAppearance,
-  FeatureAppearanceProps, Frustum, GlobeMode,
+  Frustum, GlobeMode,
   GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
   PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -1233,7 +1233,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Remove any model appearance override for the specified model.
-   * @param id The Id of the subcategory.
+   * @param id The Id of the model.
    * @see [[overrideModelAppearance]]
    */
   public dropModelAppearanceOverride(id: Id64String): void {
@@ -1242,13 +1242,23 @@ export abstract class Viewport implements IDisposable {
     this.invalidateRenderPlan();
   }
 
+  /** Obtain the override applied to a [[Model]] displayed in this viewport.
+   * @param id The reality model index
+   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
+   * @see [[overrideModelAppearance]]
+   * @beta
+   */
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
+    return this.displayStyle.getModelAppearanceOverride(id);
+  }
+
   /** Change the appearance overrides for a "contextual" reality model displayed by this viewport.
    * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
    * @param index The reality model index or -1 to apply to all models.
    * @returns true if overrides are successfully applied.
    * @beta
    */
-  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearanceProps): boolean {
+  public overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean {
     const changed = this.displayStyle.overrideRealityModelAppearance(index, overrides);
     if (changed) {
       this._changeFlags.setDisplayStyle();
@@ -1266,6 +1276,16 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.dropRealityModelAppearanceOverride(index);
     this._changeFlags.setDisplayStyle();
     this.invalidateRenderPlan();
+  }
+
+  /** Obtain the override applied to a "contextual" reality model displayed in this viewport.
+ * @param index The reality model index
+ * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
+ * @see [[overrideRealityModelAppearance]]
+ * @beta
+ */
+  public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
+    return this.displayStyle.getRealityModelAppearanceOverride(index);
   }
 
   /** Some changes may or may not require us to invalidate the scene.

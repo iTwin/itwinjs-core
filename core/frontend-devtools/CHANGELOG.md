@@ -1,6 +1,13 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Thu, 20 Aug 2020 20:57:09 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Aug 2020 18:13:04 GMT and should not be manually modified.
+
+## 2.5.1
+Mon, 24 Aug 2020 18:13:04 GMT
+
+### Updates
+
+- Fix model appearance tools to combine with existing overrides correctly.
 
 ## 2.5.0
 Thu, 20 Aug 2020 20:57:09 GMT

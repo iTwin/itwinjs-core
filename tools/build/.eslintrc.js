@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 const rulesDirPlugin = require("eslint-plugin-rulesdir");
-rulesDirPlugin.RULES_DIR = "./node_modules/@bentley/build-tools/src/eslint-rules";
+rulesDirPlugin.RULES_DIR = "./node_modules/@bentley/build-tools/eslint-rules";
 module.exports = {
   env: {
     "browser": true

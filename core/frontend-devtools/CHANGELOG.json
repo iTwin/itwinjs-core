@@ -2,6 +2,18 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "2.5.1",
+      "tag": "@bentley/frontend-devtools_v2.5.1",
+      "date": "Mon, 24 Aug 2020 18:13:04 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix model appearance tools to combine with existing overrides correctly."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.0",
       "tag": "@bentley/frontend-devtools_v2.5.0",
       "date": "Thu, 20 Aug 2020 20:57:09 GMT",
