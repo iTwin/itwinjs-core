@@ -8853,10 +8853,12 @@ export abstract class TileAdmin {
     abstract getTilesForViewport(vp: Viewport): SelectedAndReadyTiles | undefined;
     // @internal
     abstract getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
-    // @internal
-    abstract getViewportSetForUsage(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
     // @internal (undocumented)
     abstract get ignoreAreaPatterns(): boolean;
+    // @internal
+    abstract isTileInUse(marker: TileUsageMarker): boolean;
+    // @internal
+    abstract markTileUsedByViewport(marker: TileUsageMarker, vp: Viewport): void;
     abstract get maxActiveRequests(): number;
     abstract set maxActiveRequests(max: number);
     // @internal (undocumented)

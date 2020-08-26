@@ -7,7 +7,7 @@ import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core"
 import { ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags } from "@bentley/imodeljs-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
-  Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, Viewport, ViewRect,
+  Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, TileUsageMarker, Viewport, ViewRect,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -148,6 +148,9 @@ describe("Properly render on- or off-screen", () => {
     const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
     expect(vp0.rendersToScreen).to.be.false;
     expect(vp1.rendersToScreen).to.be.false;
+
+    vp0.dispose();
+    vp1.dispose();
   });
 });
 
@@ -1224,6 +1227,49 @@ describe("Tile unloading", async () => {
     await expiration.wait();
     await vp.drawFrame(); // needed for off-screen viewports which don't participate in render loop
   }
+
+  it("should mark usage", async () => {
+    const vp1 = await createOnScreenTestViewport("0x41", imodel, 100, 100);
+    const vp2 = await createOnScreenTestViewport("0x41", imodel, 100, 100);
+
+    const now = BeTimePoint.now();
+    const later = now.plus(BeDuration.fromSeconds(10));
+
+    const marker = new TileUsageMarker();
+    const admin = IModelApp.tileAdmin;
+    expect(admin.isTileInUse(marker)).to.be.false;
+    expect(marker.isExpired(now)).to.be.false;
+    expect(marker.isExpired(later)).to.be.true;
+
+    marker.mark(vp1, now);
+    expect(admin.isTileInUse(marker)).to.be.true;
+    expect(marker.isExpired(now)).to.be.false;
+    expect(marker.isExpired(later)).to.be.false;
+
+    admin.clearUsageForViewport(vp1);
+    expect(admin.isTileInUse(marker)).to.be.false;
+    expect(marker.isExpired(now)).to.be.false;
+    expect(marker.isExpired(later)).to.be.true;
+
+    marker.mark(vp1, now);
+    marker.mark(vp2, now);
+    expect(admin.isTileInUse(marker)).to.be.true;
+    expect(marker.isExpired(now)).to.be.false;
+    expect(marker.isExpired(later)).to.be.false;
+
+    admin.clearUsageForViewport(vp1);
+    expect(admin.isTileInUse(marker)).to.be.true;
+    expect(marker.isExpired(now)).to.be.false;
+    expect(marker.isExpired(later)).to.be.false;
+
+    admin.clearUsageForViewport(vp2);
+    expect(admin.isTileInUse(marker)).to.be.false;
+    expect(marker.isExpired(now)).to.be.false;
+    expect(marker.isExpired(later)).to.be.true;
+
+    vp1.dispose();
+    vp2.dispose();
+  });
 
   it("should not dispose of displayed tiles", async () => {
     await testViewports("0x41", imodel, 1854, 931, async (vp) => {

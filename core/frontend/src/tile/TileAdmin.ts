@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, Dictionary, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
   defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
   RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
@@ -15,7 +15,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
-import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet } from "./internal";
+import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -126,10 +126,18 @@ export abstract class TileAdmin {
    */
   public abstract getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
 
-  /** Returns the union of the input set and the input viewport, to be associated with a [[TileUsageMarker]].
+  /** Marks the Tile as "in use" by the specified Viewport, where the tile defines what "in use" means.
+   * A tile will not be discarded while it is in use by any Viewport.
+   * @see [[TileTree.prune]]
    * @internal
    */
-  public abstract getViewportSetForUsage(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
+  public abstract markTileUsedByViewport(marker: TileUsageMarker, vp: Viewport): void;
+
+  /** Returns true if the Tile is currently in use by any Viewport.
+   * @see [[markTileUsedByViewport]].
+   * @internal
+   */
+  public abstract isTileInUse(marker: TileUsageMarker): boolean;
 
   /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles.
    * @internal
@@ -490,18 +498,6 @@ class Queue extends PriorityQueue<TileRequest> {
   }
 }
 
-class TilesPerViewport extends Dictionary<Viewport, Set<Tile>> {
-  public constructor() {
-    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
-  }
-}
-
-class SelectedAndReadyTilesPerViewport extends Dictionary<Viewport, SelectedAndReadyTiles> {
-  public constructor() {
-    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
-  }
-}
-
 /** Some views contain thousands of models. When we open such a view, the first thing we do is request the TileTreeProps for each model. This involves a http request per model,
  * which can exceed the maximum number of simultaneous requests permitted by the browser.
  * Similar to how we throttle requests for tile *content*, we throttle requests for TileTreeProps based on `TileAdmin.Props.maxActiveTileTreePropsRequests`, heretofore referred to as `N`.
@@ -575,9 +571,9 @@ export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | un
 
 class Admin extends TileAdmin {
   private readonly _viewports = new Set<Viewport>();
-  private readonly _requestsPerViewport = new TilesPerViewport();
-  private readonly _selectedAndReady = new SelectedAndReadyTilesPerViewport();
-  private readonly _viewportSetsForUsage = new UniqueViewportSets();
+  private readonly _requestsPerViewport = new Map<Viewport, Set<Tile>>();
+  private readonly _tileUsagePerViewport = new Map<Viewport, Set<TileUsageMarker>>();
+  private readonly _selectedAndReady = new Map<Viewport, SelectedAndReadyTiles>();
   private readonly _viewportSetsForRequests = new UniqueViewportSets();
   private _maxActiveRequests: number;
   private readonly _maxActiveTileTreePropsRequests: number;
@@ -753,7 +749,7 @@ class Admin extends TileAdmin {
     this._swapPendingRequests = previouslyPending;
 
     // We will repopulate pending requests queue from each viewport. We do NOT sort by priority while doing so.
-    this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
+    this._requestsPerViewport.forEach((value, key) => this.processRequests(key, value));
 
     // Recompute priority of each request.
     for (const req of this._pendingRequests)
@@ -956,7 +952,7 @@ class Admin extends TileAdmin {
   }
 
   private onIModelClosed(iModel: IModelConnection): void {
-    this._requestsPerViewport.forEach((vp, _req) => {
+    this._requestsPerViewport.forEach((_req, vp) => {
       if (vp.iModel === iModel)
         this.onViewportIModelClosed(vp);
     });
@@ -990,7 +986,7 @@ class Admin extends TileAdmin {
 
     this._requestsPerViewport.clear();
     this._viewportSetsForRequests.clear();
-    this._viewportSetsForUsage.clear();
+    this._tileUsagePerViewport.clear();
     this._tileTreePropsRequests.length = 0;
   }
 
@@ -1018,12 +1014,24 @@ class Admin extends TileAdmin {
     return this._viewportSetsForRequests.getViewportSet(vp, vps);
   }
 
-  public getViewportSetForUsage(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet {
-    return this._viewportSetsForUsage.getViewportSet(vp, vps);
+  public markTileUsedByViewport(marker: TileUsageMarker, vp: Viewport): void {
+    let set = this._tileUsagePerViewport.get(vp);
+    if (!set)
+      this._tileUsagePerViewport.set(vp, set = new Set<TileUsageMarker>());
+
+    set.add(marker);
+  }
+
+  public isTileInUse(marker: TileUsageMarker): boolean {
+    for (const [_viewport, markers] of this._tileUsagePerViewport)
+      if (markers.has(marker))
+        return true;
+
+    return false;
   }
 
   public clearUsageForViewport(vp: Viewport): void {
-    this._viewportSetsForUsage.remove(vp);
+    this._tileUsagePerViewport.delete(vp);
   }
 
   public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {

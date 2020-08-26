@@ -191,19 +191,13 @@ class TileSortProjector implements OrbitGtIProjectToViewForSort {
   }
 }
 
-class OrbitGtTileGraphic {
-  private _usageMarker: TileUsageMarker;
-  constructor(public graphic: RenderGraphic, viewport: Viewport, time: BeTimePoint) {
-    this._usageMarker = new TileUsageMarker();
-    this._usageMarker.mark(viewport, time);
-  }
+class OrbitGtTileGraphic extends TileUsageMarker {
+  public readonly graphic: RenderGraphic;
 
-  public markUsed(viewport: Viewport, time: BeTimePoint) {
-    this._usageMarker.mark(viewport, time);
-  }
-
-  public isExpired(olderThan: BeTimePoint) {
-    return this._usageMarker.isExpired(olderThan);
+  public constructor(graphic: RenderGraphic, viewport: Viewport, time: BeTimePoint) {
+    super();
+    this.graphic = graphic;
+    this.mark(viewport, time);
   }
 
   public dispose(): void {
@@ -289,7 +283,7 @@ export class OrbitGtTileTree extends TileTree {
       const key = tile.tileIndex.key;
       const cachedGraphic = this._tileGraphics.get(key);
       if (undefined !== cachedGraphic) {
-        cachedGraphic.markUsed(args.context.viewport, args.now);
+        cachedGraphic.mark(args.context.viewport, args.now);
         args.graphics.add(cachedGraphic.graphic);
       } else {
         const range = rangeFromOrbitGt(tile.bounds);

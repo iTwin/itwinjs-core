@@ -9,7 +9,6 @@
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
-import { ReadonlyViewportSet } from "../ViewportSet";
 
 /** A marker associated with a [[Tile]] to track usage of that tile by any number of viewports.
  * The marker tracks:
@@ -19,22 +18,20 @@ import { ReadonlyViewportSet } from "../ViewportSet";
  * @beta
  */
 export class TileUsageMarker {
-  private _viewports: ReadonlyViewportSet;
   private _timePoint = BeTimePoint.now();
 
   /** Constructs a usage marker with its timepoint set to the current time and its set of viewports empty. */
   public constructor() {
-    this._viewports = IModelApp.tileAdmin.emptyViewportSet;
   }
 
   /** Returns true if this tile is currently in use by no viewports and its timestamp pre-dates `expirationTime`. */
   public isExpired(expirationTime: BeTimePoint): boolean {
-    return this._viewports.isEmpty && this._timePoint.before(expirationTime);
+    return this._timePoint.before(expirationTime) && !IModelApp.tileAdmin.isTileInUse(this);
   }
 
   /** Updates the timestamp to the specified time and marks the tile as being in use by the specified viewport. */
   public mark(vp: Viewport, time: BeTimePoint): void {
     this._timePoint = time;
-    this._viewports = IModelApp.tileAdmin.getViewportSetForUsage(vp, this._viewports);
+    IModelApp.tileAdmin.markTileUsedByViewport(this, vp);
   }
 }
