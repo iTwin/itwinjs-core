@@ -4,24 +4,25 @@
 
 ```ts
 
-import * as i18next from 'i18next';
+import { Callback } from 'i18next';
 import { I18NextXhrBackend } from 'i18next-xhr-backend';
+import { TranslationOptions } from 'i18next';
 
 // @public
 export class I18N {
-    constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback);
+    constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: Callback);
     // @internal
-    getEnglishTranslation(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string;
+    getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string;
     getNamespace(name: string): I18NNamespace | undefined;
     // @internal (undocumented)
     languageList(): string[];
     // @internal (undocumented)
     loadNamespace(name: string, i18nCallback: any): void;
     registerNamespace(name: string): I18NNamespace;
-    translate(key: string | string[], options?: i18next.TranslationOptions): string;
+    translate(key: string | string[], options?: TranslationOptions): string;
     translateKeys(line: string): string;
     // @internal
-    translateWithNamespace(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string;
+    translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     unregisterNamespace(name: string): void;
     // @internal

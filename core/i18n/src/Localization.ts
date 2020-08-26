@@ -6,7 +6,7 @@
  * @module Localization
  */
 
-import * as i18next from "i18next";
+import { i18n, Callback, InitOptions, TranslationOptions, createInstance } from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -21,7 +21,7 @@ export interface I18NOptions {
  * @public
  */
 export class I18N {
-  private _i18next: i18next.i18n;
+  private _i18next: i18n;
   private readonly _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
   /** Constructor for I18N.
@@ -29,8 +29,8 @@ export class I18N {
    * @param options object with I18NOptions (optional)
    * @param renderFunction optional i18next.Callback function
    */
-  public constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback) {
-    this._i18next = i18next.createInstance();
+  public constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: Callback) {
+    this._i18next = createInstance();
 
     const backendOptions: I18NextXhrBackend.BackendOptions = {
       loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
@@ -45,7 +45,7 @@ export class I18N {
 
     nameSpaces = nameSpaces ? ("string" === typeof nameSpaces ? [nameSpaces] : nameSpaces) : [""];
 
-    const initOptions: i18next.InitOptions = {
+    const initOptions: InitOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
       ns: nameSpaces,
@@ -111,7 +111,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @public
    */
-  public translate(key: string | string[], options?: i18next.TranslationOptions): string {
+  public translate(key: string | string[], options?: TranslationOptions): string {
     const value = this._i18next.t(key, options);
     if (typeof value !== "string")
       throw new Error("Translation key(s) not found");
@@ -126,7 +126,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public translateWithNamespace(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string {
+  public translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -147,7 +147,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishTranslation(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string {
+  public getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string {
     const en = this._i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
