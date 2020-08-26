@@ -14,8 +14,12 @@ public;ActiveContentChangedEvent
 public;ActiveContentChangedEventArgs
 internal;ActiveFrontstageDefProvider({ frontstageDef }:
 public;ActivityCenterField 
+beta;ActivityMessage(props: ActivityMessageProps): JSX.Element
 public;ActivityMessageCancelledEvent 
 public;ActivityMessageEventArgs
+beta;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null
+beta;ActivityMessagePopupProps 
+beta;ActivityMessageProps
 public;ActivityMessageUpdatedEvent 
 internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray

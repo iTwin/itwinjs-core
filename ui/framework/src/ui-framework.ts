@@ -147,6 +147,8 @@ export * from "./ui-framework/stagepanels/StagePanelDef";
 export * from "./ui-framework/stagepanels/StagePanelHeader";
 export * from "./ui-framework/stagepanels/StagePanelEnums";
 
+export * from "./ui-framework/statusbar/ActivityMessage";
+export * from "./ui-framework/statusbar/ActivityMessagePopup";
 export * from "./ui-framework/statusbar/StatusBar";
 export * from "./ui-framework/statusbar/StatusBarWidgetControl";
 export * from "./ui-framework/statusbar/StatusBarComposer";

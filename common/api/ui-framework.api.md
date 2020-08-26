@@ -286,6 +286,9 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
     render(): React.ReactNode;
 }
 
+// @beta
+export function ActivityMessage(props: ActivityMessageProps): JSX.Element;
+
 // @public
 export class ActivityMessageCancelledEvent extends UiEvent<{}> {
 }
@@ -296,6 +299,27 @@ export interface ActivityMessageEventArgs {
     message: NotifyMessageType;
     percentage: number;
     restored?: boolean;
+}
+
+// @beta
+export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null;
+
+// @beta
+export interface ActivityMessagePopupProps extends CommonProps {
+    // (undocumented)
+    cancelActivityMessage?: () => void;
+    // (undocumented)
+    dismissActivityMessage?: () => void;
+}
+
+// @beta
+export interface ActivityMessageProps {
+    // (undocumented)
+    activityMessageInfo: ActivityMessageEventArgs;
+    // (undocumented)
+    cancelActivityMessage: () => void;
+    // (undocumented)
+    dismissActivityMessage: () => void;
 }
 
 // @public

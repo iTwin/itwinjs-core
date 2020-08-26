@@ -11,17 +11,17 @@ import classnames from "classnames";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { OutputMessageType } from "@bentley/imodeljs-frontend";
-import { CommonDivProps, CommonProps, Div, Icon, IconProps, MessageSeverity, SmallText, UiCore } from "@bentley/ui-core";
-import { Footer, Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
+import { CommonDivProps, CommonProps, Div, Icon, IconProps, MessageSeverity } from "@bentley/ui-core";
+import { Footer, Status } from "@bentley/ui-ninezone";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { MessageDiv } from "../messages/MessageSpan";
 import { NotifyMessageDetailsType, NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-import { ToastMessage } from "./ToastMessage";
+import { ActivityMessage } from "./ActivityMessage";
 import { StickyMessage } from "./StickyMessage";
+import { ToastMessage } from "./ToastMessage";
 
 // cspell:ignore safearea
 
@@ -379,59 +379,5 @@ export function HollowIcon(props: IconProps) {
     <span className="uifw-statusbar-hollow-icon">
       <Icon {...props} />
     </span>
-  );
-}
-
-/** Properties for a [[ActivityMessage]] */
-interface ActivityMessageProps {
-  activityMessageInfo: ActivityMessageEventArgs;
-  cancelActivityMessage: () => void;
-  dismissActivityMessage: () => void;
-}
-
-/** Activity Message React component */
-function ActivityMessage(props: ActivityMessageProps) {
-  const messageDetails = props.activityMessageInfo.details;
-  const [percentCompleteLabel] = React.useState(UiFramework.translate("activityCenter.percentComplete"));
-  const [cancelLabel] = React.useState(UiCore.translate("dialog.cancel"));
-
-  return (
-    <Message
-      status={Status.Information}
-      icon={
-        <HollowIcon iconSpec="icon-info-hollow" />
-      }
-    >
-      <MessageLayout
-        buttons={
-          (messageDetails && messageDetails.supportsCancellation) ?
-            <div>
-              <MessageHyperlink onClick={props.cancelActivityMessage}>{cancelLabel}</MessageHyperlink>
-              <span>&nbsp;</span>
-              <MessageButton onClick={props.dismissActivityMessage}>
-                <Icon iconSpec="icon-close" />
-              </MessageButton>
-            </div> :
-            <MessageButton onClick={props.dismissActivityMessage}>
-              <Icon iconSpec="icon-close" />
-            </MessageButton>
-        }
-        progress={
-          (messageDetails && messageDetails.showProgressBar) &&
-          <MessageProgress
-            status={Status.Information}
-            progress={props.activityMessageInfo.percentage}
-          />
-        }
-      >
-        <div>
-          {<MessageLabel message={props.activityMessageInfo.message} className="uifw-statusbar-message-brief" />}
-          {
-            (messageDetails && messageDetails.showPercentInMessage) &&
-            <SmallText>{props.activityMessageInfo.percentage + percentCompleteLabel}</SmallText>
-          }
-        </div>
-      </MessageLayout>
-    </Message>
   );
 }
