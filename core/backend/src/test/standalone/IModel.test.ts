@@ -2088,7 +2088,7 @@ describe("iModel", () => {
     const elementProps: DefinitionElementProps = {
       classFullName: SpatialCategory.classFullName,
       model: IModel.dictionaryId,
-      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategory"),
+      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearUserLabel"),
     };
     const elementId = imodel1.elements.insertElement(elementProps);
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
@@ -2111,6 +2111,37 @@ describe("iModel", () => {
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.userLabel);
+  });
+
+  it("should clear FederationGuid", () => {
+    // insert element with an undefined FederationGuid
+    const elementProps: DefinitionElementProps = {
+      classFullName: SpatialCategory.classFullName,
+      model: IModel.dictionaryId,
+      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearFederationGuid"),
+    };
+    const elementId = imodel1.elements.insertElement(elementProps);
+    let element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.isUndefined(element.federationGuid);
+
+    // update element with a defined FederationGuid
+    const federationGuid: GuidString = Guid.createValue();
+    element.federationGuid = federationGuid;
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.federationGuid, federationGuid);
+
+    // update FederationGuid to undefined
+    element.federationGuid = undefined;
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.federationGuid, federationGuid); // NOTE: FederationGuid is not cleared in this case!
+
+    // update FederationGuid to ""
+    element.federationGuid = "";
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.isUndefined(element.federationGuid);
   });
 });
 
