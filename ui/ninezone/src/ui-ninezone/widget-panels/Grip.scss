@@ -5,9 +5,20 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .nz-widgetPanels-grip {
+  $handle-length: 3em;
+  $handle-width: 1.5em;
+
   background-color: $buic-background-5;
   padding: 0.25em;
   border-radius: 3px;
+  position: relative;
+
+  > .nz-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
   &:not(.nz-collapsed) {
     position: absolute;
@@ -27,6 +38,11 @@
       &:not(:first-child) {
         margin-top: 3px;
       }
+    }
+
+    > .nz-handle {
+      height: $handle-length;
+      width: $handle-width;
     }
   }
 
@@ -64,6 +80,11 @@
       &:not(:first-child) {
         margin-left: 3px;
       }
+    }
+
+    > .nz-handle {
+      height: $handle-width;
+      width: $handle-length;
     }
   }
 

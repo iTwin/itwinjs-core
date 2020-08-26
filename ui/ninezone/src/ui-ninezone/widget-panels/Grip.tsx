@@ -46,17 +46,19 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // eslint
     resizing && "nz-resizing",
   );
   const resizeGripTitle = useLabel("resizeGripTitle");
-
   return (
     <div
       className={className}
-      ref={ref}
       title={resizeGripTitle}
     >
       <div className="nz-dot" />
       <div className="nz-dot" />
       <div className="nz-dot" />
       <div className="nz-dot" />
+      <div
+        className="nz-handle"
+        ref={ref}
+      />
     </div>
   );
 });

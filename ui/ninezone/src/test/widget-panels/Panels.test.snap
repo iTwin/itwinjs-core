@@ -118,6 +118,9 @@ exports[`WidgetPanels should render widget content 1`] = `
         <div
           class="nz-dot"
         />
+        <div
+          class="nz-handle"
+        />
       </div>
     </div>
   </div>
