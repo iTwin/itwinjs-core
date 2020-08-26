@@ -1,6 +1,16 @@
 # Change Log - @bentley/extension-cli
 
-This log was last generated on Thu, 20 Aug 2020 20:57:09 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Aug 2020 22:09:08 GMT and should not be manually modified.
+
+## 2.5.2
+Tue, 25 Aug 2020 22:09:08 GMT
+
+*Version update only*
+
+## 2.5.1
+Mon, 24 Aug 2020 18:13:04 GMT
+
+*Version update only*
 
 ## 2.5.0
 Thu, 20 Aug 2020 20:57:09 GMT

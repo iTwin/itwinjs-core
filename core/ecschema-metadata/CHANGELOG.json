@@ -2,6 +2,24 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "2.5.2",
+      "tag": "@bentley/ecschema-metadata_v2.5.2",
+      "date": "Tue, 25 Aug 2020 22:09:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "extend ECVersion read and write ver to 3 digits"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.5.1",
+      "tag": "@bentley/ecschema-metadata_v2.5.1",
+      "date": "Mon, 24 Aug 2020 18:13:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.5.0",
       "tag": "@bentley/ecschema-metadata_v2.5.0",
       "date": "Thu, 20 Aug 2020 20:57:09 GMT",
