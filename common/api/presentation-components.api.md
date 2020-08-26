@@ -187,6 +187,7 @@ export interface IContentDataProvider extends IPresentationDataProvider {
     getContent: (pageOptions?: PageOptions) => Promise<Content | undefined>;
     getContentDescriptor: () => Promise<Descriptor | undefined>;
     getContentSetSize: () => Promise<number>;
+    getFieldByPropertyRecord: (propertyRecord: PropertyRecord) => Promise<Field | undefined>;
     keys: KeySet;
     selectionInfo: SelectionInfo | undefined;
 }
@@ -274,6 +275,8 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 
 // @public
 export interface PresentationPropertyDataProviderProps {
+    // @alpha
+    disableFavoritesCategory?: boolean;
     // @alpha
     enableContentAutoUpdate?: boolean;
     imodel: IModelConnection;

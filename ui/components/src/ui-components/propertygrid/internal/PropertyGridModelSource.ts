@@ -7,11 +7,11 @@
  */
 
 import { produce } from "immer";
-import { IMutablePropertyGridModel, IPropertyGridModel, MutablePropertyGridModel } from "./PropertyGridModel";
-import { PropertyGridModelChangeEvent } from "./PropertyGridModelChangeEvent";
-import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
 import { PropertyData } from "../PropertyDataProvider";
 import { IMutableFlatGridItem } from "./flat-items/MutableFlatGridItem";
+import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
+import { IMutablePropertyGridModel, IPropertyGridModel, MutablePropertyGridModel } from "./PropertyGridModel";
+import { PropertyGridModelChangeEvent } from "./PropertyGridModelChangeEvent";
 
 /** @alpha */
 export interface IPropertyGridModelSource {
@@ -50,16 +50,15 @@ export class PropertyGridModelSource implements IPropertyGridModelSource {
 
     flatGrid.forEach((gridItem) => {
       const oldGridItem = oldModelMap.get(gridItem.selectionKey);
-      if (!oldGridItem)
-        return;
-
-      gridItem.isExpanded = oldGridItem.isExpanded;
+      // istanbul ignore else
+      if (oldGridItem)
+        gridItem.isExpanded = oldGridItem.isExpanded;
     });
   }
 
   public setPropertyData(data: PropertyData) {
     const newModel = new MutablePropertyGridModel(data, this._gridFactory);
-    if (this._model !== undefined)
+    if (this._model !== undefined && data.reusePropertyDataState)
       this.moveOldModelState(this._model, newModel);
 
     this._model = newModel;
@@ -74,12 +73,8 @@ export class PropertyGridModelSource implements IPropertyGridModelSource {
     if (!this._model)
       return;
 
-    const newModel = produce(this._model, callback);
-
-    if (newModel !== this._model) {
-      this._model = newModel;
-      this.onModelChanged.raiseEvent();
-    }
+    this._model = produce(this._model, callback);
+    this.onModelChanged.raiseEvent();
   }
 
   /** Returns property grid model. */

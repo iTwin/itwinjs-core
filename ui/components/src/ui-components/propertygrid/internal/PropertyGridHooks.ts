@@ -6,15 +6,15 @@
  * @module PropertyGrid
  */
 
-import { IPropertyGridModel } from "./PropertyGridModel";
-import { MutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
-import { IPropertyDataProvider } from "../PropertyDataProvider";
-import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGridModelSource";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { PropertyGridEventHandler } from "./PropertyGridEventHandler";
-import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue";
 import { PropertyGridCommons } from "../component/PropertyGridCommons";
+import { IPropertyDataProvider } from "../PropertyDataProvider";
+import { MutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
+import { PropertyGridEventHandler } from "./PropertyGridEventHandler";
+import { IPropertyGridModel } from "./PropertyGridModel";
+import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGridModelSource";
 
 /**
  * Custom hook that gets propertyData from data provider and subscribes to further data changes.
@@ -26,29 +26,27 @@ import { PropertyGridCommons } from "../component/PropertyGridCommons";
 export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
   const { dataProvider, onPropertyLinkClick } = { ...props };
 
-  const [forcedUpdate, triggerForcedUpdate] = useReducer((currentValue) => !currentValue, false);
+  const [forcedUpdate, triggerForcedUpdate] = useReducer(() => ({}), {});
+  useEffect(() => {
+    return dataProvider.onDataChanged.addListener(() => {
+      triggerForcedUpdate();
+    });
+  }, [dataProvider]);
 
   // ForcedUpdate is added to dependency list to re-memo getData promise when onDataChanged emits an event.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const scheduledReturn = useDebouncedAsyncValue(useCallback(async () => dataProvider.getData(), [dataProvider, forcedUpdate]));
-
-  useEffect(() => {
-    return dataProvider.onDataChanged.addListener(triggerForcedUpdate);
-  }, [dataProvider]);
-
-  useEffect(() => {
-    const propertyData = scheduledReturn.value;
-    if (!propertyData)
-      return;
-
-    for (const categoryName in propertyData.records) {
-      // istanbul ignore else
-      if (propertyData.records.hasOwnProperty(categoryName))
-        PropertyGridCommons.assignRecordClickHandlers(propertyData.records[categoryName], onPropertyLinkClick);
+  const delayedReturn = useDebouncedAsyncValue(useCallback(async () => dataProvider.getData(), [dataProvider, forcedUpdate]));
+  const { value, inProgress } = delayedReturn;
+  return useMemo(() => {
+    if (value) {
+      for (const categoryName in value.records) {
+        // istanbul ignore else
+        if (value.records.hasOwnProperty(categoryName))
+          PropertyGridCommons.assignRecordClickHandlers(value.records[categoryName], onPropertyLinkClick);
+      }
     }
-  }, [scheduledReturn, onPropertyLinkClick]);
-
-  return scheduledReturn;
+    return { value, inProgress };
+  }, [value, inProgress, onPropertyLinkClick]);
 }
 
 /**
@@ -66,7 +64,7 @@ export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataP
   useEffect(() => {
     if (propertyData)
       modelSource.setPropertyData(propertyData);
-  }, [propertyData, modelSource]);
+  }, [modelSource, propertyData]);
 
   return modelSource;
 }
@@ -91,7 +89,6 @@ export function usePropertyGridModel(props: { modelSource: IPropertyGridModelSou
     const modelChanged = () => {
       setModel(modelSource.getModel());
     };
-
     modelChanged();
     return modelSource.onModelChanged.addListener(modelChanged);
   }, [modelSource]);

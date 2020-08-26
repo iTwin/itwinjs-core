@@ -17,39 +17,43 @@ import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 
 describe("FilteredTreeDataProvider", () => {
 
-  /*
-  A-1
-    A-1-1
-  A-2
-    A-2-1
-    A-2-2
-      A-2-2-1
-  */
-  const nodePaths: NodePathElement[] = [];
+  function createPaths() {
+    /*
+    A-1
+      A-1-1
+    A-2
+      A-2-1
+      A-2-2
+        A-2-2-1
+    */
+    const nodePaths: NodePathElement[] = [];
 
-  nodePaths[0] = createRandomNodePathElement();
-  nodePaths[0].node.label = LabelDefinition.fromLabelString("A-1");
+    nodePaths[0] = createRandomNodePathElement();
+    nodePaths[0].node.label = LabelDefinition.fromLabelString("A-1");
 
-  nodePaths[1] = createRandomNodePathElement();
-  nodePaths[1].node.label = LabelDefinition.fromLabelString("A-2");
+    nodePaths[1] = createRandomNodePathElement();
+    nodePaths[1].node.label = LabelDefinition.fromLabelString("A-2");
 
-  nodePaths[0].children = [];
-  nodePaths[0].children[0] = createRandomNodePathElement();
-  nodePaths[0].children[0].node.label = LabelDefinition.fromLabelString("A-1-1");
+    nodePaths[0].children = [];
+    nodePaths[0].children[0] = createRandomNodePathElement();
+    nodePaths[0].children[0].node.label = LabelDefinition.fromLabelString("A-1-1");
 
-  nodePaths[1].children = [];
-  nodePaths[1].children[0] = createRandomNodePathElement();
-  nodePaths[1].children[0].node.label = LabelDefinition.fromLabelString("A-2-1");
+    nodePaths[1].children = [];
+    nodePaths[1].children[0] = createRandomNodePathElement();
+    nodePaths[1].children[0].node.label = LabelDefinition.fromLabelString("A-2-1");
 
-  nodePaths[1].children[1] = createRandomNodePathElement();
-  nodePaths[1].children[1].node.label = LabelDefinition.fromLabelString("A-2-2");
+    nodePaths[1].children[1] = createRandomNodePathElement();
+    nodePaths[1].children[1].node.label = LabelDefinition.fromLabelString("A-2-2");
 
-  nodePaths[1].children[1].children = [];
-  nodePaths[1].children[1].children[0] = createRandomNodePathElement();
-  nodePaths[1].children[1].children[0].node.label = LabelDefinition.fromLabelString("A-2-2-1");
+    nodePaths[1].children[1].children = [];
+    nodePaths[1].children[1].children[0] = createRandomNodePathElement();
+    nodePaths[1].children[1].children[0].node.label = LabelDefinition.fromLabelString("A-2-2-1");
+    return nodePaths;
+  }
 
   let provider: FilteredPresentationTreeDataProvider;
   let filter: string;
+  let paths: NodePathElement[];
   const parentProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const pageOptions: PageOptions = { size: 0, start: 0 };
@@ -57,10 +61,11 @@ describe("FilteredTreeDataProvider", () => {
   beforeEach(() => {
     parentProviderMock.reset();
     filter = faker.random.word();
+    paths = createPaths();
     provider = new FilteredPresentationTreeDataProvider({
       parentDataProvider: parentProviderMock.object,
       filter,
-      paths: nodePaths,
+      paths,
     });
   });
 
@@ -113,7 +118,7 @@ describe("FilteredTreeDataProvider", () => {
     });
 
     it("returns child nodes", async () => {
-      const parentNode = createTreeNodeItem(nodePaths[1].node);
+      const parentNode = createTreeNodeItem(paths[1].node);
 
       const result = await provider.getNodes(parentNode, pageOptions);
       expect(result).to.matchSnapshot();
@@ -125,14 +130,14 @@ describe("FilteredTreeDataProvider", () => {
 
     it("returns root nodes count", async () => {
       const result = await provider.getNodesCount();
-      expect(result).to.equal(nodePaths.length);
+      expect(result).to.equal(paths.length);
     });
 
     it("returns child nodes count", async () => {
-      const parentNode = createTreeNodeItem(nodePaths[1].node);
+      const parentNode = createTreeNodeItem(paths[1].node);
 
       const result = await provider.getNodesCount(parentNode);
-      expect(result).to.equal(nodePaths[1].children.length);
+      expect(result).to.equal(paths[1].children.length);
     });
 
   });
@@ -141,11 +146,11 @@ describe("FilteredTreeDataProvider", () => {
 
     it("calls parent data provider", async () => {
       parentProviderMock.setup(async (x) => x.getFilteredNodePaths(filter))
-        .returns(async () => nodePaths)
+        .returns(async () => paths)
         .verifiable();
 
       const result = await provider.getFilteredNodePaths(filter);
-      expect(result).to.equal(nodePaths);
+      expect(result).to.equal(paths);
       parentProviderMock.verifyAll();
     });
 
@@ -195,7 +200,7 @@ describe("FilteredTreeDataProvider", () => {
     });
 
     it("doesn't count if node paths don't have filtering data", () => {
-      const paths: NodePathElement[] = [];
+      paths = [];
       paths[0] = createRandomNodePathElement();
       paths[0].node.label = LabelDefinition.fromLabelString("A-1");
       paths[0].filteringData = undefined;

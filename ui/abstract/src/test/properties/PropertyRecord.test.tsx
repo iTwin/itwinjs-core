@@ -28,6 +28,22 @@ describe("PropertyRecord", () => {
       expect(newRecord.value).to.eq(value2);
     });
 
+    it("should copy all attributes from source", () => {
+      const src = new PropertyRecord(value1, getPropertyDescription());
+      src.autoExpand = true;
+      src.description = "test";
+      src.extendedData = { a: "b" };
+      src.isDisabled = true;
+      src.isMerged = true;
+      src.isReadonly = true;
+      src.links = {
+        matcher: () => [],
+        onClick: () => { },
+      };
+      const newRecord = src.copyWithNewValue(value2);
+      expect(newRecord).to.deep.eq({ ...src, value: value2 });
+    });
+
   });
 
   describe("fromString", () => {

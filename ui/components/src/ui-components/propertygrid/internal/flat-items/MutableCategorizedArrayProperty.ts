@@ -7,7 +7,7 @@
  * @module PropertyGrid
  */
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
+import { FlatGridItemType, IMutableCategorizedPropertyItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
 import { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /**
@@ -40,7 +40,7 @@ export class MutableCategorizedArrayProperty extends MutableCategorizedProperty 
     return FlatGridItemType.Array;
   }
 
-  public getChildren(): IMutableFlatGridItem[] {
+  public getChildren(): IMutableCategorizedPropertyItem[] {
     return this._children;
   }
 }

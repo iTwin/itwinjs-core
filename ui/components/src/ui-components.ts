@@ -134,6 +134,11 @@ export * from "./ui-components/propertygrid/internal/PropertyGridHooks";
 export * from "./ui-components/propertygrid/internal/PropertyGridModel";
 export * from "./ui-components/propertygrid/internal/PropertyGridModelChangeEvent";
 export * from "./ui-components/propertygrid/internal/PropertyGridModelSource";
+export * from "./ui-components/propertygrid/dataproviders/FilteringDataProvider";
+export * from "./ui-components/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer";
+export * from "./ui-components/propertygrid/dataproviders/filterers/DisplayValuePropertyDataFilterer";
+export * from "./ui-components/propertygrid/dataproviders/filterers/LabelPropertyDataFilterer";
+export * from "./ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 
 export * from "./ui-components/color/Swatch";
 export * from "./ui-components/color/HueSlider";

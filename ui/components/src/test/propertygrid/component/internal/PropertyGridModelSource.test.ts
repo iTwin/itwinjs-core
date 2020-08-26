@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { TestUtils } from "../../../TestUtils";
-import { PropertyGridModelSource } from "../../../../ui-components/propertygrid/internal/PropertyGridModelSource";
-import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
-import sinon from "sinon";
 import { expect } from "chai";
+import sinon from "sinon";
+import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
 import { IPropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
+import { PropertyGridModelSource } from "../../../../ui-components/propertygrid/internal/PropertyGridModelSource";
+import { TestUtils } from "../../../TestUtils";
 import { FlatGridTestUtils as GridUtils, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
 
 describe("PropertyGridModelSource", () => {
@@ -170,7 +170,6 @@ describe("PropertyGridModelSource", () => {
 
     it(`Should correctly map old state to new state: ${testData.before.testName}`, () => {
       const gridModelSource = new PropertyGridModelSource(factory);
-
       gridModelSource.setPropertyData(testData.before.propertyData);
 
       const expectedIsExpand = !(gridModelSource.getModel()!.getItem(testData.changedPropertyKey).isExpanded);
@@ -180,8 +179,7 @@ describe("PropertyGridModelSource", () => {
       });
 
       // Reset same property data
-      gridModelSource.setPropertyData({ ...testData.before.propertyData });
-
+      gridModelSource.setPropertyData({ ...testData.before.propertyData, reusePropertyDataState: true });
       expect(gridModelSource.getModel()!.getItem(testData.changedPropertyKey).isExpanded).to.equal(expectedIsExpand);
     });
 

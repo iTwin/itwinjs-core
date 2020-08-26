@@ -80,8 +80,9 @@ export class TestUtils {
 
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
-    if (property.autoExpand !== undefined)
-      property.autoExpand = autoExpand;
+    property.autoExpand = autoExpand;
+    if (property.autoExpand === undefined)
+      delete property.autoExpand;
 
     return property;
   }

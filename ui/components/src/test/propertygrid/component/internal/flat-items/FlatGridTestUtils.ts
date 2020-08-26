@@ -127,8 +127,16 @@ export class FlatGridTestUtils {
 
   public static assignParentsToCategories(categories: PropertyCategory[], parentCategory?: PropertyCategory) {
     for (const category of categories) {
-      category.parentCategory = parentCategory;
+      if (category.parentCategory)
+        category.parentCategory = parentCategory;
       this.assignParentsToCategories(category.childCategories ?? [], category);
+    }
+  }
+
+  public static removeParentsFromCategories(categories: PropertyCategory[]) {
+    for (const category of categories) {
+      delete category.parentCategory;
+      this.removeParentsFromCategories(category.childCategories ?? []);
     }
   }
 
@@ -372,7 +380,8 @@ export class FlatGridTestUtils {
       expect(gridItem.type).to.be.equal(FlatGridItemType.Category);
 
       const category = gridItem as GridCategoryItem;
-      expect(category.derivedCategory).to.deep.equal(expectedProperty.item, "Derived category and expected category do not match");
+      const expectedCategory = { name: expectedProperty.item.name, label: expectedProperty.item.label, expand: expectedProperty.item.expand };
+      expect(category.derivedCategory).to.deep.equal(expectedCategory, "Derived category and expected category do not match");
     }
   }
 }

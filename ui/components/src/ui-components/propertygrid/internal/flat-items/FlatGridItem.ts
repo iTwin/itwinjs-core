@@ -39,6 +39,9 @@ export interface GridCategoryItem extends FlatGridItemBase {
   readonly type: FlatGridItemType.Category;
   readonly name: string;
   readonly derivedCategory: PropertyCategory;
+
+  getChildCategories(): GridCategoryItem[];
+  getDescendantCategoriesAndSelf(): GridCategoryItem[];
 }
 
 /**
@@ -50,6 +53,8 @@ export interface CategorizedPropertyItem extends FlatGridItemBase {
   readonly derivedRecord: PropertyRecord;
   readonly parentCategorySelectionKey: string;
   readonly parentSelectionKey: string;
+
+  getChildren(): CategorizedPropertyItem[];
 }
 
 /**

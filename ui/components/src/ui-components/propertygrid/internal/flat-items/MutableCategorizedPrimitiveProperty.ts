@@ -7,7 +7,7 @@
  * @module PropertyGrid
  */
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
+import { FlatGridItemType, IMutableCategorizedPropertyItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
 
 /**
  * Mutable wrapper object for PropertyRecord with primitive valueFormat.
@@ -35,7 +35,7 @@ export class MutableCategorizedPrimitiveProperty extends MutableCategorizedPrope
 
   public set isExpanded(_: boolean) { }
 
-  public getChildren(): IMutableFlatGridItem[] {
+  public getChildren(): IMutableCategorizedPropertyItem[] {
     return [];
   }
 }

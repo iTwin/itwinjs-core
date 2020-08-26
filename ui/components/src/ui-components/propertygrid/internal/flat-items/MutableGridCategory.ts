@@ -27,28 +27,30 @@ export class MutableGridCategory extends MutableFlatPropertyGridItem implements 
   private _children: IMutableFlatGridItem[];
   private _childCategories: IMutableGridCategoryItem[];
   private _selectionKey: string;
+  private _category: PropertyCategory;
 
   constructor(
-    private _category: PropertyCategory,
+    category: PropertyCategory,
     recordsDict: CategoryRecordsDict,
     gridItemFactory: IMutableGridItemFactory,
     parentSelectionKey?: string,
     depth: number = 0,
   ) {
     super(depth, parentSelectionKey, parentSelectionKey);
+    this._category = { name: category.name, label: category.label, expand: category.expand };
 
     if (parentSelectionKey !== undefined)
-      this._selectionKey = `${parentSelectionKey}_${this._category.name}`;
+      this._selectionKey = `${parentSelectionKey}_${category.name}`;
     else
-      this._selectionKey = this._category.name;
+      this._selectionKey = category.name;
 
-    this._isExpanded = this._category.expand;
+    this._isExpanded = category.expand;
 
     // Even though categories are nested and have their own depth, categorized properties depth is counted starting with the parent category.
-    const categoryRecords = recordsDict[this._category.name] ?? [];
+    const categoryRecords = recordsDict[category.name] ?? [];
     this._children = categoryRecords.map((value) => gridItemFactory.createCategorizedProperty(value, this.selectionKey, this.selectionKey, 0));
 
-    const childCategories = this._category.childCategories ?? [];
+    const childCategories = category.childCategories ?? [];
     this._childCategories = childCategories.map((childCategory) => gridItemFactory.createGridCategory(childCategory, recordsDict, this.selectionKey, this.depth + 1));
 
     this._children.push(...this._childCategories);

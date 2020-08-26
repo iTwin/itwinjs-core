@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { config, expect } from "chai";
 import sinon from "sinon";
-import { FlattenedProperty, GridModelLastItemData, FlatGridTestUtils as GridUtils, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
-import { MutablePropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
-import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
-import TestUtils from "../../../TestUtils";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { MutablePropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
+import TestUtils from "../../../TestUtils";
+import { FlatGridTestUtils as GridUtils, FlattenedProperty, GridModelLastItemData, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
 
 config.truncateThreshold = 0;
 
 describe("MutablePropertyGridModel", () => {
-  const testCases: PropertyGridModelTestData[] = [
+  const testCases: Array<PropertyGridModelTestData & { unexistingItemKey: string }> = [
     {
       testName: "Single category",
       propertyData: {
@@ -28,6 +28,7 @@ describe("MutablePropertyGridModel", () => {
       expectedLastItemData: {
         Cat1: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
       },
+      unexistingItemKey: "does not exist",
     },
     {
       testName: "Multiple categories",
@@ -49,6 +50,7 @@ describe("MutablePropertyGridModel", () => {
         Cat2: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
         Cat3: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
       },
+      unexistingItemKey: "does not exist",
     },
     {
       testName: "Nested categories",
@@ -74,6 +76,7 @@ describe("MutablePropertyGridModel", () => {
       expectedLastItemData: {
         "Cat1_Cat1-1_Cat1-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 3 },
       },
+      unexistingItemKey: "does not exist",
     },
     {
       testName: "Single category with property records",
@@ -93,6 +96,7 @@ describe("MutablePropertyGridModel", () => {
       expectedLastItemData: {
         Cat1_Struct: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
       },
+      unexistingItemKey: "does not exist",
     },
     {
       testName: "Multiple categories with property records",
@@ -126,6 +130,7 @@ describe("MutablePropertyGridModel", () => {
         Cat2_Array: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
         Cat3_Prop: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
       },
+      unexistingItemKey: "does not exist",
     },
     {
       testName: "Nested categories with property records",
@@ -163,6 +168,7 @@ describe("MutablePropertyGridModel", () => {
       expectedLastItemData: {
         "Cat1_Cat1-1_Cat1-1-1_Prop": { isLastInRootCategory: true, lastInNumberOfCategories: 3 },
       },
+      unexistingItemKey: "does not exist",
     },
     {
       testName: "Nested categories with nested property records",
@@ -213,6 +219,7 @@ describe("MutablePropertyGridModel", () => {
         "Cat1_Cat1-1_Array1-1-1_Struct1-1-1-2_1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
         "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 3 },
       },
+      unexistingItemKey: "Cat2_Struct2-1_does not exist",
     },
     {
       testName: "Big nested categories with nested property records",
@@ -342,6 +349,7 @@ describe("MutablePropertyGridModel", () => {
         "Cat2_Cat2-1_Cat2-1-3": { isLastInRootCategory: false, lastInNumberOfCategories: 2 },
         "Cat2_Cat2-2": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
       },
+      unexistingItemKey: "Cat2_Struct2_does not exist",
     },
   ];
 
@@ -424,21 +432,19 @@ describe("MutablePropertyGridModel", () => {
 
   describe("getItem", () => {
     for (const testCase of testCases) {
-      it(`${testCase.testName} when getting item that does not exist`, () => {
+      it(`Throws when getting item that does not exist: ${testCase.testName}`, () => {
         const gridModel = new MutablePropertyGridModel(testCase.propertyData, factory);
-
-        const expectedKey = "SomeKeyThatDoesNotExist";
-        expect(() => gridModel.getItem("SomeKeyThatDoesNotExist")).to.throw(Error, `Grid item at provided key not found: ${expectedKey}`);
+        expect(() => gridModel.getItem(testCase.unexistingItemKey)).to.throw(Error, `Grid item at provided key not found: ${testCase.unexistingItemKey}`);
       });
 
-      it(`${testCase.testName} when getting visible items`, () => {
+      it(`Gets visible items: ${testCase.testName}`, () => {
         const gridModel = new MutablePropertyGridModel(testCase.propertyData, factory);
 
         const expectedFlatGrid = GridUtils.getFlattenedPropertyData(testCase.propertyData, true);
         assertGridModel(gridModel, expectedFlatGrid, testCase.expectedLastItemData);
       });
 
-      it(`${testCase.testName} when getting all items`, () => {
+      it(`Gets all items: ${testCase.testName}`, () => {
         const gridModel = new MutablePropertyGridModel(testCase.propertyData, factory);
 
         const expectedFlatGrid = GridUtils.getFlattenedPropertyData(testCase.propertyData, false);

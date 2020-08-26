@@ -91,6 +91,9 @@ export interface IContentDataProvider extends IPresentationDataProvider {
    * @param pageOptions Paging options.
    */
   getContent: (pageOptions?: PageOptions) => Promise<Content | undefined>;
+
+  /** Get field that was used to create the given property record */
+  getFieldByPropertyRecord: (propertyRecord: PropertyRecord) => Promise<Field | undefined>;
 }
 
 /**

@@ -81,6 +81,8 @@ public;CommonPropertyGridProps
 public;CompletionObserver
 beta;CompositeFilterDescriptor 
 beta;CompositeFilterDescriptorCollection
+alpha;CompositeFilterType
+alpha;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 internal;ContextMenu 
 internal;ContextMenuItem 
@@ -110,6 +112,7 @@ public;DEPRECATED_Tree
 beta;DEPRECATED_withTreeDragDrop
 beta;Direction
 internal;DirectionHelpers
+alpha;DisplayValuePropertyDataFilterer 
 beta;DistinctValueCollection
 beta;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
@@ -152,6 +155,7 @@ beta;FilterDescriptorCollection
 beta;class FilterDescriptorCollectionBase
 public;FilteringInput 
 public;FilteringInputProps 
+alpha;FilteringPropertyDataProvider 
 beta;FilterOperator
 beta;FilterRenderer
 alpha;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
@@ -197,6 +201,7 @@ internal;InputContext
 internal;InputSwitchComponent 
 internal;InputSwitchProps
 public;IntTypeConverter 
+alpha;IPropertyDataFilterer
 public;IPropertyDataProvider
 alpha;IPropertyGridEventHandler
 alpha;IPropertyGridModel
@@ -217,6 +222,7 @@ public;ITreeDataProvider
 public;ITreeImageLoader 
 beta;ITreeNodeLoader
 beta;ITreeNodeLoaderWithProvider
+alpha;LabelPropertyDataFilterer 
 public;LessGreaterOperatorProcessor
 beta;LineWeightSwatch 
 beta;LineWeightSwatchProps 
@@ -299,11 +305,15 @@ public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
 public;PropertyDataChangesListener = () => void
+alpha;class PropertyDataFiltererBase 
+alpha;PropertyDataFilterResult
 public;PropertyDialogState
 public;PropertyEditingArgs
 beta;class PropertyEditorBase 
 beta;PropertyEditorManager
 beta;PropertyEditorProps 
+alpha;PropertyFilterChangeEvent 
+alpha;PropertyFilterChangesListener = () => void
 public;PropertyGrid 
 public;PropertyGridCategory
 internal;PropertyGridCommons

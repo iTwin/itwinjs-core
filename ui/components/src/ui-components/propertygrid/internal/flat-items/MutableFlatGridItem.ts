@@ -198,6 +198,8 @@ export interface IMutableCategorizedPropertyItem extends IMutableFlatPropertyGri
   readonly derivedRecord: PropertyRecord;
   readonly parentCategorySelectionKey: string;
   readonly parentSelectionKey: string;
+
+  getChildren(): IMutableCategorizedPropertyItem[];
 }
 
 /**
@@ -240,6 +242,7 @@ export abstract class MutableCategorizedProperty extends MutableFlatPropertyGrid
   }
 
   public abstract type: CategorizedPropertyTypes;
+  public abstract getChildren(): IMutableCategorizedPropertyItem[];
 
   /**
    * Maps PropertyRecord valueFormat to FlatGridItemType
@@ -286,7 +289,7 @@ export abstract class MutableCategorizedProperty extends MutableFlatPropertyGrid
     return Object.assign(newRecord, others);
   }
 
-  public getSelf(): IMutableFlatGridItem {
+  public getSelf(): IMutableCategorizedPropertyItem {
     return this;
   }
 
