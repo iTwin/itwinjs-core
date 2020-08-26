@@ -10,8 +10,8 @@ import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, PhysicalEl
 import {
   BackendLoggerCategory, BackendRequestContext, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel,
-  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner,
-  TemplateRecipe3d,
+  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, SnapshotDb, SpatialCategory, Subject,
+  TemplateModelCloner, TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
@@ -459,6 +459,44 @@ describe("IModelTransformer", () => {
     assert.throws(() => cloneContext.remapCodeSpec("SourceNotFound", "TargetNotFound"));
     cloneContext.dispose();
     iModelDb.close();
+  });
+
+  it("should clone across schema versions", async () => {
+    // NOTE: schema differences between 01.00.00 and 01.00.01 were crafted to reproduce a cloning bug. The goal of this test is to prevent regressions.
+    const cloneTestSchema100: string = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
+    const cloneTestSchema101: string = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.01.ecschema.xml");
+
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneWithSchemaChanges-Source.bim");
+    const sourceDb = SnapshotDb.createFrom(SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim")), sourceDbFile);
+    await sourceDb.importSchemas(new BackendRequestContext(), [cloneTestSchema100]);
+    const sourceElementProps = {
+      classFullName: "CloneTest:PhysicalType",
+      model: IModel.dictionaryId,
+      code: PhysicalType.createCode(sourceDb, IModel.dictionaryId, "Type1"),
+      string1: "a",
+      string2: "b",
+    };
+    const sourceElementId = sourceDb.elements.insertElement(sourceElementProps);
+    const sourceElement = sourceDb.elements.getElement(sourceElementId);
+    assert.equal(sourceElement.asAny.string1, "a");
+    assert.equal(sourceElement.asAny.string2, "b");
+    sourceDb.saveChanges();
+
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneWithSchemaChanges-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "CloneWithSchemaChanges-Target" } });
+    await targetDb.importSchemas(new BackendRequestContext(), [cloneTestSchema101]);
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    transformer.processElement(sourceElementId);
+    targetDb.saveChanges();
+
+    const targetElementId = transformer.context.findTargetElementId(sourceElementId);
+    const targetElement = targetDb.elements.getElement(targetElementId);
+    assert.equal(targetElement.asAny.string1, "a");
+    assert.equal(targetElement.asAny.string2, "b");
+
+    sourceDb.close();
+    targetDb.close();
   });
 
   // WIP: Included as skipped until test file management strategy can be refined.
