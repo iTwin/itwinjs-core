@@ -76,7 +76,7 @@ describe("Full Schema Deserialization", () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
-        version: "1.100.0",
+        version: "1.1000.0",
       };
 
       await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);

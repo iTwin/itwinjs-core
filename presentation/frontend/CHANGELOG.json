@@ -2,6 +2,12 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "2.5.2",
+      "tag": "@bentley/presentation-frontend_v2.5.2",
+      "date": "Tue, 25 Aug 2020 22:09:08 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.5.1",
       "tag": "@bentley/presentation-frontend_v2.5.1",
       "date": "Mon, 24 Aug 2020 18:13:04 GMT",

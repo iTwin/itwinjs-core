@@ -33,6 +33,11 @@ describe("SchemaKey", () => {
     it("should throw for invalid string", () => {
       expect(() => SchemaKey.parseString("invalid")).to.throw(ECObjectsError);
     });
+    it("should throw for out of bounds ECVersions", () => {
+      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).to.throw(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).to.throw(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).to.throw(ECObjectsError);
+    });
   });
 
   describe("compareByName", () => {
