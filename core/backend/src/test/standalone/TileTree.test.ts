@@ -45,7 +45,7 @@ function insertPhysicalModel(db: IModelDb): Id64String {
     classFullName: PhysicalPartition.classFullName,
     model: IModel.repositoryModelId,
     parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-    code: PhysicalPartition.createCode(db, IModel.rootSubjectId, "PhysicalPartition_" + (++uniqueId)),
+    code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${(++uniqueId)}`),
   };
 
   const partitionId = db.elements.insertElement(partitionProps);
@@ -79,12 +79,12 @@ describe("tile tree", () => {
     const props = {
       rootSubject: { name: "TileTreeTest", description: "Test purgeTileTrees" },
       client: "TileTree",
-      globaleOrigin: { x: 0, y: 0 },
+      globalOrigin: { x: 0, y: 0 },
       projectExtents: defaultExtents,
       guid: Guid.createValue(),
     };
 
-    const name = "Test_" + (++uniqueId) + ".bim";
+    const name = `Test_${(++uniqueId)}.bim`;
     db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("TileTree", name), props);
     modelId = insertPhysicalModel(db);
 
@@ -108,13 +108,12 @@ describe("tile tree", () => {
   });
 
   after(() => {
-    if (db)
-      db.close();
+    db?.close();
   });
 
   it("should update after changing project extents and purging", async () => {
     // "_x-" holds the flags - 0 = don't use project extents as basis of tile tree range; 1 = use them.
-    let treeId = "8_0-" + modelId;
+    let treeId = `8_0-${modelId}`;
     const context = new BackendRequestContext();
     let tree = await db.tiles.requestTileTreeProps(context, treeId);
     expect(tree).not.to.be.undefined;
@@ -125,7 +124,7 @@ describe("tile tree", () => {
     let range = Range3d.fromJSON(tree.rootTile.range);
     expect(almostEqualRange(range, skewedDefaultExtents)).to.be.false;
 
-    treeId = "8_1-" + modelId;
+    treeId = `8_1-${modelId}`;
     tree = await db.tiles.requestTileTreeProps(context, treeId);
     range = Range3d.fromJSON(tree.rootTile.range);
     expect(range.isNull).to.be.false;

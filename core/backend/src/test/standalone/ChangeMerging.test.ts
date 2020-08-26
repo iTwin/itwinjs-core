@@ -24,7 +24,7 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
 
   // finishCreateChangeSet deletes the file that startCreateChangeSet created.
   // We make a copy of it now, before he does that.
-  const csFileName = path.join(KnownTestLocations.outputDir, token.id + ".cs");
+  const csFileName = path.join(KnownTestLocations.outputDir, `${token.id}.cs`);
   IModelJsFs.copySync(token.pathname, csFileName);
   token.pathname = csFileName;
 
@@ -90,7 +90,7 @@ describe("ChangeMerging", () => {
     // first. Create a new model, category, and element.  =>  #0
     if (true) {
       [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(firstDb, IModelTestUtils.getUniqueModelCode(firstDb, "newPhysicalModel"), true);
-      const dictionary: DictionaryModel = firstDb.models.getModel(IModel.dictionaryId) as DictionaryModel;
+      const dictionary: DictionaryModel = firstDb.models.getModel<DictionaryModel>(IModel.dictionaryId);
       const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
       spatialCategoryId = SpatialCategory.insert(dictionary.iModel, dictionary.id, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
       el1 = firstDb.elements.insertElement(IModelTestUtils.createPhysicalObject(firstDb, modelId, spatialCategoryId));
@@ -118,7 +118,7 @@ describe("ChangeMerging", () => {
     // first: modify el1.userLabel
     if (true) {
       const el1cc = firstDb.elements.getElement(el1);
-      el1cc.userLabel = el1cc.userLabel + " -> changed by first";
+      el1cc.userLabel = `${el1cc.userLabel} -> changed by first`;
       firstDb.elements.updateElement(el1cc);
       firstDb.saveChanges("first modified el1.userLabel");
       csHistory.push(createChangeSet(firstDb));
@@ -129,7 +129,7 @@ describe("ChangeMerging", () => {
     let expectedValueOfEl1UserLabel: string;
     if (true) {
       const el1before: Element = secondDb.elements.getElement(el1);
-      expectedValueOfEl1UserLabel = el1before.userLabel + " -> changed by second";
+      expectedValueOfEl1UserLabel = `${el1before.userLabel} -> changed by second`;
       el1before.userLabel = expectedValueOfEl1UserLabel;
       secondDb.elements.updateElement(el1before);
       secondDb.saveChanges("second modified el1.userLabel");

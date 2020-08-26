@@ -84,7 +84,7 @@ describe("IModelTransformer", () => {
       assert.equal(3, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
       targetDb.saveChanges();
       IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
-      transformer.context.dump(targetDbFile + ".context.txt");
+      transformer.context.dump(`${targetDbFile}.context.txt`);
       transformer.dispose();
     }
 

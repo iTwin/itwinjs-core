@@ -29,7 +29,7 @@ export class HubUtility {
       return;
     try {
       IModelJsFs.readdirSync(dirPath).forEach((file) => {
-        const curPath = dirPath + "/" + file;
+        const curPath = `${dirPath}/${file}`;
         if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
           HubUtility.deleteDirectoryRecursive(curPath);
         } else {
@@ -46,7 +46,7 @@ export class HubUtility {
   private static async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
     const project: Project = await getIModelProjectAbstraction().queryProject(requestContext, {
       $select: "*",
-      $filter: "Name+eq+'" + projectName + "'",
+      $filter: `Name+eq+'${projectName}'`,
     });
     return project;
   }
@@ -91,7 +91,7 @@ export class HubUtility {
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel || !iModel.id)
       throw new Error(`IModel ${iModelName} not found`);
-    return iModel.id!;
+    return iModel.id;
   }
 
   /** Query the latest change set (id) of the specified iModel */
@@ -286,7 +286,7 @@ export class HubUtility {
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
     const lastMergedChangeSet = changeSets.find((value: ChangeSetToken) => value.id === lastAppliedChangeSetId);
-    const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value: ChangeSetToken) => value.index > lastMergedChangeSet!.index) : changeSets;
+    const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value: ChangeSetToken) => value.index > lastMergedChangeSet.index) : changeSets;
 
     // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
@@ -421,7 +421,7 @@ export class HubUtility {
     for (const changeSetJson of filteredChangeSetsJson) {
       const changeSetPathname = path.join(uploadDir, "changeSets", changeSetJson.fileName);
       if (!IModelJsFs.existsSync(changeSetPathname)) {
-        throw new Error("Cannot find the ChangeSet file: " + changeSetPathname);
+        throw new Error(`Cannot find the ChangeSet file: ${changeSetPathname}`);
       }
 
       const changeSet = new ChangeSet();
@@ -498,7 +498,7 @@ export class HubUtility {
     for (const changeSetJson of changeSetsJson) {
       const changeSetPathname = path.join(iModelDir, "changeSets", changeSetJson.fileName);
       if (!IModelJsFs.existsSync(changeSetPathname)) {
-        throw new Error("Cannot find the ChangeSet file: " + changeSetPathname);
+        throw new Error(`Cannot find the ChangeSet file: ${changeSetPathname}`);
       }
       tokens.push(new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, +changeSetJson.index, changeSetPathname, changeSetJson.changesType!));
     }

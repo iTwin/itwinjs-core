@@ -58,7 +58,7 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
           break;
         }
         default:
-          throw new Error("Unexpected ChangedOpCode " + instanceChange.opCode);
+          throw new Error(`Unexpected ChangedOpCode ${instanceChange.opCode}`);
       }
       content.instanceChanges.push(instanceChange);
     }
@@ -492,14 +492,14 @@ describe("ChangeSummary (#integration)", () => {
       });
 
       for (const changeSummary of changeSummaries) {
-        const filePath = path.join(outDir, "imodelid_" + readWriteTestIModel.id + "_changesummaryid_" + changeSummary.id + ".changesummary.json");
+        const filePath = path.join(outDir, `imodelid_${readWriteTestIModel.id}_changesummaryid_${changeSummary.id}.changesummary.json`);
         if (IModelJsFs.existsSync(filePath))
           IModelJsFs.unlinkSync(filePath);
 
         const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
         iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
           stmt.bindId(1, changeSummary.id);
-          perfLogger = new PerfLogger("ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary " + changeSummary.id);
+          perfLogger = new PerfLogger(`ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary ${changeSummary.id}`);
           while (stmt.step() === DbResult.BE_SQLITE_ROW) {
             const row = stmt.getRow();
 
@@ -527,7 +527,7 @@ describe("ChangeSummary (#integration)", () => {
                 break;
               }
               default:
-                throw new Error("Unexpected ChangedOpCode " + instanceChange.opCode);
+                throw new Error(`Unexpected ChangedOpCode ${instanceChange.opCode}`);
             }
 
             content.instanceChanges.push(instanceChange);

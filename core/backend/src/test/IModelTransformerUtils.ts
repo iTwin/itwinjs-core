@@ -411,8 +411,8 @@ export namespace IModelTransformerUtils {
     const informationRecordId2: Id64String = sourceDb.elements.queryElementIdByCode(informationRecodeCode2)!;
     assert.isTrue(Id64.isValidId64(informationRecordId2));
     const informationRecord2: any = sourceDb.elements.getElement(informationRecordId2);
-    informationRecord2.commonString = informationRecord2.commonString + "-Updated";
-    informationRecord2.sourceString = informationRecord2.sourceString + "-Updated";
+    informationRecord2.commonString = `${informationRecord2.commonString}-Updated`;
+    informationRecord2.sourceString = `${informationRecord2.sourceString}-Updated`;
     informationRecord2.update();
     // delete InformationRecord3
     const informationRecodeCode3: Code = new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" });
@@ -452,7 +452,7 @@ export namespace IModelTransformerUtils {
     // Subject
     const subjectId: Id64String = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, targetSubjectName))!;
     assert.isTrue(Id64.isValidId64(subjectId));
-    const subjectProps: SubjectProps = targetDb.elements.getElementProps(subjectId) as SubjectProps;
+    const subjectProps: SubjectProps = targetDb.elements.getElementProps(subjectId);
     assert.equal(subjectProps.description, `${targetSubjectName} Description`);
     const sourceOnlySubjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Only in Source"));
     assert.equal(undefined, sourceOnlySubjectId);
@@ -1046,7 +1046,7 @@ export namespace IModelTransformerUtils {
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
-    const outputFileName: string = iModelDb.nativeDb.getFilePath() + ".info.txt";
+    const outputFileName: string = `${iModelDb.nativeDb.getFilePath()}.info.txt`;
     if (IModelJsFs.existsSync(outputFileName)) {
       IModelJsFs.removeSync(outputFileName);
     }

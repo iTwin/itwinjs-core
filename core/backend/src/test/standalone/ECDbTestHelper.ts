@@ -13,17 +13,17 @@ export class ECDbTestHelper {
     if (!IModelJsFs.existsSync(outDir))
       IModelJsFs.mkdirSync(outDir);
 
-    const outpath = path.join(outDir, fileName);
-    if (IModelJsFs.existsSync(outpath))
-      IModelJsFs.unlinkSync(outpath);
+    const outPath = path.join(outDir, fileName);
+    if (IModelJsFs.existsSync(outPath))
+      IModelJsFs.unlinkSync(outPath);
 
     const ecdb = new ECDb();
-    ecdb.createDb(outpath);
+    ecdb.createDb(outPath);
 
     if (!schemaXml)
       return ecdb;
 
-    const schemaPath = path.join(outDir, Guid.createValue() + ".ecschema.xml");
+    const schemaPath = path.join(outDir, `${Guid.createValue()}.ecschema.xml`);
     if (IModelJsFs.existsSync(schemaPath))
       IModelJsFs.unlinkSync(schemaPath);
 

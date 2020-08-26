@@ -127,7 +127,7 @@ describe("BriefcaseManager (#integration)", () => {
 
       const expectedChangeSetId = await IModelVersion.first().evaluateChangeSet(requestContext, readOnlyTestIModel.id, BriefcaseManager.imodelClient);
       assert.strictEqual<string>(iModel.briefcase.parentChangeSetId, expectedChangeSetId);
-      assert.strictEqual<string>(iModel.changeSetId!, expectedChangeSetId);
+      assert.strictEqual<string>(iModel.changeSetId, expectedChangeSetId);
 
       assert.isTrue(onOpenedCalled);
       assert.isTrue(onOpenCalled);
@@ -294,7 +294,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.exists(iModelFixed);
 
     let rootEl: Element = iModelFixed.elements.getRootSubject();
-    rootEl.userLabel = rootEl.userLabel + "changed";
+    rootEl.userLabel = `${rootEl.userLabel}changed`;
     assert.throws(() => iModelFixed.elements.updateElement(rootEl));
 
     const iModelPullAndPush: BriefcaseDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
@@ -303,7 +303,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.equal(iModelPullAndPush.openMode, OpenMode.ReadWrite);
 
     rootEl = iModelPullAndPush.elements.getRootSubject();
-    rootEl.userLabel = rootEl.userLabel + "changed";
+    rootEl.userLabel = `${rootEl.userLabel}changed`;
     await iModelPullAndPush.concurrencyControl.requestResourcesForUpdate(requestContext, [rootEl]);
     iModelPullAndPush.elements.updateElement(rootEl);
 
@@ -592,7 +592,7 @@ describe("BriefcaseManager (#integration)", () => {
     const pathname = iModelPullOnly.briefcase.pathname;
 
     const rootEl: Element = iModelPullOnly.elements.getRootSubject();
-    rootEl.userLabel = rootEl.userLabel + "changed";
+    rootEl.userLabel = `${rootEl.userLabel}changed`;
     let errorThrown1 = false;
     try {
       await iModelPullOnly.concurrencyControl.requestResourcesForUpdate(userContext2, [rootEl]);
@@ -680,7 +680,7 @@ describe("BriefcaseManager (#integration)", () => {
     const pathname = iModelPullAndPush.briefcase.pathname;
 
     const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
-    rootEl.userLabel = rootEl.userLabel + "changed";
+    rootEl.userLabel = `${rootEl.userLabel}changed`;
     await iModelPullAndPush.concurrencyControl.requestResourcesForUpdate(userContext2, [rootEl]);
     iModelPullAndPush.elements.updateElement(rootEl);
 
