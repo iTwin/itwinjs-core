@@ -123,10 +123,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param result optional pre-allocated GrowableXYZArray to clear and fill.
    */
   public static create(data: any, result?: GrowableXYZArray): GrowableXYZArray {
-    if (result)
+    if (result) {
       result.clear();
-    else
-      result = new GrowableXYZArray(data.length);
+    } else {
+      const pointCount = typeof data[0] === "number" ? data.length / 3 : data.length;
+      result = new GrowableXYZArray(pointCount);
+    }
+
     result.pushFrom(data);
     return result;
   }
