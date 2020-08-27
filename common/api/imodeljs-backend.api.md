@@ -2740,6 +2740,7 @@ export class IModelImporter {
     readonly autoExtendProjectExtents: boolean;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
+    readonly doNotUpdateElementIds: Set<string>;
     importElement(elementProps: ElementProps): Id64String;
     importElementMultiAspects(aspectPropsArray: ElementAspectProps[]): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
