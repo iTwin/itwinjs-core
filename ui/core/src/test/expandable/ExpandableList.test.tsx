@@ -58,4 +58,38 @@ describe("ExpandableList", () => {
 
     wrapper.unmount();
   });
+
+  it("should support singleExpandOnly & singleIsCollapsible props", () => {
+    const wrapper = mount(
+      <ExpandableList singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={1}>
+        <ExpandableBlock title="Test0" isExpanded={true} onClick={() => { }}>
+          Hello0
+        </ExpandableBlock>
+        <ExpandableBlock title="Test1" isExpanded={true} onClick={() => { }}>
+          Hello1
+        </ExpandableBlock>
+      </ExpandableList>);
+
+    let blocks = wrapper.find("div.uicore-expandable-blocks-block");
+    let expanded = wrapper.find("div.is-expanded");
+
+    expect(expanded.length).to.eq(1);
+    expect(blocks.length).to.eq(2);
+    expect(expanded.find("div.content").text()).to.eq("Hello1");
+
+    blocks.at(0).find(".header").simulate("click");
+    wrapper.update();
+    expanded = wrapper.find("div.is-expanded");
+    expect(expanded.length).to.eq(1);
+    expect(expanded.find("div.content").text()).to.eq("Hello0");
+
+    blocks = wrapper.find("div.uicore-expandable-blocks-block");
+    blocks.at(0).find(".header").simulate("click");
+    wrapper.update();
+    expanded = wrapper.find("div.is-expanded");
+    expect(expanded.length).to.eq(0);
+
+    wrapper.unmount();
+  });
+
 });

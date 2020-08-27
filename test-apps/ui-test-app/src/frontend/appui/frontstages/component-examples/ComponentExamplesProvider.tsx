@@ -183,6 +183,21 @@ export class ComponentExamplesProvider {
             <ExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
               Hello World 2
             </ExpandableBlock>
+            <ExpandableBlock title="Test3" isExpanded={false} onClick={() => { }}>
+              Hello World 3
+            </ExpandableBlock>
+          </ExpandableList>),
+        createComponentExample("ExpandableList w/ singleIsCollapsible", "ExpandableList with singleIsCollapsible prop",
+          <ExpandableList className="uicore-full-width" singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={0}>
+            <ExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
+              Hello World 1
+            </ExpandableBlock>
+            <ExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+              Hello World 2
+            </ExpandableBlock>
+            <ExpandableBlock title="Test3" isExpanded={false} onClick={() => { }}>
+              Hello World 3
+            </ExpandableBlock>
           </ExpandableList>),
       ],
     };

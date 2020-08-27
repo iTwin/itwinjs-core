@@ -15,10 +15,12 @@ import { CommonProps } from "../utils/Props";
  * @public
  */
 export interface ExpandableListProps extends CommonProps {
-  /** Indicates whether to allow only one expanded block */
-  singleExpandOnly?: boolean;
   /** Index of the default active block */
   defaultActiveBlock?: number;
+  /** Indicates whether to allow only one expanded block */
+  singleExpandOnly?: boolean;
+  /** Indicates whether the single expanded block is collapsible */
+  singleIsCollapsible?: boolean;
 }
 
 /** @internal */
@@ -45,7 +47,12 @@ export class ExpandableList extends React.PureComponent<ExpandableListProps, Exp
 
   // set active block
   private _handleBlockClick = (index: number, onClick: () => any) => {
-    this.setState({ activeBlock: index });
+    let activeBlock = index;
+
+    if (this.props.singleIsCollapsible && index === this.state.activeBlock)
+      activeBlock = -1;
+
+    this.setState({ activeBlock });
 
     // istanbul ignore else
     if (onClick) {

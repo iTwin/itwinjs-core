@@ -697,6 +697,7 @@ export class ExpandableList extends React.PureComponent<ExpandableListProps, Exp
 export interface ExpandableListProps extends CommonProps {
     defaultActiveBlock?: number;
     singleExpandOnly?: boolean;
+    singleIsCollapsible?: boolean;
 }
 
 // @public
