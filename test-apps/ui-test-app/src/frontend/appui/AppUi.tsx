@@ -21,7 +21,7 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
+import { FunctionKey, StagePanelLocation, StageUsage, BadgeType } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
   CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, CoreTools, FrontstageManager, KeyboardShortcutManager,
@@ -440,6 +440,7 @@ export class AppUi {
       element: <FillCentered>Dynamic Widget for ViewsFrontstage</FillCentered>,
       fillZone: true,
       priority: -1,
+      badgeType: BadgeType.TechnicalPreview,
     });
     UiFramework.widgetManager.addWidgetDef(widgetDef1, "ViewsFrontstage", undefined, ZoneLocation.BottomRight);
 

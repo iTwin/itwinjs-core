@@ -323,12 +323,16 @@ alpha;TabGroupProps
 internal;TabIdContext: React.Context
 alpha;TabMode
 alpha;TabModeHelpers
+internal;TabNodeContext: React.Context
+internal;TabPositionContext: React.Context
+internal;TabPositionContextArgs
 alpha;TabProps 
 alpha;TabSeparator 
 alpha;TabSeparatorProps 
 internal;TabsState
 internal;TabsStateContext: React.Context
 internal;TabState
+internal;TabStateContext: React.Context
 internal;TabTargetFloatingWidgetState
 internal;TabTargetPanelState
 internal;TabTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState | TabTargetFloatingWidgetState
@@ -480,7 +484,9 @@ internal;WidgetTabDragAction
 internal;WidgetTabDragEndAction
 internal;WidgetTabDragStartAction
 alpha;WidgetTabDragStartArguments
-internal;WidgetTabProps
+internal;WidgetTabProps 
+internal;WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTabProviderProps): JSX.Element
+internal;WidgetTabProviderProps 
 internal;WidgetTabs: React.NamedExoticComponent
 internal;WidgetTabsEntryContext: React.Context
 internal;WidgetTabsEntryContextProviderProps

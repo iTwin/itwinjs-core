@@ -6,6 +6,8 @@
  * @module Utilities
  */
 
+import "./BetaBadge.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../utils/Props";
 import { Badge } from "./Badge";
@@ -15,5 +17,12 @@ import betaBadgeIcon from "./technical-preview-badge.svg?sprite";
  * @internal
  */
 export function BetaBadge(props: CommonProps) {
-  return <Badge {...props} svg={betaBadgeIcon} />;
+  const className = classnames("core-badge-betaBadge",
+    props.className,
+  );
+  return <Badge
+    {...props}
+    svg={betaBadgeIcon}
+    className={className}
+  />;
 }

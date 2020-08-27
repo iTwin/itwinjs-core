@@ -14,7 +14,7 @@ import { TabsStateContext } from "../base/NineZone";
 import { getChildKey, useOverflow } from "../tool-settings/Docked";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 import { WidgetOverflow } from "./Overflow";
-import { WidgetTab } from "./Tab";
+import { WidgetTabProvider } from "./Tab";
 import { WidgetTabTarget } from "./TabTarget";
 import { WidgetStateContext } from "./Widget";
 
@@ -36,7 +36,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
             tabIndex={index}
             first
           />}
-          <WidgetTab
+          <WidgetTabProvider
             first={index === 0}
             firstInactive={firstInactive}
             last={index === array.length - 1}

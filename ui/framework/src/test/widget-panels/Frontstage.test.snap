@@ -96,6 +96,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
         "widgets": Object {},
       }
     }
+    tab={<WidgetPanelsTab />}
     toolSettingsContent={<ToolSettingsContent />}
     widgetContent={<WidgetContent />}
   >

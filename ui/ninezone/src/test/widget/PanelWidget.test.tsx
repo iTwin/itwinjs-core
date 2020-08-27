@@ -48,7 +48,7 @@ describe("PanelWidget", () => {
         <PanelWidget widgetId="w1" />
       </Provider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render minimized", () => {
@@ -62,7 +62,7 @@ describe("PanelWidget", () => {
         <PanelWidget widgetId="w1" />
       </Provider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render with fit-content", () => {

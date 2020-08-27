@@ -64,10 +64,9 @@ exports[`WidgetPanels should render widget content 1`] = `
               <div
                 class="nz-widget-tab nz-active nz-first nz-last"
                 role="tab"
+                title=""
               >
-                <span
-                  title=""
-                />
+                <span />
               </div>
               <div
                 class="nz-widget-tabTarget nz-hidden"

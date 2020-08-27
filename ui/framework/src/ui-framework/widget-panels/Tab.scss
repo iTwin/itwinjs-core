@@ -4,6 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
-.nz-widget-menu {
-  background: $buic-background-1;
+.nz-widget-tab {
+  &.uifw-badge-new {
+    &.nz-active {
+      &:before {
+        width: calc(100% - 1em) !important;
+        left: 0.5em !important;
+      }
+    }
+  }
 }

@@ -20,10 +20,9 @@ exports[`PanelWidget should not transition 1`] = `
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -69,10 +68,9 @@ exports[`PanelWidget should render 1`] = `
       <div
         class="nz-widget-tab nz-active nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -119,10 +117,9 @@ exports[`PanelWidget should render horizontal with fit-content 1`] = `
       <div
         class="nz-widget-tab nz-active nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -168,10 +165,9 @@ exports[`PanelWidget should render minimized 1`] = `
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -197,88 +193,6 @@ exports[`PanelWidget should render minimized 1`] = `
 </div>
 `;
 
-exports[`PanelWidget should render minimized 2`] = `
-<div
-  class="nz-widget-widget nz-widget-panelWidget nz-fill"
->
-  <div
-    class="nz-widget-tabBar"
-  >
-    <div
-      class="nz-handle"
-    />
-    <div
-      class="nz-widget-tabs"
-      role="tablist"
-    >
-      <div
-        class="nz-widget-tabTarget nz-hidden"
-      />
-      <div
-        class="nz-widget-tab nz-active nz-first nz-last"
-        role="tab"
-      >
-        <span
-          title=""
-        />
-      </div>
-      <div
-        class="nz-widget-tabTarget nz-hidden"
-      />
-      <div
-        class="nz-widget-overflow nz-hidden"
-      >
-        <div
-          class="nz-button"
-          role="button"
-          tabindex="-1"
-        >
-          <div
-            class="nz-icon"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-  <div
-    class="nz-widget-content-container"
-  />
-</div>
-`;
-
-exports[`PanelWidget should render prepared for transition 1`] = `
-<div
-  class="nz-widget-widget nz-widget-panelWidget nz-transition nz-transitioning"
-  style="max-height: 35px;"
->
-  <div
-    class="nz-widget-tabBar"
-  >
-    <div
-      class="nz-handle"
-    />
-    <div
-      class="nz-widget-tabs"
-      role="tablist"
-    >
-      <div
-        class="nz-widget-overflow nz-hidden"
-      >
-        <div
-          class="nz-button"
-          role="button"
-          tabindex="-1"
-        >
-          <div
-            class="nz-icon"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-`;
-
 exports[`PanelWidget should render with fit-content 1`] = `
 <div
   class="nz-widget-widget nz-widget-panelWidget nz-fit"
@@ -300,10 +214,9 @@ exports[`PanelWidget should render with fit-content 1`] = `
       <div
         class="nz-widget-tab nz-active nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -350,10 +263,9 @@ exports[`PanelWidget should transition 1`] = `
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -400,10 +312,9 @@ exports[`PanelWidget should transition 2`] = `
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -450,10 +361,9 @@ exports[`PanelWidget should transition horizontal 1`] = `
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -500,10 +410,9 @@ exports[`PanelWidget should transition horizontal 2`] = `
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -550,10 +459,9 @@ exports[`PanelWidget should transition when switching tab 1`] = `
       <div
         class="nz-widget-tab nz-first"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"
@@ -561,71 +469,9 @@ exports[`PanelWidget should transition when switching tab 1`] = `
       <div
         class="nz-widget-tab nz-active nz-last"
         role="tab"
+        title=""
       >
-        <span
-          title=""
-        />
-      </div>
-      <div
-        class="nz-widget-tabTarget nz-hidden"
-      />
-      <div
-        class="nz-widget-overflow nz-hidden"
-      >
-        <div
-          class="nz-button"
-          role="button"
-          tabindex="-1"
-        >
-          <div
-            class="nz-icon"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-  <div
-    class="nz-widget-content-container"
-  />
-</div>
-`;
-
-exports[`PanelWidget should transition when switching tab 2`] = `
-<div
-  class="nz-widget-widget nz-widget-panelWidget nz-fit"
-  style="max-height: 50%;"
->
-  <div
-    class="nz-widget-tabBar"
-  >
-    <div
-      class="nz-handle"
-    />
-    <div
-      class="nz-widget-tabs"
-      role="tablist"
-    >
-      <div
-        class="nz-widget-tabTarget nz-hidden"
-      />
-      <div
-        class="nz-widget-tab nz-first"
-        role="tab"
-      >
-        <span
-          title=""
-        />
-      </div>
-      <div
-        class="nz-widget-tabTarget nz-hidden"
-      />
-      <div
-        class="nz-widget-tab nz-active nz-last"
-        role="tab"
-      >
-        <span
-          title=""
-        />
+        <span />
       </div>
       <div
         class="nz-widget-tabTarget nz-hidden"

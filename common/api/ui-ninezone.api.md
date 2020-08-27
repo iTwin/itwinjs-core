@@ -1318,6 +1318,8 @@ export interface NineZoneProps {
     // (undocumented)
     state: NineZoneState;
     // (undocumented)
+    tab?: React.ReactNode;
+    // (undocumented)
     toolSettingsContent?: React.ReactNode;
     // (undocumented)
     widgetContent?: React.ReactNode;
@@ -2242,6 +2244,22 @@ export class TabModeHelpers {
     static readonly OPEN_CLASS_NAME = "nz-mode-open";
 }
 
+// @internal (undocumented)
+export const TabNodeContext: React.Context<React.ReactNode>;
+
+// @internal (undocumented)
+export const TabPositionContext: React.Context<TabPositionContextArgs>;
+
+// @internal (undocumented)
+export interface TabPositionContextArgs {
+    // (undocumented)
+    first?: boolean;
+    // (undocumented)
+    firstInactive?: boolean;
+    // (undocumented)
+    last?: boolean;
+}
+
 // @alpha
 export interface TabProps extends CommonProps {
     badge?: React.ReactNode;
@@ -2293,6 +2311,9 @@ export interface TabState {
     // (undocumented)
     readonly preferredPanelWidgetSize?: "fit-content";
 }
+
+// @internal (undocumented)
+export const TabStateContext: React.Context<TabState>;
 
 // @internal
 export interface TabTargetFloatingWidgetState {
@@ -3250,13 +3271,16 @@ export interface WidgetTabDragStartArguments {
 }
 
 // @internal
-export interface WidgetTabProps {
+export interface WidgetTabProps extends CommonProps {
     // (undocumented)
-    first?: boolean;
-    // (undocumented)
-    firstInactive?: boolean;
-    // (undocumented)
-    last?: boolean;
+    badge?: React.ReactNode;
+}
+
+// @internal (undocumented)
+export function WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTabProviderProps): JSX.Element;
+
+// @internal (undocumented)
+export interface WidgetTabProviderProps extends TabPositionContextArgs {
     // (undocumented)
     tab: TabState;
 }

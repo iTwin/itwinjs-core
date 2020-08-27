@@ -16,20 +16,33 @@
     overflow: hidden;
   }
 
+  > .nz-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
   &.nz-overflown {
     cursor: pointer;
     display: flex;
     position: relative;
     max-width: 18em;
+    line-height: 2em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
 
     > span {
       margin-right: 3em;
     }
 
+    > .nz-badge {
+      left: 0.25em;
+    }
+
     &.nz-active {
       > .nz-icon {
         position: absolute;
-        right: 0;
+        right: 0.75em;
         border-style: solid;
         border-color: $buic-foreground-primary;
         border-width: 0 0.15em 0.15em 0;
@@ -40,8 +53,18 @@
       }
     }
 
-    &:not(.nz-last) {
+    &.nz-first {
+      margin-top: 0.5em;
+    }
+
+    &.nz-last {
       margin-bottom: 0.5em;
+    }
+
+    @media (hover: hover) {
+      &:hover {
+        color: $buic-foreground-primary;
+      }
     }
   }
 
@@ -61,7 +84,7 @@
         color: $buic-foreground-primary;
         padding-bottom: 1px;
 
-        &:after {
+        &:before {
           $padding: 0.25em;
           content: '';
           position: absolute;

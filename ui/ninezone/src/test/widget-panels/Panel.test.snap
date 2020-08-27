@@ -30,10 +30,9 @@ exports[`WidgetPanel should render captured 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"
@@ -114,10 +113,9 @@ exports[`WidgetPanel should render collapsed 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"
@@ -199,10 +197,9 @@ exports[`WidgetPanel should render horizontal 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"
@@ -283,10 +280,9 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"
@@ -332,10 +328,9 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"
@@ -416,10 +411,9 @@ exports[`WidgetPanel should render spanned 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"
@@ -501,10 +495,9 @@ exports[`WidgetPanel should render vertical 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"
@@ -585,10 +578,9 @@ exports[`WidgetPanel should render with span bottom 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"
@@ -669,10 +661,9 @@ exports[`WidgetPanel should render with top spanned 1`] = `
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
               role="tab"
+              title=""
             >
-              <span
-                title=""
-              />
+              <span />
             </div>
             <div
               class="nz-widget-tabTarget nz-hidden"

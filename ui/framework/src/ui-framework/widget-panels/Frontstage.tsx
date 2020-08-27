@@ -32,6 +32,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
 import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
+import { WidgetPanelsTab } from "./Tab";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -141,6 +142,7 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
 });
 
 const defaultNineZone = createNineZoneState();
+const tabElement = <WidgetPanelsTab />;
 
 /** @internal */
 export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: FrontstageDef }) {
@@ -159,6 +161,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
         dispatch={dispatch}
         labels={labels}
         state={nineZone || defaultNineZone}
+        tab={tabElement}
         toolSettingsContent={toolSettingsContent}
         widgetContent={widgetContent}
       >

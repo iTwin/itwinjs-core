@@ -2467,6 +2467,9 @@ export type FunctionType = (...args: any[]) => any;
 // @public @deprecated
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 
+// @internal (undocumented)
+export function getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" | "uifw-badge-tp" | undefined;
+
 // @alpha
 export function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise<string[]>;
 
@@ -6625,6 +6628,9 @@ export function WidgetPanelsFrontstageContent(): JSX.Element | null;
 
 // @internal (undocumented)
 export function WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null;
+
+// @internal (undocumented)
+export function WidgetPanelsTab(): JSX.Element;
 
 // @internal (undocumented)
 export function WidgetPanelsToolbars(): JSX.Element;

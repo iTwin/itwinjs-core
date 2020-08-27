@@ -84,3 +84,12 @@ $header-height: 50px;
   grid-template-columns: 1fr 1fr;
   grid-gap: 5px;
 }
+
+.nzdemo-tab-new {
+  &.nz-active {
+    &:before {
+      width: calc(100% - 1em) !important;
+      left: 0.5em !important;
+    }
+  }
+}

@@ -23,7 +23,7 @@ describe("FloatingWidget", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render minimized", () => {
@@ -40,7 +40,7 @@ describe("FloatingWidget", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render dragged", () => {
@@ -63,7 +63,7 @@ describe("FloatingWidget", () => {
       fireEvent.mouseDown(handle);
       fireEvent.mouseMove(handle);
     });
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should dispatch FLOATING_WIDGET_RESIZE", () => {

@@ -221,6 +221,7 @@ export * from "./ui-framework/widget-panels/Frontstage";
 export * from "./ui-framework/widget-panels/FrontstageContent";
 export * from "./ui-framework/widget-panels/ModalFrontstageComposer";
 export * from "./ui-framework/widget-panels/StatusBar";
+export * from "./ui-framework/widget-panels/Tab";
 export * from "./ui-framework/widget-panels/Toolbars";
 export * from "./ui-framework/widget-panels/ToolSettings";
 export * from "./ui-framework/widget-panels/useWidgetDirection";

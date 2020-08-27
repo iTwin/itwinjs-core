@@ -5,9 +5,9 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import "./Zones.scss";
 import * as React from "react";
-import { ActionButton, GroupButton } from "@bentley/ui-abstract";
+import { ActionButton, GroupButton, BadgeType } from "@bentley/ui-abstract";
 import { ToolbarItem, ToolbarWithOverflow, UiComponents } from "@bentley/ui-components";
-import { Point } from "@bentley/ui-core";
+import { Point, BadgeUtilities } from "@bentley/ui-core";
 import {
   NineZone,
   addPanelWidget,
@@ -32,6 +32,8 @@ import {
   NineZoneContext,
   createPanelsState,
   createHorizontalPanelState,
+  WidgetTab,
+  TabStateContext,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -305,6 +307,18 @@ const page = function () {
   }
 }();
 
+
+function Tab() {
+  const { id } = React.useContext(TabStateContext);
+  if (id === "topLeft_2")
+    return <WidgetTab className="nzdemo-tab-new" badge={BadgeUtilities.getComponentForBadgeType(BadgeType.New)} />;
+  else if (id === "bottomLeft_1" || id === "topLeft_4")
+    return <WidgetTab className="nzdemo-tab-tp" badge={BadgeUtilities.getComponentForBadgeType(BadgeType.TechnicalPreview)} />;
+  return <WidgetTab />;
+}
+
+const tab = <Tab />;
+
 export default function Zones() {
   page.initialize();
   React.useEffect(() => {
@@ -389,6 +403,7 @@ export default function Zones() {
           dispatch={dispatch}
           labels={labels}
           state={state}
+          tab={tab}
           toolSettingsContent={toolSettings}
           widgetContent={widget}
         >

@@ -19,6 +19,6 @@ describe("FloatingWidgets", () => {
         <FloatingWidgets />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 });

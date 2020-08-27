@@ -797,7 +797,7 @@ class AdditionalTools {
         this._radialMenuItem, this._exampleFormItem, this._viewportDialogItem, this._spinnerTestDialogItem,
         this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem,
       ],
-      badgeType: BadgeType.New,
+      badgeType: BadgeType.TechnicalPreview,
     }),
   ], 100, { groupPriority: 20 }), this.getMiscGroupItem()];
 }

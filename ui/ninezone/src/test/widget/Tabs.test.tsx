@@ -35,7 +35,7 @@ describe("WidgetTabs", () => {
         </PanelSideContext.Provider>
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render overflow panel", () => {
@@ -58,7 +58,7 @@ describe("WidgetTabs", () => {
         </PanelSideContext.Provider>
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should overflow all tabs in horizontal minimized widget", () => {

@@ -1006,7 +1006,7 @@ describe("packNineZoneState", () => {
     nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const sut = packNineZoneState(nineZone);
-    sut.should.matchSnapshot(true);
+    sut.should.matchSnapshot();
   });
 });
 

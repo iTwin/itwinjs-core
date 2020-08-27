@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanelsTab should render 1`] = `<WidgetTab />`;
+
+exports[`WidgetPanelsTab should render with badge 1`] = `
+<WidgetTab
+  badge={<NewBadge />}
+  className="uifw-badge-new"
+/>
+`;

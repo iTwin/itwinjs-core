@@ -9,10 +9,10 @@
 import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Point, Rectangle, Timer, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { useDragTab } from "../base/DragManager";
-import { MeasureContext, NineZoneDispatchContext } from "../base/NineZone";
+import { MeasureContext, NineZoneDispatchContext, TabNodeContext } from "../base/NineZone";
 import { TabState } from "../base/NineZoneState";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { PanelSideContext } from "../widget-panels/Panel";
@@ -20,23 +20,45 @@ import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabsEntryContext } from "./Tabs";
 import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
 import { WidgetOverflowContext } from "./Overflow";
+import { TabIdContext } from "./ContentRenderer";
+
+/** @internal */
+export interface WidgetTabProviderProps extends TabPositionContextArgs {
+  tab: TabState;
+}
+
+/** @internal */
+export function WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTabProviderProps) {
+  const tabNode = React.useContext(TabNodeContext);
+  const position = React.useMemo<TabPositionContextArgs>(() => ({
+    first,
+    firstInactive,
+    last,
+  }), [first, firstInactive, last]);
+  return (
+    <TabIdContext.Provider value={tab.id}>
+      <TabStateContext.Provider value={tab}>
+        <TabPositionContext.Provider value={position}>
+          {tabNode}
+        </TabPositionContext.Provider>
+      </TabStateContext.Provider>
+    </TabIdContext.Provider>
+  );
+}
 
 /** Properties of [[WidgetTab]] component.
- * @internal
+ * @internal future
  */
-export interface WidgetTabProps {
-  tab: TabState;
-  first?: boolean;
-  last?: boolean;
-  firstInactive?: boolean;
+export interface WidgetTabProps extends CommonProps {
+  badge?: React.ReactNode;
 }
 
 /** Component that displays a tab in a side panel widget.
- * @internal
+ * @internal future
  */
 export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const { tab } = props;
-  const { id } = tab;
+  const tab = React.useContext(TabStateContext);
+  const { first, firstInactive, last } = React.useContext(TabPositionContext);
   const widgetTabsEntryContext = React.useContext(WidgetTabsEntryContext);
   const overflowContext = React.useContext(WidgetOverflowContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
@@ -45,6 +67,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
   const widget = React.useContext(WidgetStateContext);
   const widgetContext = React.useContext(WidgetContext);
   const measure = React.useContext(MeasureContext);
+  const { id } = tab;
   assert(widget);
   const handleDragStart = useDragTab({
     tabId: id,
@@ -151,19 +174,40 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     active && "nz-active",
     !widgetTabsEntryContext && "nz-overflown",
     widget.minimized && "nz-minimized",
-    props.first && "nz-first",
-    props.last && "nz-last",
-    props.firstInactive && "nz-first-inactive",
+    first && "nz-first",
+    last && "nz-last",
+    firstInactive && "nz-first-inactive",
     widgetTabsEntryContext?.lastNotOverflown && "nz-last-not-overflown",
+    props.className,
   );
   return (
     <div
       className={className}
       ref={refs}
       role="tab"
+      style={props.style}
+      title={tab.label}
     >
-      <span title={tab.label}>{tab.label}</span>
+      <span>{tab.label}</span>
       {!widgetTabsEntryContext && <div className="nz-icon" />}
+      {props.badge && <div className="nz-badge">
+        {props.badge}
+      </div>}
     </div>
   );
 });
+
+/** @internal */
+export interface TabPositionContextArgs {
+  first?: boolean;
+  last?: boolean;
+  firstInactive?: boolean;
+}
+
+/** @internal */
+export const TabPositionContext = React.createContext<TabPositionContextArgs>(undefined!);
+TabPositionContext.displayName = "nz:TabPositionContext";
+
+/** @internal */
+export const TabStateContext = React.createContext<TabState>(undefined!);
+TabStateContext.displayName = "nz:TabStateContext";

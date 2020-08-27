@@ -35,7 +35,7 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render horizontal", () => {
@@ -54,7 +54,7 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render collapsed", () => {
@@ -73,7 +73,7 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render captured", () => {
@@ -91,7 +91,7 @@ describe("WidgetPanel", () => {
         </DraggedPanelSideContext.Provider>
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render spanned", () => {
@@ -110,7 +110,7 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render with top spanned", () => {
@@ -127,7 +127,7 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render with span bottom", () => {
@@ -144,7 +144,7 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should dispatch PANEL_INITIALIZE", () => {
@@ -185,6 +185,6 @@ describe("WidgetPanel", () => {
         />
       </NineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot(true);
+    container.firstChild!.should.matchSnapshot();
   });
 });
