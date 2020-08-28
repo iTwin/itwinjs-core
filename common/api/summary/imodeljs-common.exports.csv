@@ -74,6 +74,7 @@ public;CommonLoggerCategory
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
+internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
 internal;class ContentIdProvider
 public;ContextRealityModelProps
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps

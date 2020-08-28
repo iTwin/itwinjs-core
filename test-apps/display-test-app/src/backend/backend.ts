@@ -85,6 +85,13 @@ function setupStandaloneConfiguration(): SVTConfiguration {
       configuration.maxTilesToSkip = maxToSkip;
   }
 
+  const minSpatialTolEnv = process.env.SVT_MIN_SPATIAL_TOLERANCE;
+  if (undefined !== minSpatialTolEnv) {
+    const minSpatialTol = Number.parseFloat(minSpatialTolEnv);
+    if (!Number.isNaN(minSpatialTol))
+      configuration.minimumSpatialTolerance = minSpatialTol;
+  }
+
   if (undefined !== process.env.SVT_DISABLE_LOG_Z)
     configuration.logarithmicZBuffer = false;
 

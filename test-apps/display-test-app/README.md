@@ -158,6 +158,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, when requesting tile content, edges will always be requested regardless of view settings.
 * SVT_SUBDIVIDE_INCOMPLETE
   * If defined, TileAdmin.Props.alwaysSubdivideIncompleteTiles will be initialized to `true`.
+* SVT_MIN_SPATIAL_TOLERANCE
+  * See TileAdmin.Props.minimumSpatialTolerance.
 
 ## Key-ins
 

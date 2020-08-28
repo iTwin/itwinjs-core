@@ -7,11 +7,18 @@
  */
 
 import { assert, ByteStream, compareNumbers, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+import { Range3d, Vector3d } from "@bentley/geometry-core";
 import { BatchType } from "../FeatureTable";
 import { TileProps } from "../TileProps";
 import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
 import { TileReadError, TileReadStatus } from "./TileIO";
+
+// NB: These constants correspond to those defined in Tile.cpp.
+namespace Constants {
+  export const tileScreenSize = 512;
+  export const minToleranceRatioMultiplier = 2;
+  export const minToleranceRatio = tileScreenSize * minToleranceRatioMultiplier;
+}
 
 /** Describes an iModel tile tree.
  * @internal
@@ -392,7 +399,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
       contentRange: parent.contentRange,
       sizeMultiplier,
       isLeaf: false,
-      maximumSize: 512,
+      maximumSize: Constants.tileScreenSize,
     });
 
     return { children, numEmpty };
@@ -444,7 +451,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
         childSpec.k = parentSpec.k * 2 + k;
 
         const childId = idProvider.idFromSpec(childSpec);
-        children.push({ contentId: childId, range, maximumSize: 512 });
+        children.push({ contentId: childId, range, maximumSize: Constants.tileScreenSize });
       }
     }
   }
@@ -508,6 +515,22 @@ export function readTileContentDescription(stream: ByteStream, sizeMultiplier: n
     sizeMultiplier,
     emptySubRangeMask: header.emptySubRanges,
   };
+}
+
+const scratchRangeDiagonal = new Vector3d();
+
+/** Compute the chord tolerance for the specified tile of the given range with the specified size multiplier.
+ * @internal
+ */
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number {
+  if (tile.range.isNull)
+    return 0;
+
+  const diagonal = tile.range.diagonal(scratchRangeDiagonal);
+  const diagDist = is3d ? diagonal.magnitude() : diagonal.magnitudeXY();
+
+  const mult = Math.max(tile.sizeMultiplier ?? 1, 1);
+  return diagDist / (Constants.minToleranceRatio * Math.max(1, mult));
 }
 
 /** Deserializes tile metadata.

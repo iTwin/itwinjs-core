@@ -8866,6 +8866,8 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get maximumMajorTileFormatVersion(): number;
     // @internal (undocumented)
+    abstract get minimumSpatialTolerance(): number;
+    // @internal (undocumented)
     abstract onActiveRequestCanceled(tile: Tile): void;
     // @internal (undocumented)
     abstract onCacheMiss(): void;
@@ -8929,6 +8931,7 @@ export namespace TileAdmin {
         maximumLevelsToSkip?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
+        minimumSpatialTolerance?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;

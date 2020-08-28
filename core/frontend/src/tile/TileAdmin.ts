@@ -98,6 +98,8 @@ export abstract class TileAdmin {
   public abstract get alwaysRequestEdges(): boolean;
   /** @internal */
   public abstract get alwaysSubdivideIncompleteTiles(): boolean;
+  /** @internal */
+  public abstract get minimumSpatialTolerance(): number;
 
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
@@ -477,6 +479,14 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @internal
      */
     alwaysSubdivideIncompleteTiles?: boolean;
+
+    /** If defined and greater than zero, specifies the minimum chord tolerance in meters of a tile. A tile with chord tolerance less than this minimum will not be refined.
+     * Applies only to spatial models, which model real-world assets on real-world scales.
+     * A reasonable value is on the order of millimeters.
+     * Default value: undefined
+     * @alpha
+     */
+    minimumSpatialTolerance?: number;
   }
 }
 
@@ -585,6 +595,7 @@ class Admin extends TileAdmin {
   private readonly _disableMagnification: boolean;
   private readonly _alwaysRequestEdges: boolean;
   private readonly _alwaysSubdivideIncompleteTiles: boolean;
+  private readonly _minimumSpatialTolerance: number;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
   private readonly _maximumLevelsToSkip: number;
@@ -671,6 +682,9 @@ class Admin extends TileAdmin {
     else
       this._maximumLevelsToSkip = 1;
 
+    const minSpatialTol = options.minimumSpatialTolerance;
+    this._minimumSpatialTolerance = minSpatialTol ? Math.max(minSpatialTol, 0) : 0;
+
     this._cancelBackendTileRequests = true === options.cancelBackendTileRequests;
 
     const clamp = (seconds: number, min: number, max: number): BeDuration => {
@@ -709,6 +723,7 @@ class Admin extends TileAdmin {
   public get disableMagnification() { return this._disableMagnification; }
   public get alwaysRequestEdges() { return this._alwaysRequestEdges; }
   public get alwaysSubdivideIncompleteTiles() { return this._alwaysSubdivideIncompleteTiles; }
+  public get minimumSpatialTolerance() { return this._minimumSpatialTolerance; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
   public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }

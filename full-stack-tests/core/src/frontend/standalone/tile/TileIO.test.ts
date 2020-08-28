@@ -14,14 +14,14 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
-import { testOnScreenViewport } from "../TestViewport";
-import { TileTestCase, TileTestData } from "./TileIO.data";
-import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
-import { TILE_DATA_1_2 } from "./TileIO.data.1.2";
-import { TILE_DATA_1_3 } from "./TileIO.data.1.3";
-import { TILE_DATA_1_4 } from "./TileIO.data.1.4";
-import { TILE_DATA_2_0 } from "./TileIO.data.2.0";
-import { changeHeaderLength, changeMajorVersion, changeMinorVersion } from "./TileIO.data.fake";
+import { testOnScreenViewport } from "../..//TestViewport";
+import { TileTestCase, TileTestData } from "./data/TileIO.data";
+import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
+import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
+import { TILE_DATA_1_3 } from "./data/TileIO.data.1.3";
+import { TILE_DATA_1_4 } from "./data/TileIO.data.1.4";
+import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
+import { changeHeaderLength, changeMajorVersion, changeMinorVersion } from "./data/TileIO.data.fake";
 
 const testCases = [
   TILE_DATA_1_1,

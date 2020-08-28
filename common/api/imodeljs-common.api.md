@@ -1358,6 +1358,9 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 }>;
 
 // @internal
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
+
+// @internal
 export abstract class ContentIdProvider {
     // (undocumented)
     protected abstract computeId(depth: number, i: number, j: number, k: number, mult: number): string;
