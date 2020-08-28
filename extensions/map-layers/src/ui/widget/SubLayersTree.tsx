@@ -22,6 +22,7 @@ interface ToolbarProps {
   children?: React.ReactNode[];
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function Toolbar(props: ToolbarProps) {
   return (
     <div className="map-manager-sublayer-tree-toolbar">
@@ -35,6 +36,7 @@ function Toolbar(props: ToolbarProps) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersPanel({ mapLayer, viewport }: { mapLayer: StyleMapLayerSettings, viewport: ScreenViewport | undefined }) {
   const [noneAvailableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.NoSubLayers"));
   if (!viewport || (undefined === mapLayer.subLayers || 0 === mapLayer.subLayers.length)) {
@@ -69,6 +71,7 @@ function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean
  * Tree Control that displays sub-layer hierarchy
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
   const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.SearchPlaceholder"));
   const [allOnLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOn"));

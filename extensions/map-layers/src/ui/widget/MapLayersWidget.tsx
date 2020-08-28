@@ -13,6 +13,7 @@ import { MapLayerManager } from "./MapLayerManager";
  * Widget to Manage Map Layers
  * @beta
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayersWidget() {
   const [notGeoLocatedMsg] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.NotSupported"));
   const activeViewport = useActiveViewport();
