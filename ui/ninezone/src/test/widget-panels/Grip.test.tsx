@@ -30,9 +30,10 @@ describe("WidgetPanelGrip", () => {
       </NineZoneProvider>,
     );
     const grip = container.getElementsByClassName("nz-widgetPanels-grip")[0];
+    const handle = grip.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.mouseDown(grip);
-      fireEvent.mouseMove(grip);
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseMove(handle);
     });
     container.firstChild!.should.matchSnapshot();
   });
@@ -52,11 +53,12 @@ describe("WidgetPanelGrip", () => {
       </NineZoneProvider>,
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
+    const handle = grip.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.mouseDown(grip);
-      fireEvent.mouseUp(grip);
-      fireEvent.mouseDown(grip);
-      fireEvent.mouseUp(grip);
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseUp(handle);
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseUp(handle);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "PANEL_TOGGLE_COLLAPSED",
@@ -80,8 +82,9 @@ describe("WidgetPanelGrip", () => {
       </NineZoneProvider>,
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
+    const handle = grip.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.mouseDown(grip);
+      fireEvent.mouseDown(handle);
     });
     act(() => {
       fakeTimers.tick(300);
@@ -112,8 +115,9 @@ describe("WidgetPanelGrip", () => {
       </NineZoneProvider>,
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
+    const handle = grip.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.pointerMove(grip);
+      fireEvent.pointerMove(handle);
     });
     container.firstChild!.should.matchSnapshot();
   });
@@ -131,10 +135,11 @@ describe("WidgetPanelGrip", () => {
       </NineZoneProvider>,
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
+    const handle = grip.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.pointerDown(grip);
-      fireEvent.pointerMove(grip);
-      fireEvent.pointerUp(grip);
+      fireEvent.pointerDown(handle);
+      fireEvent.pointerMove(handle);
+      fireEvent.pointerUp(handle);
     });
     container.firstChild!.should.matchSnapshot();
   });
