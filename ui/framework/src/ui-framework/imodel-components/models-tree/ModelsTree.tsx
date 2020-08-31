@@ -540,10 +540,11 @@ class SubjectModelIdsCache {
   private async initSubjectModels() {
     this._subjectModels = new Map();
     const ecsql = `
-      SELECT p.ECInstanceId id, p.Parent.Id subjectId
-        FROM bis.InformationPartitionElement p
-        INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
-       WHERE NOT m.IsPrivate`;
+      SELECT p.ECInstanceId id, s.ECInstanceId subjectId
+      FROM bis.InformationPartitionElement p
+      INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
+      INNER JOIN bis.Subject s ON (s.ECInstanceId = p.Parent.Id OR json_extract(s.JsonProperties, '$.Subject.Model.TargetPartition') = printf('0x%x', p.ECInstanceId))
+      WHERE NOT m.IsPrivate`;
     const result = this._imodel.query(ecsql);
     for await (const row of result) {
       let list = this._subjectModels.get(row.subjectId);

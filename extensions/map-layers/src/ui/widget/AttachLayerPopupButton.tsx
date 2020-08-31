@@ -18,6 +18,7 @@ interface AttachLayerPanelProps {
   onLayerAttached: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps) {
   const [layerNameToAdd, setLayerNameToAdd] = React.useState<string | undefined>();
   const [sourceFilterString, setSourceFilterString] = React.useState<string | undefined>();
@@ -151,6 +152,7 @@ export interface AttachLayerPopupButtonProps {
 }
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function AttachLayerPopupButton({ isOverlay }: AttachLayerPopupButtonProps) {
   const [showAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Attach"));
   const [hideAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Close"));

@@ -34,9 +34,11 @@ function displayElevationError(): void {
     MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationDetails")));
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapSettingsPanel() {
   const { activeViewport } = useSourceMapContext();
 
+  /*
   const [basemapVisible, setBasemapVisible] = React.useState(() => {
     if (activeViewport) {
       return activeViewport.viewFlags.backgroundMap;
@@ -54,6 +56,7 @@ export function MapSettingsPanel() {
       setBasemapVisible(newState);
     }
   }, [basemapVisible, activeViewport]);
+*/
 
   const [showSettings, setShowSettings] = React.useState(false);
   const toggleShowSettings = React.useCallback(() => {
@@ -65,7 +68,7 @@ export function MapSettingsPanel() {
   const [transparency, setTransparency] = React.useState(() =>
     typeof backgroundMapSettings.transparency === "boolean"
       ? 0
-      : Math.round((backgroundMapSettings.transparency as number) * 100) / 100);
+      : Math.round((backgroundMapSettings.transparency) * 100) / 100);
 
   const terrainSettings = backgroundMapSettings.terrainSettings;
   const [groundBias, setGroundBias] = React.useState(() => backgroundMapSettings.groundBias);
@@ -149,7 +152,13 @@ export function MapSettingsPanel() {
       event.preventDefault();
   }, []);
 
-  const [showMapLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ShowMapLayers"));
+  const [isLocatable, setIsLocatable] = React.useState(() => backgroundMapSettings.locatable);
+  const onLocatableToggle = React.useCallback((checked: boolean) => {
+    updateBackgroundMap({ nonLocatable: !checked });
+    setIsLocatable(checked);
+  }, [updateBackgroundMap]);
+
+  /* const [showMapLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ShowMapLayers")); */
   const [settingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Settings"));
   const [transparencyLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Transparency"));
   const [terrainLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Terrain"));
@@ -158,17 +167,22 @@ export function MapSettingsPanel() {
   const [modelHeightLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ModelHeight"));
   const [heightOriginLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.HeightOrigin"));
   const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Exaggeration"));
+  const [locatableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Locatable"));
 
   return (
     <>
       <div className="map-manager-settings-header">
         <ExpandableBlock title={settingsLabel} className="map-expandable-blocks-block" isExpanded={showSettings} onClick={toggleShowSettings}>
           <div className="map-manager-settings-panel">
+            {/*
             <span className="map-manager-settings-label">{showMapLayersLabel}</span>
             <Toggle onChange={handleVisibilityChange} isOn={basemapVisible} className="map-manager-base-settings-toggle" />
-
+            */}
             <span className="map-manager-settings-label">{transparencyLabel}</span>
             <Slider min={0} max={100} showMinMax showTooltip values={[transparency * 100]} onChange={handleAlphaChange} step={1} />
+
+            <span className="map-manager-settings-label">{locatableLabel}</span>
+            <Toggle onChange={onLocatableToggle} isOn={isLocatable} />
 
             <span className="map-manager-settings-label">{terrainLabel}</span>
             <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />

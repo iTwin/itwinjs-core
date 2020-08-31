@@ -11,6 +11,7 @@ import { IModelApp, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, 
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./MapUrlDialog.scss";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, onOkResult: () => void }) {
   const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachCustomLayer"));
   const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));

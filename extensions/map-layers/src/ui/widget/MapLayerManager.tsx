@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore droppable Sublayer Basemap
 
+// the following quiet warning caused by react-beautiful-dnd package
+/* eslint-disable @typescript-eslint/unbound-method */
+
 import * as React from "react";
 import { DragDropContext, Draggable, DraggableChildrenFn, Droppable, DropResult } from "react-beautiful-dnd";
 import { MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
@@ -61,6 +64,7 @@ export interface StyleMapLayerSettings {
   showSubLayers: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const settingsRef = React.useRef<HTMLButtonElement>(null);
@@ -190,6 +194,7 @@ interface MapLayerManagerProps {
   activeViewport: ScreenViewport;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerManager(props: MapLayerManagerProps) {
   const [mapSources, setMapSources] = React.useState<MapLayerSource[] | undefined>();
   const [baseSources, setBaseSources] = React.useState<MapLayerSource[] | undefined>();
@@ -353,15 +358,15 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     assert(overlayMapLayers);
 
     return (
-      <div className="map-manager-source-item" data-id={rubric.source.index} key={overlayMapLayers![rubric.source.index].name}
+      <div className="map-manager-source-item" data-id={rubric.source.index} key={overlayMapLayers[rubric.source.index].name}
         {...overlayDragProvided.draggableProps}
         ref={overlayDragProvided.innerRef} >
         <button className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { handleVisibilityChange(overlayMapLayers[rubric.source.index]); }}>
           <Icon iconSpec={overlayMapLayers[rubric.source.index].visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
-        <span className="map-manager-item-label" {...overlayDragProvided.dragHandleProps}>{overlayMapLayers![rubric.source.index].name}</span>
+        <span className="map-manager-item-label" {...overlayDragProvided.dragHandleProps}>{overlayMapLayers[rubric.source.index].name}</span>
         <div className="map-manager-item-sub-layer-container">
-          {overlayMapLayers![rubric.source.index].subLayers && overlayMapLayers![rubric.source.index].subLayers!.length > 1 &&
-            <SubLayersPopupButton mapLayerSettings={overlayMapLayers![rubric.source.index]} activeViewport={activeViewport} />
+          {overlayMapLayers[rubric.source.index].subLayers && overlayMapLayers[rubric.source.index].subLayers!.length > 1 &&
+            <SubLayersPopupButton mapLayerSettings={overlayMapLayers[rubric.source.index]} activeViewport={activeViewport} />
           }
         </div>
         <MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={overlayMapLayers[rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} />
@@ -372,18 +377,18 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   const renderUnderlayItem: DraggableChildrenFn = (underlayDragProvided, _, rubric) => {
     assert(backgroundMapLayers);
     return (
-      <div className="map-manager-source-item" data-id={rubric.source.index} key={backgroundMapLayers![rubric.source.index].name}
+      <div className="map-manager-source-item" data-id={rubric.source.index} key={backgroundMapLayers[rubric.source.index].name}
         {...underlayDragProvided.draggableProps}
         ref={underlayDragProvided.innerRef} >
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { handleVisibilityChange(backgroundMapLayers![rubric.source.index]); }}>
-          <Icon iconSpec={backgroundMapLayers![rubric.source.index].visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
-        <span className="map-manager-item-label" {...underlayDragProvided.dragHandleProps}>{backgroundMapLayers![rubric.source.index].name}</span>
+        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { handleVisibilityChange(backgroundMapLayers[rubric.source.index]); }}>
+          <Icon iconSpec={backgroundMapLayers[rubric.source.index].visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
+        <span className="map-manager-item-label" {...underlayDragProvided.dragHandleProps}>{backgroundMapLayers[rubric.source.index].name}</span>
         <div className="map-manager-item-sub-layer-container">
-          {backgroundMapLayers![rubric.source.index].subLayers && backgroundMapLayers![rubric.source.index].subLayers!.length > 1 &&
-            <SubLayersPopupButton mapLayerSettings={backgroundMapLayers![rubric.source.index]} activeViewport={activeViewport} />
+          {backgroundMapLayers[rubric.source.index].subLayers && backgroundMapLayers[rubric.source.index].subLayers!.length > 1 &&
+            <SubLayersPopupButton mapLayerSettings={backgroundMapLayers[rubric.source.index]} activeViewport={activeViewport} />
           }
         </div>
-        <MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={backgroundMapLayers![rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} />
+        <MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={backgroundMapLayers[rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} />
       </div>
     );
   };

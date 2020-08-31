@@ -41,7 +41,7 @@
     "ZoomToLayer": "Zoom to layer"
   },
   "Settings": {
-    "ElevationOffset": "Elevation Offset (meters)",
+    "ElevationOffset": "Elevation Offset (m)",
     "ElevationTypeGeodetic": "GPS (Geodetic/Ellipsoid)",
     "ElevationTypeGeoid": "Sea Level (Geoid)",
     "ElevationTypeGround": "Ground",
@@ -49,12 +49,13 @@
     "HeightOrigin": "Height Origin",
     "InvalidElevationError": "Invalid Elevation",
     "InvalidElevationDetails": "Please enter a valid number for elevation.",
-    "ModelHeight": "Model Height (meters)",
+    "ModelHeight": "Model Height (m)",
     "Settings": "Settings",
     "ShowMapLayers": "Show Map Layers",
     "Terrain": "Use Terrain",
     "Transparency": "Transparency",
-    "UseDepthBuffer": "Use Depth Buffer"
+    "UseDepthBuffer": "Use Depth Buffer",
+    "Locatable": "Locatable"
   },
   "SubLayers": {
     "AllOn": "Turn on all Sub-layers",

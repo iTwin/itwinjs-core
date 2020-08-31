@@ -23,6 +23,20 @@ $hovered-icon-color: $buic-foreground-primary-tone;
       width: 100%;
       margin-top: 2px;
 
+      button.map-manager-item-visibility {
+        border: none;
+        margin: 0 2px;
+        color: $buic-foreground-body;
+
+        &:hover {
+          color: $hovered-icon-color;
+        }
+        &:focus {
+          outline: none;
+          box-shadow: $uicore-button-focus-boxshadow;
+        }
+      }
+
       .map-transparency-popup-button {
         background-color: transparent;
         margin-left: auto;
