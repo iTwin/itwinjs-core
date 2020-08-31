@@ -97,9 +97,10 @@ export interface ViewportDecorator {
 }
 
 /** @internal */
-export type CachedDecoration = { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner }
-  | { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean }
-  | { type: "html", htmlElement: HTMLElement };
+export type CachedDecoration =
+  { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner } |
+  { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean } |
+  { type: "html", htmlElement: HTMLElement };
 
 function disposeCachedDecoration(dec: CachedDecoration): void {
   if ("graphic" === dec.type)

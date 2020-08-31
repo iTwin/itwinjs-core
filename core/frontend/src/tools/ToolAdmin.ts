@@ -369,7 +369,7 @@ export class ToolAdmin {
     const opts = ToolAdmin.exceptionOptions;
     const msg: string = undefined !== exception.stack ? exception.stack : exception.toString();
     if (opts.log)
-      Logger.logError(FrontendLoggerCategory.Package + ".unhandledException", msg);
+      Logger.logError(`${FrontendLoggerCategory.Package}.unhandledException`, msg);
 
     if (opts.launchDebugger) // this does nothing if the debugger window is not already opened
       debugger; // eslint-disable-line no-debugger
@@ -377,10 +377,10 @@ export class ToolAdmin {
     if (!opts.alertBox)
       return;
 
-    let out = "<h2>" + IModelApp.i18n.translate("iModelJs:Errors.ReloadPage") + "</h2>";
+    let out = `<h2>${IModelApp.i18n.translate("iModelJs:Errors.ReloadPage")}</h2>`;
     if (opts.details) {
-      out += "<h3>" + IModelApp.i18n.translate("iModelJs:Errors.Details") + "</h3><h4>";
-      msg.split("\n").forEach((line) => out += line + "<br>");
+      out += `<h3>${IModelApp.i18n.translate("iModelJs:Errors.Details")}</h3><h4>`;
+      msg.split("\n").forEach((line) => out += `${line}<br>`);
       out += "</h4>";
     }
 
@@ -512,7 +512,6 @@ export class ToolAdmin {
 
     const pt2d = this.getMousePosition(event);
 
-    vp.setAnimator();
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
     const wheelEvent = new BeWheelEvent();
     wheelEvent.wheelDelta = delta;
