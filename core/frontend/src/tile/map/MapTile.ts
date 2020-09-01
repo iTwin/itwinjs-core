@@ -139,7 +139,7 @@ export class MapTile extends RealityTile {
   }
 
   public get graphicType() {
-    return this.mapTree.isOverlay ? TileGraphicType.Overlay : (this.mapTree.useDepthBuffer ? TileGraphicType.Scene : TileGraphicType.BackgroundMap);
+    return this.mapTree.isOverlay ? TileGraphicType.Overlay : ((this.mapTree.useDepthBuffer || this._forceDepthBuffer) ? TileGraphicType.Scene : TileGraphicType.BackgroundMap);
   }
 
   public get mapLoader() { return this.realityRoot.loader as MapTileLoader; }
@@ -165,6 +165,9 @@ export class MapTile extends RealityTile {
       }
     }
     return undefined;
+  }
+  private get _forceDepthBuffer() {
+    return this.mapTree.globeMode === GlobeMode.Ellipsoid && this.depth < 8;       // For large ellipsoidal globe tile force the depth buffer on to avoid anomalies at horizon.  These are large enough that they
   }
 
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
