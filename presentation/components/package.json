@@ -43,7 +43,7 @@
   "dependencies": {
     "lodash": "^4.17.10",
     "micro-memoize": "^4.0.9",
-    "rxjs": "^6.5.2"
+    "rxjs": "^6.6.2"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.6.0-dev.11",
