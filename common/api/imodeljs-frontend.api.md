@@ -8419,8 +8419,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get currentPlanarClassifierOrDrape(): PlanarClassifier | TextureDrape | undefined;
     // (undocumented)
-    get currentShaderFlags(): ShaderFlags;
-    // (undocumented)
     get currentTextureDrape(): TextureDrape | undefined;
     // (undocumented)
     get currentTransform(): Transform;

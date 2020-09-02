@@ -164,7 +164,10 @@ export class ViewFlags {
   public clipVolume: boolean = true;
   /** Shows or hides construction class geometry. */
   public constructions: boolean = false;
-  /** Draw all graphics in a single color */
+  /** Draw geometry using the view's monochrome color.
+   * @see [DisplayStyleSettings.monochromeColor]($common) for details on how the color is applied.
+   * @see [DisplayStyleSettings.monochromeMode]($common) to control the type of monochrome display applied.
+   */
   public monochrome: boolean = false;
   /** @internal unused Ignore geometry maps */
   public noGeometryMap: boolean = false;

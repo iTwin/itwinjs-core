@@ -44,7 +44,7 @@ import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { SceneCompositor } from "./SceneCompositor";
 import { freeDrawParams } from "./ScratchDrawParams";
-import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
+import { ShaderProgramExecutor } from "./ShaderProgram";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { desync, SyncTarget } from "./Sync";
 import { System } from "./System";
@@ -236,7 +236,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get currentClipVolume(): ClipVolume | undefined { return this.uniforms.branch.clipVolume; }
   public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
   public get currentEdgeSettings(): EdgeSettings { return this.currentBranch.edgeSettings; }
-  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.currentBranch.symbologyOverrides; }
   public get currentPlanarClassifier(): PlanarClassifier | undefined { return this.currentBranch.planarClassifier; }
   public get currentlyDrawingClassifier(): PlanarClassifier | undefined { return this._currentlyDrawingClassifier; }

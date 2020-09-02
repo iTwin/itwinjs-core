@@ -211,6 +211,7 @@ export class InstancedGeometry extends CachedGeometry {
   public wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
   public getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
   public getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
+  public wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
 
   public get rtcCenter(): Point3d { return this._buffers.rtcCenter; }
 

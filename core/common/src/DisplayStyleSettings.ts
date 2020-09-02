@@ -86,10 +86,10 @@ export interface ContextRealityModelProps {
  * @public
  */
 export enum MonochromeMode {
-  /** The color of all geometry is replaced with the monochrome color. e.g., if monochrome color is white, all geometry will be white. */
+  /** The color of the geometry is replaced with the monochrome color. e.g., if monochrome color is white, the geometry will be white. */
   Flat = 0,
   /** The color of surfaces is computed as normal, then scaled to a shade of the monochrome color based on the surface color's intensity.
-   * For example, if the monochrome color is white, this results in a greyscale affect.
+   * For example, if the monochrome color is white, this results in a greyscale effect.
    * Geometry other than surfaces is treated the same as [[MonochromeMode.Flat]].
    */
   Scaled = 1,
@@ -105,7 +105,10 @@ export interface DisplayStyleSettingsProps {
   viewflags?: ViewFlagProps;
   /** The color displayed in the view background. Defaults to black. */
   backgroundColor?: ColorDefProps;
-  /** The color used in monochrome mode. Defaults to white. */
+  /** The color used in monochrome mode. Defaults to white.
+   * The monochrome color is applied to all surfaces and linear geometry.
+   * It is never applied to the **edges** of surfaces, except in Wireframe render mode.
+   */
   monochromeColor?: ColorDefProps;
   /** The style in which the monochrome color is applied. Default: [[MonochromeMode.Scaled]]. */
   monochromeMode?: MonochromeMode;

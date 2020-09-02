@@ -10,7 +10,6 @@ import { RenderType } from "@bentley/webgl-compatibility";
 import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../Handle";
 import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../ShaderBuilder";
-import { ShaderFlags } from "../ShaderProgram";
 import { System } from "../System";
 import { addModelViewMatrix } from "./Vertex";
 
@@ -79,12 +78,14 @@ const kShaderBitOITScaleOutput = 3;
 const kShaderBitIgnoreNonLocatable = 4;
 
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
-  const flags = params.target.currentShaderFlags;
-  shaderFlagArray[kShaderBitMonochrome] = (0 === (flags & ShaderFlags.Monochrome) ? 0 : 1);
-  shaderFlagArray[kShaderBitNonUniformColor] = (0 === (flags & ShaderFlags.NonUniformColor) ? 0 : 1);
-  shaderFlagArray[kShaderBitOITFlatAlphaWeight] = (0 === (flags & ShaderFlags.OITFlatAlphaWeight) ? 0 : 1);
-  shaderFlagArray[kShaderBitOITScaleOutput] = (0 === (flags & ShaderFlags.OITScaleOutput) ? 0 : 1);
-  shaderFlagArray[kShaderBitIgnoreNonLocatable] = (0 === (flags & ShaderFlags.IgnoreNonLocatable) ? 0 : 1);
+  const monochrome = params.target.currentViewFlags.monochrome && params.geometry.wantMonochrome(params.target);
+  shaderFlagArray[kShaderBitMonochrome] = monochrome ? 1 : 0;
+
+  shaderFlagArray[kShaderBitNonUniformColor] = 0;
+  shaderFlagArray[kShaderBitOITFlatAlphaWeight] = 0;
+  shaderFlagArray[kShaderBitOITScaleOutput] = 0;
+  shaderFlagArray[kShaderBitIgnoreNonLocatable] = 0;
+
   const geom = params.geometry.asLUT;
   if (undefined !== geom) {
     // Could also be TerrainMeshGeometry, so only detect non-uniform color if explicitly LUTGeometry.
