@@ -512,6 +512,7 @@ export class ToolAdmin {
 
     const pt2d = this.getMousePosition(event);
 
+    vp.setAnimator();
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
     const wheelEvent = new BeWheelEvent();
     wheelEvent.wheelDelta = delta;

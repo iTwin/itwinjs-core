@@ -452,6 +452,7 @@ class GlobeAnimator implements Animator {
  */
 class FrustumAnimator implements Animator {
   private _tweens = new Tweens();
+  private _duration = 0;
 
   public constructor(public options: ViewAnimationOptions, viewport: ScreenViewport, begin: ViewPose, end: ViewPose) {
     const settings = ScreenViewport.animation;
@@ -461,6 +462,7 @@ class FrustumAnimator implements Animator {
     if (duration <= 0 || begin.cameraOn !== end.cameraOn) // no duration means skip animation. We can't animate if the camera toggles.
       return;
 
+    this._duration = duration;
     let extentBias: Vector3d | undefined;
     let eyeBias: Vector3d | undefined;
     const zVec = begin.zVec;
@@ -528,8 +530,9 @@ class FrustumAnimator implements Animator {
   }
 
   public interrupt() {
-    if (!this.options.cancelOnAbort)
-      this._tweens.update(Infinity); // jump to end pose
+    // We were interrupted. Either go to: the final frame (normally) or, add a small fraction of the total duration (30ms for a .5 second duration) to
+    // the current time for cancelOnAbort. That makes aborted animations show some progress, as happens when the mouse wheel rolls quickly.
+    this._tweens.update(this.options.cancelOnAbort ? Date.now() + (this._duration * .06) : Infinity);
   }
 }
 
