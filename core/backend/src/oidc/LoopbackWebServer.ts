@@ -101,7 +101,7 @@ export class LoopbackWebServer {
       const errorDescription = searchParams.get("error_description") || undefined;
       authorizationError = { error, error_description: errorDescription, error_uri: errorUri, state }; // eslint-disable-line @typescript-eslint/naming-convention
     } else {
-      authorizationResponse = { code: code!, state: state! };
+      authorizationResponse = { code: code!, state };
     }
     authorizationEvents.onAuthorizationResponse.raiseEvent(authorizationError, authorizationResponse);
 

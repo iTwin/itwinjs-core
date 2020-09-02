@@ -69,7 +69,7 @@ export interface ChangeSummaryExtractOptions {
 export class ChangeSummaryExtractContext {
   public constructor(public readonly iModel: BriefcaseDb) { }
 
-  public get iModelId(): GuidString { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
+  public get iModelId(): GuidString { assert(!!this.iModel.briefcase); return this.iModel.briefcase.iModelId; }
 }
 
 /** Class to extract Change Summaries for a briefcase.
@@ -218,7 +218,7 @@ export class ChangeSummaryManager {
 
         const changeSetFilePath: string = path.join(changeSetsFolder, currentChangeSetInfo.fileName!);
         if (!IModelJsFs.existsSync(changeSetFilePath))
-          throw new IModelError(IModelStatus.FileNotFound, "Failed to extract change summary: Changeset file '" + changeSetFilePath + "' does not exist.");
+          throw new IModelError(IModelStatus.FileNotFound, `Failed to extract change summary: Changeset file "${changeSetFilePath}" does not exist.`);
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
         const stat: IModelJsNative.ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
@@ -315,7 +315,7 @@ export class ChangeSummaryManager {
 
     const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changeCacheFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Failed to create Change Cache file at '" + changeCacheFilePath + "'.");
+      throw new IModelError(stat, `Failed to create Change Cache file at "${changeCacheFilePath}".`);
 
     // Extended information like changeset ids, push dates are persisted in the IModelChange ECSchema
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());
@@ -372,7 +372,7 @@ export class ChangeSummaryManager {
 
         const r: DbResult = stmt.step();
         if (r !== DbResult.BE_SQLITE_DONE)
-          throw new IModelError(r, "Failed to add changeset information to extracted change summary " + changeSummaryId);
+          throw new IModelError(r, `Failed to add changeset information to extracted change summary ${changeSummaryId}`);
       });
   }
 
@@ -427,7 +427,7 @@ export class ChangeSummaryManager {
 
       const row = stmt.getRow();
       const changedInstanceId: Id64String = row.changedInstanceId;
-      const changedInstanceClassName: string = "[" + row.changedInstanceSchemaName + "].[" + row.changedInstanceClassName + "]";
+      const changedInstanceClassName: string = `[${row.changedInstanceSchemaName}].[${row.changedInstanceClassName}]`;
       const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
       return {
@@ -465,7 +465,7 @@ export class ChangeSummaryManager {
             if (!isFirstToken)
               item += ".";
 
-            item += "[" + token + "]";
+            item += `[${token}]`;
             isFirstToken = false;
           }
           selectClauseItems.push(item);
@@ -512,7 +512,7 @@ export class ChangeSummaryManager {
 
     // Avoiding parameters in the Changes function speeds up performance because ECDb can do optimizations
     // if it knows the function args at prepare time
-    ecsql += " FROM main." + instanceChangeInfo.changedInstance.className + ".Changes(" + instanceChangeInfo.summaryId.toString() + "," + changedValueState + ") WHERE ECInstanceId=" + instanceChangeInfo.changedInstance.id.toString();
+    ecsql += ` FROM main.${instanceChangeInfo.changedInstance.className}.Changes(${instanceChangeInfo.summaryId},${changedValueState}) WHERE ECInstanceId=${instanceChangeInfo.changedInstance.id}`;
     return ecsql;
   }
 }

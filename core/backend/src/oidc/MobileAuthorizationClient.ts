@@ -81,7 +81,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
 
     const expiresAt = this._accessToken.getExpiresAt();
     assert(!!expiresAt, "Invalid token in MobileAuthorizationClient");
-    if (expiresAt!.getTime() - Date.now() > (this._clientConfiguration.expiryBuffer || defaultMobileAuthorizationClientExpiryBuffer) * 1000)
+    if (expiresAt.getTime() - Date.now() > (this._clientConfiguration.expiryBuffer || defaultMobileAuthorizationClientExpiryBuffer) * 1000)
       return true;
 
     return false;

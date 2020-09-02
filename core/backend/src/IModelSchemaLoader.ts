@@ -36,7 +36,7 @@ export class IModelSchemaLoader {
   public getSchema<T extends Schema>(schemaName: string): T {
     const schema = this.tryGetSchema(schemaName);
     if (!schema)
-      throw new IModelError(IModelStatus.NotFound, "reading schema=" + schemaName, Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, `reading schema=${schemaName}`, Logger.logWarning, loggerCategory);
 
     return schema as T;
   }
@@ -97,7 +97,7 @@ class IModelSchemaLocater implements ISchemaLocater {
       if (IModelStatus.NotFound === val.error.status) {
         return undefined;
       }
-      throw new IModelError(val.error.status, "reading schema=" + schemaName, Logger.logWarning, loggerCategory);
+      throw new IModelError(val.error.status, `reading schema=${schemaName}`, Logger.logWarning, loggerCategory);
     }
     return val.result;
   }
