@@ -38,9 +38,8 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
-import { BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient } from "@bentley/backend-itwin-client";
+import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient } from "@bentley/backend-itwin-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -304,9 +303,9 @@ export class IModelHost {
   }
 
   private static initializeUsageLogging(platform: typeof IModelJsNative, region: number, applicationType?: ApplicationType, iModelClient?: IModelClient): void {
-    const nativeApplicationType = applicationType == ApplicationType.WebAgent
+    const nativeApplicationType = applicationType === ApplicationType.WebAgent
       ? IModelJsNative.ApplicationType.WebAgent
-      : applicationType == ApplicationType.NativeApp
+      : applicationType === ApplicationType.NativeApp
         ? IModelJsNative.ApplicationType.NativeApp
         : IModelJsNative.ApplicationType.WebApplicationBackend;
     const iModelClientType = !!iModelClient && iModelClient instanceof IModelBankClient
@@ -413,8 +412,7 @@ export class IModelHost {
         if (configuration.nativePlatform !== undefined) {
           this.registerPlatform(configuration.nativePlatform);
           this.initializeUsageLogging(configuration.nativePlatform, region, configuration.applicationType, configuration.imodelClient);
-        }
-        else {
+        } else {
           this.loadNative(region, configuration.applicationType, configuration.imodelClient);
         }
       } catch (error) {
