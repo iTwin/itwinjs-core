@@ -746,6 +746,9 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   if (TestConfig.enableMocks)
     return;
 
+  if (TestConfig.enableIModelBank)
+    deleteIfExists = true;
+
   contextId = contextId || await getProjectId(requestContext, TestConfig.projectName);
 
   const client = getDefaultClient();
