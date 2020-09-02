@@ -46,7 +46,7 @@ export class SeqLoggerConfig {
       seqConfig = {};
 
     const seqStreamParams: any = {};
-    seqStreamParams.serverUrl = (seqConfig.hostURL || "http://localhost") + ":" + (seqConfig.port || 5341);
+    seqStreamParams.serverUrl = `${seqConfig.hostURL || "http://localhost"}:${seqConfig.port || 5341}`;
 
     if (seqConfig.apiKey !== undefined)
       seqStreamParams.apiKey = seqConfig.apiKey;
@@ -88,14 +88,12 @@ export class SeqLoggerConfig {
     const validProps = ["hostURL", "port"];
     for (const prop of Object.keys(seqConfig)) {
       if (!validProps.includes(prop))
-        throw new BentleyError(IModelStatus.BadArg, "unrecognized SeqConfig property: " + prop);
+        throw new BentleyError(IModelStatus.BadArg, `unrecognized SeqConfig property: ${prop}`);
     }
   }
 
   /** @internal Used to flush all pending seq logs right before exiting. */
   public static async shutdownSeq() {
-    const stream = this._seqStream;
-    const noop = async () => { };
-    return (stream?.stream?._logger?.close ?? noop)();
+    return this._seqStream?.stream?.flush?.();
   }
 }
