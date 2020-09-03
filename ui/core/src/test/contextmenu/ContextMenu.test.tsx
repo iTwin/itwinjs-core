@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { BadgeType, SpecialKey } from "@bentley/ui-abstract";
 import { cleanup, render } from "@testing-library/react";
-import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu, PopupContextMenu } from "../../ui-core";
+import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
 import { TildeFinder } from "../../ui-core/contextmenu/TildeFinder";
 import TestUtils from "../TestUtils";
 
@@ -332,7 +332,7 @@ describe("ContextMenu", () => {
       it("should support changing direction", () => {
         const wrapper = mount<ContextMenu>(<ContextMenu opened={true} direction={ContextMenuDirection.Right} />);
         expect(wrapper.state().direction === ContextMenuDirection.Right);
-        wrapper.setProps({ direction: ContextMenuDirection.Left });
+        wrapper.setProps({ direction: ContextMenuDirection.Left, opened: false });
         expect(wrapper.state().direction === ContextMenuDirection.Left);
         wrapper.unmount();
       });
@@ -639,14 +639,6 @@ describe("ContextMenu", () => {
       const node = true;
       const tildeFindRet = TildeFinder.findAfterTilde(node);
       expect(tildeFindRet.node).to.equal(node);
-    });
-  });
-
-  describe("<PopupContextMenu />", () => {
-    it("renders correctly", () => {
-      const component = render(<PopupContextMenu isOpen={true} />);
-      expect(component.getByTestId("core-popup")).to.exist;
-      expect(component.getByTestId("core-context-menu-root")).to.exist;
     });
   });
 

@@ -149,10 +149,10 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 98.3,
-    "branches": 95.4,
-    "functions": 98.4,
-    "lines": 98.3
+    "statements": 98.5,
+    "branches": 95.8,
+    "functions": 98.6,
+    "lines": 98.5
   },
   "eslintConfig": {
     "extends": "./node_modules/@bentley/ui-core/package.json"

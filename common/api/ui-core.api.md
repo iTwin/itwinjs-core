@@ -828,6 +828,9 @@ export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 // @internal
 export function getBestBWContrastColor(hexColor: string): "black" | "white";
 
+// @internal (undocumented)
+export function getButtonTypeClassName(buttonType?: ButtonType): string;
+
 // @internal
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
 
@@ -1438,6 +1441,7 @@ export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
 
 // @alpha
 export interface PopupContextMenuProps extends CommonProps {
+    animate?: boolean;
     ariaLabel?: string;
     autoflip?: boolean;
     children?: React.ReactNode;
@@ -1460,6 +1464,7 @@ export interface PopupContextMenuProps extends CommonProps {
 
 // @public
 export interface PopupProps extends CommonProps {
+    animate?: boolean;
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
@@ -1889,11 +1894,15 @@ export enum SplitButtonActionType {
 
 // @public
 export interface SplitButtonProps extends CommonProps {
+    buttonType?: ButtonType;
     drawBorder?: boolean;
     icon?: IconSpec;
+    // @internal (undocumented)
+    initialExpanded?: boolean;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
     onExecute?: () => any;
+    popupPosition?: RelativePosition;
     toolTip?: string;
 }
 

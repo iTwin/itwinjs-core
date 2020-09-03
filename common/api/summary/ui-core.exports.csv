@@ -86,6 +86,7 @@ beta;FormContextState
 beta;FormProps
 beta;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
 internal;getBestBWContrastColor(hexColor: string): "black" | "white"
+internal;getButtonTypeClassName(buttonType?: ButtonType): string
 internal;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
 internal;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
 internal;getDisplayName: (component: React.ComponentType

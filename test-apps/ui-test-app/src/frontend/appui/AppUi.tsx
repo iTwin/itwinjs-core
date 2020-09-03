@@ -21,7 +21,7 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { FunctionKey, StagePanelLocation, StageUsage, BadgeType } from "@bentley/ui-abstract";
+import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
   CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, CoreTools, FrontstageManager, KeyboardShortcutManager,
@@ -40,6 +40,8 @@ import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
+
+// cSpell:ignore uitestapp
 
 /** Example Ui Configuration for an iModelJS App
  */

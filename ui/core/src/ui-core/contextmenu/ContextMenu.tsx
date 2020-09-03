@@ -149,8 +149,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     this._hotKeyMap.set(index, hotKey);
   }
 
+  // istanbul ignore next
   private _handleOnOutsideClick = (event: MouseEvent): void => {
-    // istanbul ignore next
     if (this.props.opened && this.props.onOutsideClick)
       this.props.onOutsideClick(event);
   }

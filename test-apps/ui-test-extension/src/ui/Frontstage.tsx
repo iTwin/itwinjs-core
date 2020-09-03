@@ -23,7 +23,7 @@ export class ExtensionFrontstage extends FrontstageProvider {
     return "ui-test.SampleStage";
   }
 
-  private get additionalVerticalToolWidgetItems(): CommonToolbarItem[] {
+  private get _additionalVerticalToolWidgetItems(): CommonToolbarItem[] {
     return ([GenericTool.getActionButtonDef(400)]);
   }
 
@@ -74,7 +74,7 @@ export class ExtensionFrontstage extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isFreeform={true} element={<BasicToolWidget additionalVerticalItems={this.additionalVerticalToolWidgetItems} />} />,
+                <Widget isFreeform={true} element={<BasicToolWidget additionalVerticalItems={this._additionalVerticalToolWidgetItems} />} />,
               ]}
           />
         }

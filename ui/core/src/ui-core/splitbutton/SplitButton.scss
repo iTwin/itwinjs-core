@@ -5,11 +5,14 @@
 @import "../button/button";
 @import "../icons/variables";
 @import "../style/baseline";
+@import "../style/opacity";
 @import "../style/typography";
 @import "../style/themecolors";
 @import "../text/mixins";
 
 // cspell:ignore themecolors unbordered
+
+$split-button-padding:  4px;
 
 .core-split-button {
   flex-shrink: 1;
@@ -18,48 +21,69 @@
   @include uicore-buttons-button;
 
   padding:        $uicore-button-padding;
-  border-color:   $buic-background-control;
   box-shadow:     none;
 
-  cursor: pointer;
-  margin: 0;
-  display: flex;
-  color: $buic-foreground-body;
-  background-color: $buic-background-control;
-  box-sizing: border-box;
+  cursor:         pointer;
+  margin:         0;
+  display:        flex;
+  box-sizing:     border-box;
+  line-height:    $uicore-line-height;
+  outline:        none;
+
+  &.core-split-button-default-colors {
+    border-color:     $buic-background-control;
+    color:            $buic-foreground-body;
+    background-color: $buic-background-control;
+
+    > .core-split-button-label {
+      &:hover {
+        color: $buic-foreground-primary;
+      }
+    }
+
+    > .core-split-button-arrow {
+      > .core-split-button-arrow-icon {
+        &:hover {
+          color: $buic-foreground-primary;
+        }
+      }
+    }
+
+    &:focus {
+      > .core-split-button-arrow {
+        > .core-split-button-arrow-icon {
+          color: $buic-foreground-primary;
+        }
+      }
+    }
+  }
+
+  > .core-split-button-label {
+    flex: 1;
+    text-align: center;
+
+    &.core-split-button-border {
+      margin: 0 $split-button-padding;
+    }
+  }
 
   &.core-split-button-border {
     border-color:   $buic-text-color-disabled;
     box-shadow:     $buic-inputs-boxshadow 0px 1px 1px inset;
   }
 
-  > .core-split-button-label {
-    &:hover {
-      color: $buic-foreground-primary;
-    }
-    &:focus {
-      outline: none;
-    }
-
-    @include uicore-text(body);
-  }
-
   > .core-split-button-divider {
-    width: 5px;
+    width: $split-button-padding + 1px;
 
     &.core-split-button-border {
-      width: 5px;
-      border-right: 1px solid $buic-inputs-border;
+      border-right: 1px solid currentColor;
+      opacity: $uicore-opacity-disabled;
     }
   }
 
   > .core-split-button-arrow {
     > .core-split-button-arrow-icon {
       transition: transform .2s;
-
-      &:hover {
-        color: $buic-foreground-primary;
-      }
 
       text-align: center;
       font-size: $uicore-icons-x-small;
@@ -68,7 +92,7 @@
 
     width: $uicore-line-height;
     height: $uicore-line-height;
-    margin-left: 3px;
+    margin-left: $split-button-padding;
 
     > .context-menu {
       top: $uicore-inputs-padding-bordered;
@@ -95,10 +119,6 @@
       border: none;
       box-shadow: none;
       outline: 0px;
-
-      > .core-split-button-arrow-icon {
-        color: $buic-foreground-primary;
-      }
     }
   }
 

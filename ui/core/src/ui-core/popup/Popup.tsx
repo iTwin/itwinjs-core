@@ -60,6 +60,8 @@ export interface PopupProps extends CommonProps {
   focusTarget?: React.RefObject<HTMLElement> | string;
   /** Indicates whether the popup is pinned. */
   isPinned?: boolean;
+  /** Indicates whether to use animation for open/close (defaults to true) */
+  animate?: boolean;
 }
 
 /** @internal */
@@ -443,11 +445,13 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   public render() {
+    const animate = this.props.animate !== undefined ? this.props.animate : true;
     const className = classnames(
       "core-popup",
       this._getClassNameByPosition(this.state.position),
       this.props.showShadow && "core-popup-shadow",
       this.props.showArrow && "arrow",
+      !animate && "core-popup-animation-none",
       this.props.className,
     );
 
