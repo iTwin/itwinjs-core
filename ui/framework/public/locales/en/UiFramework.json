@@ -252,11 +252,13 @@
   "widget": {
     "tooltips": {
       "dockToolSettings": "Dock to top",
-      "sendHome": "Send to panel",
       "moreWidgets": "More widgets",
       "moreToolSettings": "More tool settings",
+      "pinPanel": "Pin widget panel",
+      "sendHome": "Send to panel",
       "resizeGrip": "Resize widget panel",
-      "toolSettingsHandle": "Undock tool settings"
+      "toolSettingsHandle": "Undock tool settings",
+      "unpinPanel": "Unpin widget panel"
     }
   },
   "statusBar": {

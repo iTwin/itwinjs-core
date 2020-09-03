@@ -11,9 +11,11 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
         "dockToolSettingsTitle": "widget.tooltips.dockToolSettings",
         "moreToolSettingsTitle": "widget.tooltips.moreToolSettings",
         "moreWidgetsTitle": "widget.tooltips.moreWidgets",
+        "pinPanelTitle": "widget.tooltips.pinPanel",
         "resizeGripTitle": "widget.tooltips.resizeGrip",
         "sendWidgetHomeTitle": "widget.tooltips.sendHome",
         "toolSettingsHandleTitle": "widget.tooltips.toolSettingsHandle",
+        "unpinPanelTitle": "widget.tooltips.unpinPanel",
       }
     }
     state={

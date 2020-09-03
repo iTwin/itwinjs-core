@@ -4,39 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
-.nz-widget-dock {
+.nz-widget-pinToggle {
   position: relative;
   padding: 0 0.5em;
   border: 0;
   background: none;
   cursor: pointer;
   outline: none;
-
-  > i {
-    width: 1.2em;
-    height: 1em;
-    border-width: 0.15em;
-    border-style: solid;
-    border-color: $buic-foreground-muted;
-    display: block;
-
-    &:after {
-      content: '';
-      background: $buic-foreground-muted;
-      height: 33%;
-      display: block;
-    }
-  }
+  color: $buic-foreground-muted;
 
   @media (hover: hover) {
     &:hover {
-      border-color: $buic-foreground-activehover;
-
-      > i {
-        &:after {
-          background: $buic-foreground-activehover;
-        }
-      }
+      color: $buic-foreground-activehover;
     }
   }
 }

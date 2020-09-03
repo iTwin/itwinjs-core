@@ -5,7 +5,7 @@
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, DraggedPanelSideContext, NineZoneDispatch, WidgetPanel,
 } from "../../ui-ninezone";
@@ -186,5 +186,95 @@ describe("WidgetPanel", () => {
       </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should transition when collapsed", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
+    const { container, rerender } = render(
+      <WidgetPanel
+        panel={nineZone.panels.left}
+      />,
+      {
+        wrapper: (props) => <NineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+      },
+    );
+
+    const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
+    Array.from(panel.classList.values()).should.not.contain("nz-transition");
+
+    nineZone = produce(nineZone, (draft) => {
+      draft.panels.left.collapsed = true;
+    })
+
+    rerender(<WidgetPanel
+      panel={nineZone.panels.left}
+    />);
+
+    Array.from(panel.classList.values()).should.contain("nz-transition");
+    panel.style.width.should.eq("0px");
+
+    fireEvent.transitionEnd(panel);
+    Array.from(panel.classList.values()).should.not.contain("nz-transition");
+  });
+
+  it("should transition to panel size when opened", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = produce(nineZone, (draft) => {
+      draft.panels.left.size = 200;
+      draft.panels.left.collapsed = true;
+    })
+    const { container, rerender } = render(
+      <WidgetPanel
+        panel={nineZone.panels.left}
+      />,
+      {
+        wrapper: (props) => <NineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+      },
+    );
+
+    const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
+
+    nineZone = produce(nineZone, (draft) => {
+      draft.panels.left.collapsed = false;
+    });
+
+    rerender(<WidgetPanel
+      panel={nineZone.panels.left}
+    />);
+
+    Array.from(panel.classList.values()).should.contain("nz-transition");
+    panel.style.width.should.eq("200px");
+  });
+
+  it("should measure panel bounds when resizing", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = produce(nineZone, (draft) => {
+      draft.panels.left.size = 200;
+      draft.panels.left.collapsed = true;
+    })
+    const { container } = render(
+      <WidgetPanel
+        panel={nineZone.panels.left}
+      />,
+      {
+        wrapper: (props) => <NineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+      },
+    );
+
+    const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0];
+    const spy = sinon.spy(panel, "getBoundingClientRect");
+
+    const grip = container.getElementsByClassName("nz-widgetPanels-grip")[0];
+    const handle = grip.getElementsByClassName("nz-handle")[0];
+    fireEvent.mouseDown(handle);
+    fireEvent.mouseMove(handle);
+
+    sinon.assert.called(spy);
   });
 });

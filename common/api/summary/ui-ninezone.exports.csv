@@ -199,7 +199,7 @@ beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
 internal;NineZone(props: NineZoneProps): JSX.Element
-internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction
+internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction
 internal;NineZoneContext: React.Context
 internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
 internal;NineZoneDispatchContext: React.Context
@@ -236,7 +236,8 @@ alpha;Panel
 internal;PanelInitializeAction
 internal;PanelPinnedContext: React.Context
 alpha;PanelProps 
-internal;PanelResizeAction
+internal;PanelSetCollapsedAction
+internal;PanelSetSizeAction
 internal;PanelSide = VerticalPanelSide | HorizontalPanelSide
 internal;PanelSideContext: React.Context
 internal;panelSides: [LeftPanelSide, RightPanelSide, TopPanelSide, BottomPanelSide]
@@ -254,6 +255,7 @@ internal;PanelToggleSpanAction
 internal;PanelWidget: React.NamedExoticComponent
 internal;PanelWidgetDragStartAction
 internal;PanelWidgetProps
+internal;PinToggle: React.NamedExoticComponent
 internal;PointerCaptor 
 internal;PointerCaptorArgs
 internal;PointerCaptorEvent = MouseEvent | TouchEvent
@@ -416,8 +418,10 @@ internal;useForceFill(): boolean
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
+internal;useIsMainPanelWidget(): boolean
 internal;useLabel(labelKey: keyof NineZoneLabels): string | undefined
 internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray
+internal;usePanelsAutoCollapse
 internal;usePanelTarget
 internal;UsePanelTargetArgs
 internal;usePointerCaptor: 
@@ -463,6 +467,11 @@ internal;WidgetOverflowProps
 internal;WidgetPanel: React.NamedExoticComponent
 internal;WidgetPanelComponent: React.NamedExoticComponent
 internal;WidgetPanelComponentProps
+internal;WidgetPanelContext: React.Context
+internal;WidgetPanelContextArgs
+internal;WidgetPanelExpander({ side }: WidgetPanelExpanderProps): JSX.Element
+internal;WidgetPanelExpanderProps
+internal;WidgetPanelExpanders(): JSX.Element
 internal;WidgetPanelGrip: React.NamedExoticComponent
 internal;WidgetPanelProps
 internal;WidgetPanels: React.NamedExoticComponent

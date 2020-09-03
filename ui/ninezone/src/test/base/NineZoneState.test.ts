@@ -77,6 +77,30 @@ describe("NineZoneStateReducer", () => {
     });
   });
 
+  describe("PANEL_SET_COLLAPSED", () => {
+    it("should collapse panel", () => {
+      const state = createNineZoneState();
+      const newState = NineZoneStateReducer(state, {
+        type: "PANEL_SET_COLLAPSED",
+        side: "left",
+        collapsed: true,
+      });
+      newState.panels.left.collapsed.should.true;
+    });
+  });
+
+  describe("PANEL_SET_SIZE", () => {
+    it("should set panel size", () => {
+      const state = createNineZoneState();
+      const newState = NineZoneStateReducer(state, {
+        type: "PANEL_SET_SIZE",
+        side: "left",
+        size: 400,
+      });
+      Number(400).should.eq(newState.panels.left.size);
+    });
+  });
+
   describe("PANEL_TOGGLE_SPAN", () => {
     it("should toggle span property of panel", () => {
       const state = createNineZoneState();
@@ -96,72 +120,6 @@ describe("NineZoneStateReducer", () => {
         side: "top",
       });
       newState.panels.top.pinned.should.not.eq(state.panels.top.pinned);
-    });
-  });
-
-  describe("PANEL_RESIZE", () => {
-    it("should not resize if panel size is not set", () => {
-      const state = createNineZoneState();
-      const newState = NineZoneStateReducer(state, {
-        type: "PANEL_RESIZE",
-        side: "left",
-        resizeBy: 50,
-      });
-      newState.should.eq(state);
-    });
-
-    it("should expand collapsed panel", () => {
-      let state = createNineZoneState();
-      state = produce(state, (stateDraft) => {
-        stateDraft.panels.left.size = 300;
-        stateDraft.panels.left.collapsed = true;
-      });
-      const newState = NineZoneStateReducer(state, {
-        type: "PANEL_RESIZE",
-        side: "left",
-        resizeBy: 150,
-      });
-      newState.panels.left.collapsed.should.false;
-    });
-
-    it("should not expand if collapseOffset is not reached", () => {
-      let state = createNineZoneState();
-      state = produce(state, (stateDraft) => {
-        stateDraft.panels.left.size = 300;
-        stateDraft.panels.left.collapsed = true;
-      });
-      const newState = NineZoneStateReducer(state, {
-        type: "PANEL_RESIZE",
-        side: "left",
-        resizeBy: 50,
-      });
-      newState.should.eq(state);
-    });
-
-    it("should collapse", () => {
-      let state = createNineZoneState();
-      state = produce(state, (stateDraft) => {
-        stateDraft.panels.left.size = 200;
-      });
-      const newState = NineZoneStateReducer(state, {
-        type: "PANEL_RESIZE",
-        side: "left",
-        resizeBy: -100,
-      });
-      newState.panels.left.collapsed.should.true;
-    });
-
-    it("should resize", () => {
-      let state = createNineZoneState();
-      state = produce(state, (stateDraft) => {
-        stateDraft.panels.left.size = 200;
-      });
-      const newState = NineZoneStateReducer(state, {
-        type: "PANEL_RESIZE",
-        side: "left",
-        resizeBy: 50,
-      });
-      newState.panels.left.size!.should.eq(250);
     });
   });
 

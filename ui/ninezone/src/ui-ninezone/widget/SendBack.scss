@@ -25,14 +25,6 @@
 
       display: block;
     }
-
-    &:hover {
-      border-color: $buic-foreground-activehover;
-
-      &:after {
-        background: $buic-foreground-activehover;
-      }
-    }
   }
 
   &.nz-left {
@@ -71,6 +63,18 @@
         width: 100%;
         position: absolute;
         bottom: 0;
+      }
+    }
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: $buic-foreground-activehover;
+
+      > i {
+        &:after {
+          background: $buic-foreground-activehover;
+        }
       }
     }
   }
