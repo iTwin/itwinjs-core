@@ -147,6 +147,14 @@ export class IModelExporter {
    * @see [[exportSchemas]]
    */
   public wantSystemSchemas: boolean = false;
+  /** A flag that determines whether this IModelExporter should visit Elements or not. The default is `true`.
+   * @note This flag is available as an optimization when the exporter doesn't need to visit elements, so can skip loading them.
+   */
+  public visitElements: boolean = true;
+  /** A flag that determines whether this IModelExporter should visit Relationships or not. The default is `true`.
+   * @note This flag is available as an optimization when the exporter doesn't need to visit relationships, so can skip loading them.
+   */
+  public visitRelationships: boolean = true;
   /** Optionally cached entity change information */
   private _sourceDbChanges?: ChangedInstanceIds;
   /** The handler called by this IModelExporter. */
@@ -252,15 +260,19 @@ export class IModelExporter {
     this.exportSubModels(IModel.repositoryModelId);
     this.exportRelationships(ElementRefersToElements.classFullName);
     // handle deletes
-    for (const elementId of this._sourceDbChanges.element.deleteIds) {
-      this.handler.callProtected.onDeleteElement(elementId);
+    if (this.visitElements) {
+      for (const elementId of this._sourceDbChanges.element.deleteIds) {
+        this.handler.callProtected.onDeleteElement(elementId);
+      }
     }
     // WIP: handle ElementAspects?
     for (const modelId of this._sourceDbChanges.model.deleteIds) {
       this.handler.callProtected.onDeleteModel(modelId);
     }
-    for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
-      this.handler.callProtected.onDeleteRelationship(relInstanceId);
+    if (this.visitRelationships) {
+      for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
+        this.handler.callProtected.onDeleteRelationship(relInstanceId);
+      }
     }
   }
 
@@ -419,6 +431,10 @@ export class IModelExporter {
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): void {
+    if (!this.visitElements) {
+      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportModelContents()`);
+      return;
+    }
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       if (!this._sourceDbChanges.model.insertIds.has(modelId) && !this._sourceDbChanges.model.updateIds.has(modelId)) {
         return; // this optimization assumes that the Model changes (LastMod) any time an Element in the Model changes
@@ -488,6 +504,10 @@ export class IModelExporter {
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public exportElement(elementId: Id64String): void {
+    if (!this.visitElements) {
+      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportElement(${elementId})`);
+      return;
+    }
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       if (this._sourceDbChanges.element.insertIds.has(elementId)) {
@@ -514,6 +534,10 @@ export class IModelExporter {
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public exportChildElements(elementId: Id64String): void {
+    if (!this.visitElements) {
+      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportChildElements(${elementId})`);
+      return;
+    }
     const childElementIds: Id64String[] = this.sourceDb.elements.queryChildren(elementId);
     if (childElementIds.length > 0) {
       Logger.logTrace(loggerCategory, `exportChildElements(${elementId})`);
@@ -525,6 +549,10 @@ export class IModelExporter {
 
   /** Export RepositoryLinks in the RepositoryModel. */
   public exportRepositoryLinks(): void {
+    if (!this.visitElements) {
+      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportRepositoryLinks()`);
+      return;
+    }
     const sql = `SELECT ECInstanceId FROM ${RepositoryLink.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("modelId", IModel.repositoryModelId);
@@ -583,6 +611,10 @@ export class IModelExporter {
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public exportRelationships(baseRelClassFullName: string): void {
+    if (!this.visitRelationships) {
+      Logger.logTrace(loggerCategory, `visitRelationships=false, skipping exportRelationships()`);
+      return;
+    }
     Logger.logTrace(loggerCategory, `exportRelationships(${baseRelClassFullName})`);
     const sql = `SELECT ECInstanceId FROM ${baseRelClassFullName}`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
@@ -596,6 +628,10 @@ export class IModelExporter {
 
   /** Export a relationship from the source iModel. */
   public exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
+    if (!this.visitRelationships) {
+      Logger.logTrace(loggerCategory, `visitRelationships=false, skipping exportRelationship(${relClassFullName}, ${relInstanceId})`);
+      return;
+    }
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       if (this._sourceDbChanges.relationship.insertIds.has(relInstanceId)) {
