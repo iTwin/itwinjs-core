@@ -37,11 +37,13 @@ export interface NineZoneProps {
 /** @internal */
 export interface NineZoneLabels {
   dockToolSettingsTitle?: string;
-  sendWidgetHomeTitle?: string;
   moreWidgetsTitle?: string;
   moreToolSettingsTitle?: string;
+  pinPanelTitle?: string;
   resizeGripTitle?: string;
+  sendWidgetHomeTitle?: string;
   toolSettingsHandleTitle?: string;
+  unpinPanelTitle?: string;
 }
 
 /** @internal future */

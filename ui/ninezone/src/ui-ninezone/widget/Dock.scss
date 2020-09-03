@@ -26,12 +26,16 @@
       height: 33%;
       display: block;
     }
+  }
 
+  @media (hover: hover) {
     &:hover {
       border-color: $buic-foreground-activehover;
 
-      &:after {
-        background: $buic-foreground-activehover;
+      > i {
+        &:after {
+          background: $buic-foreground-activehover;
+        }
       }
     }
   }

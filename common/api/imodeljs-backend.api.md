@@ -2612,6 +2612,8 @@ export class IModelExporter {
     protected get handler(): IModelExportHandler;
     registerHandler(handler: IModelExportHandler): void;
     readonly sourceDb: IModelDb;
+    visitElements: boolean;
+    visitRelationships: boolean;
     wantGeometry: boolean;
     wantSystemSchemas: boolean;
     wantTemplateModels: boolean;

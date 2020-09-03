@@ -16,22 +16,22 @@ describe("SchemaDesignPerf Schema Import", () => {
 
   function createSchema(count: number): string {
     let schemaPath = "";
-    schemaPath = path.join(outDir, "TestEnumSchema_" + count.toString() + ".01.00.00.ecschema.xml");
+    schemaPath = path.join(outDir, `TestEnumSchema_${count}.01.00.00.ecschema.xml`);
     if (!IModelJsFs.existsSync(schemaPath)) {
-      let sxml = `<?xml version="1.0" encoding="UTF-8"?>
+      let schemaXml = `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestEnumSchema" alias="tes" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
             <ECEnumeration typeName="Domain" backingTypeName="string" isStrict="true">`;
       for (let i = 0; i < count; ++i) {
-        sxml = sxml + `<ECEnumerator name="Dom` + i.toString() + `" value=".dom` + i.toString() + `" />`;
+        schemaXml = `${schemaXml}<ECEnumerator name="Dom${i}" value=".dom${i}" />`;
       }
-      sxml = sxml + `</ECEnumeration>
+      schemaXml = `${schemaXml}</ECEnumeration>
           <ECEntityClass typeName="TestElement" >
             <BaseClass>bis:PhysicalElement</BaseClass>
             <ECProperty propertyName="Domain" typeName="Domain" />
           </ECEntityClass>`;
-      sxml = sxml + `</ECSchema>`;
-      IModelJsFs.writeFileSync(schemaPath, sxml);
+      schemaXml = `${schemaXml}</ECSchema>`;
+      IModelJsFs.writeFileSync(schemaPath, schemaXml);
     }
     return schemaPath;
   }
@@ -51,7 +51,7 @@ describe("SchemaDesignPerf Schema Import", () => {
     for (const eCount of enumCounts) {
       const st = createSchema(eCount);
       assert(IModelJsFs.existsSync(st));
-      const seedName = path.join(outDir, "import_" + eCount + ".bim");
+      const seedName = path.join(outDir, `import_${eCount}.bim`);
       if (IModelJsFs.existsSync(seedName)) {
         IModelJsFs.removeSync(seedName);
       }

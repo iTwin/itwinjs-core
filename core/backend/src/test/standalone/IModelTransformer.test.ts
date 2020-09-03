@@ -9,9 +9,9 @@ import { Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geomet
 import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, PhysicalElementProps, Placement3d } from "@bentley/imodeljs-common";
 import {
   BackendLoggerCategory, BackendRequestContext, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel,
-  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, SnapshotDb, SpatialCategory, Subject,
-  TemplateModelCloner, TemplateRecipe3d,
+  ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs, IModelTransformer,
+  InformationRecordModel, InformationRecordPartition, Model, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, SnapshotDb,
+  SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
@@ -515,8 +515,9 @@ describe("IModelTransformer", () => {
     const cloneTestSchema100: string = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
     const cloneTestSchema101: string = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.01.ecschema.xml");
 
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneWithSchemaChanges-Source.bim");
-    const sourceDb = SnapshotDb.createFrom(SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim")), sourceDbFile);
+    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbFile);
     await sourceDb.importSchemas(new BackendRequestContext(), [cloneTestSchema100]);
     const sourceElementProps = {
       classFullName: "CloneTest:PhysicalType",
@@ -544,8 +545,46 @@ describe("IModelTransformer", () => {
     assert.equal(targetElement.asAny.string1, "a");
     assert.equal(targetElement.asAny.string2, "b");
 
+    seedDb.close();
     sourceDb.close();
     targetDb.close();
+  });
+
+  it("Should not visit elements or relationships", async () => {
+    // class that asserts if it encounters an element or relationship
+    class TestExporter extends IModelExportHandler {
+      public iModelExporter: IModelExporter;
+      public modelCount: number = 0;
+      public constructor(iModelDb: IModelDb) {
+        super();
+        this.iModelExporter = new IModelExporter(iModelDb);
+        this.iModelExporter.registerHandler(this);
+      }
+      protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
+        ++this.modelCount;
+      }
+      protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
+        assert.fail("Should not visit element when visitElements=false");
+      }
+      protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
+        assert.fail("Should not visit relationship when visitRelationship=false");
+      }
+    }
+    const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const sourceDb: SnapshotDb = SnapshotDb.openFile(sourceFileName);
+    const exporter = new TestExporter(sourceDb);
+    exporter.iModelExporter.visitElements = false;
+    exporter.iModelExporter.visitRelationships = false;
+    // call various methods to make sure the onExport* callbacks don't assert
+    exporter.iModelExporter.exportAll();
+    exporter.iModelExporter.exportElement(IModel.rootSubjectId);
+    exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
+    exporter.iModelExporter.exportRepositoryLinks();
+    exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
+    exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);
+    // make sure the exporter actually visited something
+    assert.isAtLeast(exporter.modelCount, 4);
+    sourceDb.close();
   });
 
   // WIP: Included as skipped until test file management strategy can be refined.

@@ -151,7 +151,7 @@ export class AutoPush {
     const reqProps = ["pushIntervalSecondsMin", "pushIntervalSecondsMax", "autoSchedule"];
     for (const reqProp of reqProps) {
       if (!params.hasOwnProperty(reqProp)) {
-        throw new IModelError(IModelStatus.BadArg, "Invalid AutoPushParams object - missing required property: " + reqProp, Logger.logError, loggerCategory);
+        throw new IModelError(IModelStatus.BadArg, `Invalid AutoPushParams object - missing required property: ${reqProp}`, Logger.logError, loggerCategory);
       }
     }
   }
@@ -205,7 +205,7 @@ export class AutoPush {
     const intervalMillis = intervalSeconds ? (intervalSeconds * 1000) : this._pushIntervalMillisMin;
     this._pendingTimeout = setTimeout(() => this.doAutoPush(), intervalMillis);
     this._state = AutoPushState.Scheduled;
-    Logger.logTrace(loggerCategory, "AutoPush - next push in " + (intervalMillis / 1000) + " seconds...");
+    Logger.logTrace(loggerCategory, `AutoPush - next push in ${(intervalMillis / 1000)} seconds...`);
   }
 
   public async reserveCodes(): Promise<void> {

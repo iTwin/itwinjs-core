@@ -5,10 +5,10 @@ exports[`WidgetPanels should render 1`] = `
   class="nz-widgetPanels-panels"
 >
   <div
-    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-appContent"
   />
   <div
-    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-centerContent"
   />
   <div
     class="nz-widgetPanels-panelTarget nz-hidden nz-left"
@@ -30,80 +30,89 @@ exports[`WidgetPanels should render widget content 1`] = `
   class="nz-widgetPanels-panels"
 >
   <div
-    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-appContent"
   />
   <div
-    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-centerContent"
   />
   <div
-    class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+    class="nz-widgetPanels-panel nz-left nz-pinned nz-span-top nz-span-bottom"
   >
-    <div>
+    <div
+      class="nz-content"
+    >
       <div
-        class="nz-content"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-fill"
       >
         <div
-          class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
-        />
-        <div
-          class="nz-widget-widget nz-widget-panelWidget nz-fill"
+          class="nz-widget-tabBar"
         >
           <div
-            class="nz-widget-tabBar"
+            class="nz-handle"
+          />
+          <div
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-handle"
+              class="nz-widget-tabTarget nz-hidden"
             />
             <div
-              class="nz-widget-tabs"
-              role="tablist"
+              class="nz-widget-tab nz-active nz-first nz-last"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-widget-tabTarget nz-hidden"
-              />
-              <div
-                class="nz-widget-tab nz-active nz-first nz-last"
-                role="tab"
-                title=""
-              >
-                <span />
-              </div>
-              <div
-                class="nz-widget-tabTarget nz-hidden"
-              />
-              <div
-                class="nz-widget-overflow nz-hidden"
+                class="nz-button"
+                role="button"
+                tabindex="-1"
               >
                 <div
-                  class="nz-button"
-                  role="button"
-                  tabindex="-1"
-                >
-                  <div
-                    class="nz-icon"
-                  />
-                </div>
+                  class="nz-icon"
+                />
               </div>
             </div>
           </div>
-          <div
-            class="nz-widget-content-container"
+          <button
+            class="nz-widget-pinToggle"
           >
-            <div
-              class="nz-widget-contentRenderer"
-            >
-              <div>
-                Hello World!
-              </div>
+            <i
+              class="icon icon-chevron-left"
+            />
+          </button>
+        </div>
+        <div
+          class="nz-widget-content-container"
+        >
+          <div
+            class="nz-widget-contentRenderer"
+          >
+            <div>
+              Hello World!
             </div>
           </div>
         </div>
-        <div
-          class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
-        />
       </div>
       <div
-        class="nz-widgetPanels-grip nz-left"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
+    </div>
+    <div
+      class="nz-grip-container"
+    >
+      <div
+        class="nz-widgetPanels-grip nz-left nz-grip"
       >
         <div
           class="nz-dot"

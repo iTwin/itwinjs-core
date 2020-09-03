@@ -1190,7 +1190,7 @@ export interface NestedToolSettingsProps extends CommonProps {
 export function NineZone(props: NineZoneProps): JSX.Element;
 
 // @internal
-export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
+export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React.Context<NineZoneState>;
@@ -1210,11 +1210,15 @@ export interface NineZoneLabels {
     // (undocumented)
     moreWidgetsTitle?: string;
     // (undocumented)
+    pinPanelTitle?: string;
+    // (undocumented)
     resizeGripTitle?: string;
     // (undocumented)
     sendWidgetHomeTitle?: string;
     // (undocumented)
     toolSettingsHandleTitle?: string;
+    // (undocumented)
+    unpinPanelTitle?: string;
 }
 
 // @internal (undocumented)
@@ -1495,13 +1499,23 @@ export interface PanelProps extends CommonProps {
 }
 
 // @internal
-export interface PanelResizeAction {
+export interface PanelSetCollapsedAction {
     // (undocumented)
-    readonly resizeBy: number;
+    readonly collapsed: boolean;
     // (undocumented)
     readonly side: PanelSide;
     // (undocumented)
-    readonly type: "PANEL_RESIZE";
+    readonly type: "PANEL_SET_COLLAPSED";
+}
+
+// @internal
+export interface PanelSetSizeAction {
+    // (undocumented)
+    readonly side: PanelSide;
+    // (undocumented)
+    readonly size: number;
+    // (undocumented)
+    readonly type: "PANEL_SET_SIZE";
 }
 
 // @internal
@@ -1624,6 +1638,9 @@ export interface PanelWidgetProps {
     // (undocumented)
     widgetId: WidgetState["id"];
 }
+
+// @internal (undocumented)
+export const PinToggle: React.NamedExoticComponent<object>;
 
 // @internal
 export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
@@ -2860,10 +2877,16 @@ export function useIsDraggedItem(item: DragItem): boolean;
 export function useIsDraggedType(type: DragItem["type"]): boolean;
 
 // @internal (undocumented)
+export function useIsMainPanelWidget(): boolean;
+
+// @internal (undocumented)
 export function useLabel(labelKey: keyof NineZoneLabels): string | undefined;
 
 // @internal
 export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
+
+// @internal (undocumented)
+export function usePanelsAutoCollapse<T extends Element>(): React.Ref<T>;
 
 // @internal (undocumented)
 export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [React.Ref<T>, boolean];
@@ -2881,7 +2904,7 @@ export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((args: P
 export function usePreferredPanelWidgetSize(widgetId: WidgetState["id"]): "fit-content" | undefined;
 
 // @internal (undocumented)
-export const useResizeGrip: <T extends HTMLElement>(side: PanelSide, onResize?: ((resizeBy: number) => void) | undefined, onDoubleClick?: (() => void) | undefined) => [(instance: T | null) => void, boolean, boolean];
+export const useResizeGrip: <T extends HTMLElement>() => [(instance: T | null) => void, boolean, boolean];
 
 // @beta
 export class UserProfile extends React.PureComponent<UserProfileProps> {
@@ -3114,8 +3137,29 @@ export interface WidgetPanelComponentProps {
     spanTop?: boolean;
 }
 
+// @internal (undocumented)
+export const WidgetPanelContext: React.Context<WidgetPanelContextArgs | undefined>;
+
+// @internal (undocumented)
+export interface WidgetPanelContextArgs {
+    // (undocumented)
+    getBounds(): RectangleProps;
+}
+
 // @internal
-export const WidgetPanelGrip: React.NamedExoticComponent<object>;
+export function WidgetPanelExpander({ side }: WidgetPanelExpanderProps): JSX.Element;
+
+// @internal (undocumented)
+export interface WidgetPanelExpanderProps {
+    // (undocumented)
+    side: PanelSide;
+}
+
+// @internal (undocumented)
+export function WidgetPanelExpanders(): JSX.Element;
+
+// @internal
+export const WidgetPanelGrip: React.NamedExoticComponent<CommonProps>;
 
 // @internal
 export interface WidgetPanelProps {
@@ -3130,7 +3174,7 @@ export interface WidgetPanelProps {
 // @internal
 export const WidgetPanels: React.NamedExoticComponent<WidgetPanelsProps>;
 
-// @internal (undocumented)
+// @internal
 export const WidgetPanelsContent: React.MemoExoticComponent<React.ForwardRefExoticComponent<WidgetPanelsContentProps & React.RefAttributes<HTMLDivElement>>>;
 
 // @internal

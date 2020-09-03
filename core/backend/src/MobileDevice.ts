@@ -82,7 +82,7 @@ export class MobileDevice {
     if (!this.impl.reconnect) {
       throw new Error("Native backend did not registered reconnect() functions");
     }
-    this.impl.reconnect!(connection);
+    this.impl.reconnect(connection);
   }
 
   public emit(eventName: DeviceEvents, ...args: any[]) {

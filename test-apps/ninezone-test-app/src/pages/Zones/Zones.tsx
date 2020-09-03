@@ -34,6 +34,7 @@ import {
   createHorizontalPanelState,
   WidgetTab,
   TabStateContext,
+  createVerticalPanelState,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -333,7 +334,10 @@ export default function Zones() {
     let initialState = createNineZoneState({
       panels: createPanelsState({
         top: createHorizontalPanelState("top", {
-          resizable: false,
+          // resizable: false,
+        }),
+        left: createVerticalPanelState("left", {
+          pinned: false,
         }),
       }),
     });
@@ -360,7 +364,12 @@ export default function Zones() {
   });
   const labels = React.useMemo<NineZoneLabels>(() => ({
     dockToolSettingsTitle: "Dock to top",
+    moreToolSettingsTitle: "More tool settings",
+    moreWidgetsTitle: "More widgets",
+    pinPanelTitle: "Pin panel",
     sendWidgetHomeTitle: "Send to panel",
+    resizeGripTitle: "Resize panel",
+    unpinPanelTitle: "Unpin panel",
   }), []);
   const widget = React.useMemo(() => <WidgetContent />, []);
   const toolSettings = React.useMemo(() => <div>{settingsStr}</div>, [settingsStr]);

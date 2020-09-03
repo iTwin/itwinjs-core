@@ -41,6 +41,13 @@ exports[`PanelWidget should not transition 1`] = `
         </div>
       </div>
     </div>
+    <button
+      class="nz-widget-pinToggle"
+    >
+      <i
+        class="icon icon-chevron-left"
+      />
+    </button>
   </div>
   <div
     class="nz-widget-content-container nz-minimized"
@@ -89,6 +96,13 @@ exports[`PanelWidget should render 1`] = `
         </div>
       </div>
     </div>
+    <button
+      class="nz-widget-pinToggle"
+    >
+      <i
+        class="icon icon-chevron-left"
+      />
+    </button>
   </div>
   <div
     class="nz-widget-content-container"
@@ -186,6 +200,13 @@ exports[`PanelWidget should render minimized 1`] = `
         </div>
       </div>
     </div>
+    <button
+      class="nz-widget-pinToggle"
+    >
+      <i
+        class="icon icon-chevron-left"
+      />
+    </button>
   </div>
   <div
     class="nz-widget-content-container nz-minimized"
@@ -235,6 +256,13 @@ exports[`PanelWidget should render with fit-content 1`] = `
         </div>
       </div>
     </div>
+    <button
+      class="nz-widget-pinToggle"
+    >
+      <i
+        class="icon icon-chevron-left"
+      />
+    </button>
   </div>
   <div
     class="nz-widget-content-container"
@@ -284,6 +312,13 @@ exports[`PanelWidget should transition 1`] = `
         </div>
       </div>
     </div>
+    <button
+      class="nz-widget-pinToggle"
+    >
+      <i
+        class="icon icon-chevron-left"
+      />
+    </button>
   </div>
   <div
     class="nz-widget-content-container nz-minimized"
@@ -333,6 +368,13 @@ exports[`PanelWidget should transition 2`] = `
         </div>
       </div>
     </div>
+    <button
+      class="nz-widget-pinToggle"
+    >
+      <i
+        class="icon icon-chevron-left"
+      />
+    </button>
   </div>
   <div
     class="nz-widget-content-container nz-minimized"
@@ -490,6 +532,13 @@ exports[`PanelWidget should transition when switching tab 1`] = `
         </div>
       </div>
     </div>
+    <button
+      class="nz-widget-pinToggle"
+    >
+      <i
+        class="icon icon-chevron-left"
+      />
+    </button>
   </div>
   <div
     class="nz-widget-content-container"

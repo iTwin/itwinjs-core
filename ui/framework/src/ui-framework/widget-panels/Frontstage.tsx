@@ -175,11 +175,13 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
 export function useLabels() {
   return React.useMemo<NineZoneLabels>(() => ({
     dockToolSettingsTitle: UiFramework.translate("widget.tooltips.dockToolSettings"),
-    sendWidgetHomeTitle: UiFramework.translate("widget.tooltips.sendHome"),
     moreWidgetsTitle: UiFramework.translate("widget.tooltips.moreWidgets"),
     moreToolSettingsTitle: UiFramework.translate("widget.tooltips.moreToolSettings"),
+    pinPanelTitle: UiFramework.translate("widget.tooltips.pinPanel"),
     resizeGripTitle: UiFramework.translate("widget.tooltips.resizeGrip"),
+    sendWidgetHomeTitle: UiFramework.translate("widget.tooltips.sendHome"),
     toolSettingsHandleTitle: UiFramework.translate("widget.tooltips.toolSettingsHandle"),
+    unpinPanelTitle: UiFramework.translate("widget.tooltips.unpinPanel"),
   }), []);
 }
 

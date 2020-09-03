@@ -7,11 +7,10 @@ import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
-  PanelStateContext, PanelWidget, Widget, WidgetIdContext, WidgetStateContext,
+  PanelStateContext, PanelWidget, PanelWidgetDragStartAction, Widget, WidgetIdContext, WidgetStateContext,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";
-import { PanelWidgetDragStartAction } from "../../ui-ninezone/base/NineZoneState";
 
 describe("PanelWidget", () => {
   const sandbox = sinon.createSandbox();

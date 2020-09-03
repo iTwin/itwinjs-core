@@ -237,7 +237,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     await this.setTokenResponse(requestContext, tokenResponse);
 
     assert(!!this._accessToken);
-    return this._accessToken!;
+    return this._accessToken;
   }
 
   /** Returns a promise that resolves to the AccessToken of the currently authorized user.
@@ -260,7 +260,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     }
 
     assert(this.isValidToken(this._tokenResponse) && !!this._accessToken);
-    return this._accessToken!;
+    return this._accessToken;
   }
 
   /**

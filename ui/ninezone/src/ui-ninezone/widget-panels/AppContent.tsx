@@ -7,9 +7,11 @@
  */
 
 import * as React from "react";
-import { PanelsStateContext } from "../base/NineZone";
+import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
 import { WidgetPanelsContent } from "./Content";
 import { ContentNodeContext } from "./Panels";
+import { panelSides } from "./Panel";
+import { useRefEffect } from "@bentley/ui-core";
 
 /** Main app content (i.e. viewport) that will change bounds based on panel pinned settings.
  * @internal
@@ -17,13 +19,44 @@ import { ContentNodeContext } from "./Panels";
 export const AppContent = React.memo(function AppContent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panels = React.useContext(PanelsStateContext);
   const content = React.useContext(ContentNodeContext);
+  const ref = usePanelsAutoCollapse<HTMLDivElement>();
   return (
     <WidgetPanelsContent
-      children={content} // eslint-disable-line react/no-children-prop
+      className="nz-widgetPanels-appContent"
+      ref={ref}
       pinnedLeft={panels.left.pinned}
       pinnedRight={panels.right.pinned}
       pinnedTop={panels.top.pinned}
       pinnedBottom={panels.bottom.pinned}
-    />
+    >
+      {content}
+    </WidgetPanelsContent>
   );
 });
+
+/** @internal */
+export function usePanelsAutoCollapse<T extends Element>(): React.Ref<T> {
+  const panels = React.useContext(PanelsStateContext);
+  const dispatch = React.useContext(NineZoneDispatchContext);
+  const setRef = useRefEffect<T>((instance) => {
+    if (!instance)
+      return;
+    const listener = () => {
+      for (const side of panelSides) {
+        const panel = panels[side];
+        if (panel.collapsed || panel.pinned)
+          continue;
+        dispatch({
+          type: "PANEL_SET_COLLAPSED",
+          collapsed: true,
+          side: panel.side,
+        });
+      }
+    };
+    instance.addEventListener("mousedown", listener, true);
+    return () => {
+      instance.removeEventListener("mousedown", listener, true);
+    };
+  }, [panels]);
+  return setRef;
+}

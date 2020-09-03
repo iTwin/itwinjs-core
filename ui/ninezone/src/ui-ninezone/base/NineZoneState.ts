@@ -180,6 +180,20 @@ export interface PanelToggleCollapsedAction {
 }
 
 /** @internal future */
+export interface PanelSetCollapsedAction {
+  readonly type: "PANEL_SET_COLLAPSED";
+  readonly collapsed: boolean;
+  readonly side: PanelSide;
+}
+
+/** @internal future */
+export interface PanelSetSizeAction {
+  readonly type: "PANEL_SET_SIZE";
+  readonly side: PanelSide;
+  readonly size: number;
+}
+
+/** @internal future */
 export interface PanelToggleSpanAction {
   readonly type: "PANEL_TOGGLE_SPAN";
   readonly side: HorizontalPanelSide;
@@ -189,13 +203,6 @@ export interface PanelToggleSpanAction {
 export interface PanelTogglePinnedAction {
   readonly type: "PANEL_TOGGLE_PINNED";
   readonly side: PanelSide;
-}
-
-/** @internal future */
-export interface PanelResizeAction {
-  readonly type: "PANEL_RESIZE";
-  readonly side: PanelSide;
-  readonly resizeBy: number;
 }
 
 /** @internal future */
@@ -302,9 +309,10 @@ export interface ToolSettingsDockAction {
 export type NineZoneActionTypes =
   ResizeAction |
   PanelToggleCollapsedAction |
+  PanelSetCollapsedAction |
+  PanelSetSizeAction |
   PanelToggleSpanAction |
   PanelTogglePinnedAction |
-  PanelResizeAction |
   PanelInitializeAction |
   FloatingWidgetResizeAction |
   FloatingWidgetBringToFrontAction |
@@ -342,7 +350,18 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     }
     case "PANEL_TOGGLE_COLLAPSED": {
       const panel = state.panels[action.side];
-      state.panels[action.side].collapsed = !panel.collapsed;
+      panel.collapsed = !panel.collapsed;
+      return;
+    }
+    case "PANEL_SET_COLLAPSED": {
+      const panel = state.panels[action.side];
+      panel.collapsed = action.collapsed;
+      return;
+    }
+    case "PANEL_SET_SIZE": {
+      const panel = state.panels[action.side];
+      const newSize = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
+      state.panels[action.side].size = newSize;
       return;
     }
     case "PANEL_TOGGLE_SPAN": {
@@ -353,31 +372,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "PANEL_TOGGLE_PINNED": {
       const panel = state.panels[action.side];
       state.panels[action.side].pinned = !panel.pinned;
-      return;
-    }
-    case "PANEL_RESIZE": {
-      const panel = state.panels[action.side];
-      if (panel.size === undefined)
-        return;
-
-      const requestedSize = panel.size + action.resizeBy;
-      if (panel.collapsed) {
-        if (action.resizeBy >= panel.collapseOffset) {
-          state.panels[action.side].collapsed = false;
-          return;
-        }
-        return;
-      }
-
-      const collapseThreshold = Math.max(panel.minSize - panel.collapseOffset, 0);
-      if (requestedSize <= collapseThreshold) {
-        state.panels[action.side].collapsed = true;
-        state.panels[action.side].size = panel.minSize;
-        return;
-      }
-
-      const size = Math.min(Math.max(requestedSize, panel.minSize), panel.maxSize);
-      state.panels[action.side].size = size;
       return;
     }
     case "PANEL_INITIALIZE": {

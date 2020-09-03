@@ -114,7 +114,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
       downloadProgress = (progress: ProgressInfo) => {
         EventSinkManager.global.emit(
           Events.NativeApp.namespace,
-          Events.NativeApp.onBriefcaseDownloadProgress + "-" + requestProps.iModelId,
+          `${Events.NativeApp.onBriefcaseDownloadProgress}-${requestProps.iModelId}`,
           { progress }, { strategy: EmitStrategy.PurgeOlderEvents });
       };
     }
