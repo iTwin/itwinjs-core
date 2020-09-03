@@ -131,7 +131,7 @@ class WireFormat {
           chunk = Math.min(chunkThreshold, remaining);
         }
       } else {
-        marker.index = marshalingTarget.data.push(value as Uint8Array) - 1;
+        marker.index = marshalingTarget.data.push(value) - 1;
       }
 
       return marker;
