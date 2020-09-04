@@ -344,6 +344,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     badgeType?: BadgeType;
     disabled?: boolean;
+    hideIconContainer?: boolean;
     icon?: IconSpec;
     iconRight?: IconSpec;
     // (undocumented)
