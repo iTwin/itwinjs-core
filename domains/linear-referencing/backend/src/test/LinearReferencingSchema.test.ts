@@ -112,10 +112,10 @@ describe("LinearReferencing Domain", () => {
     };
     const physicalPartitionId: Id64String = iModelDb.elements.insertElement(physicalPartitionProps);
     assert.isTrue(Id64.isValidId64(physicalPartitionId));
-    const physicalModel: PhysicalModel = iModelDb.models.createModel({
+    const physicalModel = iModelDb.models.createModel<PhysicalModel>({
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: physicalPartitionId },
-    }) as PhysicalModel;
+    });
     const physicalModelId: Id64String = iModelDb.models.insertModel(physicalModel);
     assert.isTrue(Id64.isValidId64(physicalModelId));
 
