@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/ecschema-locaters"
+    }
+  ],
+  "packageName": "@bentley/ecschema-locaters",
+  "email": "Bill.Goehrig@bentley.com"
+}
