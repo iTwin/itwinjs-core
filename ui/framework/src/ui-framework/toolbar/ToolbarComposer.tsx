@@ -32,7 +32,7 @@ function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfIn
         return;
 
       // istanbul ignore else
-      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
         // process each item that has interest
         itemsManager.refreshAffectedItems(args.eventIds);
       }
