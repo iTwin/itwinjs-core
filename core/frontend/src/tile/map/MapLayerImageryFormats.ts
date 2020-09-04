@@ -449,12 +449,12 @@ class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
 
   // construct the Url from the desired Tile
   public constructUrl(y: number, x: number, zoom: number): string {
-    const subscriptionId = "nlg51DaVsSAEX5lDF-ti5D91_DhZUwFaPWSbSlXIRms";
+    const subscriptionId = "TBD";   // To be supplied when Azure maps is supported.
     return `${this._settings.url}&subscription-key=${subscriptionId}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
   }
 
   public getLogo(_vp: ScreenViewport) {
-    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.MapBoxCopyright") });
+    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.AzureMapsCopyright") });
   }
 }
 
@@ -557,6 +557,7 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "AzureMaps";
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
@@ -582,4 +583,4 @@ class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
 }
 
 /** @internal */
-export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, AzureMapsMapLayerFormat, BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
+export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];

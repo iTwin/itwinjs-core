@@ -109,9 +109,14 @@ export class MapLayerSources {
     addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
     addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
     addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
-    addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+
+    // For now just omit the search for Mapbox sources.
+    const addMapBoxSources = false;
+    if (addMapBoxSources) {
+      addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
+      addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
+      addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    }
 
     const requestContext = new FrontendRequestContext();
     const sourcesJson = await getJson(requestContext, "assets/MapLayerSources.json");
@@ -122,7 +127,8 @@ export class MapLayerSources {
         addSource(source);
     }
 
-    const queryForUSGSSources = queryForPublicSources, queryForDiscoMapSources = queryForPublicSources;
+    // For now just omit the search for USGS or Disco sources.
+    const queryForUSGSSources = false /* queryForPublicSources */, queryForDiscoMapSources = false /* queryForPublicSources */;
 
     if (queryForUSGSSources) {
       (await ArcGisUtilities.getServiceDirectorySources("https://basemap.nationalmap.gov/arcgis/rest/services")).forEach((source) => addSource(source));

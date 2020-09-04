@@ -1,54 +1,5 @@
 [
   {
-    "url": "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.base.darkgrey",
-    "name": "AzureMaps-Grey",
-    "formatId": "AzureMaps",
-    "maxZoom": 18,
-    "transparentBackground": true
-  },
-  {
-    "url": "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.imagery",
-    "name": "AzureMaps-Imagery",
-    "formatId": "AzureMaps",
-    "maxZoom": 19,
-    "transparentBackground": true
-  },
-  {
-    "url": "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.weather.infrared.main",
-    "name": "AzureMaps-Infrared",
-    "formatId": "AzureMaps",
-    "maxZoom": 15,
-    "transparentBackground": true
-  },
-  {
-    "url": "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.weather.radar.main",
-    "name": "AzureMaps-Radar",
-    "formatId": "AzureMaps",
-    "maxZoom": 15,
-    "transparentBackground": true
-  },
-  {
-    "url": "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.base.road",
-    "name": "AzureMaps-Road",
-    "formatId": "AzureMaps",
-    "maxZoom": 18,
-    "transparentBackground": true
-  },
-  {
-    "url": "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.base.labels.road",
-    "name": "AzureMaps-RoadLabels",
-    "formatId": "AzureMaps",
-    "maxZoom": 18,
-    "transparentBackground": true
-  },
-  {
-    "url": "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.terra.main",
-    "name": "AzureMaps-Terra",
-    "formatId": "AzureMaps",
-    "maxZoom": 6,
-    "transparentBackground": true
-  },
-  {
     "url": "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
     "name": "Bing Maps: Aerial Imagery",
     "formatId": "BingMaps",
