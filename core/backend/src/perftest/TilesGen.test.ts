@@ -11,12 +11,13 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 
 import { BackendTileGenerator, TileGenParams, TileStats } from "./TilesGenUtils";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
-import { BriefcaseDb } from "../IModelDb";
+import { StandaloneDb } from "../IModelDb";
+import { IModelJsFs } from "../IModelJsFs";
 
 interface TileResult {
   nModels: number;
@@ -38,6 +39,7 @@ interface ConfigData {
   iModelName: string;
   changesetId: string;
   genParams: TileGenParams;
+  localPath: string;
 }
 
 interface OSStats {
@@ -122,10 +124,15 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
 
   console.log(`Started generating tiles for iModel ${config.iModelName}`); // eslint-disable-line no-console
 
-  const iModelId = await HubUtility.queryIModelIdByName(requestContext, config.contextId, config.iModelName);
-  const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
+  let iModelDb;
+  if (config.localPath) {
+    iModelDb = StandaloneDb.openFile(config.localPath, OpenMode.Readonly);
+  } else {
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, config.contextId, config.iModelName);
+    const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
 
-  const iModelDb: BriefcaseDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, config.contextId, iModelId, SyncMode.FixedVersion, version);
+    iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, config.contextId, iModelId, SyncMode.FixedVersion, version);
+  }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
 
   const generator = new BackendTileGenerator(iModelDb, config.genParams);
@@ -162,7 +169,7 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
   const stats = await generator.generateTilesForAllModels();
   clearInterval(interval);
 
-  await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelDb);
+  iModelDb.close();
   console.log(`Finished generating tiles for iModel ${config.iModelName}`); // eslint-disable-line no-console
 
   return {
@@ -189,12 +196,6 @@ describe("TilesGenerationPerformance", () => {
   let csvResultPath: string;
 
   before(async () => {
-    // console.log("here");
-    // console.log(Config.App.getString("imjs_tile_perf_config"));
-    // config =
-    //   console.log(config);
-    // imodels.push();
-
     assert.isDefined(config.regionId, "No Region defined");
     assert.isDefined(config.contextId, "No ContextId defined");
     imodels.forEach((element) => element.contextId = config.contextId);
@@ -205,7 +206,15 @@ describe("TilesGenerationPerformance", () => {
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");
 
     Config.App.merge({ imjs_buddi_resolve_url_using_region: config.regionId }); // eslint-disable-line @typescript-eslint/naming-convention
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.super);
+    if (IModelJsFs.existsSync(config.iModelLocation)) {
+      imodels.forEach((element) => element.localPath = path.join(config.iModelLocation, `${element.iModelName}.bim`));
+      // delete the .tile file
+      const tileFiles = IModelJsFs.readdirSync(config.iModelLocation).filter((fileName: string) => fileName.endsWith(".Tiles"));
+      for (const tileFile of tileFiles)
+        IModelJsFs.removeSync(path.join(config.iModelLocation, tileFile));
+    } else {
+      requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.super);
+    }
   });
 
   imodels.forEach(async (configData: ConfigData) =>
