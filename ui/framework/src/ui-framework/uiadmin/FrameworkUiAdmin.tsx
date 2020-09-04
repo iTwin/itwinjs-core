@@ -7,9 +7,10 @@
  */
 
 import { XAndY } from "@bentley/geometry-core";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  AbstractMenuItemProps, AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc, Primitives,
-  PropertyDescription, PropertyRecord, RelativePosition, UiAdmin, UiDataProvider,
+  AbstractMenuItemProps, AbstractToolbarProps, IMatch, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
+  Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin, UiDataProvider,
 } from "@bentley/ui-abstract";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
@@ -19,10 +20,38 @@ import { CursorMenuData } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
+/** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
+ * @beta
+ */
+export enum KeyinFieldLocalization {
+  /** Include only non-localized key-in strings. */
+  NonLocalized,
+  /** Include only localized key-in strings. */
+  Localized,
+  /** Include localized and non-localized strings for each key-in. */
+  Both,
+}
+
+/** Defines a keyin entry to show/filter in UI
+ * @beta
+*/
+export interface KeyinEntry {
+  /** string that matched a filter string */
+  value: string;
+  /** define array of start and end positions of filter matches. */
+  matches?: IMatch[];
+  /** true if entry was loaded from key-in history */
+  isHistory?: boolean;
+}
+
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
  */
 export class FrameworkUiAdmin extends UiAdmin {
+  private _localizedKeyinPreference: KeyinFieldLocalization = KeyinFieldLocalization.NonLocalized;
+
+  public get localizedKeyinPreference(): KeyinFieldLocalization { return this._localizedKeyinPreference; }
+  public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference=preference; }
 
   /** @internal */
   public onInitialized() { }
@@ -68,6 +97,53 @@ export class FrameworkUiAdmin extends UiAdmin {
       el = ConfigurableUiManager.getWrapperElement();
 
     return { position, el };
+  }
+
+  public getKeyins(): KeyinEntry[] {
+    const toolKeyins: KeyinEntry[] = [];
+    const tools = IModelApp.tools.getToolList();
+    for (const tool of tools) {
+      switch (this.localizedKeyinPreference) {
+        case KeyinFieldLocalization.Localized:
+          toolKeyins.push({ value: tool.keyin });
+          break;
+        case KeyinFieldLocalization.Both:
+          toolKeyins.push({ value: tool.keyin });
+          // istanbul ignore else
+          if (tool.keyin === tool.englishKeyin)
+            break;
+          // istanbul ignore next
+        default: // eslint-disable-line no-fallthrough
+        case KeyinFieldLocalization.NonLocalized:
+          // istanbul ignore next
+          if (KeyinFieldLocalization.NonLocalized === this.localizedKeyinPreference || (KeyinFieldLocalization.Both === this.localizedKeyinPreference && tool.englishKeyin !== tool.keyin))
+            toolKeyins.push({ value: tool.englishKeyin });
+          break;
+      }
+    }
+
+    return toolKeyins;
+  }
+
+  /** Show the Command Palette to display all support command key-ins.
+   * @param htmlElement The HTMLElement that anchors the Popup. If undefined, the location is relative to the overall window.
+   * @return true if the Command Palette was displayed, false if it could not be displayed.
+   */
+  public showKeyinPalette(htmlElement?: HTMLElement): boolean {
+    // istanbul ignore next
+    const el = htmlElement ? htmlElement : ConfigurableUiManager.getWrapperElement();
+
+    // istanbul ignore next
+    const hidePopup = () => {
+      IModelApp.uiAdmin.hideKeyinPalette();
+    };
+
+    return PopupManager.showKeyinPalette(this.getKeyins(), el, hidePopup, hidePopup);
+  }
+
+  /** Hides the Command Palette. */
+  public hideKeyinPalette(): boolean {
+    return PopupManager.hideKeyinPalette();
   }
 
   /** Show a Toolbar at a particular location.

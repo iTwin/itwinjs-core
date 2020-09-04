@@ -26,7 +26,7 @@ export interface ListboxProps extends React.DetailedHTMLProps<React.HTMLAttribut
   selectedValue?: ListboxValue;
   ariaLabel?: any;
   ariaLabelledBy?: any;
-  onListboxValueChange?: ((newValue: ListboxValue) => void);
+  onListboxValueChange?: ((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => void);
 }
 
 /**
@@ -48,7 +48,7 @@ export interface ListboxContextProps {
   listboxId?: string;
   listboxValue?: ListboxValue;
   focusValue?: ListboxValue;
-  onListboxValueChange: ((newValue: ListboxValue) => void);
+  onListboxValueChange: ((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => void);
   listboxRef?: React.RefObject<HTMLUListElement>;
 }
 
@@ -69,7 +69,7 @@ function getOptionValueArray(childNodes: React.ReactNode): ListboxItemProps[] {
 
 function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: number, key: string): [number, boolean] {
   let keyProcessed = false;
-  let newIndex = itemIndex;
+  let newIndex = itemIndex >= 0 ? itemIndex : 0;
 
   // Note: In aria example Page Up/Down just moves up or down by one item. See https://www.w3.org/TR/wai-aria-practices-1.1/examples/listbox/js/listbox.js
   if (key === SpecialKey.ArrowDown || key === SpecialKey.PageDown) {
@@ -121,18 +121,14 @@ export function Listbox(props: ListboxProps) {
   const [currentValue, setCurrentValue] = React.useState<ListboxValue | undefined>(selectedValue);
   const [focusValue, setFocusValue] = React.useState<ListboxValue | undefined>(currentValue);
   const scrollTopRef = React.useRef(0);
-  const handleValueChange = React.useCallback((newValue: ListboxValue) => {
+  const handleValueChange = React.useCallback((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => {
     // istanbul ignore else
     if (newValue !== currentValue) {
       setCurrentValue(newValue);
       setFocusValue(newValue);
       if (onListboxValueChange)
-        onListboxValueChange(newValue);
+        onListboxValueChange(newValue, isControlOrCommandPressed);
     }
-
-    // istanbul ignore else
-    if (listRef.current)
-      listRef.current.focus();  // ensure list has focus
   }, [setCurrentValue, currentValue, onListboxValueChange]);
 
   const focusOption = React.useCallback((itemIndex: number) => {
@@ -166,13 +162,13 @@ export function Listbox(props: ListboxProps) {
     if (optionValues.length < 1)
       return;
 
-    const itemIndex = (undefined === focusValue) ? 0 : optionValues.findIndex((optionValue) => ((optionValue.value === focusValue)));
+    const itemIndex = (undefined === focusValue) ? -1 : optionValues.findIndex((optionValue) => ((optionValue.value === focusValue)));
 
     if (event.key === SpecialKey.Space) {
       event.preventDefault();
       // istanbul ignore else
       if (focusValue)
-        handleValueChange(focusValue);
+        handleValueChange(focusValue, event.getModifierState("Control")||event.getModifierState("Meta"));  // Control or Command
       return;
     } else {
       const [newItemIndex, keyProcessed] = processKeyboardNavigation(optionValues, itemIndex, event.key);
@@ -212,6 +208,18 @@ export function Listbox(props: ListboxProps) {
       scrollTopRef.current = listRef.current.scrollTop;
   }, []);
 
+  // istanbul ignore next
+  const handleOnFocus = React.useCallback((_event: React.FocusEvent<HTMLUListElement>) => {
+    if (!focusValue || 0 === focusValue.length) {
+      if (currentValue) {
+        setFocusValue(currentValue);
+      } else {
+        if (optionValues.length > 0)
+          setFocusValue(optionValues[0].value);
+      }
+    }
+  }, [currentValue, focusValue, optionValues]);
+
   return <ul
     className={classes}
     // If the listbox is not part of another widget, then it has a visible
@@ -236,6 +244,8 @@ export function Listbox(props: ListboxProps) {
     onKeyDown={handleKeyDown}
     onScroll={handleOnScroll}
     data-value={currentValue}
+    data-focusvalue={focusValue}
+    onFocus={handleOnFocus}
   >
     <ListboxContext.Provider
       value={{
@@ -282,8 +292,9 @@ export function ListboxItem(props: ListboxItemProps) {
     // istanbul ignore next
     const selectedValue = event.currentTarget?.dataset?.value;
     // istanbul ignore else
-    if (undefined !== selectedValue)
-      onListboxValueChange(selectedValue);
+    if (undefined !== selectedValue) {
+      onListboxValueChange(selectedValue, event.ctrlKey);
+    }
   }, [onListboxValueChange]);
 
   const getItemId = React.useCallback(() => {

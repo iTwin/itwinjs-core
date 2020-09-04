@@ -118,6 +118,7 @@ export * from "./ui-core/tabs/Tabs";
 export * from "./ui-core/text/BodyText";
 export * from "./ui-core/text/BlockText";
 export * from "./ui-core/text/DisabledText";
+export * from "./ui-core/text/FilteredText";
 export * from "./ui-core/text/Headline";
 export * from "./ui-core/text/LeadingText";
 export * from "./ui-core/text/LeadingText2";

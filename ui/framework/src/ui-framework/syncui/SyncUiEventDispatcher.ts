@@ -64,6 +64,8 @@ export enum SyncUiEventId {
   SelectionSetChanged = "selectionsetchanged",
   /** The current view state has changed (used by view undo/redo toolbar buttons). */
   ViewStateChanged = "viewstatechanged",
+  /** The current object the reads and write UI Settings has changed. */
+  UiSettingsChanged = "uisettingschanged",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.

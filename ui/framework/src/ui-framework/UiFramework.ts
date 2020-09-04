@@ -16,7 +16,7 @@ import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
-import { UiEvent } from "@bentley/ui-core";
+import { LocalUiSettings, UiEvent, UiSettings } from "@bentley/ui-core";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
@@ -26,13 +26,14 @@ import { ConfigurableUiActionId } from "./configurableui/state";
 import { FrameworkState } from "./redux/FrameworkState";
 import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from "./redux/SessionState";
 import { StateManager } from "./redux/StateManager";
-import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
+import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 
 // cSpell:ignore Mobi
 
@@ -78,6 +79,7 @@ export class UiFramework {
   private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
+  private static _uiSettings: UiSettings;
 
   /** Get Show Ui event.
    * @public
@@ -126,6 +128,7 @@ export class UiFramework {
     const frameworkNamespace = UiFramework._i18n.registerNamespace(UiFramework.i18nNamespace);
     [
       restoreLayoutTools,
+      keyinPaletteTools,
     ].forEach((tool) => IModelApp.tools.registerModule(tool, frameworkNamespace));
 
     const readFinishedPromise = frameworkNamespace.readFinished;
@@ -345,6 +348,23 @@ export class UiFramework {
 
   public static getIModelConnection(): IModelConnection | undefined {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
+  }
+
+  /** @beta */
+  public static setUiSettings(uiSettings: UiSettings, immediateSync = false) {
+    UiFramework._uiSettings = uiSettings;
+    // istanbul ignore next
+    if (immediateSync)
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiSettingsChanged);
+    else
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiSettingsChanged);
+  }
+
+  /** @beta */
+  public static getUiSettings(): UiSettings {
+    if (undefined === UiFramework._uiSettings)
+      UiFramework._uiSettings= new LocalUiSettings();
+    return UiFramework._uiSettings;
   }
 
   /** @beta */

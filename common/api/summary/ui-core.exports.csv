@@ -76,6 +76,8 @@ beta;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
 beta;FieldProps 
 beta;FieldValues
 public;FillCentered(props: CommonDivProps): JSX.Element
+alpha;FilteredText(props: FilteredTextProps): JSX.Element
+alpha;FilteredTextProps 
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer(props: CommonDivProps): JSX.Element
 internal;FocusTrap(props: FocusTrapProps): JSX.Element | null

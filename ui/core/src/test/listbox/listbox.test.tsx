@@ -49,7 +49,7 @@ describe("<ListBox />", () => {
     fireEvent.keyDown(listBoxElement!, { key: "ArrowDown" });
     const focusedItem = listBox.container.querySelector("li.focused");
     expect(focusedItem).not.to.null;
-    expect(focusedItem!.getAttribute("data-value")).to.eq(listItems[1]);
+    expect(focusedItem!.getAttribute("data-value")).to.eq(listItems[0]);
   });
 
   it("honors aria-labelledby", () => {

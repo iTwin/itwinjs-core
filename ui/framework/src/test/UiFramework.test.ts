@@ -13,6 +13,7 @@ import { ColorTheme, CursorMenuData, UiFramework } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 import TestUtils, { mockUserInfo } from "./TestUtils";
+import { UiSettings } from "@bentley/ui-core";
 
 describe("UiFramework", () => {
 
@@ -152,6 +153,10 @@ describe("UiFramework", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     UiFramework.setIModelConnection(imodelMock.object);
     expect(UiFramework.getIModelConnection()).to.eq(imodelMock.object);
+
+    const uisettingsMock = moq.Mock.ofType<UiSettings>();
+    UiFramework.setUiSettings(uisettingsMock.object);
+    expect(UiFramework.getUiSettings()).to.eq(uisettingsMock.object);
 
     UiFramework.closeCursorMenu();
     expect(UiFramework.getCursorMenuData()).to.be.undefined;

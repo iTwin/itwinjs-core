@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelAppOptions, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
 import {
   AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogPropertyItem, PropertyChangeResult,
   PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames, UiDataProvider,
@@ -19,21 +19,34 @@ import { Calculator } from "../../ui-framework/accudraw/Calculator";
 import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
 import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
-import { TestUtils } from "../TestUtils";
+import TestUtils, { storageMock } from "../TestUtils";
 import { Card } from "../../ui-framework/popup/CardPopup";
 import { DialogGridContainer } from "../../ui-framework/uiprovider/DefaultDialogGridContainer";
+import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { KeyinPalettePanel } from "../../ui-framework/popup/KeyinPalettePanel";
+const myLocalStorage = storageMock();
 
 describe("PopupManager", () => {
+  const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
 
   before(async () => {
+    Object.defineProperty(window, "localStorage", {
+      get: () => myLocalStorage,
+    });
+
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    // use mock renderer so standards tools are registered.
+    const opts: IModelAppOptions = {uiAdmin: new FrameworkUiAdmin()};
+    await MockRender.App.startup(opts);
   });
 
   after(async () => {
     await MockRender.App.shutdown();
+    // restore the overriden property getter
+    Object.defineProperty(window, "localStorage", propertyDescriptorToRestore);
     TestUtils.terminateUiFramework();
   });
+
 
   beforeEach(() => {
     PopupManager.clearPopups();
@@ -423,6 +436,26 @@ describe("PopupManager", () => {
       inputNode = wrapper.find("input");
       expect(inputNode.length).to.eq(1);
 
+      inputNode.at(0).simulate("keyDown", { key: "Escape" });
+      await TestUtils.flushAsyncOperations();
+      expect(spyCancel.calledOnce).to.be.true;
+
+      wrapper.unmount();
+    });
+
+    it("PopupRenderer should render Keyin Palette", async () => {
+      const wrapper = mount(<PopupRenderer />);
+      const keyins: KeyinEntry[] = [{value: "keyin one"}, {value: "keyin two"}]
+      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+      const spyOk = sinon.spy();
+      const spyCancel = sinon.spy();
+
+      PopupManager.showKeyinPalette(keyins, doc.documentElement, spyOk, spyCancel);
+
+      wrapper.update();
+      expect(wrapper.find(KeyinPalettePanel).length).to.eq(1);
+      const inputNode = wrapper.find("input");
+      expect(inputNode.length).to.eq(1);
       inputNode.at(0).simulate("keyDown", { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;

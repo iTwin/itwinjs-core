@@ -15,6 +15,7 @@ import { getOptionLabel } from 'react-select/src/builtins';
 import { getOptionValue } from 'react-select/src/builtins';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IMatch } from '@bentley/ui-abstract';
 import { InputActionMeta } from 'react-select/src/types';
 import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -782,6 +783,17 @@ export interface FieldValues {
 // @public
 export function FillCentered(props: CommonDivProps): JSX.Element;
 
+// @alpha
+export function FilteredText(props: FilteredTextProps): JSX.Element;
+
+// @alpha
+export interface FilteredTextProps extends CommonProps {
+    matchClassName?: string;
+    matches?: IMatch[];
+    matchStyle?: React.CSSProperties;
+    value: string;
+}
+
 // @internal
 export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 
@@ -1107,7 +1119,7 @@ export interface ListboxContextProps {
     // (undocumented)
     listboxValue?: ListboxValue;
     // (undocumented)
-    onListboxValueChange: ((newValue: ListboxValue) => void);
+    onListboxValueChange: ((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => void);
 }
 
 // @alpha
@@ -1128,7 +1140,7 @@ export interface ListboxProps extends React.DetailedHTMLProps<React.HTMLAttribut
     // (undocumented)
     id?: string;
     // (undocumented)
-    onListboxValueChange?: ((newValue: ListboxValue) => void);
+    onListboxValueChange?: ((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => void);
     // (undocumented)
     selectedValue?: ListboxValue;
 }

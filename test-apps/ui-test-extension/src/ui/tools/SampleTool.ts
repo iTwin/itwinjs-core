@@ -35,7 +35,7 @@ enum ToolOptions {
 }
 
 export class SampleTool extends PrimitiveTool {
-  // ensure toolId is unique by add "uiTestExtension-" prefix
+  // ensure toolId is unique by adding "uiTestExtension-" prefix
   public static toolId = "uiTestExtension-SampleTool";
   public static iconSpec = `svg:${sampleToolSvg}`;
   public readonly points: Point3d[] = [];

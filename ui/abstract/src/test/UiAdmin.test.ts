@@ -164,6 +164,11 @@ describe("UiAdmin", () => {
     expect(uiAdmin.closeToolSettingsPopup()).to.be.false;
   });
 
+  it("showKeyinPalette should return false by default", () => {
+    expect(uiAdmin.showKeyinPalette()).to.be.false;
+    expect(uiAdmin.hideKeyinPalette()).to.be.false;
+  });
+
   it("isFocusOnHome should return false by default", () => {
     expect(uiAdmin.isFocusOnHome).to.be.false;
   });
