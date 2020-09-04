@@ -18,5 +18,5 @@
  */
 export function assert(condition: boolean, msg?: string): asserts condition {
   if (!condition)
-    throw new Error("Assert: " + ((msg !== undefined) ? msg : "Programmer Error"));
+    throw new Error(`Assert: ${msg ?? "Programmer Error"}`);
 }

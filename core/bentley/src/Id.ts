@@ -179,7 +179,7 @@ export namespace Id64 {
 
     briefcaseId = Math.floor(briefcaseId);
     const lowStr = localId.toString(16);
-    return "0x" + ((briefcaseId === 0) ? lowStr : (briefcaseId.toString(16) + (_localIdPrefixByLocalIdLength[lowStr.length] + lowStr)));
+    return `0x${(briefcaseId === 0) ? lowStr : (briefcaseId.toString(16) + (_localIdPrefixByLocalIdLength[lowStr.length] + lowStr))}`;
   }
 
   // Used as a buffer when converting a pair of 32-bit integers to an Id64String. Significant performance optimization.
@@ -945,7 +945,7 @@ export namespace Id64 {
       const increment = new Uint64();
 
       if (0 === this._str.length || "+" !== this._str[0])
-          throw new Error("Invalid CompressedId64Set");
+        throw new Error("Invalid CompressedId64Set");
 
       while (this._curIndex < this._str.length) {
         let multiplier = 1;
@@ -1059,7 +1059,7 @@ export namespace Guid {
     if (noDashPattern.test(noDashValue)) {
       return noDashValue.replace(noDashPattern,
         (_match: string, p1: string, p2: string, p3: string, p4: string, p5: string) =>
-          p1 + "-" + p2 + "-" + p3 + "-" + p4 + "-" + p5);
+          `${p1}-${p2}-${p3}-${p4}-${p5}`);
     }
 
     // Return unmodified string - (note: it is *not* a valid Guid)
