@@ -694,6 +694,8 @@ export interface BreadcrumbProps extends CommonProps {
     dataProvider: TreeDataProvider;
     delimiter?: string;
     dropdownOnly?: boolean;
+    // @internal (undocumented)
+    expandedNodes?: boolean;
     initialBreadcrumbMode?: BreadcrumbMode;
     initialCurrent?: TreeNodeItem;
     onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
@@ -2190,6 +2192,8 @@ export interface InputSwitchProps {
     currentMode: BreadcrumbMode;
     // (undocumented)
     delimiter: string;
+    // (undocumented)
+    expandedNode?: boolean;
     // (undocumented)
     node?: BeInspireTreeNode<TreeNodeItem>;
     // (undocumented)

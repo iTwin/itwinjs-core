@@ -15,6 +15,7 @@ import { getOptionLabel } from 'react-select/src/builtins';
 import { getOptionValue } from 'react-select/src/builtins';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IMatch } from '@bentley/ui-abstract';
 import { InputActionMeta } from 'react-select/src/types';
 import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -782,6 +783,17 @@ export interface FieldValues {
 // @public
 export function FillCentered(props: CommonDivProps): JSX.Element;
 
+// @alpha
+export function FilteredText(props: FilteredTextProps): JSX.Element;
+
+// @alpha
+export interface FilteredTextProps extends CommonProps {
+    matchClassName?: string;
+    matches?: IMatch[];
+    matchStyle?: React.CSSProperties;
+    value: string;
+}
+
 // @internal
 export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 
@@ -827,6 +839,9 @@ export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
 // @internal
 export function getBestBWContrastColor(hexColor: string): "black" | "white";
+
+// @internal (undocumented)
+export function getButtonTypeClassName(buttonType?: ButtonType): string;
 
 // @internal
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
@@ -1104,7 +1119,7 @@ export interface ListboxContextProps {
     // (undocumented)
     listboxValue?: ListboxValue;
     // (undocumented)
-    onListboxValueChange: ((newValue: ListboxValue) => void);
+    onListboxValueChange: ((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => void);
 }
 
 // @alpha
@@ -1125,7 +1140,7 @@ export interface ListboxProps extends React.DetailedHTMLProps<React.HTMLAttribut
     // (undocumented)
     id?: string;
     // (undocumented)
-    onListboxValueChange?: ((newValue: ListboxValue) => void);
+    onListboxValueChange?: ((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => void);
     // (undocumented)
     selectedValue?: ListboxValue;
 }
@@ -1438,6 +1453,7 @@ export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
 
 // @alpha
 export interface PopupContextMenuProps extends CommonProps {
+    animate?: boolean;
     ariaLabel?: string;
     autoflip?: boolean;
     children?: React.ReactNode;
@@ -1460,6 +1476,7 @@ export interface PopupContextMenuProps extends CommonProps {
 
 // @public
 export interface PopupProps extends CommonProps {
+    animate?: boolean;
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
@@ -1889,11 +1906,15 @@ export enum SplitButtonActionType {
 
 // @public
 export interface SplitButtonProps extends CommonProps {
+    buttonType?: ButtonType;
     drawBorder?: boolean;
     icon?: IconSpec;
+    // @internal (undocumented)
+    initialExpanded?: boolean;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
     onExecute?: () => any;
+    popupPosition?: RelativePosition;
     toolTip?: string;
 }
 

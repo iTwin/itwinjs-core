@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/ui-framework",
-      "comment": "Show duplicate target partitions in ModelsTree",
+      "comment": "Add support for opening a key-in palette to run key-ins.",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-framework",
-  "email": "grigas.petraitis@bentley.com"
+  "email": "Bill.Steinbock@bentley.com"
 }

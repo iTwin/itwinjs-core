@@ -75,6 +75,7 @@ $buic-text-color-muted:                   var(--buic-foreground-muted);         
 $buic-text-color-subdued:                 var(--buic-foreground-subdued);       // 0.75 opacity (Note: 0.65 is too much for color contrast checking)
 $buic-text-color-reverse:                 var(--buic-foreground-body-reverse);  // 0.85 opacity
 $buic-text-color-hover:                   var(--buic-foreground-activehover);   // 1.00 opacity
+$buic-text-color-highlight:               var(--buic-foreground-primary);       // themed
 
 $buic-icon-color:                         var(--buic-foreground-body);
 $buic-icon-color-disabled:                var(--buic-foreground-disabled);

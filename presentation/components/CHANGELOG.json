@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.5.4",
+      "tag": "@bentley/presentation-components_v2.5.4",
+      "date": "Fri, 28 Aug 2020 15:34:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.3",
+      "tag": "@bentley/presentation-components_v2.5.3",
+      "date": "Wed, 26 Aug 2020 11:46:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.5.2",
       "tag": "@bentley/presentation-components_v2.5.2",
       "date": "Tue, 25 Aug 2020 22:09:08 GMT",

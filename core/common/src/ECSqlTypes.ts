@@ -161,9 +161,9 @@ export class ECJsNames {
 
     // parse access string and convert the leaf tokens if they are system props
     // The first char of the access string is lowered.
-    let jsName: string = ECJsNames.lowerFirstChar(accessStringTokens[0] + ".");
+    let jsName: string = ECJsNames.lowerFirstChar(`${accessStringTokens[0]}.`);
     for (let j = 1; j < tokenCount - 1; j++) {
-      jsName += accessStringTokens[j] + ".";
+      jsName += `${accessStringTokens[j]}.`;
     }
 
     const leafToken: string = accessStringTokens[tokenCount - 1];

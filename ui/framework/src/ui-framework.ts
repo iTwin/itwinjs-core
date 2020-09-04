@@ -110,6 +110,8 @@ export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
+export * from "./ui-framework/popup/KeyinPalettePanel";
+export * from "./ui-framework/popup/KeyinPalettePopup";
 export * from "./ui-framework/popup/HTMLElementPopup";
 export * from "./ui-framework/popup/InputEditorPopup";
 export * from "./ui-framework/popup/PopupManager";

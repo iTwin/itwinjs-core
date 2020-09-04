@@ -50,27 +50,32 @@ export class Button extends React.PureComponent<ButtonProps> {
   public render() {
     const { buttonType, size, className, style, onClick, ...props } = this.props;
 
-    let typeClassName = "";
-
-    switch (buttonType) {
-      case ButtonType.Blue:
-        typeClassName = "uicore-buttons-blue";
-        break;
-      case ButtonType.Disabled:
-        typeClassName = "uicore-buttons-disabled";
-        break;
-      case ButtonType.Hollow:
-        typeClassName = "uicore-buttons-hollow";
-        break;
-      case ButtonType.Primary:
-      default:
-        typeClassName = "uicore-buttons-primary";
-        break;
-    }
+    let typeClassName = getButtonTypeClassName(buttonType);
 
     if (size === ButtonSize.Large)
       typeClassName += "-large";
 
     return <button {...props} className={classnames(typeClassName, className)} style={style} onClick={onClick} />;
   }
+}
+
+/** @internal */
+export function getButtonTypeClassName(buttonType?: ButtonType): string {
+  let typeClassName: string;
+  switch (buttonType) {
+    case ButtonType.Blue:
+      typeClassName = "uicore-buttons-blue";
+      break;
+    case ButtonType.Disabled:
+      typeClassName = "uicore-buttons-disabled";
+      break;
+    case ButtonType.Hollow:
+      typeClassName = "uicore-buttons-hollow";
+      break;
+    case ButtonType.Primary:
+    default:
+      typeClassName = "uicore-buttons-primary";
+      break;
+  }
+  return typeClassName;
 }

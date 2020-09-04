@@ -67,6 +67,8 @@ export interface BreadcrumbProps extends CommonProps {
   renderNode?: BreadcrumbNodeRenderer;
   /** @internal */
   onRender?: () => void;
+  /** @internal */
+  expandedNodes?: boolean;
 }
 
 /** Enum for Breadcrumb Mode
@@ -347,7 +349,8 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
               staticOnly={this.props.staticOnly}
               showUpDir={this.props.showUpDir}
               parentsOnly={this.props.parentsOnly}
-              width={this.props.width!} /> :
+              width={this.props.width!}
+              expandedNode={this.props.expandedNodes} /> :
             <InputSwitch
               tree={this.state.model}
               node={node}
@@ -361,7 +364,8 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
               parentsOnly={this.props.parentsOnly}
               delimiter={this.props.delimiter!}
               onOutsideClick={this._setDropdown}
-              renderNode={this.props.renderNode} />
+              renderNode={this.props.renderNode}
+              expandedNode={this.props.expandedNodes} />
           }
         </div>
       </div>
@@ -402,17 +406,20 @@ export interface InputSwitchProps {
   renderNode?: BreadcrumbNodeRenderer;
   width: number | string;
   delimiter: string;
+  expandedNode?: boolean;
 }
 
 /** @internal */
 export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> {
   public render(): React.ReactNode {
-    const { currentMode, tree, node, onInputStart, onInputCancel, onNodeChange, renderNode, width, showUpDir, delimiter } = this.props;
+    const { currentMode, tree, node, onInputStart, onInputCancel, onNodeChange, renderNode, width, showUpDir, delimiter, expandedNode } = this.props;
     switch (currentMode) {
       case BreadcrumbMode.Dropdown:
-        return <BreadcrumbDropdown tree={tree} node={node} onNodeChange={onNodeChange} renderNode={renderNode} onInputStart={onInputStart} parentsOnly={this.props.parentsOnly} showUpDir={showUpDir} width={width} />;
+        return <BreadcrumbDropdown tree={tree} node={node} onNodeChange={onNodeChange} renderNode={renderNode} onInputStart={onInputStart}
+          parentsOnly={this.props.parentsOnly} showUpDir={showUpDir} width={width} expandedNode={expandedNode} />;
       case BreadcrumbMode.Input:
-        return <BreadcrumbInput tree={tree} node={node} onNodeChange={onNodeChange} onCancel={onInputCancel} parentsOnly={this.props.parentsOnly} delimiter={delimiter} width={width} pathString={this.props.pathString} />;
+        return <BreadcrumbInput tree={tree} node={node} onNodeChange={onNodeChange} onCancel={onInputCancel}
+          parentsOnly={this.props.parentsOnly} delimiter={delimiter} width={width} pathString={this.props.pathString} />;
       default:
         return <div data-testid="components-breadcrumb-error-unknown-mode">{UiComponents.translate("breadcrumb.errorUnknownMode")}</div>;
     }
@@ -696,6 +703,7 @@ interface BreadcrumbDropdownProps {
   width: number | string;
   showUpDir?: boolean;
   renderNode?: BreadcrumbNodeRenderer;
+  expandedNode?: boolean;
 }
 
 /** @internal */
@@ -769,7 +777,8 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
             staticOnly={this.props.staticOnly}
             parentsOnly={this.props.parentsOnly}
             last={!nodes || nodes.length === 0}
-            renderNode={this.props.renderNode} />
+            renderNode={this.props.renderNode}
+            expandedNode={this.props.expandedNode} />
           {nodes && nodes.map((n, i) => {
             return (
               <BreadcrumbDropdownNode
@@ -780,7 +789,8 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
                 staticOnly={this.props.staticOnly}
                 parentsOnly={this.props.parentsOnly}
                 last={i === nodes!.length - 1}
-                renderNode={this.props.renderNode} />
+                renderNode={this.props.renderNode}
+                expandedNode={this.props.expandedNode} />
             );
           })}
         </div>
@@ -813,6 +823,7 @@ interface BreadcrumbDropdownNodeProps {
   parentsOnly?: boolean;
   last?: boolean;
   renderNode?: BreadcrumbNodeRenderer;
+  expandedNode?: boolean;
 }
 
 /** @internal */
@@ -853,6 +864,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
             this.props.onNodeSelected(n);
           }}
           label={renderNode({ label, icon }, n, parent)}
+          initialExpanded={this.props.expandedNode}
         >
           {nodeChildren.map((child, d) => {
             return (

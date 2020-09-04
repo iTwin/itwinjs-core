@@ -11,11 +11,12 @@
     "args": "Arguments",
     "argsTip": "'|' separated arguments",
     "execute": "Execute",
-    "placeholder": "Type key-in",
+    "placeholder": "Enter key-in",
     "incorrectArgs": "Incorrect number of key-in arguments",
     "failedToRun": "Key-in failed to run",
     "exceptionOccurred": "Key-in caused the following exception to occur",
-    "couldNotFindTool": "Could not find a tool with the given key-in"
+    "couldNotFindTool": "Could not find a tool with the given key-in",
+    "couldNotSaveHistory": "Could not save key-in in history"
   },
   "general": {
     "sheet": "Sheet",
@@ -163,6 +164,11 @@
       "description": "Restore Frontstage to Default Layout",
       "flyover": "Restore Stage to Default Layout",
       "noStageFound": "Specified stage not found."
+    },
+    "ClearKeyinPaletteHistory": {
+      "keyin": "clear keyin history",
+      "description": "Clear keyin palette history",
+      "flyover": "Clear keyin palette history"
     }
   },
   "iModelIndex": {

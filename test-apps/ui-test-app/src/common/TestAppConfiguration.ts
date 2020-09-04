@@ -7,6 +7,7 @@ export interface TestAppConfiguration {
   snapshotPath?: string;        // Used when run in the browser - a common base path for all snapshot imodels
   startWithSnapshots?: boolean;
   reactAxeConsole?: boolean;
+  useLocalSettings?: boolean;
 }
 
 export const loggerCategory = "ui-test-app";

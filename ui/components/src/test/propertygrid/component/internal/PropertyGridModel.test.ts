@@ -8,7 +8,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
 import { MutablePropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
 import TestUtils from "../../../TestUtils";
-import { FlatGridTestUtils as GridUtils, FlattenedProperty, GridModelLastItemData, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
+import { FlattenedProperty, GridModelLastItemData, FlatGridTestUtils as GridUtils, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
 
 config.truncateThreshold = 0;
 

@@ -32,7 +32,7 @@ export class GenericTool extends PrimitiveTool {
   public async filterHit(_hit: HitDetail, _out?: LocateResponse) { return Promise.resolve(LocateFilterStatus.Accept); }
 
   public static getPrompt(name: string): string {
-    const key = "tools." + this.toolId + ".Prompts." + name;
+    const key = `tools.${this.toolId}.Prompts.${name}`;
     return this.i18n.translateWithNamespace(this.namespace.name, key);
   }
 

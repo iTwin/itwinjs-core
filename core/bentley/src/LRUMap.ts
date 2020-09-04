@@ -341,7 +341,7 @@ export class LRUCache<K, V> {
     let s = "";
     let entry = this.oldest;
     while (entry) {
-      s += String(entry.key) + ":" + entry.value;
+      s += `${String(entry.key)}:${entry.value}`;
       entry = entry.newer;
       if (entry) {
         s += " < ";

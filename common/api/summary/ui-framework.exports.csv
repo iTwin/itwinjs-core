@@ -76,6 +76,7 @@ public;CategoryTreeProps
 internal;ChangeSetInfo
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
+internal;clearKeyinPaletteHistory(): void
 public;COLOR_THEME_DEFAULT = ColorTheme.Light
 public;ColorTheme
 public;CombinedReducerState
@@ -291,6 +292,11 @@ public;KeyboardShortcutProps
 beta;KeyinBrowser 
 beta;KeyinBrowserExecuteArgs
 beta;KeyinBrowserProps 
+beta;KeyinEntry
+beta;KeyinFieldLocalization
+internal;KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element
+alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element
+alpha;KeyinPalettePopupProps
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
 public;LayoutSplit

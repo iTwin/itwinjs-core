@@ -199,7 +199,7 @@ export class Cartographic implements LatLongAndHeight {
   }
 
   /** Create a string representing this cartographic in the format '(longitude, latitude, height)'. */
-  public toString(): string { return "(" + this.longitude + ", " + this.latitude + ", " + this.height + ")"; }
+  public toString(): string { return `(${this.longitude}, ${this.latitude}, ${this.height})`; }
 
   private static _scaleToGeodeticSurfaceIntersection = new Point3d();
   private static _scaleToGeodeticSurfaceGradient = new Point3d();

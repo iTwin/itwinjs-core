@@ -60,6 +60,7 @@ import { IconSpec } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
@@ -781,6 +782,9 @@ export enum ClassGroupingOption {
 
 // @beta
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
+
+// @internal (undocumented)
+export function clearKeyinPaletteHistory(): void;
 
 // @public @deprecated
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
@@ -1950,13 +1954,19 @@ export interface FrameworkState {
 export class FrameworkUiAdmin extends UiAdmin {
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
+    // (undocumented)
+    getKeyins(): KeyinEntry[];
     hideCalculator(): boolean;
     hideCard(): boolean;
     hideHTMLElement(): boolean;
     hideInputEditor(): boolean;
+    hideKeyinPalette(): boolean;
     hideMenuButton(id: string): boolean;
     hideToolbar(): boolean;
     get isFocusOnHome(): boolean;
+    // (undocumented)
+    get localizedKeyinPreference(): KeyinFieldLocalization;
+    set localizedKeyinPreference(preference: KeyinFieldLocalization);
     // @internal (undocumented)
     onInitialized(): void;
     openToolSettingsPopup(dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
@@ -1968,6 +1978,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showInputEditor(initialValue: Primitives.Value, propertyDescription: PropertyDescription, location: XAndY, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
+    showKeyinPalette(htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
@@ -3121,6 +3132,40 @@ export interface KeyinBrowserProps extends CommonProps {
     onExecute?: (args: KeyinBrowserExecuteArgs) => void;
 }
 
+// @beta
+export interface KeyinEntry {
+    isHistory?: boolean;
+    matches?: IMatch[];
+    value: string;
+}
+
+// @beta
+export enum KeyinFieldLocalization {
+    Both = 2,
+    Localized = 1,
+    NonLocalized = 0
+}
+
+// @internal (undocumented)
+export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element;
+
+// @alpha
+export function KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface KeyinPalettePopupProps {
+    // (undocumented)
+    el: HTMLElement;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    keyins: KeyinEntry[];
+    // (undocumented)
+    onCancel?: OnCancelFunc;
+    // (undocumented)
+    onItemExecuted?: OnItemExecutedFunc;
+}
+
 // @public
 export interface LayoutFragmentProps {
     horizontalSplit?: LayoutHorizontalSplitProps;
@@ -3856,6 +3901,8 @@ export class PopupManager {
     // (undocumented)
     static hideInputEditor(): boolean;
     // (undocumented)
+    static hideKeyinPalette(): boolean;
+    // (undocumented)
     static hideToolbar(): boolean;
     // (undocumented)
     static readonly onPopupsChangedEvent: PopupsChangedEvent;
@@ -3874,6 +3921,8 @@ export class PopupManager {
     static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static showInputEditor(el: HTMLElement, pt: XAndY, value: Primitives.Value, propertyDescription: PropertyDescription, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showKeyinPalette(keyins: KeyinEntry[], el: HTMLElement, onItemExecuted?: OnItemExecutedFunc, onCancel?: OnCancelFunc): boolean;
     // (undocumented)
     static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     }
@@ -5383,6 +5432,7 @@ export enum SyncUiEventId {
     SelectionSetChanged = "selectionsetchanged",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
+    UiSettingsChanged = "uisettingschanged",
     ViewStateChanged = "viewstatechanged",
     WidgetStateChanged = "widgetstatechanged",
     WorkflowActivated = "workflowactivated"
@@ -5937,6 +5987,8 @@ export class UiFramework {
     // (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
+    static getUiSettings(): UiSettings;
+    // @beta (undocumented)
     static getUserInfo(): UserInfo | undefined;
     // (undocumented)
     static getWidgetOpacity(): number;
@@ -5983,6 +6035,8 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
+    // @beta (undocumented)
+    static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): void;
     // @beta (undocumented)
     static setUserInfo(userInfo: UserInfo | undefined, immediateSync?: boolean): void;
     // (undocumented)

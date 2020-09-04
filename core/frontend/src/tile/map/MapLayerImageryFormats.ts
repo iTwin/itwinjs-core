@@ -228,16 +228,35 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }
   }
-  private getLayerString() {
+
+  private getVisibleLayerString() {
+    const layerNames = this.getVisibleLayers();
+    return layerNames.join("%2C");
+  }
+  private getVisibleLayers(): string[] {
     const layerNames = new Array<string>();
     this._settings.subLayers.forEach((subLayer) => { if (this._settings.isSubLayerVisible(subLayer) && subLayer.isNamed) layerNames.push(subLayer.name); });
-    return layerNames.join("%2C");
+    return layerNames;
+  }
+
+  private getQueryableLayers(): string[] {
+    const layerNames = new Array<string>();
+    this._capabilities?.layer?.subLayers.forEach((subLayer) => { if (subLayer.queryable) layerNames.push(subLayer.name); });
+    return layerNames;
+  }
+
+  private getVisibleQueryableLayersString(): string {
+    const layers = new Array<string>();
+    const queryables = this.getQueryableLayers();
+    const visibles = this.getVisibleLayers();
+    queryables.forEach((layer: string) => { if (visibles.includes(layer)) layers.push(layer); })
+    return layers.join("%2C");
   }
 
   // construct the Url from the desired Tile
   public constructUrl(row: number, column: number, zoomLevel: number): string {
     const bboxString = this.getEPSG3857ExtentString(row, column, zoomLevel);
-    const layerString = this.getLayerString();
+    const layerString = this.getVisibleLayerString();
     return `${this._baseUrl}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&CRS=EPSG%3A3857&STYLES=&BBOX=${bboxString}`;
   }
 
@@ -250,7 +269,9 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     if (!formatString) formatString = infoFormats[0];
 
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
-    const layerString = this.getLayerString();
+    const layerString = this.getVisibleQueryableLayersString();
+    if (layerString.length === 0)
+      return;
     const rectangle = tree.getTileRectangle(quadId);
     const fraction = rectangle.worldToLocal(Point2d.create(carto.longitude, carto.latitude, scratchPoint2d))!;
     const x = Math.floor(.5 + fraction.x * this.tileSize);
@@ -428,12 +449,12 @@ class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
 
   // construct the Url from the desired Tile
   public constructUrl(y: number, x: number, zoom: number): string {
-    const subscriptionId = "nlg51DaVsSAEX5lDF-ti5D91_DhZUwFaPWSbSlXIRms";
+    const subscriptionId = "TBD";   // To be supplied when Azure maps is supported.
     return `${this._settings.url}&subscription-key=${subscriptionId}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
   }
 
   public getLogo(_vp: ScreenViewport) {
-    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.MapBoxCopyright") });
+    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.AzureMapsCopyright") });
   }
 }
 
@@ -536,6 +557,7 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "AzureMaps";
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
@@ -561,4 +583,4 @@ class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
 }
 
 /** @internal */
-export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, AzureMapsMapLayerFormat, BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
+export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];

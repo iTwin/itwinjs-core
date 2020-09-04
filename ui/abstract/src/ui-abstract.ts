@@ -52,6 +52,9 @@ export * from "./ui-abstract/utils/getClassName";
 export * from "./ui-abstract/utils/IconSpecUtilities";
 export * from "./ui-abstract/utils/callbacks";
 export * from "./ui-abstract/utils/UiError";
+export * from "./ui-abstract/utils/filter/charCode";
+export * from "./ui-abstract/utils/filter/filters";
+export * from "./ui-abstract/utils/filter/strings";
 
 export * from "./ui-abstract/widget/AbstractWidgetProps";
 export * from "./ui-abstract/widget/StagePanel";

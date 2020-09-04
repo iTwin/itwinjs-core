@@ -212,7 +212,7 @@ describe("Gradient.Symb", () => {
         continue;
       }
       if (current.shift !== prev.shift) {
-        assert.isTrue(current.shift! > prev.shift!);
+        assert.isTrue(current.shift > prev.shift);
         continue;
       }
       if (current.angle!.degrees !== prev.angle!.degrees) {

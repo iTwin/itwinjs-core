@@ -35,7 +35,7 @@ enum ToolOptions {
 }
 
 export class SampleTool extends PrimitiveTool {
-  // ensure toolId is unique by add "uiTestExtension-" prefix
+  // ensure toolId is unique by adding "uiTestExtension-" prefix
   public static toolId = "uiTestExtension-SampleTool";
   public static iconSpec = `svg:${sampleToolSvg}`;
   public readonly points: Point3d[] = [];
@@ -49,12 +49,12 @@ export class SampleTool extends PrimitiveTool {
   }
 
   public static getPrompt(name: string): string {
-    const key = "tools." + this.toolId + ".Prompts." + name;
+    const key = `tools.${this.toolId}.Prompts.${name}`;
     return this.i18n.translateWithNamespace(this.namespace.name, key);
   }
 
   public static getOptionString(name: string): string {
-    const key = "tools." + this.toolId + ".Options." + name;
+    const key = `tools.${this.toolId}.Options.${name}`;
     return this.i18n.translateWithNamespace(this.namespace.name, key);
   }
 
@@ -484,7 +484,7 @@ export class SampleTool extends PrimitiveTool {
   }
 
   private syncLengthState(): void {
-    const lengthValue: DialogItemValue = { value: this.length, displayValue: this._lengthDescription.format(this.length as number) };
+    const lengthValue: DialogItemValue = { value: this.length, displayValue: this._lengthDescription.format(this.length) };
     const syncItem: DialogPropertySyncItem = { value: lengthValue, propertyName: SampleTool._lengthName, isDisabled: !this.useLength };
     this.syncToolSettingsProperties([syncItem]);
   }

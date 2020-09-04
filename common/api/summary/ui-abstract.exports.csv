@@ -24,6 +24,7 @@ beta;BasePropertyEditorParams
 beta;BasePropertyValue
 beta;class BaseQuantityDescription 
 beta;ButtonGroupEditorParams 
+internal;enum CharCode
 beta;ColorEditorParams 
 beta;CommandHandler
 beta;CommonBackstageItem 
@@ -32,6 +33,8 @@ beta;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelI
 beta;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
 public;ConditionalBooleanValue
 beta;ConditionalStringValue
+internal;convertSimple2RegExpPattern(pattern: string): string
+internal;createMatches(score: undefined | FuzzyScore): IMatch[]
 beta;CustomButtonDefinition 
 beta;CustomFormattedNumberParams 
 beta;DialogItem 
@@ -45,7 +48,14 @@ beta;DialogRow
 beta;EditorPosition
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
+internal;equalsIgnoreCase(a: string, b: string): boolean
 public;FunctionKey
+internal;FuzzyScore = [number, number, number]
+internal;FuzzyScore
+internal;fuzzyScore(pattern: string, patternLow: string, patternStart: number, word: string, wordLow: string, wordStart: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
+internal;fuzzyScoreGraceful(pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
+internal;fuzzyScoreGracefulAggressive(pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
+internal;FuzzyScorer = (pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean) => FuzzyScore | undefined
 beta;GenericUiEvent 
 beta;GenericUiEventArgs
 internal;getClassName: (obj: any) => string
@@ -54,7 +64,9 @@ beta;IconDefinition
 beta;IconEditorParams 
 beta;IconListEditorParams 
 beta;IconSpecUtilities
+internal;IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null
 beta;ImageCheckBoxParams 
+public;IMatch
 beta;InputEditorSizeParams 
 beta;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
 beta;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
@@ -66,14 +78,26 @@ beta;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEdito
 beta;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
 beta;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
 beta;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
+internal;isLowerAsciiLetter(code: number): boolean
+internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
 beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 beta;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
+internal;isUpperAsciiLetter(code: number): boolean
 beta;LinkElementsInfo
+internal;matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null
+internal;matchesContiguousSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
+internal;matchesFuzzy(word: string, wordToMatchAgainst: string, enableSeparateSubstringMatching?: boolean): IMatch[] | null
+internal;matchesFuzzy2(pattern: string, word: string): IMatch[] | null
+internal;matchesPrefix: IFilter
+internal;matchesStrictPrefix: IFilter
+internal;matchesSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
+internal;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
 beta;MultilineTextEditorParams 
 beta;OnCancelFunc = () => void
 beta;OnItemExecutedFunc = (item: any) => void
 beta;OnNumberCommitFunc = (value: number) => void
 beta;OnValueCommitFunc = (value: Primitives.Value) => void
+internal;or(...filter: IFilter[]): IFilter
 beta;ParseResults
 beta;Primitives
 beta;PrimitiveValue 
@@ -96,6 +120,7 @@ beta;StagePanelSection
 beta;StageUsage
 beta;StandardEditorNames
 beta;StandardTypeNames
+internal;startsWithIgnoreCase(str: string, candidate: string): boolean
 beta;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
 internal;StatusBarItemsManager

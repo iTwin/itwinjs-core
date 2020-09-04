@@ -289,7 +289,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private async loadMultipart(response: Response, contentType: string) {
     const data = await response.arrayBuffer();
-    const value = new RpcMultipartParser(contentType!, Buffer.from(data)).parse();
+    const value = new RpcMultipartParser(contentType, Buffer.from(data)).parse();
     return value;
   }
 

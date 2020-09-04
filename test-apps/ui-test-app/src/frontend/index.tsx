@@ -167,7 +167,6 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _uiSettings: UiSettings | undefined;
   private static _appUiSettings = new AppUiSettings();
 
   // Favorite Properties Support
@@ -177,10 +176,14 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static get uiSettings(): UiSettings { return SampleAppIModelApp._uiSettings || new LocalUiSettings(); }
-  public static set uiSettings(v: UiSettings) {
-    SampleAppIModelApp._uiSettings = v;
+  public static get uiSettings(): UiSettings {
+    const settings = UiFramework.getUiSettings();
+    SampleAppIModelApp._appUiSettings.apply(settings);  // eslint-disable-line @typescript-eslint/no-floating-promises
+    return settings;
+  }
 
+  public static set uiSettings(v: UiSettings) {
+    UiFramework.setUiSettings(v);
     SampleAppIModelApp._appUiSettings.apply(v);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
@@ -267,7 +270,7 @@ export class SampleAppIModelApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
-    await MapLayersUI.initialize(true); // if false then add widget in FrontstageDef
+    await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
   }
 
   // cSpell:enable
@@ -532,7 +535,7 @@ function mapFrameworkVersionStateToProps(state: RootState) {
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
+class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettings: UiSettings }> {
   constructor(props: any) {
     super(props);
 
@@ -543,23 +546,28 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
 
     this.state = {
       authorized,
+      uiSettings: this.getUiSettings(authorized),
     };
   }
 
   private _initializeSignin = async (authorized: boolean): Promise<void> => {
-    this.setUiSettings(authorized);
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   }
 
   private _onUserStateChanged = (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-
-    this.setState({ authorized });
+    this.setState({ authorized, uiSettings: this.getUiSettings(authorized)});
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  private setUiSettings(authorized: boolean): void {
-    SampleAppIModelApp.uiSettings = authorized ? new IModelAppUiSettings() : new LocalUiSettings();
+  private getUiSettings(authorized: boolean): UiSettings {
+    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized ) {
+      SampleAppIModelApp.uiSettings = new LocalUiSettings();
+    } else {
+      SampleAppIModelApp.uiSettings = new IModelAppUiSettings();
+    }
+
+    return SampleAppIModelApp.uiSettings;
   }
 
   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
@@ -595,7 +603,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
               <AppDragInteraction>
                 <AppFrameworkVersion>
                   {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                  <UiSettingsProvider uiSettings={SampleAppIModelApp.uiSettings}>
+                  <UiSettingsProvider uiSettings={this.state.uiSettings}>
                     <ConfigurableUiContent
                       appBackstage={<AppBackstageComposer />}
                     />
@@ -687,6 +695,7 @@ async function main() {
       snapshotPath: process.env.imjs_TESTAPP_SNAPSHOT_FILEPATH,
       startWithSnapshots: process.env.imjs_TESTAPP_START_WITH_SNAPSHOTS,
       reactAxeConsole: process.env.imjs_TESTAPP_REACT_AXE_CONSOLE,
+      useLocalSettings: process.env.imjs_TESTAPP_USE_LOCAL_SETTINGS,
     } as TestAppConfiguration;
     Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
   }

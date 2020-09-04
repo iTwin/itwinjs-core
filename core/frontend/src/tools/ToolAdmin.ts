@@ -1208,6 +1208,8 @@ export class ToolAdmin {
         case "y":
         case "Y":
           return this.doRedoOperation();
+        case "F2":
+          return IModelApp.uiAdmin.showKeyinPalette ();
       }
     }
 

@@ -8,7 +8,7 @@ import { OctEncodedNormal } from "../OctEncodedNormal";
 
 function _expectSignsEqual(a: number, b: number) {
   if (a !== 0) {
-    assert.isTrue(a < 0 === b < 0, "expectSignsEqual " + a + " " + b);
+    assert.isTrue(a < 0 === b < 0, `expectSignsEqual ${a} ${b}`);
   }
 }
 

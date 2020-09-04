@@ -6,7 +6,7 @@
 import * as React from "react";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { IconSpecUtilities } from "@bentley/ui-abstract";
+import { IconSpecUtilities, RelativePosition } from "@bentley/ui-abstract";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
@@ -398,6 +398,22 @@ export class ComponentExamplesProvider {
           </SplitButton>),
         createComponentExample("SplitButton with border", "SplitButton with drawBorder prop",
           <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }}>
+            {this.splitButtonMenuItems.map((node) => node)}
+          </SplitButton>),
+        createComponentExample("SplitButton with width", "SplitButton with width style",
+          <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }} style={{ width: "200px" }}>
+            {this.splitButtonMenuItems.map((node) => node)}
+          </SplitButton>),
+        createComponentExample("SplitButton with popupPosition", "SplitButton with RelativePosition.BottomRight popupPosition prop",
+          <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }} popupPosition={RelativePosition.BottomRight}>
+            {this.splitButtonMenuItems.map((node) => node)}
+          </SplitButton>),
+        createComponentExample("SplitButton with Blue buttonType", "SplitButton with buttonType={ButtonType.Blue} prop",
+          <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }} buttonType={ButtonType.Blue}>
+            {this.splitButtonMenuItems.map((node) => node)}
+          </SplitButton>),
+        createComponentExample("SplitButton with Primary buttonType", "SplitButton with buttonType={ButtonType.Primary} prop",
+          <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }} buttonType={ButtonType.Primary}>
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),
       ],

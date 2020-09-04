@@ -11,6 +11,7 @@ import { Popup } from "../popup/Popup";
 import { ContextMenu } from "./ContextMenu";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps } from "../utils/Props";
+import { ContextMenuDirection } from "./ContextMenuDirection";
 
 /** Properties for [[PopupContextMenu]] component
  * @alpha
@@ -38,6 +39,8 @@ export interface PopupContextMenuProps extends CommonProps {
   offset?: number;
   /** accessibility label */
   ariaLabel?: string;
+  /** Indicates whether to use animation for open/close (defaults to true) */
+  animate?: boolean;
 
   /** When list item or submenu is selected */
   onSelect?: (event: React.MouseEvent | undefined) => void;
@@ -61,6 +64,7 @@ export interface PopupContextMenuProps extends CommonProps {
  */
 export function PopupContextMenu(props: PopupContextMenuProps) {
   const { style, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, selectedIndex, children, ...popupProps } = props;
+  const menuDirection = getContextMenuDirectionFromRelativePosition(popupProps.position);
   return (
     <Popup {...popupProps}
       showShadow={false} showArrow={false} moveFocus={true}
@@ -69,9 +73,41 @@ export function PopupContextMenu(props: PopupContextMenuProps) {
         opened={true} onSelect={onSelect} onEsc={onEsc}
         autoflip={autoflip} edgeLimit={edgeLimit}
         hotkeySelect={hotkeySelect} selectedIndex={selectedIndex}
+        direction={menuDirection}
       >
         {children}
       </ContextMenu>
     </Popup >
   );
+}
+
+function getContextMenuDirectionFromRelativePosition(relativePosition?: RelativePosition): ContextMenuDirection {
+  let menuDirection = ContextMenuDirection.Bottom;
+  switch (relativePosition) {
+    case RelativePosition.Top:
+      menuDirection = ContextMenuDirection.Top;
+      break;
+    case RelativePosition.TopLeft:
+      menuDirection = ContextMenuDirection.TopRight;
+      break;
+    case RelativePosition.TopRight:
+      menuDirection = ContextMenuDirection.TopLeft;
+      break;
+    case RelativePosition.Left:
+      menuDirection = ContextMenuDirection.Left;
+      break;
+    case RelativePosition.Right:
+      menuDirection = ContextMenuDirection.Right;
+      break;
+    case RelativePosition.Bottom:
+      menuDirection = ContextMenuDirection.Bottom;
+      break;
+    case RelativePosition.BottomLeft:
+      menuDirection = ContextMenuDirection.BottomRight;
+      break;
+    case RelativePosition.BottomRight:
+      menuDirection = ContextMenuDirection.BottomLeft;
+      break;
+  }
+  return menuDirection;
 }
