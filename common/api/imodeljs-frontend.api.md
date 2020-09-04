@@ -11667,6 +11667,8 @@ export namespace WmsCapability {
         // (undocumented)
         readonly parent?: SubLayer | undefined;
         // (undocumented)
+        readonly queryable: boolean;
+        // (undocumented)
         readonly title: string;
     }
 }

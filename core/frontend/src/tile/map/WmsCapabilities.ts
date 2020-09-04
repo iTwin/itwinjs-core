@@ -143,9 +143,11 @@ export namespace WmsCapability {
     public readonly title: string;
     public readonly cartoRange?: MapCartoRectangle;
     public readonly children?: SubLayer[];
+    public readonly queryable: boolean;
     public constructor(_json: any, public readonly parent?: SubLayer) {
       this.name = _json.Name ? _json.Name : "";
       this.title = _json.Title;
+      this.queryable = _json.queryable ? true : false;
       this.cartoRange = rangeFromJSON(_json);
       if (Array.isArray(_json.Layer)) {
         this.children = new Array<SubLayer>();
