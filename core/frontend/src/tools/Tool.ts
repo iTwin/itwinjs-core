@@ -353,7 +353,7 @@ export class Tool {
   public static register(namespace?: I18NNamespace, i18n?: I18N) { IModelApp.tools.register(this, namespace, i18n); }
 
   private static getLocalizedKey(name: string): string | undefined {
-    const key = "tools." + this.toolId + "." + name;
+    const key = `tools.${  this.toolId  }.${  name}`;
     const val = this.i18n.translateWithNamespace(this.namespace.name, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
@@ -372,7 +372,7 @@ export class Tool {
    * its registered Namespace (e.g. "en/MyApp.json").
    */
   public static get englishKeyin(): string {
-    const key = "tools." + this.toolId + ".keyin";
+    const key = `tools.${  this.toolId  }.keyin`;
     const val = this.i18n.getEnglishTranslation(this.namespace.name, key);
     return val !== key ? val : ""; // default to empty string
   }
@@ -808,6 +808,56 @@ export class ToolRegistry {
     return tool !== undefined && tool.run(...args);
   }
 
+  /**
+   * Split key-in into and array of string arguments. Handles embedded quoted strings.
+   * @param keyin keyin string to process
+   * #return an Array of string argument
+   */
+  private splitIntoArgs(keyin: string): string[] {
+    const words: string[] = [];
+    let currentWord: string[] = [];
+    let quoteAtStart=false;
+
+    for (let i = 0; i < keyin.length; i++) {
+      if (34 === keyin.charCodeAt(i)) {
+        if (currentWord.length) {
+          if (quoteAtStart) {
+            words.push (currentWord.join("").trim());
+            quoteAtStart = false;
+          } else {
+            if (currentWord.length) {
+              quoteAtStart = true;
+              if (i === keyin.length-1) { // if at last character add the quote to end of current word
+                quoteAtStart = false;
+                currentWord.push (`"`);
+              }
+              words.push (...currentWord.join("").split(" ").filter((x) => 0 < x.length));
+            }
+          }
+          currentWord = [];
+        }
+      } else {
+        currentWord.push(keyin.charAt(i))
+      }
+    }
+    if (currentWord.length) {
+      if (quoteAtStart) {
+        words.push (`"${currentWord.join("").trim()}`);
+      } else {
+        words.push (...currentWord.join("").split(" ").filter((x) => 0 < x.length));
+      }
+    } else {
+      if (quoteAtStart) {
+        const lastWord = words.pop ();
+        if (lastWord)
+          words.push (`"${lastWord.trim()}`);
+        else
+          words.push (`"`);
+      }
+    }
+    return words;
+  }
+
   /** Given a string consisting of a toolId followed by any number of arguments, locate the corresponding Tool and parse the arguments.
    * @note Only extremely rudimentary argument parsing is currently supported. e.g., arguments cannot contain whitespace.
    * @param keyin A string consisting of a toolId followed by any number of arguments. The arguments are separated by whitespace.
@@ -826,9 +876,8 @@ export class ToolRegistry {
       return { tool, args };
 
     // Tokenize to separate keyin from arguments
-    // ###TODO handle quoted arguments
     // ###TODO there's actually nothing that prevents a Tool from including leading/trailing spaces in its keyin, or sequences of more than one space...we will fail to find such tools if they exist...
-    const tokens = keyin.split(" ").filter((x) => 0 < x.length);
+    const tokens = this.splitIntoArgs(keyin);
     if (tokens.length <= 1)
       return { tool, args };
 
