@@ -125,11 +125,14 @@ export class FrameworkUiAdmin extends UiAdmin {
     return toolKeyins;
   }
 
-  /** Show the Command Palette to display all support command key-ins.
+  /** Show the Key-in Palette to display key-in from all registered Tools.
    * @param htmlElement The HTMLElement that anchors the Popup. If undefined, the location is relative to the overall window.
    * @return true if the Command Palette was displayed, false if it could not be displayed.
    */
   public showKeyinPalette(htmlElement?: HTMLElement): boolean {
+    if (!this.featureFlags.allowKeyinPalette)
+      return false;
+
     // istanbul ignore next
     const el = htmlElement ? htmlElement : ConfigurableUiManager.getWrapperElement();
 
@@ -141,8 +144,11 @@ export class FrameworkUiAdmin extends UiAdmin {
     return PopupManager.showKeyinPalette(this.getKeyins(), el, hidePopup, hidePopup);
   }
 
-  /** Hides the Command Palette. */
+  /** Hides the Key-in Palette. */
   public hideKeyinPalette(): boolean {
+    if (!this.featureFlags.allowKeyinPalette)
+      return false;
+
     return PopupManager.hideKeyinPalette();
   }
 

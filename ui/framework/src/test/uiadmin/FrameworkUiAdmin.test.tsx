@@ -96,7 +96,9 @@ describe("FrameworkUiAdmin", () => {
 
   it("showKeyinPalette should return true", () => {
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
-
+    expect(uiAdmin.showKeyinPalette(doc.documentElement)).to.be.false;
+    expect(uiAdmin.hideKeyinPalette()).to.be.false;
+    uiAdmin.updateFeatureFlags ({allowKeyinPalette:true});
     expect(uiAdmin.showKeyinPalette(doc.documentElement)).to.be.true;
     expect(uiAdmin.hideKeyinPalette()).to.be.true;
   });

@@ -1195,6 +1195,8 @@ export class CoreTools {
     // @beta
     static get keyinBrowserButtonItemDef(): CustomItemDef;
     // (undocumented)
+    static get keyinPaletteButtonItemDef(): ToolItemDef;
+    // (undocumented)
     static get measureDistanceToolItemDef(): ToolItemDef;
     // (undocumented)
     static get measureLocationToolItemDef(): ToolItemDef;

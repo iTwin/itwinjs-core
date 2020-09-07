@@ -1731,6 +1731,8 @@ export class UiAdmin {
     closeToolSettingsPopup(): boolean;
     createXAndY(x: number, y: number): XAndY;
     get cursorPosition(): XAndY;
+    // (undocumented)
+    get featureFlags(): UiFlags;
     hideCalculator(): boolean;
     hideCard(): boolean;
     hideHTMLElement(): boolean;
@@ -1756,6 +1758,8 @@ export class UiAdmin {
     showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
     showToolbar(_toolbarProps: AbstractToolbarProps, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
+    // (undocumented)
+    updateFeatureFlags(uiFlags: UiFlags): void;
 }
 
 // @beta
@@ -1771,6 +1775,11 @@ export abstract class UiDataProvider {
 // @public
 export class UiError extends BentleyError {
     constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
+}
+
+// @beta
+export interface UiFlags {
+    allowKeyinPalette?: boolean;
 }
 
 // @beta

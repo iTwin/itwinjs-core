@@ -60,6 +60,43 @@ describe("<KeyinPalettePanel>", () => {
     const keyins: KeyinEntry[] = [{value: "keyin one"}, {value: "keyin two"}]
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
+
+    await TestUtils.flushAsyncOperations();
+    const history2 = await waitForElement(() => renderedComponent.getByTitle("history2"));
+    expect(history2).not.to.be.undefined;
+    expect (renderedComponent.container.querySelectorAll ("li").length).to.eq(4);
+  });
+
+  it("handles key presses in select input ", async () => {
+    const uiSettings = UiFramework.getUiSettings();
+    if (uiSettings) {
+      await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1","history2" ]);
+    }
+    const keyins: KeyinEntry[] = [{value: "keyin one"}, {value: "keyin two"}]
+    const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
+    expect(renderedComponent).not.to.be.undefined;
+    const selectInput = renderedComponent.getByTestId("command-palette-input") as HTMLInputElement;
+
+    await TestUtils.flushAsyncOperations();
+    const history2 = await waitForElement(() => renderedComponent.getByTitle("history2"));
+    expect(history2).not.to.be.undefined;
+    expect (renderedComponent.container.querySelectorAll ("li").length).to.eq(4);
+
+    fireEvent.change(selectInput, { target: { value: "two" } });
+    await TestUtils.flushAsyncOperations();
+    // renderedComponent.debug();
+    expect (renderedComponent.container.querySelectorAll ("li").length).to.eq(1);
+    fireEvent.keyDown(selectInput, { key: SpecialKey.Enter });
+  });
+
+  it("handles ctrl+key presses in select input ", async () => {
+    const uiSettings = UiFramework.getUiSettings();
+    if (uiSettings) {
+      await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1","history2" ]);
+    }
+    const keyins: KeyinEntry[] = [{value: "keyin one"}, {value: "keyin two"}]
+    const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
+    expect(renderedComponent).not.to.be.undefined;
     const selectInput = renderedComponent.getByTestId("command-palette-input") as HTMLInputElement;
 
     await TestUtils.flushAsyncOperations();
@@ -72,8 +109,7 @@ describe("<KeyinPalettePanel>", () => {
     // renderedComponent.debug();
     expect (renderedComponent.container.querySelectorAll ("li").length).to.eq(1);
     fireEvent.keyDown(selectInput, { key: SpecialKey.Enter, ctrlKey: true });
-    fireEvent.keyDown(selectInput, { key: SpecialKey.Enter });
-
+    await TestUtils.flushAsyncOperations();
     fireEvent.change(selectInput, { target: { value: "two" } });
     await TestUtils.flushAsyncOperations();
     fireEvent.keyDown(selectInput, { key: SpecialKey.Tab });
