@@ -26,6 +26,7 @@ export class RpcPendingQueue {
   private _pendingLock: number = 0;
 
   private constructor() {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     RpcRequest.events.addListener(this.requestEventHandler, this);
   }
 

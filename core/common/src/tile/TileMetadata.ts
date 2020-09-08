@@ -13,6 +13,8 @@ import { TileProps } from "../TileProps";
 import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
 import { TileReadError, TileReadStatus } from "./TileIO";
 
+// cspell:ignore imdl mult bitfield
+
 // NB: These constants correspond to those defined in Tile.cpp.
 namespace Constants {
   export const tileScreenSize = 512;
@@ -130,29 +132,29 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
-      idStr = idStr + "A:" + treeId.animationId + "_";
+      idStr = `${idStr}A:${treeId.animationId}_`;
     else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
     if (!treeId.edgesRequired) {
       // Tell backend not to bother generating+returning edges - we would just discard them anyway
-      idStr = idStr + "E:0_";
+      idStr = `${idStr}E:0_`;
     }
   } else {
     const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
-    idStr = idStr + typeStr + ":" + treeId.expansion.toFixed(6) + "_";
+    idStr = `${idStr + typeStr}:${treeId.expansion.toFixed(6)}_`;
 
     if (BatchType.VolumeClassifier === treeId.type)
       flags |= TreeFlags.UseProjectExtents;
 
     if (undefined !== treeId.animationId) {
-      idStr = idStr + "A:" + treeId.animationId + "_";
+      idStr = `${idStr}A:${treeId.animationId}_`;
     }
   }
 
   const version = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion);
   if (version >= 4) {
-    const prefix = version.toString(16) + "_" + flags.toString(16) + "-";
+    const prefix = `${version.toString(16)}_${flags.toString(16)}-`;
     idStr = prefix + idStr;
   }
 

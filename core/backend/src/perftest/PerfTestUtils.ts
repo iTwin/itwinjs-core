@@ -24,12 +24,12 @@ export class PerfTestDataMgr {
     const dirName = path.basename(path.dirname(imodelPath));
     this.db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile(dirName, fName), { rootSubject: { name: "PerfTest" } });
   }
-  public async importSchema(scehamPath: string, testCName: string = "") {
-    assert(IModelJsFs.existsSync(scehamPath));
+  public async importSchema(schemaPath: string, testCName: string = "") {
+    assert(IModelJsFs.existsSync(schemaPath));
     if (this.db) {
-      await this.db.importSchemas(new BackendRequestContext(), [scehamPath]);
+      await this.db.importSchemas(new BackendRequestContext(), [schemaPath]);
       if (testCName)
-        assert.isDefined(this.db.getMetaData(testCName), "Class Name " + testCName + "is not present in iModel.");
+        assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);
       this.db.saveChanges();
     }
   }
@@ -103,12 +103,12 @@ interface TestElementProps extends GeometricElementProps {
 
 export class PerfTestUtility {
   public static genSchemaXML(schemaName: string, className: string, classCount: number, hierarchy: boolean, is3d: boolean, props: any[]) {
-    const subClassName = className + "Sub";
+    const subClassName = `${className}Sub`;
     let sxml = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="${schemaName}" alias="tps" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>`;
     for (let i = 0; i < classCount; ++i) {
-      sxml = sxml + `
+      sxml = `${sxml}
         <ECEntityClass typeName="${i === 0 ? className : subClassName + i}">`;
       const bisBaseClass: string = is3d ? "bis:PhysicalElement" : "bis:GraphicalElement2d";
       if (hierarchy) {
@@ -118,29 +118,29 @@ export class PerfTestUtility {
         else {
           baseClass = i === 1 ? className : subClassName + (i - 1);
         }
-        sxml = sxml + `
+        sxml = `${sxml}
             <BaseClass>${baseClass}</BaseClass>`;
       } else {
-        sxml = sxml + `
+        sxml = `${sxml}
         <BaseClass>${bisBaseClass}</BaseClass>`;
       }
       if (props.length === 0) {
-        sxml = sxml + `
-            <ECProperty propertyName="${i === 0 ? "BaseStr" : "Sub" + i + "Str"}" typeName="string"/>
-            <ECProperty propertyName="${i === 0 ? "BaseLong" : "Sub" + i + "Long"}" typeName="long"/>
-            <ECProperty propertyName="${i === 0 ? "BaseDouble" : "Sub" + i + "Double"}" typeName="double"/>`;
+        sxml = `${sxml}
+            <ECProperty propertyName="${i === 0 ? "BaseStr" : `Sub${i}Str`}" typeName="string"/>
+            <ECProperty propertyName="${i === 0 ? "BaseLong" : `Sub${i}Long`}" typeName="long"/>
+            <ECProperty propertyName="${i === 0 ? "BaseDouble" : `Sub${i}Double`}" typeName="double"/>`;
 
       } else {
         for (const prop of props) {
           const propType = prop.split("Test")[0];
-          sxml = sxml + `
-          <ECProperty propertyName="${i === 0 ? prop : "Sub" + i + prop}" typeName="${propType}"/>`;
+          sxml = `${sxml}
+          <ECProperty propertyName="${i === 0 ? prop : `Sub${i}${prop}`}" typeName="${propType}"/>`;
         }
       }
-      sxml = sxml + `
+      sxml = `${sxml}
         </ECEntityClass>`;
     }
-    sxml = sxml + `
+    sxml = `${sxml}
     </ECSchema>`;
     return sxml;
   }
@@ -191,7 +191,7 @@ export class PerfTestUtility {
     }
     // Create props
     const elementProps: GeometricElementProps = {
-      classFullName: schemaName + ":" + className,
+      classFullName: `${schemaName}:${className}`,
       model: modId,
       category: catId,
       code: Code.createEmpty(),
@@ -206,7 +206,7 @@ export class PerfTestUtility {
 
   public static getCount(imodel: IModelDb, className: string) {
     let count = 0;
-    imodel.withPreparedStatement("SELECT count(*) AS [count] FROM " + className, (stmt: ECSqlStatement) => {
+    imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
       count = row.count;
@@ -228,7 +228,7 @@ export class PerfTestUtility {
     }
     // Create props
     const elementProps: TestElementProps = {
-      classFullName: "PerfTestDomain:" + className,
+      classFullName: `PerfTestDomain:${className}`,
       model: modId,
       category: catId,
       code: Code.createEmpty(),

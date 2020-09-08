@@ -149,11 +149,11 @@ export class RpcMultipartParser {
             state = CLOSE_BOUNDARY;
             break;
           } else if (index === boundaryLength - 2) {
-            if (c !== CR) throw new Error("Expected CR Received " + c);
+            if (c !== CR) throw new Error(`Expected CR Received ${c}`);
             index++;
             break;
           } else if (index === boundaryLength - 1) {
-            if (c !== LF) throw new Error("Expected LF Received " + c);
+            if (c !== LF) throw new Error(`Expected LF Received ${c}`);
             index = 0;
             this._onParsePartBegin();
             state = HEADER_FIELD_START;
@@ -191,7 +191,7 @@ export class RpcMultipartParser {
 
           cl = c | 0x20;
           if (cl < A || cl > Z) {
-            throw new Error("Expected alphabetic character, received " + c);
+            throw new Error(`Expected alphabetic character, received ${c}`);
           }
           break;
         case HEADER_VALUE_START:
@@ -209,11 +209,11 @@ export class RpcMultipartParser {
           }
           break;
         case HEADER_VALUE_ALMOST_DONE:
-          if (c !== LF) throw new Error("Expected LF Received " + c);
+          if (c !== LF) throw new Error(`Expected LF Received ${c}`);
           state = HEADER_FIELD_START;
           break;
         case HEADERS_ALMOST_DONE:
-          if (c !== LF) throw new Error("Expected LF Received " + c);
+          if (c !== LF) throw new Error(`Expected LF Received ${c}`);
           const err: any = this._onParseHeadersEnd(i + 1);
           if (err) throw err;
           state = PART_DATA_START;
@@ -226,7 +226,7 @@ export class RpcMultipartParser {
           prevIndex = index;
 
           if (index === 0) {
-            // boyer-moore derrived algorithm to safely skip non-boundary data
+            // boyer-moore derived algorithm to safely skip non-boundary data
             i += boundaryEnd;
             while (i < bufferLength && !(this._buffer[i] in boundaryChars)) {
               i += boundaryLength;
@@ -290,7 +290,7 @@ export class RpcMultipartParser {
 
           break;
         case CLOSE_BOUNDARY:
-          if (c !== HYPHEN) throw new Error("Expected HYPHEN Received " + c);
+          if (c !== HYPHEN) throw new Error(`Expected HYPHEN Received ${c}`);
           if (index === 1) {
             this._onParsePartEnd();
             state = END;

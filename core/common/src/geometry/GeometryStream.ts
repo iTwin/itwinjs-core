@@ -525,6 +525,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get entry() {
     if (undefined === this._entry)
       this._entry = new IteratorEntry(this._appearance, this._localToWorld);

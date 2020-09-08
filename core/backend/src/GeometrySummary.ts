@@ -21,6 +21,8 @@ interface ElementGeom {
   geometricElement?: GeometricElement;
 }
 
+// cspell:ignore earlin
+
 /** Generates an array of GeometryStreamResponseProps. */
 class ResponseGenerator {
   public verbosity = GeometrySummaryVerbosity.Basic;
@@ -53,7 +55,7 @@ class ResponseGenerator {
   }
 
   public generateSummary(id: Id64String): string {
-    let lines = ["[Geometry Summary for Element " + id + "]"];
+    let lines = [`[Geometry Summary for Element ${id}]`];
     try {
       const geom = this.getElementGeom(id);
       if (undefined === geom)
@@ -68,7 +70,7 @@ class ResponseGenerator {
       let curLocalRange: Range3d | undefined;
       for (const entry of geom.iterator) {
         if (this.verboseSymbology && (undefined === curGeomParams || !curGeomParams.isEquivalent(entry.geomParams))) {
-          lines.push("Symbology: " + this.stringify(entry.geomParams));
+          lines.push(`Symbology: ${this.stringify(entry.geomParams)}`);
           curGeomParams = entry.geomParams.clone();
         }
 
@@ -101,7 +103,7 @@ class ResponseGenerator {
       if (undefined === message)
         message = err.toString();
 
-      lines.push("ERROR: " + message);
+      lines.push(`ERROR: ${message}`);
     }
 
     return lines.filter((line) => line !== "").join("\n");
@@ -109,11 +111,11 @@ class ResponseGenerator {
 
   public summarizeElement(elem: GeometricElement): string {
     const lines: string[] = [];
-    lines.push("(" + (elem.is2d() ? "2D" : "3D") + ") Category: " + elem.category);
-    lines.push("Model: " + elem.model);
+    lines.push(`(${elem.is2d() ? "2D" : "3D"}) Category: ${elem.category}`);
+    lines.push(`Model: ${elem.model}`);
     if (this.includePlacement) {
-      lines.push("Range: " + this.stringify(elem.calculateRange3d()));
-      lines.push("Transform: " + this.stringify(elem.getPlacementTransform()));
+      lines.push(`Range: ${this.stringify(elem.calculateRange3d())}`);
+      lines.push(`Transform: ${this.stringify(elem.getPlacementTransform())}`);
     }
 
     return lines.join("\n");
@@ -121,7 +123,7 @@ class ResponseGenerator {
 
   public summarizePartReferences(id: Id64String, is2d: boolean): string {
     const refIds = this.iModel.nativeDb.findGeometryPartReferences([id], is2d);
-    return "Part references (" + refIds.length + "): " + refIds.join();
+    return `Part references (${refIds.length}): ${refIds.join()}`;
   }
 
   public getElementGeom(id: Id64String): ElementGeom | undefined {
@@ -142,7 +144,7 @@ class ResponseGenerator {
   }
 
   public summarizeRange3d(range: Range3d): string {
-    return "SubGraphicRange: " + this.stringify(range);
+    return `SubGraphicRange: ${this.stringify(range)}`;
   }
 
   public summarizePrimitive(lines: string[], primitive: TextStringPrimitive | ImagePrimitive): void {
@@ -154,11 +156,11 @@ class ResponseGenerator {
 
     const json = this.stringify(primitive.type === "textString" ? primitive.textString : primitive.image);
     if (GeometrySummaryVerbosity.Detailed >= this.verbosity) {
-      lines.push(summary + ": " + json);
+      lines.push(`${summary}: ${json}`);
       return;
     }
 
-    lines.push(summary + ":");
+    lines.push(`${summary}:`);
     lines.push(json);
   }
 
@@ -171,18 +173,18 @@ class ResponseGenerator {
 
     const json = this.stringify({ type: brep.type, transform: brep.transform, faceSymbology: brep.faceSymbology });
     if (GeometrySummaryVerbosity.Detailed >= this.verbosity) {
-      lines.push(summary + ": " + json);
+      lines.push(`${summary}: ${json}`);
       return;
     }
 
-    lines.push(summary + ":");
+    lines.push(`${summary}:`);
     lines.push(json);
   }
 
   public summarizePartReference(partId: string, partToLocal?: Transform): string {
-    let line = "part id: " + partId;
+    let line = `part id: ${partId}`;
     if (undefined !== partToLocal)
-      line = line + " transform: " + this.stringify(partToLocal);
+      line = `${line} transform: ${this.stringify(partToLocal)}`;
 
     return line;
   }
@@ -239,7 +241,7 @@ class ResponseGenerator {
   }
 
   public summarizeGeometryQueryDetailed(query: AnyGeometryQuery): string {
-    let summary = this.summarizeGeometryQueryBasic(query) + ": ";
+    let summary = `${this.summarizeGeometryQueryBasic(query)}: `;
     switch (query.geometryCategory) {
       case "solid":
         return summary + this.summarizeSolidPrimitive(query);
@@ -248,28 +250,28 @@ class ResponseGenerator {
       case "curveCollection":
         return summary + this.summarizeCurveCollection(query);
       case "pointCollection":
-        return summary + " numPoints: " + query.points.length;
+        return `${summary} numPoints: ${query.points.length}`;
       case "bsurf":
-        return summary
-          + " poleDimension: " + query.poleDimension
-          + " numPolesTotal: " + query.numPolesTotal()
-          + " degree[U,V]: " + JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.VDirection)])
-          + " order[U,V]: " + JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.VDirection)])
-          + " numSpan[U,V]: " + JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.VDirection)])
-          + " numPoles[U,V]: " + JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.VDirection)])
-          + " poleStep[U,V]: " + JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.VDirection)]);
+        return `${summary}'
+        ' poleDimension: ${query.poleDimension}'
+        ' numPolesTotal: ${query.numPolesTotal()}'
+        ' degree[U,V]: ${JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.VDirection)])}'
+        ' order[U,V]: ${JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.VDirection)])}'
+        ' numSpan[U,V]: ${JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.VDirection)])}'
+        ' numPoles[U,V]: ${JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.VDirection)])}'
+        ' poleStep[U,V]: ${JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.VDirection)])}`;
       case "polyface": {
         const data = query.data;
-        summary = summary + " pointCount: " + data.point.length
-          + " pointIndexCount: " + data.pointIndex.length;
+        summary = `${summary} pointCount: ${data.point.length}'
+        ' pointIndexCount: ${data.pointIndex.length}`;
         if (query.twoSided)
-          summary = summary + " (two-sided)";
+          summary = `${summary} (two-sided)`;
         if (undefined !== data.normal)
-          summary = summary + " normalCount: " + data.normal.length;
+          summary = `${summary} normalCount: ${data.normal.length}`;
         if (undefined !== data.param)
-          summary = summary + " paramCount: " + data.param.length;
+          summary = `${summary} paramCount: ${data.param.length}`;
         if (undefined !== data.color)
-          summary = summary + " colorCount: " + data.color.length;
+          summary = `${summary} colorCount: ${data.color.length}`;
 
         return summary;
       }
@@ -283,41 +285,41 @@ class ResponseGenerator {
     switch (solid.solidPrimitiveType) {
       case "box":
         const box: Box = (solid as Box);
-        return summary
-          + " baseOrigin: " + JSON.stringify(box.getBaseOrigin().toJSON())
-          + " topOrigin: " + JSON.stringify(box.getTopOrigin().toJSON())
-          + " baseX: " + box.getBaseX()
-          + " baseY: " + box.getBaseY();
+        return `${summary}'
+        ' baseOrigin: ${JSON.stringify(box.getBaseOrigin().toJSON())}'
+        ' topOrigin: ${JSON.stringify(box.getTopOrigin().toJSON())}'
+        ' baseX: ${box.getBaseX()}'
+        ' baseY: ${box.getBaseY()}`;
       case "cone":
         const cone: Cone = solid as Cone;
-        return summary
-          + " baseCenterPoint: " + JSON.stringify(cone.getCenterA())
-          + " topCenterPoint: " + JSON.stringify(cone.getCenterB())
-          + " baseCenterRadius: " + JSON.stringify(cone.getRadiusA())
-          + " topCenterRadius: " + JSON.stringify(cone.getRadiusB());
+        return `${summary}'
+        ' baseCenterPoint: ${JSON.stringify(cone.getCenterA())}'
+        ' topCenterPoint: ${JSON.stringify(cone.getCenterB())}'
+        ' baseCenterRadius: ${JSON.stringify(cone.getRadiusA())}'
+        ' topCenterRadius: ${JSON.stringify(cone.getRadiusB())}`;
       case "sphere":
         const sphere: Sphere = solid as Sphere;
-        return summary
-          + " centerPoint: " + JSON.stringify(sphere.cloneCenter().toJSON())
-          + " radius: " + JSON.stringify(sphere.trueSphereRadius());
+        return `${summary}'
+        ' centerPoint: ${JSON.stringify(sphere.cloneCenter().toJSON())}'
+        ' radius: ${JSON.stringify(sphere.trueSphereRadius())}`;
       case "linearSweep":
         const linearSweep: LinearSweep = solid as LinearSweep;
-        return summary
-          + " vector: " + linearSweep.cloneSweepVector().toJSON()
-          + " curves" + this.summarizeCurveCollection(linearSweep.getCurvesRef());
+        return `${summary}'
+        ' vector: ${linearSweep.cloneSweepVector().toJSON()}'
+        ' curves${this.summarizeCurveCollection(linearSweep.getCurvesRef())}`;
       case "rotationalSweep":
         const rotationalSweep: RotationalSweep = solid as RotationalSweep;
         const axis = rotationalSweep.cloneAxisRay();
-        return summary +
-          " center: " + axis.origin.toJSON()
-          + " axis: " + JSON.stringify(axis.direction.toJSON())
-          + " sweepAngle: " + rotationalSweep.getSweep().degrees;
+        return `${summary}'
+        ' center: ${axis.origin.toJSON()}'
+        ' axis: ${JSON.stringify(axis.direction.toJSON())}'
+        ' sweepAngle: ${rotationalSweep.getSweep().degrees}`;
       case "ruledSweep":
         const ruledSweep: RuledSweep = solid as RuledSweep;
         const summarizedCollection = ruledSweep.cloneContours().map((curveCollection) => this.summarizeCurveCollection(curveCollection));
-        return summary
-          + " isClosedVolume" + ruledSweep.isClosedVolume
-          + " contours: " + JSON.stringify(summarizedCollection);
+        return `${summary}'
+        ' isClosedVolume${ruledSweep.isClosedVolume}'
+        ' contours: ${JSON.stringify(summarizedCollection)}`;
       case "torusPipe":
         const torusPipe: TorusPipe = solid as TorusPipe;
         const vectorX = torusPipe.cloneVectorX();
@@ -327,12 +329,12 @@ class ResponseGenerator {
           vectorY.scaleInPlace(-1.0);
           sweep.setRadians(-sweep.radians);
         }
-        return summary
-          + " center: " + torusPipe.cloneCenter().toJSON()
-          + " xyVectors: " + JSON.stringify([vectorX.toJSON(), vectorY.toJSON()])
-          + " majorRadius: " + torusPipe.getMajorRadius()
-          + " minorRadius: " + torusPipe.getMinorRadius()
-          + " sweepAngle: " + sweep.degrees;
+        return `${summary}'
+        ' center: ${torusPipe.cloneCenter().toJSON()}'
+        ' xyVectors: ${JSON.stringify([vectorX.toJSON(), vectorY.toJSON()])}'
+        ' majorRadius: ${torusPipe.getMajorRadius()}'
+        ' minorRadius: ${torusPipe.getMinorRadius()}'
+        ' sweepAngle: ${sweep.degrees}`;
     }
   }
 
@@ -342,38 +344,38 @@ class ResponseGenerator {
     switch (curve.curvePrimitiveType) {
       case "arc":
         const arc: Arc3d = curve as Arc3d;
-        summary = summary + " center: " + JSON.stringify(arc.center.toJSON());
+        summary = `${summary} center: ${JSON.stringify(arc.center.toJSON())}`;
         if (undefined !== arc.circularRadius)
-          summary = summary + " radius: " + arc.circularRadius();
-        summary = summary
-          + " vectorX:" + arc.vector0.toJSON()
-          + " vectorY:" + arc.vector90.toJSON()
-          + ` sweepStartEnd [${arc.sweep.startDegrees}, ${arc.sweep.endDegrees}]`
-          + " curveLength: " + curve.curveLength();
+          summary = `${summary} radius: ${arc.circularRadius()}`;
+        summary = `${summary}'
+        ' vectorX:${arc.vector0.toJSON()}'
+        ' vectorY:${arc.vector90.toJSON()}'
+        ' sweepStartEnd [${arc.sweep.startDegrees}, ${arc.sweep.endDegrees}]`
+          + ` curveLength: ${curve.curveLength()}`;
         return summary;
       case "lineSegment":
         const lineSegment: LineSegment3d = curve as LineSegment3d;
-        summary = summary + " points: " + JSON.stringify(lineSegment.toJSON());
-        summary = summary + " curveLength: " + curve.curveLength();
+        summary = `${summary} points: ${JSON.stringify(lineSegment.toJSON())}`;
+        summary = `${summary} curveLength: ${curve.curveLength()}`;
         return summary;
       case "lineString":
         const lineString: LineString3d = curve as LineString3d;
-        summary = summary + " pointCount: " + lineString.numPoints()
-          + " curveLength: " + curve.curveLength();
+        summary = `${summary} pointCount: ${lineString.numPoints()}'
+        ' curveLength: ${curve.curveLength()}`;
         return summary;
       case "bsplineCurve":
         const bsplineCurve: BSplineCurve3d = curve as BSplineCurve3d;
-        summary = summary
-          + " curveOrder: " + bsplineCurve.order
-          + " controlPointsCount: " + bsplineCurve.numPoles
-          + " curveLength: " + curve.curveLength();
+        summary = `${summary}'
+        ' curveOrder: ${bsplineCurve.order}'
+        ' controlPointsCount: ${bsplineCurve.numPoles}'
+        ' curveLength: ${curve.curveLength()}`;
         return summary;
       case "bezierCurve":
         const bezierCurve: BezierCurveBase = curve as BezierCurveBase;
-        summary = summary
-          + " curveOrder: " + bezierCurve.order
-          + " controlPointsCount: " + bezierCurve.numPoles
-          + " curveLength: " + curve.curveLength();
+        summary = `${summary}'
+        ' curveOrder: ${bezierCurve.order}'
+        ' controlPointsCount: ${bezierCurve.numPoles}'
+        ' curveLength: ${curve.curveLength()}`;
         return summary;
       case "transitionSpiral":
         const transitionSpiral: TransitionSpiral3d = curve as TransitionSpiral3d;
@@ -383,9 +385,9 @@ class ResponseGenerator {
       case "curveChainWithDistanceIndex":
         const curveChainWithDistanceIndex: CurveChainWithDistanceIndex = curve as CurveChainWithDistanceIndex;
         const path = curveChainWithDistanceIndex.path;
-        summary = summary
-          + " curveLength: " + curve.curveLength()
-          + " isOpen: " + path.isOpenPath;
+        summary = `${summary}'
+        ' curveLength: ${curve.curveLength()}'
+        ' isOpen: ${path.isOpenPath}`;
         return summary;
     }
   }
@@ -395,17 +397,17 @@ class ResponseGenerator {
     switch (curves.curveCollectionType) {
       case "loop":
         const loop: Loop = curves as Loop;
-        summary = summary + " isInner: " + loop.isInner;
+        summary = `${summary} isInner: ${loop.isInner}`;
         break;
       case "path":
         const path: Path = curves as Path;
-        summary = summary + " isOpen: " + path.isOpenPath;
+        summary = `${summary} isOpen: ${path.isOpenPath}`;
         break;
     }
 
-    return summary
-      + " numCurves: " + curves.collectCurvePrimitives().length
-      + " boundary: " + curves.dgnBoundaryType();
+    return `${summary}'
+    ' numCurves: ${curves.collectCurvePrimitives().length}'
+    ' boundary: ${curves.dgnBoundaryType()}`;
   }
 }
 
