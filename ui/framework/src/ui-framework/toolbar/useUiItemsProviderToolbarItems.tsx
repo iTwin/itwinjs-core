@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import {
-  CommonToolbarItem, StageUsage, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager, ToolbarItemsChangedArgs,
+  CommonToolbarItem, StageUsage, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager,
 } from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";

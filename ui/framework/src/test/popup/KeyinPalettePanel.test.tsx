@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
+
+import { IModelApp, IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../ui-framework";
@@ -15,9 +16,18 @@ const myLocalStorage = storageMock();
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
 const KEYIN_HISTORY_KEY = "historyArray";
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
+function requestNextAnimation() {}
 
 describe("<KeyinPalettePanel>", () => {
+
   before(async () => {
+
+    // Avoid requestAnimationFrame exception during test by temporarily replacing function that calls it. Tried replacing window.requestAnimationFrame first
+    // but that did not work.
+    Object.defineProperty(IModelApp, "requestNextAnimation", {
+      get: () => requestNextAnimation,
+    });
 
     Object.defineProperty(window, "localStorage", {
       get: () => myLocalStorage,
@@ -36,6 +46,7 @@ describe("<KeyinPalettePanel>", () => {
 
     // restore the overriden property getter
     Object.defineProperty(window, "localStorage", propertyDescriptorToRestore);
+    Object.defineProperty(IModelApp, "requestNextAnimation", rnaDescriptorToRestore);
 
     TestUtils.terminateUiFramework();
   });
