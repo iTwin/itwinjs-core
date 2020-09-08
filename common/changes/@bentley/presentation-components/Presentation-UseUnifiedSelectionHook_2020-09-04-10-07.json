@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Added usePropertyDataProviderWithUnifiedSelection Hook",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "aurelijus.kauneckis@bentley.com"
+}

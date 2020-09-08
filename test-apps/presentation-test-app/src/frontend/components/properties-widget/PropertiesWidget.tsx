@@ -8,7 +8,7 @@ import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
 import {
-  IPresentationPropertyDataProvider, PresentationPropertyDataProvider, propertyGridWithUnifiedSelection,
+  IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
 } from "@bentley/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
@@ -16,10 +16,7 @@ import {
   ActionButtonRendererProps, PropertyCategory, PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue,
   VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Orientation } from "@bentley/ui-core";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const SamplePropertyGrid = propertyGridWithUnifiedSelection(VirtualizedPropertyGridWithDataProvider);
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation } from "@bentley/ui-core";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
 
@@ -31,6 +28,8 @@ export interface Props {
 
 export function PropertiesWidget(props: Props) {
   const dataProvider = React.useMemo(() => createDataProvider(props.imodel, props.rulesetId), [props.imodel, props.rulesetId]);
+
+  const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
 
   const renderFavoritesActionButton = React.useCallback((buttonProps: ActionButtonRendererProps) => (<FavoritePropertyActionButton {...buttonProps} dataProvider={dataProvider} />), [dataProvider]);
   const renderCopyActionButton = React.useCallback(() => <CopyActionButton />, []);
@@ -51,18 +50,25 @@ export function PropertiesWidget(props: Props) {
     setContextMenuArgs(undefined);
   }, [onFindSimilarProp, dataProvider]);
 
+  let content;
+  if (isOverLimit) {
+    content = (<FillCentered>{IModelApp.i18n.translate("Sample:property-grid.too-many-elements-selected")}</FillCentered>);
+  } else {
+    content = (<VirtualizedPropertyGridWithDataProvider
+      dataProvider={dataProvider}
+      isPropertyHoverEnabled={true}
+      onPropertyContextMenu={onPropertyContextMenu}
+      actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
+      orientation={Orientation.Horizontal}
+      horizontalOrientationMinWidth={500}
+    />);
+  }
+
   return (
     <div className="PropertiesWidget">
       <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
       <div className="ContentContainer">
-        <SamplePropertyGrid
-          dataProvider={dataProvider}
-          isPropertyHoverEnabled={true}
-          onPropertyContextMenu={onPropertyContextMenu}
-          actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
-          orientation={Orientation.Horizontal}
-          horizontalOrientationMinWidth={500}
-        />
+        {content}
       </div>
       {contextMenuArgs && <PropertiesWidgetContextMenu args={contextMenuArgs} dataProvider={dataProvider} onFindSimilar={onFindSimilar} onCloseContextMenu={onCloseContextMenu} />}
     </div>
@@ -192,6 +198,7 @@ class AutoExpandingPropertyDataProvider extends PresentationPropertyDataProvider
     this.expandCategories(result.categories);
     return result;
   }
+
   private expandCategories(categories: PropertyCategory[]) {
     categories.forEach((category: PropertyCategory) => {
       category.expand = true;
