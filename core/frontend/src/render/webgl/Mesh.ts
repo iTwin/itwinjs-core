@@ -279,6 +279,9 @@ export class EdgeGeometry extends MeshGeometry {
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
   public get endPointAndQuadIndices(): BufferHandle { return this._endPointAndQuadIndices; }
+  public wantMonochrome(target: Target): boolean {
+    return target.currentViewFlags.renderMode === RenderMode.Wireframe;
+  }
 
   protected constructor(indices: BufferHandle, endPointAndQuadsIndices: BufferHandle, numIndices: number, mesh: MeshData) {
     super(mesh, numIndices);
@@ -355,10 +358,15 @@ export class PolylineEdgeGeometry extends MeshGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return true; }
   protected _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
   protected _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  public getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
   public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public get polylineBuffers(): PolylineBuffers { return this._buffers; }
+
+  public wantMonochrome(target: Target): boolean {
+    return target.currentViewFlags.renderMode === RenderMode.Wireframe;
+  }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;

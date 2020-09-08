@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.5.5",
+      "tag": "@bentley/presentation-components_v2.5.5",
+      "date": "Wed, 02 Sep 2020 17:42:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update rxjs dependency version to `^6.6.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.4",
       "tag": "@bentley/presentation-components_v2.5.4",
       "date": "Fri, 28 Aug 2020 15:34:15 GMT",

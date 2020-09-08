@@ -151,6 +151,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   }
 
   public wantMixMonochromeColor(_target: Target): boolean { return false; }
+  public wantMonochrome(_target: Target): boolean { return true; }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 

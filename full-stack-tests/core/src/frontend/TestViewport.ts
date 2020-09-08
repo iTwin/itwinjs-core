@@ -85,6 +85,11 @@ export class Color {
     return Color.from(v);
   }
 
+  public static fromColorDef(def: ColorDef): Color {
+    const colors = def.colors;
+    return Color.fromRgba(colors.r, colors.g, colors.b, 0xff - colors.t);
+  }
+
   public compare(rhs: Color): number {
     return this.v - rhs.v;
   }

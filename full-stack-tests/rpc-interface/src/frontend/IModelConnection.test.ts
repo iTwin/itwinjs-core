@@ -81,7 +81,7 @@ describe("IModelConnection Tiles", () => {
 
   it("IModelTileRpcInterface method getTileCacheContainerUrl should work as expected", async () => {
     // requesting tiles will automatically call getTileCacheContainerUrl if the chechCache method is defined
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
     const treeId = modelProps[0].id!.toString();
     const tile = await iModel.tiles.getTileTreeProps(treeId);
 
@@ -96,7 +96,7 @@ describe("IModelConnection Tiles", () => {
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
     expect(modelProps.length).to.be.at.least(1);
 
     const treeId = modelProps[0].id!.toString();
@@ -118,7 +118,7 @@ describe("IModelConnection Tiles", () => {
     if (!testContext.settings.runiModelTileRpcTests)
       this.skip();
 
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
     const treeId = modelProps[0].id!.toString();
 
     const result = await iModel.tiles.getTileTreeProps(treeId);
@@ -131,7 +131,7 @@ describe("IModelConnection Tiles", () => {
     if (!testContext.settings.runiModelTileRpcTests)
       this.skip();
 
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
     const treeId = modelProps[0].id!.toString();
     const tile = await iModel.tiles.getTileTreeProps(treeId);
 
@@ -146,7 +146,7 @@ describe("IModelConnection Tiles", () => {
     if (!testContext.settings.runiModelTileRpcTests)
       this.skip();
 
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
     const treeId = modelProps[0].id!.toString();
 
     const result = await iModel.tiles.getTileTreeProps(treeId);
@@ -159,7 +159,7 @@ describe("IModelConnection Tiles", () => {
     if (!testContext.settings.runiModelTileRpcTests)
       this.skip();
 
-    const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({ from: "BisCore.SpatialModel" });
     const treeId = modelProps[0].id!.toString();
     const tile = await iModel.tiles.getTileTreeProps(treeId);
 
@@ -175,7 +175,7 @@ describe("IModelConnection Tiles", () => {
     if (!testContext.settings.runiModelTileRpcTests)
       this.skip();
 
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
     const treeId = modelProps[0].id!.toString();
 
     let failed = false;
@@ -367,7 +367,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
   */
 
   it("iModelReadRpcInterface method queryModelRanges should work as expected", async () => {
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
     const modelId = modelProps[0].id!.toString();
 
     const idSet: Id64Set = Id64.toIdSet(modelId);
