@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 28 Aug 2020 15:34:15 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+
+## 2.5.5
+Wed, 02 Sep 2020 17:42:23 GMT
+
+### Updates
+
+- Update rxjs dependency version to `^6.6.2`
 
 ## 2.5.4
 Fri, 28 Aug 2020 15:34:15 GMT
