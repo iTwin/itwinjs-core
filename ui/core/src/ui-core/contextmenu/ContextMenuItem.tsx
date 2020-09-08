@@ -30,6 +30,8 @@ export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivEle
   badgeType?: BadgeType;
   /** Icon to display in the right margin. */
   iconRight?: IconSpec;
+  /** Hide the icon container. */
+  hideIconContainer?: boolean;
   /** @internal */
   onHover?: () => any;
   /* @internal */
@@ -90,9 +92,9 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         tabIndex={isSelected ? 0 : -1}
         aria-disabled={disabled}
       >
-        <div className="core-context-menu-icon">
+        {!this.props.hideIconContainer && <div className="core-context-menu-icon">
           {icon !== undefined && <Icon iconSpec={icon} />}
-        </div>
+        </div>}
         <div className={"core-context-menu-content"}>
           {this._parsedChildren}
         </div>

@@ -36,6 +36,7 @@ export * from "./presentation-components/ComponentsLoggerCategory";
  */
 export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider, PresentationPropertyDataProviderProps } from "./presentation-components/propertygrid/DataProvider";
 export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./presentation-components/propertygrid/WithUnifiedSelection";
+export * from "./presentation-components/propertygrid/UseUnifiedSelection";
 
 /**
  * @module FavoriteProperties

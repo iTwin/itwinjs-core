@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+// cspell:ignore showstatus showerror
+
 // show status in the output HTML
 export function showStatus(string1: string, string2?: string) {
   let outString: string = string1;
@@ -24,7 +26,7 @@ export function showError(string1: HTMLElement | string, string2?: string) {
   }
 
   if (string2) {
-    const textNode = document.createTextNode(" " + string2);
+    const textNode = document.createTextNode(` ${string2}`);
     span.appendChild(textNode);
   }
 

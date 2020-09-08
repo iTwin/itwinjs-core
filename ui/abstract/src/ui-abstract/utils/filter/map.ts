@@ -6,7 +6,7 @@
 // code extracted from https://github.com/microsoft/vscode/blob/master/src/vs/base/common/map.ts
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
-/* eslint-disable rulesdir/prefer-get */
+/* eslint-disable @bentley/prefer-get */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable @typescript-eslint/no-this-alias */
 

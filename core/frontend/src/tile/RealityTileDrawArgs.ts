@@ -33,7 +33,7 @@ export class RealityTileDrawArgs extends TileDrawArgs {
   public getPixelSize(tile: Tile): number {
     if (tile instanceof MapTile) {
       /* For background maps which contain only rectangles with textures, use the projected screen rectangle rather than sphere to calculate pixel size.  */
-      const rangeCorners = (tile as MapTile).getRangeCorners(scratchCorners);
+      const rangeCorners = tile.getRangeCorners(scratchCorners);
       scratchXRange.setNull();
       scratchYRange.setNull();
 

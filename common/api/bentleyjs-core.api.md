@@ -485,9 +485,6 @@ export function disposeArray(list?: IDisposable[]): undefined;
 // @public
 export type DisposeFunc = () => void;
 
-// @internal
-export const electronRenderer: any;
-
 // @public
 export class Entry<K, V> {
     constructor(key: K, value: V);
@@ -980,6 +977,9 @@ export class IndexMap<T> {
     // (undocumented)
     protected readonly _maximumSize: number;
 }
+
+// @internal
+export const isElectronMain: boolean;
 
 // @internal
 export const isElectronRenderer: boolean;

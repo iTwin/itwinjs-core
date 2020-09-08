@@ -267,7 +267,7 @@ class FrameBuffers implements WebGLDisposable {
     if (undefined !== textures.occlusion) {
       assert(undefined !== textures.occlusionBlur);
       this.occlusion = FrameBuffer.create([textures.occlusion]);
-      this.occlusionBlur = FrameBuffer.create([textures.occlusionBlur!]);
+      this.occlusionBlur = FrameBuffer.create([textures.occlusionBlur]);
     } else {
       assert(undefined === textures.occlusionBlur);
       this.occlusion = dispose(this.occlusion);
@@ -384,8 +384,8 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       assert(undefined !== textures.occlusionBlur);
       this.composite!.occlusion = textures.occlusion.getHandle();
       this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
-      this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
-      this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
+      this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
+      this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
     } else {
       assert(undefined === textures.occlusionBlur);
       this.composite!.occlusion = undefined;
@@ -797,7 +797,7 @@ abstract class Compositor extends SceneCompositor {
         this._geom.disableVolumeClassifier();
         this._textures.disableVolumeClassifier();
         if (undefined !== this._vcAltDepthStencil) {
-          this._vcAltDepthStencil!.dispose();
+          this._vcAltDepthStencil.dispose();
           this._vcAltDepthStencil = undefined;
         }
         this._haveVolumeClassifier = false;
@@ -856,7 +856,7 @@ abstract class Compositor extends SceneCompositor {
         this._geom.disableVolumeClassifier();
         this._textures.disableVolumeClassifier();
         if (undefined !== this._vcAltDepthStencil) {
-          this._vcAltDepthStencil!.dispose();
+          this._vcAltDepthStencil.dispose();
           this._vcAltDepthStencil = undefined;
         }
         this._haveVolumeClassifier = false;
@@ -1179,7 +1179,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Create a BranchState and several RenderStates to use when drawing the classifier volumes.
     // The BranchState needs to be created every time in case the symbology overrides changes.
-    // It is based off of the curent state, but turns off unnecessary and unwanted options, lighting being the most important.
+    // It is based off of the current state, but turns off unnecessary and unwanted options, lighting being the most important.
     const top = this.target.uniforms.branch.top;
     const vf = ViewFlags.createFrom(top.viewFlags);
     vf.renderMode = RenderMode.SmoothShade;
@@ -1313,8 +1313,8 @@ abstract class Compositor extends SceneCompositor {
     if (!this.target.activeVolumeClassifierProps || (renderForReadPixels && 0 === cmds.length) || 0 === cmdsForVC.length)
       return;
 
-    let outsideFlags = this.target.activeVolumeClassifierProps!.flags.outside;
-    let insideFlags = this.target.activeVolumeClassifierProps!.flags.inside;
+    let outsideFlags = this.target.activeVolumeClassifierProps.flags.outside;
+    let insideFlags = this.target.activeVolumeClassifierProps.flags.inside;
 
     if (this.target.wantThematicDisplay) {
       if (outsideFlags !== SpatialClassificationProps.Display.Off)
@@ -1408,7 +1408,7 @@ abstract class Compositor extends SceneCompositor {
 
     if (renderForReadPixels) {
       // Set the stencil for all of the classifier volumes.
-      System.instance.frameBufferStack.execute(this._frameBuffers.altZOnly!, false, this.useMsBuffers, () => {
+      System.instance.frameBufferStack.execute(this._frameBuffers.altZOnly, false, this.useMsBuffers, () => {
         this.target.pushState(this._vcBranchState!);
         System.instance.applyRenderState(this._vcSetStencilRenderState!);
         this.target.techniques.execute(this.target, cmds, RenderPass.Classification);
@@ -1448,7 +1448,7 @@ abstract class Compositor extends SceneCompositor {
     if ((needOutsideDraw && cmds.length > 0) || (needInsideDraw && !(doColorByElement && doColorByElementForIntersectingVolumes))) {
       // Set the stencil using all of the volume classifiers.  This will be used to do the outside and/or the inside if they need to be done.
       // If we are not modifying the outside and the inside is using color-by-element for intersecting volumes, then the stencil will get set later.
-      fbStack.execute(zOnlyFbo!, false, this.useMsBuffers, () => {
+      fbStack.execute(zOnlyFbo, false, this.useMsBuffers, () => {
         this.target.pushState(this._vcBranchState!);
         System.instance.applyRenderState(this._vcSetStencilRenderState!);
         this.target.techniques.execute(this.target, cmds, RenderPass.Classification);
@@ -1503,7 +1503,7 @@ abstract class Compositor extends SceneCompositor {
         for (let i = 0; i < cmdsByIndex.length; i += numCmdsPerClassifier) {
           const nxtCmds = cmdsByIndex.slice(i, i + numCmdsPerClassifier);
           // Set the stencil for this one classifier.
-          fbStack.execute(zOnlyFbo!, false, this.useMsBuffers, () => {
+          fbStack.execute(zOnlyFbo, false, this.useMsBuffers, () => {
             this.target.pushState(this._vcBranchState!);
             System.instance.applyRenderState(this._vcSetStencilRenderState!);
             this.target.techniques.execute(this.target, nxtCmds, RenderPass.Classification);
@@ -1596,7 +1596,7 @@ abstract class Compositor extends SceneCompositor {
     if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers) {
       volClassBlendFbo.blitMsBuffersToTextures(false); // make sure the volClassBlend texture that we are about to read has been blitted
     }
-    fbStack.execute(fboColorAndZ!, false, this.useMsBuffers, () => {
+    fbStack.execute(fboColorAndZ, false, this.useMsBuffers, () => {
       this.target.pushState(this.target.decorationsState);
       this._vcBlendRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.SrcAlpha, GL.BlendFactor.Zero, GL.BlendFactor.OneMinusSrcAlpha, GL.BlendFactor.One);
       System.instance.applyRenderState(this._vcBlendRenderState!);
@@ -1619,7 +1619,7 @@ abstract class Compositor extends SceneCompositor {
       });
 
       // Process the stencil to flash the contents.
-      fbStack.execute(fboColorAndZ!, true, this.useMsBuffers, () => {
+      fbStack.execute(fboColorAndZ, true, this.useMsBuffers, () => {
         this.target.pushState(this.target.decorationsState);
         this._vcColorRenderState!.blend.color = [1.0, 1.0, 1.0, this.target.flashIntensity * 0.2];
         this._vcColorRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.One);

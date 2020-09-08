@@ -16,6 +16,8 @@ import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 
+// cspell:ignore textbox topdiv
+
 export class Surface {
   public readonly element: HTMLElement;
   public readonly keyinField: KeyinField;
@@ -154,7 +156,7 @@ export class Surface {
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
     } catch (err) {
-      alert("Error opening iModel: " + err.toString());
+      alert(`Error opening iModel: ${err.toString()}`);
     }
   }
 

@@ -91,7 +91,7 @@ describe("Texture tests", () => {
     const imageSource = new ImageSource(pngData, ImageSourceFormat.Png);
     const image = await imageElementFromImageSource(imageSource);
     assert(undefined !== image);
-    const imageTexture = TextureHandle.createForImage(image!, true, RenderTexture.Type.Normal);
+    const imageTexture = TextureHandle.createForImage(image, true, RenderTexture.Type.Normal);
     assert(undefined !== imageTexture);
     expect(imageTexture!.width).to.equal(4);
     expect(imageTexture!.height).to.equal(4);
@@ -141,15 +141,15 @@ describe("ImageUtil", () => {
   it("should extract image dimensions from ImageSource", async () => {
     const size = await extractImageSourceDimensions(imageSource);
     assert(undefined !== size);
-    expect(size!.x).to.equal(3);
-    expect(size!.y).to.equal(3);
+    expect(size.x).to.equal(3);
+    expect(size.y).to.equal(3);
   });
 
   it("should extract image from ImageSource", async () => {
     const image = await imageElementFromImageSource(imageSource);
     assert(undefined !== image);
-    expect(image!.naturalWidth).to.equal(3);
-    expect(image!.naturalHeight).to.equal(3);
+    expect(image.naturalWidth).to.equal(3);
+    expect(image.naturalHeight).to.equal(3);
   });
 
   it("should produce a data URL from an alpha ImageBuffer", async () => {

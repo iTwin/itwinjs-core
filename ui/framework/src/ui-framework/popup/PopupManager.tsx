@@ -63,7 +63,8 @@ export class PopupManager {
   private static _htmlElementId = "HTMLElement";
   private static _cardId = "Card";
   private static _toolSettingsId = "ToolSettings";
-  private static _commandPaletteId = "KeyinPalette";
+  private static _keyPalettePopupId = "KeyinPalette";
+
   private static _defaultOffset = { x: 8, y: 8 };
 
   public static readonly onPopupsChangedEvent = new PopupsChangedEvent();
@@ -162,7 +163,7 @@ export class PopupManager {
     keyins: KeyinEntry[], el: HTMLElement, onItemExecuted?: OnItemExecutedFunc, onCancel?: OnCancelFunc,
   ): boolean {
 
-    const id = PopupManager._commandPaletteId;
+    const id = PopupManager._keyPalettePopupId;
     const component = (
       <KeyinPalettePopup keyins={keyins}
         id={id} el={el} onCancel={onCancel} onItemExecuted={onItemExecuted} />
@@ -180,7 +181,7 @@ export class PopupManager {
   }
 
   public static hideKeyinPalette(): boolean {
-    return PopupManager.removePopup(PopupManager._commandPaletteId);
+    return PopupManager.removePopup(PopupManager._keyPalettePopupId);
   }
 
   public static showToolbar(

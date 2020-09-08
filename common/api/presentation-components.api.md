@@ -368,10 +368,18 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
     preloadingEnabled?: boolean;
 }
 
-// @public
+// @beta
+export interface PropertyDataProviderWithUnifiedSelectionProps {
+    dataProvider: IPresentationPropertyDataProvider;
+    requestedContentInstancesLimit?: number;
+    // @internal (undocumented)
+    selectionHandler?: SelectionHandler;
+}
+
+// @public @deprecated
 export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<P & PropertyGridWithUnifiedSelectionProps>;
 
-// @public
+// @public @deprecated
 export interface PropertyGridWithUnifiedSelectionProps {
     dataProvider: IPresentationPropertyDataProvider;
     requestedContentInstancesLimit?: number;
@@ -450,6 +458,11 @@ export function useControlledTreeFiltering(props: ControlledTreeFilteringProps):
 
 // @beta
 export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+
+// @beta
+export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): {
+    isOverLimit: boolean;
+};
 
 // @public
 export function useRulesetRegistration(ruleset: Ruleset): void;

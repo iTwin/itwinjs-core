@@ -60,8 +60,8 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
   };
 
   private log(status: string, props: Props): void {
-    const descr = this._operationName + "(" + this.stringify(props) + ")";
-    Logger.logTrace(this._loggerCategory, "Backend " + status + " " + descr, () => this.makeMetadata(props));
+    const descr = `${this._operationName}(${this.stringify(props)})`;
+    Logger.logTrace(this._loggerCategory, `Backend ${status} ${descr}`, () => this.makeMetadata(props));
   }
 
   protected async perform(props: Props): Promise<Result> {
@@ -89,7 +89,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     assert(tileQP.isRejected);
     this.log("rejected", props);
-    throw tileQP.error!; // eslint-disable-line no-throw-literal
+    throw tileQP.error; // eslint-disable-line no-throw-literal
   }
 }
 
@@ -130,13 +130,13 @@ async function getTileContent(props: TileContentRequestProps): Promise<Uint8Arra
 }
 
 function generateTileContentKey(props: TileContentRequestProps): string {
-  return generateTileRequestKey(props) + `:${props.contentId}`;
+  return `${generateTileRequestKey(props)}:${props.contentId}`;
 }
 
 class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileContentRequestProps> {
   protected get _timeoutMilliseconds() { return IModelHost.tileContentRequestTimeout; }
   protected get _operationName() { return "requestTileContent"; }
-  protected stringify(props: TileContentRequestProps): string { return props.treeId + ":" + props.contentId; }
+  protected stringify(props: TileContentRequestProps): string { return `${props.treeId}:${props.contentId}`; }
   protected addMetadata(meta: any, props: TileContentRequestProps): void {
     meta.treeId = props.treeId;
     meta.contentId = props.contentId;

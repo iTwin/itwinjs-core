@@ -107,7 +107,7 @@ export class NativeApp {
     if (reportProgress) {
       stopProgressEvents = EventSourceManager.global.on(
         Events.NativeApp.namespace,
-        Events.NativeApp.onBriefcaseDownloadProgress + "-" + iModelId, (data: any) => {
+        `${Events.NativeApp.onBriefcaseDownloadProgress}-${iModelId}`, (data: any) => {
           progress!(data.progress as ProgressInfo);
         }).off;
     }

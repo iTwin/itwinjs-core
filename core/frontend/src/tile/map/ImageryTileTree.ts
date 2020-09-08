@@ -190,7 +190,7 @@ class ImageryTileLoader extends RealityTileLoader {
     assert(data instanceof ImageSource);
     assert(tile instanceof ImageryMapTile);
     const content: ImageryTileContent = {};
-    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
+    const texture = await this.loadTextureImage(data, this._iModel, system, isCanceled);
     if (undefined === texture)
       return content;
 

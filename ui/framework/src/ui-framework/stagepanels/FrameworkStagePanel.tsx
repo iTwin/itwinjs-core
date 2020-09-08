@@ -21,6 +21,7 @@ import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneLocation } from "../zones/Zone";
 import { getNestedStagePanelKey, getStagePanelType } from "./StagePanel";
 import { StagePanelState } from "./StagePanelDef";
+import { WidgetDef } from "../widgets/WidgetDef";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal
@@ -39,11 +40,11 @@ export interface FrameworkStagePanelProps {
   location: StagePanelLocation;
   panel: NineZoneStagePanelManagerProps;
   panelState: StagePanelState;
-  renderPane: (index: number) => React.ReactNode;
+  renderPane: (widgetDefId: WidgetDef["id"]) => React.ReactNode;
   resizable: boolean;
   widgetChangeHandler: WidgetChangeHandler;
-  widgetCount: number;
-  widgets: ZonesManagerWidgetsProps;
+  stagePanelWidgets: ReadonlyArray<WidgetDef["id"]>; // widgets defined in StagePanel
+  widgets: ZonesManagerWidgetsProps; // zone widgets
   widgetTabs: WidgetTabs;
 }
 
@@ -66,7 +67,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
   public render(): React.ReactNode {
     const panelStateClassName = classnames(this.props.panelState === StagePanelState.Off && /* istanbul ignore next */ "uifw-stagepanel-off");
     const className = classnames("uifw-stagepanel", panelStateClassName);
-    const paneCount = this.props.widgetCount + this.props.panel.panes.length;
+    const paneCount = this.props.stagePanelWidgets.length + this.props.panel.panes.length;
     const type = getStagePanelType(this.props.location);
     const isTargetVisible = !!this.props.draggedWidgetId && this.props.allowedZones && this.props.allowedZones.some((z) => this.props.draggedWidgetId === z);
     if (paneCount === 0) {
@@ -121,8 +122,12 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
                     isGripHidden={this.props.panel.isCollapsed}
                     isVertical={isVertical}
                   >
-                    {Array.from({ length: this.props.widgetCount }, (_, index) => index).map((index) => {
-                      return this.props.renderPane(index);
+                    {this.props.stagePanelWidgets.map((widgetId) => {
+                      return (
+                        <React.Fragment key={`wd-${widgetId}`}>
+                          {this.props.renderPane(widgetId)}
+                        </React.Fragment>
+                      );
                     })}
                     {this.props.panel.panes.map((pane, index) => {
                       const openWidgetId = pane.widgets.find((wId) => this.props.widgets[wId].tabIndex >= 0);

@@ -10,8 +10,8 @@
 
 // cSpell:words proxys
 
-type resolveFunc = ((arg: any) => void);
-type rejectFunc = ((arg: Error) => void);
+type ResolveFunc = ((arg: any) => void);
+type RejectFunc = ((arg: Error) => void);
 
 /** Class that manages Web Workers. The number of Web Worker threads can be specified.
  * Each Web Worker maintains a queue of requests, and queueOperation method selects
@@ -76,8 +76,8 @@ class RequestMessage {
  * @alpha
  */
 export abstract class WorkerOperation {
-  private _resolve: resolveFunc | undefined = undefined;
-  private _reject: rejectFunc | undefined = undefined;
+  private _resolve: ResolveFunc | undefined = undefined;
+  private _reject: RejectFunc | undefined = undefined;
   private _proxy: WebWorkerProxy | undefined = undefined;
   public msgId: number = 0;
 
@@ -86,7 +86,7 @@ export abstract class WorkerOperation {
 
   // This is the executor method that is called immediately when you instantiate a Promise.
   // Here, we store the resolve and reject functions for use when we handle the message from the worker (see handleMessage).
-  public executor(resolve: resolveFunc, reject: rejectFunc) {
+  public executor(resolve: ResolveFunc, reject: RejectFunc) {
     // save the resolve and reject functions to dispatch when we get reply back from the web worker.
     this._resolve = resolve;
     this._reject = reject;

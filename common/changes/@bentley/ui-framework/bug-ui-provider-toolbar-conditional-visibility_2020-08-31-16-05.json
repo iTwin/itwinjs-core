@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "add itemschanged handler so that items provided can be conditionally hidden",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "6283674+kckst8@users.noreply.github.com"
+}

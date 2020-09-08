@@ -1195,6 +1195,8 @@ export class CoreTools {
     // @beta
     static get keyinBrowserButtonItemDef(): CustomItemDef;
     // (undocumented)
+    static get keyinPaletteButtonItemDef(): ToolItemDef;
+    // (undocumented)
     static get measureDistanceToolItemDef(): ToolItemDef;
     // (undocumented)
     static get measureLocationToolItemDef(): ToolItemDef;
@@ -1929,13 +1931,13 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     panelState: StagePanelState;
     // (undocumented)
-    renderPane: (index: number) => React.ReactNode;
+    renderPane: (widgetDefId: WidgetDef["id"]) => React.ReactNode;
     // (undocumented)
     resizable: boolean;
     // (undocumented)
-    widgetChangeHandler: WidgetChangeHandler;
+    stagePanelWidgets: ReadonlyArray<WidgetDef["id"]>;
     // (undocumented)
-    widgetCount: number;
+    widgetChangeHandler: WidgetChangeHandler;
     // (undocumented)
     widgets: ZonesManagerWidgetsProps;
     // (undocumented)

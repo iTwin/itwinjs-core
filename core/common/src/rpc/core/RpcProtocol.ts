@@ -51,7 +51,7 @@ export interface RpcRequestFulfillment {
   /** The result for the request. */
   result: RpcSerializedValue;
 
-  /** The unserialized result for the request. */
+  /** The un-serialized result for the request. */
   rawResult: any;
 
   /** A protocol-specific status code value for the request. */

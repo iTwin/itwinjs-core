@@ -230,6 +230,7 @@ public;class IModel
 internal;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
+internal;IModelElectronIpc
 public;IModelEncryptionProps
 public;IModelError 
 public;IModelNotFoundResponse 

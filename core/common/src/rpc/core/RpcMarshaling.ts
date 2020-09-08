@@ -10,6 +10,8 @@ import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
 import { RpcProtocol } from "./RpcProtocol";
 
+// cspell:ignore unmarshal
+
 let marshalingTarget: RpcSerializedValue;
 let chunkThreshold = 0;
 

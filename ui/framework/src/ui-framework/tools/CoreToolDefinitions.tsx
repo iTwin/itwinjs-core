@@ -64,6 +64,16 @@ export class CoreTools {
       <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />
     );
   }
+
+  public static get keyinPaletteButtonItemDef() {
+    return new ToolItemDef({
+      toolId: "uif:keyinpalette",
+      iconSpec: "icon-process",
+      labelKey: "UiFramework:keyinbrowser.label",
+      execute: () => { IModelApp.uiAdmin.showKeyinPalette(); },
+    });
+  }
+
   public static get fitViewCommand() {
     return new ToolItemDef({
       toolId: FitViewTool.toolId,

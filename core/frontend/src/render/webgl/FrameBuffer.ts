@@ -136,7 +136,7 @@ export class FrameBuffer implements WebGLDisposable {
       System.instance.context.deleteFramebuffer(this._fbo!);
       this._fbo = undefined;
       if (undefined !== this._fboMs) {
-        System.instance.context.deleteFramebuffer(this._fboMs!);
+        System.instance.context.deleteFramebuffer(this._fboMs);
         this._fboMs = undefined;
       }
     }
@@ -198,7 +198,7 @@ export class FrameBuffer implements WebGLDisposable {
         continue;
       }
       if (this._colorMsBuffers[i].isDirty) {
-        gl2.bindFramebuffer(gl2.READ_FRAMEBUFFER, this._fboMs!);
+        gl2.bindFramebuffer(gl2.READ_FRAMEBUFFER, this._fboMs);
         gl2.readBuffer(this._colorAttachments[i]);
         gl2.bindFramebuffer(gl2.DRAW_FRAMEBUFFER, this._fbo!);
         attachments.push(this._colorAttachments[i]);
@@ -215,7 +215,7 @@ export class FrameBuffer implements WebGLDisposable {
     }
     if (blitDepth && undefined !== this.depthBuffer && undefined !== this.depthBufferMs && (this.depthBufferMs as RenderBufferMultiSample).isDirty) {
       const mask = GL.BufferBit.Depth; // (this.depthBuffer instanceof RenderBuffer ? GL.BufferBit.Depth : GL.BufferBit.Depth | GL.BufferBit.Stencil);
-      gl2.bindFramebuffer(gl2.READ_FRAMEBUFFER, this._fboMs!);
+      gl2.bindFramebuffer(gl2.READ_FRAMEBUFFER, this._fboMs);
       gl2.bindFramebuffer(gl2.DRAW_FRAMEBUFFER, this._fbo!);
       gl2.blitFramebuffer(0, 0, this.depthBuffer.width, this.depthBuffer.height,
         0, 0, this.depthBuffer.width, this.depthBuffer.height,

@@ -14,7 +14,7 @@ import { MapTilingScheme } from "../internal";
 const scratchMercatorFractionRange = Range2d.createNull();
 const scratchPoint2d = Point2d.createZero();
 
-/** A specialization of Range2d that represents a cartograhphic range used by map tiles.
+/** A specialization of Range2d that represents a cartographic range used by map tiles.
  * @internal
  */
 export class MapCartoRectangle extends Range2d {
@@ -40,7 +40,7 @@ export class MapCartoRectangle extends Range2d {
   public set east(x: number) { this.high.x = x; }
   public get north() { return this.high.y; }
   public set north(y: number) { this.high.y = y; }
-  public get latLongString() { return "Latitude: " + this.low.y * Angle.degreesPerRadian + " - " + this.high.y * Angle.degreesPerRadian + " Longitude: " + this.low.x * Angle.degreesPerRadian + " - " + this.high.x * Angle.degreesPerRadian; }
+  public get latLongString() { return `Latitude: ${this.low.y * Angle.degreesPerRadian} - ${this.high.y * Angle.degreesPerRadian} Longitude: ${this.low.x * Angle.degreesPerRadian} - ${this.high.x * Angle.degreesPerRadian}`; }
   public get globalLocationArea(): GlobalLocationArea { return { southwest: Cartographic.fromRadians(this.west, this.south), northeast: Cartographic.fromRadians(this.east, this.north) }; }
   public get cartoCenter() { return new Cartographic((this.low.x + this.high.x) / 2, (this.low.y + this.high.y) / 2); }
   public get globalLocation(): GlobalLocation { return { center: this.cartoCenter, area: this.globalLocationArea }; }

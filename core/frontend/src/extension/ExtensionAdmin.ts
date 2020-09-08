@@ -136,7 +136,7 @@ export class ExtensionAdmin {
     const extensionNameLC = extension.name.toLowerCase();
     this._registeredExtensions.set(extensionNameLC, extension);
     // log successful load after extension is registered.
-    Logger.logInfo(loggerCategory, extension.name + " registered");
+    Logger.logInfo(loggerCategory, `${extension.name} registered`);
     // retrieve the args we saved in the pendingExtension.
     let args: string[] | undefined;
     const pendingExtension = this._pendingExtensions.get(extensionNameLC);

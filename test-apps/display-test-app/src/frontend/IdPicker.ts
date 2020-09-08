@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@bentley/frontend-devtools";
 import { GeometricModel3dProps } from "@bentley/imodeljs-common";
 import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
+
+// cspell:ignore dehilite textbox subcat
 
 export abstract class IdPicker extends ToolBarDropDown {
   protected readonly _vp: ScreenViewport;
@@ -80,7 +81,7 @@ export abstract class IdPicker extends ToolBarDropDown {
 
     createComboBox({
       name: "Display: ",
-      id: this._elementType + "Picker_show",
+      id: `${this._elementType}Picker_show`,
       parent: this._element,
       handler: (select) => {
         this.show(select.value);
@@ -92,7 +93,7 @@ export abstract class IdPicker extends ToolBarDropDown {
 
     const textbox = createTextBox({
       label: "Id: ",
-      id: this._elementType + "Enable_byId",
+      id: `${this._elementType}Enable_byId`,
       parent: this._element,
       tooltip: "Enter comma-separated list of Ids to enable",
       inline: true,
@@ -170,7 +171,7 @@ export abstract class IdPicker extends ToolBarDropDown {
 
       this.toggleIds(ids, isolate);
     }).catch((reason) => {
-      alert("Error querying iModel: " + reason);
+      alert(`Error querying iModel: ${reason}`);
     });
   }
 
@@ -188,13 +189,13 @@ export abstract class IdPicker extends ToolBarDropDown {
       return [];
     }
 
-    const elemIds = "(" + Array.from(selectedElems).join(",") + ")";
-    const ecsql = "SELECT DISTINCT " + elementType + ".Id FROM bis.GeometricElement" + (is2d ? "2d" : "3d") + " WHERE ECInstanceId IN " + elemIds;
+    const elemIds = `(${Array.from(selectedElems).join(",")})`;
+    const ecsql = `SELECT DISTINCT ${elementType}.Id FROM bis.GeometricElement${is2d ? "2d" : "3d"} WHERE ECInstanceId IN ${elemIds}`;
     const rows = [];
     for await (const row of this._vp.view.iModel.query(ecsql)) {
       rows.push(row);
     }
-    const column = elementType.toLowerCase() + ".id";
+    const column = `${elementType.toLowerCase()}.id`;
     return rows.map((value) => value[column]);
   }
 
@@ -218,8 +219,8 @@ function getCategoryName(row: any): string {
 const selectUsedSpatialCategoryIds = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
 const selectUsedDrawingCategoryIds = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement2d WHERE Model.Id=? AND Category.Id IN (SELECT ECInstanceId from BisCore.DrawingCategory)";
 const selectCategoryProps = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM ";
-const selectSpatialCategoryProps = selectCategoryProps + "BisCore.SpatialCategory WHERE ECInstanceId IN (" + selectUsedSpatialCategoryIds + ")";
-const selectDrawingCategoryProps = selectCategoryProps + "BisCore.DrawingCategory WHERE ECInstanceId IN (" + selectUsedDrawingCategoryIds + ")";
+const selectSpatialCategoryProps = `${selectCategoryProps}BisCore.SpatialCategory WHERE ECInstanceId IN (${selectUsedSpatialCategoryIds})`;
+const selectDrawingCategoryProps = `${selectCategoryProps}BisCore.DrawingCategory WHERE ECInstanceId IN (${selectUsedDrawingCategoryIds})`;
 
 export class CategoryPicker extends IdPicker {
   public constructor(vp: ScreenViewport, parent: HTMLElement) { super(vp, parent); }
@@ -396,7 +397,7 @@ export class ModelPicker extends IdPicker {
 
     const query = { from: GeometricModel3dState.classFullName, wantPrivate: true };
     const props = await view.iModel.models.queryProps(query);
-    props.forEach((prop) => { if (prop.isPrivate) prop.name = "~" + prop.name; });
+    props.forEach((prop) => { if (prop.isPrivate) prop.name = `~${prop.name}`; });
     props.sort((lhs, rhs) => compareStringsOrUndefined(lhs.name, rhs.name));
 
     const selector = view.modelSelector;

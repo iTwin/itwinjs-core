@@ -45,7 +45,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
-    imodel.withPreparedStatement("SELECT count(*) AS [count] FROM " + className, (stmt: ECSqlStatement) => {
+    imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
       count = row.count;
@@ -65,9 +65,9 @@ describe("SchemaDesignPerf Polymorphic query", () => {
   function createSchema(count: number, multi: boolean): string {
     let schemaPath = "";
     if (multi)
-      schemaPath = path.join(outDir, "TestPolymorphicSchema_Multi_" + count.toString() + ".01.00.00.ecschema.xml");
+      schemaPath = path.join(outDir, `TestPolymorphicSchema_Multi_${count.toString()}.01.00.00.ecschema.xml`);
     else
-      schemaPath = path.join(outDir, "TestPolymorphicSchema_Flat_" + count.toString() + ".01.00.00.ecschema.xml");
+      schemaPath = path.join(outDir, `TestPolymorphicSchema_Flat_${count.toString()}.01.00.00.ecschema.xml`);
     if (!IModelJsFs.existsSync(schemaPath)) {
       if (multi) {
         let sxml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -82,14 +82,14 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           if (i === 0)
             baseClassName = "TestElement";
           else
-            baseClassName = "Child" + (i - 1).toString();
-          sxml = sxml + `<ECEntityClass typeName="Child` + i.toString() + `" >
-        <BaseClass>` + baseClassName + `</BaseClass>
-              <ECProperty propertyName = "PropChild` + i.toString() + `" typeName = "string" />
+            baseClassName = `Child${(i - 1).toString()}`;
+          sxml = `${sxml}<ECEntityClass typeName="Child${i.toString()}" >
+        <BaseClass>${  baseClassName}</BaseClass>
+              <ECProperty propertyName = "PropChild${  i.toString()}" typeName = "string" />
         </ECEntityClass>`;
         }
 
-        sxml = sxml + `</ECSchema>`;
+        sxml = `${sxml}</ECSchema>`;
         IModelJsFs.writeFileSync(schemaPath, sxml);
       } else {
         let sxml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -100,12 +100,12 @@ describe("SchemaDesignPerf Polymorphic query", () => {
               <ECProperty propertyName="PropBase" typeName="string" />
           </ECEntityClass>`;
         for (let i = 0; i < count; ++i) {
-          sxml = sxml + `<ECEntityClass typeName="Child` + i.toString() + `" >
+          sxml = `${sxml}<ECEntityClass typeName="Child${i.toString()}" >
         <BaseClass>TestElement</BaseClass>
               <ECProperty propertyName = "PropChild" typeName = "string" />
         </ECEntityClass>`;
         }
-        sxml = sxml + `</ECSchema>`;
+        sxml = `${sxml}</ECSchema>`;
         IModelJsFs.writeFileSync(schemaPath, sxml);
       }
     }
@@ -126,9 +126,9 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     for (const hCount of flatHierarchyCounts) {
       const st = createSchema(hCount, false);
       assert(IModelJsFs.existsSync(st));
-      const seedName = path.join(outDir, "poly_flat_" + hCount + ".bim");
+      const seedName = path.join(outDir, `poly_flat_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_flat_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_flat_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         // first create Elements and then Relationship
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
@@ -147,8 +147,8 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           assert.isTrue(Id64.isValidId64(id), "insert failed");
           // create elements of Child up to required level
           for (let j = 0; j < hCount; ++j) {
-            const className: string = "child" + j.toString();
-            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestPolySchema:" + className);
+            const className: string = `child${j.toString()}`;
+            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestPolySchema:${className}`);
             geomElement = seedIModel.elements.createElement(elementProps);
             setPropVal(geomElement, "propBase", "Base Value");
             setPropVal(geomElement, "propChild", "Child Value");
@@ -164,9 +164,9 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     // now create single multiHierarchy based schema and iModel
     const st2 = createSchema(multiHierarchyCount, true);
     assert(IModelJsFs.existsSync(st2));
-    const seedName2 = path.join(outDir, "poly_multi_" + multiHierarchyCount.toString() + ".bim");
+    const seedName2 = path.join(outDir, `poly_multi_${multiHierarchyCount.toString()}.bim`);
     if (!IModelJsFs.existsSync(seedName2)) {
-      const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_multi_" + multiHierarchyCount.toString() + ".bim"), { rootSubject: { name: "PerfTest" } });
+      const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_multi_${multiHierarchyCount.toString()}.bim`), { rootSubject: { name: "PerfTest" } });
       await seedIModel2.importSchemas(new BackendRequestContext(), [st2]);
       // first create Elements and then Relationship
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel2, Code.createEmpty(), true);
@@ -185,8 +185,8 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         assert.isTrue(Id64.isValidId64(id), "insert failed");
         // create elements of Child up to required level
         for (let j = 0; j < multiHierarchyCount; ++j) {
-          const className: string = "child" + j.toString();
-          elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, "TestPolySchema:" + className);
+          const className: string = `child${j.toString()}`;
+          elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, `TestPolySchema:${className}`);
           geomElement = seedIModel2.elements.createElement(elementProps);
           setPropVal(geomElement, "propBase", "Base Value");
           setPropVals(geomElement, j + 1, "propChild");
@@ -205,8 +205,8 @@ describe("SchemaDesignPerf Polymorphic query", () => {
   });
   it("Flat Read", async () => {
     for (const fhCount of flatHierarchyCounts) {
-      const seedFileName = path.join(outDir, "poly_flat_" + fhCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_flat_Read_" + fhCount + ".bim");
+      const seedFileName = path.join(outDir, `poly_flat_${fhCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_flat_Read_${fhCount}.bim`);
 
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
       let totalTime = 0.0;
@@ -214,7 +214,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         const startTime = new Date().getTime();
         try {
           let sql = "SELECT * from ";
-          sql = sql + "tps.Child" + i.toString();
+          sql = `${sql}tps.Child${i.toString()}`;
           perfimodel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
             while (stmt.step() === DbResult.BE_SQLITE_ROW) {
               const row = stmt.getRow();
@@ -235,8 +235,8 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     }
   });
   it("Multi Read", async () => {
-    const seedFileName = path.join(outDir, "poly_multi_" + multiHierarchyCount + ".bim");
-    const testFileName = IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_multi_Read_" + multiHierarchyCount + ".bim");
+    const seedFileName = path.join(outDir, `poly_multi_${multiHierarchyCount}.bim`);
+    const testFileName = IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_multi_Read_${multiHierarchyCount}.bim`);
 
     const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     let totalTime = 0.0;
@@ -246,8 +246,8 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       try {
         let sql = "SELECT * from ";
         if (i === 0)
-          sql = sql + "ONLY ";
-        sql = sql + "tps.TestElement";
+          sql = `${sql}ONLY `;
+        sql = `${sql}tps.TestElement`;
         perfimodel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
           while (stmt.step() === DbResult.BE_SQLITE_ROW) {
             const row = stmt.getRow();

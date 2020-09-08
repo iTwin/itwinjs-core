@@ -17,8 +17,22 @@ export abstract class StandardElectronManager {
   private _mainWindow?: BrowserWindow;
   protected get _defaultWindowOptions(): BrowserWindowConstructorOptions { return {}; }
 
-  private openMainWindow(options: BrowserWindowConstructorOptions) {
-    this._mainWindow = new BrowserWindow({ ...this._defaultWindowOptions, ...options });
+  private openMainWindow(options: BrowserWindowConstructorOptions = {}) {
+    const opts: BrowserWindowConstructorOptions = {
+      autoHideMenuBar: true,
+      webPreferences: {
+        preload: path.join(__dirname, "./ElectronPreload.js"),
+        nodeIntegration: false,
+        experimentalFeatures: false,
+        enableRemoteModule: true,
+        contextIsolation: true,
+        sandbox: true,
+      },
+      ...this._defaultWindowOptions, // override defaults
+      ...options, // overrides everything above
+    };
+
+    this._mainWindow = new BrowserWindow(opts);
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
@@ -37,7 +51,7 @@ export abstract class StandardElectronManager {
    *      - Basically, closing all windows should quit the application on platforms other that MacOS.
    * @param windowOptions Options for constructing the main BrowserWindow.  See: https://electronjs.org/docs/api/browser-window#new-browserwindowoptions
    */
-  public async initialize(windowOptions: BrowserWindowConstructorOptions = {}): Promise<void> {
+  public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
     // quit the application when all windows are closed (unless we're running on MacOS)
     app.on("window-all-closed", () => {
       if (process.platform !== "darwin")
@@ -66,6 +80,7 @@ export abstract class StandardElectronManager {
  */
 export class IModelJsElectronManager extends StandardElectronManager {
   private readonly _webResourcesPath: string;
+  private readonly _electronFrontend = "electron://frontend/";
   public frontendURL: string;
   public appIconPath: string;
 
@@ -74,12 +89,12 @@ export class IModelJsElectronManager extends StandardElectronManager {
     this._webResourcesPath = webResourcesPath;
 
     // In production builds, load the built frontend assets directly from the filesystem.
-    this.frontendURL = "electron://frontend/index.html";
-    this.appIconPath = this.parseElectronUrl("electron://frontend/appicon.ico");
+    this.frontendURL = `${this._electronFrontend}index.html`;
+    this.appIconPath = this.parseElectronUrl(`${this._electronFrontend}appicon.ico`);
   }
 
   /**
-   * Converts an "electron://" URL to an absolute file path.
+   * Converts an "electron://frontend/" URL to an absolute file path.
    *
    * We use this protocol in production builds because our frontend must be built with absolute URLs,
    * however, since we're loading everything directly from the install directory, we cannot know the
@@ -87,7 +102,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
    */
   private parseElectronUrl(requestedUrl: string): string {
     // Note that the "frontend/" path is arbitrary - this is just so we can handle *some* relative URLs...
-    let assetPath = requestedUrl.substr("electron://frontend/".length);
+    let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
     assetPath = assetPath.replace(/(#|\?).*$/, "");
@@ -109,7 +124,6 @@ export class IModelJsElectronManager extends StandardElectronManager {
 
   protected get _defaultWindowOptions() {
     return {
-      autoHideMenuBar: true,
       icon: this.appIconPath,
     };
   }
@@ -141,12 +155,11 @@ export class WebpackDevServerElectronManager extends StandardElectronManager {
 
     // In development builds, the frontend assets are served by the webpack devserver.
     this.frontendURL = `http://localhost:${frontendPort}`;
-    this.appIconPath = `http://localhost:${frontendPort}/appicon.ico`;
+    this.appIconPath = `${this.frontendURL}/appicon.ico`;
   }
 
   protected get _defaultWindowOptions() {
     return {
-      autoHideMenuBar: true,
       icon: this.appIconPath,
     };
   }

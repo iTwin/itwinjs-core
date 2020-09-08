@@ -51,6 +51,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/eslint-plugin",
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
       "name": "@bentley/express-server",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -444,7 +448,7 @@
     },
     {
       "name": "eslint-plugin-jsx-a11y",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "eslint-plugin-prefer-arrow",
@@ -456,10 +460,6 @@
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
-    },
-    {
-      "name": "eslint-plugin-rulesdir",
       "allowedCategories": [ "tools" ]
     },
     {
@@ -829,6 +829,10 @@
     {
       "name": "request-promise-native",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "require-dir",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "resize-observer-polyfill",

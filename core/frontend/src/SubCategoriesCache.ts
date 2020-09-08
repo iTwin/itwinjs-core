@@ -93,7 +93,7 @@ export class SubCategoriesCache {
 
   private processResults(result: SubCategoriesCache.Result, missing: Id64Set): void {
     for (const row of result)
-      this.add(row.parentId as string, row.id as string, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
+      this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
 
     // Ensure that any category Ids which returned no results (e.g., non-existent category, invalid Id, etc) are still recorded so they are not repeatedly re-requested
     for (const id of missing)
@@ -139,7 +139,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
       while (catIds.length !== 0) {
         const end = (catIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : catIds.length;
         const where = catIds.splice(0, end).join(",");
-        this._ecsql.push("SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")");
+        this._ecsql.push(`SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`);
       }
     }
 
@@ -250,14 +250,14 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
       assert(undefined === this._next);
 
       this._current = entry;
-      this._request!.promise.then((completed: boolean) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      this._request.promise.then((completed: boolean) => { // eslint-disable-line @typescript-eslint/no-floating-promises
         if (this._disposed)
           return;
 
         // Invoke all the functions which were awaiting this set of categories.
         assert(undefined !== this._current);
         if (completed)
-          for (const func of this._current!.funcs)
+          for (const func of this._current.funcs)
             func();
 
         this._request = undefined;

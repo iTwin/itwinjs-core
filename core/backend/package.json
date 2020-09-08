@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "2.6.0-dev.15",
+  "version": "2.6.0-dev.17",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -27,7 +27,6 @@
     "perftest:cs": "npm run perftest:pre && betools test --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
     "perftest:elAspect": "npm run perftest:pre && betools test --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerformance",
     "perftest:schema": "npm run perftest:pre && betools test --testDir=\"./lib/perftest\" --timeout=999999999 --grep SchemaDesignPerf",
-    "perftest:tile": "npm run perftest:pre && betools test --testDir=\"./lib/perftest\" --timeout=999999999 --grep TilesGenerationPerformance",
     "copy:ios-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/ios/webpack/assets && cpx \"./lib/assets/**/*\" ./lib/test/ios/webpack/assets",
     "build:imodeljs-backend-test-app": "xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData -allowProvisioningUpdates",
     "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx ./src/test/ios/config/ignoreTest.js ./lib/test && cpx ./src/test/ios/runMochaTestsDirectly.js ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
@@ -48,36 +47,37 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.6.0-dev.15",
-    "@bentley/ecschema-metadata": "2.6.0-dev.15",
-    "@bentley/frontend-authorization-client": "^2.6.0-dev.15",
-    "@bentley/geometry-core": "^2.6.0-dev.15",
-    "@bentley/imodelhub-client": "^2.6.0-dev.15",
-    "@bentley/itwin-client": "^2.6.0-dev.15",
-    "@bentley/backend-itwin-client": "^2.6.0-dev.15",
-    "@bentley/imodeljs-common": "^2.6.0-dev.15",
-    "@bentley/telemetry-client": "^2.6.0-dev.15",
-    "@bentley/rbac-client": "^2.6.0-dev.15"
+    "@bentley/bentleyjs-core": "^2.6.0-dev.17",
+    "@bentley/ecschema-metadata": "2.6.0-dev.17",
+    "@bentley/frontend-authorization-client": "^2.6.0-dev.17",
+    "@bentley/geometry-core": "^2.6.0-dev.17",
+    "@bentley/imodelhub-client": "^2.6.0-dev.17",
+    "@bentley/itwin-client": "^2.6.0-dev.17",
+    "@bentley/backend-itwin-client": "^2.6.0-dev.17",
+    "@bentley/imodeljs-common": "^2.6.0-dev.17",
+    "@bentley/telemetry-client": "^2.6.0-dev.17",
+    "@bentley/rbac-client": "^2.6.0-dev.17"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.6.0-dev.15",
-    "@bentley/build-tools": "2.6.0-dev.15",
-    "@bentley/config-loader": "2.6.0-dev.15",
-    "@bentley/ecschema-metadata": "2.6.0-dev.15",
-    "@bentley/frontend-authorization-client": "2.6.0-dev.15",
-    "@bentley/geometry-core": "2.6.0-dev.15",
-    "@bentley/imodelhub-client": "2.6.0-dev.15",
-    "@bentley/itwin-client": "2.6.0-dev.15",
-    "@bentley/backend-itwin-client": "2.6.0-dev.15",
-    "@bentley/imodeljs-common": "2.6.0-dev.15",
-    "@bentley/oidc-signin-tool": "2.6.0-dev.15",
-    "@bentley/perf-tools": "2.6.0-dev.15",
-    "@bentley/telemetry-client": "2.6.0-dev.15",
-    "@bentley/rbac-client": "2.6.0-dev.15",
+    "@bentley/bentleyjs-core": "2.6.0-dev.17",
+    "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
+    "@bentley/config-loader": "2.6.0-dev.17",
+    "@bentley/ecschema-metadata": "2.6.0-dev.17",
+    "@bentley/frontend-authorization-client": "2.6.0-dev.17",
+    "@bentley/geometry-core": "2.6.0-dev.17",
+    "@bentley/imodelhub-client": "2.6.0-dev.17",
+    "@bentley/itwin-client": "2.6.0-dev.17",
+    "@bentley/backend-itwin-client": "2.6.0-dev.17",
+    "@bentley/imodeljs-common": "2.6.0-dev.17",
+    "@bentley/oidc-signin-tool": "2.6.0-dev.17",
+    "@bentley/perf-tools": "2.6.0-dev.17",
+    "@bentley/telemetry-client": "2.6.0-dev.17",
+    "@bentley/rbac-client": "2.6.0-dev.17",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
@@ -109,8 +109,8 @@
   },
   "dependencies": {
     "@bentley/imodeljs-native": "2.6.1",
-    "@bentley/context-registry-client": "2.6.0-dev.15",
-    "@bentley/usage-logging-client": "2.6.0-dev.15",
+    "@bentley/context-registry-client": "2.6.0-dev.17",
+    "@bentley/usage-logging-client": "2.6.0-dev.17",
     "@azure/storage-blob": "10.4.0",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
@@ -128,6 +128,9 @@
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

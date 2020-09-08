@@ -25,7 +25,7 @@ describe("FrameworkStagePanel", () => {
     isTargeted: false,
     renderPane: renderPane.object,
     resizable: false,
-    widgetCount: 0,
+    stagePanelWidgets: [],
     widgetChangeHandler: widgetChangeHandler.object,
     widgets: widgets.object,
     widgetTabs: widgetTabs.object,
@@ -97,7 +97,7 @@ describe("FrameworkStagePanel", () => {
     shallow(<FrameworkStagePanel
       {...props}
       location={StagePanelLocation.Top}
-      widgetCount={1}
+      stagePanelWidgets={["w1"]}
       panel={panel}
     />).dive().should.matchSnapshot();
   });

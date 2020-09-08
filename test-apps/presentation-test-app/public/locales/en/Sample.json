@@ -42,5 +42,8 @@
       "label": "Subjects",
       "description": "Subjects contained in this iModel"
     }
+  },
+  "property-grid": {
+    "too-many-elements-selected": "Too many elements selected"
   }
 }

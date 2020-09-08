@@ -100,7 +100,7 @@ class WebGL1Extensions extends WebGLExtensions {
 
   public vertexAttribDivisor(index: number, divisor: number): void {
     assert(undefined !== this._instancingExtension);
-    this._instancingExtension!.vertexAttribDivisorANGLE(index, divisor);
+    this._instancingExtension.vertexAttribDivisorANGLE(index, divisor);
   }
 
   public drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {
@@ -367,7 +367,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public static create(optionsIn?: RenderSystem.Options): System {
     const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : {};
-    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    const canvas = document.createElement("canvas");
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 

@@ -6,28 +6,17 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
+import { IModelElectronIpc } from "./ElectronRpcManager";
 
-const OBJECTS_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/objects";
-const DATA_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/data";
+const OBJECTS_CHANNEL = "imodeljs.rpc.objects";
+const DATA_CHANNEL = "imodeljs.rpc.data";
 
-/** @internal */
-export const interop = (() => {
-  let electron = null;
-  if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type) {
-    // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
-    try {
-      electron = require("electron");
-    } catch (_err) { }
-  }
-
-  return electron;
-})();
 
 interface PartialPayload { id: string, index: number, data: Uint8Array }
 
@@ -36,7 +25,7 @@ export interface IpcTransportMessage { id: string, parameters?: RpcSerializedVal
 
 /** @internal */
 export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = IpcTransportMessage, TOut extends IpcTransportMessage = IpcTransportMessage> {
-  private _ipc: any;
+  private _ipc: IModelElectronIpc;
   private _partials: Map<string, { message: TIn, received: number } | PartialPayload[]>;
   protected _protocol: ElectronRpcProtocol;
 
@@ -45,7 +34,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
     this._send(request, value);
   }
 
-  public constructor(ipc: any, protocol: ElectronRpcProtocol) {
+  public constructor(ipc: IModelElectronIpc, protocol: ElectronRpcProtocol) {
     this._ipc = ipc;
     this._protocol = protocol;
     this._partials = new Map();
@@ -180,12 +169,19 @@ export function initializeIpc(protocol: ElectronRpcProtocol) {
   if (transport)
     throw new IModelError(BentleyStatus.ERROR, `Electron IPC already initialized.`);
 
-  if (interop) {
-    if (interop.ipcMain) {
-      transport = new BackendIpcTransport(interop.ipcMain, protocol);
-    } else if (interop.ipcRenderer) {
-      transport = new FrontendIpcTransport(interop.ipcRenderer, protocol);
-    }
+  if (isElectronRenderer) {
+
+    // If we're running with nodeIntegration=false, ElectronPreload.ts defines `window.imodeljs_api` and require() won't work.
+    // If we're running with nodeIntegration=true (e.g. from tests), ElectronPreload won't have run, just use ipcRenderer.
+
+    try { // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
+      const electronIpc = (window as any).imodeljs_api ?? require("electron").ipcRenderer;
+      transport = new FrontendIpcTransport(electronIpc, protocol);
+    } catch (_err) { }
+  } else {
+    try {// Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
+      transport = new BackendIpcTransport(require("electron").ipcMain, protocol);
+    } catch (_err) { }
   }
   return transport;
 }

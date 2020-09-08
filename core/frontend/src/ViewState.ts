@@ -696,7 +696,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public outputStatusMessage(status: ViewStatus): ViewStatus {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + ViewStatus[status])));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate(`Viewing.${ViewStatus[status]}`)));
     return status;
   }
 
@@ -1277,7 +1277,7 @@ export abstract class ViewState3d extends ViewState {
     if (0 !== pitchAngleRadians) {
       const pitchAxis = upVector.unitCrossProduct(Vector3d.createStartEnd(targetPoint, lEyePoint));
       if (undefined !== pitchAxis) {
-        const pitchMatrix = Matrix3d.createRotationAroundVector(pitchAxis!, Angle.createRadians(pitchAngleRadians))!;
+        const pitchMatrix = Matrix3d.createRotationAroundVector(pitchAxis, Angle.createRadians(pitchAngleRadians))!;
         const pitchTransform = Transform.createFixedPointAndMatrix(targetPoint, pitchMatrix);
         lEyePoint = pitchTransform.multiplyPoint3d(lEyePoint);
         pitchMatrix.multiplyVector(upVector, upVector);
@@ -1447,8 +1447,8 @@ export abstract class ViewState3d extends ViewState {
 
     // The front/back distance are relatively arbitrary -- the frustum will be adjusted to include geometry.
     // Set them here to reasonable in front of eye and just beyond target.
-    frontDistance = Math.min(frontDistance!, (.5 * Constant.oneMeter));
-    backDistance = Math.min(backDistance!, focusDist + (.5 * Constant.oneMeter));
+    frontDistance = Math.min(frontDistance, (.5 * Constant.oneMeter));
+    backDistance = Math.min(backDistance, focusDist + (.5 * Constant.oneMeter));
 
     if (backDistance < focusDist) // make sure focus distance is in front of back distance.
       backDistance = focusDist + Constant.oneMillimeter;
@@ -1470,7 +1470,7 @@ export abstract class ViewState3d extends ViewState {
 
     // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
     // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
-    const origin = eye.plus3Scaled(zVec, -backDistance!, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
+    const origin = eye.plus3Scaled(zVec, -backDistance, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
 
     this.setEyePoint(eyePoint);
     this.setRotation(rotation);
@@ -1584,7 +1584,7 @@ export abstract class ViewState3d extends ViewState {
       return ViewStatus.InvalidUpVector;    // Invalid axis given
     const trans = Transform.createFixedPointAndMatrix(about, rotation);
     const newTarget = trans.multiplyPoint3d(this.getTargetPoint());
-    const upVec = rotation!.multiplyVector(this.getYVector());
+    const upVec = rotation.multiplyVector(this.getYVector());
     return this.lookAt(this.getEyePoint(), newTarget, upVec);
   }
 

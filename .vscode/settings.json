@@ -75,15 +75,15 @@
   ],
   "eslint.workingDirectories": [
     {
-      "pattern": "./**/*"
+      "pattern": "./**/*",
+      "changeProcessCWD": true
     }
   ],
   "eslint.options": {
     "configFile": "./package.json",
     "useEslintrc": false,
-    "resolvePluginsRelativeTo": "./node_modules/@bentley/build-tools"
+    "resolvePluginsRelativeTo": "./node_modules/@bentley/eslint-plugin"
   },
-  "eslint.lintTask.enable": false,
   "importSorter.importStringConfiguration.quoteMark": "double",
   "importSorter.generalConfiguration.sortImportsInDirectory": false,
   "importSorter.importStringConfiguration.trailingComma": "multiLine",

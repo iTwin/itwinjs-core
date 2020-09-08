@@ -200,7 +200,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 5, 0)));
 
-    // add line with width override, undefined endWidth = startWidth, needed soley for taper
+    // add line with width override, undefined endWidth = startWidth, needed solely for taper
     params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: widths[1], physicalWidth: true });
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.create(0.5, 0, 0), Point3d.create(0.5, 5, 0)));
@@ -238,7 +238,7 @@ describe("GeometryStream", () => {
       assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geomParams.styleInfo);
       stylesUsed.push(entry.geomParams.styleInfo!.styleId);
-      widthsUsed.push(entry.geomParams.styleInfo!.styleMod !== undefined ? entry.geomParams.styleInfo!.styleMod!.startWidth! : 0.0);
+      widthsUsed.push(entry.geomParams.styleInfo!.styleMod !== undefined ? entry.geomParams.styleInfo!.styleMod.startWidth! : 0.0);
     }
 
     // Make sure we extracted same style information after round trip...
@@ -844,7 +844,7 @@ describe("GeometryStream", () => {
 
     builder.setLocalToWorld3d(testOrigin, testAngles);
     builder.appendGeometry(Loop.create(LineString3d.create(shapePts)));
-    shapePts.forEach((pt) => { builder.appendGeometryPart3d(partId, pt, undefined, 0.25); }); // Postion part (arc center) at each vertex...
+    shapePts.forEach((pt) => { builder.appendGeometryPart3d(partId, pt, undefined, 0.25); }); // Position part (arc center) at each vertex...
 
     const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,

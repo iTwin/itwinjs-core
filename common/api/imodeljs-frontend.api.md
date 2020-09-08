@@ -4915,7 +4915,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
-    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
+    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides;
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)
@@ -6047,15 +6047,15 @@ export class PendingExtension {
     // (undocumented)
     args?: string[] | undefined;
     // (undocumented)
-    executor(resolve: resolveFunc, reject: rejectFunc): void;
+    executor(resolve: ResolveFunc, reject: RejectFunc): void;
     // (undocumented)
     loader: ExtensionLoader;
     // (undocumented)
     promise: Promise<Extension>;
     // (undocumented)
-    reject: rejectFunc | undefined;
+    reject: RejectFunc | undefined;
     // (undocumented)
-    resolve: resolveFunc | undefined;
+    resolve: ResolveFunc | undefined;
     }
 
 // @internal (undocumented)

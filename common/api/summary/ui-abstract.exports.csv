@@ -142,6 +142,7 @@ public;UiAbstract
 beta;UiAdmin
 beta;class UiDataProvider
 public;UiError 
+beta;UiFlags
 beta;UiItemProviderRegisteredEventArgs
 beta;UiItemsApplication
 beta;UiItemsApplicationAction

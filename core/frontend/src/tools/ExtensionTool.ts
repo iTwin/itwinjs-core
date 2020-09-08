@@ -56,7 +56,7 @@ export class ExtensionTool extends Tool {
       const briefMessage = IModelApp.i18n.translate("iModelJs:ExtensionErrors.CantFind", { extensionName });
       const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, briefMessage, undefined, OutputMessageType.Alert, OutputMessageAlert.Balloon);
       IModelApp.notifications.outputMessage(errorDetails);
-      Logger.logError(loggerCategory, "Extension " + extensionName + " was not found");
+      Logger.logError(loggerCategory, `Extension ${extensionName} was not found`);
     }
   }
 }

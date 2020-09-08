@@ -2,24 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { Id64String } from "@bentley/bentleyjs-core";
 import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
 } from "@bentley/frontend-devtools";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode,
-  HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
-  ViewFlags,
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
+  MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
-import {
-  DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d,
-} from "@bentley/imodeljs-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
 import { ThematicDisplayEditor } from "./ThematicDisplay";
 import { ToolBarDropDown } from "./ToolBar";
+
+// cspell:ignore cels
 
 type UpdateAttribute = (view: ViewState) => void;
 
@@ -391,7 +389,7 @@ export class ViewAttributes {
   }
 
   private addRenderMode(): void {
-    const div = document.createElement("div") as HTMLDivElement;
+    const div = document.createElement("div");
 
     const entries = [
       { name: "Wireframe", value: RenderMode.Wireframe },
@@ -566,8 +564,8 @@ export class ViewAttributes {
 
   private addMapSettings() {
     const mapSettingsDiv = document.createElement("div");
-    const groundBiasDiv = document.createElement("div") as HTMLDivElement;
-    const groundBiasLabel = document.createElement("label") as HTMLLabelElement;
+    const groundBiasDiv = document.createElement("div");
+    const groundBiasLabel = document.createElement("label");
     groundBiasLabel.style.display = "inline";
     groundBiasLabel.htmlFor = "ts_viewToolPickRadiusInches";
     groundBiasLabel.innerText = "Ground Bias: ";
@@ -613,8 +611,8 @@ export class ViewAttributes {
       handler: (select) => { updateTerrainSettings({ heightOriginMode: parseInt(select.value, 10) }); },
     }).select;
 
-    const heightOriginDiv = document.createElement("div") as HTMLDivElement;
-    const heightOriginLabel = document.createElement("label") as HTMLLabelElement;
+    const heightOriginDiv = document.createElement("div");
+    const heightOriginLabel = document.createElement("label");
     heightOriginLabel.style.display = "inline";
     heightOriginLabel.htmlFor = "ts_viewToolPickRadiusInches";
     heightOriginLabel.innerText = "Model Height: ";
@@ -629,8 +627,8 @@ export class ViewAttributes {
     heightOriginDiv.style.textAlign = "left";
     settingsDiv.appendChild(heightOriginDiv);
 
-    const exaggerationDiv = document.createElement("div") as HTMLDivElement;
-    const exaggerationLabel = document.createElement("label") as HTMLLabelElement;
+    const exaggerationDiv = document.createElement("div");
+    const exaggerationLabel = document.createElement("label");
     exaggerationLabel.style.display = "inline";
     exaggerationLabel.htmlFor = "ts_viewToolPickRadiusInches";
     exaggerationLabel.innerText = "Exaggeration: ";
@@ -685,12 +683,12 @@ export class ViewAttributes {
 
   private get _nextId(): string {
     ++this._id;
-    return "viewAttributesPanel_" + this._id;
+    return `viewAttributesPanel_${this._id}`;
   }
 
-  private get edgeSettings() { return (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings; }
+  private get _edgeSettings() { return (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings; }
   private overrideEdgeSettings(props: HiddenLine.SettingsProps) {
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings = this.edgeSettings.override(props);
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings = this._edgeSettings.override(props);
     this.sync();
   }
 
@@ -752,7 +750,7 @@ export class ViewAttributes {
       }
 
       nestedMenu.div.hidden = false;
-      const settings = this.edgeSettings;
+      const settings = this._edgeSettings;
       slider.slider.value = settings.transparencyThreshold.toString();
 
       const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
@@ -767,13 +765,13 @@ export class ViewAttributes {
   }
 
   private addHiddenLineEditor(forHiddenEdges: boolean): HTMLDivElement {
-    const style = this._vp.view.is3d() ? this.edgeSettings : HiddenLine.Settings.defaults;
+    const style = this._vp.view.is3d() ? this._edgeSettings : HiddenLine.Settings.defaults;
     const settings = forHiddenEdges ? style.hidden : style.visible;
     const div = document.createElement("div");
     div.style.paddingLeft = "10px";
     div.hidden = forHiddenEdges ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
 
-    const getSettings = () => forHiddenEdges ? this.edgeSettings.hidden : this.edgeSettings.visible;
+    const getSettings = () => forHiddenEdges ? this._edgeSettings.hidden : this._edgeSettings.visible;
     const overrideSettings = (newSettings: HiddenLine.Style) => this.overrideEdgeSettings(forHiddenEdges ? { hidden: newSettings.toJSON() } : { visible: newSettings.toJSON() });
 
     // Color override (visible only)

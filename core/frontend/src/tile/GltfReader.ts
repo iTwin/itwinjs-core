@@ -260,7 +260,7 @@ export abstract class GltfReader {
             for (const mesh of meshes) {
               renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system, instances);
               if (undefined !== renderGraphic)
-                thisList.push(renderGraphic!);
+                thisList.push(renderGraphic);
             }
             if (0 !== thisList.length)
               renderGraphic = this._system.createGraphicList(thisList);

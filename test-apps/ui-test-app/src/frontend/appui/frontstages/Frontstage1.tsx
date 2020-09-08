@@ -102,7 +102,22 @@ function SampleTimelineComponent() {
 export class Frontstage1 extends FrontstageProvider {
   private _topMostPanel = {
     widgets: [
-      <Widget element={<h2>TopMost panel</h2>} />,
+      <Widget element={<>
+        <h2>TopMost panel</h2>
+        <span>BottomMost panel:</span>
+        &nbsp;
+        <button onClick={() => {
+          const frontstageDef = FrontstageManager.activeFrontstageDef;
+          const widgetDef = frontstageDef?.findWidgetDef("BottomMostPanelWidget");
+          widgetDef?.setWidgetState(WidgetState.Open);
+        }}>show</button>
+        &nbsp;
+        <button onClick={() => {
+          const frontstageDef = FrontstageManager.activeFrontstageDef;
+          const widgetDef = frontstageDef?.findWidgetDef("BottomMostPanelWidget");
+          widgetDef?.setWidgetState(WidgetState.Hidden);
+        }}>hide</button>
+      </>} />,
     ],
   };
 
@@ -132,7 +147,7 @@ export class Frontstage1 extends FrontstageProvider {
   private _bottomMostPanel = {
     allowedZones: [2, 4, 9],
     widgets: [
-      <Widget element={<h2>BottomMost panel</h2>} />,
+      <Widget id="BottomMostPanelWidget" element={<h2>BottomMost panel</h2>} />,
     ],
   };
 

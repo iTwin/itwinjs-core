@@ -121,7 +121,7 @@ export class FeatureOverrides implements WebGLDisposable {
       this.updateFlashedAndHilited(updater, map, flashed, hilites);
     } else {
       assert(undefined !== hilites);
-      this.buildLookupTable(updater, map, ovrs, flashed, hilites!);
+      this.buildLookupTable(updater, map, ovrs, flashed, hilites);
     }
 
     (lut as Texture2DHandle).update(updater);

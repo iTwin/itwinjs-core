@@ -135,7 +135,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     // include any attached reality models (may be any number; must be loaded already)
     for (const loaded of this._vp.iModel.models.loaded.values())
       if (loaded instanceof SpatialModelState && undefined !== loaded.classifiers)
-        realityModels.push({ spatialClassifiers: loaded.classifiers, modelName: loaded.name + " (attached)" });
+        realityModels.push({ spatialClassifiers: loaded.classifiers, modelName: `${loaded.name} (attached)` });
 
     // create list of entries for Classifier in the spatial Classifiers
     const entries = realityModels.map((spatialClassifier, i) => {

@@ -21,6 +21,7 @@ const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 /**
  * Props that are injected to the PropertyGridWithUnifiedSelection HOC component.
  * @public
+ * @deprecated Use [[usePropertyDataProviderWithUnifiedSelection]] hook
  */
 export interface PropertyGridWithUnifiedSelectionProps {
   /** The data provider used by the property grid. */
@@ -47,10 +48,13 @@ interface State {
  * **Note:** it is required for the property grid to use [[IPresentationPropertyDataProvider]]
  *
  * @public
+ * @deprecated Use [[usePropertyDataProviderWithUnifiedSelection]] hook
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line deprecation/deprecation
 export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<P & PropertyGridWithUnifiedSelectionProps> {
 
+  // eslint-disable-next-line deprecation/deprecation
   type CombinedProps = P & PropertyGridWithUnifiedSelectionProps;
 
   return class WithUnifiedSelection extends React.Component<CombinedProps, State> implements IUnifiedSelectionComponent {

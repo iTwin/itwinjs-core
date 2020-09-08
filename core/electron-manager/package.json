@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "2.6.0-dev.15",
+  "version": "2.6.0-dev.17",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
@@ -32,19 +32,20 @@
   },
   "peerDependencies": {
     "electron": "^8.2.1",
-    "@bentley/bentleyjs-core": "^2.6.0-dev.15",
-    "@bentley/imodeljs-backend": "^2.6.0-dev.15"
+    "@bentley/bentleyjs-core": "^2.6.0-dev.17",
+    "@bentley/imodeljs-backend": "^2.6.0-dev.17"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.6.0-dev.15",
-    "@bentley/bentleyjs-core": "2.6.0-dev.15",
-    "@bentley/itwin-client": "2.6.0-dev.15",
-    "@bentley/imodeljs-common": "2.6.0-dev.15",
-    "@bentley/imodeljs-backend": "2.6.0-dev.15",
+    "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
+    "@bentley/bentleyjs-core": "2.6.0-dev.17",
+    "@bentley/itwin-client": "2.6.0-dev.17",
+    "@bentley/imodeljs-common": "2.6.0-dev.17",
+    "@bentley/imodeljs-backend": "2.6.0-dev.17",
     "@types/node": "10.14.1",
     "electron": "^8.2.1",
     "eslint": "^6.8.0",
@@ -53,6 +54,9 @@
   },
   "dependencies": {},
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

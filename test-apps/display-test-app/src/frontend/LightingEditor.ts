@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@bentley/frontend-devtools";
 import { Vector3d } from "@bentley/geometry-core";
 import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { Viewport, ViewState } from "@bentley/imodeljs-frontend";
+
+// cspell:ignore cels sundir textbox hemi lighteditor
 
 type Update = (view: ViewState) => void;
 
@@ -102,7 +103,7 @@ export class LightingEditor {
 
   private addSolar(parent: HTMLElement): void {
     const formatSunDirection = (dir: Vector3d) => {
-      return dir.x.toFixed(4) + ", " + dir.y.toFixed(4) + ", " + dir.z.toFixed(4);
+      return `${dir.x.toFixed(4)}, ${dir.y.toFixed(4)}, ${dir.z.toFixed(4)}`;
     };
 
     const span = document.createElement("span");
@@ -244,7 +245,7 @@ export class LightingEditor {
       max: 5,
       step: 0.05,
       display: "inline",
-      name: label + ": ",
+      name: `${label}: `,
       id: this._nextId,
       value,
       parseAsFloat: true,
@@ -284,6 +285,6 @@ export class LightingEditor {
   }
 
   private get _nextId(): string {
-    return "lighteditor_" + ++this._id;
+    return `lighteditor_${++this._id}`;
   }
 }

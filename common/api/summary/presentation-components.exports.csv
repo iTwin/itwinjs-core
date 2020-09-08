@@ -34,6 +34,7 @@ public;PresentationTreeDataProvider
 alpha;PresentationTreeDataProviderDataSourceEntryPoints
 public;PresentationTreeDataProviderProps
 beta;PresentationTreeNodeLoaderProps 
+beta;PropertyDataProviderWithUnifiedSelectionProps
 public;propertyGridWithUnifiedSelection
 public;PropertyGridWithUnifiedSelectionProps
 public;tableWithUnifiedSelection
@@ -44,6 +45,7 @@ beta;UnifiedSelectionTreeEventHandler
 beta;UnifiedSelectionTreeEventHandlerParams
 beta;useControlledTreeFiltering(props: ControlledTreeFilteringProps):
 beta;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader
+beta;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps):
 public;useRulesetRegistration(ruleset: Ruleset): void
 beta;useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams): UnifiedSelectionTreeEventHandler
 public;viewWithUnifiedSelection

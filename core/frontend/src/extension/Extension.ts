@@ -14,8 +14,8 @@ import { IModelApp } from "../IModelApp";
  */
 export const loggerCategory = "imodeljs-frontend.Extension";
 
-type resolveFunc = ((arg: any) => void);
-type rejectFunc = ((arg: Error) => void);
+type ResolveFunc = ((arg: any) => void);
+type RejectFunc = ((arg: Error) => void);
 
 /** Implement this interface, then register it using IModelApp.extensionAdmin.addExtensionLoader to load extensions from a different source.
  * @beta
@@ -118,15 +118,15 @@ export abstract class Extension {
  * @beta
  */
 export class PendingExtension {
-  public resolve: resolveFunc | undefined = undefined;
-  public reject: rejectFunc | undefined = undefined;
+  public resolve: ResolveFunc | undefined = undefined;
+  public reject: RejectFunc | undefined = undefined;
   public promise: Promise<Extension>;
 
   public constructor(private _tarFileUrl: string, public loader: ExtensionLoader, public args?: string[]) {
     this.promise = new Promise(this.executor.bind(this));
   }
 
-  public executor(resolve: resolveFunc, reject: rejectFunc) {
+  public executor(resolve: ResolveFunc, reject: RejectFunc) {
     this.resolve = resolve;
     this.reject = reject;
 

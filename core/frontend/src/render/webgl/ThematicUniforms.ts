@@ -172,7 +172,7 @@ export class ThematicUniforms implements WebGLDisposable {
 
   public bindTexture(uniform: UniformHandle, unit: TextureUnit): void {
     assert(undefined !== this._texture);
-    this._texture!.bindSampler(uniform, unit);
+    this._texture.bindSampler(uniform, unit);
   }
 
   public bindNumSensors(uniform: UniformHandle): void {
@@ -182,7 +182,7 @@ export class ThematicUniforms implements WebGLDisposable {
 
   public bindSensors(uniform: UniformHandle): void {
     assert(undefined !== this._sensors);
-    this._sensors!.texture.bindSampler(uniform, TextureUnit.ThematicSensors);
+    this._sensors.texture.bindSampler(uniform, TextureUnit.ThematicSensors);
   }
 
   public get isDisposed(): boolean {

@@ -42,7 +42,6 @@ public;DisposableList
 public;dispose(disposable?: IDisposable): undefined
 public;disposeArray(list?: IDisposable[]): undefined
 public;DisposeFunc = () => void
-internal;electronRenderer: any
 public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
@@ -69,6 +68,7 @@ beta;IModelHubStatus
 public;IModelStatus
 public;IndexedValue
 public;IndexMap
+internal;isElectronMain: boolean
 internal;isElectronRenderer: boolean
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf

@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "@bentley/bentleyjs-core";
 import { DiagnosticsPanel } from "@bentley/frontend-devtools";
 import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
@@ -29,7 +28,7 @@ export class DebugWindow extends Window {
     this.contentDiv.appendChild(this._panel.element);
 
     this.title = `[ ${viewport.viewportId} ] Diagnostics`;
-    this._windowId = "debugPanel-" + viewport.viewportId;
+    this._windowId = `debugPanel-${viewport.viewportId}`;
     this.isPinned = true;
 
     this._dispose = IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {

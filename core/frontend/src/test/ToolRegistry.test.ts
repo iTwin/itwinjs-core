@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -83,6 +84,29 @@ describe("ToolRegistry", () => {
     assert.equal(testVal2, 33);
     cmdReturn = new command().parseAndRun("125");
     assert.isFalse(cmdReturn);
+  });
+
+  function testKeyinArgs(keyin: string, args: string[]) {
+    const parsedKeyin = IModelApp.tools.parseKeyin(keyin);
+    assert.equal(parsedKeyin.args.length, args.length);
+    args.forEach ((parsedArg, index) => assert.equal(parsedArg, parsedKeyin.args[index]));
+  }
+
+  it("Should parse command with matching embeded quotes", async () => {
+    testKeyinArgs ("uccalc test args with \"a quoted string\" included", ["test", "args", "with","a quoted string","included"]);
+    testKeyinArgs ("uccalc \"a quoted string\"", ["a quoted string"]);
+    testKeyinArgs ("uccalc this has \"a quoted string\"", ["this", "has", "a quoted string"]);
+    testKeyinArgs ("uccalc \"a quoted string\" is before me", ["a quoted string", "is", "before", "me"]);
+    testKeyinArgs ("uccalc \"my arg\\\"", ["my arg\\"]);
+  });
+
+  it("Should parse command with unmatched embeded quotes", async () => {
+    testKeyinArgs ("uccalc \"test", ["\"test"]);
+    testKeyinArgs ("uccalc test\"", ["test\""]);
+    testKeyinArgs ("uccalc \"matched\" \"unmatched", ["matched", "\"unmatched"]);
+    testKeyinArgs ("uccalc bad\" unexpected match \"bad expected match\"", ["bad", "unexpected match", "bad", "expected", "match\""]);
+    testKeyinArgs ("uccalc \"", ["\""]);
+    testKeyinArgs ("uccalc 12'-3\"", ["12'-3\""]);
   });
 
   it("Should find the MicroStation inputmanager training command", async () => {

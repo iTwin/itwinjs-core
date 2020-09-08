@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
+
+import { IModelApp, IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../ui-framework";
@@ -15,9 +16,18 @@ const myLocalStorage = storageMock();
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
 const KEYIN_HISTORY_KEY = "historyArray";
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
+function requestNextAnimation() {}
 
 describe("<KeyinPalettePanel>", () => {
+
   before(async () => {
+
+    // Avoid requestAnimationFrame exception during test by temporarily replacing function that calls it. Tried replacing window.requestAnimationFrame first
+    // but that did not work.
+    Object.defineProperty(IModelApp, "requestNextAnimation", {
+      get: () => requestNextAnimation,
+    });
 
     Object.defineProperty(window, "localStorage", {
       get: () => myLocalStorage,
@@ -36,6 +46,7 @@ describe("<KeyinPalettePanel>", () => {
 
     // restore the overriden property getter
     Object.defineProperty(window, "localStorage", propertyDescriptorToRestore);
+    Object.defineProperty(IModelApp, "requestNextAnimation", rnaDescriptorToRestore);
 
     TestUtils.terminateUiFramework();
   });
@@ -60,6 +71,43 @@ describe("<KeyinPalettePanel>", () => {
     const keyins: KeyinEntry[] = [{value: "keyin one"}, {value: "keyin two"}]
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
+
+    await TestUtils.flushAsyncOperations();
+    const history2 = await waitForElement(() => renderedComponent.getByTitle("history2"));
+    expect(history2).not.to.be.undefined;
+    expect (renderedComponent.container.querySelectorAll ("li").length).to.eq(4);
+  });
+
+  it("handles key presses in select input ", async () => {
+    const uiSettings = UiFramework.getUiSettings();
+    if (uiSettings) {
+      await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1","history2" ]);
+    }
+    const keyins: KeyinEntry[] = [{value: "keyin one"}, {value: "keyin two"}]
+    const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
+    expect(renderedComponent).not.to.be.undefined;
+    const selectInput = renderedComponent.getByTestId("command-palette-input") as HTMLInputElement;
+
+    await TestUtils.flushAsyncOperations();
+    const history2 = await waitForElement(() => renderedComponent.getByTitle("history2"));
+    expect(history2).not.to.be.undefined;
+    expect (renderedComponent.container.querySelectorAll ("li").length).to.eq(4);
+
+    fireEvent.change(selectInput, { target: { value: "two" } });
+    await TestUtils.flushAsyncOperations();
+    // renderedComponent.debug();
+    expect (renderedComponent.container.querySelectorAll ("li").length).to.eq(1);
+    fireEvent.keyDown(selectInput, { key: SpecialKey.Enter });
+  });
+
+  it("handles ctrl+key presses in select input ", async () => {
+    const uiSettings = UiFramework.getUiSettings();
+    if (uiSettings) {
+      await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1","history2" ]);
+    }
+    const keyins: KeyinEntry[] = [{value: "keyin one"}, {value: "keyin two"}]
+    const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
+    expect(renderedComponent).not.to.be.undefined;
     const selectInput = renderedComponent.getByTestId("command-palette-input") as HTMLInputElement;
 
     await TestUtils.flushAsyncOperations();
@@ -72,8 +120,7 @@ describe("<KeyinPalettePanel>", () => {
     // renderedComponent.debug();
     expect (renderedComponent.container.querySelectorAll ("li").length).to.eq(1);
     fireEvent.keyDown(selectInput, { key: SpecialKey.Enter, ctrlKey: true });
-    fireEvent.keyDown(selectInput, { key: SpecialKey.Enter });
-
+    await TestUtils.flushAsyncOperations();
     fireEvent.change(selectInput, { target: { value: "two" } });
     await TestUtils.flushAsyncOperations();
     fireEvent.keyDown(selectInput, { key: SpecialKey.Tab });

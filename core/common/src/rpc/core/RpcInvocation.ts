@@ -19,6 +19,8 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /** Notification callback for an RPC invocation.
  * @public
  */

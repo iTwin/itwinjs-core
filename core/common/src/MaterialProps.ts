@@ -23,6 +23,8 @@ export type DPoint2dProps = number[];
 /** @beta */
 export enum TextureMapUnits { Relative = 0, Meters = 3, Millimeters = 4, Feet = 5, Inches = 6 }
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /** Properties that define how a texture is mapped to a material
  * @beta
  */

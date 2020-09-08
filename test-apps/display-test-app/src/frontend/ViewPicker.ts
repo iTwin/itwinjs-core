@@ -138,7 +138,7 @@ export class ViewPicker {
   public get element(): HTMLElement { return this._select; }
 
   public constructor(parent: HTMLElement, views: ViewList) {
-    this._select = document.createElement("select") as HTMLSelectElement;
+    this._select = document.createElement("select");
     this._select.className = "viewList";
     this._select.onchange = () => this.onSelectedViewChanged.raiseEvent(this._select.value);
 
@@ -153,7 +153,7 @@ export class ViewPicker {
 
     let index = 0;
     for (const spec of views) {
-      const option = document.createElement("option") as HTMLOptionElement;
+      const option = document.createElement("option");
       option.innerText = spec.name;
       option.value = spec.id;
       this._select.appendChild(option);

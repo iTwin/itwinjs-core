@@ -1907,7 +1907,7 @@ export enum Editor3dRpcInterfaceWriteReturnType {
 // @beta
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
     // (undocumented)
-    static get isElectron(): boolean;
+    static readonly isElectron: boolean;
     abstract protocol: ElectronRpcProtocol;
 }
 
@@ -3434,6 +3434,16 @@ export interface IModelCoordinatesResponseProps {
     fromCache: number;
     // (undocumented)
     iModelCoords: PointWithStatus[];
+}
+
+// @internal (undocumented)
+export interface IModelElectronIpc {
+    // (undocumented)
+    on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+    // (undocumented)
+    send: (channel: string, ...data: any[]) => void;
+    // (undocumented)
+    showOpenDialogSync: (options: any) => any;
 }
 
 // @public

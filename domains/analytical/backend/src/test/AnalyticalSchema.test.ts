@@ -182,10 +182,10 @@ describe("AnalyticalSchema", () => {
     };
     const analyticalPartitionId: Id64String = iModelDb.elements.insertElement(analyticalPartitionProps);
     assert.isTrue(Id64.isValidId64(analyticalPartitionId));
-    const analyticalModel: TestAnalyticalModel = iModelDb.models.createModel({
+    const analyticalModel = iModelDb.models.createModel<TestAnalyticalModel>({
       classFullName: TestAnalyticalModel.classFullName,
       modeledElement: { id: analyticalPartitionId },
-    }) as TestAnalyticalModel;
+    });
     const analyticalModelId: Id64String = iModelDb.models.insertModel(analyticalModel);
     assert.isTrue(Id64.isValidId64(analyticalModelId));
 

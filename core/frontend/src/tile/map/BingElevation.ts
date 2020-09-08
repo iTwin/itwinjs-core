@@ -43,7 +43,7 @@ export class BingElevationProvider {
     this._heightListRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
   public async getHeight(carto: Cartographic, geodetic = true) {
-    const requestUrl = this._heightListRequestTemplate.replace("{points}", carto.latitudeDegrees + "," + carto.longitudeDegrees).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+    const requestUrl = this._heightListRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
       const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
@@ -53,7 +53,7 @@ export class BingElevationProvider {
     }
   }
   public async getHeights(range: Range2d) {
-    const boundingBox = range.low.y + "," + range.low.x + "," + range.high.y + "," + range.high.x;
+    const boundingBox = `${range.low.y},${range.low.x},${range.high.y},${range.high.x}`;
     const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
@@ -65,7 +65,7 @@ export class BingElevationProvider {
   }
   public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
     const carto = iModel.spatialToCartographicFromEcef(point);
-    const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", carto.latitudeDegrees + "," + carto.longitudeDegrees);
+    const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`);
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
       const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
@@ -108,7 +108,7 @@ export class BingElevationProvider {
 
     const patch = new BilinearPatch(corners[0], corners[1], corners[2], corners[3]);
     const textureParams = new TextureMapping.Params({ mapMode: TextureMapping.Mode.Parametric });
-    const textureMapping = new TextureMapping(texture!, textureParams);
+    const textureMapping = new TextureMapping(texture, textureParams);
     const displayParams = new DisplayParams(DisplayParams.Type.Mesh, ColorDef.white, ColorDef.white, 0.0, LinePixels.Solid, FillFlags.None, undefined, undefined, false, textureMapping);
     BingElevationProvider._scratchRange.setNull();
     BingElevationProvider._scratchRange.extendArray(corners);
