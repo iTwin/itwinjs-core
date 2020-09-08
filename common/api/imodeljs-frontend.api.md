@@ -4915,7 +4915,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
-    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
+    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides;
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)

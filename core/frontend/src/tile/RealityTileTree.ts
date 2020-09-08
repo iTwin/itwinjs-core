@@ -164,6 +164,7 @@ export class RealityTileTree extends TileTree {
         if (!(targetBranch = graphicTypeBranches.get(tileGraphicType))) {
           graphicTypeBranches.set(tileGraphicType, targetBranch = new GraphicBranch());
           targetBranch.setViewFlagOverrides(args.graphics.viewFlagOverrides);
+          targetBranch.symbologyOverrides = args.graphics.symbologyOverrides;
         }
       }
 

@@ -477,6 +477,7 @@ export class MapTileTreeReference extends TileTreeReference {
   private _baseColor?: ColorDef;
   private readonly _imageryTrees: ImageryMapLayerTreeReference[] = new Array<ImageryMapLayerTreeReference>();
   private _baseTransparent = false;
+  private _symbologyOverrides = new FeatureSymbology.Overrides(); /** Empty overrides so that maps ignore the view overrides (isolate etc.) */
 
   public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean) {
     super();
@@ -730,10 +731,6 @@ export class MapTileTreeReference extends TileTreeReference {
         }
       }
     }
-  }
-
-  private get _symbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    return undefined;
   }
 }
 
