@@ -7,11 +7,11 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { StagePanelLocation } from "@bentley/ui-abstract";
+import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@bentley/ui-ninezone";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps,
-  FrontstageProvider, SplitterPaneTarget, StagePanel, Widget, WidgetControl,
+  FrontstageProvider, SplitterPaneTarget, StagePanel, Widget, WidgetControl, WidgetDef,
 } from "../../ui-framework";
 import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
 import { StagePanelDef, StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
@@ -81,7 +81,7 @@ describe("StagePanel", () => {
       runtimeProps={runtimeProps.object}
     />);
     const frameworkStagePanel = sut.find(FrameworkStagePanel);
-    const pane = frameworkStagePanel.prop("renderPane")(0);
+    const pane = frameworkStagePanel.prop("renderPane")("w1");
     (pane === null).should.true;
   });
 
@@ -101,32 +101,32 @@ describe("StagePanel", () => {
     />);
     const frameworkStagePanel = sut.find(FrameworkStagePanel);
     sut.setProps({ runtimeProps: undefined });
-    const pane = frameworkStagePanel.prop("renderPane")(0);
+    const pane = frameworkStagePanel.prop("renderPane")("w1");
     (pane === null).should.true;
   });
 
   it("should render collapsed pane", () => {
     const runtimeProps = moq.Mock.ofType<StagePanelRuntimeProps>();
     const panel = moq.Mock.ofType<StagePanelRuntimeProps["panel"]>();
-    const panelDef = moq.Mock.ofType<StagePanelRuntimeProps["panelDef"]>();
-    const widgetDef0 = moq.Mock.ofType<typeof panelDef.object["widgetDefs"][number]>();
+    const panelDef = new StagePanelDef();
+    const widgetDef0 = new WidgetDef({ id: "w0" });
     runtimeProps.setup((x) => x.panel).returns(() => panel.object);
-    runtimeProps.setup((x) => x.panelDef).returns(() => panelDef.object);
+    runtimeProps.setup((x) => x.panelDef).returns(() => panelDef);
     panel.setup((x) => x.panes).returns(() => []);
     panel.setup((x) => x.isCollapsed).returns(() => true);
-    panelDef.setup((x) => x.widgetCount).returns(() => 1);
-    panelDef.setup((x) => x.widgetDefs).returns(() => [widgetDef0.object]);
-    widgetDef0.setup((x) => x.isVisible).returns(() => true);
+    sinon.stub(panelDef, "findWidgetDef").returns(widgetDef0);
     const sut = shallow<StagePanel>(<StagePanel
       runtimeProps={runtimeProps.object}
     />);
     const frameworkStagePanel = sut.find(FrameworkStagePanel);
-    const pane = frameworkStagePanel.prop("renderPane")(0) as React.ReactElement;
+    const pane = frameworkStagePanel.prop("renderPane")("w0") as React.ReactElement;
     shallow(pane).should.matchSnapshot();
   });
 
   it("should pass down maxSize number property", () => {
     const runtimeProps = moq.Mock.ofType<StagePanelRuntimeProps>();
+    const panel = new StagePanelDef();
+    runtimeProps.setup((x) => x.panelDef).returns(() => panel);
     const sut = shallow<StagePanel>(<StagePanel
       runtimeProps={runtimeProps.object}
       maxSize={200}
@@ -217,6 +217,24 @@ describe("StagePanel", () => {
     UiShowHideManager.showHidePanels = false;
 
     wrapper.unmount();
+  });
+
+  it("should update stagePanelWidgets", () => {
+    const runtimeProps = moq.Mock.ofType<StagePanelRuntimeProps>();
+    const panel = moq.Mock.ofType<StagePanelRuntimeProps["panel"]>();
+    const panelDef = new StagePanelDef();
+    const w1 = new WidgetDef({ id: "w1" });
+    const w2 = new WidgetDef({ id: "w2" });
+    const w3 = new WidgetDef({ id: "w3" });
+    runtimeProps.setup((x) => x.panel).returns(() => panel.object);
+    runtimeProps.setup((x) => x.panelDef).returns(() => panelDef);
+    panel.setup((x) => x.panes).returns(() => []);
+    sinon.stub(panelDef, "widgetDefs").get(() => [w1, w2, w3]);
+    const sut = mount<StagePanel>(<StagePanel
+      runtimeProps={runtimeProps.object}
+    />);
+    w2.setWidgetState(WidgetState.Hidden);
+    sut.state("stagePanelWidgets").should.eql(["w1", "w3"]);
   });
 
   describe("SplitterPaneTarget", () => {

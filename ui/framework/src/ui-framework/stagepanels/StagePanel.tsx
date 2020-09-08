@@ -19,6 +19,7 @@ import { WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneLocation } from "../zones/Zone";
 import { FrameworkStagePanel } from "./FrameworkStagePanel";
 import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePanelState } from "./StagePanelDef";
+import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 
 /** Available StagePanel locations.
  * ------------------------------------------------------------------------------------
@@ -129,6 +130,7 @@ export interface StagePanelRuntimeProps {
 
 interface StagePanelComponentState {
   panelState: StagePanelState;
+  stagePanelWidgets: ReadonlyArray<WidgetDef["id"]>;
 }
 
 /** Frontstage Panel React component.
@@ -145,6 +147,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     const panelState = this.props.runtimeProps?.panelDef.panelState;
     this.state = {
       panelState: panelState === undefined ? StagePanelState.Open : panelState,
+      stagePanelWidgets: this._getVisibileStagePanelWidgets(),
     };
   }
 
@@ -154,10 +157,12 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
 
   public componentDidMount() {
     FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
   public componentWillUnmount() {
     FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
   public render(): React.ReactNode {
@@ -172,7 +177,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
         initialSize={size}
         location={panelDef.location}
         renderPane={this._handleRenderPane}
-        widgetCount={panelDef.widgetCount}
+        stagePanelWidgets={this.state.stagePanelWidgets}
         panelState={this.state.panelState}
         maxSize={typeof maxSize === "number" ? maxSize : undefined}
         {...props}
@@ -181,16 +186,15 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     );
   }
 
-  private _handleRenderPane = (index: number): React.ReactNode => {
+  private _handleRenderPane = (widgetDefId: WidgetDef["id"]): React.ReactNode => {
     const runtimeProps = this.props.runtimeProps;
     if (!runtimeProps)
       return null;
-    const widgetDef = runtimeProps.panelDef.widgetDefs[index];
-    if (!widgetDef.isVisible)
+    const widgetDef = runtimeProps.panelDef.findWidgetDef(widgetDefId);
+    if (!widgetDef || !widgetDef.isVisible)
       return null;
     return (
       <div
-        key={`wd-${index}`}
         style={{
           height: "100%",
           display: runtimeProps.panel.isCollapsed ? "none" : "block",
@@ -209,6 +213,25 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     this.setState({
       panelState,
     });
+  }
+
+  private _handleWidgetStateChangedEvent = ({ widgetDef }: WidgetStateChangedEventArgs) => {
+    const runtimeProps = this.props.runtimeProps;
+    if (!runtimeProps)
+      return;
+    if (!runtimeProps.panelDef.findWidgetDef(widgetDef.id))
+      return;
+    this.setState({
+      stagePanelWidgets: this._getVisibileStagePanelWidgets(),
+    });
+  }
+
+  private _getVisibileStagePanelWidgets() {
+    const panelDef = this.props.runtimeProps?.panelDef;
+    if (!panelDef)
+      return [];
+    const visibleWidgets = panelDef.widgetDefs.filter((wd) => wd.isVisible);
+    return visibleWidgets.map((widgetDef) => widgetDef.id);
   }
 }
 
