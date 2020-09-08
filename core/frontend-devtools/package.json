@@ -43,6 +43,7 @@
   "peerDependencies": {},
   "devDependencies": {
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@types/node": "10.14.1",
     "@types/file-saver": "^2.0.1",
     "cpx": "^1.5.0",
@@ -55,6 +56,9 @@
     "all": true
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

@@ -19,6 +19,10 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/backend-telemetry-application-insights-client",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -51,6 +55,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/eslint-plugin",
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
       "name": "@bentley/express-server",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -72,6 +80,10 @@
     },
     {
       "name": "@bentley/frontend-devtools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/frontend-telemetry-application-insights-client",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -123,6 +135,10 @@
       "allowedCategories": [ "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@bentley/introspection-client",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -141,6 +157,10 @@
     {
       "name": "@bentley/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@bentley/openid-introspection-client",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/orbitgt-core",
@@ -232,7 +252,7 @@
     },
     {
       "name": "@microsoft/applicationinsights-web",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@openid/appauth",
@@ -268,7 +288,11 @@
     },
     {
       "name": "applicationinsights",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "applicationinsights-web",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "autoprefixer",
@@ -444,7 +468,7 @@
     },
     {
       "name": "eslint-plugin-jsx-a11y",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "eslint-plugin-prefer-arrow",
@@ -457,10 +481,6 @@
     {
       "name": "eslint-plugin-react-hooks",
       "allowedCategories": [ "backend", "common", "frontend", "tools" ]
-    },
-    {
-      "name": "eslint-plugin-rulesdir",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "event-stream",
@@ -668,7 +688,7 @@
     },
     {
       "name": "oidc-client",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "open",
@@ -676,7 +696,7 @@
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "backend", "integration-testing", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
     },
     {
       "name": "postcss-flexbugs-fixes",
@@ -831,6 +851,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "require-dir",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "resize-observer-polyfill",
       "allowedCategories": [ "frontend" ]
     },
@@ -936,7 +960,7 @@
     },
     {
       "name": "tslint",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "tslint-consistent-codestyle",

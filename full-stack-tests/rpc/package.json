@@ -33,6 +33,7 @@
     "@bentley/certa": "2.6.0-dev.17",
     "@bentley/config-loader": "2.6.0-dev.17",
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",
     "@types/mocha": "^5.2.5",
@@ -49,6 +50,9 @@
     "webpack": "4.42.0"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

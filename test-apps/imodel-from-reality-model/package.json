@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
     "@types/node": "10.14.1",
@@ -35,6 +36,9 @@
     "typescript": "~3.7.4"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

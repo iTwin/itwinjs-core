@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@bentley/bentleyjs-core": "2.6.0-dev.17",
     "@bentley/imodeljs-common": "2.6.0-dev.17",
     "@types/chai": "^4.1.4",
@@ -65,7 +66,6 @@
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
     "eslint": "^6.8.0",
-    "eslint-plugin-react-hooks": "^3.0.0",
     "faker": "^4.1.0",
     "json-schema-faker": "0.5.0-rc16",
     "mocha": "^5.2.0",
@@ -87,6 +87,9 @@
     "lines": 100
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

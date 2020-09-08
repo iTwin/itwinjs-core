@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Moved ESLint configuration to a plugin",
+      "type": "none",
+      "packageName": "@bentley/physical-material-backend"
+    }
+  ],
+  "packageName": "@bentley/physical-material-backend",
+  "email": "66480813+pauliunas@users.noreply.github.com"
+}

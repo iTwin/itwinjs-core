@@ -41,6 +41,7 @@
   ],
   "devDependencies": {
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@bentley/bentleyjs-core": "2.6.0-dev.17",
     "@bentley/itwin-client": "2.6.0-dev.17",
     "@bentley/imodeljs-common": "2.6.0-dev.17",
@@ -53,6 +54,9 @@
   },
   "dependencies": {},
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

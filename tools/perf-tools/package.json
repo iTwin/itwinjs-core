@@ -31,12 +31,16 @@
   },
   "devDependencies": {
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@types/fs-extra": "^4.0.7",
     "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
     "typescript": "~3.7.4"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

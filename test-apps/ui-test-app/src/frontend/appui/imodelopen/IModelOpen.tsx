@@ -56,8 +56,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         isLoadingProjects: false,
         isLoadingiModels: false,
         isLoadingiModel: false,
-        currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line rulesdir/react-set-state-usage
-        iModels: this.props.initialIModels,  // eslint-disable-line rulesdir/react-set-state-usage
+        currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line @bentley/react-set-state-usage
+        iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
 
       return;

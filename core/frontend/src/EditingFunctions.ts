@@ -114,7 +114,7 @@ export class EditingFunctions {
    * Query if there are local changes that have not yet been pushed to the iModel server.
    * @alpha
    */
-  // eslint-disable-next-line rulesdir/prefer-get
+  // eslint-disable-next-line @bentley/prefer-get
   public async hasPendingTxns(): Promise<boolean> {
     return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasPendingTxns(this._connection.getRpcProps());
   }
@@ -123,7 +123,7 @@ export class EditingFunctions {
    * Query if there are in-memory changes that have not yet been saved to the briefcase.
    * @alpha
    */
-  // eslint-disable-next-line rulesdir/prefer-get
+  // eslint-disable-next-line @bentley/prefer-get
   public async hasUnsavedChanges(): Promise<boolean> {
     return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasUnsavedChanges(this._connection.getRpcProps());
   }

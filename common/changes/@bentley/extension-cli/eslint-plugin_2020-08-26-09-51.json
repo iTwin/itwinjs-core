@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Moved ESLint configuration to a plugin",
+      "type": "none",
+      "packageName": "@bentley/extension-cli"
+    }
+  ],
+  "packageName": "@bentley/extension-cli",
+  "email": "66480813+pauliunas@users.noreply.github.com"
+}

@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@bentley/certa": "2.6.0-dev.17",
     "@bentley/config-loader": "2.6.0-dev.17",
     "@bentley/itwin-client": "2.6.0-dev.17",
@@ -63,6 +64,9 @@
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/hypermodeling"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/hypermodeling-frontend"
   },
   "keywords": [
     "Bentley",
@@ -48,6 +48,7 @@
     "@bentley/imodeljs-i18n": "2.6.0-dev.17",
     "@bentley/ui-abstract": "2.6.0-dev.17",
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@bentley/certa": "2.6.0-dev.17",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
@@ -67,6 +68,9 @@
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

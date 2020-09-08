@@ -54,6 +54,7 @@
   "devDependencies": {
     "@bentley/config-loader": "2.6.0-dev.17",
     "@bentley/build-tools": "2.6.0-dev.17",
+    "@bentley/eslint-plugin": "2.6.0-dev.17",
     "@bentley/react-scripts": "3.4.2",
     "@types/bunyan": "^1.8.4",
     "@types/react": "16.9.43",
@@ -83,31 +84,15 @@
     "not <0.2%"
   ],
   "eslintConfig": {
-    "extends": [
-      "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
     ],
+    "extends": "plugin:@bentley/imodeljs-recommended",
     "parserOptions": {
       "project": [
         "tsconfig.json",
         "tsconfig.backend.json"
       ]
-    },
-    "rules": {
-      "@typescript-eslint/naming-convention": [
-        "warn",
-        {
-          "selector": "function",
-          "format": [
-            "camelCase",
-            "PascalCase"
-          ]
-        }
-      ]
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
     }
   }
 }

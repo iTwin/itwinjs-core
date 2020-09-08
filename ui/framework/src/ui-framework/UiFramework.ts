@@ -442,7 +442,7 @@ export class UiFramework {
   }
 
   /** @public */
-  public static isMobile() {  // eslint-disable-line rulesdir/prefer-get
+  public static isMobile() {  // eslint-disable-line @bentley/prefer-get
     let mobile = false;
     // istanbul ignore if
     if ((/Mobi|Android/i.test(navigator.userAgent))) {

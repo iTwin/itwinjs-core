@@ -14,7 +14,7 @@ import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
-/* eslint-disable rulesdir/prefer-get */
+/* eslint-disable @bentley/prefer-get */
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
