@@ -12,7 +12,7 @@ import * as semver from "semver";
 import {
   assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel,
 } from "@bentley/bentleyjs-core";
-import { IModelClient } from "@bentley/imodelhub-client";
+import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
@@ -39,7 +39,7 @@ import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
-import { BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient } from "@bentley/backend-itwin-client";
+import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient } from "@bentley/backend-itwin-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -280,9 +280,18 @@ export class IModelHost {
     return this.authorizationClient.getAccessToken(requestContext);
   }
 
-  private static get _isNativePlatformLoaded(): boolean { return this._platform !== undefined; }
+  private static get _isNativePlatformLoaded(): boolean {
+    return this._platform !== undefined;
+  }
 
-  private static registerPlatform(platform: typeof IModelJsNative, region: number): void {
+  /** @internal */
+  public static loadNative(region: number, applicationType?: ApplicationType, iModelClientType?: IModelClient): void {
+    const platform = Platform.load();
+    this.registerPlatform(platform);
+    this.initializeUsageLogging(platform, region, applicationType, iModelClientType);
+  }
+
+  private static registerPlatform(platform: typeof IModelJsNative): void {
     this._platform = platform;
     if (undefined === platform)
       return;
@@ -291,7 +300,19 @@ export class IModelHost {
       this.validateNativePlatformVersion();
 
     platform.logger = Logger;
-    platform.NativeUlasClient.initializeRegion(region);
+  }
+
+  private static initializeUsageLogging(platform: typeof IModelJsNative, region: number, applicationType?: ApplicationType, iModelClient?: IModelClient): void {
+    const nativeApplicationType = applicationType === ApplicationType.WebAgent
+      ? IModelJsNative.ApplicationType.WebAgent
+      : applicationType === ApplicationType.NativeApp
+        ? IModelJsNative.ApplicationType.NativeApp
+        : IModelJsNative.ApplicationType.WebApplicationBackend;
+    const iModelClientType = !!iModelClient && iModelClient instanceof IModelBankClient
+      ? IModelJsNative.IModelClientType.IModelBank
+      : IModelJsNative.IModelClientType.IModelHub;
+
+    platform.NativeUlasClient.initialize(region, nativeApplicationType, iModelClientType);
   }
 
   private static validateNativePlatformVersion(): void {
@@ -336,9 +357,6 @@ export class IModelHost {
     };
   }
 
-  /** @internal */
-  public static loadNative(region: number): void { this.registerPlatform(Platform.load(), region); }
-
   /**
    * @beta
    * @note A reference implementation is set by default for [AzureBlobStorage]. To supply a different implementation for any service provider (such as AWS),
@@ -349,6 +367,16 @@ export class IModelHost {
 
   /** @internal */
   public static tileUploader: CloudStorageTileUploader;
+
+  public static get iModelClient(): IModelClient {
+    if (!IModelHost.configuration) {
+      throw new IModelError(BentleyStatus.ERROR, "startup must be called first");
+    }
+    return IModelHost.configuration.imodelClient || new IModelHubClient(new AzureFileHandler());
+  }
+  public static get isUsingIModelBankClient(): boolean {
+    return IModelHost.iModelClient instanceof IModelBankClient;
+  }
 
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
@@ -378,13 +406,15 @@ export class IModelHost {
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 
-    const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!this._isNativePlatformLoaded) {
+      const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
       try {
-        if (configuration.nativePlatform !== undefined)
-          this.registerPlatform(configuration.nativePlatform, region);
-        else
-          this.loadNative(region);
+        if (configuration.nativePlatform !== undefined) {
+          this.registerPlatform(configuration.nativePlatform);
+          this.initializeUsageLogging(configuration.nativePlatform, region, configuration.applicationType, configuration.imodelClient);
+        } else {
+          this.loadNative(region, configuration.applicationType, configuration.imodelClient);
+        }
       } catch (error) {
         Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (configuration));
         throw error;
@@ -418,7 +448,7 @@ export class IModelHost {
     }
 
     this.setupCacheDirs(configuration);
-    BriefcaseManager.initialize(this._briefcaseCacheDir, configuration.imodelClient);
+    BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     IModelHost.setupRpcRequestContext();
 

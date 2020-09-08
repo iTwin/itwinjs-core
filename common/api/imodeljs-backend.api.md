@@ -524,10 +524,10 @@ export class BriefcaseManager {
     static getChangedElementsPathName(iModelId: GuidString): string;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
-    // @internal
+    // (undocumented)
     static get imodelClient(): IModelClient;
     // @internal
-    static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
+    static initialize(cacheRootDir: string): void;
     // @internal
     static initializeOffline(): void;
     // @internal (undocumented)
@@ -2662,12 +2662,16 @@ export class IModelHost {
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
+    // (undocumented)
+    static get iModelClient(): IModelClient;
     // @alpha (undocumented)
     static get introspectionClient(): IntrospectionClient | undefined;
     // @internal (undocumented)
     static get isNativeAppBackend(): boolean;
+    // (undocumented)
+    static get isUsingIModelBankClient(): boolean;
     // @internal (undocumented)
-    static loadNative(region: number): void;
+    static loadNative(region: number, applicationType?: ApplicationType, iModelClientType?: IModelClient): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;

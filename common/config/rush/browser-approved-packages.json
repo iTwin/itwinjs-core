@@ -19,10 +19,6 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/backend-telemetry-application-insights-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -83,10 +79,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@bentley/frontend-telemetry-application-insights-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/geometry-core",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -135,10 +127,6 @@
       "allowedCategories": [ "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
-      "name": "@bentley/introspection-client",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -157,10 +145,6 @@
     {
       "name": "@bentley/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/openid-introspection-client",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/orbitgt-core",
@@ -252,7 +236,7 @@
     },
     {
       "name": "@microsoft/applicationinsights-web",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@openid/appauth",
@@ -288,11 +272,7 @@
     },
     {
       "name": "applicationinsights",
-      "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "applicationinsights-web",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "autoprefixer",
@@ -480,7 +460,7 @@
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "event-stream",
@@ -688,7 +668,7 @@
     },
     {
       "name": "oidc-client",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "open",
@@ -696,7 +676,7 @@
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "tools" ]
     },
     {
       "name": "postcss-flexbugs-fixes",
@@ -960,7 +940,7 @@
     },
     {
       "name": "tslint",
-      "allowedCategories": [ "backend", "common", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tslint-consistent-codestyle",

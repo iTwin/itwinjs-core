@@ -21,7 +21,7 @@ export const assetsPath = __dirname + "/../../../lib/test/assets/";
 export const workDir = __dirname + "/../../../lib/test/output/";
 
 // To run tests with imodel-bank integration:
-// set NODE_EXTRA_CA_CERTS=d:\imjs\imodeljs\core\backend-itwin-client\src\test\assets\local_dev_server.crt
+// set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
 // set imjs_test_imodel_bank to true to run tests with imodel-bank. Then either:
 // set imjs_test_imodel_bank_url to specify the url to locally deployed orchestrator
 // or set the following so the tests would deploy a local orchestrator themselves:

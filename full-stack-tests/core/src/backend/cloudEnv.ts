@@ -8,7 +8,6 @@ import { getIModelBankCloudEnv } from "./IModelBankBackendCloudEnv";
 import { IModelHubBackendCloudEnv } from "./IModelHubBackendCloudEnv";
 
 export class CloudEnv {
-  public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
   private static _cloudEnv: IModelCloudEnvironment | undefined;
 
   public static get cloudEnv(): IModelCloudEnvironment {
@@ -18,8 +17,8 @@ export class CloudEnv {
   }
 
   public static async initialize(): Promise<void> {
-
-    if (!this.enableIModelBank) {
+    const enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
+    if (!enableIModelBank) {
       this._cloudEnv = new IModelHubBackendCloudEnv();
     } else {
       this._cloudEnv = getIModelBankCloudEnv();
