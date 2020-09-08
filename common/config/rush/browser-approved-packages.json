@@ -196,7 +196,7 @@
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "@bentley/ui-abstract",
