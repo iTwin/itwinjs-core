@@ -28,3 +28,7 @@ The ESLint configuration was moved from `@bentley/build-tools` to a new ESLint p
 Alternatively, `plugin:@bentley/ui` can be used, it extends the recommended configuration with additional rules used in core ui packages. There may be more alternative configurations in the future.
 
 The old configuration path `@bentley/build-tools/.eslintrc.js` remains in place but it's not recommended to use it.
+
+## Electron Security enhancements
+
+To reduce security risks when running under Electron, this version now runs with `nodeIntegration=false`, `contextIsoloation=true`, and `sandbox=true`. To understand the rationale and implications of these changes, please see the [Electon Security Checklist]( https://www.electronjs.org/docs/tutorial/security#checklist-security-recommendations). Note that these choices are the defaults, but can be overriden by arguments to `ElectronManger.initialize`. If you previously passed `webPreferences` arguments to that function, it is best to remove them entirely and rely on the default values.

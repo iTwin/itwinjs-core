@@ -177,7 +177,7 @@ export class ConcurrencyControl {
 
   private buildRequestForModelTo(request: ConcurrencyControl.Request, model: ModelProps, opcode: DbOpcode, modelClass?: typeof Model): void {
     if (modelClass === undefined)
-      modelClass = this.iModel.getJsClass(model.classFullName) as typeof Model;     // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+      modelClass = this.iModel.getJsClass<typeof Model>(model.classFullName);
     modelClass.populateRequest(request, model, this.iModel, opcode);
   }
 
@@ -226,7 +226,7 @@ export class ConcurrencyControl {
   public buildRequestForElementTo(request: ConcurrencyControl.Request, element: ElementProps, opcode: DbOpcode, elementClass?: typeof Element): void {
     const original = (DbOpcode.Update === opcode) ? this.iModel.elements.getElement(element.id!) : undefined;
     if (elementClass === undefined)
-      elementClass = this.iModel.getJsClass(element.classFullName) as typeof Element;     // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+      elementClass = this.iModel.getJsClass<typeof Element>(element.classFullName);
     elementClass.populateRequest(request, element, this.iModel, opcode, original);
   }
 
