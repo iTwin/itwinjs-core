@@ -17,7 +17,7 @@ export function serializeToken(token: AccessToken): SerializedAccessToken {
   ];
 }
 
-function deserializeToken([tokenStr, userInfo]: SerializedAccessToken): AccessToken {
+export function deserializeToken([tokenStr, userInfo]: SerializedAccessToken): AccessToken {
   const token = AccessToken.fromTokenString(tokenStr);
   token.setUserInfo(new UserInfo(userInfo.id, userInfo.email, userInfo.profile, userInfo.organization, userInfo.featureTracking));
   return token;
