@@ -81,7 +81,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get isLitSurface(): boolean { return false; }
   // Returns true if this is an unlit surface with baked-in lighting (e.g. 3mx, scalable mesh reality models)
   public get hasBakedLighting(): boolean { return false; }
-  // Returns true if this primititive constains auxilliary animation data.
+  // Returns true if this primitive contains auxillary animation data.
   public get hasAnimation(): boolean { return false; }
 
   /** Returns the origin of this geometry's quantization parameters. */
@@ -215,7 +215,7 @@ export class IndexedGeometryParams implements WebGLDisposable {
     this.buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", undefined, false);
     assert(attrPos !== undefined);
-    this.buffers.addBuffer(positions, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+    this.buffers.addBuffer(positions, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false)]);
     this.buffers.addBuffer(indices, []);
     this.positions = positions;
     this.indices = indices;
@@ -359,7 +359,7 @@ export class SkyBoxGeometryParams implements WebGLDisposable {
     this.buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", undefined, false);
     assert(attrPos !== undefined);
-    this.buffers.addBuffer(positions, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+    this.buffers.addBuffer(positions, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false)]);
     this.positions = positions;
   }
 
@@ -381,13 +381,13 @@ export class SkyBoxGeometryParams implements WebGLDisposable {
 
 /** @internal */
 namespace SkyBoxQuads { // eslint-disable-line no-redeclare
-  let _skyBoxQuads: SkyBoxQuads | undefined;
+  let skyBoxQuads: SkyBoxQuads | undefined;
 
   export function getInstance(): SkyBoxQuads {
-    if (undefined === _skyBoxQuads)
-      _skyBoxQuads = new SkyBoxQuads();
+    if (undefined === skyBoxQuads)
+      skyBoxQuads = new SkyBoxQuads();
 
-    return _skyBoxQuads;
+    return skyBoxQuads;
   }
 }
 
@@ -472,13 +472,13 @@ class ViewportQuad {
 
 /** @internal */
 namespace ViewportQuad { // eslint-disable-line no-redeclare
-  let _viewportQuad: ViewportQuad | undefined;
+  let viewportQuad: ViewportQuad | undefined;
 
   export function getInstance(): ViewportQuad {
-    if (undefined === _viewportQuad)
-      _viewportQuad = new ViewportQuad();
+    if (undefined === viewportQuad)
+      viewportQuad = new ViewportQuad();
 
-    return _viewportQuad;
+    return viewportQuad;
   }
 }
 
@@ -547,7 +547,7 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     this._worldPosBuff.bindData(this.worldPos, GL.Buffer.Usage.StreamDraw);
     const attrWorldPos = AttributeMap.findAttribute("a_worldPos", TechniqueId.SkySphereGradient, false);
     assert(attrWorldPos !== undefined);
-    this._params.buffers.addBuffer(this._worldPosBuff, [BufferParameters.create(attrWorldPos!.location, 3, GL.DataType.Float, false, 0, 0, false)]);
+    this._params.buffers.addBuffer(this._worldPosBuff, [BufferParameters.create(attrWorldPos.location, 3, GL.DataType.Float, false, 0, 0, false)]);
   }
 
   private _setPointsFromFrustum(target: Target) {
@@ -930,7 +930,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
     this.buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.VolClassCopyZ, false);
     assert(attrPos !== undefined);
-    this.buffers.addBuffer(this._positions, [BufferParameters.create(attrPos!.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+    this.buffers.addBuffer(this._positions, [BufferParameters.create(attrPos.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
   }
 
   public static createGeometry(width: number, height: number, depth: WebGLTexture): ScreenPointsGeometry {
@@ -997,11 +997,11 @@ export class PolylineBuffers implements WebGLDisposable {
     assert(attrNextIndex !== undefined);
     assert(attrParam !== undefined);
 
-    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
-    this.buffers.addBuffer(prevIndices, [BufferParameters.create(attrPrevIndex!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(prevIndices, [BufferParameters.create(attrPrevIndex.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this.buffers.addBuffer(nextIndicesAndParams, [
-      BufferParameters.create(attrNextIndex!.location, 3, GL.DataType.UnsignedByte, false, 4, 0, false),
-      BufferParameters.create(attrParam!.location, 1, GL.DataType.UnsignedByte, false, 4, 3, false),
+      BufferParameters.create(attrNextIndex.location, 3, GL.DataType.UnsignedByte, false, 4, 0, false),
+      BufferParameters.create(attrParam.location, 1, GL.DataType.UnsignedByte, false, 4, 3, false),
     ]);
 
     this.indices = indices;

@@ -14,7 +14,6 @@ export class IModelJsElectronManager extends StandardElectronManager {
     appIconPath: string;
     // (undocumented)
     protected get _defaultWindowOptions(): {
-        autoHideMenuBar: boolean;
         icon: string;
     };
     // (undocumented)
@@ -39,7 +38,6 @@ export class WebpackDevServerElectronManager extends StandardElectronManager {
     appIconPath: string;
     // (undocumented)
     protected get _defaultWindowOptions(): {
-        autoHideMenuBar: boolean;
         icon: string;
     };
     // (undocumented)

@@ -1119,8 +1119,8 @@ export class AccuDraw {
       case ItemField.X_Item:
       case ItemField.Y_Item:
         this.locked |= (ItemField.X_Item === index) ? LockedStates.X_BM : LockedStates.Y_BM;
-      /* falls through */
 
+      // falls through
       case ItemField.Z_Item:
         this.setFieldLock(index, true);
         if (synchText) {

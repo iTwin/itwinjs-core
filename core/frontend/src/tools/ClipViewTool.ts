@@ -66,7 +66,7 @@ export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
 
   protected static _orientationName = "enumAsOrientation";
-  protected static enumAsOrientationMessage(str: string) { return CoreTools.translate("Settings.Orientation." + str); }
+  protected static enumAsOrientationMessage(str: string) { return CoreTools.translate(`Settings.Orientation.${str}`); }
   protected static _getEnumAsOrientationDescription = (): PropertyDescription => {
     return {
       name: ViewClipTool._orientationName,

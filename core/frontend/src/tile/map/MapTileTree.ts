@@ -284,7 +284,7 @@ export class MapTileTree extends RealityTileTree {
         // If the reprojected corners are in the cache, resolve immediately.
         resolveCorners(gridPoints, reprojectedPoints);
       } else {
-        // If the reprojected corners are not in cache request them - but also requestt reprojection of a grid that will include descendent corners to ensure they can
+        // If the reprojected corners are not in cache request them - but also request reprojection of a grid that will include descendent corners to ensure they can
         // be reloaded without expensive reprojection requests.
         this.loadReprojectionCache(tile).then(() => {
           const reprojected = this.getCachedReprojectedPoints(gridPoints);
@@ -664,7 +664,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     for (const imageryTree of this._imageryTrees)
-      if (imageryTree.treeOwner.tileTree && imageryTree.treeOwner.tileTree!.modelId === layerTreeModelId)
+      if (imageryTree.treeOwner.tileTree && imageryTree.treeOwner.tileTree.modelId === layerTreeModelId)
         return imageryTree;
 
     return undefined;
@@ -684,11 +684,11 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const worldPoint = hit.hitPoint.clone();
-    const cartoGraphic = backgroundMapGeometry.dbToCartographic(worldPoint!);
+    const cartoGraphic = backgroundMapGeometry.dbToCartographic(worldPoint);
     const strings = [];
     const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
     if (imageryTreeRef !== undefined) {
-      strings.push("Imagery Layer: " + imageryTreeRef.layerSettings.name);
+      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
       if (hit.tileId !== undefined) {
         const terrainQuadId = QuadId.createFromContentId(hit.tileId);
         const terrainTile = tree.tileFromQuadId(terrainQuadId);
@@ -704,11 +704,11 @@ export class MapTileTreeReference extends TileTreeReference {
       }
     }
 
-    strings.push("Latitude: " + cartoGraphic.latitudeDegrees.toFixed(4));
-    strings.push("Longitude: " + cartoGraphic.longitudeDegrees.toFixed(4));
+    strings.push(`Latitude: ${cartoGraphic.latitudeDegrees.toFixed(4)}`);
+    strings.push(`Longitude: ${cartoGraphic.longitudeDegrees.toFixed(4)}`);
     if (this.settings.applyTerrain) {
       const geodeticHeight = (cartoGraphic.height - tree.bimElevationBias) / tree.terrainExaggeration;
-      strings.push("Height (Meters) Geodetic: " + geodeticHeight.toFixed(1) + " Sea Level: " + (geodeticHeight - tree.geodeticOffset).toFixed(1));
+      strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
     }
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");

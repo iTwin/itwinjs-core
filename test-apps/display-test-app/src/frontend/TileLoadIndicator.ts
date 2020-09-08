@@ -9,7 +9,7 @@ export class TileLoadIndicator {
   private readonly _progress: HTMLProgressElement;
 
   public constructor(parent: HTMLElement) {
-    this._progress = document.createElement("progress") as HTMLProgressElement;
+    this._progress = document.createElement("progress");
     parent.appendChild(this._progress);
 
     IModelApp.viewManager.onFinishRender.addListener(() => this.update());

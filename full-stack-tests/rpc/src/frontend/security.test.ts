@@ -5,6 +5,8 @@
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 
+// cspell:ignore csrf
+
 describe("CSRF Protection (Enabled)", () => {
   it("should send requests with token in header", async () => {
     if (IModelApp.initialized) {

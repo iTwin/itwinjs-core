@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as electron from "electron";
 import * as path from "path";
-import { IModelJsElectronManager, StandardElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
+import { IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
 import { ElectronRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 /**
@@ -14,11 +14,9 @@ const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
 export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
-  let manager: StandardElectronManager;
-  if (process.env.NODE_ENV === "production")
-    manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "..", "build"));
-  else
-    manager = new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
+  const manager = (process.env.NODE_ENV === "production") ?
+    new IModelJsElectronManager(path.join(__dirname, "..", "..", "..", "build")) :
+    new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
 
   // Handle custom keyboard shortcuts
   electron.app.on("web-contents-created", (_e, wc) => {
@@ -36,11 +34,6 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   await manager.initialize({
     width: 800,
     height: 650,
-    webPreferences: {
-      nodeIntegration: true,
-      experimentalFeatures: true, // Needed for CSS Grid support
-    },
-    autoHideMenuBar: true,
     show: !maximizeWindow,
   });
 

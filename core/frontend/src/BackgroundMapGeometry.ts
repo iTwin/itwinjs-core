@@ -43,7 +43,7 @@ export class BackgroundMapGeometry {
   private _mercatorTilingScheme: WebMercatorTilingScheme;
   private _ecefToDb: Transform;
   public static maxCartesianDistance = 1E4;           // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
-  private static _transitionDistanceMultiplier = .25;  // In the transition range which extends beyond the caretesian range we intepolate between cartesian and ellipsoid.
+  private static _transitionDistanceMultiplier = .25;  // In the transition range which extends beyond the cartesian range we interpolate between cartesian and ellipsoid.
 
   private static _scratchRayFractions = new Array<number>();
   private static _scratchRayAngles = new Array<LongitudeLatitudeNumber>();
@@ -228,7 +228,7 @@ export class BackgroundMapGeometry {
           if (silhouette !== undefined) {
             silhouette.perpendicularVector.clone(scratchSilhouetteNormal);
             // Push the silhouette plane as clip so that we do not include geometry at other side of ellipsoid.
-            // First make sure that it is pointing in the right diretion.
+            // First make sure that it is pointing in the right direction.
             if (eyePoint) {
               // Clip toward eye.
               if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
@@ -297,7 +297,7 @@ export class BackgroundMapGeometry {
 
   public addFrustumDecorations(builder: GraphicBuilder, frustum: Frustum) {
     if (this.geometry instanceof Ellipsoid) {
-      const ellipsoid = this.geometry as Ellipsoid;
+      const ellipsoid = this.geometry;
       const clipPlanes = frustum.getRangePlanes(false, false, 0);
       const viewRotation = frustum.getRotation()!;
       const eyePoint = frustum.getEyePoint(scratchEyePoint);

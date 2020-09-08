@@ -81,7 +81,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
     else if (undefined === rhs.transform)
       return 1;
 
-    const l = lhs.transform!, r = rhs.transform!;
+    const l = lhs.transform, r = rhs.transform;
     cmp = compareOrigins(l.origin, r.origin);
     return 0 !== cmp ? cmp : compareMatrices(l.matrix, r.matrix);
   }
@@ -253,7 +253,7 @@ class RealityModelTileLoader extends RealityTileLoader {
   public async getChildrenProps(parent: RealityTile): Promise<RealityTileParams[]> {
     const props: RealityModelTileProps[] = [];
     const thisId = parent.contentId;
-    const prefix = thisId.length ? thisId + "_" : "";
+    const prefix = thisId.length ? `${thisId}_` : "";
     const findResult = await this.findTileInJson(this.tree.tilesetJson, thisId, "", undefined, true);
     if (undefined !== findResult && Array.isArray(findResult.json.children)) {
       for (let i = 0; i < findResult.json.children.length; i++) {
@@ -305,7 +305,7 @@ class RealityModelTileLoader extends RealityTileLoader {
     }
 
     let foundChild = tilesetJson.children[childIndex];
-    const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
+    const thisParentId = parentId.length ? (`${parentId}_${childId}`) : childId;
     if (foundChild.transform) {
       const thisTransform = RealityModelTileUtils.transformFromJson(foundChild.transform);
       transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(thisTransform) : thisTransform;
@@ -394,7 +394,7 @@ export namespace RealityModelTileTree {
       if (undefined !== ecefLocation) {
         const carto = Cartographic.fromEcef(realityToEcef.getOrigin());
         const ypr = YawPitchRollAngles.createFromMatrix3d(rootTransform.matrix);
-        // If the reality model is located in the same region and height and their is significant misalighment in their orientation,
+        // If the reality model is located in the same region and height and their is significant misalignment in their orientation,
         //  then align the cartesian systems as otherwise different origins
         // can result in a misalignment from the curvature of the earth. (EWR - large point cloud)
         if (undefined !== ypr && undefined !== carto && Math.abs(ypr.roll.degrees) > 1.0E-6 && carto.height < 300.0) {  // Don't test yaw- it may be present from eccentricity fix.
@@ -499,7 +499,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     strings.push(this._name ? this._name : this._url);
     if (batch !== undefined)
       for (const key of Object.keys(batch))
-        strings.push(key + ": " + batch[key]);
+        strings.push(`${key}: ${batch[key]}`);
 
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");
@@ -521,7 +521,7 @@ interface RDSClientProps {
 }
 
 /**
- * ###TODO temporarly here for testing, needs to be moved to the clients repo
+ * ###TODO temporarily here for testing, needs to be moved to the clients repo
  * @internal
  * This class encapsulates access to a reality data wether it be from local access, http or RDS
  * The url provided at the creation is parsed to determine if this is a RDS (ProjectWise Context Share) reference.
@@ -540,7 +540,7 @@ export class RealityModelTileClient {
   constructor(url: string, accessToken?: AccessToken, contextId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (contextId && this.rdsProps)
-      this.rdsProps!.projectId = contextId;
+      this.rdsProps.projectId = contextId;
     this._token = accessToken;
   }
 
@@ -550,12 +550,12 @@ export class RealityModelTileClient {
     if (undefined !== this.rdsProps) {
       if (!this._realityData) {
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
-        // though this base URL is only the part relative to the root of the blob contining the data.
+        // though this base URL is only the part relative to the root of the blob containing the data.
         this._realityData = await RealityModelTileClient._client.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
         requestContext.enter();
 
         // A reality data that has not root document set should not be considered.
-        const rootDocument: string = (this._realityData!.rootDocument ? this._realityData!.rootDocument as string : "");
+        const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument : "");
         this.setBaseUrl(rootDocument);
       }
     }
@@ -575,7 +575,7 @@ export class RealityModelTileClient {
       let projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
 
       // ###TODO This is a temporary workaround for accessing the reality meshes with a test account
-      // The hardcoded project id corresponds to a project setup to yied access to the test account which is linked to the tileId
+      // The hardcoded project id corresponds to a project setup to yield access to the test account which is linked to the tileId
       if (projectId === "Server")
         projectId = "fb1696c8-c074-4c76-a539-a5546e048cc6";
 
@@ -584,7 +584,7 @@ export class RealityModelTileClient {
     return props;
   }
 
-  // This is to set the root url fromt he provided root document path.
+  // This is to set the root url from the provided root document path.
   // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
   // otherwise the full path to root document is given.
   // The base URL contains the base URL from which tile relative path are constructed.
@@ -595,7 +595,7 @@ export class RealityModelTileClient {
     if (urlParts.length === 0)
       this._baseUrl = "";
     else
-      this._baseUrl = urlParts.join("/") + "/";
+      this._baseUrl = `${urlParts.join("/")}/`;
   }
 
   // ### TODO. Technically the url should not be required. If the reality data encapsulated is stored on PW Context Share then

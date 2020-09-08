@@ -10,7 +10,7 @@ import { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
+  const canvas = document.createElement("canvas");
   if (null === canvas)
     return undefined;
   return canvas;
@@ -58,7 +58,7 @@ describe("Instancing", () => {
   class TestApp extends MockRender.App {
     public static async test(enableInstancing: boolean, supportsInstancing: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableInstancing };
-      const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since insdtanced arrays connot be disabled in WebGL2
+      const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since instanced arrays cannot be disabled in WebGL2
       if (!supportsInstancing)
         renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 

@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { compareStrings, SortedArray } from "@bentley/bentleyjs-core";
+
+// cspell:ignore vsps nvsp
 
 export class NamedViewStatePropsString {
   private _name: string;
@@ -75,7 +76,7 @@ export class NamedVSPSList extends SortedArray<NamedViewStatePropsString> {
 
   public getPrintString(): string {
     // We don't really want all of the other stuff from the SortedArray class in here, just the actual name/propertyString pairs.
-    return JSON.stringify(this._array as NamedViewStatePropsString[], null, "  ");
+    return JSON.stringify(this._array, null, "  ");
   }
 
   public loadFromString(esvString: string): void {

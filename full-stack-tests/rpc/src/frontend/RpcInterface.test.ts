@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
 import * as semver from "semver";
 import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
@@ -16,6 +17,9 @@ import {
   TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
+
+/* eslint-disable @typescript-eslint/unbound-method */
+// cspell:ignore oldvalue newvalue
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
@@ -295,7 +299,7 @@ describe("RpcInterface", () => {
       }
 
       if (err && expectValid)
-        assert(false, "Unexpected error: " + err.stack);
+        assert(false, `Unexpected error: ${err.stack}`);
 
       if (!err && !expectValid)
         assert(false, "Expected error, but none was thrown.");
@@ -428,7 +432,7 @@ describe("RpcInterface", () => {
     await Promise.all(promises);
   });
 
-  it("should support cachable responses", async () => {
+  it("should support cacheable responses", async () => {
     RpcOperation.lookup(TestRpcInterface, "op14").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
     assert.equal(2, await TestRpcInterface.getClient().op14(1, 1));
   });

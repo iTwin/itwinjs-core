@@ -75,7 +75,7 @@ export class MapTileLoader extends RealityTileLoader {
     if (isCanceled())
       return {};
 
-    const projection = tile.getProjection(tile.heightRange!);
+    const projection = tile.getProjection(tile.heightRange);
     const terrainGeometry = system.createTerrainMeshGeometry(mesh, projection.transformFromLocal);
 
     let unavailableChild = false;

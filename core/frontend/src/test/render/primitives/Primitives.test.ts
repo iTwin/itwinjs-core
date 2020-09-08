@@ -69,18 +69,14 @@ describe("GeometryList", () => {
     assert.isTrue(glist0.isEmpty);
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
-    const g0 = Geometry.createFromLineString([
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)], Transform.createIdentity(),
+    const g0 = Geometry.createFromLineString([Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
+      Transform.createIdentity(),
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
       dp);
     assert.isUndefined(g0.getPolyfaces(0.001));
 
-    const g1 = Geometry.createFromPointString([
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)], Transform.createIdentity(),
+    const g1 = Geometry.createFromPointString([Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
+      Transform.createIdentity(),
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
       dp);
 
@@ -124,7 +120,7 @@ describe("GeometryList", () => {
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
     const origin = Point3d.create(1, 2, 3);
-    const polyface = Sample.createTriangularUnitGridPolyface(origin as Point3d,
+    const polyface = Sample.createTriangularUnitGridPolyface(origin,
       Vector3d.create(1, 0, 0), Vector3d.create(0, 2, 0), 4, 5, true, true, false);
     const polyfaceG0 = Geometry.createFromPolyface(polyface, Transform.createIdentity(), polyface.range(), dp);
     glist0.push(polyfaceG0);

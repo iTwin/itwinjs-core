@@ -27,8 +27,8 @@ class DragState {
       let left = Math.max(0, target.offsetLeft - this._newX);
       top = Math.min(surf.clientHeight - target.clientHeight, top);
       left = Math.min(surf.clientWidth - target.clientWidth, left);
-      target.style.top = top + "px";
-      target.style.left = left + "px";
+      target.style.top = `${top}px`;
+      target.style.left = `${left}px`;
     };
 
     const stopDrag = () => {
@@ -66,7 +66,7 @@ class ResizeState {
       const width = this._prevWidth + (e.pageX - this._prevMouseX);
       const height = this._prevHeight - (e.pageY - this._prevMouseY);
       const windowTop = this._prevY + (e.pageY - this._prevMouseY);
-      const windowLeft = parseInt(window.container.style.left!, 10);
+      const windowLeft = parseInt(window.container.style.left, 10);
       const windowRight = windowLeft + width;
       const prevBottom = this._prevY + this._prevHeight;
       const surfaceWidth = window.surface.element.clientWidth;
@@ -74,11 +74,11 @@ class ResizeState {
       const surfaceTop = window.surface.element.clientTop;
 
       if (width > this.minSize)
-        target.style.width = ((windowRight <= surfaceRight) ? width : surfaceWidth - windowLeft) + "px";
+        target.style.width = `${(windowRight <= surfaceRight) ? width : surfaceWidth - windowLeft}px`;
 
       if (height > minSize) {
-        target.style.height = ((windowTop >= surfaceTop) ? height : prevBottom) + "px";
-        target.style.top = ((windowTop >= surfaceTop) ? windowTop : surfaceTop) + "px";
+        target.style.height = `${(windowTop >= surfaceTop) ? height : prevBottom}px`;
+        target.style.top = `${(windowTop >= surfaceTop) ? windowTop : surfaceTop}px`;
       }
     };
 
@@ -184,8 +184,8 @@ class WindowHeader {
       dock,
       width: undefined !== state ? state.width : target.clientWidth,
       height: undefined !== state ? state.height : target.clientHeight,
-      top: undefined !== state ? state.top : target.style.top!,
-      left: undefined !== state ? state.left : target.style.left!,
+      top: undefined !== state ? state.top : target.style.top,
+      left: undefined !== state ? state.left : target.style.left,
     };
     this.applyDock();
   }
@@ -196,8 +196,8 @@ class WindowHeader {
       return;
 
     const target = this.window.container;
-    target.style.width = s.width + "px";
-    target.style.height = s.height + "px";
+    target.style.width = `${s.width}px`;
+    target.style.height = `${s.height}px`;
     target.style.top = s.top;
     target.style.left = s.left;
 
@@ -234,10 +234,10 @@ class WindowHeader {
     }
 
     const style = this.window.container.style;
-    style.left = l + "px";
-    style.top = t + "px";
-    style.width = w + "px";
-    style.height = h + "px";
+    style.left = `${l}px`;
+    style.top = `${t}px`;
+    style.width = `${w}px`;
+    style.height = `${h}px`;
 
     this.window.focus();
   }
@@ -251,8 +251,8 @@ class WindowHeader {
     const style = this.window.container.style;
     const windowHeight = this.window.container.clientHeight;
     const windowWidth = this.window.container.clientWidth;
-    let windowTop = parseInt(style.top!, 10);
-    let windowLeft = parseInt(style.left!, 10);
+    let windowTop = parseInt(style.top, 10);
+    let windowLeft = parseInt(style.left, 10);
     const windowBottom = windowTop + windowHeight;
     const windowRight = windowLeft + windowWidth;
 
@@ -261,18 +261,18 @@ class WindowHeader {
       windowTop = (surfaceBottom - windowHeight);
     if (windowTop < surfaceTop)
       windowTop = surfaceTop;
-    style.top = windowTop + "px";
+    style.top = `${windowTop}px`;
     if (windowHeight > surfaceBottom)
-      style.height = surfaceBottom + "px";
+      style.height = `${surfaceBottom}px`;
 
     // assure the window left of the surface boarder
     if (windowRight >= surfaceRight)
       windowLeft = (surfaceRight - windowWidth);
     if (windowLeft < surfaceLeft)
       windowLeft = surfaceLeft;
-    style.left = windowLeft + "px";
+    style.left = `${windowLeft}px`;
     if (windowWidth > surfaceRight)
-      style.width = surfaceRight + "px";
+      style.width = `${surfaceRight}px`;
   }
 
   public addDock(add: Dock): void {
@@ -316,8 +316,8 @@ class WindowHeader {
     const dh = h - ph;
 
     const cont = this.window.container;
-    cont.style.width = (cont.clientWidth + dw) + "px";
-    cont.style.height = (cont.clientHeight + dh) + "px";
+    cont.style.width = `${cont.clientWidth + dw}px`;
+    cont.style.height = `${cont.clientHeight + dh}px`;
   }
 
   public hideCloseWidget(hide: boolean) {
@@ -358,19 +358,19 @@ export abstract class Window {
     this.surface = surface;
     this.container = IModelApp.makeHTMLElement("div", { className: "floating-window-container" });
 
-    this.container.style.top = 0 + "px";
-    this.container.style.left = 0 + "px";
-    this.container.style.width = (surface.element.clientWidth / 3) + "px";
-    this.container.style.height = (surface.element.clientHeight / 3) + "px";
+    this.container.style.top = `${0}px`;
+    this.container.style.left = `${0}px`;
+    this.container.style.width = `${surface.element.clientWidth / 3}px`;
+    this.container.style.height = `${surface.element.clientHeight / 3}px`;
     if (undefined !== props) {
       if (undefined !== props.top)
-        this.container.style.top = props.top + "px";
+        this.container.style.top = `${props.top}px`;
       if (undefined !== props.left)
-        this.container.style.left = props.left + "px";
+        this.container.style.left = `${props.left}px`;
       if (undefined !== props.width)
-        this.container.style.width = props.width + "px";
+        this.container.style.width = `${props.width}px`;
       if (undefined !== props.height)
-        this.container.style.height = props.height + "px";
+        this.container.style.height = `${props.height}px`;
     }
 
     this._header = new WindowHeader(this, this.container, undefined !== props ? props.title : undefined);

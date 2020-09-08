@@ -34,7 +34,7 @@ function createPurpleQuadTechnique(): TechniqueId {
 function createTarget(): Target | undefined {
   let canvas = document.getElementById("WebGLTestCanvas") as HTMLCanvasElement;
   if (null === canvas) {
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
+    canvas = document.createElement("canvas");
     if (null !== canvas) {
       canvas.id = "WebGLTestCanvas";
       document.body.appendChild(document.createTextNode("WebGL tests"));
@@ -44,7 +44,7 @@ function createTarget(): Target | undefined {
   canvas.width = 300;
   canvas.height = 150;
   assert(undefined !== canvas);
-  return System.instance!.createTarget(canvas!) as Target;
+  return System.instance.createTarget(canvas) as Target;
 }
 
 describe("Techniques", () => {

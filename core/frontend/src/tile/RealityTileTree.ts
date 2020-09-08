@@ -271,7 +271,7 @@ export class RealityTileTree extends TileTree {
       const imageryTiles: RealityTile[] = [];
       for (const selectedTile of selected) {
         if (selectedTile instanceof MapTile) {
-          const selectedImageryTiles = (selectedTile as MapTile).imageryTiles;
+          const selectedImageryTiles = (selectedTile).imageryTiles;
           if (selectedImageryTiles)
             selectedImageryTiles.forEach((tile) => imageryTiles.push(tile));
         }
@@ -314,7 +314,7 @@ export class RealityTileTree extends TileTree {
       depthMap.set(depth, found === undefined ? 1 : found + 1);
     }
 
-    depthMap.forEach((key, value) => depthString += key + "-" + value + ", ");
+    depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
     console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // eslint-disable-line
   }
 }

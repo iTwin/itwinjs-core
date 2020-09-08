@@ -640,7 +640,7 @@ export class QuantityFormatter implements UnitsProvider {
     if (activeMap.size > 0) {
       const spec = activeMap.get(type);
       if (spec)
-        return spec as FormatterSpec;
+        return spec;
     }
     throw new BentleyError(BentleyStatus.ERROR, "Unable to load FormatSpecs");
   }
@@ -674,7 +674,7 @@ export class QuantityFormatter implements UnitsProvider {
     if (activeMap.size > 0) {
       const spec = activeMap.get(type);
       if (spec)
-        return spec as ParserSpec;
+        return spec;
     }
     throw new BentleyError(BentleyStatus.ERROR, "Unable to load ParserSpec");
   }

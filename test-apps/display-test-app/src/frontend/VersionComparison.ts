@@ -9,6 +9,8 @@ import {
   SpatialViewState, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
 
+// cspell:ignore ovrs ibim
+
 interface ChangedElems {
   deleted: Set<string>;
   inserted: Set<string>;
@@ -118,7 +120,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
       assert(view.isSpatialView());
 
       // Open the "revision" iModel.
-      const filename = vp.iModel.getRpcProps().key + ".rev";
+      const filename = `${vp.iModel.getRpcProps().key}.rev`;
       const iModel = await SnapshotConnection.openFile(filename);
 
       // ###TODO determine which model(s) contain the deleted elements - don't need tiles for any others.
@@ -236,7 +238,7 @@ class Reference extends TileTreeReference {
  *  - Measure tool: should be able to snap to deleted elements and "normal" elements.
  *  - Toggling model/category display: should synchronize with the Viewport's model/category selectors.
  *  - ViewFlags: render mode, constructions, edge display, etc should be defined by the Viewport.
- *  - Never/always-drawn elements? Possiby will need to synchronize with Viewport.
+ *  - Never/always-drawn elements? Possibly will need to synchronize with Viewport.
  *
  * NOTE: This *REQUIRES* a copy of the currently-opened iModel file to exist in same directory with same name, except with ".rev" appended.
  * e.g. "d:\bim\my.ibim" must have "d:\bim\my.ibim.rev" available.

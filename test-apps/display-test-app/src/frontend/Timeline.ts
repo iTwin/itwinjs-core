@@ -25,7 +25,7 @@ class AnalysisTimelineProvider {
   public readonly duration = Range1d.createXX(0, 100);
 
   public getDescription(time: number): string {
-    return time.toFixed(0) + "%";
+    return `${time.toFixed(0)}%`;
   }
 
   public update(time: number, vp: Viewport): void {
@@ -167,12 +167,12 @@ class TimelinePanel extends ToolBarDropDown {
     this._pauseButton.style.display = "none";
 
     const durationDiv = document.createElement("div");
-    const durationLabel = document.createElement("label") as HTMLLabelElement;
+    const durationLabel = document.createElement("label");
     durationLabel.innerText = "Duration: ";
     durationLabel.htmlFor = "anim_duration";
     durationDiv.appendChild(durationLabel);
 
-    this._durationElement = document.createElement("input") as HTMLInputElement;
+    this._durationElement = document.createElement("input");
     this._durationElement.id = "anim_duration";
     this._durationElement.type = "number";
     this._durationElement.min = "0";
@@ -186,7 +186,7 @@ class TimelinePanel extends ToolBarDropDown {
 
     this._element.appendChild(controls);
 
-    this._slider = document.createElement("input") as HTMLInputElement;
+    this._slider = document.createElement("input");
     this._slider.type = "range";
     this._slider.min = "0";
     this._slider.max = "1000";

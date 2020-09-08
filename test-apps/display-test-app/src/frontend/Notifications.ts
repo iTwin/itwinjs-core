@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { XAndY } from "@bentley/geometry-core";
 import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
-import { showError, showStatus } from "./Utils";
 import { Surface } from "./Surface";
+import { showError, showStatus } from "./Utils";
 import { Window, WindowProps } from "./Window";
+
+// cspell:ignore messagebox messageboxtext messageboxbutton
 
 export interface NotificationsWindowProps extends WindowProps {
   maxStoredMessages: number;
@@ -112,8 +113,8 @@ export class Notifications extends NotificationManager {
 
     const div = IModelApp.makeHTMLElement("div", { parent, className: "tooltip" });
     div.style.position = "absolute";
-    div.style.top = pt.y - 20 + "px";
-    div.style.left = pt.x + 15 + "px";
+    div.style.top = `${pt.y - 20}px`;
+    div.style.left = `${pt.x + 15}px`;
 
     if (message instanceof HTMLElement)
       div.appendChild(message);

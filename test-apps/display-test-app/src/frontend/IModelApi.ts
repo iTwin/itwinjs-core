@@ -18,7 +18,7 @@ export class IModelApi {
       return undefined;
     for (const thisIModel of iModels) {
       if (!!thisIModel.id && thisIModel.name === iModelName) {
-        const versions: Version[] = await IModelApp.iModelClient.versions.get(requestContext, thisIModel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await IModelApp.iModelClient.versions.get(requestContext, thisIModel.id, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           thisIModel.latestVersionName = versions[0].name;
           thisIModel.latestVersionChangeSetId = versions[0].changeSetId;

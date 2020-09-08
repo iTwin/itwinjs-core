@@ -327,8 +327,8 @@ export class MapTile extends RealityTile {
           const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
           const diagonal = Math.max(corners[0].distance(corners[3]), corners[1].distance(corners[2])) / 2.0;
           const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
-          const range = Range3d.createArray(MapTile.computeRangeCorners(corners, normal!, chordHeight, scratchCorners, heightRange));
-          children.push(this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal!, rectangle, chordHeight, heightRange));
+          const range = Range3d.createArray(MapTile.computeRangeCorners(corners, normal, chordHeight, scratchCorners, heightRange));
+          children.push(this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal, rectangle, chordHeight, heightRange));
         }
       }
       resolveChildren(children);
@@ -498,7 +498,7 @@ export class MapTile extends RealityTile {
     this.clearImageryTiles();
     this._imageryTiles = new Array<ImageryMapTile>();
     for (const imageryTree of this.mapTree.imageryTrees) {
-      if (TileTreeLoadStatus.Loaded !== imageryTree.selectCartoDrapeTiles(this._imageryTiles!, this, args)) {
+      if (TileTreeLoadStatus.Loaded !== imageryTree.selectCartoDrapeTiles(this._imageryTiles, this, args)) {
         this._imageryTiles = undefined;
         return;
       }
@@ -518,7 +518,7 @@ export class MapTile extends RealityTile {
 
   /** The height range for terrain tiles is not known until the tiles are unloaded.  We use "ApproximateTerrainHeight" for first 6 levels but below
    * that the tiles inherit height range from parents.  This is problematic as tiles with large height range will be unnecessarily selected as
-   * they apparently intersect view frustum.   To avoid this force loading of terrain tiles if they exxeed "_maxParehtHightDepth".
+   * they apparently intersect view frustum.   To avoid this force loading of terrain tiles if they exceed "_maxParentHightDepth".
    * @internal
    */
 
@@ -547,7 +547,7 @@ export class MapTile extends RealityTile {
         drapeTextures.push(this.computeDrapeTexture(thisRectangle, thisDiagonal, imageryTile, imageryTile.rectangle));
         if ((bordersNorthPole && imageryTile.quadId.bordersNorthPole(imageryTile.tilingScheme) && imageryTile.rectangle.high.y < thisRectangle.high.y) ||
           (bordersSouthPole && imageryTile.quadId.bordersSouthPole(imageryTile.tilingScheme) && imageryTile.rectangle.low.y > thisRectangle.low.y)) {
-          // Add seperate texture stretching last sliver of tile imagery to cover pole.
+          // Add separate texture stretching last sliver of tile imagery to cover pole.
           const sliverRectangle = imageryTile.rectangle.clone(MapTile._scratchRectangle1);
           const clipRectangle = thisRectangle.clone(MapTile._scratchRectangle2);
           const sliverHeight = sliverRectangle.high.y - sliverRectangle.low.y;
@@ -590,7 +590,7 @@ export class MapTile extends RealityTile {
       clipRect = Range2d.createXYXY((intersect.low.x - drapeRectangle.low.x) / drapeDiagonal.x, (intersect.low.y - drapeRectangle.low.y) / drapeDiagonal.y, (intersect.high.x - drapeRectangle.low.x) / drapeDiagonal.x, (intersect.high.y - drapeRectangle.low.y) / drapeDiagonal.y);
     }
     const imageryModelId = imageryTile.tree.modelId;
-    return new TerrainTexture(imageryTile.texture!, featureIndex, scale, translate, drapeRectangle, this.mapTree.getLayerIndex(imageryModelId), this.mapTree.getLayerTransparency(imageryModelId), clipRect);
+    return new TerrainTexture(imageryTile.texture, featureIndex, scale, translate, drapeRectangle, this.mapTree.getLayerIndex(imageryModelId), this.mapTree.getLayerTransparency(imageryModelId), clipRect);
   }
 
   public setContent(content: TerrainTileContent): void {
@@ -641,7 +641,7 @@ export class UpsampledMapTile extends MapTile {
       const parentParameterRange = Range2d.createXYXY(scale * thisColumn, scale * thisRow, scale * (thisColumn + 1), scale * (thisRow + 1));
       const upsample = parentMesh.upsample(parentParameterRange);
       this.adjustHeights(upsample.heightRange.low, upsample.heightRange.high);
-      const projection = parent.getProjection(this.heightRange!);
+      const projection = parent.getProjection(this.heightRange);
       this._geometry = IModelApp.renderSystem.createTerrainMeshGeometry(upsample.mesh, projection.transformFromLocal);
     }
     return this._geometry;

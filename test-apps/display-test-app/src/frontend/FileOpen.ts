@@ -2,19 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
+
+import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { IModelElectronIpc } from "@bentley/imodeljs-common";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
   directory: string;
-}
-
-// Only want the following imports if we are using electron and not a browser -----
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let remote: any;
-if (ElectronRpcConfiguration.isElectron) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  remote = require("electron").remote;
 }
 
 function selectForElectron(): string | undefined {
@@ -23,12 +17,12 @@ function selectForElectron(): string | undefined {
     filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
   };
 
-  const filenames = remote.dialog.showOpenDialogSync(options);
+  const filenames = ((window as any).imodeljs_api as IModelElectronIpc).showOpenDialogSync(options);
   return undefined !== filenames ? filenames[0] : undefined;
 }
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
-  if (ElectronRpcConfiguration.isElectron)
+  if (isElectronRenderer)
     return selectForElectron();
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -47,7 +41,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
       try {
         const files = selector.input.files;
         if (files && files.length > 0)
-          resolve(selector.directory + "/" + files[0].name);
+          resolve(`${selector.directory}/${files[0].name}`);
         else
           resolve(undefined);
       } catch (e) {

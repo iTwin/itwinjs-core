@@ -9,8 +9,15 @@
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import { interop } from "./ElectronIpcTransport";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
+import { isElectronMain, isElectronRenderer } from "@bentley/bentleyjs-core";
+
+/** @internal */
+export interface IModelElectronIpc {
+  send: (channel: string, ...data: any[]) => void;
+  on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+  showOpenDialogSync: (options: any) => any;
+}
 
 /** Initialization parameters for ElectronRpcConfiguration.
  * @beta
@@ -23,7 +30,7 @@ export interface ElectronRpcParams {
  * @beta
  */
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
-  public static get isElectron() { return interop !== null; }
+  public static readonly isElectron = isElectronMain || isElectronRenderer;
 
   /** The protocol of the configuration. */
   public abstract protocol: ElectronRpcProtocol;
@@ -44,7 +51,7 @@ export class ElectronRpcManager extends RpcManager {
   }
 
   private static performInitialization(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[]): ElectronRpcConfiguration {
-    const protocol = (params.protocol || ElectronRpcProtocol);
+    const protocol = params.protocol ?? ElectronRpcProtocol;
 
     const config = class extends ElectronRpcConfiguration {
       public interfaces = () => interfaces;

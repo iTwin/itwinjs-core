@@ -22,7 +22,7 @@ export class FakeTileCacheService extends CloudStorageService {
 
   public obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl {
     return {
-      url: "tiles/" + id.name,
+      url: `tiles/${id.name}`,
       valid: 0,
       expires: expiry.getTime(),
       descriptor: this.makeDescriptor(id),
@@ -30,7 +30,7 @@ export class FakeTileCacheService extends CloudStorageService {
   }
 
   public async upload(container: string, name: string, data: Uint8Array, _options?: CloudStorageUploadOptions): Promise<string> {
-    const url = container + "/" + name;
+    const url = `${container}/${name}`;
     let absPath = this._dirname + url;
     const lastSlash = absPath.lastIndexOf("/");
     absPath = path.normalize(absPath);

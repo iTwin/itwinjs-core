@@ -68,7 +68,7 @@ export class SpatialClassifiers {
         if (undefined !== this._active)
           this._active.isActive = false;
 
-        this._active = classifier as SpatialClassificationProps.Properties;
+        this._active = classifier;
         this._active.isActive = true;
         return;
       }

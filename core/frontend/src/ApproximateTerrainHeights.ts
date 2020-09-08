@@ -57,7 +57,7 @@ export class ApproximateTerrainHeights {
       level = 6;
     }
 
-    const key = level + "-" + column + "-" + row;
+    const key = `${level}-${column}-${row}`;
     const heights = this._terrainHeights[key];
     assert(undefined !== heights);
 
@@ -74,7 +74,7 @@ export class ApproximateTerrainHeights {
 
     const xyLevel = this._getTileXYLevel(rectangle);
     if (undefined !== xyLevel) {
-      const key = xyLevel.level + "-" + xyLevel.x + "-" + xyLevel.y;
+      const key = `${xyLevel.level}-${xyLevel.x}-${xyLevel.y}`;
       const heights = this._terrainHeights[key];
       assert(undefined !== heights);
       if (undefined !== heights) {

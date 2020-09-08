@@ -59,7 +59,7 @@ export abstract class RealityTileLoader {
   // NB: The isCanceled arg is chiefly for tests...in usual case it just returns false if the tile is no longer in 'loading' state.
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     assert(data instanceof Uint8Array);
-    const blob = data as Uint8Array;
+    const blob = data;
     const streamBuffer = new ByteStream(blob.buffer);
     return this.loadTileContentFromStream(tile as RealityTile, streamBuffer, system, isCanceled);
   }
@@ -102,7 +102,7 @@ export abstract class RealityTileLoader {
         return { graphic: branch.isEmpty ? undefined : system.createBranch(branch, Transform.createIdentity()), isLeaf: tile.isLeaf };
 
       default:
-        assert(false, "unknown tile format " + format);
+        assert(false, `unknown tile format ${format}`);
         break;
     }
 

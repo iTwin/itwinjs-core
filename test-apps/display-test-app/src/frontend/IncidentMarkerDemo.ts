@@ -10,6 +10,8 @@ import {
   MessageBoxType, Tool,
 } from "@bentley/imodeljs-frontend";
 
+// cspell:ignore lerp
+
 /** Example Marker to show an *incident*. Each incident has an *id*, a *severity*, and an *icon*. */
 class IncidentMarker extends Marker {
   private static _size = Point2d.create(30, 30);
@@ -31,7 +33,7 @@ class IncidentMarker extends Marker {
   // when someone clicks on our marker, open a message box with the severity of the incident.
   public onMouseButton(ev: BeButtonEvent): boolean {
     if (ev.button === BeButton.Data && ev.isDown)
-      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 
@@ -42,7 +44,7 @@ class IncidentMarker extends Marker {
     this.setImage(icon); // save icon
     this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels so the bottom of the flag is at the incident location in the view.
     this.imageSize = IncidentMarker._imageSize; // 40x40
-    this.title = "Severity: " + severity + "<br>Id: " + id; // tooltip
+    this.title = `Severity: ${severity}<br>Id: ${id}`; // tooltip
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
     this.label = id.toString();
   }
@@ -116,7 +118,7 @@ class IncidentClusterMarker extends Marker {
     sorted.forEach((marker) => {
       if (title !== "")
         title += "<br>";
-      title += "Severity: " + marker.severity + " Id: " + marker.id;
+      title += `Severity: ${marker.severity} Id: ${marker.id}`;
     });
     if (cluster.markers.length > maxLen)
       title += "<br>...";
@@ -155,7 +157,7 @@ export class IncidentMarkerDemo {
     try {
       return await imageElementFromUrl(src); // note: "return await" is necessary inside try/catch
     } catch (err) {
-      const msg = "Could not load image " + src;
+      const msg = `Could not load image ${src}`;
       Logger.logError("IncidentDemo", msg);
       console.log(msg); // eslint-disable-line no-console
     }

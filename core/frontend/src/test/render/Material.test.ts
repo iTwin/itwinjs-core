@@ -86,7 +86,7 @@ function decodeMaterialParams(params: PackedMaterialParams, rgba: Float32Array):
 
 function expectEqualFloats(expected: number, actual: number): void {
   const epsilon = 1.0 / 255.0;
-  expect(Math.abs(expected - actual)).to.be.at.most(epsilon, "Expected: " + expected + " Actual: " + actual);
+  expect(Math.abs(expected - actual)).to.be.at.most(epsilon, `Expected: ${expected} Actual: ${actual}`);
 }
 
 function expectMaterialParams(expected: RenderMaterial.Params): void {

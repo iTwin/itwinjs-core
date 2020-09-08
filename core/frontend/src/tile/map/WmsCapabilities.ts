@@ -52,7 +52,7 @@ function initArray<T>(input: any): undefined | T[] {
   return Array.isArray(input) ? input.slice() : undefined;
 }
 
-/** Encapsulation of the capablitiles for an WMS server
+/** Encapsulation of the capabilities for an WMS server
  * @internal
  */
 export namespace WmsCapability {
@@ -182,7 +182,7 @@ export class WmsCapabilities {
     if (cached !== undefined)
       return cached;
 
-    const xmlCapabilities = await getXml(new ClientRequestContext(""), WmsUtilities.getBaseUrl(url) + "?request=GetCapabilities&service=WMS", credentials);
+    const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
 
     if (!xmlCapabilities)
       return undefined;

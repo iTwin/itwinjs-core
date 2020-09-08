@@ -83,7 +83,7 @@
     "semver": "^5.5.0"
   },
   "browserslist": [
-    "electron 6.0.0",
+    "electron 8.0.0",
     "last 4 chrome version",
     "last 4 firefox version",
     "last 4 safari version",

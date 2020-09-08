@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as electron from "electron";
 import * as path from "path";
-import { IModelJsElectronManager, StandardElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
+import { IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeBackend } from "./backend";
 
@@ -32,11 +32,9 @@ import { getRpcInterfaces, initializeBackend } from "./backend";
     }
   }
 
-  let manager: StandardElectronManager;
-  if (process.env.NODE_ENV === "production")
-    manager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "build"));
-  else
-    manager = new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
+  const manager = (process.env.NODE_ENV === "production") ?
+    new IModelJsElectronManager(path.join(__dirname, "..", "..", "build")) :
+    new WebpackDevServerElectronManager(3000); // port should match the port of the local dev server
 
   // Handle custom keyboard shortcuts
   electron.app.on("web-contents-created", (_e, wc) => {
@@ -54,11 +52,6 @@ import { getRpcInterfaces, initializeBackend } from "./backend";
   await manager.initialize({
     width,
     height,
-    webPreferences: {
-      nodeIntegration: true,
-      experimentalFeatures: true, // Needed for CSS Grid support
-    },
-    autoHideMenuBar: true,
     show: !maximizeWindow,
   });
 

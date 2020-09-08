@@ -430,7 +430,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
 
     /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
      * already loaded as the view is manipulated.  This value controls the depth above the the selected tile depth that will be preloaded. The default
-     * value (2) with default contextPreloadParentDepth of one will load only grandparents and great grandparents.  This generally preloas around 20% more tiles than are required.
+     * value (2) with default contextPreloadParentDepth of one will load only grandparents and great grandparents. This generally preloads around 20% more tiles than are required.
      * Default value: 2.
      * Minimum value 0.
      * Maximum value 8.
@@ -439,7 +439,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     contextPreloadParentDepth?: number;
 
     /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
-     * already loaded as the view is manipulated.  This value controls the number of parents that are skipped before parents are preloaded.  The default value of 1 will skip
+     * already loaded as the view is manipulated.  This value controls the number of parents that are skipped before parents are preloaded. The default value of 1 will skip
      * immediate parents and significantly reduce the number of preloaded tiles without significant reducing the value of preloading.
      * Default value: 1;
      * Minimum value: 0.
@@ -469,7 +469,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * This can improve user experience in cases in which the user or application is expected to frequently switch between views of the same models with
      * different edge settings, because otherwise, toggling edge display may require loading completely new tiles.
      * However, edges require additional memory and bandwidth that may be wasted if they are never displayed.
-     * Defalt value: false
+     * Default value: false
      * @alpha
      */
     alwaysRequestEdges?: boolean;
@@ -711,7 +711,7 @@ class Admin extends TileAdmin {
 
     // If unspecified preload 2 levels of parents for context tiles.
     this._contextPreloadParentDepth = Math.max(0, Math.min((options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth), 8));
-    // If unspecified skip one leveo before prealoading  of parents of context tiles.
+    // If unspecified skip one level before preloading  of parents of context tiles.
     this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
   }
 
@@ -1074,7 +1074,7 @@ class Admin extends TileAdmin {
       guid = iModelRpcProps.changeSetId || "first";
 
     if (qualifier)
-      guid = guid + "_" + qualifier;
+      guid = `${guid}_${qualifier}`;
 
     const intfc = IModelTileRpcInterface.getClient();
     return intfc.requestTileContent(iModelRpcProps, treeId, contentId, isCanceled, guid);

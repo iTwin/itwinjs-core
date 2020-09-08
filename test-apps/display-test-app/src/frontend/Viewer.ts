@@ -25,6 +25,8 @@ import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
 
+// cspell:ignore savedata topdiv savedview viewtop
+
 function saveImage(vp: Viewport) {
   const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...
   if (undefined === buffer) {
@@ -180,8 +182,8 @@ export class Viewer extends Window {
       // Offset position from top-left corner
       const style = getComputedStyle(this.container, null);
       const pxToNum = (propName: string) => parseFloat(style.getPropertyValue(propName).replace("px", "")) + 40;
-      viewer.container.style.top = pxToNum("top") + "px";
-      viewer.container.style.left = pxToNum("left") + "px";
+      viewer.container.style.top = `${pxToNum("top")}px`;
+      viewer.container.style.left = `${pxToNum("left")}px`;
     }
 
     return viewer;
@@ -364,7 +366,7 @@ export class Viewer extends Window {
 
     const id = !this._isSavedView ? this.viewport.view.id : "Saved View";
     const dim = this.viewport.view.is2d() ? "2d" : "3d";
-    this.title = "[ " + this.viewport.viewportId + " ] " + viewName + " <" + id + "> (" + dim + ")";
+    this.title = `[ ${this.viewport.viewportId} ] ${viewName} <${id}> (${dim})`;
   }
 
   private async changeView(id: Id64String): Promise<void> {
