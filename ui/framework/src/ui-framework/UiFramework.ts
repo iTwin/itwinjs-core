@@ -7,10 +7,10 @@
  */
 
 import { Store } from "redux";
-import { Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -28,6 +28,7 @@ import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from
 import { StateManager } from "./redux/StateManager";
 import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
+import { TelemetryEvent } from "@bentley/telemetry-client";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
@@ -62,6 +63,14 @@ export interface FrameworkVersionChangedEventArgs {
  */
 export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> { }
 
+/** TrackingTime time argument used by our feature tracking manager as an option argument to the TelemetryClient
+ * @internal
+ */
+export interface TrackingTime {
+  startTime: Date;
+  endTime: Date;
+
+}
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
  * @public
@@ -156,7 +165,6 @@ export class UiFramework {
     await UiComponents.initialize(UiFramework._i18n);
 
     UiFramework._initialized = true;
-
     return readFinishedPromise;
   }
 
@@ -463,9 +471,22 @@ export class UiFramework {
     return UiFramework._uiVersion;
   }
 
+  /** Send logging message to the telemetry system
+   * @internal
+   */
+  // istanbul ignore next
+  public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: GuidString, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
+    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+      return;
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const telemetryEvent = new TelemetryEvent(eventName, eventId, contextId, iModeId, changeSetId, time, additionalProperties);
+    await IModelApp.telemetry.postTelemetry(requestContext, telemetryEvent);
+  }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used
     Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Ui Version changed to ${args.version} `);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
     UiFramework._uiVersion = args.version;
 
     // If Ui Version 1, save widget opacity

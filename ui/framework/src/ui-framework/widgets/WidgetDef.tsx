@@ -21,6 +21,14 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 
+const widgetStateNameMap = new Map<WidgetState, string>([
+  [WidgetState.Closed, "Closed"],
+  [WidgetState.Floating, "Floating"],
+  [WidgetState.Hidden, "Hidden"],
+  [WidgetState.Open, "Open"],
+  [WidgetState.Unloaded, "Unloaded"],
+]);
+
 /** Widget State Changed Event Args interface.
  * @public
  */
@@ -359,6 +367,8 @@ export class WidgetDef {
   }
 
   public onWidgetStateChanged(): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.widgetControl && UiFramework.postTelemetry(`Widget ${this.widgetControl.classId} state set to ${widgetStateNameMap.get(this._state)}`, "35402486-9839-441E-A5C7-46D546142D11");
     this.widgetControl && this.widgetControl.onWidgetStateChanged();
     this._onWidgetStateChanged && this._onWidgetStateChanged();
   }

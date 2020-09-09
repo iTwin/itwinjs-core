@@ -53,6 +53,7 @@ import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { FunctionKey as FunctionKey_2 } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
+import { GuidString } from '@bentley/bentleyjs-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps } from '@bentley/ui-core';
@@ -5945,6 +5946,14 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
 }
 
 // @internal
+export interface TrackingTime {
+    // (undocumented)
+    endTime: Date;
+    // (undocumented)
+    startTime: Date;
+}
+
+// @internal
 export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> {
 }
 
@@ -6015,6 +6024,10 @@ export class UiFramework {
     static openCursorMenu(menuData: CursorMenuData | undefined): void;
     // @internal (undocumented)
     static get packageName(): string;
+    // @internal
+    static postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: GuidString, time?: TrackingTime, additionalProperties?: {
+        [key: string]: any;
+    }): Promise<void>;
     // @internal (undocumented)
     static get projectServices(): ProjectServices;
     // (undocumented)
