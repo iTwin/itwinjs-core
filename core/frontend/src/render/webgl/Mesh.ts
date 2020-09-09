@@ -37,7 +37,7 @@ import { VertexLUT } from "./VertexLUT";
 export class MeshData implements WebGLDisposable {
   public readonly edgeWidth: number;
   public readonly hasFeatures: boolean;
-  public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeisFlashed for flashing volume classification primitives.
+  public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeIsFlashed for flashing volume classification primitives.
   public readonly texture?: Texture;
   public readonly materialInfo?: MaterialInfo;
   public readonly type: SurfaceType;
@@ -290,8 +290,8 @@ export class EdgeGeometry extends MeshGeometry {
     const attrEndPointAndQuadIndices = AttributeMap.findAttribute("a_endPointAndQuadIndices", TechniqueId.Edge, false);
     assert(attrPos !== undefined);
     assert(attrEndPointAndQuadIndices !== undefined);
-    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
-    this.buffers.addBuffer(endPointAndQuadsIndices, [BufferParameters.create(attrEndPointAndQuadIndices!.location, 4, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(endPointAndQuadsIndices, [BufferParameters.create(attrEndPointAndQuadIndices.location, 4, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this._indices = indices;
     this._endPointAndQuadIndices = endPointAndQuadsIndices;
   }
@@ -329,7 +329,7 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     super(indices, endPointAndQuadsIndices, numIndices, mesh);
     const attrNormals = AttributeMap.findAttribute("a_normals", TechniqueId.SilhouetteEdge, false);
     assert(attrNormals !== undefined);
-    this.buffers.addBuffer(normalPairs, [BufferParameters.create(attrNormals!.location, 4, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(normalPairs, [BufferParameters.create(attrNormals.location, 4, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this._normalPairs = normalPairs;
   }
 }
@@ -617,7 +617,7 @@ export class SurfaceGeometry extends MeshGeometry {
     this._buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.Surface, false);
     assert(undefined !== attrPos);
-    this._buffers.addBuffer(indices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this._buffers.addBuffer(indices, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this._indices = indices;
   }
 

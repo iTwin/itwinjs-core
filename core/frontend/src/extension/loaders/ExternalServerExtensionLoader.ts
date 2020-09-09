@@ -20,9 +20,9 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
   public constructor(public serverName: string) { }
 
   public resolveResourceUrl(extensionName: string, relativeUrl: string): string {
-    const relativeUrlWithSlash = relativeUrl.startsWith("/") ? relativeUrl : ("/" + relativeUrl);
+    const relativeUrlWithSlash = relativeUrl.startsWith("/") ? relativeUrl : (`/${relativeUrl}`);
     const version = this._loadedVersions.get(extensionName);
-    const nameSegment = version === undefined ? extensionName : (extensionName + "/" + version);
+    const nameSegment = version === undefined ? extensionName : (`${extensionName}/${version}`);
     return new URL("imjs_extensions/".concat(nameSegment, relativeUrlWithSlash), this.serverName).toString();
   }
 
@@ -38,7 +38,7 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
 
   public async loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined> {
     // TODO: The entry point must be a "index.js" file at this point and no need for a manifest file.  All version checking is done in the Extensions bundle (i.e. "index.js")
-    const jsFileUrl: string = this.resolveResourceUrl(extensionName, extensionVersion === undefined ? "index.js" : (extensionVersion + "/index.js"));
+    const jsFileUrl: string = this.resolveResourceUrl(extensionName, extensionVersion === undefined ? "index.js" : (`${extensionVersion}/index.js`));
     // check if the entry point exists
     try {
       const response = await fetch(jsFileUrl, { method: "HEAD" });

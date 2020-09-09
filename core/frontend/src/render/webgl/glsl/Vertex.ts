@@ -150,7 +150,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addUniform("u_vertParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_vertParams", (uniform, params) => {
       assert(undefined !== params.geometry.asLUT);
-      const lut = params.geometry.asLUT!.lut;
+      const lut = params.geometry.asLUT.lut;
       const lutParams = scratchLutParams;
       lutParams[0] = lut.texture.width;
       lutParams[1] = lut.texture.height;
@@ -270,8 +270,8 @@ const discardVertex = `
 `;
 
 /** @internal */
-export const earlyVertexDiscard = `  if (checkForEarlyDiscard(rawPosition))` + discardVertex;
+export const earlyVertexDiscard = `  if (checkForEarlyDiscard(rawPosition))${discardVertex}`;
 /** @internal */
-export const vertexDiscard = `  if (checkForDiscard())` + discardVertex;
+export const vertexDiscard = `  if (checkForDiscard())${discardVertex}`;
 /** @internal */
-export const lateVertexDiscard = `  if (checkForLateDiscard())` + discardVertex;
+export const lateVertexDiscard = `  if (checkForLateDiscard())${discardVertex}`;

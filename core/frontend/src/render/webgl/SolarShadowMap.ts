@@ -478,7 +478,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     });
 
     // mipmap resulting EVSM texture and set filtering options
-    System.instance.activateTexture2d(TextureUnit.ShadowMap, bundle.shadowMapTexture.texture.getHandle()!);
+    System.instance.activateTexture2d(TextureUnit.ShadowMap, bundle.shadowMapTexture.texture.getHandle());
     gl.generateMipmap(gl.TEXTURE_2D);
     const fullFloat = System.instance.capabilities.maxRenderType === RenderType.TextureFloat;
     if (fullFloat && System.instance.capabilities.supportsTextureFloatLinear || !fullFloat && System.instance.capabilities.supportsTextureHalfFloatLinear) {

@@ -39,12 +39,12 @@ const computeOutputs = `
   vec4 output1 = vec4(ai * wzi * outputScale);
 `;
 
-const assignFragData = computeOutputs + `
+const assignFragData = `${computeOutputs}
   FragColor0 = output0;
   FragColor1 = output1;
 `;
 
-const assignFragColor = computeOutputs + `
+const assignFragColor = `${computeOutputs}
   FragColor = (0 == u_renderTargetIndex) ? output0 : output1;
 `;
 

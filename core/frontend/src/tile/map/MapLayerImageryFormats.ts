@@ -438,7 +438,7 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     if (this._usesCachedTiles) {
       return `${this._settings.url}/tile/${zoomLevel}/${row}/${column} `;
     } else {
-      const bboxString = this.getEPSG3857ExtentString(row, column, zoomLevel) + "&bboxSR=3857";
+      const bboxString = `${this.getEPSG3857ExtentString(row, column, zoomLevel)}&bboxSR=3857`;
       return `${this._settings.url}/export?bbox=${bboxString}&size=${this.tileSize},${this.tileSize}&layers=${this.getLayerString()}&format=png&transparent=${this.transparentBackgroundString}&f=image&sr=3857&imagesr=3857`;
     }
   }
@@ -492,9 +492,9 @@ class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   public async initialize(): Promise<void> { }
 }
 
-const _levelToken = "{level}";
-const _rowToken = "{row}";
-const _columnToken = "{column}";
+const levelToken = "{level}";
+const rowToken = "{row}";
+const columnToken = "{column}";
 
 /**  Provide tiles from a url template in the a generic format ... i.e. https://b.tile.openstreetmap.org/{level}/{column}/{row}.png */
 class TileUrlImageryProvider extends MapLayerImageryProvider {
@@ -502,7 +502,7 @@ class TileUrlImageryProvider extends MapLayerImageryProvider {
     super(settings, true);
   }
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {
-    return { status: (template.indexOf(_levelToken) > 0 && template.indexOf(_columnToken) > 0 && template.indexOf(_rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
+    return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
   }
 
   // construct the Url from the desired Tile
@@ -510,11 +510,11 @@ class TileUrlImageryProvider extends MapLayerImageryProvider {
     let url = this._settings.url;
     if (TileUrlImageryProvider.validateUrlTemplate(url).status !== MapLayerSourceStatus.Valid) {
       if (url.lastIndexOf("/") !== url.length - 1)
-        url = url + "/";
-      url = url + "{level}/{column}/{row}.png";
+        url = `${url}/`;
+      url = `${url}{level}/{column}/{row}.png`;
     }
 
-    return url.replace(_levelToken, level.toString()).replace(_columnToken, column.toString()).replace(_rowToken, row.toString());
+    return url.replace(levelToken, level.toString()).replace(columnToken, column.toString()).replace(rowToken, row.toString());
   }
 }
 

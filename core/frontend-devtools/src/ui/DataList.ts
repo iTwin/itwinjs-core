@@ -32,7 +32,7 @@ export interface DataList {
 }
 
 function _appendDataListEntry(list: HTMLDataListElement, entry: DataListEntry) {
-  const option = document.createElement("option") as HTMLOptionElement;
+  const option = document.createElement("option");
   if (undefined !== entry.value)
     option.value = entry.value.toString();
   list.appendChild(option);
@@ -47,7 +47,7 @@ export function appendDataListEntries(dl: DataList, entries: DataListEntry[]) {
 
 /** @alpha */
 export function createDataList(props: DataListProps): DataList {
-  const list = document.createElement("datalist") as HTMLDataListElement;
+  const list = document.createElement("datalist");
   list.id = props.id;
 
   for (const entry of props.entries) {

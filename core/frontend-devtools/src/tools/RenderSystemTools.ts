@@ -53,7 +53,7 @@ export class CompileShadersTool extends RenderSystemDebugControlTool {
   public static toolId = "CompileShaders";
   public execute(control: RenderSystemDebugControl): void {
     const compiled = control.compileAllShaders();
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, (compiled ? "No" : "Some") + " compilation errors occurred."));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, `${compiled ? "No" : "Some"} compilation errors occurred.`));
   }
 }
 

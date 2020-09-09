@@ -7,11 +7,10 @@
  * @module Tools
  */
 
-import { FeatureAppearanceProps, RgbColorProps, FeatureAppearance } from "@bentley/imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@bentley/imodeljs-common";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
-
 
 /** @alpha */
 export class AttachRealityModelTool extends Tool {

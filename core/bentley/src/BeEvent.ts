@@ -37,8 +37,7 @@ export class BeEvent<T extends Listener> {
    */
   public addListener(listener: T, scope?: any): () => void {
     this._listeners.push(new EventContext(listener, scope, false));
-    const event = this;
-    return () => { event.removeListener(listener, scope); };
+    return () => this.removeListener(listener, scope);
   }
 
   /**
@@ -50,8 +49,7 @@ export class BeEvent<T extends Listener> {
    */
   public addOnce(listener: T, scope?: any): () => void {
     this._listeners.push(new EventContext(listener, scope, true));
-    const event = this;
-    return () => { event.removeListener(listener, scope); };
+    return () => this.removeListener(listener, scope);
   }
 
   /**

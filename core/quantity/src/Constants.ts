@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /** Constants used internally for both formatting and parsing.
  * @internal
  */

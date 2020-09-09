@@ -255,7 +255,7 @@ export class Parser {
                     signToken = "";
                   }
 
-                  wipToken = wipToken + "e" + exponentSymbol.exponent;
+                  wipToken = `${wipToken}e${exponentSymbol.exponent}`;
                   const scientificValue = Number(wipToken);
                   tokens.push(new ParseToken(scientificValue));
                   processingNumber = false;

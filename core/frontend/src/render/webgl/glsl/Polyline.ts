@@ -160,7 +160,7 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
 
   addLineCodeUniform(vert);
 
-  const funcCall: string = "computeLineCodeTextureCoords(" + args + ")";
+  const funcCall: string = `computeLineCodeTextureCoords(${args})`;
 
   prog.addFunctionComputedVaryingWithArgs("v_texc", VariableType.Vec2, funcCall, computeTextureCoord);
 

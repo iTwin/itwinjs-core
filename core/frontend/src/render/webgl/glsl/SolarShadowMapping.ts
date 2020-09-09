@@ -101,7 +101,7 @@ export function addSolarShadowMap(builder: ProgramBuilder, toTerrain = false) {
     prog.addGraphicUniform("s_shadowSampler", (uniform, params) => {
       const shadowMap = params.target.solarShadowMap;
       assert(undefined !== shadowMap.shadowMapTexture);
-      shadowMap.shadowMapTexture!.texture.bindSampler(uniform, TextureUnit.ShadowMap);
+      shadowMap.shadowMapTexture.texture.bindSampler(uniform, TextureUnit.ShadowMap);
     });
   });
 

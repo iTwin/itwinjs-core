@@ -388,7 +388,7 @@ const computeNormal = `
 const computeAnimatedNormal = `
   if (u_animNormalParams.x >= 0.0)
     return normalize(MAT_NORM * computeAnimationNormal(u_animNormalParams.x, u_animNormalParams.y, u_animNormalParams.z));
-` + computeNormal;
+${computeNormal}`;
 
 const applyBackgroundColor = `
   return u_surfaceFlags[kSurfaceBitIndex_BackgroundFill] ? vec4(u_bgColor.rgb, 1.0) : baseColor;
@@ -404,7 +404,7 @@ const computeTexCoord = `
 const computeAnimatedTexCoord = `
   if (u_animScalarQParams.x >= 0.0)
     return computeAnimationParam(u_animScalarParams.x, u_animScalarParams.y, u_animScalarParams.z, u_animScalarQParams.x, u_animScalarQParams.y);
-` + computeTexCoord;
+${computeTexCoord}`;
 const getSurfaceColor = `
 vec4 getSurfaceColor() { return v_color; }
 `;
@@ -458,7 +458,7 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
   builder.addUniformArray("u_surfaceFlags", VariableType.Boolean, SurfaceBitIndex.Count, (prog) => {
     prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
       assert(undefined !== params.geometry.asSurface);
-      const mesh = params.geometry.asSurface!;
+      const mesh = params.geometry.asSurface;
       mesh.computeSurfaceFlags(params.programParams, surfaceFlagArray);
       uniform.setUniform1iv(surfaceFlagArray);
     });
@@ -502,7 +502,7 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: I
       } else if (surfGeom.useTexture(params.programParams)) {
         const texture = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.texture;
         assert(undefined !== texture);
-        texture!.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
+        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else {
         System.instance.ensureSamplerBound(uniform, TextureUnit.SurfaceTexture);
       }

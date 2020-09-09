@@ -44,7 +44,7 @@ describe("IModelBridgeFwkStandAlone", () => {
     bridgeJobDef.isSnapshot = true;
 
     const runner = new BridgeRunner(bridgeJobDef);
-    const fileName = path.basename(assetFile, path.extname(assetFile)) + ".bim";
+    const fileName = `${path.basename(assetFile, path.extname(assetFile))}.bim`;
     const filePath = path.join(KnownTestLocations.outputDir, fileName);
     const status = await runner.synchronize();
     expect(status === BentleyStatus.SUCCESS);

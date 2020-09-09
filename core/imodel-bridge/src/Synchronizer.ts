@@ -221,7 +221,7 @@ export class Synchronizer {
         return status;
       }
     }
-    status = this.setExternalSourceAspect(results.element!, results.itemState, scope, sourceItem, kind);
+    status = this.setExternalSourceAspect(results.element, results.itemState, scope, sourceItem, kind);
     return status;
   }
 
@@ -256,7 +256,7 @@ export class Synchronizer {
    * @alpha
    */
   public insertResultsIntoIModel(results: SynchronizationResults): IModelStatus {
-    this.getLocksAndCodes(results.element!);
+    this.getLocksAndCodes(results.element);
     results.element.insert(); // throws on error
 
     this.onElementSeen(results.element.id);
@@ -371,7 +371,7 @@ export class Synchronizer {
       return IModelStatus.WrongClass;
     }
 
-    this.getLocksAndCodes(results.element!);
+    this.getLocksAndCodes(results.element);
     results.element.update();
 
     return IModelStatus.Success;
@@ -432,7 +432,7 @@ export class Synchronizer {
     if (!this.imodel.isBriefcaseDb() || this.imodel.concurrencyControl.isBulkMode) {
       return;
     }
-    const briefcase = this.imodel as BriefcaseDb;
+    const briefcase = this.imodel;
     element.buildConcurrencyControlRequest(Id64.isValid(element.id) ? DbOpcode.Update : DbOpcode.Insert);
     (async () => briefcase.concurrencyControl.request(this._requestContext!, briefcase.concurrencyControl.pendingRequest));
   }
@@ -448,9 +448,10 @@ export class Synchronizer {
         url: docProps.desktopURN,
         userLabel: document,
         repositoryGuid: docProps.docGuid,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         jsonProperties: { DocumentProperties: { desktopURN: docProps.desktopURN, webURN: docProps.webURN, attributes: docProps.attributesJson } },
       };
-      repositoryLink = this.imodel.elements.createElement(elementProps) as RepositoryLink;
+      repositoryLink = this.imodel.elements.createElement(elementProps);
     }
     return repositoryLink;
   }

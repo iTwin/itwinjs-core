@@ -147,7 +147,7 @@ const computeClassifiedHiliteColor = `
 const computeClassifiedSurfaceHiliteColor = `
   if (isSurfaceBitSet(kSurfaceBit_HasTexture) && TEXTURE(s_texture, v_texCoord).a <= 0.15)
     return vec4(0.0);
-` + computeClassifiedHiliteColor;
+${computeClassifiedHiliteColor}`;
 
 const computeClassifierPos = "vec4 classProj = u_pClassProj * rawPosition; v_pClassPos = classProj.xy;";
 const computeInstancedClassifierPos = "vec4 classProj = u_pClassProj * g_instancedRtcMatrix * rawPosition; v_pClassPos = classProj.xy;";
@@ -206,7 +206,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
       assert(undefined !== source || undefined !== volClass);
       if (source) {
         assert(undefined !== source.texture);
-        source.texture!.texture.bindSampler(uniform, TextureUnit.PlanarClassification);
+        source.texture.texture.bindSampler(uniform, TextureUnit.PlanarClassification);
       } else
         Texture2DHandle.bindSampler(uniform, volClass!, TextureUnit.PlanarClassification);
     });
@@ -279,7 +279,7 @@ export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextur
     prog.addGraphicUniform("s_pClassHiliteSampler", (uniform, params) => {
       const classifier = params.target.currentPlanarClassifier!;
       assert(undefined !== classifier && undefined !== classifier.hiliteTexture);
-      classifier.hiliteTexture!.texture.bindSampler(uniform, TextureUnit.PlanarClassificationHilite);
+      classifier.hiliteTexture.texture.bindSampler(uniform, TextureUnit.PlanarClassificationHilite);
     });
   });
 

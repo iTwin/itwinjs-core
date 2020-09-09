@@ -33,8 +33,8 @@ export function createCopyColorProgram(context: WebGLRenderingContext | WebGL2Re
   });
 
   const flagString = (copyAlpha ? "-CopyAlpha" : "-NoAlpha");
-  builder.vert.headerComment = "//!V! CopyColor" + flagString;
-  builder.frag.headerComment = "//!F! CopyColor" + flagString;
+  builder.vert.headerComment = `//!V! CopyColor${flagString}`;
+  builder.frag.headerComment = `//!F! CopyColor${flagString}`;
 
   return builder.buildProgram(context);
 }

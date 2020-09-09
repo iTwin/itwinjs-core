@@ -336,7 +336,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === context.viewingSpace)
       return;
 
-    const viewState = context.viewingSpace!.view as ViewState3d;
+    const viewState = context.viewingSpace.view as ViewState3d;
     if (undefined === viewState)
       return;
 

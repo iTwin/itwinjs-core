@@ -85,7 +85,7 @@ function addTextures(builder: ProgramBuilder) {
   });
 
   for (let i = 0; i < maxTexturesPerMesh; i++) {
-    const textureLabel = "s_texture" + i;
+    const textureLabel = `s_texture${i}`;
     builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform(textureLabel, (uniform, params) => {
         const textureUnits = [TextureUnit.TerrainMesh0, TextureUnit.TerrainMesh1, params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder, TextureUnit.TerrainMesh3, TextureUnit.TerrainMesh4, TextureUnit.TerrainMesh5];
@@ -93,14 +93,14 @@ function addTextures(builder: ProgramBuilder) {
         const terrainTexture = terrainMesh.textureParams ? terrainMesh.textureParams.textures[i] : undefined;
         if (terrainTexture !== undefined) {
           const texture = terrainTexture as Texture;
-          texture!.texture.bindSampler(uniform, textureUnits[i]);
+          texture.texture.bindSampler(uniform, textureUnits[i]);
         } else {
-          // assert(false, "Terrain Mesh texture not defined when beinging texture.");
+          // assert(false, "Terrain Mesh texture not defined when beginning texture.");
           System.instance.ensureSamplerBound(uniform, textureUnits[i]);
         }
       });
     });
-    const paramsLabel = "u_texTransform" + i;
+    const paramsLabel = `u_texTransform${i}`;
     builder.frag.addUniform(paramsLabel, VariableType.Mat4, (prog) => {
       prog.addGraphicUniform(paramsLabel, (uniform, params) => {
         const terrainMesh = params.geometry.asTerrainMesh!;

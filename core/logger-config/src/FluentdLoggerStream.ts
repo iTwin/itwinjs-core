@@ -43,7 +43,7 @@ export class PostFluentd implements GenericPost {
     customHeaders["seq-apikey"] = config.seqApiKey;
     // TODO: Handle SEQ_PORT (on fluentd side as well) and use kabab case instead of snake case.
     return {
-      uri: config.fluentdHost + ":" + config.fluentdPort + "/seqlogging",
+      uri: `${config.fluentdHost}:${config.fluentdPort}/seqlogging`,
       body: jsonbody,
       headers: JSON.parse(JSON.stringify(customHeaders)),
       resolveWithFullResponse: true,

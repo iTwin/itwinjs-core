@@ -186,17 +186,17 @@ function _sensorRadiusAffectsRange(sensor: ThematicDisplaySensor, sensorRadius: 
   return !(distance > sensorRadius);
 }
 
-const _scratchRange = Range3d.createNull();
+const scratchRange = Range3d.createNull();
 
 function _accumulateSensorsInRange(sensors: ThematicDisplaySensor[], range: Range3d, transform: Transform, distanceCutoff: number): ThematicDisplaySensor[] {
   const retSensors: ThematicDisplaySensor[] = [];
 
-  transform.multiplyRange(range, _scratchRange);
+  transform.multiplyRange(range, scratchRange);
 
   for (const sensor of sensors) {
     const position = sensor.position;
 
-    if (distanceCutoff <= 0 || _sensorRadiusAffectsRange(sensor, distanceCutoff, _scratchRange)) {
+    if (distanceCutoff <= 0 || _sensorRadiusAffectsRange(sensor, distanceCutoff, scratchRange)) {
       const value = sensor.value;
       retSensors.push(ThematicDisplaySensor.fromJSON({ position, value }));
     }

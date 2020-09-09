@@ -36,12 +36,12 @@ export function createSlider(props: SliderProps): Slider {
   div.style.verticalAlign = "middle";
   div.style.textAlign = "right";
 
-  const label = document.createElement("label") as HTMLLabelElement;
+  const label = document.createElement("label");
   label.htmlFor = props.id;
   label.innerText = props.name;
   div.appendChild(label);
 
-  const slider = document.createElement("input") as HTMLInputElement;
+  const slider = document.createElement("input");
   slider.type = "range";
   slider.className = "slider";
   slider.id = props.id;

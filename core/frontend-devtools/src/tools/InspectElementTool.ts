@@ -17,7 +17,7 @@ import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
 /** Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments, all of which are optional:
- *  - `id=elementId,elementId,elementId` comma-separated list of element Idswhere each `elementId` is a hexadecimal element Id such as "0x12cb";
+ *  - `id=elementId,elementId,elementId` comma-separated list of element Ids where each `elementId` is a hexadecimal element Id such as "0x12cb";
  *  - `symbology=0|1` where 1 indicates detailed symbology information should be included in the output;
  *  - `placement=0|1` where 1 indicates detailed geometric element placement should be included; and
  *  - `verbosity=0|1|2` controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note verbosity=2 can produce megabytes of data for certain types of geometric primitives like large meshes.
@@ -142,7 +142,7 @@ export class InspectElementTool extends PrimitiveTool {
       if (this._doCopy)
         copyStringToClipboard(str);
 
-      const brief = "Summary " + (this._doCopy ? "copied to clipboard." : "complete.");
+      const brief = `Summary ${this._doCopy ? "copied to clipboard." : "complete."}`;
       messageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, brief, str);
 
       if (this._modal) {

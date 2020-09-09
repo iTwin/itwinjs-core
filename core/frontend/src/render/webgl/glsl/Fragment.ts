@@ -64,7 +64,7 @@ const multiplyAlpha = `
     baseColor = vec4(baseColor.rgb * baseColor.a, baseColor.a);
 `;
 
-const computePickBufferOutputs = multiplyAlpha + `
+const computePickBufferOutputs = `${multiplyAlpha}
   vec4 output0 = baseColor;
 
   // Fix interpolation errors despite all vertices sending exact same feature_id...
@@ -74,7 +74,7 @@ const computePickBufferOutputs = multiplyAlpha + `
   vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 
-const computeAltPickBufferOutputs = multiplyAlpha + `
+const computeAltPickBufferOutputs = `${multiplyAlpha}
   vec4 output0 = baseColor;
   vec4 output1 = vec4(0.0);
   vec4 output2 = vec4(0.0);
@@ -162,11 +162,11 @@ export function addFragColorWithPreMultipliedAlpha(frag: FragmentShaderBuilder):
 /** @internal */
 export const assignFragColor = "FragColor = baseColor;";
 
-const assignFragColorWithPreMultipliedAlpha = multiplyAlpha + `
+const assignFragColorWithPreMultipliedAlpha = `${multiplyAlpha}
   FragColor = baseColor;
 `;
 
-const overrideAndAssignFragColorWithPreMultipliedAlpha = multiplyAlpha + `
+const overrideAndAssignFragColorWithPreMultipliedAlpha = `${multiplyAlpha}
   vec4 fragColor = overrideColor(baseColor);
   FragColor = fragColor;
 `;

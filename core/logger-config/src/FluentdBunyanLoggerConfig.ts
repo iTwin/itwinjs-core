@@ -49,7 +49,7 @@ export class FluentdBunyanLoggerConfig {
     const validProps: string[] = ["host", "port"];
     for (const prop of Object.keys(fluentdConfig)) {
       if (!validProps.includes(prop)) {
-        throw new BentleyError(IModelStatus.BadArg, "unrecognized fluentdConfig property: " + prop);
+        throw new BentleyError(IModelStatus.BadArg, `unrecognized fluentdConfig property: ${prop}`);
       }
     }
   }

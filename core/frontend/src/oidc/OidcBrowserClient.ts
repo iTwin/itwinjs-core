@@ -6,7 +6,7 @@
  * @module OIDC
  */
 
-import { Log as OidcClientLog, Logger as IOidcClientLogger, User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
+import { Logger as IOidcClientLogger, Log as OidcClientLog, User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
@@ -163,7 +163,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     requestContext.enter();
     assert(!!this._userManager, "OidcBrowserClient not initialized");
 
-    const user = await this._userManager!.signinSilent();
+    const user = await this._userManager.signinSilent();
     assert(user && !user.expired, "Expected userManager.signinSilent to always resolve to authorized user");
     return user;
   }
@@ -179,7 +179,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     requestContext.enter();
     assert(!!this._userManager, "OidcBrowserClient not initialized");
 
-    return this._userManager!.getUser();
+    return this._userManager.getUser();
   }
 
   /**

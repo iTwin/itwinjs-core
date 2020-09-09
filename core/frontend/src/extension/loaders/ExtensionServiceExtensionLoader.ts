@@ -28,7 +28,7 @@ export class ExtensionServiceExtensionLoader implements ExtensionLoader {
     }
 
     const fullFileName = new URL(relativeFileName, loadedProps.basePath).toString();
-    const fileNameWithKey = loadedProps.props.files.find((file) => file.url.startsWith(fullFileName + "?"))?.url;
+    const fileNameWithKey = loadedProps.props.files.find((file) => file.url.startsWith(`${fullFileName}?`))?.url;
 
     return fileNameWithKey ?? fullFileName;
   }
@@ -107,9 +107,9 @@ export class ExtensionServiceExtensionLoader implements ExtensionLoader {
         extensionProps = props.sort((ext1, ext2) => semver.rcompare(ext1.version, ext2.version, true))[0];
       }
     } catch (err) {
-      Logger.logInfo(loggerCategory, "Extension " + extensionName + " failed to load from Extension Service");
+      Logger.logInfo(loggerCategory, `Extension ${extensionName} failed to load from Extension Service`);
       if (err instanceof BentleyError)
-        Logger.logError(loggerCategory, err.name + ": " + err.message);
+        Logger.logError(loggerCategory, `${err.name}: ${err.message}`);
       return undefined;
     }
 

@@ -201,7 +201,7 @@ export function createSkySphereProgram(context: WebGLRenderingContext | WebGL2Re
       shader.addGraphicUniform("s_skyTxtr", (uniform, params) => {
         const geom = params.geometry as SkySphereViewportQuadGeometry;
         if (undefined !== geom.skyTexture)
-          (geom.skyTexture! as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
+          (geom.skyTexture as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
         else
           System.instance.ensureSamplerBound(uniform, TextureUnit.FeatureSymbology);
       });
@@ -222,8 +222,8 @@ export function createSkySphereProgram(context: WebGLRenderingContext | WebGL2Re
   }
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
-  builder.vert.headerComment = "//!V! SkySphere-" + (isGradient ? "Gradient" : "Texture");
-  builder.frag.headerComment = "//!F! SkySphere-" + (isGradient ? "Gradient" : "Texture");
+  builder.vert.headerComment = `//!V! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
+  builder.frag.headerComment = `//!F! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
 
   return builder.buildProgram(context);
 }

@@ -110,7 +110,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected verifyShadersContiguous(): void {
     let emptyShaderIndex = -1;
-    assert(-1 === (emptyShaderIndex = this._basicPrograms.findIndex((prog) => undefined === prog)), "Shader index " + emptyShaderIndex + " is undefined in " + this.constructor.name);
+    assert(-1 === (emptyShaderIndex = this._basicPrograms.findIndex((prog) => undefined === prog)), `Shader index ${emptyShaderIndex} is undefined in ${this.constructor.name}`);
   }
 
   private _isDisposed = false;
@@ -143,7 +143,7 @@ export abstract class VariedTechnique implements Technique {
   protected abstract get _debugDescription(): string;
 
   protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
-    const descr = this._debugDescription + ": " + flags.buildDescription();
+    const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
     builder.setDebugDescription(descr);
 
     if (System.instance.supportsLogZBuffer)
@@ -601,7 +601,7 @@ interface PrioritizedTechniqueOrShader {
   specificShader?: PrioritizedShaderVariation; // if defined, only compile this specific shader variation for the technique; otherwise, compile all uncompiled shader variations for the technique
 }
 
-const _techniquesByPriority: PrioritizedTechniqueOrShader[] = [
+const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   // Compile these specific shader variations first because they seem most likely to be used immediately upon opening a file.
   { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.None, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.No, isTranslucent: false } },
   { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Pick, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.No, isTranslucent: false } },
@@ -649,7 +649,7 @@ const _techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassSetBlend },
   { techniqueId: TechniqueId.VolClassBlend },
 ];
-const _numTechniquesByPriority = _techniquesByPriority.length;
+const numTechniquesByPriority = techniquesByPriority.length;
 
 /** A collection of rendering techniques accessed by ID.
  * @internal
@@ -740,13 +740,13 @@ export class Techniques implements WebGLDisposable {
     let wasPreviouslyCompiled = false;
 
     do {
-      if (this._techniqueByPriorityIndex >= _numTechniquesByPriority)
+      if (this._techniqueByPriorityIndex >= numTechniquesByPriority)
         return false;
 
       let shader: ShaderProgram;
       let numShaders = 0;
 
-      const pTech = _techniquesByPriority[this._techniqueByPriorityIndex];
+      const pTech = techniquesByPriority[this._techniqueByPriorityIndex];
       const tech = this._list[pTech.techniqueId];
 
       if (pTech.specificShader !== undefined) { // if this entry consists of a specific shader, just compile that

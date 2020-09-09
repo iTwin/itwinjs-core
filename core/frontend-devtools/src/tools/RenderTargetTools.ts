@@ -26,7 +26,8 @@ export abstract class RenderTargetDebugControlTool extends Tool {
   protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
 }
 
-type DebugControlBoolean = "displayDrapeFrustum" | "drawForReadPixels" | "displayRealityTileRanges" | "displayRealityTileRanges" |
+type DebugControlBoolean =
+  "displayDrapeFrustum" | "drawForReadPixels" | "displayRealityTileRanges" | "displayRealityTileRanges" |
   "displayRealityTilePreload" | "freezeRealityTiles" | "logRealityTiles" | "vcSupportIntersectingVolumes";
 
 /** Toggles some aspect of a RenderTargetDebugControl for the selected viewport.
@@ -109,7 +110,7 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
   }
 }
 
-/** Turn on display of reality tile boundaies.
+/** Turn on display of reality tile boundaries.
  * @alpha
  */
 export class ToggleRealityTileBounds extends RenderTargetDebugControlToggleTool {
@@ -132,7 +133,7 @@ export class ToggleRealityTileFreeze extends RenderTargetDebugControlToggleTool 
   public get aspect(): DebugControlBoolean { return "freezeRealityTiles"; }
 }
 
-/** Turn on logging of console tile selection and loadding (to console).
+/** Turn on logging of console tile selection and loading (to console).
  * @alpha
  */
 export class ToggleRealityTileLogging extends RenderTargetDebugControlToggleTool {
@@ -148,7 +149,7 @@ export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool 
   public get aspect(): DebugControlBoolean { return "vcSupportIntersectingVolumes"; }
 }
 
-/** Set the number of antialiasing sampes to use (<=1 for no antialiasing).
+/** Set the number of antialiasing samples to use (<=1 for no antialiasing).
  * @internal
  */
 export class SetAASamplesTool extends RenderTargetDebugControlTool {

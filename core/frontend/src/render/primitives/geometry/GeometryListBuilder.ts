@@ -183,7 +183,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
     let pixelSize = 1.0;
     if (!this.isViewCoordinates) {
       // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
-      const range = accum.geometries!.computeRange();
+      const range = accum.geometries.computeRange();
       const pt = range.low.interpolate(0.5, range.high);
       pixelSize = this.viewport.getPixelSizeAtPoint(pt);
       pixelSize = this.viewport.target.adjustPixelSizeForLOD(pixelSize);

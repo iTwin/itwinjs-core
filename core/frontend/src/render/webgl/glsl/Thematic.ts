@@ -154,7 +154,7 @@ export function getComputeThematicIndex(instanced: boolean): string {
   const modelPos = instanced ? "(g_instancedRtcMatrix * rawPosition).xyz" : "rawPosition.xyz";
   return `
   if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
-    vec3 u = u_modelToWorld + ` + modelPos + `;
+    vec3 u = u_modelToWorld + ${modelPos};
     vec3 v = u_thematicAxis;
     vec3 proju = (dot(v, u) / dot(v, v)) * v;
     vec3 a = v * u_thematicRange.s;

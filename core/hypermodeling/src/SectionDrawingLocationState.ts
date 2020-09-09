@@ -152,7 +152,7 @@ export class SectionDrawingLocationState {
     this.clip = extractClip(props.clipJSON) ?? ClipVector.createEmpty();
 
     const placementProps = {
-      origin: props.origin ?? { },
+      origin: props.origin ?? {},
       angles: {
         yaw: props.yaw,
         pitch: props.pitch,
@@ -213,7 +213,7 @@ export class SectionDrawingLocationState {
     const states: SectionDrawingLocationState[] = [];
     try {
       for await (const row of iModel.query(selectSectionDrawingLocationStatesECSql))
-      states.push(new SectionDrawingLocationState(row as SectionDrawingLocationStateData, iModel));
+        states.push(new SectionDrawingLocationState(row as SectionDrawingLocationStateData, iModel));
     } catch (_) {
       // If the iModel contains a version of BisCore schema older than 1.12.0, the query will produce an exception due to missing SectionDrawingLocation class. That's fine.
     }

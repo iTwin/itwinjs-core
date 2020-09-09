@@ -67,7 +67,7 @@ export class ExtensionServiceTool extends Tool {
       IModelApp.extensionAdmin.addExtensionLoaderFront(new ExtensionServiceExtensionLoader(cid));
       ExtensionServiceTool.showSuccess(contextName);
     } catch (err) {
-      const briefMessage = "Unable to add Extension Service Connected Context '" + contextName + "'";
+      const briefMessage = `Unable to add Extension Service Connected Context '${contextName}'`;
       const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage, (typeof err.message === "string") ? err.message : undefined, OutputMessageType.Alert, OutputMessageAlert.Balloon);
       IModelApp.notifications.outputMessage(errorDetails);
     }
@@ -102,16 +102,16 @@ export class ExtensionServiceTool extends Tool {
   }
 
   private static showSuccess(contextName: string) {
-    const briefMessage = "Extension Service Connected Context '" + contextName + "' added";
+    const briefMessage = `Extension Service Connected Context '${contextName}' added`;
     const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, undefined, OutputMessageType.InputField);
     IModelApp.notifications.outputMessage(info);
     Logger.logInfo(loggerCategory, briefMessage);
   }
 
   private static showError(contextName: string) {
-    const briefMessage = "Cannot find Connected Context '" + contextName + "'";
+    const briefMessage = `Cannot find Connected Context '${contextName}'`;
     const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, briefMessage, undefined, OutputMessageType.Alert, OutputMessageAlert.Balloon);
     IModelApp.notifications.outputMessage(errorDetails);
-    Logger.logError(loggerCategory, "Extension Service: Connected Context '" + contextName + "' was not found");
+    Logger.logError(loggerCategory, `Extension Service: Connected Context '${contextName}' was not found`);
   }
 }

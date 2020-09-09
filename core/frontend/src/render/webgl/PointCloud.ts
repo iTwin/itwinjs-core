@@ -48,7 +48,7 @@ export class PointCloudGeometry extends CachedGeometry {
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointCloud, false);
     assert(undefined !== attrPos);
     const vertexDataType = (pointCloud.points instanceof Uint8Array) ? GL.DataType.UnsignedByte : GL.DataType.UnsignedShort;
-    this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos!.location, 3, vertexDataType, false, 0, 0, false)]);
+    this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos.location, 3, vertexDataType, false, 0, 0, false)]);
     this._vertexCount = pointCloud.points.length / 3;
     this._hasFeatures = FeatureIndexType.Empty !== pointCloud.features.type;
     this._voxelSize = pointCloud.voxelSize;
@@ -59,7 +59,7 @@ export class PointCloudGeometry extends CachedGeometry {
       this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
       const attrColor = AttributeMap.findAttribute("a_color", TechniqueId.PointCloud, false);
       assert(undefined !== attrColor);
-      this.buffers.addBuffer(this._colorHandle!, [BufferParameters.create(attrColor!.location, 3, GL.DataType.UnsignedByte, true, 0, 0, false)]);
+      this.buffers.addBuffer(this._colorHandle!, [BufferParameters.create(attrColor.location, 3, GL.DataType.UnsignedByte, true, 0, 0, false)]);
     }
   }
 

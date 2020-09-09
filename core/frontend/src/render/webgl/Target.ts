@@ -166,7 +166,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
 
-  public get techniques(): Techniques { return this.renderSystem.techniques!; }
+  public get techniques(): Techniques { return this.renderSystem.techniques; }
 
   public get hilites(): Hilites { return this._hilites; }
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
@@ -304,13 +304,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _getRangeCorners(r: Range3d): Point3d[] {
     const p = this._scratchRangeCorners;
     p[0].setFromPoint3d(r.low);
-    p[1].set(r.high.x, r.low.y, r.low.z),
-      p[2].set(r.low.x, r.high.y, r.low.z),
-      p[3].set(r.high.x, r.high.y, r.low.z),
-      p[4].set(r.low.x, r.low.y, r.high.z),
-      p[5].set(r.high.x, r.low.y, r.high.z),
-      p[6].set(r.low.x, r.high.y, r.high.z),
-      p[7].setFromPoint3d(r.high);
+    p[1].set(r.high.x, r.low.y, r.low.z);
+    p[2].set(r.low.x, r.high.y, r.low.z);
+    p[3].set(r.high.x, r.high.y, r.low.z);
+    p[4].set(r.low.x, r.low.y, r.high.z);
+    p[5].set(r.high.x, r.low.y, r.high.z);
+    p[6].set(r.low.x, r.high.y, r.high.z);
+    p[7].setFromPoint3d(r.high);
     return p;
   }
 
@@ -1179,7 +1179,7 @@ export class OnScreenTarget extends Target {
 
     // Render to our framebuffer
     const system = this.renderSystem;
-    system.frameBufferStack.push(this._fbo!, true, false);
+    system.frameBufferStack.push(this._fbo, true, false);
 
     const viewRect = this.viewRect;
 
@@ -1330,7 +1330,7 @@ export class OffScreenTarget extends Target {
 
   protected _beginPaint(): void {
     assert(this._fbo !== undefined);
-    this.renderSystem.frameBufferStack.push(this._fbo!, true, false);
+    this.renderSystem.frameBufferStack.push(this._fbo, true, false);
   }
 
   protected _endPaint(): void {

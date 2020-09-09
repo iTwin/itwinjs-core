@@ -1038,6 +1038,7 @@ class Admin extends TileAdmin {
   }
 
   public isTileInUse(marker: TileUsageMarker): boolean {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     for (const [_viewport, markers] of this._tileUsagePerViewport)
       if (markers.has(marker))
         return true;

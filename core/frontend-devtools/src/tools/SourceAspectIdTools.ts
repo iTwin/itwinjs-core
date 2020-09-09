@@ -53,7 +53,7 @@ export abstract class SourceAspectIdTool extends Tool {
     if (copyToClipboard)
       copyStringToClipboard(resultId);
 
-    const message = queryId + " => " + resultId;
+    const message = `${queryId} => ${resultId}`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message));
   }
 }
@@ -71,7 +71,7 @@ export class SourceAspectIdFromElementIdTool extends SourceAspectIdTool {
   public static toolId = "SourceAspectIdFromElementId";
 
   protected getECSql(queryId: string): string {
-    return "SELECT Identifier as resultId FROM BisCore.ExternalSourceAspect WHERE Element.Id=" + queryId + " AND [Kind]='Element'";
+    return `SELECT Identifier as resultId FROM BisCore.ExternalSourceAspect WHERE Element.Id=${queryId} AND [Kind]='Element'`;
   }
 }
 
@@ -88,6 +88,6 @@ export class ElementIdFromSourceAspectIdTool extends SourceAspectIdTool {
   public static toolId = "ElementIdFromSourceAspectId";
 
   protected getECSql(queryId: string): string {
-    return "SELECT Element.Id as resultId FROM BisCore.ExternalSourceAspect WHERE Identifier='" + queryId + "' AND [Kind]='Element'";
+    return `SELECT Element.Id as resultId FROM BisCore.ExternalSourceAspect WHERE Identifier='${queryId}' AND [Kind]='Element'`;
   }
 }

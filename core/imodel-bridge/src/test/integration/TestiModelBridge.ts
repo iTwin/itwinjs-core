@@ -40,6 +40,7 @@ class TestBridge extends IModelBridge {
     // nothing to do here
   }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get repositoryLink(): RepositoryLink {
     assert(this._repositoryLink !== undefined);
     return this._repositoryLink;
@@ -90,7 +91,7 @@ class TestBridge extends IModelBridge {
     const physicalModelId = this.queryPhysicalModel();
     const definitionModelId = this.queryDefinitionModel();
     if (undefined === groupModelId || undefined === physicalModelId || undefined === definitionModelId) {
-      const error = "Unable to find model Id for " + undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition);
+      const error = `Unable to find model Id for ${undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition)}`;
       throw new IModelError(IModelStatus.BadArg, error, Logger.logError, loggerCategory);
     }
 
@@ -128,7 +129,7 @@ class TestBridge extends IModelBridge {
     }
 
     const sourceItem: SourceItem = {
-      id: this._sourceData!,
+      id: this._sourceData,
       version: timeStamp.toString(),
     };
     const documentStatus = this.synchronizer.recordDocument(IModelDb.rootSubjectId, sourceItem);

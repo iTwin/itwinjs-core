@@ -113,8 +113,8 @@ describe("Markup", () => {
       if (elem instanceof Element) elem = [elem];
       elem.forEach((e) => {
         const css = window.getComputedStyle(e.node);
-        assert.equal(css.stroke, stroke, msg + " stroke");
-        assert.equal(css.fill, fill, msg + " fill");
+        assert.equal(css.stroke, stroke, `${msg} stroke`);
+        assert.equal(css.fill, fill, `${msg} fill`);
       });
     };
     const el = makeRect(nested);

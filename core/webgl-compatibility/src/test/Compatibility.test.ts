@@ -18,7 +18,7 @@ let createContext = (canvas: HTMLCanvasElement, useWebGL2: boolean, contextAttri
 };
 
 function _createCanvas(): HTMLCanvasElement | undefined {
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
+  const canvas = document.createElement("canvas");
   if (null === canvas)
     return undefined;
   return canvas;

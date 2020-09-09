@@ -406,7 +406,7 @@ export class BufferHandle implements WebGLDisposable {
       return undefined;
     }
 
-    handle!.bindData(data, usage);
+    handle.bindData(data, usage);
     return handle;
   }
   /** Creates a BufferHandle and binds its data */
@@ -543,7 +543,7 @@ export class UniformHandle {
   public static create(program: WebGLProgram, name: string): UniformHandle {
     const location = System.instance.context.getUniformLocation(program, name);
     if (null === location)
-      throw new Error("uniform " + name + " not found.");
+      throw new Error(`uniform ${name} not found.`);
 
     return new UniformHandle(location);
   }

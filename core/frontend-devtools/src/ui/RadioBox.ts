@@ -40,25 +40,25 @@ export function createRadioBox(props: RadioBoxProps): RadioBox {
 
   let label: HTMLLabelElement | undefined;
   if (undefined !== props.name) {
-    label = document.createElement("label") as HTMLLabelElement;
+    label = document.createElement("label");
     label.htmlFor = props.id;
     label.innerText = props.name;
     div.appendChild(label);
   }
 
-  const form = document.createElement("form") as HTMLFormElement;
+  const form = document.createElement("form");
   form.id = props.id;
 
   const radioBoxes: HTMLInputElement[] = [];
 
   for (const entry of props.entries) {
-    const input = document.createElement("input") as HTMLInputElement;
+    const input = document.createElement("input");
     input.type = "radio";
     input.name = props.name ? props.name : props.id;
 
     input.value = (undefined !== entry.value) ? entry.value.toString() : "";
 
-    const inputLabel: HTMLLabelElement = document.createElement("label") as HTMLLabelElement;
+    const inputLabel: HTMLLabelElement = document.createElement("label");
     inputLabel.innerText = entry.label;
 
     inputLabel.onclick = () => {

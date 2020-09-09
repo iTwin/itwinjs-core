@@ -11,18 +11,18 @@ import { ShaderBuilder, VariableType } from "../ShaderBuilder";
 
 // render passes actually used in shader code.
 const renderPasses = [
-  [ RenderPass.Background, "Background" ],
-  [ RenderPass.OpaqueLayers, "Layers" ], // Shaders treat all layer passes the same
-  [ RenderPass.OpaqueLinear, "OpaqueLinear" ],
-  [ RenderPass.OpaquePlanar, "OpaquePlanar" ],
-  [ RenderPass.OpaqueGeneral, "OpaqueGeneral" ],
-  [ RenderPass.Classification, "Classification" ],
-  [ RenderPass.Translucent, "Translucent" ],
-  [ RenderPass.HiddenEdge, "HiddenEdge" ],
-  [ RenderPass.Hilite, "Hilite" ],
-  [ RenderPass.WorldOverlay, "WorldOverlay" ],
-  [ RenderPass.ViewOverlay, "ViewOverlay" ],
-  [ RenderPass.PlanarClassification, "PlanarClassification" ],
+  [RenderPass.Background, "Background"],
+  [RenderPass.OpaqueLayers, "Layers"], // Shaders treat all layer passes the same
+  [RenderPass.OpaqueLinear, "OpaqueLinear"],
+  [RenderPass.OpaquePlanar, "OpaquePlanar"],
+  [RenderPass.OpaqueGeneral, "OpaqueGeneral"],
+  [RenderPass.Classification, "Classification"],
+  [RenderPass.Translucent, "Translucent"],
+  [RenderPass.HiddenEdge, "HiddenEdge"],
+  [RenderPass.Hilite, "Hilite"],
+  [RenderPass.WorldOverlay, "WorldOverlay"],
+  [RenderPass.ViewOverlay, "ViewOverlay"],
+  [RenderPass.PlanarClassification, "PlanarClassification"],
 ];
 
 /**
@@ -49,5 +49,5 @@ export function addRenderPass(builder: ShaderBuilder) {
   });
 
   for (const renderPass of renderPasses)
-    builder.addGlobal("kRenderPass_" + renderPass[1], VariableType.Float, renderPass[0].toString() + ".0", true);
+    builder.addGlobal(`kRenderPass_${renderPass[1]}`, VariableType.Float, `${renderPass[0].toString()}.0`, true);
 }

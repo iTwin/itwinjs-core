@@ -2,23 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
+
+import { assert } from "chai";
+import * as path from "path";
 import { BentleyLoggerCategory, Config, DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, BriefcaseManager, ECSqlStatement, ExternalSourceAspect, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, NativeLoggerCategory, PhysicalPartition, Subject } from "@bentley/imodeljs-backend";
-
-import { HubUtility } from "./integration/HubUtility";
-import * as path from "path";
-import { assert } from "chai";
-import { KnownTestLocations } from "./KnownTestLocations";
+import {
+  BackendLoggerCategory, BriefcaseManager, ECSqlStatement, ExternalSourceAspect, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs,
+  NativeLoggerCategory, PhysicalPartition, Subject,
+} from "@bentley/imodeljs-backend";
+import { IModel } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import { BridgeLoggerCategory } from "../BridgeLoggerCategory";
+import { BridgeJobDefArgs } from "../imodel-bridge";
 import { IModelBankArgs, IModelBankUtils } from "../IModelBankUtils";
 import { IModelHubUtils } from "../IModelHubUtils";
-import { BridgeLoggerCategory } from "../BridgeLoggerCategory";
+import { HubUtility } from "./integration/HubUtility";
 import { CodeSpecs, RectangleTile, SmallSquareTile } from "./integration/TestBridgeElements";
-import { BridgeJobDefArgs } from "../imodel-bridge";
-import { IModel } from "@bentley/imodeljs-common";
 import { ModelNames } from "./integration/TestiModelBridge";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 export class TestIModelInfo {
   private _name: string;
@@ -49,7 +52,7 @@ export class TestIModelInfo {
 
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
-  imodel.withPreparedStatement("SELECT count(*) AS [count] FROM " + className, (stmt: ECSqlStatement) => {
+  imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();
     count = row.count;
@@ -139,7 +142,7 @@ export class BridgeTestUtils {
     assert.equal(8, getCount(imodel, "TestBridge:SmallSquareTile"));
 
     assert.isTrue(imodel.codeSpecs.hasName(CodeSpecs.Group));
-    const jobSubjectName = "TestiModelBridge:" + bridgeJobDef.sourcePath!;
+    const jobSubjectName = `TestiModelBridge:${bridgeJobDef.sourcePath!}`;
     const subjectId: Id64String = imodel.elements.queryElementIdByCode(Subject.createCode(imodel, IModel.rootSubjectId, jobSubjectName))!;
     assert.isTrue(Id64.isValidId64(subjectId));
 
@@ -152,21 +155,21 @@ export class BridgeTestUtils {
       const ids = ExternalSourceAspect.findBySource(imodel, physicalModelId!, "Tile", "e1aa3ec3-0c2e-4328-89d0-08e1b4d446c8");
       assert.isTrue(Id64.isValidId64(ids.aspectId!));
       assert.isTrue(Id64.isValidId64(ids.elementId!));
-      const tile = imodel.elements.getElement(ids.elementId!) as SmallSquareTile;
+      const tile = imodel.elements.getElement<SmallSquareTile>(ids.elementId!);
       assert.equal(tile.condition, "New");
     } else {
       // Modified element
       let ids = ExternalSourceAspect.findBySource(imodel, physicalModelId!, "Tile", "e1aa3ec3-0c2e-4328-89d0-08e1b4d446c8");
       assert.isTrue(Id64.isValidId64(ids.aspectId!));
       assert.isTrue(Id64.isValidId64(ids.elementId!));
-      let tile = imodel.elements.getElement(ids.elementId!) as SmallSquareTile;
+      let tile = imodel.elements.getElement<SmallSquareTile>(ids.elementId!);
       assert.equal(tile.condition, "Scratched");
 
       // New element
       ids = ExternalSourceAspect.findBySource(imodel, physicalModelId!, "Tile", "5b51a06f-4026-4d0d-9674-d8428b118e9a");
       assert.isTrue(Id64.isValidId64(ids.aspectId!));
       assert.isTrue(Id64.isValidId64(ids.elementId!));
-      tile = imodel.elements.getElement(ids.elementId!) as RectangleTile;
+      tile = imodel.elements.getElement<RectangleTile>(ids.elementId!);
       assert.equal(tile.placement.origin.x, 1.0);
       assert.equal(tile.placement.origin.y, 2.0);
     }

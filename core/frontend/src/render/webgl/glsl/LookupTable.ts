@@ -37,10 +37,10 @@ const initializerTemplate = `
 export function addLookupTable(sb: VertexShaderBuilder, lutName: string, mult: string = "1.0") {
   sb.addFunction(computeLUTCoords);
 
-  const lutStepX = "g_" + lutName + "_stepX";
-  const lutStepY = lutName + "_stepY";
-  const lutCenter = "g_" + lutName + "_center";
-  const lutParams = "u_" + lutName + "Params";
+  const lutStepX = `g_${lutName}_stepX`;
+  const lutStepY = `${lutName}_stepY`;
+  const lutCenter = `g_${lutName}_center`;
+  const lutParams = `u_${lutName}Params`;
 
   sb.addGlobal(lutStepX, VariableType.Float);
   sb.addGlobal(lutCenter, VariableType.Vec2);

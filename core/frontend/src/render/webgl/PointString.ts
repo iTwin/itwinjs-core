@@ -39,7 +39,7 @@ export class PointStringGeometry extends LUTGeometry {
     this.buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointString, false);
     assert(undefined !== attrPos);
-    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this.numIndices = numIndices;
     this.indices = indices;
     this.lut = lut;

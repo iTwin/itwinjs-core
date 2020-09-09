@@ -114,7 +114,7 @@ class MemoryPanel {
   public constructor(parent: HTMLElement, label: string, labels: string[]) {
     this._label = label;
     this._labels = labels;
-    this._div = document.createElement("div") as HTMLDivElement;
+    this._div = document.createElement("div");
 
     this._header = document.createElement("label")!;
     this._header.style.fontWeight = "bold";
@@ -136,7 +136,7 @@ class MemoryPanel {
     assert(this._labels.length === stats.length);
     assert(this._labels.length === this._elems.length);
 
-    this._header.innerHTML = this._label + ": " + formatMemory(total);
+    this._header.innerHTML = `${this._label}: ${formatMemory(total)}`;
 
     for (let i = 0; i < this._labels.length; i++) {
       const elem = this._elems[i];
@@ -147,7 +147,7 @@ class MemoryPanel {
       }
 
       elem.style.display = "block";
-      elem.innerHTML = this._labels[i] + " (" + stat.count + "): " + formatMemory(stat.totalBytes); // + "\n(max: " + formatMemory(stat.maxBytes) + ")";
+      elem.innerHTML = `${this._labels[i]} (${stat.count}): ${formatMemory(stat.totalBytes)}`; // + "\n(max: " + formatMemory(stat.maxBytes) + ")";
     }
   }
 }
@@ -170,7 +170,7 @@ export class MemoryTracker {
   public constructor(parent: HTMLElement, vp: Viewport) {
     this._vp = vp;
 
-    this._div = document.createElement("div") as HTMLDivElement;
+    this._div = document.createElement("div");
     this._div.style.display = "none";
     this._div.style.textAlign = "right";
 
@@ -281,8 +281,8 @@ export class MemoryTracker {
     const calc = calcMem[this._memIndex];
     this._stats.clear();
     const numTrees = calc(this._stats, this._vp);
-    this._totalElem.innerText = "Total: " + formatMemory(this._stats.totalBytes);
-    this._totalTreesElem.innerText = "Total Tile Trees: " + numTrees;
+    this._totalElem.innerText = `Total: ${formatMemory(this._stats.totalBytes)}`;
+    this._totalTreesElem.innerText = `Total Tile Trees: ${numTrees}`;
 
     this._textures.update(this._stats.consumers, this._stats.totalBytes - this._stats.buffers.totalBytes);
     this._buffers.update(this._stats.buffers.consumers, this._stats.buffers.totalBytes);

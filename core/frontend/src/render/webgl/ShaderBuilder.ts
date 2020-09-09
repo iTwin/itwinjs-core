@@ -173,7 +173,7 @@ export class ShaderVariable {
     parts.push(this.typeName);
 
     if (this.length > 0)
-      parts.push(this.name + "[" + this.length.toFixed(0) + "]");
+      parts.push(`${this.name}[${this.length.toFixed(0)}]`);
     else
       parts.push(this.name);
 
@@ -182,7 +182,7 @@ export class ShaderVariable {
       parts.push(this.value);
     }
 
-    return parts.join(" ") + ";";
+    return `${parts.join(" ")};`;
   }
 }
 
@@ -228,7 +228,7 @@ export class ShaderVariables {
 
   public addBitFlagConstant(name: string, value: number) {
     if (System.instance.capabilities.isWebGL2)
-      this.addGlobal(name, VariableType.Uint, (2 ** value).toFixed(0) + "u", true);
+      this.addGlobal(name, VariableType.Uint, `${(2 ** value).toFixed(0)}u`, true);
     else
       this.addGlobal(name, VariableType.Float, (1.0 / (2 ** (value + 1))).toExponential(7), true);
   }
@@ -237,7 +237,7 @@ export class ShaderVariables {
   public buildDeclarations(isVertexShader: boolean): string {
     let decls = "";
     for (const v of this._list) {
-      decls += v.buildDeclaration(isVertexShader) + "\n";
+      decls += `${v.buildDeclaration(isVertexShader)}\n`;
     }
 
     return decls;
@@ -321,11 +321,11 @@ export class ShaderVariables {
           continue;
       }
       slot = this.findSlot(variableSize, loopSize, registers);
-      outStr += "// varying slot " + slot + " " + Convert.typeToString(variable.type) + " " + variable.name + "\n";
+      outStr += `// varying slot ${slot} ${Convert.typeToString(variable.type)} ${variable.name}\n`;
     }
     const slotsUsed = registers.indexOf(0);
     registers.length = slotsUsed;
-    outStr += "// Slots used: " + slotsUsed + "  [" + registers.toString() + "]\n";
+    outStr += `// Slots used: ${slotsUsed}  [${registers.toString()}]\n`;
 
     // debug output modes
     const outputAll = true;  // false just outputs varyings that use more than 8
@@ -416,22 +416,22 @@ export class SourceBuilder {
 
   /**
    * Construct a function definition given the function signature and body. For example:
-   * buildFunctionDefintion("float average(float a, float b)", "\n  return (a + b) / 2.0;\n");
+   * buildFunctionDefinition("float average(float a, float b)", "\n  return (a + b) / 2.0;\n");
    * will produce:
    *  "float average(float a, float b) {
    *     return (a + b) / 2.0;
    *   }"
    * For an inline function:
-   * buildFunctionDefintion("float average(float a, float b)", "return (a + b) / 2.0;");
+   * buildFunctionDefinition("float average(float a, float b)", "return (a + b) / 2.0;");
    * will produce:
    *  "float average(float a, float b) { return (a + b) / 2.0; }"
    */
   public static buildFunctionDefinition(declaration: string, implementation: string): string {
     // If implementation does not start with a newline then assume it is an inline function & add spaces between braces.
     if ("\n" === implementation.charAt(0))
-      return declaration + " {" + implementation + "}\n\n";
+      return `${declaration} {${implementation}}\n\n`;
     else
-      return declaration + " { " + implementation + " }\n\n";
+      return `${declaration} { ${implementation} }\n\n`;
   }
 
   /** Constructs a function definition as described by buildFunctionDefinition() and appends it to the glsl source. */
@@ -510,7 +510,7 @@ export class ShaderBuilder extends ShaderVariables {
   public addFunction(declarationOrFull: string, implementation?: string): void {
     let def = declarationOrFull;
     if (undefined !== implementation) {
-      def = SourceBuilder.buildFunctionDefinition("\n" + declarationOrFull, implementation);
+      def = SourceBuilder.buildFunctionDefinition(`\n${declarationOrFull}`, implementation);
     }
 
     if (undefined === this.findFunction(def)) {
@@ -543,7 +543,7 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   public addDefine(name: string, value: string): void {
-    const defineName = "#define " + name + " ";
+    const defineName = `#define ${name} `;
     const macro = defineName + value;
 
     const index = this._macros.findIndex((x) => x.startsWith(defineName));
@@ -563,7 +563,7 @@ export class ShaderBuilder extends ShaderVariables {
       this._fragOutputs.push("out vec4 FragColor;");
       return;
     }
-    this._fragOutputs.push("layout(location = " + value + ") out vec4 " + name + ";");
+    this._fragOutputs.push(`layout(location = ${value}) out vec4 ${name};`);
   }
 
   protected buildPreludeCommon(attrMap: Map<string, AttributeDetails> | undefined, isVertexShader: boolean): SourceBuilder {
@@ -585,7 +585,7 @@ export class ShaderBuilder extends ShaderVariables {
 
     // Extensions
     for (const ext of this._extensions)
-      src.addline("#extension " + ext + " : enable");
+      src.addline(`#extension ${ext} : enable`);
 
     // Default precisions
     src.addline("precision highp float;");
@@ -600,9 +600,9 @@ export class ShaderBuilder extends ShaderVariables {
       const webGL2 = System.instance.capabilities.isWebGL2;
       attrMap.forEach((attr: AttributeDetails, key: string) => {
         if (webGL2)
-          src.addline("in " + Convert.typeToString(attr.type) + " " + key + ";");
+          src.addline(`in ${Convert.typeToString(attr.type)} ${key};`);
         else
-          src.addline("attribute " + Convert.typeToString(attr.type) + " " + key + ";");
+          src.addline(`attribute ${Convert.typeToString(attr.type)} ${key};`);
       });
     }
 
@@ -723,7 +723,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
-      main.addline("  {" + init + "  }\n");
+      main.addline(`  {${init}  }\n`);
     }
 
     main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
@@ -787,7 +787,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     }
 
     for (const comp of this._computedVarying) {
-      main.addline("  " + comp);
+      main.addline(`  ${comp}`);
     }
 
     const checkForLateDiscard = this.get(VertexShaderComponent.CheckForLateDiscard);
@@ -891,12 +891,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (System.instance.capabilities.isWebGL2) {
       this.clearFragOutput();
       for (let i = 0; i < n; i++)
-        this.addFragOutput("FragColor" + i, i);
+        this.addFragOutput(`FragColor${i}`, i);
     } else {
       assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
       this.addExtension("GL_EXT_draw_buffers");
       for (let i = 0; i < n; i++)
-        this.addDefine("FragColor" + i, "gl_FragData[" + i + "]");
+        this.addDefine(`FragColor${i}`, `gl_FragData[${i}]`);
     }
   }
 
@@ -916,7 +916,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
-      main.addline("  {" + init + "  }\n");
+      main.addline(`  {${init}  }\n`);
     }
 
     const checkForEarlyDiscard = this.get(FragmentShaderComponent.CheckForEarlyDiscard);
@@ -950,50 +950,50 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     const applyMaterialOverrides = this.get(FragmentShaderComponent.ApplyMaterialOverrides);
     if (undefined !== applyMaterialOverrides) {
       prelude.addFunction("vec4 applyMaterialOverrides(vec4 baseColor)", applyMaterialOverrides);
-      main.addline(clipIndent + "  baseColor = applyMaterialOverrides(baseColor);");
+      main.addline(`${clipIndent}  baseColor = applyMaterialOverrides(baseColor);`);
     }
 
     const applyThematicDisplay = this.get(FragmentShaderComponent.ApplyThematicDisplay);
     if (undefined !== applyThematicDisplay) {
       prelude.addFunction("vec4 applyThematicDisplay(vec4 baseColor)", applyThematicDisplay);
-      main.addline(clipIndent + "  if (u_renderPass != kRenderPass_PlanarClassification)");
-      main.addline(clipIndent + "    baseColor = applyThematicDisplay(baseColor);");
+      main.addline(`${clipIndent}  if (u_renderPass != kRenderPass_PlanarClassification)`);
+      main.addline(`${clipIndent}    baseColor = applyThematicDisplay(baseColor);`);
     }
 
     const applyPlanarClassifier = this.get(FragmentShaderComponent.ApplyPlanarClassifier);
     if (undefined !== applyPlanarClassifier) {
       if (undefined === finalizeDepth) {
         if (this.findFunction(volClassOpaqueColor))
-          main.addline(clipIndent + "  float finalDepth = gl_FragCoord.z;");
+          main.addline(`${clipIndent}  float finalDepth = gl_FragCoord.z;`);
         else
-          main.addline(clipIndent + "  float finalDepth = 1.0;");
+          main.addline(`${clipIndent}  float finalDepth = 1.0;`);
       }
       prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor, float depth)", applyPlanarClassifier);
-      main.addline(clipIndent + "  baseColor = applyPlanarClassifications(baseColor, finalDepth);");
+      main.addline(`${clipIndent}  baseColor = applyPlanarClassifications(baseColor, finalDepth);`);
     }
 
     const applySolarShadowMap = this.get(FragmentShaderComponent.ApplySolarShadowMap);
     if (undefined !== applySolarShadowMap) {
       prelude.addFunction("vec4 applySolarShadowMap(vec4 baseColor)", applySolarShadowMap);
-      main.addline(clipIndent + "  baseColor = applySolarShadowMap(baseColor);");
+      main.addline(`${clipIndent}  baseColor = applySolarShadowMap(baseColor);`);
     }
 
     const finalize = this.get(FragmentShaderComponent.FinalizeBaseColor);
     if (undefined !== finalize) {
       prelude.addFunction("vec4 finalizeBaseColor(vec4 baseColor)", finalize);
-      main.addline(clipIndent + "  baseColor = finalizeBaseColor(baseColor);");
+      main.addline(`${clipIndent}  baseColor = finalizeBaseColor(baseColor);`);
     }
 
     const checkForDiscard = this.get(FragmentShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard(vec4 baseColor)", checkForDiscard);
-      main.addline(clipIndent + "  if (checkForDiscard(baseColor)) { discard; return; }");
+      main.addline(`${clipIndent}  if (checkForDiscard(baseColor)) { discard; return; }`);
     }
 
     const discardByAlpha = this.get(FragmentShaderComponent.DiscardByAlpha);
     if (undefined !== discardByAlpha) {
       prelude.addFunction("bool discardByAlpha(float alpha)", discardByAlpha);
-      main.addline(clipIndent + "  if (discardByAlpha(baseColor.a)) { discard; return; }");
+      main.addline(`${clipIndent}  if (discardByAlpha(baseColor.a)) { discard; return; }`);
     }
 
     if (undefined !== applyClipping)
@@ -1070,7 +1070,7 @@ export class ProgramBuilder {
     this._attrMap = attrMap;
     this.vert = new VertexShaderBuilder(flags);
     this.frag = new FragmentShaderBuilder(flags);
-    this._flags = flags; // only needed for clone - though could loook up from vert or frag shader.
+    this._flags = flags; // only needed for clone - though could look up from vert or frag shader.
   }
 
   private addVariable(v: ShaderVariable, which: ShaderType) {
@@ -1101,15 +1101,15 @@ export class ProgramBuilder {
       this.vert.addComputedVarying(name, type, inlineComputation);
   }
   public addFunctionComputedVarying(name: string, type: VariableType, funcName: string, funcBody: string) {
-    let funcDecl = "\n" + Convert.typeToString(type) + " " + funcName + "()";
+    let funcDecl = `\n${Convert.typeToString(type)} ${funcName}()`;
     funcDecl = SourceBuilder.buildFunctionDefinition(funcDecl, funcBody);
 
-    const funcCall = funcName + "()";
+    const funcCall = `${funcName}()`;
     this.addFunctionComputedVaryingWithArgs(name, type, funcCall, funcDecl);
   }
   public addFunctionComputedVaryingWithArgs(name: string, type: VariableType, funcCall: string, funcDef: string) {
     this.vert.addFunction(funcDef);
-    const computation = name + " = " + funcCall + ";";
+    const computation = `${name} = ${funcCall};`;
     this.addInlineComputedVarying(name, type, computation);
   }
 
@@ -1129,7 +1129,7 @@ export class ProgramBuilder {
       if (this.frag.headerComment) {
         let tStr = "";
         if (!outSrc) {
-          tStr = this.frag.headerComment + "\n";
+          tStr = `${this.frag.headerComment}\n`;
         }
         const tStr2 = this.vert.checkMaxVaryingVectors(fragSource);
         if (tStr2) {
@@ -1153,8 +1153,8 @@ export class ProgramBuilder {
   }
 
   public setDebugDescription(description: string): void {
-    this.vert.headerComment = ("//!V! " + description);
-    this.frag.headerComment = ("//!F! " + description);
+    this.vert.headerComment = (`//!V! ${description}`);
+    this.frag.headerComment = (`//!F! ${description}`);
   }
 
   /** Returns a deep copy of this program builder. */

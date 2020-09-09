@@ -132,7 +132,7 @@ function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = tr
  * @beta
  */
 export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo {
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
+  const canvas = document.createElement("canvas");
   if (null === canvas)
     return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent };
 

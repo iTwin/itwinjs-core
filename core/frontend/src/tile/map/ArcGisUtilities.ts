@@ -22,7 +22,7 @@ export class ArcGisUtilities {
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
   public static async getEndpoint(url: string): Promise<any | undefined> {
-    const capabilities = await getJson(new FrontendRequestContext(""), url + "?f=pjson");
+    const capabilities = await getJson(new FrontendRequestContext(""), `${url}?f=pjson`);
 
     return capabilities;
   }

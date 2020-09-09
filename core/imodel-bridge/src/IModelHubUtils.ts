@@ -32,7 +32,7 @@ export class ServerArgs {
 /** Helps with queries on Bentley Connect */
 export class ConnectUtils {
   public static async getContextId(contextName: string, requestContext: AuthorizedClientRequestContext): Promise<string> {
-    const project: Project = await (new ContextRegistryClient()).getProject(requestContext, { $select: "$id", $filter: "Name+like+'" + contextName + "'" }); // Throws if project not found
+    const project: Project = await (new ContextRegistryClient()).getProject(requestContext, { $select: "$id", $filter: `Name+like+'${contextName}'` }); // Throws if project not found
     return project.wsgId;
   }
 }
@@ -81,7 +81,7 @@ export class IModelHubUtils {
     }
 
     if (serverArgs.contextId === undefined) {
-      throw new Error("Could not find project " + serverArgs.contextName + ".");
+      throw new Error(`Could not find project ${serverArgs.contextName}.`);
     }
     if (Guid.isGuid(serverArgs.iModelName!))
       serverArgs.iModelId = serverArgs.iModelName;

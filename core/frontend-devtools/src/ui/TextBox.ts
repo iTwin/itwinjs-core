@@ -46,7 +46,7 @@ export function createTextBox(props: TextBoxProps): TextBox {
 
   let label;
   if (undefined !== props.label) {
-    label = document.createElement("label") as HTMLLabelElement;
+    label = document.createElement("label");
     label.innerText = props.label;
     if (undefined !== props.id)
       label.htmlFor = props.id;
@@ -54,7 +54,7 @@ export function createTextBox(props: TextBoxProps): TextBox {
     div.appendChild(label);
   }
 
-  const textbox = document.createElement("input") as HTMLInputElement;
+  const textbox = document.createElement("input");
   textbox.type = "text";
   if (undefined !== props.id)
     textbox.id = props.id;

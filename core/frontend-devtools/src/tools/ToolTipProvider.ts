@@ -27,7 +27,7 @@ class DebugToolTipProvider implements ToolTipProvider {
       if (undefined === value)
         continue;
 
-      html = html + key + ": " + value.toString() + "<br>";
+      html = `${html + key}: ${value.toString()}<br>`;
     }
 
     const div = document.createElement("div");

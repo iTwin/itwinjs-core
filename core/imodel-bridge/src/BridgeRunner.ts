@@ -47,7 +47,7 @@ export class BridgeJobDefArgs {
   public documentGuid?: string;
   /** The urn to fetch the input file. This and associated workspace will be downloaded */
   public dmsServerUrl?: string;
-  /** OIDC or SAML access token used to login to DMS system. If ommited or empty, user credentials are used for login. */
+  /** OIDC or SAML access token used to login to DMS system. If omitted or empty, user credentials are used for login. */
   public dmsAccessToken?: string;
   /** Additional arguments in JSON format. */
   public argsJson: any;
@@ -113,14 +113,12 @@ export class BridgeRunner {
         case "--dms-accessToken=": bridgeJobDef.dmsAccessToken = keyVal[1].trim(); break;
         case "--dms-documentGuid=": bridgeJobDef.documentGuid = keyVal[1].trim(); break;
         default:
-          {
-            /** Unsupported options
-             * --fwk-skip-assignment-check
-             * --server-user=abeesh.basheer@bentley.com
-             * --server-password=ReplaceMe
-             */
-            Logger.logError(loggerCategory, `${line} is not supported`);
-          }
+          /** Unsupported options
+           * --fwk-skip-assignment-check
+           * --server-user=abeesh.basheer@bentley.com
+           * --server-password=ReplaceMe
+           */
+          Logger.logError(loggerCategory, `${line} is not supported`);
       }
     }
 
@@ -231,13 +229,13 @@ abstract class IModelDbBuilder {
     if (this._bridgeArgs.revisionComments !== undefined)
       comment = this._bridgeArgs.revisionComments.substring(0, 400);
     if (comment.length > 0)
-      comment = comment + " - ";
+      comment = `${comment} - `;
     return comment + pushComments;
   }
 
   protected findJob(): Subject | undefined {
     assert(this._imodel !== undefined);
-    const jobCode = Subject.createCode(this._imodel!, IModel.rootSubjectId, this._jobSubjectName);
+    const jobCode = Subject.createCode(this._imodel, IModel.rootSubjectId, this._jobSubjectName);
     const subjectId = this._imodel.elements.queryElementIdByCode(jobCode);
     if (undefined === subjectId) {
       return undefined;
@@ -261,7 +259,7 @@ abstract class IModelDbBuilder {
     subjProps.Subject.Job = jobProps;
 
     const root = this._imodel.elements.getRootSubject();
-    const jobCode = Subject.createCode(this._imodel!, root.id, this._jobSubjectName!);
+    const jobCode = Subject.createCode(this._imodel, root.id, this._jobSubjectName);
 
     const subjectProps: SubjectProps = {
       classFullName: Subject.classFullName,
@@ -285,7 +283,7 @@ abstract class IModelDbBuilder {
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();
-    this._bridge!.synchronizer.detectDeletedElements();
+    this._bridge.synchronizer.detectDeletedElements();
 
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
@@ -520,7 +518,7 @@ class SnapshotDbBuilder extends IModelDbBuilder {
   }
 
   public async acquire(): Promise<void> {
-    const fileName = path.basename(this._bridgeArgs.sourcePath!, path.extname(this._bridgeArgs.sourcePath!)) + ".bim";
+    const fileName = `${path.basename(this._bridgeArgs.sourcePath!, path.extname(this._bridgeArgs.sourcePath!))}.bim`;
     const filePath = path.join(this._bridgeArgs.outputDir!, fileName);
     if (IModelJsFs.existsSync(filePath)) {
       IModelJsFs.unlinkSync(filePath);
@@ -530,7 +528,7 @@ class SnapshotDbBuilder extends IModelDbBuilder {
       throw new IModelError(IModelStatus.BadModel, `Unable to create empty SnapshotDb at ${filePath}`, Logger.logError, loggerCategory);
     }
 
-    const synchronizer = new Synchronizer(this._imodel!, this._bridge.supportsMultipleFilesPerChannel());
+    const synchronizer = new Synchronizer(this._imodel, this._bridge.supportsMultipleFilesPerChannel());
     this._bridge.synchronizer = synchronizer;
   }
 

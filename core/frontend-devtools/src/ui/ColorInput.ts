@@ -62,7 +62,7 @@ export function createColorInput(props: ColorInputProps): ColorInput {
 
   if (undefined !== props.label) {
     colorLabel = document.createElement("label");
-    colorLabel.innerText = props.label + " ";
+    colorLabel.innerText = `${props.label} `;
     inputDiv.appendChild(colorLabel);
   }
   inputDiv.appendChild(colorInput);

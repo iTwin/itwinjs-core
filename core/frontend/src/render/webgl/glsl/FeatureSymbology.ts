@@ -57,12 +57,12 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
 const computeInstanceFeatureIndex = `a_featureId`;
 function computeFeatureIndex(instanced: boolean): string {
-  return `g_featureIndex = ` + (instanced ? computeInstanceFeatureIndex : computeLUTFeatureIndex) + `;`;
+  return `g_featureIndex = ${instanced ? computeInstanceFeatureIndex : computeLUTFeatureIndex};`;
 }
 function getFeatureIndex(instanced: boolean): string {
   return `
   float getFeatureIndex() {
-    g_featureIndex = ` + computeFeatureIndex(instanced) + `;
+    g_featureIndex = ${computeFeatureIndex(instanced)};
     return decodeUInt24(g_featureIndex);
   }`;
 }
@@ -311,7 +311,7 @@ const computeHiliteColor = `
 const computeSurfaceHiliteColor = `
   if (isSurfaceBitSet(kSurfaceBit_HasTexture) && TEXTURE(s_texture, v_texCoord).a <= 0.15)
     return vec4(0.0);
-` + computeHiliteColor;
+${  computeHiliteColor}`;
 
 const computeHiliteOverrides = `
   vec4 value = getFirstFeatureRgba();
@@ -319,7 +319,7 @@ const computeHiliteOverrides = `
   v_feature_hilited = kEmphFlag_Hilite * extractNthBit(flags, kOvrBit_Hilited) + kEmphFlag_Emphasize * extractNthBit(flags, kOvrBit_Emphasized);
 `;
 
-const computeHiliteOverridesWithWeight = computeHiliteOverrides + `
+const computeHiliteOverridesWithWeight = `${computeHiliteOverrides}
   linear_feature_overrides = vec4(nthFeatureBitSet(flags, kOvrBit_Weight),
   value.a * 256.0,
   nthFeatureBitSet(flags, kOvrBit_LineCode),

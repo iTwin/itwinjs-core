@@ -63,11 +63,11 @@ export class InstanceBuffers implements WebGLDisposable {
       const bytesPerVertex = floatsPerRow * 4;
       const offset = row * bytesPerVertex;
       const stride = 3 * bytesPerVertex;
-      const name = "a_instanceMatrixRow" + row;
+      const name = `a_instanceMatrixRow${row}`;
       const details = AttributeMap.findAttribute(name, techniqueId, true);
       assert(details !== undefined);
       const bParams: BufferParameters = {
-        glAttribLoc: details!.location,
+        glAttribLoc: details.location,
         glSize: floatsPerRow,
         glType: GL.DataType.Float,
         glNormalized: false,
@@ -230,14 +230,14 @@ export class InstancedGeometry extends CachedGeometry {
       assert(attrInstanceOverrides !== undefined);
       assert(attrInstanceRgba !== undefined);
       this._buffersContainer.addBuffer(this._buffers.symbology, [
-        BufferParameters.create(attrInstanceOverrides!.location, 4, GL.DataType.UnsignedByte, false, 8, 0, true),
-        BufferParameters.create(attrInstanceRgba!.location, 4, GL.DataType.UnsignedByte, false, 8, 4, true),
+        BufferParameters.create(attrInstanceOverrides.location, 4, GL.DataType.UnsignedByte, false, 8, 0, true),
+        BufferParameters.create(attrInstanceRgba.location, 4, GL.DataType.UnsignedByte, false, 8, 4, true),
       ]);
     }
     if (this._buffers.featureIds !== undefined) {
       const attrFeatureId = AttributeMap.findAttribute("a_featureId", this.techniqueId, true);
       assert(attrFeatureId !== undefined);
-      this._buffersContainer.addBuffer(this._buffers.featureIds, [BufferParameters.create(attrFeatureId!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
+      this._buffersContainer.addBuffer(this._buffers.featureIds, [BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
     }
   }
 

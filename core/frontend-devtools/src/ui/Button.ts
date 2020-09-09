@@ -38,7 +38,7 @@ export interface ButtonProps {
 export function createButton(props: ButtonProps): Button {
   const div = document.createElement(props.inline ? "span" : "div");
 
-  const button = document.createElement("input") as HTMLInputElement;
+  const button = document.createElement("input");
   button.type = "button";
   button.value = props.value;
   button.addEventListener("click", () => props.handler(button));

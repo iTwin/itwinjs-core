@@ -525,6 +525,7 @@ export class MapTile extends RealityTile {
   public forceSelectRealityTile(): boolean {
 
     let parentHeightDepth = 0;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     for (let parent: MapTile = this; parent !== undefined && parent._heightRange === undefined; parent = parent.parent as MapTile)
       parentHeightDepth++;
 

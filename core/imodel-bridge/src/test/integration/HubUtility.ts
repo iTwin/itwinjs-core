@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseManager } from "@bentley/imodeljs-backend";
-import { Briefcase as HubBriefcase, BriefcaseQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { Project } from "@bentley/context-registry-client";
+import { BriefcaseQuery, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { BriefcaseManager } from "@bentley/imodeljs-backend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export class HubUtility {
   public static logCategory = "HubUtility";
@@ -44,13 +45,13 @@ export class HubUtility {
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel || !iModel.id)
       throw new Error(`IModel ${iModelName} not found`);
-    return iModel.id!;
+    return iModel.id;
   }
 
   private static async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
     const project: Project = await getIModelProjectAbstraction().queryProject(requestContext, {
       $select: "*",
-      $filter: "Name+eq+'" + projectName + "'",
+      $filter: `Name+eq+'${projectName}'`,
     });
     return project;
   }

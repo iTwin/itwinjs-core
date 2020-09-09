@@ -115,10 +115,10 @@ export class GpuProfiler {
       checkBox.div.title = "EXT_disjoint_timer_query is not available in this browser";
     }
 
-    this._div = document.createElement("div") as HTMLDivElement;
+    this._div = document.createElement("div");
     this._div.style.display = "none";
 
-    this._recordButton = document.createElement("button") as HTMLButtonElement;
+    this._recordButton = document.createElement("button");
     this._recordButton.style.textAlign = "center";
     this._isRecording = false;
     this._recordButton.innerText = "Record Profile";
@@ -128,7 +128,7 @@ export class GpuProfiler {
     this._div.appendChild(this._recordButton);
 
     this._results = [];
-    this._resultsDiv = document.createElement("div") as HTMLDivElement;
+    this._resultsDiv = document.createElement("div");
     this._resultsDiv.style.textAlign = "left";
     this._div.appendChild(this._resultsDiv);
 
@@ -186,7 +186,7 @@ export class GpuProfiler {
       if (index < 0) { // Add brand new entry
         const data: GpuProfilerResults = {
           label: currentRes.label,
-          paddingLeft: depth + "em",
+          paddingLeft: `${depth}em`,
           sum: currentRes.nanoseconds,
           values: [currentRes.nanoseconds],
         };
@@ -223,7 +223,7 @@ export class GpuProfiler {
     printDepth(0, result);
 
     this._results.forEach((value, index) => {
-      if (!changedResults[index]) { // if no data recieved on this item, add a value of 0.0 to the avg.
+      if (!changedResults[index]) { // if no data received on this item, add a value of 0.0 to the avg.
         const oldVal = value.values.length >= numSavedFrames ? value.values.shift()! : 0.0;
         value.sum -= oldVal;
         value.values.push(0.0);

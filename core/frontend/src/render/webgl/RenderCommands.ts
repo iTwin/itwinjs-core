@@ -542,11 +542,11 @@ export class RenderCommands {
   public computeBatchHiliteRenderPass(batch: Batch): RenderPass {
     let pass = RenderPass.Hilite;
     if (batch.graphic instanceof MeshGraphic) {
-      const mg = batch.graphic as MeshGraphic;
+      const mg = batch.graphic;
       if (SurfaceType.VolumeClassifier === mg.surfaceType)
         pass = RenderPass.HiliteClassification;
     } else if (batch.graphic instanceof GraphicsArray) {
-      const ga = batch.graphic as GraphicsArray;
+      const ga = batch.graphic;
       if (ga.graphics[0] instanceof MeshGraphic) {
         const mg = ga.graphics[0] as MeshGraphic;
         if (SurfaceType.VolumeClassifier === mg.surfaceType)

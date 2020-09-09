@@ -66,7 +66,7 @@ export class TileStatisticsTracker {
       handler: (_cb) => this.toggle(),
     });
 
-    this._div = document.createElement("div") as HTMLDivElement;
+    this._div = document.createElement("div");
     this._div.style.display = "none";
     this._div.style.textAlign = "right";
 
@@ -111,7 +111,7 @@ export class TileStatisticsTracker {
   private addMaxActive(parent: HTMLElement): void {
     const div = document.createElement("div");
 
-    const label = document.createElement("label") as HTMLLabelElement;
+    const label = document.createElement("label");
     label.style.display = "inline";
     label.htmlFor = "maxActiveRequests";
     label.innerText = "Max Active Requests: ";
@@ -158,7 +158,7 @@ export class TileStatisticsTracker {
     const stats = IModelApp.tileAdmin.statistics;
     for (let i = 0; i < statEntries.length; i++) {
       const stat = statEntries[i];
-      const label = stat.label + ": " + stat.getValue(stats, this._vp);
+      const label = `${stat.label}: ${stat.getValue(stats, this._vp)}`;
       this._statElements[i].innerText = label;
     }
   }

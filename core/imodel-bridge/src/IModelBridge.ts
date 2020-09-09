@@ -27,7 +27,7 @@ export abstract class IModelBridge {
     return BentleyStatus.SUCCESS;
   }
 
-  /** This is only called the first time this sourcedata is synchronized.  Allows the bridge to perform any steps after the Job Subject has been created.  It
+  /** This is only called the first time this source data is synchronized.  Allows the bridge to perform any steps after the Job Subject has been created.  It
    * must call synchronizer.recordDocument on the source data.
    */
   public abstract async initializeJob(): Promise<void>;
@@ -63,7 +63,7 @@ export abstract class IModelBridge {
 
   /** Returns the name to be used for the job subject. This only needs to be overridden if the bridge supports multiple files per channel, in which case it must be overridden. */
   public getJobSubjectName(sourcePath: string): string {
-    return this.getBridgeName() + ":" + sourcePath;
+    return `${this.getBridgeName()}:${sourcePath}`;
   }
 
   public set synchronizer(sync: Synchronizer) {

@@ -174,7 +174,7 @@ export class ShaderProgram implements WebGLDisposable {
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     if (!succeeded) {
-      const compileLog = (GL.ShaderType.Vertex === type ? "Vertex" : "Fragment") + " shader failed to compile. Errors: " + gl.getShaderInfoLog(shader) + " Program description: " + this._description;
+      const compileLog = `${GL.ShaderType.Vertex === type ? "Vertex" : "Fragment"} shader failed to compile. Errors: ${gl.getShaderInfoLog(shader)} Program description: ${this._description}`;
       throw new Error(compileLog);
     }
 
@@ -210,7 +210,7 @@ export class ShaderProgram implements WebGLDisposable {
     const succeeded = gl.getProgramParameter(this._glProgram, GL.ProgramParameter.LinkStatus) as boolean;
     if (!succeeded) {
       const validateLog = gl.getProgramInfoLog(this._glProgram);
-      const msg = "Shader program failed to link. Link errors: " + linkLog + " Validation errors: " + validateLog + " Program description: " + this._description;
+      const msg = `Shader program failed to link. Link errors: ${linkLog} Validation errors: ${validateLog} Program description: ${this._description}`;
       throw new Error(msg);
     }
 
@@ -330,11 +330,11 @@ export class ShaderProgram implements WebGLDisposable {
       sname = sname.split("; ").join("-");
     } else {
       // need to investigate shaders with no comments to derive names, for now come up with unique name
-      sname = "noname-" + shaderFiles.length;
+      sname = `noname-${shaderFiles.length}`;
     }
 
     sname += isVS ? "_VS" : "_FS";
-    const fname = sname + ".glsl";
+    const fname = `${sname}.glsl`;
     let dsfNdx = shaderFiles.push(new DebugShaderFile(fname, src, isVS, true, false));
     if (isVS)
       this._vertGNdx = dsfNdx - 1;
@@ -352,7 +352,7 @@ export class ShaderProgram implements WebGLDisposable {
     // TODO: implement WebGL2 specific inputs for gl_VertexID and gl_InstanceID if ever used
 
     // parse and edit srcH to make it compilable
-    const fnameH = sname + ".hlsl";
+    const fnameH = `${sname}.hlsl`;
     let numTargets = 0; // for gl_Color cases
     let haveGLpos = false;
     let haveGLpntsz = false;
@@ -406,7 +406,7 @@ export class ShaderProgram implements WebGLDisposable {
             let aNdx = 0;
             for (const tstr of attrs) {
               ++ndx;
-              lines.splice(ndx, 0, "  " + tstr + ": TEXCOORD" + aNdx + ";");
+              lines.splice(ndx, 0, `  ${tstr}: TEXCOORD${aNdx};`);
               ++aNdx;
             }
 
@@ -418,7 +418,7 @@ export class ShaderProgram implements WebGLDisposable {
               t = vName.indexOf(" ");
               vName = vName.substring(0, t);
               ++ndx;
-              lines.splice(ndx, 0, "  " + vName + " = input." + vName + ";");
+              lines.splice(ndx, 0, `  ${vName} = input.${vName};`);
             }
 
             ++ndx;
@@ -436,7 +436,7 @@ export class ShaderProgram implements WebGLDisposable {
             let vNdx = 0;
             for (const tstr of varyings) {
               ++ndx;
-              lines.splice(ndx, 0, "  " + tstr + ": TEXCOORD" + vNdx + ";");
+              lines.splice(ndx, 0, `  ${tstr}: TEXCOORD${vNdx};`);
               ++vNdx;
             }
 
@@ -458,7 +458,7 @@ export class ShaderProgram implements WebGLDisposable {
               t = vName.indexOf(" ");
               vName = vName.substring(0, t);
               ++ndx;
-              lines.splice(ndx, 0, "  output." + vName + " = " + vName + ";");
+              lines.splice(ndx, 0, `  output.${vName} = ${vName};`);
             }
 
             ++ndx;
@@ -507,7 +507,7 @@ export class ShaderProgram implements WebGLDisposable {
             let vNdx = 0;
             for (const tstr of varyings) {
               ++ndx;
-              lines.splice(ndx, 0, "  " + tstr + ": TEXCOORD" + vNdx + ";");
+              lines.splice(ndx, 0, `  ${tstr}: TEXCOORD${vNdx};`);
               ++vNdx;
             }
 
@@ -534,7 +534,7 @@ export class ShaderProgram implements WebGLDisposable {
               t = vName.indexOf(" ");
               vName = vName.substring(0, t);
               ++ndx;
-              lines.splice(ndx, 0, "  " + vName + " = input." + vName + ";");
+              lines.splice(ndx, 0, `  ${vName} = input.${vName};`);
             }
 
             if (haveGLFrontFacing) {
@@ -552,7 +552,7 @@ export class ShaderProgram implements WebGLDisposable {
             let cNdx = 0;
             while (cNdx < numTargets) {
               ++ndx;
-              lines.splice(ndx, 0, "  float4 col" + cNdx + " : SV_TARGET" + cNdx + ";");
+              lines.splice(ndx, 0, `  float4 col${cNdx} : SV_TARGET${cNdx};`);
               ++cNdx;
             }
 
@@ -563,7 +563,7 @@ export class ShaderProgram implements WebGLDisposable {
               for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
                 if (haveGLFragColor[cNdx]) {
                   ++ndx;
-                  lines.splice(ndx, 0, "  float4 out_FragColor" + cNdx + " : SV_TARGET" + cNdx + ";");
+                  lines.splice(ndx, 0, `  float4 out_FragColor${cNdx} : SV_TARGET${cNdx};`);
                 }
               }
             }
@@ -578,7 +578,7 @@ export class ShaderProgram implements WebGLDisposable {
             cNdx = 0;
             while (cNdx < numTargets) {
               ++ndx;
-              lines.splice(ndx, 0, "  output.col" + cNdx + " = gl_Color[" + cNdx + "];");
+              lines.splice(ndx, 0, `  output.col${cNdx} = gl_Color[${cNdx}];`);
               ++cNdx;
             }
 
@@ -589,7 +589,7 @@ export class ShaderProgram implements WebGLDisposable {
               for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
                 if (haveGLFragColor[cNdx]) {
                   ++ndx;
-                  lines.splice(ndx, 0, "  output.out_FragColor" + cNdx + " = out_FragColor" + cNdx + ";");
+                  lines.splice(ndx, 0, `  output.out_FragColor${cNdx} = out_FragColor${cNdx};`);
                 }
               }
             }
@@ -602,9 +602,9 @@ export class ShaderProgram implements WebGLDisposable {
             ++ndx;
             lines.splice(ndx, 0, "  return output;\n}");
           } else if (line.indexOf("PS_OUTPUT main") >= 0) {
-            lines[ndx] = "// " + line + "\nPS_OUTPUT main(VS_OUTPUT input){";
+            lines[ndx] = `// ${line}\nPS_OUTPUT main(VS_OUTPUT input){`;
           } else if (line.indexOf("@@ MAIN PROLOGUE @@") >= 0) {
-            lines[ndx] = "// " + line + "\ngetInputs(input);";
+            lines[ndx] = `// ${line}\ngetInputs(input);`;
           }
         }
 

@@ -20,7 +20,7 @@ export class ReportWebGLCompatibilityTool extends Tool {
     const status = info.status < statuses.length ? statuses[info.status] : "UNKNOWN";
     const json = JSON.stringify(info, null, 2); // prettify JSON output
 
-    const msg = "Compatibility: " + status + "\n" + json;
+    const msg = `Compatibility: ${status}\n${json}`;
     const html = document.createElement("div");
     html.style.whiteSpace = "pre-wrap";
     html.appendChild(document.createTextNode(msg));

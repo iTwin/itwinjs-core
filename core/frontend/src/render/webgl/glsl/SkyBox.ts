@@ -42,7 +42,7 @@ export function createSkyBoxProgram(context: WebGLRenderingContext | WebGL2Rende
   prog.frag.addUniform("s_cube", VariableType.SamplerCube, (prg) => {
     prg.addGraphicUniform("s_cube", (uniform, params) => {
       const geom = params.geometry as SkyBoxQuadsGeometry;
-      (geom.cube! as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
+      (geom.cube as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
     });
   });
   prog.addInlineComputedVarying("v_texDir", VariableType.Vec3, computeTexDir);

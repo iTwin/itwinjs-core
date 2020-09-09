@@ -34,10 +34,7 @@ export class Config {
     const imjsPrefix = /^imjs/i;
     const systemEnv = Object.keys(process.env)
       .filter((key) => imjsPrefix.test(key))
-      .reduce<any>((env: any, key: string) => {
-        env[key] = process.env[key];
-        return env;
-      }, {});
+      .reduce<any>((env: any, key: string) => { env[key] = process.env[key]; return env; }, {});
     this.merge(systemEnv);
   }
 
@@ -194,11 +191,10 @@ export class Config {
   /** Copies the properties, recursing into object properties. Only do the translateVar at the top level. */
   private _copyProperties(destination: any, source: any, doTranslate: boolean) {
     Object.keys(source).forEach((varName) => {
-      // if subkey is an object, recurse.
+      // if sub-key is an object, recurse.
       if (typeof (source[varName]) === "object") {
         destination[varName] = {};
         this._copyProperties(destination[varName], source[varName], false);
-
       } else {
         const name = doTranslate ? this.checkExists(varName) : varName;
         const val = source[name];

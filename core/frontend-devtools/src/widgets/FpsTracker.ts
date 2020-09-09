@@ -59,6 +59,6 @@ export class FpsTracker {
   private updateFPS(): void {
     const metrics = this._metrics!;
     const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
-    this._label.innerText = "FPS: " + fps;
+    this._label.innerText = `FPS: ${fps}`;
   }
 }

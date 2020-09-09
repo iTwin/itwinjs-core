@@ -74,7 +74,7 @@ export class KeyinField {
   public constructor(props: KeyinFieldProps) {
     this._localization = props.localization ?? KeyinFieldLocalization.NonLocalized;
     this.keyins = this.findKeyins();
-    const autoCompleteListId = props.baseId + "_autoComplete";
+    const autoCompleteListId = `${props.baseId}_autoComplete`;
     this.autoCompleteList = createDataList({
       parent: props.parent,
       entries: keyinsToDataListEntries(this.keyins),
@@ -84,7 +84,7 @@ export class KeyinField {
 
     this.textBox = createTextBox({
       label: props.wantLabel ? "Key-in: " : undefined,
-      id: props.baseId + "_textBox",
+      id: `${props.baseId}_textBox`,
       parent: props.parent,
       handler: () => this.selectAll(),
       keypresshandler: async (_tb, ev) => { await this.handleKeyPress(ev); },
@@ -182,7 +182,7 @@ export class KeyinField {
     try {
       switch (IModelApp.tools.parseAndRun(input)) {
         case ParseAndRunResult.ToolNotFound:
-          message = "Cannot find a key-in that matches: " + input;
+          message = `Cannot find a key-in that matches: ${input}`;
           break;
         case ParseAndRunResult.BadArgumentCount:
           message = "Incorrect number of arguments";
@@ -192,7 +192,7 @@ export class KeyinField {
           break;
       }
     } catch (ex) {
-      message = "Key-in produced exception: " + ex;
+      message = `Key-in produced exception: ${ex}`;
     }
 
     if (undefined !== message)
