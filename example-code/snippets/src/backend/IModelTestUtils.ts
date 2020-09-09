@@ -41,7 +41,7 @@ export class IModelTestUtils {
   public static get connectClient(): ContextRegistryClient {
     if (!IModelTestUtils._connectClient)
       IModelTestUtils._connectClient = new ContextRegistryClient();
-    return IModelTestUtils._connectClient!;
+    return IModelTestUtils._connectClient;
   }
 
   private static getStat(name: string) {
@@ -60,7 +60,7 @@ export class IModelTestUtils {
       IModelJsFs.mkdirSync(destPath);
 
     const srcName = path.join(KnownTestLocations.assetsDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
+    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename : filename));
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
     if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs)
@@ -73,7 +73,7 @@ export class IModelTestUtils {
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts || {});
     const iModel = SnapshotDb.openFile(dbName); // could throw Error
     assert.exists(iModel);
-    return iModel!;
+    return iModel;
   }
 
   public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenOptions): StandaloneDb {

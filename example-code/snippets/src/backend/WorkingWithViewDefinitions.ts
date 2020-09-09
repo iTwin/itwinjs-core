@@ -15,7 +15,7 @@ import { ColorDef, ViewQueryParams } from "@bentley/imodeljs-common";
  * @return An array of all of the views which are configured to view the specified drawing model.
  */
 function findViewsOfDrawingModel(iModel: IModelDb, drawingModelId: Id64String, includePrivate: boolean = false): DrawingViewDefinition[] {
-  let where = "BaseModel.Id=" + drawingModelId; // Limit query to those views which look at the specified model
+  let where = `BaseModel.Id=${drawingModelId}`; // Limit query to those views which look at the specified model
   if (!includePrivate)
     where += " AND IsPrivate=FALSE"; // Exclude private views if specified
 

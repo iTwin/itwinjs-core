@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ IModelExporter_CodeExporter.code
+
 import { CodeSpec } from "@bentley/imodeljs-common";
-import { Element, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs as fs, SnapshotDb } from "@bentley/imodeljs-backend";
+import { Element, IModelJsFs as fs, IModelDb, IModelExporter, IModelExportHandler, SnapshotDb } from "@bentley/imodeljs-backend";
 
 /** CodeExporter creates a CSV output file containing all Codes from the specified iModel. */
 class CodeExporter extends IModelExportHandler {
@@ -34,6 +35,7 @@ class CodeExporter extends IModelExportHandler {
     super.onExportElement(element, isUpdate);
   }
 }
+
 // __PUBLISH_EXTRACT_END__
 import * as path from "path";
 import { IModelTestUtils } from "./IModelTestUtils";

@@ -12,7 +12,7 @@
     "cover": "",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/logger-config/file.json --tsIndexFile=./logger-config.ts --onlyJson",
     "extract-api": "betools extract-api --entry=logger-config",
-    "lint": "eslint ./src/**/*.ts 1>&2",
+    "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": ""
   },
   "author": {

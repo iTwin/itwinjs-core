@@ -87,7 +87,7 @@ describe("Useful ECSQL spatial queries", () => {
     // This is an example of passing the WRONG TYPE of object to iModel_bbox_areaxy and getting an error.
     // This statement is wrong, because iModel_placement_angles returns a iModel_angles object, while iModel_bbox_areaxy expects a DGN_bbox object.
     // Note that the error is detected when you try to step the statement, not when you prepare it.
-    iModel.withPreparedStatement("SELECT iModel_bbox_areaxy(iModel_angles(Yaw,Pitch,Roll)) FROM " + GeometricElement3d.classFullName,
+    iModel.withPreparedStatement(`SELECT iModel_bbox_areaxy(iModel_angles(Yaw,Pitch,Roll)) FROM ${GeometricElement3d.classFullName}`,
       (stmt: ECSqlStatement) => {
         // TODO: I expect an exception here:
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {

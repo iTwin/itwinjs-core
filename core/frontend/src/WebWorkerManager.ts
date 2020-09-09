@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// This file contains the code that manages a pool of We bWorkers, starting and dispatching work to them.
+// This file contains the code that manages a pool of WebWorkers, starting and dispatching work to them.
 // All the WebWorkers for a given instance of WebWorkerManager are the same, running the specified javascript
 // code. The Web Worker javascript  must be set up to handle the set of WorkerOperation's that are sent by
 // calls to queueOperation on WebWorkerManager.

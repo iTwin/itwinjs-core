@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { SnapshotDb } from "@bentley/imodeljs-backend";
-import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@bentley/imodeljs-common";
+import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully.
@@ -26,7 +26,7 @@ describe("Wire Format Snippets", () => {
 
   it("Root Subject", () => {
     // __PUBLISH_EXTRACT_START__ WireFormat_RootSubject.code
-    const elementProps = iModel.elements.getElementProps(IModel.rootSubjectId) as ElementProps;
+    const elementProps = iModel.elements.getElementProps(IModel.rootSubjectId);
     const json = JSON.stringify(elementProps, undefined, 2);
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(elementProps);

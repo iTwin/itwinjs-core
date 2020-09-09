@@ -7,6 +7,7 @@ import { NavigationValue } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void> {
   {
@@ -85,7 +86,7 @@ async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void
       const parent: NavigationValue = row.parent;
       const lastMod: string = row.lastMod;
 
-      console.log(id + "|" + className + "|" + parent.id + "|" + parent.relClassName + "|" + lastMod);
+      console.log(`${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`);
     }
     // __PUBLISH_EXTRACT_END__
   }

@@ -152,7 +152,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
       const parent: NavigationValue = row.parent;
       const lastMod: string = row.lastMod;
 
-      console.log(id + "|" + className + "|" + parent.id + "|" + parent.relClassName + "|" + lastMod);
+      console.log(`${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`);
     }
   });
   // __PUBLISH_EXTRACT_END__
@@ -174,7 +174,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
       const parent: NavigationValue = parentValue.getNavigation();
       const lastMod: string = lastModValue.getDateTime();
 
-      console.log(id + "|" + className + "|" + parent.id + "|" + parent.relClassName + "|" + lastMod);
+      console.log(`${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`);
     }
   });
   // __PUBLISH_EXTRACT_END__
@@ -191,7 +191,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
       const classId: string = classIdValue.getId();
       const parentRelClassId: string = parentRelClassIdValue.getId();
 
-      console.log(classId + "|" + parentRelClassId);
+      console.log(`${classId}|${parentRelClassId}`);
     }
   });
   // __PUBLISH_EXTRACT_END__
