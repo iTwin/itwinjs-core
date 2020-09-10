@@ -24,7 +24,7 @@ function mockGetVersionsByIdWithThumbnails(imodelId: GuidString, versionId: Guid
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", `${versionId}?$select=` + getSelectStatement(thumbnailSizes));
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", `${versionId}?$select=${getSelectStatement(thumbnailSizes)}`);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Version>(versions);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
@@ -33,7 +33,7 @@ function mockGetVersionsByNameWithThumbnails(imodelId: GuidString, name: string,
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", `?$filter=Name+eq+%27${name}%27&$select=` + getSelectStatement(thumbnailSizes));
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", `?$filter=Name+eq+%27${name}%27&$select=${getSelectStatement(thumbnailSizes)}`);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Version>(versions);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
@@ -235,7 +235,7 @@ describe("iModelHub VersionHandler", () => {
     utils.mockGetThumbnailsByVersionId(imodelId2, "Large", firstVersion.id!, mockedLargeThumbnail);
     const largeThumbnail: Thumbnail = (await iModelClient.thumbnails.get(requestContext, imodelId2, "Large", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
-    mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, mockedSmallThumbnail.id!, mockedLargeThumbnail.id!));
+    mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, mockedSmallThumbnail.id, mockedLargeThumbnail.id));
     mockGetVersionsByIdWithThumbnails(imodelId2, firstVersion.id!, ["Small", "Large"], ...mockedVersions);
     versions = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byId(firstVersion.id!).selectThumbnailId("Small", "Large"));
     chai.expect(versions.length === 1);
@@ -244,7 +244,7 @@ describe("iModelHub VersionHandler", () => {
     chai.assert(!!versions[0].largeThumbnailId);
     chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
 
-    mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, undefined, mockedLargeThumbnail.id!));
+    mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, undefined, mockedLargeThumbnail.id));
     mockGetVersionsByNameWithThumbnails(imodelId2, firstVersion.name!, ["Large"], ...mockedVersions);
     versions = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byName(firstVersion.name!).selectThumbnailId("Large"));
     chai.expect(versions.length === 1);

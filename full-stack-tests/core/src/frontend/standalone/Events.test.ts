@@ -25,7 +25,7 @@ export class EventTest {
   private constructor(
     private readonly _tokenProps: IModelRpcProps) {
     // setup backend event handler.
-    const eventSourceId = this._tokenProps.key!;
+    const eventSourceId = this._tokenProps.key;
     EventSourceManager.get(eventSourceId, this._tokenProps)
       .on(EventsTestRpcInterface.name, "echo", (data: any) => {
         this.onEcho.raiseEvent(data.id, data.message);

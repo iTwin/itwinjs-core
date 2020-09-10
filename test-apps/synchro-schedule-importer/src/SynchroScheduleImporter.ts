@@ -10,7 +10,7 @@ import {
   DisplayStyle3d, ECSqlStatement, GeometricElement3d, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, SpatialViewDefinition, StandaloneDb,
   ViewDefinition,
 } from "@bentley/imodeljs-backend";
-import { ColorDef, ElementAlignedBox3d, Placement3d, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, Placement3d, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 
 interface ImportInputArgs {
   input: string;
@@ -22,13 +22,13 @@ interface ImportInputArgs {
 }
 
 function doFixRange(iModel: IModelDb) {
-  const totalRange = Range3d.createNull() as ElementAlignedBox3d;
+  const totalRange = Range3d.createNull();
 
   iModel.withPreparedStatement("SELECT ECInstanceId,Category.Id,Origin,Yaw,Pitch,Roll,BBoxLow,BBoxHigh FROM bis.GeometricElement3d", (stmt: ECSqlStatement) => {
     while (DbResult.BE_SQLITE_ROW === stmt.step()) {
       const row = stmt.getRow();
       if (undefined !== row.bBoxLow && undefined !== row.bBoxHigh && undefined !== row.origin) {
-        const box = Range3d.create(row.bBoxLow, row.bBoxHigh) as ElementAlignedBox3d;
+        const box = Range3d.create(row.bBoxLow, row.bBoxHigh);
         const placement = new Placement3d(Point3d.fromJSON(row.origin), YawPitchRollAngles.createDegrees(row.yaw, row.pitch, row.roll), box);
         const range = placement.calculateRange();
         totalRange.extendRange(range);
@@ -57,7 +57,7 @@ class ScriptEntry {
     for (let [key, value] of Object.entries(this.data)) { // eslint-disable-line prefer-const
       if (key === "cuttingPlaneTimeline") {
         if (Array.isArray(value)) {
-          const range = Range3d.createNull() as ElementAlignedBox3d;
+          const range = Range3d.createNull();
           this.elementIds.forEach((elementId) => {
             const element = iModel.elements.getElement<GeometricElement3d>(elementId);
             if (element)
@@ -204,12 +204,12 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
   const jsonString = readFileSync(animationScript, "utf8");
   const json = JSON.parse(jsonString);
   if (json === undefined) {
-    process.stdout.write("Unable to parse json from animation script: " + animationScript + "\n");
+    process.stdout.write(`Unable to parse json from animation script: ${animationScript}\n`);
     return false;
   }
   const script = animationScriptFromSynchro(json, iModel);
   if (createSeparateScriptFile)
-    writeFileSync(animationScript + ".output.json", JSON.stringify(script));
+    writeFileSync(`${animationScript}.output.json`, JSON.stringify(script));
 
   iModel.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, (view: ViewDefinition) => {
     if (!view.isSpatialView())
@@ -232,32 +232,32 @@ function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
   let originalIModel: StandaloneDb;
 
   try {
-    originalIModel = StandaloneDb.openFile(inputArgs.input as string, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
+    originalIModel = StandaloneDb.openFile(inputArgs.input, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
   } catch (error) {
-    process.stdout.write("Unable to open: " + inputArgs.input + "\n");
+    process.stdout.write(`Unable to open: ${inputArgs.input}\n`);
     return false;
   }
 
   let outputIModel = originalIModel;
-  let outputFileName = inputArgs.input as string;
+  let outputFileName = inputArgs.input;
   if (inputArgs.createDuplicateIbim) {
-    outputFileName = inputArgs.input + ".animated.ibim";
-    IModelJsFs.copySync(inputArgs.input as string, outputFileName);
+    outputFileName = `${inputArgs.input}.animated.ibim`;
+    IModelJsFs.copySync(inputArgs.input, outputFileName);
     outputIModel = StandaloneDb.openFile(outputFileName, OpenMode.ReadWrite);
   }
-  try { unlinkSync(outputFileName + ".tiles"); } catch (error) { }
+  try { unlinkSync(`${outputFileName}.tiles`); } catch (error) { }
   if (inputArgs.fixRange)
     doFixRange(outputIModel);
 
   if (inputArgs.script) {
-    if (doAddAnimationScript(outputIModel, inputArgs.script as string, inputArgs.createSeparateScript as boolean))
-      process.stdout.write("Animation Script: " + inputArgs.script + " added to: " + outputFileName + "\n");
+    if (doAddAnimationScript(outputIModel, inputArgs.script, inputArgs.createSeparateScript))
+      process.stdout.write(`Animation Script: ${inputArgs.script} added to: ${outputFileName}\n`);
   }
 
   try {
     outputIModel.saveChanges();
   } catch (error) {
-    process.stdout.write("Unable to save changes to: " + outputFileName + "\n");
+    process.stdout.write(`Unable to save changes to: ${outputFileName}\n`);
   }
 
   originalIModel.close();

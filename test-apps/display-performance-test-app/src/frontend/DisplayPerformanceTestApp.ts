@@ -163,7 +163,7 @@ function getRenderOpts(): string {
                 optString += "-fragDepth";
                 break;
               default:
-                optString += "-" + ext;
+                optString += `-${ext}`;
                 break;
             }
           }
@@ -188,10 +188,10 @@ function getRenderOpts(): string {
         if (value) optString += "+webGL2";
         break;
       case "antialiasSamples":
-        if (value > 1) optString += "+aa" + (value as number);
+        if (value > 1) optString += `+aa${value as number}`;
         break;
       default:
-        if (value) optString += "+" + key;
+        if (value) optString += `+${key}`;
     }
   }
   return optString;
@@ -211,16 +211,16 @@ function getTileProps(): string {
         if (value) tilePropsStr += "+inst";
         break;
       case "maxActiveRequests":
-        if (value !== 10) tilePropsStr += "+max" + value;
+        if (value !== 10) tilePropsStr += `+max${value}`;
         break;
       case "retryInterval":
-        if (value) tilePropsStr += "+retry" + value;
+        if (value) tilePropsStr += `+retry${value}`;
         break;
       case "disableMagnification":
         if (value) tilePropsStr += "-mag";
         break;
       default:
-        if (value) tilePropsStr += "+" + key;
+        if (value) tilePropsStr += `+${key}`;
     }
   }
   return tilePropsStr;
@@ -249,13 +249,13 @@ function getBackgroundMapProps(): string {
       bmPropsStr += "+st";
       break;
     default:
-      bmPropsStr += "+type" + bmProps.mapType;
+      bmPropsStr += `+type${bmProps.mapType}`;
       break;
   }
-  if (bmProps.groundBias !== 0) bmPropsStr += "+bias" + bmProps.groundBias;
+  if (bmProps.groundBias !== 0) bmPropsStr += `+bias${bmProps.groundBias}`;
   if (bmProps.applyTerrain) bmPropsStr += "+terr";
   if (bmProps.useDepthBuffer) bmPropsStr += "+depth";
-  if (typeof (bmProps.transparency) === "number") bmPropsStr += "+trans" + bmProps.transparency;
+  if (typeof (bmProps.transparency) === "number") bmPropsStr += `+trans${bmProps.transparency}`;
   return bmPropsStr;
 }
 
@@ -336,7 +336,7 @@ function getViewFlagsString(): string {
         if (value) vfString += "+fsd";
         break;
       default:
-        if (value) vfString += "+" + key;
+        if (value) vfString += `+${key}`;
     }
   }
   if (undefined !== activeViewState.overrideElements)
@@ -401,15 +401,15 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
   rowData.set("View", configs.viewName!);
   const w = cssPixelsToDevicePixels(configs.view!.width);
   const h = cssPixelsToDevicePixels(configs.view!.height);
-  rowData.set("Screen Size", w + "X" + h);
-  rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
+  rowData.set("Screen Size", `${w}X${h}`);
+  rowData.set("Skip & Time Renders", `${configs.numRendersToSkip} & ${configs.numRendersToTime}`);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
-  rowData.set("View Flags", getViewFlagsString() !== "" ? " " + getViewFlagsString() : "");
-  rowData.set("Render Options", getRenderOpts() !== "" ? " " + getRenderOpts() : "");
-  rowData.set("Tile Props", getTileProps() !== "" ? " " + getTileProps() : "");
-  rowData.set("Bkg Map Props", getBackgroundMapProps() !== "" ? " " + getBackgroundMapProps() : "");
-  if (pixSelectStr) rowData.set("ReadPixels Selector", " " + pixSelectStr);
+  rowData.set("View Flags", getViewFlagsString() !== "" ? ` ${getViewFlagsString()}` : "");
+  rowData.set("Render Options", getRenderOpts() !== "" ? ` ${getRenderOpts()}` : "");
+  rowData.set("Tile Props", getTileProps() !== "" ? ` ${getTileProps()}` : "");
+  rowData.set("Bkg Map Props", getBackgroundMapProps() !== "" ? ` ${getBackgroundMapProps()}` : "");
+  if (pixSelectStr) rowData.set("ReadPixels Selector", ` ${pixSelectStr}`);
   rowData.set("Test Name", getTestName(configs));
   rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
   if (!minimize) rowData.set("Tile Loading Time", curTileLoadingTime);
@@ -422,7 +422,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
       let gpuSum = 0;
       for (const gpuData of gpuDataArray)
         gpuSum += gpuData;
-      rowData.set("GPU-" + name, gpuDataArray.length ? (gpuSum / gpuDataArray.length).toFixed(fixed) : gpuSum.toFixed(fixed));
+      rowData.set(`GPU-${name}`, gpuDataArray.length ? (gpuSum / gpuDataArray.length).toFixed(fixed) : gpuSum.toFixed(fixed));
     }
   };
 
@@ -431,7 +431,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
     for (const colName of finalFrameTimings[0].keys()) {
       let sum = 0;
       finalFrameTimings.forEach((timing) => {
-        const data = timing!.get(colName);
+        const data = timing.get(colName);
         sum += data ? data : 0;
       });
       if (!minimize || (minimize && colName === "CPU Total Time")) {
@@ -443,7 +443,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
     for (const colName of finalFrameTimings[0].keys()) {
       let sum = 0;
       finalFrameTimings.forEach((timing) => {
-        const data = timing!.get(colName);
+        const data = timing.get(colName);
         sum += data ? data : 0;
       });
       if (!minimize || (minimize && colName === "CPU Total Time")) {
@@ -507,7 +507,7 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
 }
 
 function getImageString(configs: DefaultConfigs, prefix = ""): string {
-  const filename = getTestName(configs, prefix, true) + ".png";
+  const filename = `${getTestName(configs, prefix, true)}.png`;
   if (MobileRpcConfiguration.isMobileFrontend)
     return filename; // skip path for mobile - we use device's Documents path as determined by mobile backend
   return path.join(configs.outputPath ? configs.outputPath : "", filename);
@@ -517,19 +517,19 @@ function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, 
   let testName = "";
   if (prefix) testName += prefix;
   testName += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
-  testName += configs.viewName ? "_" + configs.viewName : "";
-  testName += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
-  testName += getRenderMode() !== "" ? "_" + getRenderMode() : "";
-  testName += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
-  testName += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
-  testName += getTileProps() !== "" ? "_" + getTileProps() : "";
-  testName += getBackgroundMapProps() !== "" ? "_" + getBackgroundMapProps() : "";
+  testName += configs.viewName ? `_${configs.viewName}` : "";
+  testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
+  testName += getRenderMode() !== "" ? `_${getRenderMode()}` : "";
+  testName += getViewFlagsString() !== "" ? `_${getViewFlagsString()}` : "";
+  testName += getRenderOpts() !== "" ? `_${getRenderOpts()}` : "";
+  testName += getTileProps() !== "" ? `_${getTileProps()}` : "";
+  testName += getBackgroundMapProps() !== "" ? `_${getBackgroundMapProps()}` : "";
   testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
   if (!ignoreDupes) {
     let testNum = isImage ? testNamesImages.get(testName) : testNamesTimings.get(testName);
     if (testNum === undefined)
       testNum = 0;
-    testName += (testNum > 1) ? ("---" + testNum) : "";
+    testName += (testNum > 1) ? (`---${testNum}`) : "";
   }
   return testName;
 }
@@ -647,25 +647,25 @@ class DefaultConfigs {
     this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
     this.backgroundMap = this.updateData(jsonData.backgroundMap, this.backgroundMap) as BackgroundMapProps || undefined;
 
-    debugPrint("view: " + (this.view !== undefined ? (this.view!.width + "X" + this.view!.height) : "undefined"));
-    debugPrint("numRendersToTime: " + this.numRendersToTime);
-    debugPrint("numRendersToSkip: " + this.numRendersToSkip);
-    debugPrint("outputFile: " + this.outputFile);
-    debugPrint("outputName: " + this.outputName);
-    debugPrint("outputPath: " + this.outputPath);
-    debugPrint("iModelFile: " + this.iModelFile);
-    debugPrint("iModelLocation: " + this.iModelLocation);
-    debugPrint("iModelName: " + this.iModelName);
-    debugPrint("iModelHubProject: " + this.iModelHubProject);
-    debugPrint("csvFormat: " + this.csvFormat);
-    debugPrint("filenameOptsToIgnore: " + this.filenameOptsToIgnore);
-    debugPrint("viewName: " + this.viewName);
-    debugPrint("testType: " + this.testType);
-    debugPrint("displayStyle: " + this.displayStyle);
-    debugPrint("tileProps: " + this.tileProps);
-    debugPrint("renderOptions: " + this.renderOptions);
-    debugPrint("viewFlags: " + this.viewFlags);
-    debugPrint("backgroundMap: " + this.backgroundMap);
+    debugPrint(`view: ${this.view !== undefined ? (`${this.view.width}X${this.view.height}`) : "undefined"}`);
+    debugPrint(`numRendersToTime: ${this.numRendersToTime}`);
+    debugPrint(`numRendersToSkip: ${this.numRendersToSkip}`);
+    debugPrint(`outputFile: ${this.outputFile}`);
+    debugPrint(`outputName: ${this.outputName}`);
+    debugPrint(`outputPath: ${this.outputPath}`);
+    debugPrint(`iModelFile: ${this.iModelFile}`);
+    debugPrint(`iModelLocation: ${this.iModelLocation}`);
+    debugPrint(`iModelName: ${this.iModelName}`);
+    debugPrint(`iModelHubProject: ${this.iModelHubProject}`);
+    debugPrint(`csvFormat: ${this.csvFormat}`);
+    debugPrint(`filenameOptsToIgnore: ${this.filenameOptsToIgnore}`);
+    debugPrint(`viewName: ${this.viewName}`);
+    debugPrint(`testType: ${this.testType}`);
+    debugPrint(`displayStyle: ${this.displayStyle}`);
+    debugPrint(`tileProps: ${this.tileProps}`);
+    debugPrint(`renderOptions: ${this.renderOptions}`);
+    debugPrint(`viewFlags: ${this.viewFlags}`);
+    debugPrint(`backgroundMap: ${this.backgroundMap}`);
   }
 
   private getRenderModeCode(value: any): RenderMode | undefined {
@@ -716,7 +716,7 @@ class DefaultConfigs {
     else {
       let output = filePath;
       const lastChar = output[output.length - 1];
-      debugPrint("lastChar: " + lastChar);
+      debugPrint(`lastChar: ${lastChar}`);
       if (lastChar !== "/" && lastChar !== "\\")
         output += "\\";
       return output + fileName;
@@ -823,16 +823,16 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
     viewSize.width /= pixelRatio;
     viewSize.height /= pixelRatio;
 
-    vpDiv.style.width = String(viewSize.width) + "px";
-    vpDiv.style.height = String(viewSize.height) + "px";
+    vpDiv.style.width = `${String(viewSize.width)}px`;
+    vpDiv.style.height = `${String(viewSize.height)}px`;
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
     theViewport.rendersToScreen = true;
-    const canvas = theViewport.canvas as HTMLCanvasElement;
-    canvas.style.width = String(viewSize.width) + "px";
-    canvas.style.height = String(viewSize.height) + "px";
+    const canvas = theViewport.canvas;
+    canvas.style.width = `${String(viewSize.width)}px`;
+    canvas.style.height = `${String(viewSize.height)}px`;
     theViewport.continuousRendering = false;
     theViewport.setRedrawPending();
-    (theViewport!.target as Target).performanceMetrics = undefined;
+    (theViewport.target as Target).performanceMetrics = undefined;
     await _changeView(state.viewState!);
   }
 }
@@ -843,14 +843,14 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<F
   if (ElectronRpcConfiguration.isElectron) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
+    const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: BrowserAuthorizationClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    const oidcConfiguration: BrowserAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} imodeljs-router`, responseType: "code" };
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
     return browserClient;
   }
@@ -892,7 +892,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     try {
       activeViewState.iModelConnection = await SnapshotConnection.openFile(testConfig.iModelFile!);
     } catch (err) {
-      alert("openSnapshot failed: " + err.toString());
+      alert(`openSnapshot failed: ${err.toString()}`);
       openLocalIModel = false;
     }
     const esvString = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(testConfig.iModelFile!);
@@ -912,18 +912,18 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
 
     const iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
     activeViewState.projectConfig = { projectName: testConfig.iModelHubProject, iModelName } as ConnectProjectConfiguration;
-    activeViewState.project = await initializeIModelHub(activeViewState.projectConfig!.projectName);
-    activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
+    activeViewState.project = await initializeIModelHub(activeViewState.projectConfig.projectName);
+    activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig.iModelName);
     if (activeViewState.iModel === undefined)
-      throw new Error(`${activeViewState.projectConfig!.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
-    activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel!.wsgId, undefined, OpenMode.Readonly);
+      throw new Error(`${activeViewState.projectConfig.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
+    activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel.wsgId, undefined, OpenMode.Readonly);
 
     if (activeViewState.project) { // Get any external saved views from iModelHub if they exist
       try {
         const projectShareClient: ProjectShareClient = new ProjectShareClient();
         const projectId = activeViewState.project.wsgId;
         const findFile = async (folderId: string): Promise<boolean> => {
-          const files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folderId, iModelName + "_ESV.json"));
+          const files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folderId, `${iModelName}_ESV.json`));
           if (files && files.length > 0) {
             const content = await projectShareClient.readFile(requestContext, files[0]);
             const esvString = new TextDecoder("utf-8").decode(content);
@@ -947,7 +947,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
           }
         };
         // Set activeViewState.externalSavedViews using the first _ESV.json file found in iModelHub with the iModel's name
-        await findAllFiles(activeViewState.project!.wsgId);
+        await findAllFiles(activeViewState.project.wsgId);
       } catch (error) {
         // Couldn't access the project share files
       }
@@ -976,7 +976,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   // Set the display style
   const iModCon = activeViewState.iModelConnection;
   if (iModCon && testConfig.displayStyle) {
-    const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.classFullName, where: "CodeValue = '" + testConfig.displayStyle + "'" });
+    const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.classFullName, where: `CodeValue = '${testConfig.displayStyle}'` });
     if (displayStyleProps.length >= 1)
       theViewport!.view.setDisplayStyle(new DisplayStyle3dState(displayStyleProps[0] as DisplayStyleProps, iModCon));
   }
@@ -1014,7 +1014,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
 
   // Set the selected elements (if there are any)
   if (undefined !== iModCon && undefined !== activeViewState.selectedElements) {
-    iModCon!.selectionSet.add(activeViewState.selectedElements);
+    iModCon.selectionSet.add(activeViewState.selectedElements);
     theViewport!.markSelectionSetDirty();
     theViewport!.renderFrame();
   }
@@ -1023,7 +1023,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
 }
 
 async function closeIModel() {
-  debugPrint("start closeIModel" + activeViewState.iModelConnection);
+  debugPrint(`start closeIModel${activeViewState.iModelConnection}`);
   if (activeViewState.iModelConnection) {
     await activeViewState.iModelConnection.close();
   }
@@ -1161,15 +1161,15 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
       });
       if (elemIdImgData !== undefined) {
         ctx.putImageData(elemIdImgData, 0, 0);
-        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"), canvas);
+        await savePng(getImageString(testConfig, `elemId_${pixStr}_`), canvas);
       }
       if (depthImgData !== undefined) {
         ctx.putImageData(depthImgData, 0, 0);
-        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"), canvas);
+        await savePng(getImageString(testConfig, `depth_${pixStr}_`), canvas);
       }
       if (typeImgData !== undefined) {
         ctx.putImageData(typeImgData, 0, 0);
-        await savePng(getImageString(testConfig, "type_" + pixStr + "_"), canvas);
+        await savePng(getImageString(testConfig, `type_${pixStr}_`), canvas);
       }
     }
   }
@@ -1312,7 +1312,7 @@ async function runTest(testConfig: DefaultConfigs) {
     await closeIModel();
   } else {
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, gpuResultsCallback);
-    await renderAsync(theViewport!, testConfig.numRendersToTime!, timingsForActualFPS, gpuResultsCallback);
+    await renderAsync(theViewport!, testConfig.numRendersToTime, timingsForActualFPS, gpuResultsCallback);
     // Close model & save csv file
     await closeIModel();
     const rowData = getRowData(timingsForActualFPS, finalGPUFrameTimings, timingsForActualFPS, testConfig);
@@ -1320,13 +1320,13 @@ async function runTest(testConfig: DefaultConfigs) {
 
     if (wantConsoleOutput) { // Debug purposes only
       debugPrint("------------ ");
-      debugPrint("Tile Loading Time: " + curTileLoadingTime);
+      debugPrint(`Tile Loading Time: ${curTileLoadingTime}`);
       for (const t of finalCPUFrameTimings) {
         let timingsString = "[";
         t.forEach((val) => {
-          timingsString += val + ", ";
+          timingsString += `${val}, `;
         });
-        debugPrint(timingsString + "]");
+        debugPrint(`${timingsString}]`);
         // Save all of the individual runs in the csv file, not just the average
         // const rowData = getRowData([t], testConfig);
         // await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
@@ -1337,7 +1337,7 @@ async function runTest(testConfig: DefaultConfigs) {
 
 // selects the configured view.
 async function loadView(state: SimpleViewState, viewName: string) {
-  const viewIds = await state.iModelConnection!.elements.queryIds({ from: ViewState.classFullName, where: "CodeValue = '" + viewName + "'" });
+  const viewIds = await state.iModelConnection!.elements.queryIds({ from: ViewState.classFullName, where: `CodeValue = '${viewName}'` });
   if (1 === viewIds.size)
     state.viewState = await state.iModelConnection!.views.load(viewIds.values().next().value);
 
@@ -1445,13 +1445,13 @@ async function main() {
   let renderData = "\"End of Tests-----------\r\n";
   const renderComp = IModelApp.queryRenderCompatibility();
   if (renderComp.userAgent) {
-    renderData += "Browser: " + getBrowserName(renderComp.userAgent) + "\r\n";
-    renderData += "User Agent: " + renderComp.userAgent + "\r\n";
+    renderData += `Browser: ${getBrowserName(renderComp.userAgent)}\r\n`;
+    renderData += `User Agent: ${renderComp.userAgent}\r\n`;
   }
-  if (renderComp.unmaskedRenderer) renderData += "Unmasked Renderer: " + renderComp.unmaskedRenderer + "\r\n";
-  if (renderComp.unmaskedVendor) renderData += "Unmasked Vendor: " + renderComp.unmaskedVendor + "\r\n";
-  if (renderComp.missingRequiredFeatures) renderData += "Missing Required Features: " + renderComp.missingRequiredFeatures + "\r\n";
-  if (renderComp.missingOptionalFeatures) renderData += "Missing Optional Features: " + renderComp.missingOptionalFeatures + "\"\r\n";
+  if (renderComp.unmaskedRenderer) renderData += `Unmasked Renderer: ${renderComp.unmaskedRenderer}\r\n`;
+  if (renderComp.unmaskedVendor) renderData += `Unmasked Vendor: ${renderComp.unmaskedVendor}\r\n`;
+  if (renderComp.missingRequiredFeatures) renderData += `Missing Required Features: ${renderComp.missingRequiredFeatures}\r\n`;
+  if (renderComp.missingOptionalFeatures) renderData += `Missing Optional Features: ${renderComp.missingOptionalFeatures}"\r\n`;
   if (testConfig.csvFormat === undefined) testConfig.csvFormat = "original";
   await DisplayPerfRpcInterface.getClient().finishCsv(renderData, testConfig.outputPath, testConfig.outputName, testConfig.csvFormat);
 

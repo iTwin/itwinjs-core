@@ -29,16 +29,16 @@ IModelHost.startup().then(async () => {
   console.log("start ..");
   const directoryTail = argv.input;
   const outputFileName = argv.output;
-  console.log("input from" + directoryTail);
+  console.log(`input from${directoryTail}`);
   if (directoryTail) {
-    const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : "d:\\bfiles\\importIMJS\\" + directoryTail + ".bim";
+    const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : `d:\\bfiles\\importIMJS\\${directoryTail}.bim`;
     const importer = ImportIMJS.create(fullBimName,
       "testSubject");
 
     if (!importer) {
       console.log("Failed to create bim file");
     } else {
-      const inputDirName = path.isAbsolute(directoryTail) ? directoryTail : "..\\..\\core\\geometry\\src\\test\\output\\" + directoryTail + "\\";
+      const inputDirName = path.isAbsolute(directoryTail) ? directoryTail : `..\\..\\core\\geometry\\src\\test\\output\\${directoryTail}\\`;
       const modelGroups = importer.importFilesFromDirectory(inputDirName);
       let numModel = 0;
       for (const group of modelGroups) {

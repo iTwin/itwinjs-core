@@ -12,7 +12,7 @@ export function createFilePath(filePath: string) {
   let curFile = "";
   for (const file of files) {
     if (file === "") break;
-    curFile += file + "\\";
+    curFile += `${file}\\`;
     if (!IModelJsFs.existsSync(curFile)) IModelJsFs.mkdirSync(curFile);
   }
 }
@@ -24,7 +24,7 @@ export function createNewCsvFile(filePath: string, fileName: string, data: Map<s
     try {
       let colNames = "";
       data.forEach((_value, colName) => {
-        colNames += colName + ",";
+        colNames += `${colName},`;
       });
       colNames += "\r\n";
       IModelJsFs.writeFileSync(file, colNames);
@@ -49,8 +49,8 @@ function addColumn(origFile: string, newName: string, columnsIndex: number): str
         curIndex++;
       }
       if (pos < 0) pos = line.length;
-      newFile += line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" ? "" : 0))
-        + (line[pos] !== "," ? "," : "") + line.slice(pos) + "\r\n";
+      newFile += `${line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" ? "" : 0))
+        + (line[pos] !== "," ? "," : "") + line.slice(pos)}\r\n`;
     }
   });
   return newFile;
@@ -113,9 +113,9 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
           value = 0;
       }
       if (colName === "iModel" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector" || colName === "Tile Props")
-        stringData += "\"" + value + "\",";
+        stringData += `"${value}",`;
       else if (colName !== "" || index !== columns.length - 1)
-        stringData += value + ",";
+        stringData += `${value},`;
     });
     stringData += "\r\n";
     IModelJsFs.appendFileSync(file, stringData);

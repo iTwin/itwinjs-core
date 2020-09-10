@@ -66,6 +66,7 @@ export class TestSeqClient {
     const options: RequestOptions = {
       method: "GET",
       headers: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "X-Seq-ApiKey": apiKey,
       },
       qs: {
@@ -75,7 +76,7 @@ export class TestSeqClient {
     };
 
     const requestContext = new ClientRequestContext();
-    const url = await this.getUrl(requestContext) + "/api/events/";
+    const url = `${await this.getUrl(requestContext)}/api/events/`;
     const res = await request(requestContext, url, options);
     return res.body;
   }

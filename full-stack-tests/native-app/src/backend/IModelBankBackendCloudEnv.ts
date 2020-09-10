@@ -15,8 +15,8 @@ import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/li
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { UserInfo } from "@bentley/itwin-client";
 
-export const assetsPath = __dirname + "/../../../lib/test/assets/";
-export const workDir = __dirname + "/../../../lib/test/output/";
+export const assetsPath = `${__dirname}/../../../lib/test/assets/`;
+export const workDir = `${__dirname}/../../../lib/test/output/`;
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
@@ -108,9 +108,9 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
   async function pingServerOnce(url: string, pauseMillis: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       setTimeout(() => {
-        https.get(url + "/sv1.1/Plugins", (response: http.IncomingMessage) => {
+        https.get(`${url}/sv1.1/Plugins`, (response: http.IncomingMessage) => {
           if (response.statusCode !== 200) {
-            reject(new Error("Unexpected response. Not an iModelBank or iModelManager server? statusCode=" + response.statusCode));
+            reject(new Error(`Unexpected response. Not an iModelBank or iModelManager server? statusCode=${response.statusCode}`));
           } else {
             response.setEncoding("utf8"); // nodejs docs say "the callback must take care to consume the response data" (https://nodejs.org/api/http.html#http_http_get_options_callback)
             response.on("data", () => { });

@@ -28,7 +28,7 @@ const argv: yargs.Arguments<{}> = yargs
   const creator = new RealityModelContextIModelCreator(argv.output as string, argv.input as string, argv.name as string);
   try {
     await creator.create();
-    process.stdout.write("IModel: " + argv.output + " Created for Reality Model: " + argv.input);
+    process.stdout.write(`IModel: ${argv.output} Created for Reality Model: ${argv.input}`);
   } catch (_error) {
     process.stdout.write("Error occurred creating IModel\n");
   }

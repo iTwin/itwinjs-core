@@ -27,7 +27,7 @@ export class HubUtility {
       return;
     try {
       IModelJsFs.readdirSync(dirPath).forEach((file) => {
-        const curPath = dirPath + "/" + file;
+        const curPath = `${dirPath}/${file}`;
         if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
           HubUtility.deleteDirectoryRecursive(curPath);
         } else {
@@ -44,7 +44,7 @@ export class HubUtility {
   private static async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
     const project: Project = await getIModelProjectAbstraction().queryProject(requestContext, {
       $select: "*",
-      $filter: "Name+eq+'" + projectName + "'",
+      $filter: `Name+eq+'${projectName}'`,
     });
     return project;
   }
@@ -82,7 +82,7 @@ export class HubUtility {
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel || !iModel.id)
       throw new Error(`IModel ${iModelName} not found`);
-    return iModel.id!;
+    return iModel.id;
   }
 
   /** Query the latest change set (id) of the specified iModel */

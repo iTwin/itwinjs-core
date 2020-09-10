@@ -98,8 +98,8 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
 
   const classifier = { modelId: classifierModelId, name, flags: classificationFlags, isActive: true, expand: 1.0 };
 
-  const realityModel = { tilesetUrl: url, name: name!, classifiers: [classifier] };
-  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name!, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
+  const realityModel = { tilesetUrl: url, name, classifiers: [classifier] };
+  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
 
   const projectExtents = Range3d.createFrom(iModelDb.projectExtents);
   let range;

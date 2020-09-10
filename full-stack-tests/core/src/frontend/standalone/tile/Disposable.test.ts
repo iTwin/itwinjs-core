@@ -243,7 +243,7 @@ describe("Disposal of WebGL Resources", () => {
     const viewState = await imodel1.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
 
-    const viewDiv = document.createElement("div") as HTMLDivElement;
+    const viewDiv = document.createElement("div");
     viewDiv.style.width = viewDiv.style.height = "1000px";
     document.body.appendChild(viewDiv);
 

@@ -35,5 +35,5 @@ const settings = new Settings(process.env);
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
   // eslint-disable-next-line no-console
-  console.log("Web backend for full-stack-tests listening on port " + port);
+  console.log(`Web backend for full-stack-tests listening on port ${port}`);
 })();

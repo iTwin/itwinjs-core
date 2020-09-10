@@ -11,7 +11,7 @@
     "copy:test-backend-assets": "cpx \"./src/backend/test/assets/**/*\" ./lib/backend/test/assets",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "npm run extract && npm run extract-assets",
-    "lint": "eslint ./src/**/*.ts 1>&2",
+    "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && betools test --defineWindow --testDir=\"./lib/backend/test\"",
     "cover": "npm test"
   },

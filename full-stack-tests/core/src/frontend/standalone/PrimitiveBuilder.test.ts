@@ -17,10 +17,10 @@ describe("PrimitiveBuilder tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
-  const viewDiv = document.createElement("div") as HTMLDivElement;
+  const viewDiv = document.createElement("div");
   assert(null !== viewDiv);
-  viewDiv!.style.width = viewDiv!.style.height = "1000px";
-  document.body.appendChild(viewDiv!);
+  viewDiv.style.width = viewDiv.style.height = "1000px";
+  document.body.appendChild(viewDiv);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await IModelApp.startup();

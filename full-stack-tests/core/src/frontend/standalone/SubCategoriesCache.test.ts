@@ -291,14 +291,14 @@ describe("SubCategoriesCache", () => {
     let promiseFulfilled = false;
 
     // I'm going to handle it further down the function, geez...
-    promise!.then(() => promiseFulfilled = true); // eslint-disable-line @typescript-eslint/no-floating-promises
+    promise.then(() => promiseFulfilled = true); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     q.expectMembers(true, false, true);
     q.dispose();
     q.expectEmpty(true);
 
     // The promise will fulfill. The results will be added to the cache, but our processing function will not execute.
-    await promise!;
+    await promise;
     expect(promiseFulfilled).to.be.true;
     expect(processed).to.be.false;
     q.expectNotLoaded("0x17");

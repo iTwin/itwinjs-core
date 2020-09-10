@@ -13,10 +13,10 @@ describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
-  const viewDiv = document.createElement("div") as HTMLDivElement;
+  const viewDiv = document.createElement("div");
   assert(null !== viewDiv);
-  viewDiv!.style.width = viewDiv!.style.height = "1000px";
-  document.body.appendChild(viewDiv!);
+  viewDiv.style.width = viewDiv.style.height = "1000px";
+  document.body.appendChild(viewDiv);
 
   before(async () => {
     await MockRender.App.startup();
@@ -31,7 +31,7 @@ describe("EmphasizeElements tests", () => {
   });
 
   it("Emphasize add/replace/clear", async () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
     const emph = EmphasizeElements.getOrCreate(vp);
     const ids = new Set<string>();
@@ -63,7 +63,7 @@ describe("EmphasizeElements tests", () => {
   });
 
   it("Isolate add/replace/clear", async () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
     const emph = EmphasizeElements.getOrCreate(vp);
     const ids = new Set<string>();
@@ -95,7 +95,7 @@ describe("EmphasizeElements tests", () => {
   });
 
   it("Hide add/replace/clear", async () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
     const emph = EmphasizeElements.getOrCreate(vp);
     const ids = new Set<string>();
@@ -127,7 +127,7 @@ describe("EmphasizeElements tests", () => {
   });
 
   it("Override add/replace/clear", async () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
     const emph = EmphasizeElements.getOrCreate(vp);
     const redIds = new Set<string>();
@@ -198,7 +198,7 @@ describe("EmphasizeElements tests", () => {
   });
 
   it("Applies correct overrides", () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
 
     const vf = vp.viewFlags.clone();
@@ -241,7 +241,7 @@ describe("EmphasizeElements tests", () => {
   });
 
   it("Override to/from key", async () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
     const emph = EmphasizeElements.getOrCreate(vp);
 
@@ -274,14 +274,14 @@ describe("EmphasizeElements tests", () => {
 
   it("to/from JSON", async () => {
     function roundTrip(populate: (emph: EmphasizeElements, vp: ScreenViewport) => void): void {
-      const vp1 = ScreenViewport.create(viewDiv!, spatialView.clone());
+      const vp1 = ScreenViewport.create(viewDiv, spatialView.clone());
       EmphasizeElements.clear(vp1);
       const before = EmphasizeElements.getOrCreate(vp1);
       populate(before, vp1);
 
       const inputJson = JSON.stringify(before.toJSON(vp1));
 
-      const vp2 = ScreenViewport.create(viewDiv!, spatialView.clone());
+      const vp2 = ScreenViewport.create(viewDiv, spatialView.clone());
       const after = EmphasizeElements.getOrCreate(vp2);
       after.fromJSON(JSON.parse(inputJson), vp2);
       const outputJson = JSON.stringify(after.toJSON(vp2));

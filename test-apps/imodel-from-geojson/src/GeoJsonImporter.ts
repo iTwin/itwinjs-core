@@ -78,7 +78,7 @@ export class GeoJsonImporter {
       const foundCategoryId = SpatialCategory.queryCategoryIdByName(this.iModelDb, IModel.dictionaryId, categoryName);
       this.featureCategoryId = (foundCategoryId !== undefined) ? foundCategoryId : this.addCategoryToExistingDb(categoryName);
       this.convertFeatureCollection();
-      const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
+      const featureModel: SpatialModel = this.iModelDb.models.getModel<SpatialModel>(this.physicalModelId);
       featureModelExtents = featureModel.queryExtents();
       const projectExtents = Range3d.createFrom(this.iModelDb.projectExtents);
       projectExtents.extendRange(featureModelExtents);
@@ -98,7 +98,7 @@ export class GeoJsonImporter {
       this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
       this.convertFeatureCollection();
 
-      const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
+      const featureModel: SpatialModel = this.iModelDb.models.getModel<SpatialModel>(this.physicalModelId);
       featureModelExtents = featureModel.queryExtents();
       if (!this._classifiedURL)
         this.insertSpatialView("Spatial View", featureModelExtents);

@@ -290,8 +290,8 @@ class Site {
   public id: string;
   public buildings: Building[];
   constructor() {
-    this.name = "",
-    this.id = "",
+    this.name = "";
+    this.id = "";
     this.buildings = [];
   }
 }
@@ -626,7 +626,7 @@ class SpaceConfiguration {
   public orientation: number | undefined;
 
   constructor(orientation: any | undefined, public temperatures: TemperatureConfiguration, public occupancy: OccupancyConfiguration,
-    public CO2: CO2Configuration, public smoke: SmokeConfiguration, public fire: FireConfiguration, public devices: IoTDevice[]) {
+    public CO2: CO2Configuration, public smoke: SmokeConfiguration, public fire: FireConfiguration, public devices: IoTDevice[]) {    // eslint-disable-line @typescript-eslint/naming-convention
     this.orientation = this._findOrientation(orientation);
   }
 
@@ -813,7 +813,7 @@ export class IoTSimulator {
     }
 
     const building = new Building(buildingProps.name, buildingProps.id);
-    this._siteInfo!.buildings.push(building);
+    this._siteInfo.buildings.push(building);
 
     let floorNum: number = 1;
     for (const floorProps of buildingProps.floors) {
@@ -1254,7 +1254,7 @@ export class IoTSimulator {
     */
 
     const filteredDevices: IoTDevice[] = this._getMatchingDevices(queryData.building, queryData.floor, queryData.space, queryData.type);
-    return filteredDevices!;
+    return filteredDevices;
   }
 
   private _getDevicesResponse(deviceList: IoTDevice[]): IoTDeviceResponse[] {

@@ -31,6 +31,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   let briefcases: Briefcase[];
   let changeSet: ChangeSet;
   let lastObjectId: Id64String;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const conflictStrategyOption = { CustomOptions: { ConflictStrategy: "Continue" } };
   let requestContext: AuthorizedClientRequestContext;
 
@@ -54,12 +55,12 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     if ((!TestConfig.enableMocks) && lastObjectId.toString() === "0") {
       lastObjectId = utils.incrementLockObjectId(lastObjectId);
       await iModelClient.locks.update(requestContext, imodelId,
-        [utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, LockType.Model, LockLevel.Shared, briefcases[0].fileId,
+        [utils.generateLock(briefcases[0].briefcaseId, lastObjectId, LockType.Model, LockLevel.Shared, briefcases[0].fileId,
           changeSet.id, changeSet.index)]);
 
       lastObjectId = utils.incrementLockObjectId(lastObjectId);
       await iModelClient.locks.update(requestContext, imodelId,
-        [utils.generateLock(briefcases[1].briefcaseId!, lastObjectId, LockType.Model, LockLevel.Shared, briefcases[1].fileId)]);
+        [utils.generateLock(briefcases[1].briefcaseId, lastObjectId, LockType.Model, LockLevel.Shared, briefcases[1].fileId)]);
     }
   });
 
@@ -74,7 +75,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should acquire one Lock", async () => {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
-    const generatedLock = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
+    const generatedLock = utils.generateLock(briefcases[0].briefcaseId, lastObjectId, 1, 1, briefcases[0].fileId);
     utils.mockUpdateLocks(imodelId, [generatedLock]);
     const lock = (await iModelClient.locks.update(requestContext, imodelId, [generatedLock]))[0];
 
@@ -86,9 +87,9 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should acquire multiple Locks", async () => {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
-    const generatedLock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
+    const generatedLock1 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId, 1, 1, briefcases[0].fileId);
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
-    const generatedLock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
+    const generatedLock2 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId, 1, 1, briefcases[0].fileId);
 
     utils.mockUpdateLocks(imodelId, [generatedLock1, generatedLock2]);
     const locks = (await iModelClient.locks.update(requestContext, imodelId, [generatedLock1, generatedLock2]));
@@ -99,7 +100,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should update Lock multiple times", async () => {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
-    const generatedLock = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
+    const generatedLock = utils.generateLock(briefcases[0].briefcaseId, lastObjectId, 1, 1, briefcases[0].fileId);
 
     utils.mockUpdateLocks(imodelId, [generatedLock]);
     let lock = (await iModelClient.locks.update(requestContext, imodelId, [generatedLock]))[0];
@@ -150,7 +151,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should get locks by briefcaseId", async () => {
     const filter = `?$filter=BriefcaseId+eq+${briefcases[0].briefcaseId}`;
-    utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, utils.generateLock(briefcases[0].briefcaseId));
+    utils.mockGetLocks(imodelId, `${filter}&$top=${LockQuery.defaultPageSize}`, utils.generateLock(briefcases[0].briefcaseId));
 
     const query = new LockQuery().byBriefcaseId(briefcases[0].briefcaseId!);
     const locks = await iModelClient.locks.get(requestContext, imodelId, query);
@@ -167,7 +168,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     const locks = await iModelClient.locks.get(requestContext, imodelId, query);
     chai.assert(locks);
     chai.expect(locks).length.to.be.greaterThan(0);
-    locks.forEach((lock) => chai.expect(lock.objectId!.toString()).to.be.equal(objectId!.toString()));
+    locks.forEach((lock) => chai.expect(lock.objectId!.toString()).to.be.equal(objectId.toString()));
   });
 
   it("should get locks by releasedWithChangeset", async () => {
@@ -175,7 +176,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, undefined,
       undefined, undefined, changeSet.id), utils.generateLock(briefcases[0].briefcaseId)];
     utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
-    utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, mockedLocks[0]);
+    utils.mockGetLocks(imodelId, `${filter}&$top=${LockQuery.defaultPageSize}`, mockedLocks[0]);
 
     const allLocks = await iModelClient.locks.get(requestContext, imodelId);
     const query = new LockQuery().byReleasedWithChangeSet(changeSet.id!);
@@ -190,7 +191,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, undefined,
       undefined, undefined, changeSet.id), utils.generateLock(briefcases[0].briefcaseId)];
     utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
-    utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, mockedLocks[0]);
+    utils.mockGetLocks(imodelId, `${filter}&$top=${LockQuery.defaultPageSize}`, mockedLocks[0]);
 
     const allLocks = await iModelClient.locks.get(requestContext, imodelId);
     const query = new LockQuery().byReleasedWithChangeSetIndex(Number.parseInt(changeSet.index!, 10));
@@ -202,7 +203,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should get locks by lock level and lock type", async () => {
     const filter = `?$filter=LockLevel+eq+${LockLevel.Shared}+and+LockType+eq+${LockType.Model}`;
-    utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, utils.generateLock(briefcases[0].briefcaseId));
+    utils.mockGetLocks(imodelId, `${filter}&$top=${LockQuery.defaultPageSize}`, utils.generateLock(briefcases[0].briefcaseId));
 
     const query = new LockQuery().byLockLevel(LockLevel.Shared).byLockType(LockType.Model);
     const locks = await iModelClient.locks.get(requestContext, imodelId, query);
@@ -249,7 +250,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
       utils.mockGetLocks(imodelId, undefined, ...mockedLocks);
 
       const filter = `?$filter=BriefcaseId+ne+${briefcases[0].briefcaseId}+and+(LockLevel+gt+0+or+ReleasedWithChangeSetIndex+gt+${changeSet.index!})`;
-      utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
+      utils.mockGetLocks(imodelId, `${filter}&$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
     }
     const query = new LockQuery().unavailableLocks(briefcases[0].briefcaseId!, changeSet.index!);
     const locks = await iModelClient.locks.get(requestContext, imodelId, query);
@@ -261,10 +262,10 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   });
 
   it("should fail on conflicting locks", async () => {
-    const lock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
-    const lock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
-    const lock3 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
-    const lock4 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock1 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock2 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock3 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock4 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
 
     utils.mockUpdateLocks(imodelId, [lock1, lock2, lock3]);
 
@@ -293,9 +294,9 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   });
 
   it("should fail updating and return conflicting lock", async () => {
-    const lock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
-    const lock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
-    const lock3 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock1 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock2 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock3 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
 
     utils.mockUpdateLocks(imodelId, [lock1, lock2, lock3]);
 
@@ -325,10 +326,10 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   });
 
   it("should return conflicting locks", async () => {
-    const lock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
-    const lock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
-    const lock3 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
-    const lock4 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock1 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock2 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock3 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
+    const lock4 = utils.generateLock(briefcases[0].briefcaseId, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
 
     utils.mockUpdateLocks(imodelId, [lock1, lock2, lock3]);
 
@@ -377,7 +378,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should not create a query by locks with no object id", () => {
@@ -391,7 +392,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should fail deleting all locks with invalid briefcase id", async () => {
@@ -403,6 +404,6 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });

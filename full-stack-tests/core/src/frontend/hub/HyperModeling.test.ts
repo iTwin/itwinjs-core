@@ -182,7 +182,7 @@ describe("HyperModeling (#integration)", () => {
       dec2 = await HyperModeling.startOrStop(vp, true);
     });
     await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
-      HyperModeling.updateConfiguration({ markers: { hiddenSectionTypes: [ SectionType.Plan ] } });
+      HyperModeling.updateConfiguration({ markers: { hiddenSectionTypes: [SectionType.Plan] } });
       dec3 = await HyperModeling.startOrStop(vp, true);
     });
     await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
@@ -191,13 +191,13 @@ describe("HyperModeling (#integration)", () => {
     });
 
     expect(dec1).not.to.be.undefined;
-    expectMarkerConfig(dec1!.config, { });
+    expectMarkerConfig(dec1!.config, {});
 
     expect(dec2).not.to.be.undefined;
     expectMarkerConfig(dec2!.config, { ignoreModelSelector: true });
 
     expect(dec3).not.to.be.undefined;
-    expectMarkerConfig(dec3!.config, { ignoreModelSelector: true, hiddenSectionTypes: [ SectionType.Plan ] });
+    expectMarkerConfig(dec3!.config, { ignoreModelSelector: true, hiddenSectionTypes: [SectionType.Plan] });
 
     expect(dec4).not.to.be.undefined;
     expectMarkerConfig(dec4!.config, { ignoreCategorySelector: true });
@@ -219,10 +219,10 @@ describe("HyperModeling (#integration)", () => {
       test("hypermodeling marker config model=0", { ignoreModelSelector: true });
       test("hypermodeling marker config cat=0", { ignoreModelSelector: true, ignoreCategorySelector: true });
       test("hypermodeling marker config m=1 c=1", { ignoreModelSelector: false, ignoreCategorySelector: false });
-      test("hypermodeling marker config", { });
-      test("hypermodeling marker config hidden=pe", { hiddenSectionTypes: [ SectionType.Plan, SectionType.Elevation ] });
-      test("hypermodeling marker config h=abc123s#@!zyx", { hiddenSectionTypes: [ SectionType.Section ] });
-      test("hypermodeling marker config", { });
+      test("hypermodeling marker config", {});
+      test("hypermodeling marker config hidden=pe", { hiddenSectionTypes: [SectionType.Plan, SectionType.Elevation] });
+      test("hypermodeling marker config h=abc123s#@!zyx", { hiddenSectionTypes: [SectionType.Section] });
+      test("hypermodeling marker config", {});
     });
   });
 
@@ -246,7 +246,7 @@ describe("HyperModeling (#integration)", () => {
       // Add some fake SectionMarkers belonging to different models/categories
       let firstMarker: SectionMarker | undefined;
       for (const marker of dec.markers.markers) {
-        firstMarker = marker!;
+        firstMarker = marker;
         break;
       }
 
@@ -313,15 +313,15 @@ describe("HyperModeling (#integration)", () => {
       dec.updateConfiguration({ ignoreModelSelector: true });
       test(6, (_) => true);
 
-      dec.updateConfiguration({ hiddenSectionTypes: [ SectionType.Plan ] });
+      dec.updateConfiguration({ hiddenSectionTypes: [SectionType.Plan] });
       test(4, (m) => m.state.sectionType !== SectionType.Plan);
 
-      await dec.setActiveMarker(firstMarker!);
+      await dec.setActiveMarker(firstMarker);
       test(1, (m) => m === firstMarker);
 
-      dec.replaceConfiguration({ hiddenSectionTypes: [ firstMarker!.state.sectionType ] });
-      vp.changeModelDisplay([ "mymod", modelId ], false);
-      vp.changeCategoryDisplay([ "mycat", catId ], false);
+      dec.replaceConfiguration({ hiddenSectionTypes: [firstMarker!.state.sectionType] });
+      vp.changeModelDisplay(["mymod", modelId], false);
+      vp.changeCategoryDisplay(["mycat", catId], false);
       vp.renderFrame();
       test(1, (m) => m === firstMarker);
 
@@ -384,7 +384,7 @@ describe("HyperModeling (#integration)", () => {
       dec.requestSync();
       expectVisible(true);
 
-      dec.updateConfiguration({ hiddenSectionTypes: [ marker.state.sectionType ] });
+      dec.updateConfiguration({ hiddenSectionTypes: [marker.state.sectionType] });
       dec.requestSync();
       expectVisible(false);
 

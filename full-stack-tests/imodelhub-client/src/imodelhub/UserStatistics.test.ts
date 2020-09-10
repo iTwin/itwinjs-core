@@ -233,8 +233,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(imodelId, generateUsersStatistics(2,
       [requestContexts[0].accessToken.getUserInfo()!.id, requestContexts[1].accessToken.getUserInfo()!.id],
       [user1BriefcasesCount, user2BriefcasesCount],
-      [user1OwnedLocksCount, user2OwnedLocksCount], [user1PushedChangesetsCount, user2PushedChangesetsCount]),
-      textQuery);
+      [user1OwnedLocksCount, user2OwnedLocksCount], [user1PushedChangesetsCount, user2PushedChangesetsCount]), textQuery);
 
     const iModelStatistics = await imodelHubClient.users.statistics.get(requestContexts[0], imodelId);
 
@@ -258,6 +257,6 @@ describe("iModelHubClient UserStatisticsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });

@@ -9,6 +9,9 @@ import { ColorByName, IModelError, IModelStatus, SubCategoryAppearance } from "@
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as _schemaNames from "../common/RobotWorldSchema";
 import * as obstacles from "./BarrierElement";
+
+/* eslint-disable @typescript-eslint/naming-convention */
+
 // __PUBLISH_EXTRACT_START__ ClassRegistry.registerModule
 // Import all modules that define classes in this schema.
 import * as robots from "./RobotElement";
@@ -74,7 +77,7 @@ export class RobotWorld extends Schema {
     const categoryId = SpatialCategory.queryCategoryIdByName(iModelDb, IModelDb.dictionaryId, className);
     if (categoryId === undefined)
       throw new IModelError(IModelStatus.NotFound, "Category not found");
-    return iModelDb.elements.getElement(categoryId) as SpatialCategory;
+    return iModelDb.elements.getElement(categoryId);
   }
 }
 

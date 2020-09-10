@@ -30,10 +30,10 @@ describe("GeometryAccumulator tests", () => {
   let spatialView: SpatialViewState;
   let accum: GeometryAccumulator;
 
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
+  const canvas = document.createElement("canvas");
   assert(null !== canvas);
-  canvas!.width = canvas!.height = 1000;
-  document.body.appendChild(canvas!);
+  canvas.width = canvas.height = 1000;
+  document.body.appendChild(canvas);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await IModelApp.startup();

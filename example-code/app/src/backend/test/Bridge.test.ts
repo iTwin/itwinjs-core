@@ -55,7 +55,7 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 async function queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
   return BriefcaseManager.connectClient.getProject(requestContext, {
     $select: "*",
-    $filter: "Name+eq+'" + projectName + "'",
+    $filter: `Name+eq+'${projectName}'`,
   });
 }
 
@@ -73,7 +73,7 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, proj
   try {
     const existingid = await queryIModelByName(requestContext, projectId, name);
     if (existingid !== undefined && !!existingid.id)
-      BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, existingid.id!); // eslint-disable-line @typescript-eslint/no-floating-promises
+      BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, existingid.id); // eslint-disable-line @typescript-eslint/no-floating-promises
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code

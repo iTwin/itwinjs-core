@@ -24,7 +24,7 @@ async function init() {
   initializeAttachedInterfacesTest(rpcConfig);
 
   // eslint-disable-next-line no-console
-  console.log("Web backend for full-stack-tests listening on port " + port);
+  console.log(`Web backend for full-stack-tests listening on port ${port}`);
 }
 
 function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {

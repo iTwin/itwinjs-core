@@ -75,7 +75,7 @@ export class RealityModelContextIModelCreator {
       const ecefHigh = (new Cartographic(region[2], region[3], region[5])).toEcef();
       const ecefRange = Range3d.create(ecefLow, ecefHigh);
       const cartoCenter = new Cartographic((region[0] + region[2]) / 2.0, (region[1] + region[3]) / 2.0, (region[4] + region[5]) / 2.0);
-      const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+      const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
       this.iModelDb.setEcefLocation(ecefLocation);
       const ecefToWorld = ecefLocation.getTransform().inverse()!;
       worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
@@ -148,7 +148,7 @@ export class RealityModelContextIModelCreator {
       this.iModelDb.saveChanges();
     })
       .catch((error) => {
-        process.stdout.write("Error occurred requesting data from: " + this.url + "Error: " + error + "\n");
+        process.stdout.write(`Error occurred requesting data from: ${this.url}Error: ${error}\n`);
       });
 
   }

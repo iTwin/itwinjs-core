@@ -49,7 +49,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContextProps> {
     if (!(ClientRequestContext.current instanceof AuthorizedClientRequestContext))
       throw new Error("Expected AuthorizedClientRequestContext");
-    const context = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const context = ClientRequestContext.current;
     return context.toJSON();
   }
 

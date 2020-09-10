@@ -127,13 +127,13 @@ describe("ViewState", () => {
 
     const oldAOSettings = vs0DisplayStyle3d.settings.ambientOcclusionSettings;
     const vs0AOSettings = AmbientOcclusion.Settings.fromJSON({
-      bias: oldAOSettings.bias! / 2.0,
-      zLengthCap: oldAOSettings.zLengthCap! / 2.0,
-      intensity: oldAOSettings.intensity! / 2.0,
-      texelStepSize: oldAOSettings.texelStepSize! / 2.0,
-      blurDelta: oldAOSettings.blurDelta! / 2.0,
-      blurSigma: oldAOSettings.blurSigma! / 2.0,
-      blurTexelStepSize: oldAOSettings.blurTexelStepSize! / 2.0,
+      bias: oldAOSettings.bias / 2.0,
+      zLengthCap: oldAOSettings.zLengthCap / 2.0,
+      intensity: oldAOSettings.intensity / 2.0,
+      texelStepSize: oldAOSettings.texelStepSize / 2.0,
+      blurDelta: oldAOSettings.blurDelta / 2.0,
+      blurSigma: oldAOSettings.blurSigma / 2.0,
+      blurTexelStepSize: oldAOSettings.blurTexelStepSize / 2.0,
     });
     vs0DisplayStyle3d.settings.ambientOcclusionSettings = vs0AOSettings;
 
@@ -159,7 +159,7 @@ describe("ViewState", () => {
 
     const oldHLSettings = vs0DisplayStyle3d.settings.hiddenLineSettings.toJSON();
     vs0DisplayStyle3d.settings.hiddenLineSettings = HiddenLine.Settings.fromJSON({
-      transThreshold: oldHLSettings.transThreshold !== undefined && oldHLSettings.transThreshold! > 0.0 ? 0.0 : 0.2,
+      transThreshold: oldHLSettings.transThreshold !== undefined && oldHLSettings.transThreshold > 0.0 ? 0.0 : 0.2,
     });
     const vs0HLSettings = vs0DisplayStyle3d.settings.hiddenLineSettings;
 
@@ -211,13 +211,13 @@ describe("ViewState", () => {
     assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");
     assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
     assert.isDefined(vs0BackgroundMap);
-    assert.isDefined(vs0BackgroundMap!.mapType);
+    assert.isDefined(vs0BackgroundMap.mapType);
     assert.isDefined(vs1BackgroundMap);
-    assert.isDefined(vs1BackgroundMap!.mapType);
-    assert.equal(vs0BackgroundMap!.mapType, vs1BackgroundMap!.mapType, "clone should copy displayStyle.backgroundMap.mapType");
-    assert.isDefined(vs0BackgroundMap!.providerName);
-    assert.isDefined(vs1BackgroundMap!.providerName);
-    assert.equal(vs0BackgroundMap!.providerName, vs1BackgroundMap!.providerName, "clone should copy displayStyle.backgroundMap.providerName");
+    assert.isDefined(vs1BackgroundMap.mapType);
+    assert.equal(vs0BackgroundMap.mapType, vs1BackgroundMap.mapType, "clone should copy displayStyle.backgroundMap.mapType");
+    assert.isDefined(vs0BackgroundMap.providerName);
+    assert.isDefined(vs1BackgroundMap.providerName);
+    assert.equal(vs0BackgroundMap.providerName, vs1BackgroundMap.providerName, "clone should copy displayStyle.backgroundMap.providerName");
     assert.equal(vs0HLSettings.transparencyThreshold, vs1HLSettings.transparencyThreshold, "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold");
     assert.isTrue(vs0MonochromeColor.equals(vs1MonochromeColor), "clone should copy displayStyle.monochromeColor");
   });

@@ -58,7 +58,7 @@ describe("RobotWorldRpc", () => {
     const roWrite = RobotWorldWriteRpcInterface.getClient();
     const roRead = RobotWorldReadRpcInterface.getClient();
 
-    const iModel: IModelConnection = await SnapshotConnection.openFile(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
+    const iModel: IModelConnection = await SnapshotConnection.openFile(`${KnownTestLocations.outputDir}/` + `RobotWorldRpc.bim`);
     assert.isTrue(iModel !== undefined);
     const iToken: IModelRpcProps = iModel.getRpcProps();
 

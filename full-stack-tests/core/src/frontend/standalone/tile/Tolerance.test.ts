@@ -7,18 +7,18 @@ import { expect } from "chai";
 import { ByteStream } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
-  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString, RenderMode,
-  TileMetadata, TileProps, TileTreeMetadata,
+  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
+  RenderMode, TileMetadata, TileProps, TileTreeMetadata,
 } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, GeometricModelState, IModelTile, SnapshotConnection, Tile, TileAdmin, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, IModelTile, SnapshotConnection, Tile, TileAdmin, TileTreeLoadStatus, ViewState,
 } from "@bentley/imodeljs-frontend";
 
 describe("Tile tolerance", () => {
   let imodel: IModelConnection;
   const minimumSpatialTolerance = 0.02;
   const modelId = "0x1c";
-  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions );
+  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
 
   before(async () => {
     await IModelApp.startup({ tileAdmin: TileAdmin.create({ minimumSpatialTolerance }) });
@@ -73,7 +73,7 @@ describe("Tile tolerance", () => {
 
     // treeProps.rootTile.contentId is a lie...must be computed on front-end.
     const contentIdProvider = ContentIdProvider.create(true, defaultTileOptions);
-    const rootTile = makeTile( { ...treeProps.rootTile, contentId: contentIdProvider.rootContentId });
+    const rootTile = makeTile({ ...treeProps.rootTile, contentId: contentIdProvider.rootContentId });
     expect(rootTile.sizeMultiplier).to.be.undefined;
     await expectTolerance(rootTile.contentId, computeTolerance(rootTile.range));
 

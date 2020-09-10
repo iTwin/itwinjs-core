@@ -64,15 +64,15 @@ IModelHost.startup().then(async () => {
     "ViewWidget",
     "XYPointBuckets",
   ]) {
-    console.log("input from" + directoryTail);
-    const importer = ImportIMJS.create("d:\\bfiles\\importIMJS\\" + directoryTail + ".bim",
+    console.log(`input from${directoryTail}`);
+    const importer = ImportIMJS.create(`d:\\bfiles\\importIMJS\\${directoryTail}.bim`,
       "testSubject");
 
     if (!importer) {
       console.log("Failed to create bim file");
     } else {
       const modelGroups = importer.importFilesFromDirectory(
-        "..\\..\\core\\geometry\\src\\test\\output\\" + directoryTail + "\\");
+        `..\\..\\core\\geometry\\src\\test\\output\\${directoryTail}\\`);
       let numModel = 0;
       for (const group of modelGroups) {
         numModel += group.modelNames.length;

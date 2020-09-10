@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodelhub-client";
+import { BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";

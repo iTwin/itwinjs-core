@@ -123,7 +123,7 @@ export class ImportIMJS {
           }
           if (range.maxAbs() < this._aroundTheWorld) {
             stats.numWithGeometry++;
-            const physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "model" + fileName);
+            const physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, `model${fileName}`);
             const featureProps: PhysicalElementProps = {
               classFullName: PhysicalObject.classFullName,
               model: physicalModelId,
@@ -133,9 +133,9 @@ export class ImportIMJS {
             const g1 = IModelJson.Writer.toIModelJson(g);
             featureProps.geom = Array.isArray(g1) ? g1 : [g1];
             this.iModelDb.elements.insertElement(featureProps);
-            const featureModel: SpatialModel = this.iModelDb.models.getModel(physicalModelId) as SpatialModel;
+            const featureModel: SpatialModel = this.iModelDb.models.getModel(physicalModelId);
             const featureModelExtents = featureModel.queryExtents();
-            this.insertSpatialViewOneModel("Spatial View" + fileName, range, physicalModelId);
+            this.insertSpatialViewOneModel(`Spatial View${fileName}`, range, physicalModelId);
             this.iModelDb.updateProjectExtents(featureModelExtents);
 
             ModelIdGroup.announceModel(modelGroups, physicalModelId, baseSize, range);

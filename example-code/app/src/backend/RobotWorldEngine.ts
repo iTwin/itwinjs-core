@@ -39,7 +39,7 @@ export class RobotWorldEngine {
   }
 
   public static countRobots(iModelDb: IModelDb): number {
-    return iModelDb.withPreparedStatement("SELECT COUNT(*) from " + RobotWorld.Class.Robot, (stmt: ECSqlStatement): number => {
+    return iModelDb.withPreparedStatement(`SELECT COUNT(*) from ${RobotWorld.Class.Robot}`, (stmt: ECSqlStatement): number => {
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
         return 0;
       return stmt.getValue(0).getInteger();
@@ -48,7 +48,7 @@ export class RobotWorldEngine {
 
   // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
   public static queryObstaclesHitByRobot(iModelDb: IModelDb, rid: Id64String): Id64String[] {
-    const robot1 = iModelDb.elements.getElement(rid) as Robot;
+    const robot1 = iModelDb.elements.getElement<Robot>(rid);
 
     const selStmt =
       `SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox) AND rt.ECInstanceId <> :thisRobot`;
@@ -67,7 +67,7 @@ export class RobotWorldEngine {
 
   // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
   public static queryBarriersHitByRobot(iModelDb: IModelDb, rid: Id64String): Id64String[] {
-    const robot1 = iModelDb.elements.getElement(rid) as Robot;
+    const robot1 = iModelDb.elements.getElement<Robot>(rid);
 
     const selStmt =
       `SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox) AND rt.ECInstanceId <> :thisRobot`;
@@ -85,7 +85,7 @@ export class RobotWorldEngine {
   // __PUBLISH_EXTRACT_END__
 
   public static moveRobot(iModelDb: IModelDb, id: Id64String, location: Point3d) {
-    const r = iModelDb.elements.getElement(id) as Robot;
+    const r = iModelDb.elements.getElement<Robot>(id);
     r.placement.origin = location;
     iModelDb.elements.updateElement(r);
   }

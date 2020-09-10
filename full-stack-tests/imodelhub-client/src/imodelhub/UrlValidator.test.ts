@@ -23,9 +23,9 @@ const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
 
 function logFunction(logLevel: string, category: string, message: string) {
   if (category === ITwinClientLoggerCategory.Request)
-    urlLogFileStream.write(message + "\n");
+    urlLogFileStream.write(`${message}\n`);
   else
-    logFileStream.write(logLevel + "|" + category + "|" + message + "\n");
+    logFileStream.write(`${logLevel}|${category}|${message}\n`);
 }
 
 // Initialize logger to file
@@ -52,7 +52,7 @@ Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
 describe.skip("Validate iModelHub URL Whitelist", () => {
 
   function normalizeUrl(loggedUrl: string, hubBaseUrl: string): string | undefined {
-    const extractRegex = new RegExp(hubBaseUrl + "\\/s?v(\\d+).(\\d+)\\/Repositories\\/(iModel|Context|Global)--(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}|Global)\\/(.*)", "i");
+    const extractRegex = new RegExp(`${hubBaseUrl}\\/s?v(\\d+).(\\d+)\\/Repositories\\/(iModel|Context|Global)--(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}|Global)\\/(.*)`, "i");
 
     const matches = loggedUrl.match(extractRegex);
     let normalizedUrl: string = "";
@@ -123,7 +123,7 @@ describe.skip("Validate iModelHub URL Whitelist", () => {
         violatingUrls.push(url);
     }
 
-    const violatingUrlsString: string = violatingUrls.length === 0 ? "" : violatingUrls.reduce((str: string, current: string) => str + "|" + current);
+    const violatingUrlsString: string = violatingUrls.length === 0 ? "" : violatingUrls.reduce((str: string, current: string) => `${str}|${current}`);
     assert.isTrue(violatingUrls.length === 0, `The URLs '${violatingUrlsString}' are not whitelisted.\n` +
       "If this is caused by a necessary API change, update the whitelist and notify iModelBank of the updates. " +
       "If the whitelist violation is unintentional, modify your changes to use existing API functionality.");

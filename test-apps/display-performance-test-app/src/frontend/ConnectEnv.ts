@@ -8,12 +8,12 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { showStatus } from "./Utils";
 
 // Logic to establish a connection to a Connect-hosted project and iModel
-let _connectClient!: ContextRegistryClient;
+let connectClient!: ContextRegistryClient;
 
 async function getProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
   let project: Project;
   try {
-    project = await _connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });
+    project = await connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });
   } catch (e) {
     console.log(`Project with name "${projectName}" does not exist`); // eslint-disable-line no-console
     return undefined;
@@ -23,7 +23,7 @@ async function getProjectByName(requestContext: AuthorizedClientRequestContext, 
 }
 
 export async function initializeIModelHub(projectName: string): Promise<Project | undefined> {
-  _connectClient = new ContextRegistryClient();
+  connectClient = new ContextRegistryClient();
 
   showStatus("opening Project", projectName);
 

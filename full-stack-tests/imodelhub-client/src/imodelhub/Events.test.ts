@@ -72,8 +72,8 @@ function mockGetEvent(imodelId: GuidString, subscriptionId: string, eventBody: o
   if (!TestConfig.enableMocks)
     return;
 
-  const headers = eventType ? { "content-type": eventType! } : {};
-  let query = subscriptionId + "/messages/head";
+  const headers = eventType ? { "content-type": eventType } : {};
+  let query = `${subscriptionId}/messages/head`;
   if (timeout)
     query += `?timeout=${timeout}`;
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Subscriptions", query);
@@ -266,9 +266,9 @@ describe("iModelHub EventHandler", () => {
     chai.assert(!!event!.iModelId);
     const typedEvent = event as LockEvent;
     chai.assert(!!typedEvent);
-    chai.assert(!!typedEvent.objectIds![0]);
-    chai.assert(Id64.isValidId64(typedEvent.objectIds![0]));
-    chai.expect(typedEvent.objectIds![0].toString()).to.be.equal(Id64.fromString("0x1"));
+    chai.assert(!!typedEvent.objectIds[0]);
+    chai.assert(Id64.isValidId64(typedEvent.objectIds[0]));
+    chai.expect(typedEvent.objectIds[0].toString()).to.be.equal(Id64.fromString("0x1"));
     chai.expect(typedEvent.lockLevel).to.be.equal(LockLevel.Shared);
     chai.expect(typedEvent.lockType).to.be.equal(LockType.Model);
   });
@@ -337,7 +337,7 @@ describe("iModelHub EventHandler", () => {
     chai.assert(!!event!.iModelId);
     const typedEvent = event as VersionEvent;
     chai.assert(!!typedEvent);
-    chai.expect(typedEvent.versionId!).to.be.equal(versionId);
+    chai.expect(typedEvent.versionId).to.be.equal(versionId);
   });
 
   it("should receive baseline VersionEvent (#unit)", async () => {
@@ -350,7 +350,7 @@ describe("iModelHub EventHandler", () => {
     chai.assert(!!event!.iModelId);
     const typedEvent = event as VersionEvent;
     chai.assert(!!typedEvent);
-    chai.expect(typedEvent.versionId!).to.be.equal(versionId);
+    chai.expect(typedEvent.versionId).to.be.equal(versionId);
     chai.expect(typedEvent.changeSetId).to.be.eq("");
   });
 

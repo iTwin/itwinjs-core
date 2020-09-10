@@ -34,6 +34,7 @@ describe("iModelHub CodeHandler", () => {
   let briefcaseId: number;
   let briefcaseId2: number;
   const imodelName = "imodeljs-clients Codes test";
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const continueOptions = { CustomOptions: { ConflictStrategy: "Continue" } };
   let requestContext: AuthorizedClientRequestContext;
 
@@ -254,12 +255,12 @@ describe("iModelHub CodeHandler", () => {
     const codeSpecId = codes[0].codeSpecId!;
     const filter = `BriefcaseId+eq+${briefcaseId}+and+CodeSpecId+eq+%27${codeSpecId}%27`;
 
-    utils.mockGetCodes(imodelId, "?$filter=" + filter + `&$top=${CodeQuery.defaultPageSize}`, ...codes);
+    utils.mockGetCodes(imodelId, `?$filter=${filter}&$top=${CodeQuery.defaultPageSize}`, ...codes);
     const query1 = new CodeQuery().byBriefcaseId(briefcaseId).byCodeSpecId(codeSpecId);
     const queriedCodes1 = await iModelClient.codes.get(requestContext, imodelId, query1);
     chai.assert(queriedCodes1);
 
-    utils.mockGetCodes(imodelId, "?$filter=" + filter + `&$top=${CodeQuery.defaultPageSize}`, ...codes);
+    utils.mockGetCodes(imodelId, `?$filter=${filter}&$top=${CodeQuery.defaultPageSize}`, ...codes);
     const query2 = new CodeQuery().filter(filter);
     const queriedCodes2 = await iModelClient.codes.get(requestContext, imodelId, query2);
     chai.assert(queriedCodes2);
@@ -270,7 +271,7 @@ describe("iModelHub CodeHandler", () => {
   it("should get codes by code scope (#iModelBank)", async () => {
     const codeScope = utils.randomCode(briefcaseId).codeScope!;
     const filter = `?$filter=CodeScope+eq+%27${codeScope}%27`;
-    utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
+    utils.mockGetCodes(imodelId, `${filter}&$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byCodeScope(codeScope);
     const codes = await iModelClient.codes.get(requestContext, imodelId, query);
@@ -299,7 +300,7 @@ describe("iModelHub CodeHandler", () => {
 
   it("should relinquish codes (#iModelBank)", async () => {
     const filter = `?$filter=BriefcaseId+eq+${briefcaseId}`;
-    utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
+    utils.mockGetCodes(imodelId, `${filter}&$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
     const query = new CodeQuery().byBriefcaseId(briefcaseId);
     let codes = await iModelClient.codes.get(requestContext, imodelId, query);
     chai.expect(codes.length).to.be.greaterThan(0);
@@ -307,7 +308,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockDeleteAllCodes(imodelId, briefcaseId);
     await iModelClient.codes.deleteAll(requestContext, imodelId, briefcaseId);
 
-    utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`);
+    utils.mockGetCodes(imodelId, `${filter}&$top=${CodeQuery.defaultPageSize}`);
     codes = await iModelClient.codes.get(requestContext, imodelId, query);
     chai.expect(codes.length).to.be.equal(0);
   });
@@ -316,7 +317,7 @@ describe("iModelHub CodeHandler", () => {
     if (TestConfig.enableMocks) {
       const mockedCodes = [utils.randomCode(briefcaseId2), utils.randomCode(briefcaseId2)];
       const filter = `?$filter=BriefcaseId+ne+${briefcaseId}`;
-      utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
+      utils.mockGetCodes(imodelId, `${filter}&$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
     }
     const query = new CodeQuery().unavailableCodes(briefcaseId);
     const codes = await iModelClient.codes.get(requestContext, imodelId, query);
@@ -336,7 +337,7 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should not create a query by codes with invalid codes (#iModelBank)", () => {
@@ -348,7 +349,7 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should fail deleting all codes with invalid briefcase id (#iModelBank)", async () => {
@@ -360,7 +361,7 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });
 

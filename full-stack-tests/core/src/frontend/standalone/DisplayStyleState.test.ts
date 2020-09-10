@@ -48,7 +48,7 @@ describe("DisplayStyle", () => {
 
     const style2 = style1.clone(imodel);
     expect(style2.sunDirection).not.to.be.undefined;
-    expect(style2.sunDirection!.isAlmostEqual(style1.sunDirection!)).to.be.true;
+    expect(style2.sunDirection.isAlmostEqual(style1.sunDirection)).to.be.true;
   });
 
   it("should read sun direction from json", () => {
@@ -58,9 +58,9 @@ describe("DisplayStyle", () => {
 
     const style = new DisplayStyle3dState(props, imodel);
     expect(style.sunDirection).not.to.be.undefined;
-    expect(style.sunDirection!.x).to.equal(sunDir.x);
-    expect(style.sunDirection!.y).to.equal(sunDir.y);
-    expect(style.sunDirection!.z).to.equal(sunDir.z);
+    expect(style.sunDirection.x).to.equal(sunDir.x);
+    expect(style.sunDirection.y).to.equal(sunDir.y);
+    expect(style.sunDirection.z).to.equal(sunDir.z);
   });
 
   it("Should override model appearance correctly", () => {

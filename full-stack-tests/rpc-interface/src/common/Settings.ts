@@ -70,6 +70,7 @@ export class Settings {
   public get writeIModel(): IModelData { return this.iModels[1]; }
   public get user(): TestUserCredentials { return this.users[0]; }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public get Backend(): Backend { return this._backend; }
 
   public get runiModelTileRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELTILE_ENABLE); }

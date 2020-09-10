@@ -214,15 +214,15 @@ describe("Element editor tests (#integration)", async () => {
 
     const points: Point3d[] = [new Point3d(0, 0, 0), new Point3d(1, 0, 0)];
 
-    assert.equal(await TestUtility.getModelLockLevel(iModel, tool.targetModelId!), LockLevel.None);   // Ask the iModel SERVER about the lock.
+    assert.equal(await TestUtility.getModelLockLevel(iModel, tool.targetModelId), LockLevel.None);   // Ask the iModel SERVER about the lock.
 
     await tool.onDataButtonDown(new BeButtonEvent({ point: points[0] }));
 
-    assert.equal(await TestUtility.getModelLockLevel(iModel, tool.targetModelId!), LockLevel.Shared);
+    assert.equal(await TestUtility.getModelLockLevel(iModel, tool.targetModelId), LockLevel.Shared);
 
     await tool.onDataButtonDown(new BeButtonEvent({ point: points[1] }));
 
-    assert.equal(await TestUtility.getModelLockLevel(iModel, tool.targetModelId!), LockLevel.Shared);
+    assert.equal(await TestUtility.getModelLockLevel(iModel, tool.targetModelId), LockLevel.Shared);
 
     await tool.onResetButtonUp(new BeButtonEvent({ point: points[1] }));
 
@@ -236,6 +236,6 @@ describe("Element editor tests (#integration)", async () => {
 
     assert.isFalse(await iModel.editing.hasPendingTxns());
 
-    assert.equal(await TestUtility.getModelLockLevel(iModel, tool.targetModelId!), LockLevel.None);
+    assert.equal(await TestUtility.getModelLockLevel(iModel, tool.targetModelId), LockLevel.None);
   });
 });

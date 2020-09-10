@@ -53,7 +53,7 @@ export abstract class IoTAnimation {
         requestOptions.body.duration = this.duration;
 
       try {
-        const response: Response = await request(this._requestContext, this._extension.simulationUrl + "/iot/getreadings", requestOptions);
+        const response: Response = await request(this._requestContext, `${this._extension.simulationUrl}/iot/getreadings`, requestOptions);
         return response.body.sequence;
       } catch (error) {
         // this shouldn't happen
@@ -144,7 +144,7 @@ export abstract class IoTAnimation {
         if (undefined === reading.id || (typeof reading.id !== "string"))
           throw new Error(`reading[${readingNumber}] of sequence[${stepNumber} does not include string id property`);
 
-        const elementId: Id64String | undefined = this._elementMap!.get(reading.id);
+        const elementId: Id64String | undefined = this._elementMap.get(reading.id);
         if (undefined === elementId) {
           // eslint-disable-next-line no-console
           console.log(`reading[${readingNumber}] of sequence[${stepNumber} includes a space id that does not match any element`);
@@ -381,7 +381,7 @@ class IotToolTipProvider implements ToolTipProvider {
           return tooltip;
 
         let out = "";
-        iotInfo.forEach((augment) => out += this.extension.i18n.translateKeys(augment) + "<br>");
+        iotInfo.forEach((augment) => out += `${this.extension.i18n.translateKeys(augment)}<br>`);
         const newDiv: HTMLDivElement = document.createElement("div");
         newDiv.innerHTML = out;
         tooltip.prepend(newDiv);
@@ -458,7 +458,7 @@ export class IoTDemoExtension extends Extension {
       this.iotMonitor = undefined;
     }
 
-    this.animation = this.createAnimation(this.animationView!, type, "Floor 1", duration, startMsec);
+    this.animation = this.createAnimation(this.animationView, type, "Floor 1", duration, startMsec);
     if (this.animation) {
       this.animation.run().catch(() => { });
     }
@@ -502,9 +502,9 @@ export class IoTDemoExtension extends Extension {
       this.localSimulator = new IoTSimulator(this.resolveResourceUrl("assets/microsoft-campus.json"));
       this.simulationPromise = this.localSimulator.runSimulation();
       await this.simulationPromise;
-      this.iotUiProvider!.minDate = this.localSimulator!.getStartTime();
-      this.iotUiProvider!.maxDate = this.localSimulator!.getEndTime();
-      this.iotUiProvider!.showIotDialog();
+      this.iotUiProvider.minDate = this.localSimulator.getStartTime();
+      this.iotUiProvider.maxDate = this.localSimulator.getEndTime();
+      this.iotUiProvider.showIotDialog();
     }
   }
 

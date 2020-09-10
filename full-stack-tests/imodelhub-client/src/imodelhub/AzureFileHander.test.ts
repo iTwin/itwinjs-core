@@ -9,6 +9,8 @@ import { AuthorizedClientRequestContext, SasUrlExpired } from "@bentley/itwin-cl
 import { AzureFileHandler, BufferedStream } from "@bentley/backend-itwin-client";
 import { MockAccessToken, workDir } from "./TestUtils";
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 describe("iModelHub AzureFileHandler", () => {
   before(async function () {
     this.enableTimeouts(false);

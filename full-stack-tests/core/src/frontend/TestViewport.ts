@@ -280,9 +280,9 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
   }
 
   public static async createTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<ScreenTestViewport> {
-    const div = document.createElement("div")! as HTMLDivElement;
-    div.style.width = width + "px";
-    div.style.height = height + "px";
+    const div = document.createElement("div");
+    div.style.width = `${width}px`;
+    div.style.height = `${height}px`;
 
     // Ensure viewport is exact specified dimensions - not fit to containing document.
     div.style.position = "absolute";

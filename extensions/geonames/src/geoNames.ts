@@ -47,7 +47,7 @@ class GeoNameMarker extends Marker {
     this.labelOffset = { x: 0, y: -24 };
     this.title = props.name;
     if (props.population)
-      this.title = this.title + " (" + GeoNameExtension.extension!.i18n.translate("geoNames:misc.Population") + ": " + props.population + ")";
+      this.title = `${this.title} (${GeoNameExtension.extension!.i18n.translate("geoNames:misc.Population")}: ${props.population})`;
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     // this.htmlElement = document.createElement("div");
@@ -59,7 +59,7 @@ class GeoNameMarker extends Marker {
       if (BeButton.Data === ev.button)
         ev.viewport.animateFlyoverToGlobalLocation({ center: new Cartographic(this.props.lng * Angle.radiansPerDegree, this.props.lat * Angle.radiansPerDegree) });
       else if (BeButton.Reset === ev.button && undefined !== this.props.wikipedia && 0 !== this.props.wikipedia.length)
-        window.open("https://" + this.props.wikipedia);
+        window.open(`https://${this.props.wikipedia}`);
     }
     return true;
   }
@@ -116,13 +116,13 @@ export class GeoNameMarkerManager {
     try {
       return await imageElementFromUrl(src); // note: "return await" is necessary inside try/catch
     } catch (err) {
-      Logger.logError("SectionLocationSetDecoration", "Could not load image " + src);
+      Logger.logError("SectionLocationSetDecoration", `Could not load image ${src}`);
     }
     return undefined;
   }
 
   private outputInfoMessage(messageKey: string) {
-    const message: string = GeoNameExtension.extension!.i18n.translate("geoNames:messages." + messageKey);
+    const message: string = GeoNameExtension.extension!.i18n.translate(`geoNames:messages.${messageKey}`);
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
     IModelApp.notifications.outputMessage(msgDetails);
   }

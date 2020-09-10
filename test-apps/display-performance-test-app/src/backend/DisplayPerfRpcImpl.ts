@@ -31,7 +31,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       if (index >= 2 && arg !== "chrome" && arg !== "edge" && arg !== "firefox" && arg.split(".").pop() !== "json") {
         while (arg.endsWith("\\") || arg.endsWith("\/"))
           arg = arg.slice(0, -1);
-        argOutputPath = "\"argOutputPath\": \"" + arg + "\",";
+        argOutputPath = `"argOutputPath": "${arg}",`;
       }
     });
 
@@ -43,7 +43,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   }
 
   public async saveCsv(outputPath: string, outputName: string, rowDataJson: string, csvFormat?: string): Promise<void> {
-    const rowData = new Map(JSON.parse(rowDataJson)) as Map<string, number | string>;
+    const rowData = new Map<string, number | string>(JSON.parse(rowDataJson));
     const testName = rowData.get("Test Name") as string;
     rowData.delete("Test Name");
     if (csvFormat === "original") {
@@ -155,8 +155,8 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   private createEsvFilename(fileName: string): string {
     const dotIndex = fileName.lastIndexOf(".");
     if (-1 !== dotIndex)
-      return fileName.substring(0, dotIndex) + "_ESV.json";
-    return fileName + ".sv";
+      return `${fileName.substring(0, dotIndex)}_ESV.json`;
+    return `${fileName}.sv`;
   }
 
   public async readExternalSavedViews(bimfileName: string): Promise<string> {

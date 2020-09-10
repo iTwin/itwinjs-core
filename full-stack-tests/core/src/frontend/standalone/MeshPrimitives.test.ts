@@ -20,10 +20,10 @@ describe("MeshPrimitive Tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
+  const canvas = document.createElement("canvas");
   assert(null !== canvas);
-  canvas!.width = canvas!.height = 1000;
-  document.body.appendChild(canvas!);
+  canvas.width = canvas.height = 1000;
+  document.body.appendChild(canvas);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await MockRender.App.startup();

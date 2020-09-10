@@ -60,7 +60,7 @@ export class IModelSession {
     try {
       const env = Config.App.get("imjs_buddi_resolve_url_using_region");
       // eslint-disable-next-line no-console
-      console.log("Environment: " + env);
+      console.log(`Environment: ${env}`);
       this._iModel = await RemoteBriefcaseConnection.open(this.contextId, this.iModelId);
       expect(this._iModel).to.exist;
     } catch (e) {

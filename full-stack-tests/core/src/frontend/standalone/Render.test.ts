@@ -16,6 +16,8 @@ import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-
 import { expect } from "chai";
 import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../TestViewport";
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 describe("Test VAO creation", () => {
   before(async () => {
     const renderSysOpts: RenderSystem.Options = {};

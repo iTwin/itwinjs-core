@@ -55,9 +55,9 @@ describe("RobotWorld", () => {
     const barrier2Id = RobotWorldEngine.insertBarrier(iModel, modelId, Point3d.create(5, 0, 0), Angle.createDegrees(90), 5);
     iModel.saveChanges();
 
-    const barrier1 = iModel.elements.getElement(barrier1Id) as Barrier;
+    const barrier1 = iModel.elements.getElement<Barrier>(barrier1Id);
     /* const barrier2 = */
-    iModel.elements.getElement(barrier2Id) as Barrier;
+    iModel.elements.getElement<Barrier>(barrier2Id);
 
     assert.equal(RobotWorldEngine.countRobots(iModel), 1);
 
@@ -77,7 +77,7 @@ describe("RobotWorld", () => {
     if (true) {
       RobotWorldEngine.moveRobot(iModel, robot1Id, barrier1.placement.origin);
       iModel.saveChanges();
-      assert.deepEqual((iModel.elements.getElement(robot1Id) as Robot).placement.origin, barrier1.placement.origin);
+      assert.deepEqual(iModel.elements.getElement<Robot>(robot1Id).placement.origin, barrier1.placement.origin);
       const barriersHit = RobotWorldEngine.queryObstaclesHitByRobot(iModel, robot1Id);
       assert.equal(barriersHit.length, 1, "expect a collision");
       assert.deepEqual(barriersHit[0], barrier1.id.toString());

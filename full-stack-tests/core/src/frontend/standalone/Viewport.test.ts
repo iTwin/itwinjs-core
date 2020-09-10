@@ -16,10 +16,10 @@ import {
 // cSpell:ignore calibri subcats subcat pmcv ovrs
 
 function createViewDiv() {
-  const div = document.createElement("div") as HTMLDivElement;
+  const div = document.createElement("div");
   assert(null !== div);
-  div!.style.width = div!.style.height = "1000px";
-  document.body.appendChild(div!);
+  div.style.width = div.style.height = "1000px";
+  document.body.appendChild(div);
   return div;
 }
 
@@ -60,7 +60,7 @@ describe("Viewport", () => {
     const frustSave = vp.getFrustum();
     const vpView2 = spatialView.clone(imodel2);
     vpView2.setStandardRotation(StandardViewId.Top);
-    const vp2 = ScreenViewport.create(viewDiv2!, vpView2);
+    const vp2 = ScreenViewport.create(viewDiv2, vpView2);
     assert.isFalse(vp2.getFrustum().isSame(vp.getFrustum()), "frustums should start out different");
 
     // test the two-way connection between 2 viewports
@@ -102,7 +102,7 @@ describe("Viewport", () => {
 
   it("AccuDraw", () => {
     const vpView = spatialView.clone();
-    const viewport = ScreenViewport.create(viewDiv!, vpView);
+    const viewport = ScreenViewport.create(viewDiv, vpView);
     const accudraw = IModelApp.accuDraw;
     assert.isTrue(accudraw.isEnabled, "Accudraw should be enabled");
     const pt = new Point3d(1, 1, 1);
@@ -137,7 +137,7 @@ describe("Viewport", () => {
 
   it("creates a RenderPlan from a viewport", () => {
     const vpView = spatialView.clone();
-    const vp = ScreenViewport.create(viewDiv!, vpView);
+    const vp = ScreenViewport.create(viewDiv, vpView);
     let plan: RenderPlan | undefined;
     try {
       plan = createRenderPlanFromViewport(vp);
@@ -156,7 +156,7 @@ describe("Viewport", () => {
   });
 
   it("supports changing a subset of background map settings", () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     const test = (changeProps: BackgroundMapProps, expectProps: BackgroundMapProps) => {
       const oldSettings = vp.backgroundMapSettings;
       const expectSettings = BackgroundMapSettings.fromJSON(expectProps);
@@ -401,7 +401,7 @@ describe("Viewport changed events", async () => {
   //  category selector 0x0f: 01 03 05 07
   let testImodel: IModelConnection;
 
-  const viewDiv = document.createElement("div") as HTMLDivElement;
+  const viewDiv = document.createElement("div");
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
@@ -487,7 +487,7 @@ describe("Viewport changed events", async () => {
   it("should be dispatched when display style changes", async () => {
     const view = await testBim.views.load("0x34") as SpatialViewState;
     view.setStandardRotation(StandardViewId.RightIso);
-    const vp = ScreenViewport.create(viewDiv!, view);
+    const vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
       // No event if equivalent flags
@@ -951,7 +951,7 @@ describe("Per-model category visibility overrides", () => {
 
   it("overrides category selector", async () => {
     // Turn off all categories
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     vp.changeCategoryDisplay(usedCatIds, false);
     for (const catId of usedCatIds)
       expect(vp.view.viewsCategory(catId)).to.be.false;
@@ -993,7 +993,7 @@ describe("Per-model category visibility overrides", () => {
 
   it("does not override always/never-drawn elements", () => {
     // Category selector contains only 0x31 and 0x2d
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     vp.changeCategoryDisplay(usedCatIds, false);
     vp.changeCategoryDisplay(["0x31", "0x2d"], true);
 
@@ -1029,7 +1029,7 @@ describe("Per-model category visibility overrides", () => {
 
   it("preserves subcategory appearance overrides", () => {
     // Enable all categories and subcategories except category 2d
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     vp.changeCategoryDisplay(usedCatIds, true, true);
     vp.changeCategoryDisplay("0x2d", false);
 
@@ -1076,7 +1076,7 @@ describe("Per-model category visibility overrides", () => {
   });
 
   it("supports iteration", () => {
-    const vp = ScreenViewport.create(viewDiv!, spatialView.clone());
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     const pmcv = vp.perModelCategoryVisibility;
     pmcv.setOverride("0x1c", ["0x2f", "0x31"], show);
     pmcv.setOverride("0x1c", ["0x2d"], hide);

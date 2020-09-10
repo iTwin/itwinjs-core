@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 // __PUBLISH_EXTRACT_START__ Logging-configureLoggingAndStreams.example-code
 import { BentleyError, EnvMacroSubst, IModelStatus, Logger, LoggerLevelsConfig } from "@bentley/bentleyjs-core";

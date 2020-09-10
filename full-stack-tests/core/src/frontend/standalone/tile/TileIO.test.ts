@@ -23,6 +23,8 @@ import { TILE_DATA_1_4 } from "./data/TileIO.data.1.4";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { changeHeaderLength, changeMajorVersion, changeMinorVersion } from "./data/TileIO.data.fake";
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 const testCases = [
   TILE_DATA_1_1,
   TILE_DATA_1_2,
@@ -740,7 +742,7 @@ describe("mirukuru TileTree", () => {
     const model = imodel.models.getLoaded(modelId) as GeometricModelState;
 
     const viewState = {
-      iModel: imodel as IModelConnection,
+      iModel: imodel,
       viewFlags: {
         renderMode: RenderMode.SmoothShade,
         visibleEdges: false,
@@ -859,7 +861,7 @@ describe("TileAdmin", () => {
           // "0xabc" => E:0_0xabc"
           // "A:0x123_0xabc" => "A:0x123_E:0_0xabc"
           const lastIndex = expectedTreeIdStr.lastIndexOf("0x");
-          expectedTreeIdStrNoEdges = expectedTreeIdStr.substring(0, lastIndex) + "E:0_" + expectedTreeIdStr.substring(lastIndex);
+          expectedTreeIdStrNoEdges = `${expectedTreeIdStr.substring(0, lastIndex)}E:0_${expectedTreeIdStr.substring(lastIndex)}`;
         }
 
         const treeId: IModelTileTreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
@@ -973,20 +975,20 @@ describe("TileAdmin", () => {
         let treeId = "0x1c";
         if (undefined === maximumMajorTileFormatVersion || maximumMajorTileFormatVersion >= 4) {
           const v = undefined !== maximumMajorTileFormatVersion ? maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
-          treeId = v.toString(16) + "_1-0x1c";
+          treeId = `${v.toString(16)}_1-0x1c`;
         }
 
         const tree = await imodel.tiles.getTileTreeProps(treeId);
 
         expect(tree).not.to.be.undefined;
-        expect(tree!.id).to.equal(treeId);
-        expect(tree!.formatVersion).not.to.be.undefined;
+        expect(tree.id).to.equal(treeId);
+        expect(tree.formatVersion).not.to.be.undefined;
 
-        const majorVersion = (tree!.formatVersion!) >>> 0x10;
+        const majorVersion = (tree.formatVersion!) >>> 0x10;
         expect(majorVersion).to.equal(expectedMajorVersion);
 
         // Old root content Id supplied strictly for very old front-ends - newer front-ends compute root content Id based on major version + flags
-        expect(tree!.rootTile.contentId).to.equal("0/0/0/0/1");
+        expect(tree.rootTile.contentId).to.equal("0/0/0/0/1");
 
         await App.stop();
       }
@@ -1009,7 +1011,7 @@ describe("TileAdmin", () => {
         const imodel = await App.start({ useProjectExtents });
 
         const flags = useProjectExtents ? "1" : "0";
-        const treeId = "8_" + flags + "-0x1c";
+        const treeId = `8_${flags}-0x1c`;
 
         const treeProps = await imodel.tiles.getTileTreeProps(treeId);
         const qualifier = treeProps.contentIdQualifier;
@@ -1030,7 +1032,7 @@ describe("TileAdmin", () => {
           if (!useProjectExtents)
             expect(guid).to.equal("first");
           else
-            expect(guid).to.equal("first_" + qualifier!);
+            expect(guid).to.equal(`first_${qualifier!}`);
 
           return new Uint8Array(1);
         };

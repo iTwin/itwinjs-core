@@ -55,7 +55,7 @@ const copyBentleyFrontendAssets = (outputDir: string) => {
 
 class IntegrationTestsApp extends NoRenderApp {
   protected static supplyI18NOptions(): I18NOptions {
-    const urlTemplate = "file://" + path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/");
+    const urlTemplate = `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`;
     return { urlTemplate };
   }
 

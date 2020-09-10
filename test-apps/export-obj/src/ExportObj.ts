@@ -98,7 +98,7 @@ async function doExport(iModelName: string, objName: string, mtlName: string): P
   const getTextureExt = (format: ImageSourceFormat): string => format === ImageSourceFormat.Jpeg ? ".jpg" : ".png";
 
   textureMap.forEach((materialName: string, textureId: Id64String) => {
-    const texture = iModel.elements.getElement(textureId) as Texture;
+    const texture = iModel.elements.getElement<Texture>(textureId);
     const texturePath = path.join(textureDirectory, textureId + getTextureExt(texture.format));
 
     fs.appendFileSync(mtlFile, `newmtl ${materialName}\n`);
@@ -127,6 +127,6 @@ interface ExportObjArgs {
 
     await doExport(args.input, args.output, mtlName);
   } catch (error) {
-    process.stdout.write(error.message + "\n" + error.stack);
+    process.stdout.write(`${error.message}\n${error.stack}`);
   }
 })();

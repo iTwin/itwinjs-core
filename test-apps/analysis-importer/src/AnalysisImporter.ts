@@ -93,8 +93,8 @@ export class AnalysisImporter {
     for (const analysisStyleProp of analysisStyleProps) {
       let name = analysisStyleProp.scalarChannelName!;
       if (undefined !== analysisStyleProp.displacementChannelName) {
-        const exaggeration = (analysisStyleProp.displacementScale === 1.0) ? "" : (" X " + analysisStyleProp.displacementScale);
-        name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName + exaggeration;
+        const exaggeration = (analysisStyleProp.displacementScale === 1.0) ? "" : (` X ${analysisStyleProp.displacementScale}`);
+        name = `${modelName}: ${name} and ${analysisStyleProp.displacementChannelName}${exaggeration}`;
       }
       names.push(name);
       displayStyleIds.push(DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, name, { viewFlags: vf, backgroundColor: bgColor, analysisStyle: analysisStyleProp }));
@@ -102,7 +102,7 @@ export class AnalysisImporter {
     const modelSelectorId = ModelSelector.insert(this.iModelDb, this.definitionModelId, modelName, [modelId]);
     const categorySelectorId = CategorySelector.insert(this.iModelDb, this.definitionModelId, modelName, [categoryId]);
 
-    DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, modelName + ": No AuxData", { viewFlags: vf, backgroundColor: bgColor });
+    DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, `${modelName}: No AuxData`, { viewFlags: vf, backgroundColor: bgColor });
     return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, modelName, modelSelectorId, categorySelectorId, displayStyleIds[0], polyface.range());
   }
   /** Import a polyface with auxillary data */

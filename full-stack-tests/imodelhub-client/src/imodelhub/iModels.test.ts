@@ -376,7 +376,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should create iModel and upload SeedFile", async function () {
-    const filePath = utils.assetsPath + "LargerSeedFile.bim";
+    const filePath = `${utils.assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
@@ -477,7 +477,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should fail creating an iModel with no file (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.iModels.create(requestContext, projectId, createIModelName, { path: utils.workDir + "InvalidiModel.bim" });
+      await iModelClient.iModels.create(requestContext, projectId, createIModelName, { path: `${utils.workDir}InvalidiModel.bim` });
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -530,8 +530,8 @@ describe("iModelHub iModelsHandler", () => {
 
     const imodel = await iModelClient.iModels.create(requestContext, projectId, createIModelName, { template: { imodelId } });
     chai.assert(imodel);
-    chai.assert(imodel!.initialized);
-    chai.expect(imodel!.iModelTemplate).to.be.equal(`${imodelId}:`);
+    chai.assert(imodel.initialized);
+    chai.expect(imodel.iModelTemplate).to.be.equal(`${imodelId}:`);
   });
 
   it("should clone iModel with ChangeSets (#unit)", async () => {
@@ -542,8 +542,8 @@ describe("iModelHub iModelsHandler", () => {
 
     const imodel = await iModelClient.iModels.create(requestContext, projectId, createIModelName, { template: { imodelId, changeSetId: changeSet.id } });
     chai.assert(imodel);
-    chai.assert(imodel!.initialized);
-    chai.expect(imodel!.iModelTemplate).to.be.equal(`${imodelId}:${changeSet.id}`);
+    chai.assert(imodel.initialized);
+    chai.expect(imodel.iModelTemplate).to.be.equal(`${imodelId}:${changeSet.id}`);
   });
 
   it("should update iModel name and description (#iModelBank)", async () => {
@@ -551,7 +551,7 @@ describe("iModelHub iModelsHandler", () => {
     const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(imodel.name).to.be.equal(imodelName);
 
-    const newName = imodel.name + "_updated";
+    const newName = `${imodel.name}_updated`;
     const newDescription = "Description_updated";
     await utils.deleteIModelByName(requestContext, projectId, newName);
     imodel.name = newName;
@@ -656,7 +656,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should create iModel if iModel does not exist (#unit)", async () => {
-    const filePath = utils.assetsPath + "LargerSeedFile.bim";
+    const filePath = `${utils.assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, createIModelName, imodelId, 0);
@@ -670,7 +670,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should throw iModelAlreadyExists if iModel already exist (#iModelBank)", async () => {
-    const filePath = utils.assetsPath + "LargerSeedFile.bim";
+    const filePath = `${utils.assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
     mockGetIModel(projectId, createIModelName, Guid.createValue(), 1);
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
@@ -721,7 +721,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should update iModel extents", async () => {
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, imodelName, imodelId, 1);
-    const newName = imodelName + "_updated";
+    const newName = `${imodelName}_updated`;
     const newDescription = "Description_updated";
     const newExtent = [1, 2, 3, 4];
 

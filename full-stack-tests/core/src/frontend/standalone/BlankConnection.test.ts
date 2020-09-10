@@ -11,8 +11,8 @@ import { BlankConnection, MockRender, ScreenViewport, SpatialViewState } from "@
 function createViewDiv() {
   const div = document.createElement("div");
   assert(null !== div);
-  div!.style.width = div!.style.height = "1000px";
-  document.body.appendChild(div!);
+  div.style.width = div.style.height = "1000px";
+  document.body.appendChild(div);
   return div;
 }
 
@@ -50,7 +50,7 @@ describe("Blank Connection", () => {
     const origin = new Point3d();
     const extents = new Vector3d(1, 1, 1);
     const spatial = SpatialViewState.createBlank(blankConnection, origin, extents);
-    const vp = ScreenViewport.create(viewDiv!, spatial);
+    const vp = ScreenViewport.create(viewDiv, spatial);
     assert.isDefined(vp);
   });
 });

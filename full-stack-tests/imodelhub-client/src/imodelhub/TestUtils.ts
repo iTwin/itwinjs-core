@@ -148,21 +148,22 @@ export class RequestBehaviorOptions {
   }
 
   public toCustomRequestOptions(): { [index: string]: string } {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     return { BehaviourOptions: this._currentOptions.join(",") };
   }
 }
 
 const requestBehaviorOptions = new RequestBehaviorOptions();
 
-let _imodelHubClient: IModelHubClient;
+let imodelHubClient: IModelHubClient;
 export function getImodelHubClient() {
-  if (_imodelHubClient !== undefined)
-    return _imodelHubClient;
-  _imodelHubClient = new IModelHubClient(createFileHandler());
+  if (imodelHubClient !== undefined)
+    return imodelHubClient;
+  imodelHubClient = new IModelHubClient(createFileHandler());
   if (!TestConfig.enableMocks) {
-    _imodelHubClient.requestOptions.setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
+    imodelHubClient.requestOptions.setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }
-  return _imodelHubClient;
+  return imodelHubClient;
 }
 
 let imodelBankClient: IModelBankClient;
@@ -204,8 +205,8 @@ export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
   return requestBehaviorOptions;
 }
 
-export const assetsPath = __dirname + "/../../lib/assets/";
-export const workDir = __dirname + "/../../lib/output/";
+export const assetsPath = `${__dirname}/../../lib/assets/`;
+export const workDir = `${__dirname}/../../lib/output/`;
 
 /**
  * Generates request URL.
@@ -230,7 +231,7 @@ export function createRequestUrl(scope: ScopeType, id: string | GuidString, clas
       break;
   }
 
-  requestUrl += className + "/";
+  requestUrl += `${className}/`;
   if (query !== undefined) {
     requestUrl += query;
   }
@@ -330,7 +331,7 @@ export async function getIModelId(requestContext: AuthorizedClientRequestContext
   if (!imodels[0] || !imodels[0].id)
     throw new Error(`iModel with name ${imodelName} doesn't exist.`);
 
-  return imodels[0].id!;
+  return imodels[0].id;
 }
 
 export function mockFileResponse(times = 1) {
@@ -399,7 +400,7 @@ export function mockCreateBriefcase(imodelId: GuidString, id?: number, briefcase
 
   if (id !== undefined) {
     briefcase.briefcaseId = id;
-    briefcase.wsgId = id!.toString();
+    briefcase.wsgId = id.toString();
   }
   const requestResponse = ResponseBuilder.generatePostResponse<Briefcase>(briefcase);
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
@@ -417,7 +418,7 @@ export function generateChangeSetId(): string {
 export function generateChangeSet(id?: string): ChangeSet {
   const changeSet = new ChangeSet();
   id = id || generateChangeSetId();
-  changeSet.fileName = id + ".cs";
+  changeSet.fileName = `${id}.cs`;
   changeSet.wsgId = id;
   return changeSet;
 }
@@ -444,7 +445,7 @@ export function mockGetChangeSetChunk(imodelId: GuidString, getDownloadUrl: bool
   if (!query)
     query = "";
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "ChangeSet",
-    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` + query : query);
+    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL${query}` : query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse, undefined, undefined, headers);
 }
@@ -559,7 +560,7 @@ export async function getLastLockObjectId(requestContext: AuthorizedClientReques
 
   locks.sort((lock1, lock2) => (parseInt(lock1.objectId!.toString(), 16) > parseInt(lock2.objectId!.toString(), 16) ? -1 : 1));
 
-  return (locks.length === 0 || locks[0].objectId === undefined) ? Id64.fromString("0x0") : locks[0].objectId!;
+  return (locks.length === 0 || locks[0].objectId === undefined) ? Id64.fromString("0x0") : locks[0].objectId;
 }
 
 export function generateLock(briefcaseId?: number, objectId?: Id64String,
@@ -651,7 +652,7 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
     result.wsgId = result.id;
   }
   result.changeSetId = changesetId === undefined || changesetId === null ? generateChangeSetId() : changesetId;
-  result.name = name || `TestVersion-${result.changeSetId!}`;
+  result.name = name || `TestVersion-${result.changeSetId}`;
   result.smallThumbnailId = smallThumbnailId;
   result.largeThumbnailId = largeThumbnailId;
   return result;
@@ -804,7 +805,7 @@ export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
     result.briefcaseId = briefcase.briefcaseId;
     result.seedFileId = briefcase.fileId;
     result.parentId = parentId;
-    result.fileName = result.id + ".cs";
+    result.fileName = `${result.id}.cs`;
     parentId = result.id;
     return result;
   });
@@ -830,7 +831,7 @@ export function generateBridgeProperties(userCount: number, changedFileCount: nu
 }
 
 export function getMockChangeSetPath(index: number, changeSetId: string) {
-  return path.join(assetsPath, "SeedFile", `${index}_${changeSetId!}.cs`);
+  return path.join(assetsPath, "SeedFile", `${index}_${changeSetId}.cs`);
 }
 
 export async function createChangeSets(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcase: Briefcase,
@@ -897,7 +898,7 @@ export async function createLocks(requestContext: AuthorizedClientRequestContext
 
   for (let i = 0; i < count; i++) {
     lastObjectId = incrementLockObjectId(lastObjectId);
-    generatedLocks.push(generateLock(briefcase.briefcaseId!,
+    generatedLocks.push(generateLock(briefcase.briefcaseId,
       lastObjectId, lockType, lockLevel, briefcase.fileId,
       releasedWithChangeSet, releasedWithChangeSetIndex));
   }

@@ -48,7 +48,7 @@ async function init() {
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
     const server = new IModelJsExpressServer(rpcConfig.protocol);
     await server.initialize(port);
-    console.log("Web backend for full-stack-tests listening on port " + port);
+    console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
     await new Promise((resolve) => {
       http.createServer(async (request, response) => {

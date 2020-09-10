@@ -17,6 +17,7 @@ export async function initializeCustomCloudEnv(projectName: string | undefined, 
 
   const userInfo = new UserInfo(id, email, profile, organization, featureTracking);
   const foreignAccessTokenWrapper: any = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ForeignProjectAccessToken: userInfo,
   };
   const accessToken = new AccessToken(JSON.stringify(foreignAccessTokenWrapper));
@@ -26,7 +27,7 @@ export async function initializeCustomCloudEnv(projectName: string | undefined, 
     projectName = "iModelJsTest";
 
   const bankContextClient = new IModelBankFileSystemContextClient(url);
-  const requestContext = new AuthorizedFrontendRequestContext(accessToken!);
+  const requestContext = new AuthorizedFrontendRequestContext(accessToken);
 
   const project = await bankContextClient.queryProjectByName(requestContext, projectName);
 

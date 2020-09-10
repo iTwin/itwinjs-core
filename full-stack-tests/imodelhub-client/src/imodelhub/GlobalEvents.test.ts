@@ -21,8 +21,8 @@ function mockGetGlobalEvent(subscriptionId: string, eventBody: object, eventType
   if (!TestConfig.enableMocks)
     return;
 
-  const headers = eventType ? { "content-type": eventType! } : {};
-  let query = subscriptionId + "/messages/head";
+  const headers = eventType ? { "content-type": eventType } : {};
+  let query = `${subscriptionId}/messages/head`;
   if (timeout)
     query += `?timeout=${timeout}`;
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
@@ -33,14 +33,14 @@ function mockPeekLockGlobalEvent(subscriptionId: string, eventBody: object, even
   if (!TestConfig.enableMocks)
     return;
 
-  const headerLocationQuery = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
+  const headerLocationQuery = `${subscriptionId}/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547`;
   const responseHeaderLocation = utils.IModelHubUrlMock.getUrl() + utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", headerLocationQuery);
 
   const headers = eventType ? {
-    "content-type": eventType!,
+    "content-type": eventType,
     "location": responseHeaderLocation,
   } : {};
-  let query = subscriptionId + "/messages/head";
+  let query = `${subscriptionId}/messages/head`;
   if (timeout)
     query += `?timeout=${timeout}`;
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
@@ -50,7 +50,7 @@ function mockPeekLockGlobalEvent(subscriptionId: string, eventBody: object, even
 function mockDeleteLockedEvent(subscriptionId: string, responseCode: number = 200) {
   if (!TestConfig.enableMocks)
     return;
-  const query = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
+  const query = `${subscriptionId}/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547`;
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
 
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, undefined, 1, undefined, undefined, responseCode);
@@ -274,7 +274,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     chai.assert(!!event!.iModelId);
     const typedEvent = event as NamedVersionCreatedEvent;
     chai.assert(!!typedEvent);
-    chai.assert(!!typedEvent!.versionId);
+    chai.assert(!!typedEvent.versionId);
     chai.expect(typedEvent.changeSetId).to.be.eq("");
   });
 
@@ -288,7 +288,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     chai.assert(!!event!.iModelId);
     const typedEvent = event as NamedVersionCreatedEvent;
     chai.assert(!!typedEvent);
-    chai.assert(!!typedEvent!.versionId);
+    chai.assert(!!typedEvent.versionId);
   });
 
   it("should delete Global Event subscription by InstanceId", async () => {

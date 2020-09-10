@@ -23,10 +23,10 @@ describe("FeatureOverrides", () => {
   let spatialView: SpatialViewState;
   let vp: ScreenViewport;
 
-  const viewDiv = document.createElement("div") as HTMLDivElement;
+  const viewDiv = document.createElement("div");
   assert(null !== viewDiv);
-  viewDiv!.style.width = viewDiv!.style.height = "1000px";
-  document.body.appendChild(viewDiv!);
+  viewDiv.style.width = viewDiv.style.height = "1000px";
+  document.body.appendChild(viewDiv);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await IModelApp.startup();
@@ -46,7 +46,7 @@ describe("FeatureOverrides", () => {
     }
 
     const vpView = spatialView.clone();
-    vp = ScreenViewport.create(viewDiv!, vpView);
+    vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
@@ -71,7 +71,7 @@ describe("FeatureOverrides", () => {
       return;
 
     const vpView = spatialView.clone();
-    vp = ScreenViewport.create(viewDiv!, vpView);
+    vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
