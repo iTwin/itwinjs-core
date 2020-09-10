@@ -7,6 +7,7 @@
  */
 
 import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@bentley/geometry-core";
+import { assert } from "@bentley/bentleyjs-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
@@ -323,11 +324,31 @@ export class CartographicRange {
   private _minLatitude: number = 0;
   private _maxLatitude: number = 0;
   constructor(spatialRange: Range3d, spatialToEcef: Transform) {
-
     const ecefRange = spatialToEcef.multiplyRange(spatialRange);
+    const ecefCorners = ecefRange.corners();
+    let low: Cartographic | undefined, high: Cartographic | undefined;
 
-    const low = Cartographic.fromEcef(ecefRange.low)!;
-    const high = Cartographic.fromEcef(ecefRange.high)!;
+    for (const ecefCorner of ecefCorners) {
+      const carto = Cartographic.fromEcef(ecefCorner);
+      if (carto) {
+        if (low) {
+          low.longitude = Math.min(low.longitude, carto.longitude);
+          low.latitude = Math.min(low.latitude, carto.latitude);
+        } else
+          low = carto.clone();
+
+        if (high) {
+          high.longitude = Math.max(high.longitude, carto.longitude);
+          high.latitude = Math.max(high.latitude, carto.latitude);
+        } else
+          high = carto.clone();
+      }
+    }
+    if (!low || !high) {
+      assert(false);
+      return;
+    }
+
 
     const longitudeRanges = [];
     this._minLongitude = Math.min(low.longitude, high.longitude), this._maxLongitude = Math.max(low.longitude, high.longitude);

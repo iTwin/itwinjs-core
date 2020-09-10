@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
-import { Angle, Point3d } from "@bentley/geometry-core";
-import {
-  BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FeatureAppearance, FontMap, FontType, SubCategoryOverride, ViewFlags,
-} from "@bentley/imodeljs-common";
+import { Angle, Point3d, Range2d } from "@bentley/geometry-core";
+import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, CartographicRange, ColorDef, Feature, FeatureAppearance, FontMap, FontType, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-common";
 import {
   ChangeFlag, ChangeFlags, CompassMode, createRenderPlanFromViewport, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool, PerModelCategoryVisibility,
   RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport,
 } from "@bentley/imodeljs-frontend";
+import { assert, expect } from "chai";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs
 
@@ -278,7 +276,33 @@ describe("Cartographic tests", () => {
     const ny2 = Cartographic.fromEcef(ecefNY);
     assert.isTrue(newYork.equalsEpsilon(ny2!, 0.01));
   });
+
 });
+
+describe("Cartographic range tests", () => {
+
+  let imodel: IModelConnection;
+
+  before(async () => {
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+  });
+
+  after(async () => {
+    if (imodel)
+      await imodel.close();
+
+    await IModelApp.shutdown();
+  });
+
+  it("Cartographic range should convert properly", () => {
+    const projectRange = new CartographicRange(imodel.projectExtents, imodel.ecefLocation!.getTransform());
+    const expected = Range2d.fromJSON({ low: { x: 2.3161187396738976, y: 0.5995727833596837 }, high: { x: 2.3161944127086604, y: 0.5996294478103081 } });
+    const longLatBox = projectRange.getLongitudeLatitudeBoundingBox();
+    assert.isTrue(longLatBox.isAlmostEqual(expected), "range matches correctly");
+  });
+});
+
 
 class ViewportChangedHandler {
   private readonly _vp: Viewport;
