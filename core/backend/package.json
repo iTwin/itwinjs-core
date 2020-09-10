@@ -27,6 +27,7 @@
     "perftest:cs": "npm run perftest:pre && betools test --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
     "perftest:elAspect": "npm run perftest:pre && betools test --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerformance",
     "perftest:schema": "npm run perftest:pre && betools test --testDir=\"./lib/perftest\" --timeout=999999999 --grep SchemaDesignPerf",
+    "perftest:tile": "npm run perftest:pre && betools test --testDir=\"./lib/perftest\" --timeout=999999999 --grep TilesGenerationPerformance",
     "copy:ios-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/ios/webpack/assets && cpx \"./lib/assets/**/*\" ./lib/test/ios/webpack/assets",
     "build:imodeljs-backend-test-app": "xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData -allowProvisioningUpdates",
     "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx ./src/test/ios/config/ignoreTest.js ./lib/test && cpx ./src/test/ios/runMochaTestsDirectly.js ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
