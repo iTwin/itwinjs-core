@@ -72,6 +72,7 @@ export class Logger {
     Logger.turnOffLevelDefault();
     Logger.turnOffCategories();
     Logger.clearMetaDataSources();
+    Logger.registerMetaDataSource(addClientRequestContext);
   }
 
   /**
@@ -141,7 +142,6 @@ export class Logger {
    * @beta
    */
   private static addMetaDataFromSources(metaData: any): void {
-    Logger.registerMetaDataSource(addClientRequestContext);
     this._makeMetaDataEvent.raiseEvent(metaData);
   }
 
