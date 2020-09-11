@@ -7784,6 +7784,8 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     // (undocumented)
     decorateSuspended(context: DecorateContext): void;
     // (undocumented)
+    static drawFigure(context: DecorateContext, vp: Viewport, groundPt: Point3d, eyeHeight: number): void;
+    // (undocumented)
     protected _eyePtWorld: Point3d;
     // (undocumented)
     protected getAdjustedEyePoint(): Point3d;

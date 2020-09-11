@@ -8,7 +8,7 @@
 
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d,
+  Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d,
   Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import { Cartographic, ColorDef, Frustum, LinePixels, Npc, NpcCenter } from "@bentley/imodeljs-common";
@@ -37,6 +37,7 @@ import {
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 import { ToolSettings } from "./ToolSettings";
 import { Pixel } from "../render/Pixel";
+import { EditManipulator } from "./EditManipulator";
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 /* eslint-disable no-restricted-syntax */
@@ -80,6 +81,10 @@ const enum NavigateMode { Pan = 0, Look = 1, Travel = 2 }
 const inertialDampen = (pt: Vector3d) => {
   pt.scaleInPlace(Geometry.clamp(ToolSettings.viewingInertia.damping, .75, .999));
 };
+
+function adjustForBackgroundColor(vp: Viewport): boolean {
+  return (vp.view.is3d() ? !vp.view.getDisplayStyle3d().environment.sky.display : true);
+}
 
 /** An InteractiveTool that manipulates a view.
  * @public
@@ -3942,7 +3947,7 @@ export class SetupCameraTool extends PrimitiveTool {
     const pt3 = targetPtWorld.plusScaled(xVec, extentX); pt3.plusScaled(yVec, -extentY, pt3);
     const pt4 = targetPtWorld.plusScaled(xVec, -extentX); pt4.plusScaled(yVec, -extentY, pt4);
 
-    const color = vp.getContrastToBackgroundColor();
+    const color = adjustForBackgroundColor(vp) ? ColorDef.black.adjustedForContrast(vp.view.backgroundColor) : ColorDef.black;
     const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
 
     builderHid.setSymbology(color, color, ViewHandleWeight.Bold);
@@ -4221,9 +4226,88 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     IModelApp.viewManager.invalidateDecorationsAllViews();
   }
 
+  private static getFigurePoints(): Point3d[] {
+    const figurePts: Point3d[] = [];
+    figurePts.push(Point3d.create(1.064, -0.014));
+    figurePts.push(Point3d.create(1.051, 0.039));
+    figurePts.push(Point3d.create(1.008, 0.058));
+    figurePts.push(Point3d.create(0.962, 0.048));
+    figurePts.push(Point3d.create(0.920, 0.026));
+    figurePts.push(Point3d.create(0.898, 0.026));
+    figurePts.push(Point3d.create(0.853, 0.094));
+    figurePts.push(Point3d.create(0.741, 0.120));
+    figurePts.push(Point3d.create(0.652, 0.091));
+    figurePts.push(Point3d.create(0.514, 0.107));
+    figurePts.push(Point3d.create(0.304, 0.108));
+    figurePts.push(Point3d.create(0.040, 0.135));
+    figurePts.push(Point3d.create(-0.023, 0.133));
+    figurePts.push(Point3d.create(-0.031, 0.088));
+    figurePts.push(Point3d.create(0.041, 0.068));
+    figurePts.push(Point3d.create(0.299, 0.035));
+    figurePts.push(Point3d.create(0.447, -0.015));
+    figurePts.push(Point3d.create(0.267, -0.042));
+    figurePts.push(Point3d.create(0.019, -0.036));
+    figurePts.push(Point3d.create(-0.027, -0.146));
+    figurePts.push(Point3d.create(-0.005, -0.179));
+    figurePts.push(Point3d.create(0.056, -0.108));
+    figurePts.push(Point3d.create(0.270, -0.122));
+    figurePts.push(Point3d.create(0.483, -0.120));
+    figurePts.push(Point3d.create(0.649, -0.145));
+    figurePts.push(Point3d.create(0.715, -0.186));
+    figurePts.push(Point3d.create(0.865, -0.135));
+    figurePts.push(Point3d.create(0.905, -0.039));
+    figurePts.push(Point3d.create(0.948, -0.035));
+    figurePts.push(Point3d.create(0.979, -0.051));
+    figurePts.push(Point3d.create(1.037, -0.046));
+    figurePts.push(figurePts[0].clone());
+    return figurePts;
+  }
+
+  private static getFigureTransform(vp: Viewport, base: Point3d, direction: Vector3d, scale: number): Transform | undefined {
+    const boresite = EditManipulator.HandleUtils.getBoresite(base, vp);
+    if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.9999)
+      return undefined;
+
+    const matrix = Matrix3d.createRigidFromColumns(direction, boresite.direction, AxisOrder.XZY);
+    if (undefined === matrix)
+      return undefined;
+
+    matrix.scaleColumnsInPlace(scale, scale, scale);
+    return Transform.createRefs(base.clone(), matrix);
+  }
+
+  public static drawFigure(context: DecorateContext, vp: Viewport, groundPt: Point3d, eyeHeight: number): void {
+    if (!vp.view.is3d() || vp.view.iModel !== context.viewport.view.iModel)
+      return;
+
+    const transform = this.getFigureTransform(context.viewport, groundPt, Vector3d.unitZ(), eyeHeight);
+    if (undefined === transform)
+      return;
+
+    const figurePts = this.getFigurePoints();
+    const color = adjustForBackgroundColor(vp) ? ColorDef.black.adjustedForContrast(vp.view.backgroundColor) : ColorDef.black;
+    const fill = ColorDef.from(255, 245, 225, 100);
+
+    const builderShadow = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    builderShadow.setSymbology(color, ColorDef.black.withAlpha(30), ViewHandleWeight.Thin);
+    builderShadow.addArc(Arc3d.createXY(groundPt, eyeHeight * 0.22), true, true);
+    context.addDecorationFromBuilder(builderShadow);
+
+    const builderHid = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
+    builderHid.setSymbology(color, fill, ViewHandleWeight.Thin);
+    builderHid.addShape(figurePts); // Copies points...
+    context.addDecorationFromBuilder(builderHid);
+
+    const builderVis = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);
+    builderVis.setSymbology(color, color, ViewHandleWeight.Normal);
+    builderVis.addLineString(figurePts); // Owns points...
+    context.addDecorationFromBuilder(builderVis);
+  }
+
   public decorate(context: DecorateContext): void {
     if (!this._haveEyePt || undefined === this.viewport)
       return;
+    SetupWalkCameraTool.drawFigure(context, this.viewport, this._eyePtWorld, ToolSettings.walkEyeHeight);
     SetupCameraTool.drawCameraFrustum(context, this.viewport, this.getAdjustedEyePoint(), this.getAdjustedTargetPoint(), this._eyePtWorld, this._targetPtWorld);
   }
 
