@@ -39,7 +39,7 @@ import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
-import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient } from "@bentley/backend-itwin-client";
+import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient, RequestHost } from "@bentley/backend-itwin-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -391,6 +391,8 @@ export class IModelHost {
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = "1.0.0"; // Default to placeholder version.
     IModelHost.sessionId = Guid.createValue();
     this.logStartup();
+
+    await RequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
 
     if (configuration.applicationType && configuration.applicationType === ApplicationType.NativeApp) {
       this._nativeAppBackend = true;

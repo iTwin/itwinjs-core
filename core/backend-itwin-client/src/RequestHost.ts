@@ -13,12 +13,11 @@ import HttpsProxyAgent = require("https-proxy-agent");
  */
 export class RequestHost {
 
-  /** Initialize the configuration for all HTTP service requests made from the backend.
-   * Sets up requests to be routed through any proxy server identified by the HTTPS_PROXY
-   * environment variable. If the environment is not defined, checks if the fiddler proxy
-   * is reachable and can be setup for debugging.
-   */
+  /** Initialize the configuration for all HTTP service requests made from the backend */
   public static async initialize() {
+    /* Set up requests to be routed through any proxy server identified by the HTTPS_PROXY
+     * environment variable. If the environment is not defined, checks if the fiddler proxy
+     * is reachable and can be setup for debugging. */
     if (process.env.HTTPS_PROXY)
       await this.setupProxyIfReachable(process.env.HTTPS_PROXY, true);
     else

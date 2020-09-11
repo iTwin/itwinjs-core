@@ -9,8 +9,6 @@ import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeBackend } from "./backend";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-  // Start the backend
-  await initializeBackend();
 
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
@@ -54,6 +52,9 @@ import { getRpcInterfaces, initializeBackend } from "./backend";
     height,
     show: !maximizeWindow,
   });
+
+  // Start the backend
+  await initializeBackend();
 
   // Initialize application gateway configuration for the backend
   ElectronRpcManager.initializeImpl({}, getRpcInterfaces("native"));

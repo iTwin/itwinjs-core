@@ -26,6 +26,7 @@ import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
 
 const loggerCategory = BackendLoggerCategory.Authorization;
+// cSpell:ignore openid appauth signin Pkce Signout
 
 /**
  * Utility to generate OIDC/OAuth tokens for Desktop Applications

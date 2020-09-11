@@ -92,6 +92,7 @@ alpha;defaultMobileAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DesktopAuthorizationClientConfiguration
+internal;DesktopAuthorizationClientMessages
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 

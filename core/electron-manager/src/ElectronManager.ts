@@ -8,6 +8,8 @@ import * as path from "path";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 
+// cSpell:ignore signin devserver webcontents
+
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
  * that follow platform-standard window behavior on all platforms.

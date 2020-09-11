@@ -1474,6 +1474,30 @@ export interface DesktopAuthorizationClientConfiguration {
 }
 
 // @internal
+export class DesktopAuthorizationClientMessages {
+    // (undocumented)
+    static readonly getAccessToken: string;
+    // (undocumented)
+    static readonly getAccessTokenComplete: string;
+    // (undocumented)
+    static readonly initialize: string;
+    // (undocumented)
+    static readonly initializeComplete: string;
+    // (undocumented)
+    static readonly onUserStateChanged: string;
+    // (undocumented)
+    static readonly onUserStateChangedComplete: string;
+    // (undocumented)
+    static readonly signIn: string;
+    // (undocumented)
+    static readonly signInComplete: string;
+    // (undocumented)
+    static readonly signOut: string;
+    // (undocumented)
+    static readonly signOutComplete: string;
+}
+
+// @internal
 export abstract class DevToolsRpcInterface extends RpcInterface {
     static getClient(): DevToolsRpcInterface;
     static readonly interfaceName = "DevToolsRpcInterface";
