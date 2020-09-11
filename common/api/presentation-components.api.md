@@ -14,6 +14,7 @@ import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
+import { FavoritePropertiesScope } from '@bentley/presentation-frontend';
 import { Field } from '@bentley/presentation-common';
 import { HighlightableTreeProps } from '@bentley/ui-components';
 import { Id64Arg } from '@bentley/bentleyjs-core';
@@ -35,6 +36,8 @@ import { PageOptions } from '@bentley/presentation-common';
 import { PageOptions as PageOptions_2 } from '@bentley/ui-components';
 import { PropertyData } from '@bentley/ui-components';
 import { PropertyDataChangeEvent } from '@bentley/ui-components';
+import { PropertyDataFiltererBase } from '@bentley/ui-components';
+import { PropertyDataFilterResult } from '@bentley/ui-components';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyGridProps } from '@bentley/ui-components';
 import { PropertyRecord } from '@bentley/ui-abstract';
@@ -165,6 +168,23 @@ export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeCom
 
 // @public @deprecated
 export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>): React.ForwardRefExoticComponent<React.PropsWithoutRef<P & TreeWithUnifiedSelectionProps> & React.RefAttributes<React.Component<P, any, any>>>;
+
+// @alpha
+export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
+    constructor(props: FavoritePropertiesDataFiltererProps);
+    get isActive(): boolean;
+    set isActive(value: boolean);
+    // (undocumented)
+    matchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
+    }
+
+// @alpha
+export interface FavoritePropertiesDataFiltererProps {
+    favoritesScope: FavoritePropertiesScope;
+    isActive?: boolean;
+    isFavorite?: (field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope) => boolean;
+    source: IPresentationPropertyDataProvider;
+}
 
 // @beta
 export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataProvider {

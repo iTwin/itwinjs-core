@@ -18,6 +18,11 @@
   min-height: 0;
 }
 
+.SearchBar{
+  display: flex;
+  align-items: center;
+}
+
 .favorite-action-button {
   width: fit-content;
   height: 20px;

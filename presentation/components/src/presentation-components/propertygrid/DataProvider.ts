@@ -291,6 +291,7 @@ class PropertyDataBuilder {
       ...records,
       label: createLabelRecord(this._contentItem.label, "label"),
       description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
+      reusePropertyDataState: true,
     } as PropertyData;
   }
 

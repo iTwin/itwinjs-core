@@ -1557,6 +1557,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1600,6 +1601,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1664,6 +1666,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -3325,6 +3328,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -3370,6 +3374,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -3446,5 +3451,6 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;

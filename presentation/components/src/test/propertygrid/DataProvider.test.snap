@@ -38,6 +38,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -58,6 +59,7 @@ Object {
     },
   },
   "records": Object {},
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -101,6 +103,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -169,6 +172,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -225,6 +229,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -361,6 +366,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -472,6 +478,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -682,6 +689,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -874,6 +882,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1052,6 +1061,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1162,6 +1172,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1240,6 +1251,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1316,6 +1328,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1336,6 +1349,7 @@ Object {
     },
   },
   "records": Object {},
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1407,6 +1421,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1453,6 +1468,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1509,6 +1525,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1552,6 +1569,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1572,6 +1590,7 @@ Object {
     },
   },
   "records": Object {},
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1616,6 +1635,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1688,6 +1708,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1745,6 +1766,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -1906,6 +1928,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -2030,6 +2053,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -2246,6 +2270,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -2456,6 +2481,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -2641,6 +2667,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -2755,6 +2782,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -2848,6 +2876,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -2930,6 +2959,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -2950,6 +2980,7 @@ Object {
     },
   },
   "records": Object {},
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -3024,6 +3055,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -3073,6 +3105,7 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;
 
@@ -3131,5 +3164,6 @@ Object {
       },
     ],
   },
+  "reusePropertyDataState": true,
 }
 `;

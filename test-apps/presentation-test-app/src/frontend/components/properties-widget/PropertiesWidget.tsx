@@ -8,15 +8,16 @@ import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
 import {
-  IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
+  FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
 } from "@bentley/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
-  ActionButtonRendererProps, PropertyCategory, PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue,
-  VirtualizedPropertyGridWithDataProvider,
+  ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteringInput,
+  FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData, PropertyGridContextMenuArgs, useAsyncValue,
+  useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation } from "@bentley/ui-core";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle } from "@bentley/ui-core";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
 
@@ -50,12 +51,26 @@ export function PropertiesWidget(props: Props) {
     setContextMenuArgs(undefined);
   }, [onFindSimilarProp, dataProvider]);
 
+  const labelFilterer = React.useRef(new LabelPropertyDataFilterer());
+  const valueFilterer = React.useRef(new DisplayValuePropertyDataFilterer());
+  const favoriteFilterer = React.useRef(new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: false }));
+  const filteringDataProvider = React.useMemo(() => {
+    const textFilterer = new CompositePropertyDataFilterer(labelFilterer.current, CompositeFilterType.Or, valueFilterer.current);
+    const favoriteTextFilterer = new CompositePropertyDataFilterer(textFilterer, CompositeFilterType.And, favoriteFilterer.current);
+    return new FilteringPropertyDataProvider(dataProvider, favoriteTextFilterer);
+  }, [dataProvider]);
+
+  const setFilter = React.useCallback((filter) => {
+    labelFilterer.current.filterText = filter;
+    valueFilterer.current.filterText = filter;
+  }, [])
+
   let content;
   if (isOverLimit) {
     content = (<FillCentered>{IModelApp.i18n.translate("Sample:property-grid.too-many-elements-selected")}</FillCentered>);
   } else {
     content = (<VirtualizedPropertyGridWithDataProvider
-      dataProvider={dataProvider}
+      dataProvider={filteringDataProvider}
       isPropertyHoverEnabled={true}
       onPropertyContextMenu={onPropertyContextMenu}
       actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
@@ -67,6 +82,19 @@ export function PropertiesWidget(props: Props) {
   return (
     <div className="PropertiesWidget">
       <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
+      <div className="SearchBar" >
+        <FilteringInput
+          filteringInProgress={false}
+          onFilterCancel={() => { setFilter(""); }}
+          onFilterClear={() => { setFilter(""); }}
+          onFilterStart={(newFilter) => { setFilter(newFilter); }}
+          style={{ flex: "auto" }}
+        />
+        <Toggle
+          title="Favorites"
+          onChange={(on) => favoriteFilterer.current.isActive = on}
+        />
+      </div>
       <div className="ContentContainer">
         {content}
       </div>
