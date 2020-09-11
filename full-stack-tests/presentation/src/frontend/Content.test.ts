@@ -131,7 +131,7 @@ describe("Content", () => {
       field = findFieldByLabel(descriptor.fields, "<0")!;
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "0.00",
-        groupedRawValues: [0.0007575, 1e-7],
+        groupedRawValues: [1e-7, 0.0007575],
       }, {
         displayValue: "0.12",
         groupedRawValues: [0.123456789],
