@@ -9,7 +9,8 @@
 import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, Field, InstanceKey, Item, PresentationError, PresentationStatus, Ruleset, SortDirection,
+  Content, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item, PresentationError,
+  PresentationStatus, Ruleset, SortDirection,
 } from "@bentley/presentation-common";
 import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider as ITableDataProvider } from "@bentley/ui-components";
 import { SortDirection as UiSortDirection } from "@bentley/ui-core";
@@ -175,24 +176,26 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     }
   }
 
-  /** Handles filtering and sorting. */
-  protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
-    const configured = super.configureContentDescriptor(descriptor);
-    if (this._sortColumnKey) {
-      configured.sortingField = descriptor.getFieldByName(this._sortColumnKey)!;
-      switch (this._sortDirection) {
-        case UiSortDirection.Descending:
-          configured.sortDirection = SortDirection.Descending;
-          break;
-        case UiSortDirection.Ascending:
-          configured.sortDirection = SortDirection.Ascending;
-          break;
-        default:
-          configured.sortDirection = undefined;
-      }
+  /**
+   * Tells the data provider to _not_ request descriptor and instead configure
+   * content using `getDescriptorOverrides()` call
+   */
+  protected shouldConfigureContentDescriptor(): boolean { return false; }
+
+  /**
+   * Provides content configuration for the property grid
+   */
+  protected getDescriptorOverrides(): DescriptorOverrides {
+    const overrides = super.getDescriptorOverrides();
+    if (this._sortColumnKey && this._sortDirection !== UiSortDirection.NoSort) {
+      overrides.sorting = {
+        field: { type: FieldDescriptorType.Name, fieldName: this._sortColumnKey },
+        direction: (this._sortDirection === UiSortDirection.Descending) ? SortDirection.Descending : SortDirection.Ascending,
+      };
     }
-    configured.filterExpression = this._filterExpression;
-    return configured;
+    if (this._filterExpression)
+      overrides.filterExpression = this._filterExpression;
+    return overrides;
   }
 
   /**

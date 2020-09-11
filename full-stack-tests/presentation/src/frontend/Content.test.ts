@@ -33,7 +33,7 @@ describe("Content", () => {
     await terminate();
   });
 
-  describe("DistinctValues", () => {
+  describe("Distinct Values", () => {
 
     it("[deprecated] gets distinct content values", async () => {
       const ruleset: Ruleset = {
@@ -244,6 +244,86 @@ describe("Content", () => {
         displayValue: "",
         groupedRawValues: [undefined],
       }]);
+    });
+
+  });
+
+  describe("Fields Selector", () => {
+
+    it("excludes fields from content", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["Element"] },
+            handleInstancesPolymorphically: true,
+            instanceFilter: `this.ECInstanceId = 1`,
+          }],
+        }],
+      };
+
+      const content1 = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {},
+        keys: new KeySet(),
+      });
+      expect(content1?.contentSet.length).to.eq(1);
+      const fieldsCount = content1!.descriptor.fields.length;
+
+      const content2 = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {
+          fieldsSelector: {
+            type: "exclude",
+            fields: [content1!.descriptor.fields[0].getFieldDescriptor()],
+          },
+        },
+        keys: new KeySet(),
+      });
+      expect(content2?.contentSet.length).to.eq(1);
+      expect(content2!.descriptor.fields.length).to.eq(fieldsCount - 1);
+    });
+
+    it("exclusively includes fields in content", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["Element"] },
+            handleInstancesPolymorphically: true,
+            instanceFilter: `this.ECInstanceId = 1`,
+          }],
+        }],
+      };
+
+      const content1 = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {},
+        keys: new KeySet(),
+      });
+      expect(content1?.contentSet.length).to.eq(1);
+      expect(content1!.descriptor.fields.length).to.be.greaterThan(1);
+
+      const content2 = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {
+          fieldsSelector: {
+            type: "include",
+            fields: [content1!.descriptor.fields[0].getFieldDescriptor()],
+          },
+        },
+        keys: new KeySet(),
+      });
+      expect(content2?.contentSet.length).to.eq(1);
+      expect(content2!.descriptor.fields.length).to.eq(1);
     });
 
   });

@@ -15,24 +15,24 @@ Array [
 exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `
 Array [
   Object {
+    "editable": false,
+    "filterable": false,
+    "key": "backing up",
+    "label": "vortals relationships payment",
+    "sortable": true,
+  },
+  Object {
+    "editable": false,
+    "filterable": false,
+    "key": "Tala",
+    "label": "Underpass Towels",
+    "sortable": true,
+  },
+  Object {
     "editable": true,
     "filterable": false,
-    "key": "Rustic",
-    "label": "Saint Pierre and Miquelon",
-    "sortable": true,
-  },
-  Object {
-    "editable": false,
-    "filterable": false,
-    "key": "Home Loan Account",
-    "label": "Refined rich",
-    "sortable": true,
-  },
-  Object {
-    "editable": false,
-    "filterable": false,
-    "key": "Investment Account",
-    "label": "Handcrafted Frozen Soap",
+    "key": "program",
+    "label": "Surinam Dollar Creative Rubber",
     "sortable": true,
   },
 ]
@@ -42,60 +42,69 @@ exports[`TableDataProvider getRow returns valid row item 1`] = `
 Object {
   "cells": Array [
     Object {
-      "key": "zero defect",
+      "key": "Home Loan Account",
       "record": PropertyRecord {
-        "description": "Investment Account",
-        "property": Object {
-          "displayLabel": "SCSI Accountability Supervisor",
-          "name": "zero defect",
-          "typename": "double",
-        },
-        "value": Object {
-          "displayValue": "Investment Account",
-          "value": "Incredible",
-          "valueFormat": 0,
-        },
-      },
-    },
-    Object {
-      "key": "Salad",
-      "record": PropertyRecord {
-        "description": "Tasty",
-        "property": Object {
-          "displayLabel": "cyan HDD Avon",
-          "editor": Object {
-            "name": "incremental",
-            "params": Array [],
-          },
-          "name": "Salad",
-          "typename": "date",
-        },
-        "value": Object {
-          "displayValue": "Tasty",
-          "value": "transmitting",
-          "valueFormat": 0,
-        },
-      },
-    },
-    Object {
-      "key": "Pizza",
-      "record": PropertyRecord {
-        "description": "Global",
+        "description": "payment bluetooth mindshare",
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "IB digital aggregate",
-          "name": "Pizza",
-          "typename": "boolean",
+          "displayLabel": "Administrator",
+          "editor": Object {
+            "name": "Clothing",
+            "params": Array [],
+          },
+          "name": "Home Loan Account",
+          "typename": "float",
         },
         "value": Object {
-          "displayValue": "Global",
-          "value": "Bacon",
+          "displayValue": "payment bluetooth mindshare",
+          "value": "Product",
+          "valueFormat": 0,
+        },
+      },
+    },
+    Object {
+      "key": "Dynamic",
+      "record": PropertyRecord {
+        "description": "optimal application Designer",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "ADP neural-net",
+          "editor": Object {
+            "name": "seamless",
+            "params": Array [],
+          },
+          "name": "Dynamic",
+          "typename": "bit",
+        },
+        "value": Object {
+          "displayValue": "optimal application Designer",
+          "value": "input",
+          "valueFormat": 0,
+        },
+      },
+    },
+    Object {
+      "key": "SAS",
+      "record": PropertyRecord {
+        "description": "Garden",
+        "property": Object {
+          "displayLabel": "azure Licensed",
+          "editor": Object {
+            "name": "cyan",
+            "params": Array [],
+          },
+          "name": "SAS",
+          "typename": "bigint",
+        },
+        "value": Object {
+          "displayValue": "Garden",
+          "value": "Avon",
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"Streets\\",\\"id\\":\\"0x574a000000a4b6\\"}",
+  "key": "{\\"className\\":\\"primary\\",\\"id\\":\\"0x1a360000007f42\\"}",
 }
 `;
 
@@ -111,13 +120,13 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Towels envisioneer",
-          "value": "Towels envisioneer",
+          "displayValue": "deposit virtual",
+          "value": "deposit virtual",
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"Rhode Island\\",\\"id\\":\\"0xf03800000112ad\\"}",
+  "key": "{\\"className\\":\\"Fields\\",\\"id\\":\\"0x15606000000a9bc\\"}",
 }
 `;

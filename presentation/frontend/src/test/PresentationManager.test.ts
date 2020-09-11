@@ -643,7 +643,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
+        .setup((x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentSetSize(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
@@ -662,7 +662,7 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
+        .setup((x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentSetSize(options);
@@ -707,7 +707,7 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
+        .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
       const actualResult = await manager.getContent(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
@@ -732,7 +732,7 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
+        .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
       const actualResult = await manager.getContent(options);
@@ -801,7 +801,7 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
+        .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
       const actualResult = await manager.getContentAndSize(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
@@ -830,7 +830,7 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createStrippedDescriptor(), keys: keyset.toJSON() })))
+        .setup(async (x) => x.getPagedContentSet(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
       const actualResult = await manager.getContentAndSize(options);
@@ -939,7 +939,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getDistinctValues(prepareOptions(options),
-          moq.deepEquals(descriptor.createStrippedDescriptor()),
+          moq.deepEquals(descriptor.createDescriptorOverrides()),
           moq.deepEquals(keyset.toJSON()), fieldName, maximumValueCount))
         .returns(async () => result)
         .verifiable();
@@ -987,7 +987,7 @@ describe("PresentationManager", () => {
       };
       const rpcHandlerOptions = {
         ...prepareOptions(managerOptions),
-        descriptor: descriptor.createStrippedDescriptor(),
+        descriptor: descriptor.createDescriptorOverrides(),
         keys: keys.toJSON(),
         paging: { start: 0, size: 0 },
       };
@@ -1025,7 +1025,7 @@ describe("PresentationManager", () => {
       };
       const rpcHandlerOptions = {
         ...prepareOptions(managerOptions),
-        descriptor: descriptor.createStrippedDescriptor(),
+        descriptor: descriptor.createDescriptorOverrides(),
         keys: keys.toJSON(),
       };
       rpcRequestsHandlerMock

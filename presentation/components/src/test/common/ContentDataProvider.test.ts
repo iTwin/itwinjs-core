@@ -34,12 +34,12 @@ class Provider extends ContentDataProvider {
     super(props);
   }
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); }
-  public shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); }
-  public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); }
+  public configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); } // eslint-disable-line deprecation/deprecation
+  public shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); } // eslint-disable-line deprecation/deprecation
+  public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
   public shouldRequestContentForEmptyKeyset() { return super.shouldRequestContentForEmptyKeyset(); }
   public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
-  public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
+  public isFieldHidden(field: Field) { return super.isFieldHidden(field); } // eslint-disable-line deprecation/deprecation
 }
 
 describe("ContentDataProvider", () => {
@@ -134,14 +134,14 @@ describe("ContentDataProvider", () => {
     });
 
     it("sets a different rulesetId and clears caches", () => {
-      const newId = rulesetId + " (changed)";
+      const newId = `${rulesetId} (changed)`;
       provider.rulesetId = newId;
       expect(provider.rulesetId).to.eq(newId);
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
     it("doesn't clear caches if setting to the same rulesetId", () => {
-      const newId = rulesetId + "";
+      const newId = `${rulesetId}`;
       provider.rulesetId = newId;
       expect(provider.rulesetId).to.eq(newId);
       expect(invalidateCacheSpy).to.not.be.called;
@@ -601,10 +601,9 @@ describe("ContentDataProvider", () => {
     });
 
     it("return a field", async () => {
-      const descriptor = createRandomDescriptor();
       const field = createRandomPropertiesField();
       field.name = faker.random.word();
-      descriptor.fields = [field];
+      const descriptor = createRandomDescriptor(undefined, [field]);
       propertyRecord.property.name = field.name;
 
       presentationManagerMock.setup((x) =>
@@ -614,16 +613,15 @@ describe("ContentDataProvider", () => {
 
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
-      expect(resultField).to.be.eq(field);
+      expect(resultField!.name).to.eq(field.name);
     });
 
     it("return a nested field", async () => {
-      const descriptor = createRandomDescriptor();
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
         faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
-      descriptor.fields = [field];
+      const descriptor = createRandomDescriptor(undefined, [field]);
       propertyRecord.property.name = `${field.name}${FIELD_NAMES_SEPARATOR}${nestedField.name}`;
 
       presentationManagerMock.setup((x) =>
@@ -633,7 +631,7 @@ describe("ContentDataProvider", () => {
 
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
-      expect(resultField).to.be.eq(nestedField);
+      expect(resultField!.name).to.eq(nestedField.name);
     });
 
   });

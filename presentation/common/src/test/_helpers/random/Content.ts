@@ -9,7 +9,7 @@ import {
   PropertiesField, PropertyValueFormat, StructTypeDescription, TypeDescription,
 } from "../../../presentation-common";
 import { SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
-import { BaseFieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
+import { BaseFieldJSON, FieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
 import { PropertyJSON } from "../../../presentation-common/content/Property";
 import { createRandomECClassInfoJSON, createRandomPropertyInfoJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON } from "./EC";
 import { nullable } from "./Misc";
@@ -117,24 +117,27 @@ export const createRandomNestedContentField = (nestedFields?: Field[], category?
   return nestedContentField;
 };
 
-export const createRandomDescriptorJSON = (displayType?: string) => {
-  const categories = [createRandomCategoryJSON()];
-  const selectClasses = [createRandomSelectClassInfoJSON(), createRandomSelectClassInfoJSON()];
-  const fields = [createRandomPrimitiveFieldJSON(categories[0]), createRandomPrimitiveFieldJSON(categories[0]), createRandomPrimitiveFieldJSON(categories[0])];
+export const createRandomDescriptorJSON = (displayType?: string, fields?: FieldJSON[], categories?: CategoryDescriptionJSON[]) => {
+  categories = categories ?? (fields ? undefined : [createRandomCategoryJSON()]);
+  fields = fields ?? [createRandomPrimitiveFieldJSON(categories![0]), createRandomPrimitiveFieldJSON(categories![0]), createRandomPrimitiveFieldJSON(categories![0])];
   return {
     connectionId: faker.random.uuid(),
     inputKeysHash: faker.random.uuid(),
     contentOptions: faker.random.objectElement(),
-    displayType: displayType || faker.lorem.words(),
-    selectClasses,
+    displayType: displayType ?? faker.lorem.words(),
+    selectClasses: [createRandomSelectClassInfoJSON(), createRandomSelectClassInfoJSON()],
     categories,
     fields,
     contentFlags: 0,
   };
 };
 
-export const createRandomDescriptor = (displayType?: string): Descriptor => {
-  return Descriptor.fromJSON(createRandomDescriptorJSON(displayType))!;
+export const createRandomDescriptor = (displayType?: string, fields?: Field[], categories?: CategoryDescription[]): Descriptor => {
+  return Descriptor.fromJSON(createRandomDescriptorJSON(
+    displayType,
+    fields ? fields.map((f) => f.toJSON()) : undefined,
+    categories ? categories.map(CategoryDescription.toJSON) : undefined,
+  ))!;
 };
 
 export const createRandomContentJSON = () => {

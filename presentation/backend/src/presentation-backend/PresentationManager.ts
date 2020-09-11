@@ -595,7 +595,7 @@ export class PresentationManager {
    * @param maximumValueCount    Maximum numbers of values that can be returned. Unlimited if 0.
    * @return A promise object that returns either distinct values on success or an error string on error.
    */
-  public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+  public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetDistinctValues,
@@ -603,7 +603,7 @@ export class PresentationManager {
       rulesetId,
       ...strippedOptions,
       keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
-      descriptorOverrides: descriptor.createDescriptorOverrides(),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
       fieldName,
       maximumValueCount,
     };
@@ -632,7 +632,7 @@ export class PresentationManager {
       rulesetId,
       ...strippedOptionsNoDescriptorAndKeys,
       keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
-      descriptorOverrides: descriptor.createDescriptorOverrides(),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     const reviver = (key: string, value: any) => {
       return key === "" ? {

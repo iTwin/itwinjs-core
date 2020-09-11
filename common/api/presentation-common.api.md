@@ -424,24 +424,21 @@ export interface DEPRECATED_RelatedPropertiesSpecification {
 // @public
 export class Descriptor implements DescriptorSource {
     constructor(source: DescriptorSource);
-    categories: CategoryDescription[];
-    connectionId: string;
-    contentFlags: number;
-    contentOptions: any;
-    // @internal (undocumented)
+    readonly categories: CategoryDescription[];
+    readonly connectionId: string;
+    readonly contentFlags: number;
+    readonly contentOptions: any;
     createDescriptorOverrides(): DescriptorOverrides;
-    // @internal (undocumented)
-    createStrippedDescriptor(): DescriptorJSON;
-    displayType: string;
-    fields: Field[];
+    readonly displayType: string;
+    readonly fields: Field[];
     filterExpression?: string;
     static fromJSON(json: DescriptorJSON | string | undefined): Descriptor | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
-    inputKeysHash: string;
+    readonly inputKeysHash: string;
     // @internal
     static reviver(key: string, value: any): any;
-    selectClasses: SelectClassInfo[];
-    selectionInfo?: SelectionInfo;
+    readonly selectClasses: SelectClassInfo[];
+    readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
     sortingField?: Field;
     toJSON(): DescriptorJSON;
@@ -477,25 +474,38 @@ export interface DescriptorJSON {
 
 // @public
 export interface DescriptorOverrides {
-    contentFlags: number;
-    displayType: string;
+    contentFlags?: number;
+    displayType?: string;
+    // @beta
+    fieldsSelector?: {
+        type: "include" | "exclude";
+        fields: FieldDescriptor[];
+    };
     filterExpression?: string;
-    hiddenFieldNames: string[];
+    // @deprecated
+    hiddenFieldNames?: string[];
+    // @deprecated
     sortDirection?: SortDirection;
+    // @beta
+    sorting?: {
+        field: FieldDescriptor;
+        direction: SortDirection;
+    };
+    // @deprecated
     sortingFieldName?: string;
 }
 
 // @public
 export interface DescriptorSource {
-    categories?: CategoryDescription[];
-    contentFlags: number;
-    displayType: string;
-    fields: Field[];
-    filterExpression?: string;
-    selectClasses: SelectClassInfo[];
-    selectionInfo?: SelectionInfo;
-    sortDirection?: SortDirection;
-    sortingField?: Field;
+    readonly categories?: CategoryDescription[];
+    readonly contentFlags: number;
+    readonly displayType: string;
+    readonly fields: Field[];
+    readonly filterExpression?: string;
+    readonly selectClasses: SelectClassInfo[];
+    readonly selectionInfo?: SelectionInfo;
+    readonly sortDirection?: SortDirection;
+    readonly sortingField?: Field;
 }
 
 // @public
@@ -572,7 +582,7 @@ export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON>
 
 // @alpha
 export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet> extends Paged<ContentRequestOptions<TIModel>> {
-    descriptor: TDescriptor;
+    descriptor: TDescriptor | DescriptorOverrides;
     fieldDescriptor: FieldDescriptor;
     keys: TKeySet;
 }
@@ -675,7 +685,7 @@ export class Field {
     static fromJSON(json: FieldJSON | string | undefined): Field | undefined;
     // (undocumented)
     protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories?: CategoryDescription[]): CategoryDescription;
-    // @alpha
+    // @beta
     getFieldDescriptor(): FieldDescriptor;
     isNestedContentField(): this is NestedContentField;
     isPropertiesField(): this is PropertiesField;
@@ -694,17 +704,16 @@ export class Field {
     type: TypeDescription;
 }
 
-// @alpha
-export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor | RelatedContentFieldDescriptor;
+// @beta
+export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export namespace FieldDescriptor {
     export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor;
     export function isProperties(d: FieldDescriptor): d is PropertiesFieldDescriptor;
-    export function isRelatedContent(d: FieldDescriptor): d is RelatedContentFieldDescriptor;
 }
 
-// @alpha
+// @beta
 export interface FieldDescriptorBase {
     // (undocumented)
     parent?: FieldDescriptor;
@@ -712,14 +721,12 @@ export interface FieldDescriptorBase {
     type: FieldDescriptorType;
 }
 
-// @alpha
+// @beta
 export enum FieldDescriptorType {
     // (undocumented)
     Name = "name",
     // (undocumented)
-    Properties = "properties",
-    // (undocumented)
-    RelatedContent = "related-content"
+    Properties = "properties"
 }
 
 // @public
@@ -1140,7 +1147,7 @@ export interface MultiSchemaClassesSpecification {
     schemaName: string;
 }
 
-// @alpha
+// @beta
 export interface NamedFieldDescriptor extends FieldDescriptorBase {
     // (undocumented)
     fieldName: string;
@@ -1170,8 +1177,6 @@ export class NestedContentField extends Field {
     // @deprecated
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
-    // @alpha
-    getFieldDescriptor(): FieldDescriptor;
     nestedFields: Field[];
     pathToPrimaryClass: RelationshipPath;
     // @internal (undocumented)
@@ -1524,7 +1529,7 @@ export class PresentationRpcInterface extends RpcInterface {
     // @deprecated (undocumented)
     getDisplayLabelDefinitions(_token: IModelRpcProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]>;
     // (undocumented)
-    getDistinctValues(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
+    getDistinctValues(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
     // (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
@@ -1612,13 +1617,13 @@ export class PropertiesField extends Field {
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
     // @deprecated
     static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
-    // @alpha
+    // @beta
     getFieldDescriptor(): FieldDescriptor;
     properties: Property[];
     toJSON(): PropertiesFieldJSON;
 }
 
-// @alpha
+// @beta
 export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
     // (undocumented)
     pathFromSelectToPropertyClass: StrippedRelationshipPath;
@@ -1881,14 +1886,6 @@ export interface RelatedClassInfoJSON {
     targetClassInfo: ClassInfoJSON;
 }
 
-// @alpha
-export interface RelatedContentFieldDescriptor extends FieldDescriptorBase {
-    // (undocumented)
-    pathFromContentToSelectClass: StrippedRelationshipPath;
-    // (undocumented)
-    type: FieldDescriptorType.RelatedContent;
-}
-
 // @public
 export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew;
 
@@ -2014,7 +2011,7 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON>;
     // (undocumented)
-    getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]>;
+    getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]>;
     // (undocumented)
     getFilteredNodePaths(options: HierarchyRequestOptions<IModelRpcProps>, filterText: string): Promise<NodePathElementJSON[]>;
     // (undocumented)

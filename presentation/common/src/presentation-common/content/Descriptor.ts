@@ -8,7 +8,7 @@
 
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
-import { Field, FieldJSON, getFieldByName } from "./Fields";
+import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -123,22 +123,56 @@ export interface DescriptorJSON {
 }
 
 /**
- * Descriptor overrides that can be used to customize
- * content.
- *
+ * Descriptor overrides that can be used to customize content
  * @public
  */
 export interface DescriptorOverrides {
-  /** Content display type. Can be accessed in presentation rules and used to modify content in various ways */
-  displayType: string;
-  /** Names of fields which should be excluded from content */
-  hiddenFieldNames: string[];
+  /**
+   * Content display type. Can be accessed in presentation rules and used
+   * to modify content in various ways. Defaults to empty string.
+   */
+  displayType?: string;
+
   /** Content flags used for content customization. See [[ContentFlags]] */
-  contentFlags: number;
-  /** Name of the sorting field */
+  contentFlags?: number;
+
+  /**
+   * Names of fields which should be excluded from content
+   * @deprecated Use [[fieldsSelector]]
+   */
+  hiddenFieldNames?: string[];
+  /**
+   * Fields selector that allows excluding or including only specified fields
+   * @beta
+   */
+  fieldsSelector?: {
+    /** Should the specified fields be included or excluded */
+    type: "include" | "exclude";
+    /** A list of field descriptors that identify fields to include / exclude */
+    fields: FieldDescriptor[];
+  };
+
+  /**
+   * Name of the sorting field
+   * @deprecated Use [[sorting]]
+   */
   sortingFieldName?: string;
-  /** Sort direction. Defaults to [[SortDirection.Ascending]] */
+  /**
+   * Sort direction. Defaults to [[SortDirection.Ascending]]
+   * @deprecated Use [[sorting]]
+   */
   sortDirection?: SortDirection;
+  /**
+   * Specification for sorting data
+   * @beta
+   */
+  sorting?: {
+    /** Identifier of the field to use for sorting */
+    field: FieldDescriptor;
+    /** Sort direction */
+    direction: SortDirection;
+  };
+
   /** [ECExpression]($docs/learning/presentation/ECExpressions.md) for filtering content */
   filterExpression?: string;
 }
@@ -149,23 +183,23 @@ export interface DescriptorOverrides {
  */
 export interface DescriptorSource {
   /** Selection info used to create the descriptor */
-  selectionInfo?: SelectionInfo;
+  readonly selectionInfo?: SelectionInfo;
   /** Display type used to create the descriptor */
-  displayType: string;
+  readonly displayType: string;
   /** A list of classes that will be selected from when creating content with this descriptor */
-  selectClasses: SelectClassInfo[];
+  readonly selectClasses: SelectClassInfo[];
   /** A list of content field categories used in this descriptor */
-  categories?: CategoryDescription[]; // TODO: make required in 3.0
+  readonly categories?: CategoryDescription[]; // TODO: make required in 3.0
   /** A list of fields contained in the descriptor */
-  fields: Field[];
+  readonly fields: Field[];
   /** [[ContentFlags]] used to create the descriptor */
-  contentFlags: number;
+  readonly contentFlags: number;
   /** Field used to sort the content */
-  sortingField?: Field;
+  readonly sortingField?: Field;
   /** Sorting direction */
-  sortDirection?: SortDirection;
+  readonly sortDirection?: SortDirection;
   /** Content filtering [ECExpression]($docs/learning/presentation/ECExpressions) */
-  filterExpression?: string;
+  readonly filterExpression?: string;
 }
 
 /**
@@ -176,23 +210,23 @@ export interface DescriptorSource {
  */
 export class Descriptor implements DescriptorSource {
   /** Id of the connection used to create the descriptor */
-  public connectionId!: string;
+  public readonly connectionId!: string;
   /** Hash of the input keys used to create the descriptor */
-  public inputKeysHash!: string;
+  public readonly inputKeysHash!: string;
   /** Extended options used to create the descriptor */
-  public contentOptions: any;
+  public readonly contentOptions: any;
   /** Selection info used to create the descriptor */
-  public selectionInfo?: SelectionInfo;
+  public readonly selectionInfo?: SelectionInfo;
   /** Display type used to create the descriptor */
-  public displayType!: string;
-  /** A list of classes that will be selected from when creating content with this descriptor */
-  public selectClasses!: SelectClassInfo[];
+  public readonly displayType!: string;
+  /** A list of classes that will be selected when creating content with this descriptor */
+  public readonly selectClasses!: SelectClassInfo[];
   /** A list of content field categories used in this descriptor */
-  public categories!: CategoryDescription[];
+  public readonly categories!: CategoryDescription[];
   /** A list of fields contained in the descriptor */
-  public fields!: Field[];
+  public readonly fields!: Field[];
   /** [[ContentFlags]] used to create the descriptor */
-  public contentFlags!: number;
+  public readonly contentFlags!: number;
   /** Field used to sort the content */
   public sortingField?: Field;
   /** Sorting direction */
@@ -233,20 +267,25 @@ export class Descriptor implements DescriptorSource {
   private static fromJSONWithCategories(json: DescriptorJSON & { categories: CategoryDescriptionJSON[] }): Descriptor {
     const descriptor = Object.create(Descriptor.prototype);
     const categories = CategoryDescription.listFromJSON(json.categories);
+    const fields = this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromJSON(fieldJson, categories));
+    const sortingField = json.sortingFieldName ? getFieldByName(fields, json.sortingFieldName, true) : undefined;
     return Object.assign(descriptor, json, {
       selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
       categories,
-      fields: this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromJSON(fieldJson, categories)),
+      fields,
+      sortingField,
     });
   }
 
   private static fromJSONWithoutCategories(json: DescriptorJSON & { categories: undefined }): Descriptor {
     const descriptor = Object.create(Descriptor.prototype);
     const fields = this.getFieldsFromJSON(json.fields, /* eslint-disable-line deprecation/deprecation */ Field.fromJSON);
+    const sortingField = json.sortingFieldName ? getFieldByName(fields, json.sortingFieldName, true) : undefined;
     return Object.assign(descriptor, json, {
       selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
       categories: this.getCategoriesFromFields(fields),
       fields,
+      sortingField,
     });
   }
 
@@ -298,25 +337,20 @@ export class Descriptor implements DescriptorSource {
     return getFieldByName(this.fields, name, recurse);
   }
 
-  /** @internal */
+  /**
+   * Create descriptor overrides object from this descriptor.
+   * @public
+   */
   public createDescriptorOverrides(): DescriptorOverrides {
-    return {
-      displayType: this.displayType,
-      hiddenFieldNames: [],
-      sortingFieldName: this.sortingField ? this.sortingField.name : undefined,
-      sortDirection: this.sortDirection,
-      contentFlags: this.contentFlags,
-      filterExpression: this.filterExpression,
-    };
-  }
-
-  /** @internal */
-  public createStrippedDescriptor(): DescriptorJSON {
-    return {
-      ...this.toJSON(),
-      categories: [],
-      fields: [],
-      selectClasses: [],
-    };
+    const overrides: DescriptorOverrides = {};
+    if (this.displayType)
+      overrides.displayType = this.displayType;
+    if (this.contentFlags !== 0)
+      overrides.contentFlags = this.contentFlags;
+    if (this.filterExpression)
+      overrides.filterExpression = this.filterExpression;
+    if (this.sortingField)
+      overrides.sorting = { field: this.sortingField.getFieldDescriptor(), direction: this.sortDirection ?? SortDirection.Ascending };
+    return overrides;
   }
 }

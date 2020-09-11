@@ -86,10 +86,10 @@ public;ExtendedDataRule
 beta;ExtendedHierarchyRequestOptions
 beta;ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 public;Field
-alpha;FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor | RelatedContentFieldDescriptor
-alpha;FieldDescriptor
-alpha;FieldDescriptorBase
-alpha;FieldDescriptorType
+beta;FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor
+beta;FieldDescriptor
+beta;FieldDescriptorBase
+beta;FieldDescriptorType
 public;FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON
 internal;getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
@@ -151,7 +151,7 @@ public;LabelRequestOptions
 public;LabelRpcRequestOptions = PresentationRpcRequestOptions
 public;LoggingNamespaces
 public;MultiSchemaClassesSpecification
-alpha;NamedFieldDescriptor 
+beta;NamedFieldDescriptor 
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
@@ -203,7 +203,7 @@ public;PresentationStatus
 alpha;PresentationUnitSystem
 public;PrimitiveTypeDescription 
 public;PropertiesField 
-alpha;PropertiesFieldDescriptor 
+beta;PropertiesFieldDescriptor 
 public;PropertiesFieldJSON 
 public;Property
 public;Property
@@ -236,7 +236,6 @@ public;RegisteredRuleset
 public;RelatedClassInfo
 public;RelatedClassInfo
 public;RelatedClassInfoJSON
-alpha;RelatedContentFieldDescriptor 
 public;RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew
 public;RelatedInstanceNodesSpecificationNew 
 public;RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew

@@ -11,7 +11,8 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, Item, KeySet, PresentationError, SortDirection as ContentSortDirection, ValuesDictionary,
+  Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, PresentationError, SortDirection as PresentationSortDirection,
+  ValuesDictionary,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -30,7 +31,9 @@ import { mockPresentationManager } from "../_helpers/UiComponents";
  */
 class Provider extends PresentationTableDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public configureContentDescriptor(descriptor: Descriptor) { return super.configureContentDescriptor(descriptor); }
+  public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); }
+  public configureContentDescriptor(descriptor: Descriptor) { return super.configureContentDescriptor(descriptor); } // eslint-disable-line deprecation/deprecation
+  public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
 }
 
 describe("TableDataProvider", () => {
@@ -174,41 +177,10 @@ describe("TableDataProvider", () => {
 
   });
 
-  describe("configureContentDescriptor", () => {
+  describe("shouldConfigureContentDescriptor", () => {
 
-    it("sets sorting properties", async () => {
-      const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => source);
-
-      await provider.sort(0, SortDirection.Descending);
-      let result = provider.configureContentDescriptor(source);
-      expect(source.sortingField).to.be.undefined;
-      expect(source.sortDirection).to.be.undefined;
-      expect(result.sortingField!.name).to.eq((await provider.getColumns())[0].key);
-      expect(result.sortDirection).to.eq(ContentSortDirection.Descending);
-
-      await provider.sort(0, SortDirection.Ascending);
-      result = provider.configureContentDescriptor(source);
-      expect(source.sortingField).to.be.undefined;
-      expect(source.sortDirection).to.be.undefined;
-      expect(result.sortingField!.name).to.eq((await provider.getColumns())[0].key);
-      expect(result.sortDirection).to.eq(ContentSortDirection.Ascending);
-
-      await provider.sort(0, SortDirection.NoSort);
-      result = provider.configureContentDescriptor(source);
-      expect(source.sortingField).to.be.undefined;
-      expect(source.sortDirection).to.be.undefined;
-      expect(result.sortingField!.name).to.eq((await provider.getColumns())[0].key);
-      expect(result.sortDirection).to.be.undefined;
-    });
-
-    it("sets filterExpression", () => {
-      const source = createRandomDescriptor();
-      provider.filterExpression = "test";
-      const result = provider.configureContentDescriptor(source);
-      expect(source.filterExpression).to.be.undefined;
-      expect(result.filterExpression).to.eq("test");
+    it("return false", () => {
+      expect(provider.shouldConfigureContentDescriptor()).to.be.false;
     });
 
   });
@@ -235,13 +207,20 @@ describe("TableDataProvider", () => {
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
+    it("applies filter expression to descriptor overrides", () => {
+      provider.filterExpression = "test";
+      expect(provider.getDescriptorOverrides()).to.deep.eq({
+        displayType: provider.displayType,
+        filterExpression: "test",
+      });
+    });
+
   });
 
   describe("sort", () => {
 
     it("throws when trying to sort by invalid column", async () => {
-      const source = createRandomDescriptor();
-      source.fields = [];
+      const source = createRandomDescriptor(undefined, []);
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
       await expect(provider.sort(0, SortDirection.NoSort)).to.eventually.be.rejectedWith(PresentationError);
@@ -261,9 +240,35 @@ describe("TableDataProvider", () => {
       const source = createRandomDescriptor();
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
+
       await provider.sort(0, SortDirection.Descending);
       expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
       expect(provider.sortDirection).to.eq(SortDirection.Descending);
+      expect(provider.getDescriptorOverrides()).to.deep.eq({
+        displayType: provider.displayType,
+        sorting: {
+          field: { type: FieldDescriptorType.Name, fieldName: provider.sortColumnKey },
+          direction: PresentationSortDirection.Descending,
+        },
+      });
+
+      await provider.sort(0, SortDirection.Ascending);
+      expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
+      expect(provider.sortDirection).to.eq(SortDirection.Ascending);
+      expect(provider.getDescriptorOverrides()).to.deep.eq({
+        displayType: provider.displayType,
+        sorting: {
+          field: { type: FieldDescriptorType.Name, fieldName: provider.sortColumnKey },
+          direction: PresentationSortDirection.Ascending,
+        },
+      });
+
+      await provider.sort(0, SortDirection.NoSort);
+      expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
+      expect(provider.sortDirection).to.eq(SortDirection.NoSort);
+      expect(provider.getDescriptorOverrides()).to.deep.eq({
+        displayType: provider.displayType,
+      });
     });
 
   });
@@ -301,8 +306,7 @@ describe("TableDataProvider", () => {
     });
 
     it("returns one column descriptor when display type is list", async () => {
-      const descriptor = createRandomDescriptor();
-      descriptor.displayType = DefaultContentDisplayTypes.List;
+      const descriptor = createRandomDescriptor(DefaultContentDisplayTypes.List);
       (provider as any).getContentDescriptor = () => descriptor;
       const cols = await provider.getColumns();
       expect(cols.length).to.be.eq(1);
@@ -402,8 +406,7 @@ describe("TableDataProvider", () => {
     });
 
     it("returns valid row when display type is list", async () => {
-      const descriptor = createRandomDescriptor();
-      descriptor.displayType = DefaultContentDisplayTypes.List;
+      const descriptor = createRandomDescriptor(DefaultContentDisplayTypes.List);
       const values: ValuesDictionary<any> = {};
       const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],

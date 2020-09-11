@@ -149,7 +149,7 @@ describe("PropertyDataProvider", () => {
   describe("getDescriptorOverrides", () => {
 
     it("should have `ShowLabels` and `MergeResults` flags", () => {
-      const flags = provider.getDescriptorOverrides().contentFlags;
+      const flags = provider.getDescriptorOverrides().contentFlags!;
       expect(flags & (ContentFlags.MergeResults | ContentFlags.ShowLabels)).to.not.eq(0);
     });
 
@@ -335,8 +335,7 @@ describe("PropertyDataProvider", () => {
         });
 
         it("handles records with no values", async () => {
-          const descriptor = createRandomDescriptor();
-          descriptor.fields = [createPrimitiveField()];
+          const descriptor = createRandomDescriptor(undefined, [createPrimitiveField()]);
           const values: ValuesDictionary<any> = {};
           const displayValues: ValuesDictionary<any> = {};
           const record = new Item([createRandomECInstanceKey()],
@@ -346,8 +345,7 @@ describe("PropertyDataProvider", () => {
         });
 
         it("returns primitive property data", async () => {
-          const descriptor = createRandomDescriptor();
-          descriptor.fields = [createPrimitiveField()];
+          const descriptor = createRandomDescriptor(undefined, [createPrimitiveField()]);
           const values: ValuesDictionary<any> = {};
           const displayValues: ValuesDictionary<any> = {};
           descriptor.fields.forEach((field) => {
@@ -362,8 +360,7 @@ describe("PropertyDataProvider", () => {
 
         it("returns array property data", async () => {
           const field = createArrayField();
-          const descriptor = createRandomDescriptor();
-          descriptor.fields = [field];
+          const descriptor = createRandomDescriptor(undefined, [field]);
           const values = {
             [field.name]: ["some value 1", "some value 2"],
           };
@@ -377,9 +374,8 @@ describe("PropertyDataProvider", () => {
         });
 
         it("returns struct property data", async () => {
-          const descriptor = createRandomDescriptor();
           const field = createStructField();
-          descriptor.fields = [field];
+          const descriptor = createRandomDescriptor(undefined, [field]);
           const values = {
             [field.name]: {
               [(field.type as StructTypeDescription).members[0].name]: "some value",
@@ -399,26 +395,27 @@ describe("PropertyDataProvider", () => {
         describe("nested content handling", () => {
 
           let descriptor: Descriptor;
+          let categories: CategoryDescription[];
           let field1: NestedContentField;
           let field2: Field;
           beforeEach(() => {
-            descriptor = createRandomDescriptor();
-            descriptor.categories = [createRandomCategory("top-1"), createRandomCategory("top-2"), createRandomCategory("nested-1-1")];
-            descriptor.categories[2].parent = descriptor.categories[0];
+            categories = [createRandomCategory("top-1"), createRandomCategory("top-2"), createRandomCategory("nested-1-1")];
+            categories[2].parent = categories[0];
 
             const nestedFields = [
-              createRandomPrimitiveField(descriptor.categories[0], "nested 1"),
-              createRandomPrimitiveField(descriptor.categories[0], "nested 2"),
-              createRandomPrimitiveField(descriptor.categories[2], "nested 3"),
+              createRandomPrimitiveField(categories[0], "nested 1"),
+              createRandomPrimitiveField(categories[0], "nested 2"),
+              createRandomPrimitiveField(categories[2], "nested 3"),
             ];
 
-            field1 = new NestedContentField(descriptor.categories[0], "nested content field",
+            field1 = new NestedContentField(categories[0], "nested content field",
               "Nested Content", createRandomPrimitiveTypeDescription(), faker.random.boolean(),
               faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
               nestedFields, undefined, faker.random.boolean());
             field1.rebuildParentship();
-            field2 = createRandomPrimitiveField(descriptor.categories[0], "primitive");
-            descriptor.fields = [field1, field2];
+            field2 = createRandomPrimitiveField(categories[0], "primitive");
+
+            descriptor = createRandomDescriptor(undefined, [field1, field2], categories);
           });
 
           it("returns nested content with multiple nested records", async () => {
@@ -455,7 +452,7 @@ describe("PropertyDataProvider", () => {
           });
 
           it("returns nested content with multiple nested records when there's only one record in category", async () => {
-            descriptor.fields = [field1];
+            descriptor = createRandomDescriptor(undefined, [field1]);
             const values = {
               [field1.name]: [{
                 primaryKeys: [createRandomECInstanceKey()],
@@ -511,7 +508,7 @@ describe("PropertyDataProvider", () => {
           });
 
           it("returns nested content with single nested record when there's only one record in category", async () => {
-            descriptor.fields = [field1];
+            descriptor = createRandomDescriptor(undefined, [field1]);
             const values = {
               [field1.name]: [{
                 primaryKeys: [createRandomECInstanceKey()],
@@ -534,7 +531,7 @@ describe("PropertyDataProvider", () => {
           });
 
           it("returns nested content with single nested record as a list of struct member records when there's only one record in category", async () => {
-            descriptor.fields = [field1];
+            descriptor = createRandomDescriptor(undefined, [field1]);
             const values = {
               [field1.name]: [{
                 primaryKeys: [createRandomECInstanceKey()],
@@ -572,7 +569,7 @@ describe("PropertyDataProvider", () => {
           });
 
           it("returns nothing for nested content with no values when there's only one record in category", async () => {
-            descriptor.fields = [field1];
+            descriptor = createRandomDescriptor(undefined, [field1]);
             const values = {
               [field1.name]: [] as NestedContentValue[],
             };
@@ -613,7 +610,7 @@ describe("PropertyDataProvider", () => {
           it("returns favorite nested content in a separate category when it's categorized", async () => {
             field1.nestedFields[0].category = createRandomCategory("custom");
             // eslint-disable-next-line deprecation/deprecation
-            favoritePropertiesManagerMock.setup((x) => x.has(field1.nestedFields[0], moq.It.isAny(), moq.It.isAny())).returns(() => true);
+            favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: field1.nestedFields[0].name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
             const values = {
               [field1.name]: [{
                 primaryKeys: [createRandomECInstanceKey()],
@@ -664,7 +661,7 @@ describe("PropertyDataProvider", () => {
           });
 
           it("removes nested content record when the only nested field is moved into a separate category and nested content record is the only record in category", async () => {
-            descriptor.fields = [field1];
+            descriptor = createRandomDescriptor(undefined, [field1]);
             field1.nestedFields[0].category = createRandomCategory("custom");
             field1.nestedFields.splice(1);
             const values = {
@@ -689,7 +686,7 @@ describe("PropertyDataProvider", () => {
           });
 
           it("removes nested content record when the nested field is categorized but there's no content", async () => {
-            descriptor.fields = [field1];
+            descriptor = createRandomDescriptor(undefined, [field1]);
             field1.nestedFields[0].category = createRandomCategory("custom");
             const values = {
               [field1.name]: [] as NestedContentValue[],
@@ -704,7 +701,7 @@ describe("PropertyDataProvider", () => {
           });
 
           it("returns nested content with multiple nested categorized records", async () => {
-            descriptor.fields = [field1];
+            descriptor = createRandomDescriptor(undefined, [field1]);
             field1.nestedFields[0].category = createRandomCategory("custom");
             const values = {
               [field1.name]: [{
@@ -763,8 +760,7 @@ describe("PropertyDataProvider", () => {
 
           it("doesn't include array fields with no values when set", async () => {
             const fields = [1, 2].map(() => createArrayField());
-            const descriptor = createRandomDescriptor();
-            descriptor.fields = fields;
+            const descriptor = createRandomDescriptor(undefined, fields);
             const values: ValuesDictionary<any> = {
               [fields[0].name]: [faker.random.word()],
               [fields[1].name]: [],
@@ -785,8 +781,7 @@ describe("PropertyDataProvider", () => {
           it("doesn't include struct fields with no values when set", async () => {
             const fields = [1, 2].map(() => createStructField());
             (fields[1].type as StructTypeDescription).members = [];
-            const descriptor = createRandomDescriptor();
-            descriptor.fields = fields;
+            const descriptor = createRandomDescriptor(undefined, fields);
             const values: ValuesDictionary<any> = {};
             const displayValues: ValuesDictionary<any> = {};
             fields.forEach((field) => {
@@ -815,8 +810,7 @@ describe("PropertyDataProvider", () => {
             const arrayField = createArrayField();
             const structField = createStructField();
 
-            const descriptor = createRandomDescriptor();
-            descriptor.fields = [primitiveField, arrayField, structField];
+            const descriptor = createRandomDescriptor(undefined, [primitiveField, arrayField, structField]);
             const values = {
               [primitiveField.name]: faker.random.word(),
               [arrayField.name]: ["some value 1", "some value 2"],
@@ -870,16 +864,15 @@ describe("PropertyDataProvider", () => {
           describe("with nested content", () => {
 
             it("puts non-struct records of struct fields into favorite category", async () => {
-              const descriptor = createRandomDescriptor();
-              const categories = descriptor.categories = [createRandomCategory("primitive"), createRandomCategory("nested")];
+              const categories = [createRandomCategory("primitive"), createRandomCategory("nested")];
               categories[0].parent = categories[1];
               const propertiesField = createRandomPropertiesField(categories[0]);
               const nestedContentField = createRandomNestedContentField([propertiesField], categories[1]);
               nestedContentField.rebuildParentship();
-              descriptor.fields = [nestedContentField];
+              const descriptor = createRandomDescriptor(undefined, [nestedContentField], categories);
 
               // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(propertiesField, moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField.name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
               const propertyValue: string = faker.random.words(2);
               const nestedContentValue: NestedContentValue[] = [{
@@ -913,16 +906,15 @@ describe("PropertyDataProvider", () => {
             });
 
             it("puts properties field parent record into favorites category if property is merged", async () => {
-              const descriptor = createRandomDescriptor();
-              const categories = descriptor.categories = [createRandomCategory("primitive"), createRandomCategory("nested")];
+              const categories = [createRandomCategory("primitive"), createRandomCategory("nested")];
               categories[0].parent = categories[1];
               const propertiesField = createRandomPropertiesField(categories[0]);
               const nestedContentField = createRandomNestedContentField([propertiesField], categories[1]);
               nestedContentField.rebuildParentship();
-              descriptor.fields = [nestedContentField];
+              const descriptor = createRandomDescriptor(undefined, [nestedContentField], categories);
 
               // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(propertiesField, moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField.name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
               const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
               const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
@@ -946,19 +938,18 @@ describe("PropertyDataProvider", () => {
             });
 
             it("doesn't put duplicate records for merged nested content fields that have multiple favorite properties", async () => {
-              const descriptor = createRandomDescriptor();
-              const categories = descriptor.categories = [createRandomCategory("primitive"), createRandomCategory("nested")];
+              const categories = [createRandomCategory("primitive"), createRandomCategory("nested")];
               categories[0].parent = categories[1];
               const propertiesField1 = createRandomPropertiesField(categories[0]);
               const propertiesField2 = createRandomPropertiesField(categories[0]);
               const nestedContentField = createRandomNestedContentField([propertiesField1, propertiesField2], categories[1]);
               nestedContentField.rebuildParentship();
-              descriptor.fields = [nestedContentField];
+              const descriptor = createRandomDescriptor(undefined, [nestedContentField], categories);
 
               // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(propertiesField1, moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField1.name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
               // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(propertiesField2, moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField2.name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
               const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
               const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
@@ -982,15 +973,14 @@ describe("PropertyDataProvider", () => {
             });
 
             it("throws if nested field values are not nested content", async () => {
-              const descriptor = createRandomDescriptor();
-              const category = descriptor.categories[0];
+              const category = createRandomCategory();
               const propertiesField1 = createRandomPropertiesField(category);
               const propertiesField2 = createRandomPropertiesField(category);
               const nestedContentField = createRandomNestedContentField([propertiesField1, propertiesField2], category);
-              descriptor.fields = [nestedContentField];
+              const descriptor = createRandomDescriptor(undefined, [nestedContentField], [category]);
 
               // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(nestedContentField.nestedFields[0], moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: nestedContentField.nestedFields[0].name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
 
               const values = {
                 [nestedContentField.name]: [{ primaryKeys: [createRandomECInstanceKey()] }],

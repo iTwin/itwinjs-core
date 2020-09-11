@@ -8,7 +8,7 @@
 
 import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import { DescriptorJSON } from "./content/Descriptor";
+import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { InstanceKeyJSON } from "./EC";
@@ -145,7 +145,7 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient, this.rpcClient.getPagedContentSet, options);
   }
 
-  public async getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
+  public async getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
     return this.request<string[], ContentRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getDistinctValues, options, descriptor, keys, fieldName, maximumValueCount);
   }
