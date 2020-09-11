@@ -236,6 +236,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Numeric Input", "Numeric Input component", <NumericInput placeholder="Icon Input" min={1} max={100} className="uicore-full-width" />),
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
+        createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
@@ -310,6 +311,7 @@ export class ComponentExamplesProvider {
       White,
       Blue,
       Yellow,
+      Orange,
     }
 
     const colorChoices = [
@@ -317,6 +319,7 @@ export class ComponentExamplesProvider {
       { label: "White", value: ColorOptions.White },
       { label: "Blue", value: ColorOptions.Blue },
       { label: "Yellow", value: ColorOptions.Yellow },
+      { label: "Orange", value: ColorOptions.Orange },
     ];
 
     const cityChoices = [

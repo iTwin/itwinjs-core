@@ -11,6 +11,7 @@ enum ColorOptions {
   White,
   Blue,
   Yellow,
+  Orange,
 }
 
 const colorChoices = [
@@ -18,6 +19,7 @@ const colorChoices = [
   { label: "White", value: ColorOptions.White },
   { label: "Blue", value: ColorOptions.Blue },
   { label: "Yellow", value: ColorOptions.Yellow },
+  { label: "Orange", value: ColorOptions.Orange },
 ];
 
 const cityChoices = [

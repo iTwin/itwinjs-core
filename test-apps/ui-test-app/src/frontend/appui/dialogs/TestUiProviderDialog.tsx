@@ -17,6 +17,7 @@ enum ColorOptions {
   White,
   Blue,
   Yellow,
+  Orange,
 }
 
 interface TestUiProviderDialogProps {
@@ -108,6 +109,7 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
           { label: "White", value: ColorOptions.White },
           { label: "Blue", value: ColorOptions.Blue },
           { label: "Yellow", value: ColorOptions.Yellow },
+          { label: "Orange", value: ColorOptions.Orange },
         ],
       },
     };

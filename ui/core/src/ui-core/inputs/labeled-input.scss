@@ -40,6 +40,7 @@
       > .bwx-inputs-input {
 
         padding-right:  $uicore-bordered-padding + $uicore-line-height;
+        margin-right: $uicore-bordered-padding + $uicore-line-height;
       }
     }
 
@@ -50,11 +51,10 @@
       right:              0;
       top:                0;
       bottom:             0;
-      padding:            $uicore-unbordered-padding;
+      padding:            $uicore-bordered-padding;
 
-      font-size:          16px;
+      font-size:          $uicore-font-size;
       font-weight:        normal;
-      line-height:        $uicore-line-height;
     }
   }
 
