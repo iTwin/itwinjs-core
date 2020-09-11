@@ -128,7 +128,7 @@ You can use these environment variables to alter the default behavior of various
 * SVT_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
 * SVT_FAKE_CLOUD_STORAGE
-  * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/. They will be removed by a `rush clean`.
+  * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/backend/tiles/. They will be removed by a `rush clean` or `npm run clean`.
     * NOTE: This currently only works when running display-test-app in a browser.
 * SVT_ENABLE_MAP_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
@@ -164,6 +164,7 @@ You can use these environment variables to alter the default behavior of various
 ## Key-ins
 
 display-test-app has access to all key-ins defined in the imodeljs-frontend and frontend-devtools packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
+
 * **win resize** width height *windowId* - resize the content area of the specified of focused window to specified width and height.
 * **win focus** windowId - give focus to the specified window.
 * **win max** *windowId* - maximize the specified or focused window.
@@ -201,5 +202,3 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta aspect skew decorator** *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
 * **dta classifyclip selected** *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
 * **dta model transform** - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
-
-

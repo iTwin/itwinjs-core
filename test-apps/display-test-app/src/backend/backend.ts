@@ -156,7 +156,7 @@ export async function initializeBackend(): Promise<void> {
 
   let logLevel = LogLevel.None;
   if (MobileRpcConfiguration.isMobileBackend) {
-    // Does not seem SVTConfiguraiton is used anymore.
+    // Does not seem SVTConfiguration is used anymore.
   } else {
     if (svtConfig.customOrchestratorUri)
       hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
@@ -177,5 +177,5 @@ export async function initializeBackend(): Promise<void> {
   Logger.setLevel("SVT", LogLevel.Trace);
 
   if (svtConfig.useFakeCloudStorageTileCache)
-    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "..", "..", "build", "tiles")));
+    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
 }
