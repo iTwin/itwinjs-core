@@ -97,7 +97,6 @@ import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
-import { IModelEncryptionProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
@@ -161,6 +160,7 @@ import { SheetProps } from '@bentley/imodeljs-common';
 import { SheetTemplateProps } from '@bentley/imodeljs-common';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
+import { SnapshotOpenOptions } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
@@ -3638,7 +3638,7 @@ export class SnapshotDb extends IModelDb {
     static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb;
     get filePath(): string;
-    static openFile(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb;
+    static openFile(filePath: string, props?: SnapshotOpenOptions): SnapshotDb;
     // @internal
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }

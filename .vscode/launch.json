@@ -56,20 +56,17 @@
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Offline)",
-      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend",
-      "args": [
-        "--testDir=${workspaceFolder}/core/backend/lib/test/",
-        "--inspect",
-        "--recursive",
-        "--offline=mock",
-        "--grep",
-        "#integration",
-        "--invert"
+      "cwd": "${workspaceRoot}/core/backend/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "test",
       ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
+      "outFiles": [
+        "${workspaceRoot}/core/{backend,bentley,clients,common,geometry}/lib/**/*.js"
+      ],
+      "console": "integratedTerminal",
+      "sourceMaps": true
     },
     {
       "type": "node",

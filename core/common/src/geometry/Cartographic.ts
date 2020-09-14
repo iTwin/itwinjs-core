@@ -315,40 +315,38 @@ export class Cartographic implements LatLongAndHeight {
  * @public
  */
 export class CartographicRange {
-  private _ranges: Range2d[];
+  private _ranges: Range2d[] = [];
 
   // These following are used to preserve the min/max latitude and longitudes.
   // The longitudes are raw values and may cross over the -PI or 2PI boundaries.
-  private _minLongitude: number = 0;
-  private _maxLongitude: number = 0;
-  private _minLatitude: number = 0;
-  private _maxLatitude: number = 0;
+  private _minLongitude = 0;
+  private _maxLongitude = 0;
+  private _minLatitude = 0;
+  private _maxLatitude = 0;
   constructor(spatialRange: Range3d, spatialToEcef: Transform) {
     const ecefRange = spatialToEcef.multiplyRange(spatialRange);
     const ecefCorners = ecefRange.corners();
     let low: Cartographic | undefined, high: Cartographic | undefined;
 
     for (const ecefCorner of ecefCorners) {
-      const carto = Cartographic.fromEcef(ecefCorner);
-      if (carto) {
-        if (low) {
-          low.longitude = Math.min(low.longitude, carto.longitude);
-          low.latitude = Math.min(low.latitude, carto.latitude);
-        } else
-          low = carto.clone();
-
-        if (high) {
-          high.longitude = Math.max(high.longitude, carto.longitude);
-          high.latitude = Math.max(high.latitude, carto.latitude);
-        } else
-          high = carto.clone();
+      const geoPt = Cartographic.fromEcef(ecefCorner);
+      if (!geoPt)
+        continue;
+      if (undefined === low || undefined === high) {
+        low = geoPt;
+        high = geoPt.clone();
+        continue;
       }
+      low.latitude = Math.min(low.latitude, geoPt.latitude);
+      low.longitude = Math.min(low.longitude, geoPt.longitude);
+      high.latitude = Math.max(high.latitude, geoPt.latitude);
+      high.longitude = Math.max(high.longitude, geoPt.longitude);
     }
+
     if (!low || !high) {
       assert(false);
       return;
     }
-
 
     const longitudeRanges = [];
     this._minLongitude = Math.min(low.longitude, high.longitude), this._maxLongitude = Math.max(low.longitude, high.longitude);
@@ -359,7 +357,6 @@ export class CartographicRange {
       longitudeRanges.push(Range1d.createXX(this._minLongitude, this._maxLongitude));
     }
 
-    this._ranges = [];
     for (const longitudeRange of longitudeRanges) {
       this._minLatitude = Math.min(low.latitude, high.latitude), this._maxLatitude = Math.max(low.latitude, high.latitude);
       if (this._maxLatitude - this._minLatitude > Angle.piOver2Radians) {

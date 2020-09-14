@@ -20,9 +20,9 @@ import {
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
-  IModelCoordinatesResponseProps, IModelEncryptionProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus,
-  IModelVersion, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit,
-  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps,
+  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
+  QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
   SyncMode, ThumbnailProps, TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -1736,14 +1736,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     public getViewStateData(viewDefinitionId: string): ViewStateProps {
-      const viewStateData: ViewStateProps = {} as any;
       const elements = this._iModel.elements;
       const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
-      viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
-      viewStateData.categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewStateData.viewDefinitionProps.categorySelectorId);
-      viewStateData.displayStyleProps = elements.getElementProps<DisplayStyleProps>(viewStateData.viewDefinitionProps.displayStyleId);
+      const viewDefinitionProps = viewDefinitionElement.toJSON();
+      const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
+      const displayStyleProps = elements.getElementProps<DisplayStyleProps>(viewDefinitionProps.displayStyleId);
+      const viewStateData: ViewStateProps = { viewDefinitionProps, displayStyleProps, categorySelectorProps };
 
-      const modelSelectorId = (viewStateData.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
+      const modelSelectorId = (viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
       if (modelSelectorId !== undefined) {
         viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(modelSelectorId);
       } else if (viewDefinitionElement instanceof SheetViewDefinition) {
@@ -2590,13 +2590,13 @@ export class SnapshotDb extends IModelDb {
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static openFile(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotDb {
+  public static openFile(filePath: string, props?: SnapshotOpenOptions): SnapshotDb {
     if (SnapshotDb.tryFindByKey(filePath)) {
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
     }
-    const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
+    const propsString = props ? JSON.stringify(props) : undefined;
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(filePath, OpenMode.Readonly, undefined, encryptionPropsString);
+    const status = nativeDb.openIModel(filePath, OpenMode.Readonly, undefined, propsString);
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, `Could not open snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
 
@@ -2699,7 +2699,7 @@ export class StandaloneDb extends IModelDb {
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db", Logger.logError, loggerCategory);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(filePath, openMode, upgradeOptions as any);
+    const status = nativeDb.openIModel(filePath, openMode, upgradeOptions);
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, "Could not open iModel as Standalone", Logger.logError, loggerCategory, () => ({ filePath }));
 

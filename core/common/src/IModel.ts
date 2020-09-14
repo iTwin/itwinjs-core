@@ -92,6 +92,12 @@ export interface IModelEncryptionProps {
   password?: string;
 }
 
+/** @public */
+export interface SnapshotOpenOptions extends IModelEncryptionProps {
+  /** @internal */
+  lazyBlockCache?: boolean;
+}
+
 /** Options that can be supplied when creating snapshot iModels.
  * @public
  */

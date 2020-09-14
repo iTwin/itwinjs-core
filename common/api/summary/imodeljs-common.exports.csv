@@ -448,6 +448,7 @@ public;SkyCubeProps
 beta;SnapRequestProps
 beta;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
+public;SnapshotOpenOptions 
 public;SolarLight
 public;SolarLightProps
 public;SolarShadowSettings

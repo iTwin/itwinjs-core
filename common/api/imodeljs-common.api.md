@@ -6168,6 +6168,12 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     openRemote(_key: string): Promise<IModelConnectionProps>;
 }
 
+// @public (undocumented)
+export interface SnapshotOpenOptions extends IModelEncryptionProps {
+    // @internal (undocumented)
+    lazyBlockCache?: boolean;
+}
+
 // @public
 export class SolarLight {
     constructor(json?: SolarLightProps);
