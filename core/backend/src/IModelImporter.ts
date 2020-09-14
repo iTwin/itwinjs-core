@@ -106,9 +106,18 @@ export class IModelImporter {
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertModel`.
    */
   protected onInsertModel(modelProps: ModelProps): Id64String {
-    const modelId: Id64String = this.targetDb.models.insertModel(modelProps);
-    Logger.logInfo(loggerCategory, `Inserted ${this.formatModelForLogger(modelProps)}`);
-    return modelId;
+    try {
+      const modelId: Id64String = this.targetDb.models.insertModel(modelProps);
+      Logger.logInfo(loggerCategory, `Inserted ${this.formatModelForLogger(modelProps)}`);
+      return modelId;
+    } catch (error) {
+      if (!this.targetDb.containsClass(modelProps.classFullName)) {
+        // replace standard insert error with something more helpful
+        const errorMessage = `Model class "${modelProps.classFullName}" not found in the target iModel. Was the latest version of the schema imported?`;
+        throw new IModelError(IModelStatus.InvalidName, errorMessage, Logger.logError, loggerCategory);
+      }
+      throw error; // throw original error
+    }
   }
 
   /** Update an existing Model in the target iModel from the specified ModelProps.
@@ -164,9 +173,18 @@ export class IModelImporter {
    */
   protected onInsertElement(elementProps: ElementProps): Id64String {
     this.checkProjectExtents(elementProps);
-    const elementId: Id64String = this.targetDb.elements.insertElement(elementProps);
-    Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
-    return elementId;
+    try {
+      const elementId: Id64String = this.targetDb.elements.insertElement(elementProps);
+      Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
+      return elementId;
+    } catch (error) {
+      if (!this.targetDb.containsClass(elementProps.classFullName)) {
+        // replace standard insert error with something more helpful
+        const errorMessage = `Element class "${elementProps.classFullName}" not found in the target iModel. Was the latest version of the schema imported?`;
+        throw new IModelError(IModelStatus.InvalidName, errorMessage, Logger.logError, loggerCategory);
+      }
+      throw error; // throw original error
+    }
   }
 
   /** Update an existing Element in the target iModel from the specified ElementProps.
@@ -277,8 +295,17 @@ export class IModelImporter {
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElementAspect`.
    */
   protected onInsertElementAspect(aspectProps: ElementAspectProps): void {
-    this.targetDb.elements.insertAspect(aspectProps);
-    Logger.logInfo(loggerCategory, `Inserted ${this.formatElementAspectForLogger(aspectProps)}`);
+    try {
+      this.targetDb.elements.insertAspect(aspectProps);
+      Logger.logInfo(loggerCategory, `Inserted ${this.formatElementAspectForLogger(aspectProps)}`);
+    } catch (error) {
+      if (!this.targetDb.containsClass(aspectProps.classFullName)) {
+        // replace standard insert error with something more helpful
+        const errorMessage = `ElementAspect class "${aspectProps.classFullName}" not found in the target iModel. Was the latest version of the schema imported?`;
+        throw new IModelError(IModelStatus.InvalidName, errorMessage, Logger.logError, loggerCategory);
+      }
+      throw error; // throw original error
+    }
   }
 
   /** Update the ElementAspect within the target iModel.
@@ -348,9 +375,18 @@ export class IModelImporter {
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertRelationship`.
    */
   protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String {
-    const targetRelInstanceId: Id64String = this.targetDb.relationships.insertInstance(relationshipProps);
-    Logger.logInfo(loggerCategory, `Inserted ${this.formatRelationshipForLogger(relationshipProps)}`);
-    return targetRelInstanceId;
+    try {
+      const targetRelInstanceId: Id64String = this.targetDb.relationships.insertInstance(relationshipProps);
+      Logger.logInfo(loggerCategory, `Inserted ${this.formatRelationshipForLogger(relationshipProps)}`);
+      return targetRelInstanceId;
+    } catch (error) {
+      if (!this.targetDb.containsClass(relationshipProps.classFullName)) {
+        // replace standard insert error with something more helpful
+        const errorMessage = `Relationship class "${relationshipProps.classFullName}" not found in the target iModel. Was the latest version of the schema imported?`;
+        throw new IModelError(IModelStatus.InvalidName, errorMessage, Logger.logError, loggerCategory);
+      }
+      throw error; // throw original error
+    }
   }
 
   /** Update an existing Relationship in the target iModel from the specified RelationshipProps.
