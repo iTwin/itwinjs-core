@@ -2249,8 +2249,10 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
     // @internal (undocumented)
     static get className(): string;
     readonly isNotSpatiallyLocated: boolean;
+    // @deprecated (undocumented)
     get iSpatiallyLocated(): boolean;
     readonly isPlanProjection: boolean;
+    get isSpatiallyLocated(): boolean;
     // @internal (undocumented)
     toJSON(): GeometricModel3dProps;
 }

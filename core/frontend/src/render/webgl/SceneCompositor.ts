@@ -978,6 +978,14 @@ abstract class Compositor extends SceneCompositor {
       this.renderVolumeClassification(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
 
+      // RenderPass.BackgroundMap is used only when depth is turned off for the map.
+      // Ensure it draws before any opaque geometry (including layers), without depth.
+      this.target.beginPerfMetricRecord("Render background map", true);
+      this.target.drawingBackgroundForReadPixels = true;
+      this.renderLayers(commands, false, RenderPass.BackgroundMap);
+      this.target.drawingBackgroundForReadPixels = false;
+      this.target.endPerfMetricRecord(true);
+
       this.target.beginPerfMetricRecord("Render Opaque Layers", true);
       this.renderLayers(commands, false, RenderPass.OpaqueLayers);
       this.target.endPerfMetricRecord(true);
@@ -1948,15 +1956,6 @@ class MRTCompositor extends Compositor {
 
     const fbStack = System.instance.frameBufferStack;
     fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, this.useMsBuffers, () => {
-      if (renderForReadPixels) {
-        // BackgroundMap pass is only used when the map is rendered without depth.
-        // When drawing to the screen we render it to the background framebuffer.
-        // For readPixels, draw it to opaque frame buffer before anything else, with depth turned off.
-        this.target.drawingBackgroundForReadPixels = true;
-        this.drawPass(commands, RenderPass.BackgroundMap, true);
-        this.target.drawingBackgroundForReadPixels = false;
-      }
-
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (needAO || renderForReadPixels) {
@@ -2199,14 +2198,6 @@ class MPCompositor extends Compositor {
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
     if (renderForReadPixels || needAO) {
       this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
-
-      if (renderForReadPixels && 0 < commands.getCommands(RenderPass.BackgroundMap).length) {
-        // Draw background map last for readPixels. Tell shader to discard surface if anything at all is already in pick buffer.
-        this.target.drawingBackgroundForReadPixels = true;
-        this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true, RenderPass.BackgroundMap);
-        this.target.drawingBackgroundForReadPixels = false;
-      }
-
       if (needAO)
         this.renderAmbientOcclusion();
     }

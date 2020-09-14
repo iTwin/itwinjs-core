@@ -198,6 +198,8 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
    */
   public readonly isNotSpatiallyLocated: boolean;
   /** If true, then the elements in this GeometricModel3d are in real-world coordinates and will be in the spatial index. */
+  public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
+  /** @deprecated use [[isSpatiallyLocated]] */
   public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 
   /** @internal */

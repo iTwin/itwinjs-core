@@ -3075,8 +3075,10 @@ export class GeometricModel3dState extends GeometricModelState {
     // @internal (undocumented)
     get is3d(): boolean;
     readonly isNotSpatiallyLocated: boolean;
+    // @deprecated (undocumented)
     get iSpatiallyLocated(): boolean;
     readonly isPlanProjection: boolean;
+    get isSpatiallyLocated(): boolean;
     // @internal (undocumented)
     toJSON(): GeometricModel3dProps;
 }

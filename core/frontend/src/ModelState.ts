@@ -195,6 +195,8 @@ export class GeometricModel3dState extends GeometricModelState {
   public readonly isNotSpatiallyLocated: boolean;
 
   /** If true, then the elements in this GeometricModel3dState are in real-world coordinates and will be in the spatial index. */
+  public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
+  /** @deprecated use [[isSpatiallyLocated]] */
   public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 }
 

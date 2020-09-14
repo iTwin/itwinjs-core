@@ -7,7 +7,9 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, ColorDef, GlobeMode, TerrainHeightOriginMode,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, Pixel, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import {
+  IModelApp, IModelConnection, Pixel, SnapshotConnection,
+} from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
 describe("Background map", () => {
@@ -85,7 +87,7 @@ describe("Background map", () => {
     });
   });
 
-  // The view consists of a white slab in the center of a top view - smooth-shaded mode. Map initially off. Map is coplanar with top of slab.
+  // The view consists of a white rectangle in the center of a top view - smooth-shaded mode. Map initially off. Map is coplanar with top of rectangle.
   it("obscures model based on settings", async () => {
     type PixelType = "model" | "bg" | "map";
 
