@@ -420,7 +420,7 @@
       "name": "display-test-app Electron (backend)",
       "cwd": "${workspaceFolder}/test-apps/display-test-app/",
       "env": {
-        "SVT_LOG_LEVEL": "TRACE",
+        "SVT_LOG_LEVEL": "TRACE"
       },
       "runtimeExecutable": "${workspaceFolder}/test-apps/display-test-app/node_modules/.bin/electron",
       "runtimeArgs": [
@@ -461,14 +461,6 @@
         "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ],
       "protocol": "inspector"
-    },
-    {
-      "name": "display-test-app (frontend)",
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223,
-      "webRoot": "${workspaceRoot}",
-      "sourceMaps": true
     },
     {
       "type": "node",
@@ -1145,13 +1137,6 @@
         "⚠︝Full Stack RPC Interface Tests (frontend)",
         "⚠︝Full Stack RPC Interface Tests (certa backend)",
         "⚠︝Full Stack RPC Interface Tests (backend)"
-      ]
-    },
-    {
-      "name": "✔display-test-app Electron (frontend + backend)",
-      "configurations": [
-        "display-test-app Electron (backend)",
-        "display-test-app (frontend)"
       ]
     },
     {
