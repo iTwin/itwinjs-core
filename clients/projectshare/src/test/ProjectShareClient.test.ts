@@ -132,12 +132,12 @@ describe("ProjectShareClient (#integration)", () => {
     // Create custom properties and validate returned file
     const createCustomProperties = [
       {
-        Name: `TestKey${Guid.createValue()}`,
-        Value: "TestValue1",
+        Name: `TestKey${Guid.createValue()}`, // eslint-disable-line @typescript-eslint/naming-convention
+        Value: "TestValue1", // eslint-disable-line @typescript-eslint/naming-convention
       },
       {
-        Name: `TestKey${Guid.createValue()}`,
-        Value: "TestValue2",
+        Name: `TestKey${Guid.createValue()}`, // eslint-disable-line @typescript-eslint/naming-convention
+        Value: "TestValue2", // eslint-disable-line @typescript-eslint/naming-convention
       },
     ];
     const retFile: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, createCustomProperties);
@@ -163,8 +163,8 @@ describe("ProjectShareClient (#integration)", () => {
     // Update a custom property and validate
     const updateCustomProperties = [
       {
-        Name: createCustomProperties[0].Name,
-        Value: "TestUpdatedValue1",
+        Name: createCustomProperties[0].Name, // eslint-disable-line @typescript-eslint/naming-convention
+        Value: "TestUpdatedValue1", // eslint-disable-line @typescript-eslint/naming-convention
       },
     ];
     const retFile3: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, updateCustomProperties);

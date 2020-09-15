@@ -66,7 +66,7 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
    */
   protected async getUserManagerSettings(basicSettings: BrowserAuthorizationCallbackHandlerConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings> {
     let userManagerSettings: UserManagerSettings = {
-      response_mode: basicSettings.responseMode,
+      response_mode: basicSettings.responseMode, // eslint-disable-line @typescript-eslint/naming-convention
     };
 
     if (advancedSettings) {

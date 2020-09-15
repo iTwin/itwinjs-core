@@ -66,7 +66,7 @@ export interface AuthorizedClientRequestContextProps extends ClientRequestContex
 
 // @beta
 export interface CancelRequest {
-    cancel(): boolean;
+    cancel: () => boolean;
 }
 
 // @beta (undocumented)

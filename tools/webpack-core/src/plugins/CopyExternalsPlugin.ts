@@ -20,7 +20,7 @@ class MissingExternalWarning extends WebpackError {
 
     this.name = "MissingExternalWarning";
     this.message = `\nCan't copy external package "${pkgName}" because it is not a direct dependency.\n`;
-    this.message += `To fix this, run ${chalk.cyan("npm install -P " + pkgName)}`;
+    this.message = `${this.message}To fix this, run ${chalk.cyan(`npm install -P ${pkgName}`)}`;
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -42,7 +42,7 @@ export class CopyExternalsPlugin {
     compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: any) => {
       this._logger = compilation.getLogger("CopyExternalsPlugin");
       compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: any) => {
-        if ((currentModule as any).external) {
+        if (currentModule.external) {
           this._promises.push(this.handleModule(currentModule, compiler.outputPath, compilation));
         }
       });
@@ -106,7 +106,7 @@ export class CopyExternalsPlugin {
 
   private pathToPackageName(p: string) {
     const parts = p.replace(/^.*node_modules[\\\/]/, "").split(/[\\\/]/);
-    return (parts[0].startsWith("@")) ? parts[0] + "/" + parts[1] : parts[0];
+    return (parts[0].startsWith("@")) ? `${parts[0]}/${parts[1]}` : parts[0];
   }
 
   private findPackageJson(pkgName: string, parentPath?: string) {
@@ -121,7 +121,7 @@ export class CopyExternalsPlugin {
     searchPaths.push(paths.appNodeModules);
 
     try {
-      return require.resolve(pkgName + "/package.json", { paths: searchPaths });
+      return require.resolve(`${pkgName}/package.json`, { paths: searchPaths });
     } catch (error) {
       return undefined;
     }

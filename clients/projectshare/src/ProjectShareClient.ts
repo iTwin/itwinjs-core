@@ -119,7 +119,7 @@ export class ProjectShareQuery extends WsgQuery {
    * @param ids (Array of) folder or file ids
    */
   public byWsgIds(...ids: GuidString[]) {
-    const stringOfIds = ids.reduce((prev: GuidString, curr: GuidString) => (!prev ? `'${curr}'` : prev + `,'${curr}'`), "");
+    const stringOfIds = ids.reduce((prev: GuidString, curr: GuidString) => (!prev ? `'${curr}'` : `${prev},'${curr}'`), "");
     this.filter(`$id in [${stringOfIds}]`);
     this._query.$pageSize = undefined;
     return this;
@@ -152,7 +152,7 @@ export class ProjectShareQuery extends WsgQuery {
    * <ul>
    */
   public startsWithPathAndNameLike(contextId: GuidString, path: string, nameLike: string = "*") {
-    const correctedPath = path.endsWith("/") ? path : path + "/";
+    const correctedPath = path.endsWith("/") ? path : `${path}/`;
     this.addFilter(`startswith(Path,'${contextId}/${correctedPath}') and Name like '${nameLike}'`);
     return this;
   }
@@ -192,7 +192,7 @@ export class ProjectShareFolderQuery extends ProjectShareQuery {
    * <ul>
    */
   public inPath(contextId: GuidString, path: string) {
-    const correctedPath = path.endsWith("/") ? path : path + "/";
+    const correctedPath = path.endsWith("/") ? path : `${path}/`;
     this.filter(`Path eq '${contextId}/${correctedPath}'`);
     return this;
   }
@@ -228,11 +228,11 @@ export class ProjectShareClient extends WsgClient {
 
   protected getRelyingPartyUrl(): string {
     if (Config.App.has(ProjectShareClient.configRelyingPartyUri))
-      return Config.App.get(ProjectShareClient.configRelyingPartyUri) + "/";
+      return `${Config.App.get(ProjectShareClient.configRelyingPartyUri)}/`;
 
     if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
       if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
     }
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ProjectShareClient.configRelyingPartyUri}`);
@@ -355,7 +355,7 @@ export class ProjectShareClient extends WsgClient {
 
     const requestInit = maxByteCount === undefined ? undefined : {
       headers: {
-        Range: `bytes=0-${maxByteCount}`,
+        Range: `bytes=0-${maxByteCount}`, // eslint-disable-line @typescript-eslint/naming-convention
       },
     };
     const response: Response = await fetch(file.accessUrl, requestInit);
@@ -410,14 +410,14 @@ export class ProjectShareClient extends WsgClient {
    * @param deleteProperties Array of names of custom properties to delete
    * @return The instance after the changes
    */
-  public async updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, updateProperties?: Array<{ Name: string, Value: string }>, deleteProperties?: string[]): Promise<ProjectShareFile> {
+  public async updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, updateProperties?: Array<{ Name: string, Value: string }>, deleteProperties?: string[]): Promise<ProjectShareFile> {  // eslint-disable-line @typescript-eslint/naming-convention
     requestContext.enter();
 
     const customProperties: any[] = updateProperties === undefined ? new Array<any>() : updateProperties;
     if (deleteProperties) {
       deleteProperties.forEach((value: string) => customProperties.push({
-        Name: value,
-        IsDeleted: true,
+        Name: value,  // eslint-disable-line @typescript-eslint/naming-convention
+        IsDeleted: true,  // eslint-disable-line @typescript-eslint/naming-convention
       }));
     }
 
@@ -430,8 +430,8 @@ export class ProjectShareClient extends WsgClient {
     updateInstance.customProperties = customProperties;
 
     const projectShareRequestOptions = {
-      CustomOptions: {
-        EnableAdHocChangeset: true,
+      CustomOptions: {  // eslint-disable-line @typescript-eslint/naming-convention
+        EnableAdHocChangeset: true,  // eslint-disable-line @typescript-eslint/naming-convention
       },
     };
 

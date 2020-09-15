@@ -130,7 +130,7 @@ const argv = yargs.strict(true)
       if (filePath === undefined || !fs.existsSync(filePath) || !fs.lstatSync(filePath).isDirectory())
         throw new IModelError(ExtensionStatus.UploadError, "Extension directory does not exist");
 
-      const tarFileName = argv.extensionName + "." + argv.extensionVersion + ".tar";
+      const tarFileName = `${argv.extensionName}.${argv.extensionVersion}.tar`;
       const filesToTar = fs.readdirSync(filePath);
       try {
         process.stdout.write("Packaging extension...\n");
@@ -241,9 +241,9 @@ const argv = yargs.strict(true)
   process.exit(0);
 })().catch((err) => {
   if (err instanceof BentleyError)
-    process.stderr.write("Error: " + err.name + ": " + err.message);
+    process.stderr.write(`Error: ${err.name}: ${err.message}`);
   else
-    process.stderr.write("Unknown error: " + err.message);
+    process.stderr.write(`Unknown error: ${err.message}`);
   process.exit(err.errorNumber ?? -1);
 });
 

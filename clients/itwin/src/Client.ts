@@ -9,7 +9,7 @@ import * as deepAssign from "deep-assign";
 import { ClientRequestContext, Config, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-import { request, RequestOptions, Response, ResponseError, RequestGlobalOptions, RequestTimeoutOptions } from "./Request";
+import { request, RequestGlobalOptions, RequestOptions, RequestTimeoutOptions, Response, ResponseError } from "./Request";
 import { HttpRequestOptions } from "./WsgClient";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Clients;
@@ -186,7 +186,8 @@ export class UrlDiscoveryClient extends Client {
   public async discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string> {
     requestContext.enter();
 
-    const url: string = await this.getUrl() + "/GetUrl/";
+    const urlBase: string = await this.getUrl();
+    const url: string = `${urlBase}/GetUrl/`;
     const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const options: RequestOptions = {
       method: "GET",

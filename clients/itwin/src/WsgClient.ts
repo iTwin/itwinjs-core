@@ -192,9 +192,9 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
  * @beta
  */
 export interface WsgRequestOptions {
-  ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
-  RefreshInstances?: boolean;
-  CustomOptions?: any;
+  ResponseContent?: "FullInstance" | "Empty" | "InstanceId"; // eslint-disable-line @typescript-eslint/naming-convention
+  RefreshInstances?: boolean; // eslint-disable-line @typescript-eslint/naming-convention
+  CustomOptions?: any; // eslint-disable-line @typescript-eslint/naming-convention
 }
 
 /**
@@ -260,7 +260,7 @@ export abstract class WsgClient extends Client {
     const url = await super.getUrl(requestContext);
     this._url = url;
     if (!excludeApiVersion) {
-      this._url += "/" + this.apiVersion;
+      this._url = `${this._url}/${this.apiVersion}`;
     }
     return this._url; // TODO: On the server this really needs a lifetime!!
   }

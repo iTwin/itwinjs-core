@@ -10,9 +10,9 @@ import { loggerCategory } from "../../common/TestAppConfiguration";
 
 // Setup to log to a locally install seq server from https://datalust.co/download
 const defaultConfigValues = {
-  "TESTAPP-SEQ-URL": "http://localhost",
-  "TESTAPP-SEQ-PORT": 5341,
-  "TESTAPP-API-KEY": "InvalidApiKey",
+  "TESTAPP-SEQ-URL": "http://localhost", // eslint-disable-line @typescript-eslint/naming-convention
+  "TESTAPP-SEQ-PORT": 5341, // eslint-disable-line @typescript-eslint/naming-convention
+  "TESTAPP-API-KEY": "InvalidApiKey", // eslint-disable-line @typescript-eslint/naming-convention
 };
 
 /** Initializes logging based on the configuration json file */

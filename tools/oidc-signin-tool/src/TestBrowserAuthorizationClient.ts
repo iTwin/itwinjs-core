@@ -58,7 +58,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const oidcUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
     this._issuer = await Issuer.discover(url.resolve(oidcUrl, "/.well-known/openid-configuration"));
 
-    this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" });
+    this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
     custom.setHttpOptionsDefaults({
@@ -83,7 +83,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const expiresAt = this._accessToken.getExpiresAt();
     assert(!!expiresAt);
     // show expiry one minute before actual time to refresh
-    return ((expiresAt!.getTime() - Date.now()) <= 1 * 60 * 1000);
+    return ((expiresAt.getTime() - Date.now()) <= 1 * 60 * 1000);
   }
 
   /** Returns true if the user has signed in, but the token has expired and requires a refresh */
@@ -187,18 +187,18 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const state = generators.state();
 
     const authParams: AuthorizationParameters = {
-      redirect_uri: this._config.redirectUri,
-      response_type: "code",
-      code_challenge: generators.codeChallenge(verifier),
-      code_challenge_method: "S256",
+      redirect_uri: this._config.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
+      response_type: "code", // eslint-disable-line @typescript-eslint/naming-convention
+      code_challenge: generators.codeChallenge(verifier), // eslint-disable-line @typescript-eslint/naming-convention
+      code_challenge_method: "S256", // eslint-disable-line @typescript-eslint/naming-convention
       scope,
       state,
     };
 
     const callbackChecks: OpenIDCallbackChecks = {
       state,
-      response_type: "code",
-      code_verifier: verifier,
+      response_type: "code", // eslint-disable-line @typescript-eslint/naming-convention
+      code_verifier: verifier, // eslint-disable-line @typescript-eslint/naming-convention
     };
 
     return [authParams, callbackChecks];
@@ -252,7 +252,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   }
 
   private async handlePingLoginPage(page: puppeteer.Page): Promise<void> {
-    if (undefined === this._issuer.metadata.authorization_endpoint || !page.url().startsWith(this._issuer.metadata.authorization_endpoint!))
+    if (undefined === this._issuer.metadata.authorization_endpoint || !page.url().startsWith(this._issuer.metadata.authorization_endpoint))
       return;
 
     await page.waitForSelector("#identifierInput");

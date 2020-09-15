@@ -346,7 +346,7 @@ export class ECJsonTypeMap {
     if (mappedApplicationEntry.classKeyMapInfo.classKeyPropertyName)
       ecJsonClassKey = ecJsonInstance[mappedApplicationEntry.classKeyMapInfo.classKeyPropertyName];
     else if (mappedApplicationEntry.classKeyMapInfo.schemaPropertyName && mappedApplicationEntry.classKeyMapInfo.classPropertyName)
-      ecJsonClassKey = ecJsonInstance[mappedApplicationEntry.classKeyMapInfo.schemaPropertyName] + "." + ecJsonInstance[mappedApplicationEntry.classKeyMapInfo.classPropertyName];
+      ecJsonClassKey = `${ecJsonInstance[mappedApplicationEntry.classKeyMapInfo.schemaPropertyName]}.${ecJsonInstance[mappedApplicationEntry.classKeyMapInfo.classPropertyName]}`;
     else {
       assert(false, "Unexpected classKeyMapInfo");
       return undefined;

@@ -52,9 +52,9 @@ export class PrettyLoggingPlugin {
     const newline = (this.isInteractive) ? "\n" : "";
     const myChalk: chalk.Chalk = (color) ? (chalk as any)[color] : chalk;
     if (elapsed)
-      console.log(`${newline + myChalk.inverse(this._name)} ${myChalk.bold(message) + chalk.gray("   (in " + elapsed.toLocaleString() + " ms)") + newline}`);
+      console.log(`${newline}${myChalk.inverse(this._name)} ${myChalk.bold(message)}${chalk.gray(`   (in ${elapsed.toLocaleString()} ms)`)}${newline}`);
     else
-      console.log(`${newline + myChalk.inverse(this._name)} ${myChalk.bold(message) + newline}`);
+      console.log(`${newline}${myChalk.inverse(this._name)} ${myChalk.bold(message)}${newline}`);
 
     console.group();
     this._grouped = true;
@@ -155,7 +155,7 @@ export class PrettyLoggingPlugin {
 
       if (isSuccessful) {
         const build = (this._isRebuild) ? "Rebuild" : "Build";
-        this.printHeading(build + " completed successfully!", "green", elapsed);
+        this.printHeading(`${build} completed successfully!`, "green", elapsed);
         this._successCount++;
         this._onSuccess(this._successCount);
       }

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { WsgClient, WsgRequestOptions } from "../WsgClient";
-import { AuthorizedClientRequestContext, HttpRequestOptions, WsgInstance, ChunkedQueryContext, RequestQueryOptions, ECJsonTypeMap } from "../itwin-client";
+import { AuthorizedClientRequestContext, ChunkedQueryContext, ECJsonTypeMap, HttpRequestOptions, RequestQueryOptions, WsgInstance } from "../itwin-client";
 import * as requestModule from "../Request";
 import { AccessToken } from "../Token";
 import { expect } from "chai";
@@ -168,8 +168,8 @@ describe("WsgClient", async () => {
           expect(savedRequestOptions!.timeout!.response).to.be.equal(userDefinedRequestOptions.timeout!.response);
           const expectedCalculatedDeadline =
             userDefinedRequestOptions.timeout!.response! +
-            requestModule.RequestGlobalOptions.timeout!.deadline! -
-            requestModule.RequestGlobalOptions.timeout!.response!
+            requestModule.RequestGlobalOptions.timeout.deadline! -
+            requestModule.RequestGlobalOptions.timeout.response!;
           expect(savedRequestOptions!.timeout!.deadline).to.be.equal(expectedCalculatedDeadline);
         });
       });

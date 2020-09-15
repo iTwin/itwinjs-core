@@ -21,7 +21,7 @@ export class ElectronTestRunner {
   }
 
   public static async runTests(config: CertaConfig): Promise<void> {
-    const { BrowserWindow, app, ipcMain } = require("electron");
+    const { BrowserWindow, app, ipcMain } = require("electron"); // eslint-disable-line @typescript-eslint/naming-convention
 
     if (!app.isReady())
       await new Promise((resolve) => app.on("ready", resolve));

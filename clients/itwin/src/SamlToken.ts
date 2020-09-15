@@ -103,8 +103,7 @@ export abstract class SamlToken {
     const expiresAtStr: string = select("string(/saml:Assertion/saml:Conditions/@NotOnOrAfter)", dom).toString();
 
     const extractAttribute: (attributeName: string) => string = (attributeName: string) =>
-      select("/saml:Assertion/saml:AttributeStatement/saml:Attribute[@AttributeName='" +
-        attributeName + "']/saml:AttributeValue/text()", dom).toString();
+      select(`/saml:Assertion/saml:AttributeStatement/saml:Attribute[@AttributeName='${attributeName}']/saml:AttributeValue/text()`, dom).toString();
 
     const id = extractAttribute("userid");
     const email = {
@@ -204,7 +203,7 @@ export class SamlAccessToken extends SamlToken {
     const saml = this.getSaml();
     if (!saml)
       throw new BentleyError(BentleyStatus.ERROR, "Cannot convert invalid access token to string");
-    return (includePrefix === IncludePrefix.Yes) ? SamlAccessToken._samlTokenPrefix + " " + saml : saml;
+    return (includePrefix === IncludePrefix.Yes) ? `${SamlAccessToken._samlTokenPrefix} ${saml}` : saml;
   }
 
   /**
@@ -226,6 +225,6 @@ export class SamlAccessToken extends SamlToken {
    * @internal
    */
   public static fromJson(jsonObj: any): SamlAccessToken | undefined {
-    return SamlAccessToken.fromSamlAssertion(jsonObj._samlAssertion) as SamlAccessToken;
+    return SamlAccessToken.fromSamlAssertion(jsonObj._samlAssertion);
   }
 }

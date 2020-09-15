@@ -68,11 +68,11 @@ export class RbacClient extends WsgClient {
    */
   protected getRelyingPartyUrl(): string {
     if (Config.App.has(RbacClient.configRelyingPartyUri))
-      return Config.App.get(RbacClient.configRelyingPartyUri) + "/";
+      return `${Config.App.get(RbacClient.configRelyingPartyUri)}/`;
 
     if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
       if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
     }
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RbacClient.configRelyingPartyUri}`);
@@ -91,7 +91,7 @@ export class RbacClient extends WsgClient {
     if (!userInfo)
       throw new Error("Invalid access token");
 
-    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Context";
+    const relativeUrlPath: string = `/Repositories/BentleyCONNECT--Main/RBAC/User/${userInfo.id}/Context`;
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
 
@@ -121,7 +121,7 @@ export class RbacClient extends WsgClient {
     if (!userInfo)
       throw new Error("Invalid access token");
 
-    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Object";
+    const relativeUrlPath: string = `/Repositories/BentleyCONNECT--Main/RBAC/User/${userInfo.id}/Object`;
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
 

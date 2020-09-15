@@ -15,7 +15,7 @@ import { ProgressCallback } from "./Request";
  */
 export interface CancelRequest {
   /** Returns true if cancel request was acknowledged */
-  cancel(): boolean;
+  cancel: () => boolean;
 }
 
 /** Error thrown when user cancelled operation

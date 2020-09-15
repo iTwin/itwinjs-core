@@ -162,11 +162,11 @@ export class ContextRegistryClient extends WsgClient {
    */
   protected getRelyingPartyUrl(): string {
     if (Config.App.has(ContextRegistryClient.configRelyingPartyUri))
-      return Config.App.get(ContextRegistryClient.configRelyingPartyUri) + "/";
+      return `${Config.App.get(ContextRegistryClient.configRelyingPartyUri)}/`;
 
     if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
       if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
     }
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ContextRegistryClient.configRelyingPartyUri}`);

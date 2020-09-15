@@ -44,7 +44,7 @@ export enum ECObjectsStatus {
 export class ECObjectsError extends BentleyError {
   public constructor(public readonly errorNumber: number, message?: string) {
     super(errorNumber, message);
-    assert(errorNumber as number !== ECObjectsStatus.Success as number, message);
+    assert(errorNumber !== ECObjectsStatus.Success, message);
   }
 
   public toDebugString(): string {
@@ -74,11 +74,11 @@ export class ECObjectsError extends BentleyError {
       default:
         assert(false);
         /* istanbul ignore next */
-        return this._appendMessage("Error " + this.errorNumber.toString());
+        return this._appendMessage(`Error ${this.errorNumber.toString()}`);
     }
   }
 
   private _appendMessage(e: string): string {
-    return this.message ? e + ": " + this.message : e;
+    return this.message ? `${e}: ${this.message}` : e;
   }
 }

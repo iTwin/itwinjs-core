@@ -29,7 +29,7 @@ app.use("/@/", (_req, resp) => {
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
   resp.sendFile(path.resolve("/", filePath), {
     headers: (sourceMap) && {
-      "X-SourceMap": `/@/${sourceMap.url}`,
+      "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
     },
   });
 });

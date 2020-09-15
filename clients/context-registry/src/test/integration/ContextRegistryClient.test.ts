@@ -52,7 +52,7 @@ describe("ContextRegistryClient (#integration)", () => {
   it("should get a project by name (#integration)", async () => {
     const queryOptions: ContextRegistryRequestQueryOptions = {
       $select: "*",
-      $filter: "Name+eq+'" + TestConfig.projectName + "'",
+      $filter: `Name+eq+'${TestConfig.projectName}'`,
     };
     const project: Project = await contextRegistry.getProject(requestContext, queryOptions);
     chai.expect(project.name).equals(TestConfig.projectName);

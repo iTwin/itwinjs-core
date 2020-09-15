@@ -165,9 +165,9 @@ export class RealityData extends WsgInstance {
 
     let host: string = "";
     if (nameRelativeToRootDocumentPath && this._blobRooDocumentPath && this._blobRooDocumentPath !== "")
-      host = url.origin + url.pathname + "/" + this._blobRooDocumentPath; // _blobRootDocumentPath is always '/' terminated if not empty
+      host = `${url.origin + url.pathname}/${this._blobRooDocumentPath}`; // _blobRootDocumentPath is always '/' terminated if not empty
     else
-      host = url.origin + url.pathname + "/";
+      host = `${url.origin + url.pathname}/`;
 
     const query = url.search;
 
@@ -207,10 +207,10 @@ export class RealityData extends WsgInstance {
 
     const blobUrlRequiresRefresh = !this._blobTimeStamp || (Date.now() - this._blobTimeStamp.getTime()) > 3000000; // 3 million milliseconds or 50 minutes
     if (undefined === this._blobUrl || blobUrlRequiresRefresh) {
-      const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId as string, this.id, writeAccess);
+      const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId, this.id, writeAccess);
       requestContext.enter();
       if (fileAccess.length !== 1)
-        throw new Error("Could not obtain blob file access key for reality data: " + this.id);
+        throw new Error(`Could not obtain blob file access key for reality data: ${this.id}`);
       const urlString = fileAccess[0].url!;
       this._blobUrl = (typeof window !== "undefined") ? new window.URL(urlString) : new URL(urlString);
       this._blobTimeStamp = new Date(Date.now());
@@ -220,7 +220,7 @@ export class RealityData extends WsgInstance {
         if (urlParts.length === 0)
           this._blobRooDocumentPath = "";
         else
-          this._blobRooDocumentPath = urlParts.join("/") + "/";
+          this._blobRooDocumentPath = `${urlParts.join("/")}/`;
       }
     }
 
@@ -276,9 +276,9 @@ export class RealityData extends WsgInstance {
     requestContext.enter();
 
     if (!this.rootDocument)
-      throw new Error("Root document not defined for reality data: " + this.id);
+      throw new Error(`Root document not defined for reality data: ${this.id}`);
 
-    const root = this.rootDocument!;
+    const root = this.rootDocument;
 
     return this.getModelData(requestContext, root, false);
   }
@@ -376,11 +376,11 @@ export class RealityDataClient extends WsgClient {
    */
   protected getRelyingPartyUrl(): string {
     if (Config.App.has(RealityDataClient.configRelyingPartyUri))
-      return Config.App.get(RealityDataClient.configRelyingPartyUri) + "/";
+      return `${Config.App.get(RealityDataClient.configRelyingPartyUri)}/`;
 
     if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
       if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
     }
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RealityDataClient.configRelyingPartyUri}`);
@@ -402,7 +402,7 @@ export class RealityDataClient extends WsgClient {
 
     if (!projectId || projectId === "")
       projectId = "Server";
-    return serverUrl + `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`;
+    return `${serverUrl}/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`;
   }
 
   /**
@@ -421,7 +421,7 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
 
     if (realityDatas.length !== 1)
-      throw new Error("Could not fetch reality data: " + tilesId);
+      throw new Error(`Could not fetch reality data: ${tilesId}`);
 
     realityDatas[0].client = this;
     realityDatas[0].projectId = projectId;
@@ -506,7 +506,7 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
 
     if (!resultRealityData)
-      throw new Error("Could not create new reality data: " + (realityData.id ? realityData.id : realityData.name));
+      throw new Error(`Could not create new reality data: ${realityData.id ? realityData.id : realityData.name}`);
 
     resultRealityData.client = this;
     resultRealityData.projectId = projectId;
@@ -531,7 +531,7 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
 
     if (!resultRealityData)
-      throw new Error("Could not update reality data: " + (realityData.id ? realityData.id : realityData.name));
+      throw new Error(`Could not update reality data: ${realityData.id ? realityData.id : realityData.name}`);
 
     resultRealityData.client = this;
     resultRealityData.projectId = projectId;
@@ -577,7 +577,7 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
     const resultRealityDataRelationship: RealityDataRelationship = await this.postInstance<RealityDataRelationship>(requestContext, RealityDataRelationship, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityDataRelationship`, relationship);
     if (!resultRealityDataRelationship)
-      throw new Error("Could not create new reality data relationship between reality data: " + (relationship.realityDataId ? relationship.realityDataId : "") + " and context: " + (relationship.relatedId ? relationship.relatedId : ""));
+      throw new Error(`Could not create new reality data relationship between reality data: ${relationship.realityDataId ? relationship.realityDataId : ""} and context: ${relationship.relatedId ? relationship.relatedId : ""}`);
 
     return resultRealityDataRelationship;
   }

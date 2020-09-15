@@ -30,9 +30,9 @@ export class ChromeTestRunner {
 
   public static async runTests(config: CertaConfig): Promise<void> {
     const webserverEnv = {
-      CERTA_PORT: process.env.CERTA_PORT,
-      CERTA_PATH: path.join(__dirname, "../../../public/index.html"),
-      CERTA_PUBLIC_DIRS: JSON.stringify(config.chromeOptions.publicDirs),
+      CERTA_PORT: process.env.CERTA_PORT, // eslint-disable-line @typescript-eslint/naming-convention
+      CERTA_PATH: path.join(__dirname, "../../../public/index.html"), // eslint-disable-line @typescript-eslint/naming-convention
+      CERTA_PUBLIC_DIRS: JSON.stringify(config.chromeOptions.publicDirs), // eslint-disable-line @typescript-eslint/naming-convention
     };
     const webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv, true);
 
@@ -55,7 +55,7 @@ export class ChromeTestRunner {
 }
 
 async function loadScript(page: puppeteer.Page, scriptPath: string) {
-  return page.addScriptTag({ url: "/@/" + scriptPath });
+  return page.addScriptTag({ url: `/@/${scriptPath}` });
 }
 
 async function loadScriptAndTemporarilyBreak(page: puppeteer.Page, scriptPath: string) {

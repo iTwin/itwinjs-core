@@ -110,11 +110,11 @@ export class FormDataManagementClient extends WsgClient {
    */
   protected getRelyingPartyUrl(): string {
     if (Config.App.has(FormDataManagementClient.configRelyingPartyUri))
-      return Config.App.get(FormDataManagementClient.configRelyingPartyUri) + "/";
+      return `${Config.App.get(FormDataManagementClient.configRelyingPartyUri)}/`;
 
     if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
       if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
     }
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${FormDataManagementClient.configRelyingPartyUri}`);
@@ -231,7 +231,7 @@ export class FormDataManagementClient extends WsgClient {
     if (instanceId !== undefined)
       url += `/${instanceId}`;
 
-    return this.postInstance<FormInstanceData>(requestContext, FormInstanceData, url, formData as FormInstanceData);
+    return this.postInstance<FormInstanceData>(requestContext, FormInstanceData, url, formData);
   }
 
   /**

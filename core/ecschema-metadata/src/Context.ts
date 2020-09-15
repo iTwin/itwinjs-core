@@ -56,7 +56,7 @@ export class SchemaCache implements ISchemaLocater {
     this._schema = new SchemaMap();
   }
 
-  get count() { return this._schema.length; }
+  public get count() { return this._schema.length; }
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.

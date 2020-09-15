@@ -29,7 +29,7 @@ describe("RbacClient (#integration)", () => {
     // Get test project
     const queryOptions: ContextRegistryRequestQueryOptions = {
       $select: "*",
-      $filter: "Name+eq+'" + TestConfig.projectName + "'",
+      $filter: `Name+eq+'${TestConfig.projectName}'`,
     };
 
     const project: Project = await contextRegistry.getProject(requestContext, queryOptions);
@@ -44,7 +44,7 @@ describe("RbacClient (#integration)", () => {
     // Get test project
     const queryOptions: ContextRegistryRequestQueryOptions = {
       $select: "*",
-      $filter: "Name+eq+'" + TestConfig.projectName + "'",
+      $filter: `Name+eq+'${TestConfig.projectName}'`,
     };
 
     const project: Project = await contextRegistry.getProject(requestContext, queryOptions);

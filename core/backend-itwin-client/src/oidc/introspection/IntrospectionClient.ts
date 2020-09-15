@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient, IncludePrefix } from "@bentley/itwin-client";
-import { Client as OpenIdClient, ClientMetadata, Issuer } from "openid-client";
+import { ClientMetadata, Issuer, Client as OpenIdClient } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";
 import { IntrospectionResponse } from "./IntrospectionResponse";
 import { IntrospectionResponseCache, MemoryIntrospectionResponseCache } from "./IntrospectionResponseCache";

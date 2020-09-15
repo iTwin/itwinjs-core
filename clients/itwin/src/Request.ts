@@ -245,7 +245,7 @@ export class ResponseError extends BentleyError {
 
 const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (res: sarequest.Response) => {
   const elapsed = new Date().getTime() - startTime;
-  const elapsedTime = elapsed + "ms";
+  const elapsedTime = `${elapsed}ms`;
   Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
 };
 
@@ -274,7 +274,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
     if (proxyUrl === "")
       proxyUrl = url;
     else
-      proxyUrl = proxyUrl.replace(/\/$/, "") + "/" + url;
+      proxyUrl = `${proxyUrl.replace(/\/$/, "")}/${url}`;
   } else {
     proxyUrl = url;
   }
@@ -302,7 +302,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
     const stringifyOptions: IStringifyOptions = { delimiter: "&", encode: false };
     queryStr = stringify(options.qs, stringifyOptions);
     sareq = sareq.query(queryStr);
-    fullUrl = url + "?" + queryStr;
+    fullUrl = `${url}?${queryStr}`;
   } else {
     fullUrl = url;
   }

@@ -54,7 +54,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const url = await super.getUrl(requestContext);
     this._url = url;
     if (!excludeApiVersion)
-      this._url += "/" + ConnectSettingsClient.apiVersion;
+      this._url = `${this._url}/${ConnectSettingsClient.apiVersion}`;
 
     return this._url;
   }
@@ -139,13 +139,13 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    */
   public formErrorResponse(response: Response): SettingsResult {
     if (400 === response.status) {
-      return new SettingsResult(SettingsStatus.ProjectInvalid, "Malformed URL or invalid Project " + JSON.stringify(response));
+      return new SettingsResult(SettingsStatus.ProjectInvalid, `Malformed URL or invalid Project ${JSON.stringify(response)}`);
     } else if (401 === response.status) {
-      return new SettingsResult(SettingsStatus.AuthorizationError, "Authorization failure " + JSON.stringify(response));
+      return new SettingsResult(SettingsStatus.AuthorizationError, `Authorization failure ${JSON.stringify(response)}`);
     } else if (404 === response.status) {
       return new SettingsResult(SettingsStatus.SettingNotFound);
     } else {
-      return new SettingsResult(SettingsStatus.ServerError, "Status indicates server error " + JSON.stringify(response));
+      return new SettingsResult(SettingsStatus.ServerError, `Status indicates server error ${JSON.stringify(response)}`);
     }
   }
 
@@ -175,7 +175,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     } catch (response) {
       if ((response.status < 200) || (response.status > 299))
         return this.formErrorResponse(response);
-      return new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response));
+      return new SettingsResult(SettingsStatus.UnknownError, `Unexpected Status ${JSON.stringify(response)}`);
     }
   }
 
@@ -202,7 +202,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     } catch (response) {
       if ((response.status < 200) || (response.status > 299))
         return this.formErrorResponse(response);
-      return new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response));
+      return new SettingsResult(SettingsStatus.UnknownError, `Unexpected Status ${JSON.stringify(response)}`);
     }
   }
 
@@ -245,7 +245,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
         if ((errResponse.status < 200) || (errResponse.status > 299))
           return this.formErrorResponse(errResponse);
         else
-          return new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(errResponse));
+          return new SettingsResult(SettingsStatus.UnknownError, `Unexpected Status ${JSON.stringify(errResponse)}`);
       }
     }
 
@@ -272,7 +272,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
       if ((response.status < 200) || (response.status > 299))
         return this.formErrorResponse(response);
       else
-        return new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response));
+        return new SettingsResult(SettingsStatus.UnknownError, `Unexpected Status ${JSON.stringify(response)}`);
     }
   }
   // app specific, no context, no shared, no user

@@ -20,7 +20,7 @@ export class WatchBackendPlugin {
         return;
 
       this._prevTimestamp = newTimestamp || 0;
-      (compilation as any).modifyHash(newTimestamp + "");
+      compilation.modifyHash(`${newTimestamp}`);
       return true;
     });
 

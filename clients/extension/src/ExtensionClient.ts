@@ -64,11 +64,12 @@ export class ExtensionClient extends Client {
     requestContext.enter();
     options.headers = { authorization: requestContext.accessToken.toTokenString() };
     try {
-      const response = await request(requestContext, await this.getUrl(requestContext) + contextId + "/IModelExtension/" + (extensionName ?? ""), options);
+      const urlBase = await this.getUrl(requestContext);
+      const response = await request(requestContext, `${urlBase}${contextId}/IModelExtension/${extensionName ?? ""}`, options);
       requestContext.enter();
 
       if (response.status !== 200)
-        throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + response.status + ", message: " + response.body.message);
+        throw new IModelError(ExtensionStatus.UnknownError, `Server returned status: ${response.status}, message: ${response.body.message}`);
 
       if (!(response.body instanceof Array) || response.body.length < 1)
         return [];
@@ -82,7 +83,7 @@ export class ExtensionClient extends Client {
       if (error.status === 404)
         throw new IModelError(ExtensionStatus.ExtensionNotFound, (error as any)._data?.message);
 
-      throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + error.status + ", message: " + (error as any)._data?.message);
+      throw new IModelError(ExtensionStatus.UnknownError, `Server returned status: ${error.status}, message: ${(error as any)._data?.message}`);
     }
   }
 
@@ -100,11 +101,12 @@ export class ExtensionClient extends Client {
     await this.setupOptionDefaults(options);
     requestContext.enter();
     try {
-      const response = await request(requestContext, await this.getUrl(requestContext) + contextId + "/IModelExtension/" + extensionName + "/" + version, options);
+      const urlBase = await this.getUrl(requestContext);
+      const response = await request(requestContext, `${urlBase}${contextId}/IModelExtension/${extensionName}/${version}`, options);
       requestContext.enter();
 
       if (response.status !== 200)
-        throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + response.status + ", message: " + response.body.message);
+        throw new IModelError(ExtensionStatus.UnknownError, `Server returned status: ${response.status}, message: ${response.body.message}`);
 
       const body = response.body;
       if (!(body instanceof Array) || body.length < 1)
@@ -123,7 +125,7 @@ export class ExtensionClient extends Client {
       if (error.status === 404)
         throw new IModelError(ExtensionStatus.ExtensionNotFound, (error as any)._data?.message);
 
-      throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + error.status + ", message: " + (error as any)._data?.message);
+      throw new IModelError(ExtensionStatus.UnknownError, `Server returned status: ${error.status}, message: ${(error as any)._data?.message}`);
     }
   }
 
@@ -205,11 +207,12 @@ export class ExtensionClient extends Client {
     requestContext.enter();
 
     try {
-      const response = await request(requestContext, await this.getUrl(requestContext) + contextId + "/IModelExtension", options);
+      const urlBase = await this.getUrl(requestContext);
+      const response = await request(requestContext, `${urlBase + contextId}/IModelExtension`, options);
       requestContext.enter();
 
       if (response.status !== 200)
-        throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + response.status + ", message: " + response.body.message);
+        throw new IModelError(ExtensionStatus.UnknownError, `Server returned status: ${response.status}, message: ${response.body.message}`);
 
       const body = extensionPropsFromJSON(response.body);
       if (body === undefined)
@@ -223,13 +226,13 @@ export class ExtensionClient extends Client {
       if (error instanceof IModelError)
         throw error;
       if (!(error instanceof ResponseError))
-        throw new IModelError(ExtensionStatus.UnknownError, "Unknown error creating extension: " + error.message);
+        throw new IModelError(ExtensionStatus.UnknownError, `Unknown error creating extension: ${error.message}`);
       if (error.status === 400)
         throw new IModelError(ExtensionStatus.BadRequest, JSON.stringify((error as any)._data));
       if (error.status === 409)
         throw new IModelError(ExtensionStatus.ExtensionAlreadyExists, "An extension with this name and version already exists");
 
-      throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + error.status + ", message: " + (error as any)._data?.message);
+      throw new IModelError(ExtensionStatus.UnknownError, `Server returned status: ${error.status}, message: ${(error as any)._data?.message}`);
     }
   }
 
@@ -246,9 +249,9 @@ export class ExtensionClient extends Client {
 
       // TODO: somehow add error message...
       if (response.status !== 201)
-        throw new IModelError(ExtensionStatus.UploadError, "Storage returned status: " + response.status);
+        throw new IModelError(ExtensionStatus.UploadError, `Storage returned status: ${response.status}`);
     } catch (err) {
-      throw new IModelError(ExtensionStatus.UploadError, "Unknown error uploading extension archive: " + err);
+      throw new IModelError(ExtensionStatus.UploadError, `Unknown error uploading extension archive: ${err}`);
     }
   }
 
@@ -274,9 +277,9 @@ export class ExtensionClient extends Client {
       requestContext.enter();
 
       if (response.status === 400)
-        throw new IModelError(ExtensionStatus.BadRequest, "Could not delete extension, message: " + response.body.message);
+        throw new IModelError(ExtensionStatus.BadRequest, `Could not delete extension, message: ${response.body.message}`);
       if (response.status !== 200)
-        throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + response.status + ", message: " + response.body.message);
+        throw new IModelError(ExtensionStatus.UnknownError, `Server returned status: ${response.status}, message: ${response.body.message}`);
     } catch (error) {
       if (!(error instanceof ResponseError))
         throw new IModelError(ExtensionStatus.UnknownError, "Unknown error");
@@ -285,7 +288,7 @@ export class ExtensionClient extends Client {
       if (error.status === 404)
         throw new IModelError(ExtensionStatus.ExtensionNotFound, (error as any)._data?.message);
 
-      throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + error.status + ", message: " + (error as any)._data?.message);
+      throw new IModelError(ExtensionStatus.UnknownError, `Server returned status: ${error.status}, message: ${(error as any)._data?.message}`);
     }
   }
 }

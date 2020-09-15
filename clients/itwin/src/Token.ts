@@ -27,7 +27,7 @@ export enum IncludePrefix {
  * @param prefix Prefix of the Token
  * @internal
  */
-export function TokenPrefix(prefix: string) {
+export function TokenPrefix(prefix: string) { // eslint-disable-line @typescript-eslint/naming-convention
   return (constructor: any) => {
     TokenPrefixToTypeContainer.tokenPrefixToConstructorDict[prefix] = constructor;
   };
@@ -92,7 +92,7 @@ export class AccessToken {
    */
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     const jwt = this._tokenString || "";
-    return (includePrefix === IncludePrefix.Yes) ? this._prefix + " " + jwt : jwt;
+    return (includePrefix === IncludePrefix.Yes) ? `${this._prefix} ${jwt}` : jwt;
   }
   /**
    * Initialize the jwt field of the current instance of the AccessToken

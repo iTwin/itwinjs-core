@@ -82,11 +82,11 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
   protected async getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings> {
     let userManagerSettings: UserManagerSettings = {
       authority: basicSettings.authority,
-      redirect_uri: basicSettings.redirectUri,
-      client_id: basicSettings.clientId,
+      redirect_uri: basicSettings.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
+      client_id: basicSettings.clientId, // eslint-disable-line @typescript-eslint/naming-convention
       scope: basicSettings.scope,
-      post_logout_redirect_uri: basicSettings.postSignoutRedirectUri,
-      response_type: basicSettings.responseType,
+      post_logout_redirect_uri: basicSettings.postSignoutRedirectUri, // eslint-disable-line @typescript-eslint/naming-convention
+      response_type: basicSettings.responseType, // eslint-disable-line @typescript-eslint/naming-convention
       automaticSilentRenew: true,
     };
 

@@ -203,7 +203,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId as string);
+      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
     }
 
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
@@ -275,7 +275,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId as string);
+      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
     }
 
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
@@ -398,21 +398,21 @@ describe("RealityServicesClient Normal (#integration)", () => {
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
     chai.assert(realityDataAdded2.hidden === false);
 
-    const relationships1: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataId1 as string);
+    const relationships1: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataId1);
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships1) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId as string);
+      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
     }
 
     const relationships2: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded2.id as string);
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships2) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId as string);
+      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
     }
 
-    await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataId1 as string);
+    await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataId1);
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
@@ -539,7 +539,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId as string);
+      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
     }
 
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
@@ -553,7 +553,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootParts = realityData.rootDocument!.split("/");
     chai.assert(rootParts.length >= 2);
     rootParts.pop();
-    const rootDocPath: string = rootParts.join("/") + "/";
+    const rootDocPath: string = `${rootParts.join("/")}/`;
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     const rootDataJson = JSON.parse(rootData.toString("utf8"));

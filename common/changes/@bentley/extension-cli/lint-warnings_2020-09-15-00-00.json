@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-cli",
+      "comment": "Fixed lint warnings.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-cli",
+  "email": "Ramanujam.Raman@bentley.com"
+}
