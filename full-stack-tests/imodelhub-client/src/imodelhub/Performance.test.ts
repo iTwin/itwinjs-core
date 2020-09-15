@@ -22,7 +22,7 @@ describe.skip("iModelHub Performance tests", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId, recreate);
+    await utils.createIModel(requestContext, imodelName, contextId, true, recreate);
     imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcase1 = briefcases[0];

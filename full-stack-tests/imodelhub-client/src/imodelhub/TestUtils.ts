@@ -25,6 +25,13 @@ const loggingCategory = "backend-itwin-client.TestUtils";
 
 const bankProjects: string[] = [];
 
+let testInstanceId: GuidString;
+function getTestInstanceId(): GuidString {
+  if (!testInstanceId)
+    testInstanceId = Guid.createValue();
+  return testInstanceId;
+}
+
 function configMockSettings() {
   if (!TestConfig.enableMocks)
     return;
@@ -156,7 +163,7 @@ export class RequestBehaviorOptions {
 const requestBehaviorOptions = new RequestBehaviorOptions();
 
 let imodelHubClient: IModelHubClient;
-export function getImodelHubClient() {
+export function getIModelHubClient() {
   if (imodelHubClient !== undefined)
     return imodelHubClient;
   imodelHubClient = new IModelHubClient(createFileHandler());
@@ -198,7 +205,7 @@ export class RbacUrlMock {
 
 export function getDefaultClient() {
   IModelHubUrlMock.mockGetUrl();
-  return getCloudEnv().isIModelHub ? getImodelHubClient() : imodelBankClient;
+  return getCloudEnv().isIModelHub ? getIModelHubClient() : imodelBankClient;
 }
 
 export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
@@ -307,9 +314,18 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 }
 
 /** iModels */
-export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, contextId: string, imodelName: string): Promise<void> {
+
+// Unique imodel name is used so that multiple instances of this test suite can run in parallel
+export function getUniqueIModelName(imodelName: string): string {
+  return `${imodelName} - ${getTestInstanceId()}`;
+}
+
+export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, contextId: string, imodelName: string, useUniqueName = true): Promise<void> {
   if (TestConfig.enableMocks)
     return;
+
+  if (useUniqueName)
+    imodelName = getUniqueIModelName(imodelName);
 
   const client = getDefaultClient();
   const imodels = await client.iModels.get(requestContext, contextId, new IModelQuery().byName(imodelName));
@@ -319,9 +335,12 @@ export async function deleteIModelByName(requestContext: AuthorizedClientRequest
   }
 }
 
-export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string, projectId?: string): Promise<GuidString> {
+export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string, projectId?: string, useUniqueName = true): Promise<GuidString> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
+
+  if (useUniqueName)
+    imodelName = getUniqueIModelName(imodelName);
 
   projectId = projectId ?? await getProjectId(requestContext);
 
@@ -752,12 +771,15 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, contextId?: string, deleteIfExists = false, fromSeedFile = false) {
+export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, contextId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
   if (TestConfig.enableMocks)
     return;
 
   if (TestConfig.enableIModelBank)
     deleteIfExists = true;
+
+  if (useUniqueName)
+    name = getUniqueIModelName(name);
 
   contextId = contextId || await getProjectId(requestContext, TestConfig.projectName);
 

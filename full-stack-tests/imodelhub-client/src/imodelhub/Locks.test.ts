@@ -33,7 +33,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
     contextId = await utils.getProjectId(requestContext);
     // Does not create an imodel right now, but should in the future
-    await utils.createIModel(requestContext, imodelName, contextId, true);
+    await utils.createIModel(requestContext, imodelName, contextId, true, true);
     imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     iModelClient = utils.getDefaultClient();
     briefcases = (await utils.getBriefcases(requestContext, imodelId, 2));

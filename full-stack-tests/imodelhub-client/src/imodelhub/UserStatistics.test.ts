@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { IModelClient, IModelHubClientError, UserStatistics, UserStatisticsQuery } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -28,14 +28,15 @@ function mockGetUserStatistics(imodelId: GuidString, userStatistics: UserStatist
   }
 }
 
-function generateUsersStatistics(count: number, userIds: string[], briefcasesCount?: number[], ownedLocksCount?: number[],
+function generateUsersStatistics(count: number, users: UserInfo[], briefcasesCount?: number[], ownedLocksCount?: number[],
   pushedChangesetsCount?: number[], lastChangeSetPushDate?: string[]): UserStatistics[] {
   const statistics: UserStatistics[] = [];
 
   for (let i = 0; i < count; i++) {
     const userStatistics = new UserStatistics();
-    if (userIds !== undefined) {
-      userStatistics.wsgId = userIds[i];
+    if (users !== undefined) {
+      userStatistics.wsgId = users[i].id;
+      userStatistics.email = users[i].email!.id;
     }
 
     userStatistics.briefcasesCount = briefcasesCount !== undefined ? briefcasesCount[i] : 0;
@@ -50,7 +51,7 @@ function generateUsersStatistics(count: number, userIds: string[], briefcasesCou
 }
 
 function sortStatistics(value: UserStatistics[]) {
-  value.sort((a: UserStatistics, b: UserStatistics) => a.wsgId.localeCompare(b.wsgId));
+  value.sort((a: UserStatistics, b: UserStatistics) => 0 - a.email!.localeCompare(b.email!));
 }
 
 describe("iModelHubClient UserStatisticsHandler", () => {
@@ -76,7 +77,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
     contextId = await utils.getProjectId(requestContexts[0]);
-    await utils.createIModel(requestContexts[0], imodelName, contextId, true);
+    await utils.createIModel(requestContexts[0], imodelName, contextId, true, true);
     imodelId = await utils.getIModelId(requestContexts[0], imodelName, contextId);
 
     if (!TestConfig.enableMocks) {
@@ -109,7 +110,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     const query = new UserStatisticsQuery().byId(requestContexts[0].accessToken.getUserInfo()!.id).selectBriefcasesCount();
     const textQuery = `${requestContexts[0].accessToken.getUserInfo()!.id}?$select=*,HasStatistics-forward-Statistics.BriefcasesCount`;
 
-    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!.id], [user1BriefcasesCount]), textQuery);
+    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!], [user1BriefcasesCount]), textQuery);
 
     const briefcasesCount = (await imodelHubClient.users.statistics.get(requestContexts[0], imodelId, query))[0];
 
@@ -121,7 +122,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     const query = new UserStatisticsQuery().byId(requestContexts[0].accessToken.getUserInfo()!.id).selectOwnedLocksCount();
     const textQuery = `${requestContexts[0].accessToken.getUserInfo()!.id}?$select=*,HasStatistics-forward-Statistics.OwnedLocksCount`;
 
-    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!.id], undefined,
+    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!], undefined,
       [user1OwnedLocksCount]), textQuery);
 
     const ownedLocksCount = (await imodelHubClient.users.statistics.get(requestContexts[0], imodelId, query))[0];
@@ -134,7 +135,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     const query = new UserStatisticsQuery().byId(requestContexts[0].accessToken.getUserInfo()!.id).selectPushedChangeSetsCount();
     const textQuery = `${requestContexts[0].accessToken.getUserInfo()!.id}?$select=*,HasStatistics-forward-Statistics.PushedChangeSetsCount`;
 
-    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!.id], undefined,
+    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!], undefined,
       undefined, [user1PushedChangesetsCount]), textQuery);
 
     const pushedChangesetsCount = (await imodelHubClient.users.statistics.get(requestContexts[0], imodelId,
@@ -148,7 +149,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     const query = new UserStatisticsQuery().byId(requestContexts[0].accessToken.getUserInfo()!.id).selectLastChangeSetPushDate();
     const textQuery = `${requestContexts[0].accessToken.getUserInfo()!.id}?$select=*,HasStatistics-forward-Statistics.LastChangeSetPushDate`;
 
-    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!.id], undefined,
+    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!], undefined,
       undefined, undefined, ["date"]), textQuery);
 
     const lastChangeSetPushDate = (await imodelHubClient.users.statistics.get(requestContexts[0], imodelId,
@@ -165,7 +166,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     const textQuery = `${requestContexts[0].accessToken.getUserInfo()!.id}?$select=*,HasStatistics-forward-Statistics.PushedChangeSetsCount,`
       + "HasStatistics-forward-Statistics.LastChangeSetPushDate";
 
-    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!.id], undefined,
+    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!], undefined,
       undefined, [user1PushedChangesetsCount], ["date"]), textQuery);
 
     const changesetStatistics = (await imodelHubClient.users.statistics.get(requestContexts[0], imodelId,
@@ -181,7 +182,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     const textQuery = `${requestContexts[0].accessToken.getUserInfo()!.id}?$select=*,HasStatistics-forward-Statistics.BriefcasesCount,`
       + "HasStatistics-forward-Statistics.OwnedLocksCount";
 
-    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!.id],
+    mockGetUserStatistics(imodelId, generateUsersStatistics(1, [requestContexts[0].accessToken.getUserInfo()!],
       [user1BriefcasesCount], [user1OwnedLocksCount]), textQuery);
 
     const briefcasesLocksStatistics = (await imodelHubClient.users.statistics.get(requestContexts[0], imodelId,
@@ -197,7 +198,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     const textQuery = "?$select=*,HasStatistics-forward-Statistics.BriefcasesCount";
 
     mockGetUserStatistics(imodelId, generateUsersStatistics(2,
-      [requestContexts[0].accessToken.getUserInfo()!.id, requestContexts[1].accessToken.getUserInfo()!.id],
+      [requestContexts[0].accessToken.getUserInfo()!, requestContexts[1].accessToken.getUserInfo()!],
       [user1BriefcasesCount, user2BriefcasesCount]), textQuery);
 
     const iModelStatistics = (await imodelHubClient.users.statistics.get(requestContexts[0], imodelId, query));
@@ -215,7 +216,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
       .selectPushedChangeSetsCount();
 
     mockGetUserStatistics(imodelId, generateUsersStatistics(2,
-      [requestContexts[0].accessToken.getUserInfo()!.id, requestContexts[1].accessToken.getUserInfo()!.id],
+      [requestContexts[0].accessToken.getUserInfo()!, requestContexts[1].accessToken.getUserInfo()!],
       undefined, undefined, [user1PushedChangesetsCount, user2PushedChangesetsCount]));
 
     const iModelStatistics = (await imodelHubClient.users.statistics.get(requestContexts[0], imodelId, query));
@@ -231,7 +232,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     const textQuery = "?$select=*,HasStatistics-forward-Statistics.*";
 
     mockGetUserStatistics(imodelId, generateUsersStatistics(2,
-      [requestContexts[0].accessToken.getUserInfo()!.id, requestContexts[1].accessToken.getUserInfo()!.id],
+      [requestContexts[0].accessToken.getUserInfo()!, requestContexts[1].accessToken.getUserInfo()!],
       [user1BriefcasesCount, user2BriefcasesCount],
       [user1OwnedLocksCount, user2OwnedLocksCount], [user1PushedChangesetsCount, user2PushedChangesetsCount]), textQuery);
 

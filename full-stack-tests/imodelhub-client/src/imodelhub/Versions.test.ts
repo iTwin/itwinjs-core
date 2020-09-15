@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import {
-  Briefcase, ChangeSet, IModelClient, IModelQuery, Thumbnail, ThumbnailQuery, ThumbnailSize, Version, VersionQuery,
+  Briefcase, ChangeSet, IModelClient, Thumbnail, ThumbnailQuery, ThumbnailSize, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
@@ -68,9 +68,8 @@ describe("iModelHub VersionHandler", () => {
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients Versions test";
   const imodelName2 = "imodeljs-clients Versions test 2";
-  const baselineVersionsiModelNamePrefix = "imodeljs-clients baseline versions iModel ";
+  const baselineiModelName = "imodeljs-clients baseline versions iModel";
   const firstVersionName = "Version 1";
-  let baselineiModelName = "";
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
 
@@ -92,8 +91,8 @@ describe("iModelHub VersionHandler", () => {
     (requestContext as any).activityId = "iModelHub VersionHandler";
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId, false, true);
-    await utils.createIModel(requestContext, imodelName2, contextId, false, true);
+    await utils.createIModel(requestContext, imodelName, contextId, true, false, true);
+    await utils.createIModel(requestContext, imodelName2, contextId, true, false, true);
     imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     imodelId2 = await utils.getIModelId(requestContext, imodelName2, contextId);
     iModelClient = utils.getDefaultClient();
@@ -104,7 +103,7 @@ describe("iModelHub VersionHandler", () => {
       const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
-        await utils.createIModel(requestContext, imodelName, contextId, true, true);
+        await utils.createIModel(requestContext, imodelName, contextId, true, true, true);
         imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
         briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
       }
@@ -116,10 +115,7 @@ describe("iModelHub VersionHandler", () => {
       }
       // Cleanup baseline version's iModels if they left undeleted
       if (!TestConfig.enableIModelBank) {
-        const baselineiModelsQuery = new IModelQuery().filter(`Name+like+'${baselineVersionsiModelNamePrefix}%'`);
-        const imodels = await iModelClient.iModels.get(requestContext, contextId, baselineiModelsQuery);
-        for (const imodel of imodels)
-          await iModelClient.iModels.delete(requestContext, contextId, imodel.id!);
+        await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
       }
     }
   });
@@ -164,7 +160,6 @@ describe("iModelHub VersionHandler", () => {
     // Create new iModel
     let baselineiModelId = Guid.createValue();
     if (!TestConfig.enableMocks) {
-      baselineiModelName = baselineVersionsiModelNamePrefix + Guid.createValue();
       await utils.createIModel(requestContext, baselineiModelName, contextId);
       baselineiModelId = await utils.getIModelId(requestContext, baselineiModelName, contextId);
     }

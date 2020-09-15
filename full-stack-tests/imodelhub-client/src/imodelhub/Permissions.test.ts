@@ -78,8 +78,8 @@ function mockGetIModel(contextId: string, imodelId: GuidString, secured: boolean
 describe("iModelHub PermissionsManager", () => {
   let projectId: string;
   let imodelId: GuidString;
-  const imodelName = "imodeljs-clients PermissionHandler";
-  const imodelClient: IModelClient = utils.getImodelHubClient();
+  const imodelName = "imodeljs-clients PermissionHandler test";
+  const imodelClient: IModelClient = utils.getIModelHubClient();
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {

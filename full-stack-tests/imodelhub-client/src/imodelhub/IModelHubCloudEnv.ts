@@ -8,7 +8,7 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
-import { getImodelHubClient } from "./TestUtils";
+import { getIModelHubClient } from "./TestUtils";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
 class TestContextManagerClient implements ContextManagerClient {
@@ -68,7 +68,7 @@ class TestIModelHubUserMgr implements FrontendAuthorizationClient {
 export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
   public readonly contextMgr = new TestContextManagerClient();
-  public readonly imodelClient = getImodelHubClient();
+  public readonly imodelClient = getIModelHubClient();
   public async startup(): Promise<void> { }
   public async shutdown(): Promise<number> { return 0; }
 
