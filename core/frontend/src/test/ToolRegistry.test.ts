@@ -8,7 +8,7 @@ import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
-import { Tool } from "../tools/Tool";
+import { KeyinParseError, Tool } from "../tools/Tool";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: number;
@@ -86,27 +86,66 @@ describe("ToolRegistry", () => {
     assert.isFalse(cmdReturn);
   });
 
-  function testKeyinArgs(keyin: string, args: string[]) {
-    const parsedKeyin = IModelApp.tools.parseKeyin(keyin);
-    assert.equal(parsedKeyin.args.length, args.length);
-    args.forEach ((parsedArg, index) => assert.equal(parsedArg, parsedKeyin.args[index]));
+  function testKeyinArgs(keyin: string, args: string[], expectedToolKeyin?: string) {
+    const result = IModelApp.tools.parseKeyin(keyin);
+    expect(result.ok).to.be.true;
+    if (result.ok) {
+      assert.equal(result.args.length, args.length);
+      args.forEach ((parsedArg, index) => assert.equal(parsedArg, result.args[index]));
+      if (undefined !== expectedToolKeyin)
+        expect(result.tool.keyin).to.equal(expectedToolKeyin);
+    }
   }
 
-  it("Should parse command with matching embeded quotes", async () => {
-    testKeyinArgs ("uccalc test args with \"a quoted string\" included", ["test", "args", "with","a quoted string","included"]);
-    testKeyinArgs ("uccalc \"a quoted string\"", ["a quoted string"]);
-    testKeyinArgs ("uccalc this has \"a quoted string\"", ["this", "has", "a quoted string"]);
-    testKeyinArgs ("uccalc \"a quoted string\" is before me", ["a quoted string", "is", "before", "me"]);
-    testKeyinArgs ("uccalc \"my arg\\\"", ["my arg\\"]);
+  function expectParseError(keyin: string, expectedError: KeyinParseError) {
+    const result = IModelApp.tools.parseKeyin(keyin);
+    expect(result.ok).to.be.false;
+    if (!result.ok)
+      expect(result.error).to.equal(expectedError);
+  }
+
+  it("Should parse command with quoted arguments", () => {
+    testKeyinArgs(`uccalc test args with "a quoted string" included`, ["test", "args", "with","a quoted string","included"]);
+    testKeyinArgs(`uccalc "a quoted string"`, ["a quoted string"]);
+    testKeyinArgs(`uccalc this has "a quoted string"`, ["this", "has", "a quoted string"]);
+    testKeyinArgs(`uccalc "a quoted string" is before me`, ["a quoted string", "is", "before", "me"]);
+    testKeyinArgs(`uccalc "my arg"`, ["my arg"]);
   });
 
-  it("Should parse command with unmatched embeded quotes", async () => {
-    testKeyinArgs ("uccalc \"test", ["\"test"]);
-    testKeyinArgs ("uccalc test\"", ["test\""]);
-    testKeyinArgs ("uccalc \"matched\" \"unmatched", ["matched", "\"unmatched"]);
-    testKeyinArgs ("uccalc bad\" unexpected match \"bad expected match\"", ["bad", "unexpected match", "bad", "expected", "match\""]);
-    testKeyinArgs ("uccalc \"", ["\""]);
-    testKeyinArgs ("uccalc 12'-3\"", ["12'-3\""]);
+  it("Should parse quoted arguments with embedded quotes", () => {
+    testKeyinArgs(`uccalc "a single "" inside"`, [`a single " inside`]);
+    testKeyinArgs(`uccalc """ is first"`, [`" is first`]);
+    testKeyinArgs(`uccalc "trailing """`, [`trailing "`]);
+    testKeyinArgs(`uccalc "double """" quotes"`, [`double "" quotes`]);
+    testKeyinArgs(`uccalc "" """" """"""`, [``, `"`, `""`]);
+    testKeyinArgs(`uccalc no "yes """ no """ yes" no "yes "" yes"`, [`no`, `yes "`, `no`, `" yes`, `no`, `yes " yes`]);
+  });
+
+  it("Should parse command with mismatched quotes", () => {
+    expectParseError(`uccalc "test`, KeyinParseError.MismatchedQuotes);
+    expectParseError(`uccalc abc "xyz`, KeyinParseError.MismatchedQuotes);
+    expectParseError(`uccalc abc "x "" y "" z`, KeyinParseError.MismatchedQuotes);
+  });
+
+  it("Should not consider quoted tokens as part of tool keyin", () => {
+    testKeyinArgs(`preprocessor format double`, [], "preprocessor format double");
+    testKeyinArgs(`preprocessor format double abc "d e f"`, ["abc", "d e f"], "preprocessor format double");
+    testKeyinArgs(`preprocessor format "double"`, ["double"], "preprocessor format");
+    testKeyinArgs(`preprocessor format "double" abc "d e f"`, ["double", "abc", "d e f"], "preprocessor format");
+    testKeyinArgs(`preprocessor "format" double`, ["format", "double"], "preprocessor");
+
+    const result = IModelApp.tools.parseKeyin(`"preprocessor" format double`);
+    expect(result.ok).to.be.false;
+    if (!result.ok)
+      expect(result.error).to.equal(KeyinParseError.ToolNotFound);
+  });
+
+  it("Should parse whitespace", () => {
+    // NB: A quoted argument must always be preceded by whitespace; otherwise it is just another character in an unquoted argument.
+    testKeyinArgs(`uccalc abc xyz"`, [`abc`, `xyz"`]);
+    testKeyinArgs(`  uccalc   one two  three   "four"     "five six" seven`, ["one", "two", "three", "four", "five six", "seven"]);
+    testKeyinArgs(`uccalc one"two"three four""five"`, [`one"two"three`, `four""five"`]);
+    testKeyinArgs("\tuccalc\none\t \ttwo \n three", ["one", "two", "three"]);
   });
 
   it("Should find the MicroStation inputmanager training command", async () => {

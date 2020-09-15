@@ -240,6 +240,7 @@ public;class InteractiveTool
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
 alpha;ItemField
+beta;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
@@ -316,8 +317,10 @@ public;OutputMessagePriority
 public;OutputMessageType
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
-alpha;ParseAndRunResult
-alpha;ParsedKeyin
+beta;ParseAndRunResult
+beta;ParsedKeyin
+beta;ParseKeyinError
+beta;ParseKeyinResult = ParsedKeyin | ParseKeyinError
 beta;PendingExtension
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
