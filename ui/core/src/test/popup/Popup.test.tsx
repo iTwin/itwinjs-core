@@ -708,6 +708,21 @@ describe("<Popup />", () => {
       wrapper.unmount();
     });
 
+    it("should not close on Enter if closeOnEnter=false", () => {
+      const spyOnClose = sinon.spy();
+      const spyOnEnter = sinon.spy();
+      const wrapper = mount(<Popup isOpen onClose={spyOnClose} onEnter={spyOnEnter} closeOnEnter={false} />);
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Enter" }));
+
+      spyOnClose.calledOnce.should.false;
+      spyOnEnter.calledOnce.should.true;
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      wrapper.unmount();
+    });
+
     it("should do nothing on 'a'", () => {
       const spyOnClose = sinon.spy();
       const wrapper = mount(<Popup isOpen onClose={spyOnClose}><div>fake content</div></Popup>);

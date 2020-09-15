@@ -141,6 +141,19 @@
         "tsconfig.json",
         "tsconfig.backend.json"
       ]
+    },
+    "rules": {
+      "@typescript-eslint/naming-convention": [
+        "warn",
+        {
+          "selector": "function",
+          "format": [
+            "camelCase",
+            "PascalCase"
+          ]
+        }
+      ],
+      "@typescript-eslint/unbound-method": "off"
     }
   }
 }

@@ -169,7 +169,9 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
 
     return (
       <div className={className}>
-        <PopupButton label={this.state.inputValue} setFocus={this.props.setFocus} focusTarget=".uicore-inputs-textarea">
+        <PopupButton label={this.state.inputValue}
+          closeOnEnter={false}
+          setFocus={this.props.setFocus} focusTarget=".uicore-inputs-textarea">
           <PopupContent>
             <Textarea
               {...textareaProps}
@@ -188,6 +190,19 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
  * @beta
  */
 export class TextareaPropertyEditor extends PropertyEditorBase {
+  // istanbul ignore next
+  public get containerHandlesBlur(): boolean {
+    return false;
+  }
+  // istanbul ignore next
+  public get containerHandlesEnter(): boolean {
+    return false;
+  }
+  // istanbul ignore next
+  public get containerHandlesTab(): boolean {
+    return false;
+  }
+
   public get reactNode(): React.ReactNode {
     return <TextareaEditor />;
   }

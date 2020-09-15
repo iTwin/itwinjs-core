@@ -142,17 +142,17 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
         <CalculatorKeyPad onValueClick={this._onValueButtonClick} onOperatorClick={this._onOperatorButtonClick} />
         <div className="uifw-calculator-bottom-buttons">
           <Button
-            className={classnames("uifw-calculator-large-button", "uifw-calculator-cancel-button")}
-            onClick={this._handleCancel}
-          >
-            <Icon iconSpec="icon-remove" />
-          </Button>
-          <Button
             className={classnames("uifw-calculator-large-button", "uifw-calculator-ok-button")}
             buttonType={ButtonType.Primary}
             onClick={this._handleOk}
           >
             <Icon iconSpec="icon-checkmark" />
+          </Button>
+          <Button
+            className={classnames("uifw-calculator-large-button", "uifw-calculator-cancel-button")}
+            onClick={this._handleCancel}
+          >
+            <Icon iconSpec="icon-remove" />
           </Button>
         </div>
       </div>

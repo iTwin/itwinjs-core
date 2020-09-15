@@ -73,21 +73,6 @@ describe("<EnumEditor />", () => {
     }
   });
 
-  it("onCommit should be called for Enter", async () => {
-    const propertyRecord = TestUtils.createEnumProperty("Test", 0);
-    const spyOnCommit = sinon.spy();
-    function handleCommit(_commit: PropertyUpdatedArgs): void {
-      spyOnCommit();
-    }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
-    const selectNode = wrapper.find("select");
-    expect(selectNode.length).to.eq(1);
-
-    selectNode.simulate("keyDown", { key: "Enter" });
-    await TestUtils.flushAsyncOperations();
-    expect(spyOnCommit.calledOnce).to.be.true;
-  });
-
   it("onCommit should not be called for escape", async () => {
     const propertyRecord = TestUtils.createEnumProperty("Test", 0);
     const spyOnCommit = sinon.spy();

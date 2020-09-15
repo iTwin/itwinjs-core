@@ -13,9 +13,9 @@ import { memoize } from "lodash";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { isArrowKey, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
+import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  CommonProps, Dialog, ItemKeyboardNavigator, LocalUiSettings, Orientation, SortDirection, UiSettings, UiSettingsStatus,
+  CommonProps, Dialog, isNavigationKey, ItemKeyboardNavigator, LocalUiSettings, Orientation, SortDirection, UiSettings, UiSettingsStatus,
 } from "@bentley/ui-core";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
@@ -441,6 +441,21 @@ export class Table extends React.Component<TableProps, TableState> {
         // istanbul ignore else
         if (this.props.onScrollToRow)
           this.props.onScrollToRow(rowIndex);
+      }
+    }
+  }
+
+  private setFocusToSelected() {
+    // istanbul ignore else
+    if (this._gridRef.current) {
+      const grid = this._gridRef.current as any;
+      // istanbul ignore else
+      if (grid.getDataGridDOMNode) {
+        const gridSelected = grid.getDataGridDOMNode().querySelector(".rdg-selected");
+        // istanbul ignore else
+        if (gridSelected) {
+          gridSelected.focus();
+        }
       }
     }
   }
@@ -1189,8 +1204,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     let activate = false;
 
-    const isSelected = this._selectedRowIndices.has(args.rowIdx);
-    if (isSelected && this._pressedItemSelected)
+    if (this._pressedItemSelected)
       activate = true;
 
     if (activate)
@@ -1235,7 +1249,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _deactivateCellEditor = (): void => {
     if (this.state.cellEditorState.active)
-      this.setState({ cellEditorState: { active: false } });
+      this.setState({ cellEditorState: { active: false } }, () => setImmediate(() => this.setFocusToSelected()));
   }
 
   /** @internal */
@@ -1316,7 +1330,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this._gridRef.current) {
       const grid = this._gridRef.current as any;
       // istanbul ignore else
-      if (grid.onToggleFilter) {
+      if (grid.onToggleFilter && showFilter !== this._filterRowShown) {
         grid.onToggleFilter();
 
         this._filterRowShown = showFilter;
@@ -1405,23 +1419,90 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   private _onKeyboardEvent = (e: React.KeyboardEvent, keyDown: boolean) => {
-    if (isArrowKey(e.key) || SpecialKey.Home === e.key || SpecialKey.End === e.key) {
-      const handleKeyboardSelectItem = (index: number) => {
-        const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(index));
-        selectionFunction(e.shiftKey, e.ctrlKey);
-      };
-      // istanbul ignore next
-      const handleKeyboardActivateItem = (_index: number) => { };
+    if (isNavigationKey(e.key) && !this.state.cellEditorState.active) {
+      if (this._tableSelectionTarget === TableSelectionTarget.Row) {
+        const handleKeyboardSelectItem = (index: number) => {
+          const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(index));
+          selectionFunction(e.shiftKey, e.ctrlKey);
+        };
+        // istanbul ignore next
+        const handleKeyboardActivateItem = (_index: number) => { };
 
-      const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
-      itemKeyboardNavigator.orientation = Orientation.Vertical;
-      itemKeyboardNavigator.allowWrap = false;
-      itemKeyboardNavigator.itemCount = this.state.rowsCount;
+        const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
+        itemKeyboardNavigator.orientation = Orientation.Vertical;
+        itemKeyboardNavigator.allowWrap = false;
+        itemKeyboardNavigator.itemCount = this.state.rowsCount;
 
-      const processedRow = this._rowSelectionHandler.processedItem ? this._rowSelectionHandler.processedItem /* istanbul ignore next */ : 0;
-      keyDown ?
-        itemKeyboardNavigator.handleKeyDownEvent(e, processedRow) :
-        itemKeyboardNavigator.handleKeyUpEvent(e, processedRow);
+        const processedRow = this._rowSelectionHandler.processedItem ? this._rowSelectionHandler.processedItem /* istanbul ignore next */ : 0;
+        keyDown ?
+          itemKeyboardNavigator.handleKeyDownEvent(e, processedRow) :
+          itemKeyboardNavigator.handleKeyUpEvent(e, processedRow);
+      } else {
+        const handleKeyboardSelectItem = (index: number) => {
+          const processedCell = this._cellSelectionHandler.processedItem;
+          // istanbul ignore else
+          if (processedCell) {
+            const cellKey = { rowIndex: index, columnKey: processedCell.columnKey };
+            const selectionHandler = this.createCellItemSelectionHandler(cellKey);
+            const selectionFunction = this._cellSelectionHandler.createSelectionFunction(this._cellComponentSelectionHandler, selectionHandler);
+            selectionFunction(e.shiftKey, e.ctrlKey);
+          }
+        };
+
+        const handleKeyboardActivateItem = (index: number) => {
+          const processedCell = this._cellSelectionHandler.processedItem;
+          // istanbul ignore else
+          if (processedCell) {
+            const columnIndex = this.getColumnIndexFromKey(processedCell.columnKey);
+            // istanbul ignore else
+            if (0 <= columnIndex && columnIndex < this.state.columns.length) {
+              const columnDescription = this.state.columns[columnIndex].columnDescription;
+              // istanbul ignore else
+              if (columnDescription && columnDescription.editable)
+                this.activateCellEditor(index, columnIndex, processedCell.columnKey);
+            }
+          }
+        };
+
+        const handleCrossAxisArrowKey = (forward: boolean) => {
+          const processedCell = this._cellSelectionHandler.processedItem;
+          // istanbul ignore else
+          if (processedCell) {
+            const columnIndex = this.getColumnIndexFromKey(processedCell.columnKey);
+            // istanbul ignore else
+            if (columnIndex >= 0) {
+              let newColIndex = columnIndex;
+
+              if (forward)
+                newColIndex++;
+              else
+                newColIndex--;
+
+              if (newColIndex < 0)
+                newColIndex = this.state.columns.length - 1;
+              else if (newColIndex >= this.state.columns.length)
+                newColIndex = 0;
+
+              const columnKey = this.state.columns[newColIndex].key;
+              const cellKey = { rowIndex: processedCell.rowIndex, columnKey };
+              const selectionHandler = this.createCellItemSelectionHandler(cellKey);
+              const selectionFunction = this._cellSelectionHandler.createSelectionFunction(this._cellComponentSelectionHandler, selectionHandler);
+              selectionFunction(e.shiftKey, e.ctrlKey);
+            }
+          }
+        }
+
+        const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
+        itemKeyboardNavigator.orientation = Orientation.Vertical;
+        itemKeyboardNavigator.allowWrap = false;
+        itemKeyboardNavigator.itemCount = this.state.rowsCount;
+        itemKeyboardNavigator.crossAxisArrowKeyHandler = handleCrossAxisArrowKey;
+
+        const processedRow = this._cellSelectionHandler.processedItem ? this._cellSelectionHandler.processedItem.rowIndex /* istanbul ignore next */ : 0;
+        keyDown ?
+          itemKeyboardNavigator.handleKeyDownEvent(e, processedRow) :
+          itemKeyboardNavigator.handleKeyUpEvent(e, processedRow);
+      }
     }
   }
 

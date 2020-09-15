@@ -62,6 +62,8 @@ export interface PopupProps extends CommonProps {
   isPinned?: boolean;
   /** Indicates whether to use animation for open/close (defaults to true) */
   animate?: boolean;
+  /** Indicates whether to close the popup when Enter is pressed (defaults to true) */
+  closeOnEnter?: boolean;
 }
 
 /** @internal */
@@ -180,7 +182,15 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
 
     if (event.key === SpecialKey.Escape || event.key === SpecialKey.Enter) {
-      this._onClose(event.key === SpecialKey.Enter);
+      const closeOnEnter = this.props.closeOnEnter !== undefined ? this.props.closeOnEnter : true;
+      if (event.key === SpecialKey.Enter) {
+        if (closeOnEnter)
+          this._onClose(true);
+        else
+          this.props.onEnter && this.props.onEnter();
+      } else {
+        this._onClose(false);
+      }
     }
   }
 

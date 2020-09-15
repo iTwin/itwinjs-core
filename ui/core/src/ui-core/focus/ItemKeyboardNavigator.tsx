@@ -18,17 +18,19 @@ export type CrossAxisArrowKeyFunc = (forward: boolean) => void;
  * @internal
  */
 export class ItemKeyboardNavigator {
-  private _direction = new Map<string, number>();
+  private _direction: Map<string, number>;
   private _itemCount = 0;
   private _orientation = Orientation.Horizontal;
   private _allowWrap = true;
   private _crossAxisArrowKeyHandler?: CrossAxisArrowKeyFunc;
 
   constructor(public onFocusItem: (index: number) => void, public onActivateItem: (index: number) => void) {
-    this._direction.set(SpecialKey.ArrowLeft, -1);
-    this._direction.set(SpecialKey.ArrowUp, -1);
-    this._direction.set(SpecialKey.ArrowRight, 1);
-    this._direction.set(SpecialKey.ArrowDown, 1);
+    this._direction = new Map<string, number>([
+      [SpecialKey.ArrowLeft, -1],
+      [SpecialKey.ArrowUp, -1],
+      [SpecialKey.ArrowRight, 1],
+      [SpecialKey.ArrowDown, 1],
+    ]);
   }
 
   /** The item count */
@@ -69,6 +71,11 @@ export class ItemKeyboardNavigator {
       case SpecialKey.ArrowDown:
         this.determineOrientation(event, index);
         break;
+
+      case SpecialKey.Enter:
+      case SpecialKey.Space:
+        this.activateItem(index);
+        break;
     }
   }
 
@@ -80,10 +87,6 @@ export class ItemKeyboardNavigator {
       case SpecialKey.ArrowLeft:
       case SpecialKey.ArrowRight:
         this.determineOrientation(event, index);
-        break;
-      case SpecialKey.Enter:
-      case SpecialKey.Space:
-        this.activateItem(index);
         break;
     }
   }

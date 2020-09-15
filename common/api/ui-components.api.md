@@ -1603,6 +1603,8 @@ export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
 // @beta
 export class EnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
+    get containerHandlesEnter(): boolean;
+    // (undocumented)
     get reactNode(): React.ReactNode;
 }
 
@@ -4181,6 +4183,12 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
 
 // @beta
 export class TextareaPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesBlur(): boolean;
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
+    // (undocumented)
+    get containerHandlesTab(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }

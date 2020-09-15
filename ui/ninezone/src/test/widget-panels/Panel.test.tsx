@@ -5,7 +5,7 @@
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render, fireEvent } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, DraggedPanelSideContext, NineZoneDispatch, WidgetPanel,
 } from "../../ui-ninezone";

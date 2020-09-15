@@ -35,20 +35,20 @@ exports[`Calculator renders correctly 1`] = `
     className="uifw-calculator-bottom-buttons"
   >
     <Button
-      className="uifw-calculator-large-button uifw-calculator-cancel-button"
-      onClick={[Function]}
-    >
-      <Icon
-        iconSpec="icon-remove"
-      />
-    </Button>
-    <Button
       buttonType="primary"
       className="uifw-calculator-large-button uifw-calculator-ok-button"
       onClick={[Function]}
     >
       <Icon
         iconSpec="icon-checkmark"
+      />
+    </Button>
+    <Button
+      className="uifw-calculator-large-button uifw-calculator-cancel-button"
+      onClick={[Function]}
+    >
+      <Icon
+        iconSpec="icon-remove"
       />
     </Button>
   </div>

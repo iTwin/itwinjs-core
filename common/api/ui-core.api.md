@@ -1479,6 +1479,7 @@ export interface PopupContextMenuProps extends CommonProps {
 export interface PopupProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
+    closeOnEnter?: boolean;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
     isPinned?: boolean;

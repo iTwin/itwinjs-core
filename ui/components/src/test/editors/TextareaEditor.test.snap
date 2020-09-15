@@ -5,6 +5,7 @@ exports[`<TextareaEditor /> renders correctly 1`] = `
   className="components-cell-editor components-textarea-editor"
 >
   <PopupButton
+    closeOnEnter={false}
     focusTarget=".uicore-inputs-textarea"
     label=""
   >
@@ -36,6 +37,7 @@ exports[`<TextareaEditor /> renders correctly with style 1`] = `
   className="components-cell-editor components-textarea-editor"
 >
   <PopupButton
+    closeOnEnter={false}
     focusTarget=".uicore-inputs-textarea"
     label=""
   >

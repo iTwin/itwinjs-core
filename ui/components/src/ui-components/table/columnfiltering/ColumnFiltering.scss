@@ -42,6 +42,7 @@
 
         .react-select__value-container {
           padding: 0 2px;
+          max-height: $filter-height;
 
           .react-select__multi-value {
             margin: 0;

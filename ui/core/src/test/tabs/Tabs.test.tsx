@@ -172,6 +172,7 @@ describe("<Tabs />", () => {
     const wrapper = mount<Tabs>(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={1} onActivateTab={spyActivate} />);
     expect(wrapper.state().activeIndex).to.eq(1);
     const label = wrapper.find("a").at(0);
+    label.simulate("keydown", { key: "Enter" });
     label.simulate("keyup", { key: "Enter" });
     wrapper.update();
     expect(wrapper.state().activeIndex).to.eq(0);
@@ -184,6 +185,7 @@ describe("<Tabs />", () => {
     const wrapper = mount<Tabs>(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={1} onActivateTab={spyActivate} />);
     expect(wrapper.state().activeIndex).to.eq(1);
     const label = wrapper.find("a").at(2);
+    label.simulate("keydown", { key: " " });
     label.simulate("keyup", { key: " " });
     wrapper.update();
     expect(wrapper.state().activeIndex).to.eq(2);

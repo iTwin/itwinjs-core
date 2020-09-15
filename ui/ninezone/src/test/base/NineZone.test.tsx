@@ -8,7 +8,7 @@ import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { Rectangle } from "@bentley/ui-core";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
-import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, useLabel, sideToCursorType } from "../../ui-ninezone";
+import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils";
 

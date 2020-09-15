@@ -160,6 +160,11 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
  * @beta
  */
 export class EnumPropertyEditor extends PropertyEditorBase {
+  // istanbul ignore next
+  public get containerHandlesEnter(): boolean {
+    return false;
+  }
+
   public get reactNode(): React.ReactNode {
     return <EnumEditor />;
   }

@@ -29,6 +29,8 @@ export interface PopupButtonProps extends CommonProps {
   showArrow?: boolean;
   /** Indicates whether to set focus to the input element */
   setFocus?: boolean;
+  /** Indicates whether to close the popup when Enter is pressed (defaults to true) */
+  closeOnEnter?: boolean;
 
   /** Listens for click events on button area */
   onClick?: (event: React.MouseEvent) => void;
@@ -84,7 +86,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
 
   private _handleKeyDown = (event: React.KeyboardEvent) => {
     // istanbul ignore else
-    if ((event.key === SpecialKey.ArrowDown || event.key === SpecialKey.Space) && !this.state.showPopup) {
+    if ((event.key === SpecialKey.ArrowDown || event.key === SpecialKey.Space || event.key === SpecialKey.Enter) && !this.state.showPopup) {
       event.preventDefault();
       event.stopPropagation();
       this.setState({ showPopup: true });
@@ -119,7 +121,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
           </div>
         </div>
         <Popup className="components-popup-button-popup" isOpen={this.state.showPopup} position={RelativePosition.Bottom}
-          onClose={this._closePopup} onEnter={this.props.onEnter} target={this._buttonRef.current}
+          onClose={this._closePopup} onEnter={this.props.onEnter} closeOnEnter={this.props.closeOnEnter} target={this._buttonRef.current}
           showArrow={showArrow} showShadow={showShadow}
         /** Get an onBlur when using a key in Textarea or mouse movement in  Slider */
         /* focusTarget={this.props.focusTarget} moveFocus={true} */
@@ -154,13 +156,6 @@ export function PopupOkCancelButtons(props: OkCancelProps) {
   return (
     <div className="components-popup-bottom-buttons">
       <Button
-        className={classnames("components-popup-large-button", "components-popup-cancel-button")}
-        title={UiCore.translate("dialog.cancel")}
-        onClick={props.onCancel}
-      >
-        <Icon iconSpec="icon-remove" />
-      </Button>
-      <Button
         className={classnames("components-popup-large-button", "components-popup-ok-button")}
         data-testid="components-popup-ok-button"
         buttonType={ButtonType.Primary}
@@ -168,6 +163,13 @@ export function PopupOkCancelButtons(props: OkCancelProps) {
         onClick={props.onOk}
       >
         <Icon iconSpec="icon-checkmark" />
+      </Button>
+      <Button
+        className={classnames("components-popup-large-button", "components-popup-cancel-button")}
+        title={UiCore.translate("dialog.cancel")}
+        onClick={props.onCancel}
+      >
+        <Icon iconSpec="icon-remove" />
       </Button>
     </div>
   );
