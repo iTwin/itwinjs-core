@@ -445,6 +445,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: false,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const property: Property = {
         property: {
@@ -520,6 +521,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const property: Property = {
         property: {
@@ -600,6 +602,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: false,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }, {
         sourceClassInfo: intermediateClass,
         targetClassInfo: selectClass,
@@ -609,6 +612,7 @@ describe("RulesetsFactory", () => {
           label: "My Relationship 2",
         },
         isForwardRelationship: true,
+        isPolymorphicTargetClass: true,
         isPolymorphicRelationship: true,
       }];
       const property: Property = {
@@ -689,6 +693,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const property: Property = {
         property: {
@@ -746,6 +751,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: false,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const property: Property = {
         property: {
@@ -808,6 +814,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }, {
         sourceClassInfo: intermediateClass,
         targetClassInfo: propertyClass,
@@ -818,6 +825,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: false,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const property: Property = {
         property: {
@@ -880,6 +888,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const property1: Property = {
         property: {
@@ -904,6 +913,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: false,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const property2: Property = {
         property: {
@@ -974,6 +984,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: false,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const property: Property = {
         property: {
@@ -995,6 +1006,7 @@ describe("RulesetsFactory", () => {
         },
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
+        isPolymorphicTargetClass: true,
       }];
       const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
@@ -1146,6 +1158,7 @@ describe("RulesetsFactory", () => {
           },
           isForwardRelationship: false,
           isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
         }];
         const property: Property = {
           property: {
@@ -1325,6 +1338,7 @@ describe("RulesetsFactory", () => {
           },
           isForwardRelationship: false,
           isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
         }];
         const property: Property = {
           property: {
@@ -1389,6 +1403,7 @@ describe("RulesetsFactory", () => {
           },
           isForwardRelationship: false,
           isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
         }];
         const property: Property = {
           property: {

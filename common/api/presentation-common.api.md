@@ -1859,6 +1859,7 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
 export interface RelatedClassInfo {
     isForwardRelationship: boolean;
     isPolymorphicRelationship: boolean;
+    isPolymorphicTargetClass: boolean;
     relationshipInfo: ClassInfo;
     sourceClassInfo: ClassInfo;
     targetClassInfo: ClassInfo;
@@ -1877,7 +1878,9 @@ export interface RelatedClassInfoJSON {
     // (undocumented)
     isForwardRelationship: boolean;
     // (undocumented)
-    isPolymorphicRelationship: boolean;
+    isPolymorphicRelationship?: boolean;
+    // (undocumented)
+    isPolymorphicTargetClass?: boolean;
     // (undocumented)
     relationshipInfo: ClassInfoJSON;
     // (undocumented)

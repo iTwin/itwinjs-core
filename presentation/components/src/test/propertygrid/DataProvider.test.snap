@@ -9,7 +9,7 @@ Object {
       "name": "white",
     },
   ],
-  "description": "withdrawal Reactive",
+  "description": "Guadeloupe",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -17,8 +17,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "application Hat Exclusive",
-      "value": "application Hat Exclusive",
+      "displayValue": "Executive",
+      "value": "Executive",
       "valueFormat": 0,
     },
   },
@@ -57,8 +57,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Hong Kong lime strategy",
-      "value": "Hong Kong lime strategy",
+      "displayValue": "Cape ADP digital",
+      "value": "Cape ADP digital",
       "valueFormat": 0,
     },
   },
@@ -89,8 +89,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Designer card feed",
-      "value": "Designer card feed",
+      "displayValue": "Dam Fantastic human-resource",
+      "value": "Dam Fantastic human-resource",
       "valueFormat": 0,
     },
   },
@@ -116,7 +116,7 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "description": "scalable open-source Circles",
+        "description": "parsing cross-platform withdrawal",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "nested 1",
@@ -128,8 +128,8 @@ Object {
           "typename": "datetime",
         },
         "value": Object {
-          "displayValue": "scalable open-source Circles",
-          "value": "Bike",
+          "displayValue": "parsing cross-platform withdrawal",
+          "value": "Iraqi Dinar",
           "valueFormat": 0,
         },
       },
@@ -178,8 +178,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "payment",
-      "value": "payment",
+      "displayValue": "RSS",
+      "value": "RSS",
       "valueFormat": 0,
     },
   },
@@ -205,7 +205,6 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "autoExpand": true,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -215,7 +214,7 @@ Object {
         "value": Object {
           "members": Object {
             "nested 1": PropertyRecord {
-              "description": "circuit",
+              "description": "Falkland Islands (Malvinas) index",
               "property": Object {
                 "displayLabel": "nested 1",
                 "editor": Object {
@@ -226,8 +225,8 @@ Object {
                 "typename": "geometry",
               },
               "value": Object {
-                "displayValue": "circuit",
-                "value": "Wells",
+                "displayValue": "Falkland Islands (Malvinas) index",
+                "value": "Unbranded",
                 "valueFormat": 0,
               },
             },
@@ -248,19 +247,16 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "transition",
+        "description": "Small Granite Table",
+        "isReadonly": true,
         "property": Object {
           "displayLabel": "primitive",
-          "editor": Object {
-            "name": "Bacon",
-            "params": Array [],
-          },
           "name": "primitive",
-          "typename": "time",
+          "typename": "date",
         },
         "value": Object {
-          "displayValue": "transition",
-          "value": "Future",
+          "displayValue": "Small Granite Table",
+          "value": "Human",
           "valueFormat": 0,
         },
       },
@@ -287,14 +283,28 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Bedfordshire Cotton navigate",
-      "value": "Bedfordshire Cotton navigate",
+      "displayValue": "Mouse",
+      "value": "Mouse",
       "valueFormat": 0,
     },
   },
   "records": Object {
     "top-1": Array [
       PropertyRecord {
+        "description": "pixel",
+        "property": Object {
+          "displayLabel": "primitive",
+          "name": "primitive",
+          "typename": "boolean",
+        },
+        "value": Object {
+          "displayValue": "pixel",
+          "value": "Incredible",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "autoExpand": true,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -305,20 +315,6 @@ Object {
           "items": Array [],
           "itemsTypeName": "point",
           "valueFormat": 1,
-        },
-      },
-      PropertyRecord {
-        "description": "Frozen metrics Global",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "typename": "decimal",
-        },
-        "value": Object {
-          "displayValue": "Frozen metrics Global",
-          "value": "indexing",
-          "valueFormat": 0,
         },
       },
     ],
@@ -354,15 +350,15 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "interfaces Qatari Rial Money Market Account",
-      "value": "interfaces Qatari Rial Money Market Account",
+      "displayValue": "Investment Account primary interface",
+      "value": "Investment Account primary interface",
       "valueFormat": 0,
     },
   },
   "records": Object {
     "Favorite": Array [
       PropertyRecord {
-        "description": "Buckinghamshire",
+        "description": "Sao Tome and Principe Island",
         "property": Object {
           "displayLabel": "nested 1",
           "editor": Object {
@@ -373,8 +369,8 @@ Object {
           "typename": "serial",
         },
         "value": Object {
-          "displayValue": "Buckinghamshire",
-          "value": "Alaska",
+          "displayValue": "Sao Tome and Principe Island",
+          "value": "Sausages",
           "valueFormat": 0,
         },
       },
@@ -400,20 +396,24 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "description": "Customer hacking",
-        "isReadonly": true,
+        "description": "Berkshire Cotton Factors",
         "property": Object {
           "displayLabel": "primitive",
+          "editor": Object {
+            "name": "Virginia",
+            "params": Array [],
+          },
           "name": "primitive",
-          "typename": "bigint",
+          "typename": "enum",
         },
         "value": Object {
-          "displayValue": "Customer hacking",
-          "value": "Money Market Account",
+          "displayValue": "Berkshire Cotton Factors",
+          "value": "Upgradable",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
+        "autoExpand": true,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -423,7 +423,7 @@ Object {
         "value": Object {
           "members": Object {
             "nested 1": PropertyRecord {
-              "description": "Buckinghamshire",
+              "description": "Sao Tome and Principe Island",
               "property": Object {
                 "displayLabel": "nested 1",
                 "editor": Object {
@@ -434,8 +434,8 @@ Object {
                 "typename": "serial",
               },
               "value": Object {
-                "displayValue": "Buckinghamshire",
-                "value": "Alaska",
+                "displayValue": "Sao Tome and Principe Island",
+                "value": "Sausages",
                 "valueFormat": 0,
               },
             },
@@ -483,8 +483,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "generate Nebraska",
-      "value": "generate Nebraska",
+      "displayValue": "digital Representative interface",
+      "value": "digital Representative interface",
       "valueFormat": 0,
     },
   },
@@ -510,19 +510,21 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "description": "Fresh concept Plaza",
+        "description": "RAM Bond Markets Units European Composite Unit (EURCO) Function-based",
+        "isReadonly": true,
         "property": Object {
           "displayLabel": "primitive",
           "name": "primitive",
-          "typename": "blob",
+          "typename": "smallint",
         },
         "value": Object {
-          "displayValue": "Fresh concept Plaza",
-          "value": "Gourde US Dollar",
+          "displayValue": "RAM Bond Markets Units European Composite Unit (EURCO) Function-based",
+          "value": "Salad",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
+        "autoExpand": true,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -532,7 +534,7 @@ Object {
         "value": Object {
           "members": Object {
             "nested 1": PropertyRecord {
-              "description": "Research Incredible complexity",
+              "description": "PNG auxiliary Human",
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "nested 1",
@@ -544,8 +546,8 @@ Object {
                 "typename": "date",
               },
               "value": Object {
-                "displayValue": "Research Incredible complexity",
-                "value": "Equatorial Guinea",
+                "displayValue": "PNG auxiliary Human",
+                "value": "overriding",
                 "valueFormat": 0,
               },
             },
@@ -593,8 +595,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Canadian Dollar incubate withdrawal",
-      "value": "Canadian Dollar incubate withdrawal",
+      "displayValue": "SMS Extended program",
+      "value": "SMS Extended program",
       "valueFormat": 0,
     },
   },
@@ -647,7 +649,6 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "autoExpand": true,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -667,7 +668,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "holistic Dynamic",
+                    "description": "virtual",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -675,13 +676,13 @@ Object {
                       "typename": "tinyint",
                     },
                     "value": Object {
-                      "displayValue": "holistic Dynamic",
-                      "value": "dot-com",
+                      "displayValue": "virtual",
+                      "value": "navigating",
                       "valueFormat": 0,
                     },
                   },
                   "nested 2": PropertyRecord {
-                    "description": "SDD Small Fresh Computer Automated",
+                    "description": "grey",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 2",
@@ -689,8 +690,8 @@ Object {
                       "typename": "set",
                     },
                     "value": Object {
-                      "displayValue": "SDD Small Fresh Computer Automated",
-                      "value": "overriding",
+                      "displayValue": "grey",
+                      "value": "monitor",
                       "valueFormat": 0,
                     },
                   },
@@ -709,7 +710,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "Program",
+                    "description": "digital 1080p Checking Account",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -717,13 +718,13 @@ Object {
                       "typename": "tinyint",
                     },
                     "value": Object {
-                      "displayValue": "Program",
-                      "value": "Licensed",
+                      "displayValue": "digital 1080p Checking Account",
+                      "value": "Planner",
                       "valueFormat": 0,
                     },
                   },
                   "nested 2": PropertyRecord {
-                    "description": "Direct Iran",
+                    "description": "Awesome SQL Ukraine",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 2",
@@ -731,8 +732,8 @@ Object {
                       "typename": "set",
                     },
                     "value": Object {
-                      "displayValue": "Direct Iran",
-                      "value": "embrace",
+                      "displayValue": "Awesome SQL Ukraine",
+                      "value": "port",
                       "valueFormat": 0,
                     },
                   },
@@ -824,6 +825,21 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
+        "description": "Branding calculate white",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "primitive",
+          "name": "primitive",
+          "typename": "boolean",
+        },
+        "value": Object {
+          "displayValue": "Branding calculate white",
+          "value": "primary",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "autoExpand": true,
         "property": Object {
           "displayLabel": "Nested Content",
           "name": "nested content field",
@@ -842,7 +858,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "Cape Verde panel",
+                    "description": "panel",
                     "property": Object {
                       "displayLabel": "nested 1",
                       "editor": Object {
@@ -853,8 +869,8 @@ Object {
                       "typename": "smallint",
                     },
                     "value": Object {
-                      "displayValue": "Cape Verde panel",
-                      "value": "Practical",
+                      "displayValue": "panel",
+                      "value": "Oval",
                       "valueFormat": 0,
                     },
                   },
@@ -932,20 +948,6 @@ Object {
           "valueFormat": 1,
         },
       },
-      PropertyRecord {
-        "description": "Branding calculate white",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "typename": "serial",
-        },
-        "value": Object {
-          "displayValue": "Branding calculate white",
-          "value": "primary",
-          "valueFormat": 0,
-        },
-      },
     ],
   },
   "reusePropertyDataState": true,
@@ -974,8 +976,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Algeria",
-      "value": "Algeria",
+      "displayValue": "indexing alliance",
+      "value": "indexing alliance",
       "valueFormat": 0,
     },
   },
@@ -1048,7 +1050,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "projection Indian Rupee 1080p",
+                    "description": "Pennsylvania",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -1056,8 +1058,8 @@ Object {
                       "typename": "geometry",
                     },
                     "value": Object {
-                      "displayValue": "projection Indian Rupee 1080p",
-                      "value": "lime",
+                      "displayValue": "Pennsylvania",
+                      "value": "Officer",
                       "valueFormat": 0,
                     },
                   },
@@ -1089,7 +1091,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "Lakes utilisation redundant",
+                    "description": "strategic",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -1097,8 +1099,8 @@ Object {
                       "typename": "geometry",
                     },
                     "value": Object {
-                      "displayValue": "Lakes utilisation redundant",
-                      "value": "indexing",
+                      "displayValue": "strategic",
+                      "value": "Accountability",
                       "valueFormat": 0,
                     },
                   },
@@ -1152,8 +1154,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "architectures AI program",
-      "value": "architectures AI program",
+      "displayValue": "wireless Internal attitude",
+      "value": "wireless Internal attitude",
       "valueFormat": 0,
     },
   },
@@ -1174,6 +1176,19 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
+        "description": "Burundi visionary",
+        "property": Object {
+          "displayLabel": "primitive",
+          "name": "primitive",
+          "typename": "tinyint",
+        },
+        "value": Object {
+          "displayValue": "Burundi visionary",
+          "value": "Coordinator",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -1183,7 +1198,7 @@ Object {
         "value": Object {
           "members": Object {
             "nested 1": PropertyRecord {
-              "description": "payment",
+              "description": "microchip white Chair",
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "nested 1",
@@ -1191,8 +1206,8 @@ Object {
                 "typename": "geometry",
               },
               "value": Object {
-                "displayValue": "payment",
-                "value": "Handmade",
+                "displayValue": "microchip white Chair",
+                "value": "Functionality",
                 "valueFormat": 0,
               },
             },
@@ -1211,23 +1226,6 @@ Object {
             },
           },
           "valueFormat": 2,
-        },
-      },
-      PropertyRecord {
-        "description": "Intuitive",
-        "property": Object {
-          "displayLabel": "primitive",
-          "editor": Object {
-            "name": "Unbranded Rubber Table",
-            "params": Array [],
-          },
-          "name": "primitive",
-          "typename": "timestamp",
-        },
-        "value": Object {
-          "displayValue": "Intuitive",
-          "value": "payment",
-          "valueFormat": 0,
         },
       },
     ],
@@ -1258,8 +1256,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Cambridgeshire California",
-      "value": "Cambridgeshire California",
+      "displayValue": "Bedfordshire",
+      "value": "Bedfordshire",
       "valueFormat": 0,
     },
   },
@@ -1284,7 +1282,7 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "description": "Down-sized",
+        "description": "Ohio",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "nested 1",
@@ -1292,8 +1290,8 @@ Object {
           "typename": "float",
         },
         "value": Object {
-          "displayValue": "Down-sized",
-          "value": "Spain",
+          "displayValue": "Ohio",
+          "value": "Outdoors",
           "valueFormat": 0,
         },
       },
@@ -1337,8 +1335,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Keyboard Secured",
-      "value": "Keyboard Secured",
+      "displayValue": "Berkshire Wooden",
+      "value": "Berkshire Wooden",
       "valueFormat": 0,
     },
   },
@@ -1363,7 +1361,7 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "description": "primary",
+        "description": "Principal payment",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "nested 1",
@@ -1375,8 +1373,8 @@ Object {
           "typename": "bigint",
         },
         "value": Object {
-          "displayValue": "primary",
-          "value": "Berkshire",
+          "displayValue": "Principal payment",
+          "value": "Gloves",
           "valueFormat": 0,
         },
       },
@@ -1414,8 +1412,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Sleek",
-      "value": "Sleek",
+      "displayValue": "vertical online interactive",
+      "value": "vertical online interactive",
       "valueFormat": 0,
     },
   },
@@ -1433,7 +1431,7 @@ Object {
       "name": "withdrawal",
     },
   ],
-  "description": "Guinea",
+  "description": "Gorgeous Interactions",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -1441,8 +1439,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "navigate Chair",
-      "value": "navigate Chair",
+      "displayValue": "Total",
+      "value": "Total",
       "valueFormat": 0,
     },
   },
@@ -1505,7 +1503,7 @@ Object {
       "name": "dedicated",
     },
   ],
-  "description": "Books SMS encryption",
+  "description": "Concrete Djibouti maroon",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -1513,15 +1511,15 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Sausages Computer navigating",
-      "value": "Sausages Computer navigating",
+      "displayValue": "card synergy Skyway",
+      "value": "card synergy Skyway",
       "valueFormat": 0,
     },
   },
   "records": Object {
     "dedicated": Array [
       PropertyRecord {
-        "description": "New York Granite multi-byte",
+        "description": "solutions Cambridgeshire Facilitator",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "De-engineered",
@@ -1533,8 +1531,8 @@ Object {
           "typename": "serial",
         },
         "value": Object {
-          "displayValue": "New York Granite multi-byte",
-          "value": "Frozen",
+          "displayValue": "solutions Cambridgeshire Facilitator",
+          "value": "Computer",
           "valueFormat": 0,
         },
       },
@@ -1553,7 +1551,7 @@ Object {
       "name": "functionalities",
     },
   ],
-  "description": "Incredible Fresh Computer",
+  "description": "solution-oriented United States Minor Outlying Islands",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -1561,8 +1559,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "invoice Berkshire Optimization",
-      "value": "invoice Berkshire Optimization",
+      "displayValue": "RAM",
+      "value": "RAM",
       "valueFormat": 0,
     },
   },
@@ -1613,7 +1611,7 @@ Object {
       "parentCategory": undefined,
     },
   ],
-  "description": "action-items Fish",
+  "description": "1080p Avon maroon",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -1621,8 +1619,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Investor Fresh",
-      "value": "Investor Fresh",
+      "displayValue": "neural Concrete Nakfa",
+      "value": "neural Concrete Nakfa",
       "valueFormat": 0,
     },
   },
@@ -1657,8 +1655,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Liaison Handcrafted Metal Car Executive",
-      "value": "Liaison Handcrafted Metal Car Executive",
+      "displayValue": "intuitive Tools Creek",
+      "value": "intuitive Tools Creek",
       "valueFormat": 0,
     },
   },
@@ -1693,8 +1691,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Auto Loan Account Cuban Peso Peso Convertible",
-      "value": "Auto Loan Account Cuban Peso Peso Convertible",
+      "displayValue": "bluetooth",
+      "value": "bluetooth",
       "valueFormat": 0,
     },
   },
@@ -1728,7 +1726,7 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "HDD Paradigm",
+        "description": "AI envisioneer",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "nested 1",
@@ -1736,8 +1734,8 @@ Object {
           "typename": "mediumint",
         },
         "value": Object {
-          "displayValue": "HDD Paradigm",
-          "value": "Product",
+          "displayValue": "AI envisioneer",
+          "value": "magenta",
           "valueFormat": 0,
         },
       },
@@ -1774,8 +1772,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "next-generation",
-      "value": "next-generation",
+      "displayValue": "port",
+      "value": "port",
       "valueFormat": 0,
     },
   },
@@ -1801,6 +1799,7 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
+        "autoExpand": true,
         "property": Object {
           "displayLabel": "Nested Content",
           "name": "nested content field",
@@ -1809,7 +1808,7 @@ Object {
         "value": Object {
           "members": Object {
             "nested 1": PropertyRecord {
-              "description": "Field Generic",
+              "description": "Forward primary",
               "property": Object {
                 "displayLabel": "nested 1",
                 "editor": Object {
@@ -1820,8 +1819,8 @@ Object {
                 "typename": "bigint",
               },
               "value": Object {
-                "displayValue": "Field Generic",
-                "value": "application",
+                "displayValue": "Forward primary",
+                "value": "blue",
                 "valueFormat": 0,
               },
             },
@@ -1843,19 +1842,20 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "interfaces 24/7 Intelligent Steel Table",
+        "description": "Denar capacitor",
+        "isReadonly": true,
         "property": Object {
           "displayLabel": "primitive",
           "editor": Object {
-            "name": "Avon",
+            "name": "Small Soft Chair",
             "params": Array [],
           },
           "name": "primitive",
-          "typename": "real",
+          "typename": "text",
         },
         "value": Object {
-          "displayValue": "interfaces 24/7 Intelligent Steel Table",
-          "value": "Handmade Metal Chicken",
+          "displayValue": "Denar capacitor",
+          "value": "Incredible Fresh Salad",
           "valueFormat": 0,
         },
       },
@@ -1884,8 +1884,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Up-sized haptic",
-      "value": "Up-sized haptic",
+      "displayValue": "JBOD Soft",
+      "value": "JBOD Soft",
       "valueFormat": 0,
     },
   },
@@ -1904,19 +1904,20 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "Handmade Frozen Sausages",
+        "description": "Up-sized haptic",
+        "isReadonly": true,
         "property": Object {
           "displayLabel": "primitive",
           "editor": Object {
-            "name": "Wyoming",
+            "name": "Washington",
             "params": Array [],
           },
           "name": "primitive",
-          "typename": "enum",
+          "typename": "real",
         },
         "value": Object {
-          "displayValue": "Handmade Frozen Sausages",
-          "value": "Tunnel",
+          "displayValue": "Up-sized haptic",
+          "value": "enhance",
           "valueFormat": 0,
         },
       },
@@ -1953,8 +1954,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Squares Car",
-      "value": "Squares Car",
+      "displayValue": "bottom-line Digitized Washington",
+      "value": "bottom-line Digitized Washington",
       "valueFormat": 0,
     },
   },
@@ -1980,20 +1981,6 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "description": "driver redundant parsing",
-        "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "typename": "text",
-        },
-        "value": Object {
-          "displayValue": "driver redundant parsing",
-          "value": "input",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "autoExpand": true,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -2003,7 +1990,7 @@ Object {
         "value": Object {
           "members": Object {
             "nested 1": PropertyRecord {
-              "description": "e-commerce",
+              "description": "Maine Usability",
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "nested 1",
@@ -2011,8 +1998,8 @@ Object {
                 "typename": "datetime",
               },
               "value": Object {
-                "displayValue": "e-commerce",
-                "value": "payment",
+                "displayValue": "Maine Usability",
+                "value": "Ecuador",
                 "valueFormat": 0,
               },
             },
@@ -2034,6 +2021,19 @@ Object {
             },
           },
           "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "Buckinghamshire Health",
+        "property": Object {
+          "displayLabel": "primitive",
+          "name": "primitive",
+          "typename": "enum",
+        },
+        "value": Object {
+          "displayValue": "Buckinghamshire Health",
+          "value": "Chips",
+          "valueFormat": 0,
         },
       },
     ],
@@ -2069,8 +2069,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Colombia teal Libyan Arab Jamahiriya",
-      "value": "Colombia teal Libyan Arab Jamahiriya",
+      "displayValue": "strategize Brand Keyboard",
+      "value": "strategize Brand Keyboard",
       "valueFormat": 0,
     },
   },
@@ -2103,7 +2103,7 @@ Object {
         "value": Object {
           "members": Object {
             "nested 1": PropertyRecord {
-              "description": "Internal Distributed expedite",
+              "description": "Libyan Arab Jamahiriya",
               "property": Object {
                 "displayLabel": "nested 1",
                 "editor": Object {
@@ -2114,8 +2114,8 @@ Object {
                 "typename": "bit",
               },
               "value": Object {
-                "displayValue": "Internal Distributed expedite",
-                "value": "Automotive",
+                "displayValue": "Libyan Arab Jamahiriya",
+                "value": "teal",
                 "valueFormat": 0,
               },
             },
@@ -2137,19 +2137,19 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "flexibility quantifying Dong",
+        "description": "JSON 1080p",
         "property": Object {
           "displayLabel": "primitive",
           "editor": Object {
-            "name": "seamless",
+            "name": "Switzerland",
             "params": Array [],
           },
           "name": "primitive",
-          "typename": "date",
+          "typename": "smallint",
         },
         "value": Object {
-          "displayValue": "flexibility quantifying Dong",
-          "value": "teal",
+          "displayValue": "JSON 1080p",
+          "value": "Buckinghamshire",
           "valueFormat": 0,
         },
       },
@@ -2235,7 +2235,6 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "autoExpand": true,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -2255,7 +2254,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "Liaison North Dakota",
+                    "description": "Investment Account core Functionality",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -2267,21 +2266,21 @@ Object {
                       "typename": "text",
                     },
                     "value": Object {
-                      "displayValue": "Liaison North Dakota",
-                      "value": "Turnpike",
+                      "displayValue": "Investment Account core Functionality",
+                      "value": "Accounts",
                       "valueFormat": 0,
                     },
                   },
                   "nested 2": PropertyRecord {
-                    "description": "Accounts Portugal Orchestrator",
+                    "description": "Shoes",
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
                       "typename": "boolean",
                     },
                     "value": Object {
-                      "displayValue": "Accounts Portugal Orchestrator",
-                      "value": "Ohio",
+                      "displayValue": "Shoes",
+                      "value": "Portugal",
                       "valueFormat": 0,
                     },
                   },
@@ -2300,7 +2299,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "Dynamic Wooden withdrawal",
+                    "description": "functionalities",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -2312,21 +2311,21 @@ Object {
                       "typename": "text",
                     },
                     "value": Object {
-                      "displayValue": "Dynamic Wooden withdrawal",
-                      "value": "discrete",
+                      "displayValue": "functionalities",
+                      "value": "Tuna",
                       "valueFormat": 0,
                     },
                   },
                   "nested 2": PropertyRecord {
-                    "description": "Practical Senior Taiwan",
+                    "description": "Taiwan",
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
                       "typename": "boolean",
                     },
                     "value": Object {
-                      "displayValue": "Practical Senior Taiwan",
-                      "value": "Shoes",
+                      "displayValue": "Taiwan",
+                      "value": "utilisation",
                       "valueFormat": 0,
                     },
                   },
@@ -2372,8 +2371,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Colombia Towels",
-      "value": "Colombia Towels",
+      "displayValue": "Ball fuchsia Salad",
+      "value": "Ball fuchsia Salad",
       "valueFormat": 0,
     },
   },
@@ -2445,7 +2444,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "Concrete supply-chains",
+                    "description": "bypass TCP innovative",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -2453,8 +2452,8 @@ Object {
                       "typename": "geometry",
                     },
                     "value": Object {
-                      "displayValue": "Concrete supply-chains",
-                      "value": "Sausages",
+                      "displayValue": "bypass TCP innovative",
+                      "value": "Legacy",
                       "valueFormat": 0,
                     },
                   },
@@ -2489,7 +2488,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "Designer Personal Loan Account",
+                    "description": "model Pula",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -2497,8 +2496,8 @@ Object {
                       "typename": "geometry",
                     },
                     "value": Object {
-                      "displayValue": "Designer Personal Loan Account",
-                      "value": "interface",
+                      "displayValue": "model Pula",
+                      "value": "Albania",
                       "valueFormat": 0,
                     },
                   },
@@ -2528,16 +2527,20 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "Grocery Research Grocery",
+        "description": "Facilitator TCP input",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "primitive",
+          "editor": Object {
+            "name": "AGP",
+            "params": Array [],
+          },
           "name": "primitive",
-          "typename": "smallint",
+          "typename": "binary",
         },
         "value": Object {
-          "displayValue": "Grocery Research Grocery",
-          "value": "Licensed",
+          "displayValue": "Facilitator TCP input",
+          "value": "grey",
           "valueFormat": 0,
         },
       },
@@ -2573,8 +2576,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Investment Account cutting-edge Secured",
-      "value": "Investment Account cutting-edge Secured",
+      "displayValue": "solid state",
+      "value": "solid state",
       "valueFormat": 0,
     },
   },
@@ -2628,6 +2631,7 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
+        "autoExpand": true,
         "property": Object {
           "displayLabel": "Nested Content",
           "name": "nested content field",
@@ -2646,7 +2650,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "alarm Saint Helena Pound",
+                    "description": "payment system withdrawal",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -2658,8 +2662,8 @@ Object {
                       "typename": "smallint",
                     },
                     "value": Object {
-                      "displayValue": "alarm Saint Helena Pound",
-                      "value": "portal",
+                      "displayValue": "payment system withdrawal",
+                      "value": "generate",
                       "valueFormat": 0,
                     },
                   },
@@ -2690,7 +2694,7 @@ Object {
               "value": Object {
                 "members": Object {
                   "nested 1": PropertyRecord {
-                    "description": "Re-engineered Planner",
+                    "description": "Virginia Interactions Fresh",
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "nested 1",
@@ -2702,8 +2706,8 @@ Object {
                       "typename": "smallint",
                     },
                     "value": Object {
-                      "displayValue": "Re-engineered Planner",
-                      "value": "Minnesota",
+                      "displayValue": "Virginia Interactions Fresh",
+                      "value": "Re-engineered",
                       "valueFormat": 0,
                     },
                   },
@@ -2761,8 +2765,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "hard drive models Global",
-      "value": "hard drive models Global",
+      "displayValue": "synergistic card",
+      "value": "synergistic card",
       "valueFormat": 0,
     },
   },
@@ -2783,6 +2787,21 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
+        "description": "action-items lime",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "primitive",
+          "name": "primitive",
+          "typename": "real",
+        },
+        "value": Object {
+          "displayValue": "action-items lime",
+          "value": "SSL",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "autoExpand": true,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
@@ -2792,7 +2811,7 @@ Object {
         "value": Object {
           "members": Object {
             "nested 1": PropertyRecord {
-              "description": "Self-enabling Infrastructure Granite",
+              "description": "Bypass",
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "nested 1",
@@ -2800,8 +2819,8 @@ Object {
                 "typename": "boolean",
               },
               "value": Object {
-                "displayValue": "Self-enabling Infrastructure Granite",
-                "value": "Small",
+                "displayValue": "Bypass",
+                "value": "paradigms",
                 "valueFormat": 0,
               },
             },
@@ -2819,19 +2838,6 @@ Object {
             },
           },
           "valueFormat": 2,
-        },
-      },
-      PropertyRecord {
-        "description": "Saudi Riyal",
-        "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "typename": "boolean",
-        },
-        "value": Object {
-          "displayValue": "Saudi Riyal",
-          "value": "bandwidth",
-          "valueFormat": 0,
         },
       },
     ],
@@ -2866,8 +2872,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Licensed Metal Towels synergies",
-      "value": "Licensed Metal Towels synergies",
+      "displayValue": "sexy",
+      "value": "sexy",
       "valueFormat": 0,
     },
   },
@@ -2888,15 +2894,15 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "description": "Music PNG",
+        "description": "bluetooth",
         "property": Object {
           "displayLabel": "nested 1",
           "name": "nested content field$nested 1",
           "typename": "text",
         },
         "value": Object {
-          "displayValue": "Music PNG",
-          "value": "communities",
+          "displayValue": "bluetooth",
+          "value": "invoice",
           "valueFormat": 0,
         },
       },
@@ -2945,8 +2951,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Technician Nebraska multi-byte",
-      "value": "Technician Nebraska multi-byte",
+      "displayValue": "Garden",
+      "value": "Garden",
       "valueFormat": 0,
     },
   },
@@ -2967,15 +2973,15 @@ Object {
     ],
     "top-1": Array [
       PropertyRecord {
-        "description": "parse Coordinator",
+        "description": "Computers Fresh leverage",
         "property": Object {
           "displayLabel": "nested 1",
           "name": "nested content field$nested 1",
           "typename": "tinyint",
         },
         "value": Object {
-          "displayValue": "parse Coordinator",
-          "value": "grey",
+          "displayValue": "Computers Fresh leverage",
+          "value": "Vermont",
           "valueFormat": 0,
         },
       },
@@ -3013,8 +3019,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "infrastructure next-generation mobile",
-      "value": "infrastructure next-generation mobile",
+      "displayValue": "Landing Practical Concrete Car deposit",
+      "value": "Landing Practical Concrete Car deposit",
       "valueFormat": 0,
     },
   },
@@ -3034,7 +3040,7 @@ Object {
       "parentCategory": undefined,
     },
   ],
-  "description": "FTP system engine",
+  "description": "global IB",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -3042,8 +3048,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "supply-chains payment Senior",
-      "value": "supply-chains payment Senior",
+      "displayValue": "alarm Saint Kitts and Nevis Concrete",
+      "value": "alarm Saint Kitts and Nevis Concrete",
       "valueFormat": 0,
     },
   },
@@ -3109,7 +3115,7 @@ Object {
       "parentCategory": undefined,
     },
   ],
-  "description": "firewall Burgs",
+  "description": "Money Market Account",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -3117,15 +3123,15 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Computer",
-      "value": "Computer",
+      "displayValue": "front-end firewall Burgs",
+      "value": "front-end firewall Burgs",
       "valueFormat": 0,
     },
   },
   "records": Object {
     "index": Array [
       PropertyRecord {
-        "description": "Automotive synergistic",
+        "description": "Computer",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Soft",
@@ -3137,8 +3143,8 @@ Object {
           "typename": "smallint",
         },
         "value": Object {
-          "displayValue": "Automotive synergistic",
-          "value": "aggregate",
+          "displayValue": "Computer",
+          "value": "Colombian Peso Unidad de Valor Real",
           "valueFormat": 0,
         },
       },
@@ -3159,7 +3165,7 @@ Object {
       "parentCategory": undefined,
     },
   ],
-  "description": "end-to-end Granite JSON",
+  "description": "B2C XML reintermediate",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -3167,8 +3173,8 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Fresh",
-      "value": "Fresh",
+      "displayValue": "Sausages",
+      "value": "Sausages",
       "valueFormat": 0,
     },
   },

@@ -44,7 +44,7 @@ Object {
     Object {
       "key": "Home Loan Account",
       "record": PropertyRecord {
-        "description": "payment bluetooth mindshare",
+        "description": "Bike array Guatemala",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Administrator",
@@ -56,8 +56,8 @@ Object {
           "typename": "float",
         },
         "value": Object {
-          "displayValue": "payment bluetooth mindshare",
-          "value": "Product",
+          "displayValue": "Bike array Guatemala",
+          "value": "Heights",
           "valueFormat": 0,
         },
       },
@@ -65,7 +65,7 @@ Object {
     Object {
       "key": "Dynamic",
       "record": PropertyRecord {
-        "description": "optimal application Designer",
+        "description": "Unbranded Optimized",
         "isReadonly": true,
         "property": Object {
           "displayLabel": "ADP neural-net",
@@ -77,8 +77,8 @@ Object {
           "typename": "bit",
         },
         "value": Object {
-          "displayValue": "optimal application Designer",
-          "value": "input",
+          "displayValue": "Unbranded Optimized",
+          "value": "Sleek",
           "valueFormat": 0,
         },
       },
@@ -86,7 +86,7 @@ Object {
     Object {
       "key": "SAS",
       "record": PropertyRecord {
-        "description": "Garden",
+        "description": "system engine Indonesia",
         "property": Object {
           "displayLabel": "azure Licensed",
           "editor": Object {
@@ -97,14 +97,14 @@ Object {
           "typename": "bigint",
         },
         "value": Object {
-          "displayValue": "Garden",
-          "value": "Avon",
+          "displayValue": "system engine Indonesia",
+          "value": "Engineer",
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"primary\\",\\"id\\":\\"0x1a360000007f42\\"}",
+  "key": "{\\"className\\":\\"Ethiopian Birr\\",\\"id\\":\\"0xaee00000014f8f\\"}",
 }
 `;
 
@@ -120,13 +120,13 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "deposit virtual",
-          "value": "deposit virtual",
+          "displayValue": "Berkshire alliance capacitor",
+          "value": "Berkshire alliance capacitor",
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"Fields\\",\\"id\\":\\"0x15606000000a9bc\\"}",
+  "key": "{\\"className\\":\\"envisioneer\\",\\"id\\":\\"0x2bb00000018315\\"}",
 }
 `;
