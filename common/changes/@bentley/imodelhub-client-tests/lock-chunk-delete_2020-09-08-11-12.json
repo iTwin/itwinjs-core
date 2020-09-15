@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client-tests",
+      "comment": " Unit test fixes due to changed lock deletion",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client-tests",
+  "email": "austeja.kalpakovaite@bentley.com"
+}

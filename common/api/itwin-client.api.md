@@ -92,7 +92,8 @@ export interface ClassKeyMapInfo {
 // @beta
 export abstract class Client {
     protected constructor();
-    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
+    protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
+    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     protected abstract getUrlSearchKey(): string;
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
@@ -161,6 +162,8 @@ export function getJson(requestContext: ClientRequestContext, url: string): Prom
 export interface HttpRequestOptions {
     // (undocumented)
     headers?: any;
+    // (undocumented)
+    timeout?: RequestTimeoutOptions;
 }
 
 // @beta (undocumented)

@@ -8,7 +8,7 @@
 
 import * as deepAssign from "deep-assign";
 import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, ResponseError, WsgInstance, WsgQuery, WsgRequestOptions } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, ResponseError, WsgInstance, WsgQuery, WsgRequestOptions, HttpRequestOptions } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubError } from "./Errors";
@@ -553,8 +553,34 @@ export class LockHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, false, `DeleteAll-${briefcaseId}`));
-    requestContext.enter();
+    await this.deleteAllLocksInChunks(requestContext, iModelId, briefcaseId);
+    Logger.logTrace(loggerCategory, "Deleted all locks from briefcase", () => ({ iModelId, briefcaseId }));
+  }
+
+  /** Helper method to iteratively delete chunks of [[Lock]]s for the specified [[Briefcase]] until there are no more left.
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param briefcaseId Id of the Briefcacase.
+   */
+  private async deleteAllLocksInChunks(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
+    const relativeUrl = this.getRelativeUrl(iModelId, false, `DeleteChunk-${briefcaseId}`);
+    const requestOptions: HttpRequestOptions = { timeout: { response: 45000 } };
+
+    let shouldDeleteAnotherChunk = true;
+    do {
+      try {
+        await this._handler.delete(requestContext, relativeUrl, requestOptions);
+        requestContext.enter();
+        Logger.logTrace(loggerCategory, "Deleted a chunk of locks from briefcase", () => ({ iModelId, briefcaseId }));
+      } catch (error) {
+        requestContext.enter();
+        if (error instanceof IModelHubError && error.errorNumber === IModelHubStatus.LockChunkDoesNotExist)
+          shouldDeleteAnotherChunk = false;
+        else
+          throw error;
+      }
+    } while (shouldDeleteAnotherChunk);
+
     Logger.logTrace(loggerCategory, "Deleted all locks from briefcase", () => ({ iModelId, briefcaseId }));
   }
 }

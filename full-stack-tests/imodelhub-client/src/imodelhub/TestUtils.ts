@@ -406,6 +406,15 @@ export function mockCreateBriefcase(imodelId: GuidString, id?: number, briefcase
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
+export function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Lock", `DeleteChunk-${briefcaseId}`);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, undefined, 1, undefined, undefined, 200);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, ResponseBuilder.generateError("iModelHub.LockChunkDoesNotExist"), 1, undefined, undefined, 404);
+}
+
 /** ChangeSets */
 export function generateChangeSetId(): string {
   let result = "";

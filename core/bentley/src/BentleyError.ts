@@ -313,6 +313,8 @@ export enum IModelHubStatus {
   ContextDoesNotExist = IMODELHUBERROR_BASE + 47,
   FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
+  LockChunkDoesNotExist = IMODELHUBERROR_BASE + 49,
+
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
   InvalidArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 2,
@@ -676,6 +678,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.iModelAlreadyExists: return "iModel already exists";
       case IModelHubStatus.iModelDoesNotExist: return "iModel does not exist";
       case IModelHubStatus.LockDoesNotExist: return "Lock does not exist";
+      case IModelHubStatus.LockChunkDoesNotExist: return "Lock chunk does not exist";
       case IModelHubStatus.LockOwnedByAnotherBriefcase: return "Lock is owned by another briefcase";
       case IModelHubStatus.CodeStateInvalid: return "Code state is invalid";
       case IModelHubStatus.CodeReservedByAnotherBriefcase: return "Code is reserved by another briefcase";

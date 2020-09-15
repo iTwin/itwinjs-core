@@ -9,19 +9,11 @@ import {
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
-import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
+import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 
 chai.should();
-
-function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number) {
-  if (!TestConfig.enableMocks)
-    return;
-
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Lock", `DeleteAll-${briefcaseId}`);
-  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath);
-}
 
 describe("iModelHubClient LockHandler (#iModelBank)", () => {
   let contextId: string;
@@ -364,7 +356,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should delete all locks", async () => {
     for (const briefcase of briefcases) {
-      mockDeleteAllLocks(imodelId, briefcase.briefcaseId!);
+      utils.mockDeleteAllLocks(imodelId, briefcase.briefcaseId!);
       await iModelClient.locks.deleteAll(requestContext, imodelId, briefcase.briefcaseId!);
     }
   });

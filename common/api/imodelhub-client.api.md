@@ -134,7 +134,7 @@ export abstract class BriefcaseEvent extends IModelHubEvent {
 
 // @internal
 export class BriefcaseHandler {
-    constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
+    constructor(handler: IModelBaseHandler, imodelClient: IModelClient, fileHandler?: FileHandler);
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcase?: Briefcase): Promise<Briefcase>;
     delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
     download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
@@ -578,7 +578,7 @@ export class IModelBaseHandler extends WsgClient {
     protected _agent: any;
     // (undocumented)
     static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
-    delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
+    delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
     deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
     // (undocumented)
     protected _fileHandler: FileHandler | undefined;

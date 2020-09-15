@@ -1111,6 +1111,22 @@
       "protocol": "inspector",
       "outputCapture": "std"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run iTwin Tests",
+      "program": "${workspaceFolder}/clients/itwin/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/clients/itwin",
+      "args": [
+        "--testDir=${workspaceFolder}/clients/itwin/lib",
+        "--inspect",
+        "--offline",
+        "mock"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
   ],
   "compounds": [
     {

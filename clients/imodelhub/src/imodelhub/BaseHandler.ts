@@ -171,10 +171,11 @@ export class IModelBaseHandler extends WsgClient {
    * Send a delete request. Sends a request without body.
    * @param requestContext The client request context
    * @param relativeUrlPath Relative path to the REST resource.
+   * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Promise resolves after successfully deleting REST resource at the specified path.
    */
-  public async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void> {
-    return super.delete(requestContext, relativeUrlPath);
+  public async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
+    return super.delete(requestContext, relativeUrlPath, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**

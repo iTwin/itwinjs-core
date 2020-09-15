@@ -14,6 +14,7 @@ import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategorie
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
 import { addSelectApplicationData, addSelectBCVAccessKey, addSelectFileAccessKey } from "./HubQuery";
+import { IModelClient } from "../IModelClient";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
@@ -198,6 +199,7 @@ export class BriefcaseQuery extends WsgQuery {
  */
 export class BriefcaseHandler {
   private _handler: IModelBaseHandler;
+  private _imodelClient: IModelClient;
   private _fileHandler?: FileHandler;
 
   /** Constructor for BriefcaseHandler. Use [[IModelClient]] instead of directly constructing this.
@@ -205,8 +207,9 @@ export class BriefcaseHandler {
    * @param fileHandler Handler for file system.
    * @internal
    */
-  constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
+  constructor(handler: IModelBaseHandler, imodelClient: IModelClient, fileHandler?: FileHandler) {
     this._handler = handler;
+    this._imodelClient = imodelClient;
     this._fileHandler = fileHandler;
   }
 
@@ -276,6 +279,8 @@ export class BriefcaseHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
+    await this._imodelClient.locks.deleteAll(requestContext, iModelId, briefcaseId);
+    requestContext.enter();
     await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, briefcaseId));
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Deleted briefcase from iModel", () => ({ iModelId, briefcaseId }));

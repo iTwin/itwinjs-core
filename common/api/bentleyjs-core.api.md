@@ -766,6 +766,8 @@ export enum IModelHubStatus {
     // (undocumented)
     JobSchedulingFailed = 102440,
     // (undocumented)
+    LockChunkDoesNotExist = 102449,
+    // (undocumented)
     LockDoesNotExist = 102427,
     // (undocumented)
     LockOwnedByAnotherBriefcase = 102428,

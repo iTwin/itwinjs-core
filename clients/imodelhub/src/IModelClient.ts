@@ -78,7 +78,7 @@ export abstract class IModelClient {
    * @internal
    */
   public get briefcases(): BriefcaseHandler {
-    return new BriefcaseHandler(this._handler, this._fileHandler);
+    return new BriefcaseHandler(this._handler, this, this._fileHandler);
   }
 
   /**

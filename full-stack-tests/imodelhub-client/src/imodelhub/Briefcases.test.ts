@@ -151,6 +151,7 @@ describe("iModelHub BriefcaseHandler", () => {
     utils.mockGetBriefcase(imodelId, utils.generateBriefcase(2), utils.generateBriefcase(acquiredBriefcaseId));
     const originalBriefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
 
+    utils.mockDeleteAllLocks(imodelId, acquiredBriefcaseId!);
     mockDeleteBriefcase(imodelId, acquiredBriefcaseId);
     await iModelClient.briefcases.delete(requestContext, imodelId, acquiredBriefcaseId);
 

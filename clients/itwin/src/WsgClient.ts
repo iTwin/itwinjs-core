@@ -11,7 +11,7 @@ import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext
 import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Client";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
+import { request, RequestOptions, RequestQueryOptions, RequestTimeoutOptions, Response, ResponseError } from "./Request";
 import { ChunkedQueryContext } from "./ChunkedQueryContext";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Clients;
@@ -203,6 +203,7 @@ export interface WsgRequestOptions {
  */
 export interface HttpRequestOptions {
   headers?: any;
+  timeout?: RequestTimeoutOptions;
 }
 
 /**
@@ -280,9 +281,7 @@ export abstract class WsgClient extends Client {
     if (requestOptions) {
       options.body.requestOptions = requestOptions;
     }
-    if (httpRequestOptions?.headers) {
-      options.headers = { ...options.headers, ...httpRequestOptions.headers };
-    }
+    this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
     await request(requestContext, url, options);
   }
@@ -313,9 +312,7 @@ export abstract class WsgClient extends Client {
     if (requestOptions) {
       options.body.requestOptions = requestOptions;
     }
-    if (httpRequestOptions?.headers) {
-      options.headers = { ...options.headers, ...httpRequestOptions.headers };
-    }
+    this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
     requestContext.enter();
     const res: Response = await request(requestContext, url, options);
@@ -361,9 +358,7 @@ export abstract class WsgClient extends Client {
     if (requestOptions) {
       options.body.requestOptions = requestOptions;
     }
-    if (httpRequestOptions?.headers) {
-      options.headers = { ...options.headers, ...httpRequestOptions.headers };
-    }
+    this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
     requestContext.enter();
 
@@ -443,9 +438,8 @@ export abstract class WsgClient extends Client {
     options.headers = {
       authorization: requestContext.accessToken.toTokenString(),
     };
-    if (httpRequestOptions?.headers) {
-      options.headers = { ...options.headers, ...httpRequestOptions.headers };
-    }
+
+    this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
 
     if (chunkedQueryContext && chunkedQueryContext.skipToken && chunkedQueryContext.skipToken.length > 0)
       options.headers.skiptoken = chunkedQueryContext.skipToken;
@@ -516,10 +510,8 @@ export abstract class WsgClient extends Client {
       headers: { authorization: requestContext.accessToken.toTokenString() },
       body: this.getQueryRequestBody(queryOptions),
     };
-    if (httpRequestOptions?.headers) {
-      options.headers = { ...options.headers, ...httpRequestOptions.headers };
-    }
 
+    this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
     requestContext.enter();
 

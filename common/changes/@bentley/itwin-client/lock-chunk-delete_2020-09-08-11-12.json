@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "Added user-configurable timeout option to requests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client",
+  "email": "austeja.kalpakovaite@bentley.com"
+}
