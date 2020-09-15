@@ -234,9 +234,11 @@ export namespace IModelJson {
     end: XYZProps;
 
     /** radius at `start` section */
-    startRadius: number;
+    startRadius?: number;
     /** radius at `end` section */
     endRadius?: number;
+    /** single radius to be applied as both start and end */
+    radius?: number;
     /** optional x vector in start section.  Omit for circular sections perpendicular to axis. */
     vectorX?: XYZProps;
     /** optional y vector in start section.  Omit for circular sections perpendicular to axis. */
@@ -997,8 +999,8 @@ export namespace IModelJson {
       const axes = Reader.parseOrientation(json, false);
       const start = Reader.parsePoint3dProperty(json, "start");
       const end = Reader.parsePoint3dProperty(json, "end");
-
-      const startRadius = Reader.parseNumberProperty(json, "startRadius");
+      const radius = Reader.parseNumberProperty(json, "radius");
+      const startRadius = Reader.parseNumberProperty(json, "startRadius", radius);
       const endRadius = Reader.parseNumberProperty(json, "endRadius", startRadius);
 
       const capped = Reader.parseBooleanProperty(json, "capped", false) as boolean;

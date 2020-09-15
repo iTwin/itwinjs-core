@@ -2362,8 +2362,9 @@ export namespace IModelJson {
         capped?: boolean;
         end: XYZProps;
         endRadius?: number;
+        radius?: number;
         start: XYZProps;
-        startRadius: number;
+        startRadius?: number;
         vectorX?: XYZProps;
         vectorY?: XYZProps;
     }

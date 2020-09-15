@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "In imjs \"cone\", accept a single \"radius\" representing both \"startRadius\" and \"endRadius\".",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "69321059+EarlinLutz@users.noreply.github.com"
+}
