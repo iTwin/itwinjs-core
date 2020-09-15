@@ -9,19 +9,19 @@ import WebKit
 
 class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     private var webView : WKWebView? = nil
-    
+
     func setupBackend () {
-        let host = IModelJsHost.sharedInstance() as! IModelJsHost
+        let host = IModelJsHost.sharedInstance();
         let bundlePath = Bundle.main.bundlePath;
         let mainPath = bundlePath.appending ("/Assets/main.js");
         let main = URL(fileURLWithPath: mainPath);
         let client = MobileAuthorizationClient(viewController: self);
         host.loadBackend(main, withAuthClient: client,withInspect: true)
-        
+
     }
-    
+
     func setupFrontend (bimFile: URL?) {
-      
+
         let config = WKWebViewConfiguration()
         let wwwRoot = URL.init(fileURLWithPath: String(format: "%@/Assets/www", Bundle.main.resourcePath!))
         config.setURLSchemeHandler(AssetHandler(root: wwwRoot), forURLScheme: "imodeljs")
@@ -39,9 +39,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             ])
 
         self.view.setNeedsLayout()
-    
-        let host = IModelJsHost.sharedInstance() as! IModelJsHost
-        
+
+        let host = IModelJsHost.sharedInstance();
+
         // let frontProvider = "http://192.168.1.242:3000";
 
         let frontProvider = "imodeljs://app";
@@ -60,7 +60,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     }
     /// Show alert for webkit alert
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        
+
         let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert);
         alert.addAction(UIAlertAction(title: "OK", style: .cancel,
                                       handler: {
@@ -69,7 +69,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
         self.present(alert, animated: true);
       }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackend()

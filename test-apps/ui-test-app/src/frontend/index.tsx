@@ -7,14 +7,14 @@ import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface, RpcConfiguration } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface, RpcConfiguration, SyncMode, IModelVersion } from "@bentley/imodeljs-common";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
   IModelAppOptions, IModelConnection, MobileAuthorizationClient, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
@@ -254,7 +254,7 @@ export class SampleAppIModelApp {
     }
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
-    IModelApp.uiAdmin.updateFeatureFlags ({allowKeyinPalette: true});
+    IModelApp.uiAdmin.updateFeatureFlags({ allowKeyinPalette: true });
 
     // store name of this registered control in Redux store so it can be access by extensions
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
@@ -290,9 +290,19 @@ export class SampleAppIModelApp {
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
       `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
-    const iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
-    SampleAppIModelApp.setIsIModelLocal(false, true);
+    let iModelConnection: IModelConnection | undefined;
+    if (MobileRpcConfiguration.isMobileFrontend) {
+      const req = await NativeApp.requestDownloadBriefcase(projectId, iModelId, { syncMode: SyncMode.FixedVersion }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+        // eslint-disable-next-line no-console
+        console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
+      });
+      await req.downloadPromise;
+      iModelConnection = await NativeApp.openBriefcase(req.briefcaseProps);
+    } else {
+      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+    }
 
+    SampleAppIModelApp.setIsIModelLocal(false, true);
     await this.openViews(iModelConnection, viewIdsSelected);
   }
 
@@ -388,7 +398,18 @@ export class SampleAppIModelApp {
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
         `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
-      const iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+      let iModelConnection: IModelConnection | undefined;
+      if (MobileRpcConfiguration.isMobileFrontend) {
+        const req = await NativeApp.requestDownloadBriefcase(contextId, iModelId, { syncMode: SyncMode.FixedVersion }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+          // eslint-disable-next-line no-console
+          console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
+        });
+        await req.downloadPromise;
+        iModelConnection = await NativeApp.openBriefcase(req.briefcaseProps);
+      } else {
+        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+      }
+
       SampleAppIModelApp.setIsIModelLocal(false, true);
 
       SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
@@ -557,12 +578,12 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
   private _onUserStateChanged = (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-    this.setState({ authorized, uiSettings: this.getUiSettings(authorized)});
+    this.setState({ authorized, uiSettings: this.getUiSettings(authorized) });
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private getUiSettings(authorized: boolean): UiSettings {
-    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized ) {
+    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
       SampleAppIModelApp.uiSettings = new LocalUiSettings();
     } else {
       SampleAppIModelApp.uiSettings = new IModelAppUiSettings();

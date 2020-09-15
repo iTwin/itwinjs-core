@@ -40,6 +40,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient, RequestHost } from "@bentley/backend-itwin-client";
+import { MobileFileHandler } from "./MobileFileHandler";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -372,7 +373,7 @@ export class IModelHost {
     if (!IModelHost.configuration) {
       throw new IModelError(BentleyStatus.ERROR, "startup must be called first");
     }
-    return IModelHost.configuration.imodelClient || new IModelHubClient(new AzureFileHandler());
+    return IModelHost.configuration.imodelClient || new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new MobileFileHandler() : new AzureFileHandler());
   }
   public static get isUsingIModelBankClient(): boolean {
     return IModelHost.iModelClient instanceof IModelBankClient;

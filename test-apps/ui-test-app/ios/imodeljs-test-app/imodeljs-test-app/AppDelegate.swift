@@ -35,14 +35,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
-
+    func application(_ application: UIApplication,
+    handleEventsForBackgroundURLSession identifier: String,
+    completionHandler: @escaping () -> Void) {
+        IModelJsHost.sharedInstance().backgroundDownloadCompletionHandler = completionHandler;
+    }
     func application(_ app: UIApplication,
                      open url: URL,
                      options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
       // Sends the URL to the current authorization flow (if any) which will
       // process it if it relates to an authorization response.
-        let host = IModelJsHost.sharedInstance() as! IModelJsHost
-        return host.resumeExternalUserAgentFlow(url);
+        return IModelJsHost.sharedInstance().resumeExternalUserAgentFlow(url)
       // Your additional URL handling (if any)
     }
 

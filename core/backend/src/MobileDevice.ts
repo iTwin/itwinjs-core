@@ -6,8 +6,8 @@
  * @module NativeApp
  */
 
-import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 
 export enum Orientation {
   Unknown = 0,
@@ -34,6 +34,10 @@ export enum DeviceEvents {
   WillTerminate = "willTerminate",
 }
 
+export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;
+export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => void;
+export type MobileCancelCallback = () => boolean;
+
 export interface MobileDeviceAuthSettings {
   issuerUrl: string;
   clientId: string;
@@ -41,7 +45,19 @@ export interface MobileDeviceAuthSettings {
   scope: string;
   stateKey?: string;
 }
-
+export interface DownloadTask {
+  url: string;
+  downloadPath: string;
+  isDetached: boolean;
+  isRunning: boolean;
+  totalBytes?: number;
+  doneBytes?: number;
+  cancelId?: number;
+  isBackground?: boolean;
+  cancel?: MobileCancelCallback;
+  toBackground: () => boolean;
+  toForeground: () => boolean;
+}
 class MobileDeviceRpcImpl {
   public emit(eventName: DeviceEvents, ...args: any[]) {
     MobileDevice.currentDevice.emit(eventName, ...args);
@@ -49,7 +65,11 @@ class MobileDeviceRpcImpl {
   public getOrientation?: () => Orientation;
   public getBatteryState?: () => BatteryState;
   public getBatteryLevel?: () => number;
-  public downloadFile?: (url: string, callback: (downloadFileUrl?: string, err?: string) => void) => void;
+  public createDownloadTask?: (downloadUrl: string, isBackground: boolean, downloadTo: string, completion: MobileCompletionCallback, progress?: MobileProgressCallback) => number;
+  public cancelDownloadTask?: (cancelId: number) => boolean;
+  public getDownloadTasks?: () => DownloadTask[];
+  public resumeDownloadInForeground?: (requestId: number) => boolean;
+  public resumeDownloadInBackground?: (requestId: number) => boolean;
   public reconnect?: (connection: number) => void;
   public authSignIn?: (ctx: ClientRequestContext, callback: (err?: string) => void) => void;
   public authSignOut?: (ctx: ClientRequestContext, callback: (err?: string) => void) => void;
@@ -73,7 +93,36 @@ export class MobileDevice {
   public readonly onEnterBackground = new BeEvent();
   public readonly onWillTerminate = new BeEvent();
   public readonly onUserStateChanged = new BeEvent<(accessToken?: string, err?: string) => void>();
-
+  /**
+   * Download file
+   * @internal
+   */
+  public async downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (!this._impl.createDownloadTask) {
+        throw new Error("Native backend did not registered downloadFile() functions");
+      }
+      let progressCb: MobileProgressCallback | undefined;
+      if (progress) {
+        progressCb = (_bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => {
+          const percent = Number((100 * (totalBytesWritten / totalBytesExpectedToWrite)).toFixed(2));
+          progress({ total: totalBytesExpectedToWrite, loaded: totalBytesWritten, percent });
+        };
+      }
+      const requestId = this._impl.createDownloadTask(downloadUrl, false, downloadTo, (_downloadUrl: string, _downloadFileUrl: string, cancelled: boolean, err?: string) => {
+        if (cancelled)
+          reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
+        else if (err)
+          reject(new DownloadFailed(400, "Download failed"));
+        else
+          resolve();
+      }, progressCb);
+      if (cancelRequest) {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        cancelRequest.cancel = () => { return this._impl.cancelDownloadTask!(requestId); }
+      }
+    });
+  }
   /**
    * Reconnect app
    * @internal

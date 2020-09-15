@@ -130,9 +130,8 @@ export class NativeApp {
       const locRequestContext = new FrontendRequestContext();
       locRequestContext.enter();
       let status = false;
-      try {
-        status = await NativeAppRpcInterface.getClient().requestCancelDownloadBriefcase(briefcaseProps.key);
-      } finally {
+      status = await NativeAppRpcInterface.getClient().requestCancelDownloadBriefcase(briefcaseProps.key);
+      if (status) {
         stopProgressEvents();
       }
       return status;
