@@ -1,7 +1,9 @@
 {
   // Comments are allowed here!
   "testBundle": "./lib/dist/bundled-tests.js",
-  "instrumentedTestBundle": "./lib/dist/bundled-tests.instrumented.js",
+  // FIXME: Temporarily disabling instrumentedTestBundle, because webpack is taking too long with it.
+  // Coverage numbers will be inaccurate!
+  // "instrumentedTestBundle": "./lib/dist/bundled-tests.instrumented.js",
   "backendInitModule": "./lib/backend/backend.js",
   "ports": {
     "debugging": 5858,

@@ -49,8 +49,7 @@ if (argv.offline === "mock")
 const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
 
 const debugOptions = argv.debug || argv.inspect ? [
-  "--inspect=9229",
-  "--inspect-brk"
+  "--inspect=9229"
 ] : [];
 
 let grepOptions = [];

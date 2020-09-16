@@ -16,6 +16,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "",
+    "wip-test:integration": "betools test --defineWindow --testDir=\"./lib/test\"",
     "docs": "",
     "cover": ""
   },

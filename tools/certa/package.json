@@ -12,7 +12,6 @@
     "certa": "./bin/certa.js"
   },
   "scripts": {
-    "prebsuild": "webpack --config webpack.config.js 1>&2",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",

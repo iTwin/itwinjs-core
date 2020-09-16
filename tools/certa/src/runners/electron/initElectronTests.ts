@@ -45,8 +45,8 @@ async function startCertaTests(entryPoint: string) {
   }
 }
 
-const _CertaSendToBackend = async (name: string, args: any[]) => ipcRenderer.sendSync("certa-callback", { name, args }); // eslint-disable-line @typescript-eslint/naming-convention
+const certaSendToBackend = async (name: string, args: any[]) => ipcRenderer.sendSync("certa-callback", { name, args });
 
 // Expose some globals
 window.startCertaTests = startCertaTests;
-window._CertaSendToBackend = _CertaSendToBackend;
+window._CertaSendToBackend = certaSendToBackend;

@@ -36,15 +36,11 @@
   "dependencies": {
     "@bentley/backend-itwin-client": "2.7.0-dev.7",
     "@bentley/bentleyjs-core": "2.7.0-dev.7",
-    "@bentley/build-tools": "2.7.0-dev.7",
-    "@bentley/eslint-plugin": "2.7.0-dev.7",
-    "@bentley/config-loader": "2.7.0-dev.7",
     "@bentley/context-registry-client": "2.7.0-dev.7",
     "@bentley/frontend-authorization-client": "2.7.0-dev.7",
     "@bentley/imodelhub-client": "2.7.0-dev.7",
     "@bentley/imodeljs-common": "2.7.0-dev.7",
     "@bentley/itwin-client": "2.7.0-dev.7",
-    "@bentley/oidc-signin-tool": "2.7.0-dev.7",
     "@bentley/rbac-client": "2.7.0-dev.7",
     "chai": "^4.1.2",
     "deep-assign": "^2.0.0",
@@ -54,6 +50,10 @@
     "nock": "^9.2.3"
   },
   "devDependencies": {
+    "@bentley/build-tools": "2.7.0-dev.7",
+    "@bentley/config-loader": "2.7.0-dev.7",
+    "@bentley/eslint-plugin": "2.7.0-dev.7",
+    "@bentley/oidc-signin-tool": "2.7.0-dev.7",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",

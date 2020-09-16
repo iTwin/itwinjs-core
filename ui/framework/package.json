@@ -77,7 +77,7 @@
     "@bentley/presentation-testing": "2.7.0-dev.7",
     "@bentley/product-settings-client": "2.7.0-dev.7",
     "@bentley/rbac-client": "2.7.0-dev.7",
-    "@bentley/react-scripts": "3.4.2",
+    "@bentley/react-scripts": "3.4.4",
     "@bentley/telemetry-client": "2.7.0-dev.7",
     "@bentley/ui-abstract": "2.7.0-dev.7",
     "@bentley/ui-core": "2.7.0-dev.7",

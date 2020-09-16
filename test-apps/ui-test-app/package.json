@@ -48,7 +48,7 @@
     "@bentley/eslint-plugin": "2.7.0-dev.7",
     "@bentley/imodeljs-markup": "2.7.0-dev.7",
     "@bentley/frontend-devtools": "2.7.0-dev.7",
-    "@bentley/react-scripts": "3.4.2",
+    "@bentley/react-scripts": "3.4.4",
     "@types/classnames": "^2.2.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",

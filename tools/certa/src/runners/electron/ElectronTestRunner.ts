@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as path from "path";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { relaunchInElectron } from "../../utils/SpawnUtils";

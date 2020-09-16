@@ -111,4 +111,5 @@
     }
   ],
   "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
+  "debug.internalConsoleOptions": "openOnSessionStart",
 }
