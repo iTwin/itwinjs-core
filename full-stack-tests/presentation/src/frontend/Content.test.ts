@@ -88,20 +88,6 @@ describe("Content", () => {
       }
     }
 
-    function findFieldByLabel(fields: Field[], label: string): Field | undefined {
-      for (const field of fields) {
-        if (field.label === label)
-          return field;
-
-        if (field.isNestedContentField()) {
-          const nestedMatchingField = findFieldByLabel(field.nestedFields, label);
-          if (nestedMatchingField)
-            return nestedMatchingField;
-        }
-      }
-      return undefined;
-    }
-
     it("gets paged distinct primitive content values", async () => {
       const ruleset: Ruleset = {
         id: Guid.createValue(),
@@ -328,6 +314,44 @@ describe("Content", () => {
 
   });
 
+  describe("Calculated Properties", () => {
+
+    it("creates calculated fields", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["Element"] },
+            handleInstancesPolymorphically: true,
+            instanceFilter: `this.ECInstanceId = 1`,
+          }],
+        }, {
+          ruleType: RuleTypes.ContentModifier,
+          class: { schemaName: "BisCore", className: "Element" },
+          calculatedProperties: [{
+            label: "Test",
+            value: `"Value"`,
+          }],
+        }],
+      };
+
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {},
+        keys: new KeySet(),
+      });
+      const field = findFieldByLabel(content!.descriptor.fields, "Test")!;
+
+      expect(content?.contentSet.length).to.eq(1);
+      expect(content?.contentSet[0].values[field.name]).to.eq("Value");
+      expect(content?.contentSet[0].displayValues[field.name]).to.eq("Value");
+    });
+
+  });
+
   describe("when request in the backend exceeds the backend timeout time", () => {
 
     let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
@@ -369,3 +393,17 @@ describe("Content", () => {
   });
 
 });
+
+function findFieldByLabel(fields: Field[], label: string): Field | undefined {
+  for (const field of fields) {
+    if (field.label === label)
+      return field;
+
+    if (field.isNestedContentField()) {
+      const nestedMatchingField = findFieldByLabel(field.nestedFields, label);
+      if (nestedMatchingField)
+        return nestedMatchingField;
+    }
+  }
+  return undefined;
+}
