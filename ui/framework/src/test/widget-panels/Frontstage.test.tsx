@@ -11,7 +11,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
-import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
+import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
 import {
   ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, FrontstageDef,
   FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
@@ -19,7 +19,7 @@ import {
   StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
   useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
-import TestUtils, { UiSettingsStub } from "../TestUtils";
+import TestUtils, { storageMock, UiSettingsStub } from "../TestUtils";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name */
 
@@ -140,11 +140,21 @@ describe("ModalFrontstageComposer", () => {
 });
 
 describe("ActiveFrontstageDefProvider", () => {
+  const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+  const localStorageMock = storageMock();
+  const nineZoneSizeToRestore = FrontstageManager.nineZoneSize;
+
   before(async () => {
+    Object.defineProperty(window, "localStorage", {
+      get: () => localStorageMock,
+    });
+
     await TestUtils.initializeUiFramework();
   });
 
   after(() => {
+    FrontstageManager.nineZoneSize = nineZoneSizeToRestore;
+    Object.defineProperty(window, "localStorage", localStorageToRestore);
     TestUtils.terminateUiFramework();
   });
 
@@ -152,6 +162,22 @@ describe("ActiveFrontstageDefProvider", () => {
     const frontstageDef = new FrontstageDef();
     const wrapper = shallow(<ActiveFrontstageDefProvider frontstageDef={frontstageDef} />);
     wrapper.should.matchSnapshot();
+  });
+
+  it("should fall back to cached NineZoneState", () => {
+    const frontstageDef = new FrontstageDef();
+    frontstageDef.nineZoneState = createNineZoneState();
+
+    const newFrontstageDef = new FrontstageDef();
+    newFrontstageDef.nineZoneState = undefined;
+
+    const wrapper = mount<{ frontstageDef: FrontstageDef }>(<ActiveFrontstageDefProvider frontstageDef={frontstageDef} />);
+    wrapper.setProps({ frontstageDef: newFrontstageDef })
+
+    const nineZone = wrapper.find(NineZone);
+    nineZone.prop("state").should.eq(frontstageDef.nineZoneState);
+
+    wrapper.unmount();
   });
 });
 
@@ -261,6 +287,20 @@ describe("useNineZoneState", () => {
     frontstageDef.nineZoneState = nineZoneState;
     const { result } = renderHook(() => useNineZoneState(frontstageDef));
     nineZoneState.should.eq(result.current);
+  });
+
+  it("should return nineZoneState of provided frontstageDef", () => {
+    const frontstageDef = new FrontstageDef();
+    const nineZoneState = createNineZoneState();
+    frontstageDef.nineZoneState = nineZoneState;
+    const newFrontstageDef = new FrontstageDef();
+    const newNineZoneState = createNineZoneState();
+    newFrontstageDef.nineZoneState = newNineZoneState;
+    const { result, rerender } = renderHook((def: FrontstageDef) => useNineZoneState(def), {
+      initialProps: frontstageDef,
+    });
+    rerender(newFrontstageDef);
+    newNineZoneState.should.eq(result.current);
   });
 
   it("should return updated nineZoneState", () => {

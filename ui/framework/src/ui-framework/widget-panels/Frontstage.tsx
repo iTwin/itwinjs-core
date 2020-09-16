@@ -59,9 +59,11 @@ const widgetPanelsFrontstage = <WidgetPanelsFrontstageComponent />;
 
 /** @internal */
 export function useNineZoneState(frontstageDef: FrontstageDef) {
+  const lastFrontstageDef = React.useRef(frontstageDef);
   const [nineZone, setNineZone] = React.useState(frontstageDef.nineZoneState);
   React.useEffect(() => {
     setNineZone(frontstageDef.nineZoneState);
+    lastFrontstageDef.current = frontstageDef;
   }, [frontstageDef]);
   React.useEffect(() => {
     const listener = (args: FrontstageNineZoneStateChangedEventArgs) => {
@@ -74,7 +76,19 @@ export function useNineZoneState(frontstageDef: FrontstageDef) {
       FrontstageManager.onFrontstageNineZoneStateChangedEvent.removeListener(listener);
     };
   }, [frontstageDef]);
-  return nineZone;
+  return lastFrontstageDef.current === frontstageDef ? nineZone : frontstageDef.nineZoneState;
+}
+
+/** @returns Defined NineZoneState with fallback to last defined and default NineZoneState.
+ * @internal
+ */
+function useCachedNineZoneState(nineZone: NineZoneState | undefined): NineZoneState {
+  const cached = React.useRef<NineZoneState>(nineZone || defaultNineZone);
+  React.useEffect(() => {
+    if (nineZone)
+      cached.current = nineZone;
+  }, [nineZone]);
+  return nineZone || cached.current;
 }
 
 /** Update in-memory NineZoneState of newly activated frontstage with up to date size.
@@ -156,7 +170,8 @@ const tabElement = <WidgetPanelsTab />;
 
 /** @internal */
 export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: FrontstageDef }) {
-  const nineZone = useNineZoneState(frontstageDef);
+  let nineZone = useNineZoneState(frontstageDef);
+  nineZone = useCachedNineZoneState(nineZone);
   const dispatch = useNineZoneDispatch(frontstageDef);
   useUpdateNineZoneSize(frontstageDef);
   useSavedFrontstageState(frontstageDef);
@@ -170,7 +185,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
       <NineZone
         dispatch={dispatch}
         labels={labels}
-        state={nineZone || defaultNineZone}
+        state={nineZone}
         tab={tabElement}
         toolSettingsContent={toolSettingsContent}
         widgetContent={widgetContent}

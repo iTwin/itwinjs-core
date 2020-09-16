@@ -5,7 +5,7 @@
 import * as React from "react";
 import { TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-components";
 import {
-  ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
+  ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
   NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
 } from "@bentley/ui-framework";
@@ -264,19 +264,25 @@ export class Frontstage1 extends FrontstageProvider {
     );
   }
 }
-
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
 class FrontstageToolWidget extends React.Component {
+  private static _frontstage1Def: FrontstageDef | undefined;
+  private static get frontstage1Def(): FrontstageDef {
+    if (!this._frontstage1Def) {
+      const frontstageProvider = new NestedFrontstage1();
+      this._frontstage1Def = frontstageProvider.initializeDef();
+    }
+    return this._frontstage1Def;
+  }
+
   /** Command that opens a nested Frontstage */
   private get _openNestedFrontstage1() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openNestedFrontstage1",
       execute: async () => {
-        const frontstageProvider = new NestedFrontstage1();
-        const frontstageDef = frontstageProvider.initializeDef();
-        await FrontstageManager.openNestedFrontstage(frontstageDef);
+        await FrontstageManager.openNestedFrontstage(FrontstageToolWidget.frontstage1Def);
       },
     });
   }
