@@ -49,6 +49,14 @@ export class ThematicUniforms implements WebGLDisposable {
     return false;
   }
 
+  public get wantSlopeMode(): boolean {
+    return (undefined !== this.thematicDisplay) ? ThematicDisplayMode.Slope === this._displayMode[0] : false;
+  }
+
+  public get wantHillShadeMode(): boolean {
+    return (undefined !== this.thematicDisplay) ? ThematicDisplayMode.HillShade === this._displayMode[0] : false;
+  }
+
   public get wantGlobalSensorTexture(): boolean {
     return !(this._distanceCutoff > 0);
   }

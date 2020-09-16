@@ -13,6 +13,7 @@ import { unpackFloat } from "./Clipping";
 import { addRenderPass } from "./RenderPass";
 import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex";
 import { TextureUnit } from "../RenderFlags";
+import { addEyeSpace } from "./Common";
 
 const getSensorFloat = `
   vec4 getSensor(int index) {
@@ -67,8 +68,36 @@ vec3 getIsoLineColor(float ndx, float stepCount) {
 const fwidthWhenAvailable = `float _universal_fwidth(float coord) { return fwidth(coord); }`;
 const fwidthWhenNotAvailable = `float _universal_fwidth(float coord) { return coord; }`; // ###TODO: can we do something reasonable in this case?
 
+const slopeAndHillShadeShader = `else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
+  float d = dot(v_n, u_thematicAxis);
+  if (d < 0.0)
+    d = -d;
+
+  // The range of d is now 0 to 1 (90 degrees to 0 degrees).
+  // However, the range from 0 to 1 is not linear. Therefore, we use acos() to find the actual angle in radians.
+  d = acos(d);
+
+  // range of d is currently 1.5708 to 0 radians.
+  if (d < u_thematicRange.x || d > u_thematicRange.y)
+    d = -1.0; // use marginColor if outside the requested range
+  else { // convert d from radians to 0 to 1 using requested range
+    d -= u_thematicRange.x;
+    d /= (u_thematicRange.y - u_thematicRange.x);
+  }
+
+  ndx = d;
+} else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
+  float d = dot(v_n, u_thematicSunDirection);
+
+  // In the case of HillShade, v_thematicIndex contains the normal's z in world space.
+  if (!gl_FrontFacing && v_thematicIndex < 0.0)
+    d = -d;
+
+  ndx = max(0.0, d);
+}`;
+
 // Access the appropriate gradient texel for a particular index based on display mode and gradient mode.
-const applyThematicColor = `
+const applyThematicColorPrelude = `
 float ndx = v_thematicIndex;
 
 if (kThematicDisplayMode_InverseDistanceWeightedSensors == u_thematicDisplayMode) {
@@ -101,34 +130,9 @@ if (kThematicDisplayMode_InverseDistanceWeightedSensors == u_thematicDisplayMode
 
   if (contributionSum > 0.0) // avoid division by zero
     ndx = sensorSum / contributionSum;
-} else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
-  float d = dot(v_n, u_thematicAxis);
-  if (d < 0.0)
-    d = -d;
+}`;
 
-  // The range of d is now 0 to 1 (90 degrees to 0 degrees).
-  // However, the range from 0 to 1 is not linear. Therefore, we use acos() to find the actual angle in radians.
-  d = acos(d);
-
-  // range of d is currently 1.5708 to 0 radians.
-  if (d < u_thematicRange.x || d > u_thematicRange.y)
-    d = -1.0; // use marginColor if outside the requested range
-  else { // convert d from radians to 0 to 1 using requested range
-    d -= u_thematicRange.x;
-    d /= (u_thematicRange.y - u_thematicRange.x);
-  }
-
-  ndx = d;
-} else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
-  float d = dot(v_n, u_thematicSunDirection);
-
-  // In the case of HillShade, v_thematicIndex contains the normal's z in world space.
-  if (!gl_FrontFacing && v_thematicIndex < 0.0)
-    d = -d;
-
-  ndx = max(0.0, d);
-}
-
+const applyThematicColorPostlude = `
 float gradientMode = u_thematicSettings.x;
 float stepCount = u_thematicSettings.z;
 
@@ -148,35 +152,68 @@ if (kThematicGradientMode_IsoLines == gradientMode) {
 return rgba;
 `;
 
+// fwidth does not function for point clouds, so we work around the limitation with a less-than-ideal rendering of isolines and delimiters
+// using a tolerance not based on neighboring fragments.
+const delimiterToleranceForPointClouds = `0.025`; // / (stepCount * 40.0)`;
+const applyThematicColorPostludeForPointClouds = `
+float gradientMode = u_thematicSettings.x;
+float stepCount = u_thematicSettings.z;
+
+vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+
+if (kThematicGradientMode_IsoLines == gradientMode) {
+  float coord = v_thematicIndex * stepCount;
+  float line = abs(fract(coord - 0.5) - 0.5);
+  if (line > ${delimiterToleranceForPointClouds})
+    discard;
+} else if (kThematicGradientMode_SteppedWithDelimiter == gradientMode) {
+  float coord = v_thematicIndex * stepCount;
+  float line = abs(fract(coord - 0.5) - 0.5);
+  float value = min(line, 1.0);
+  if (line < ${delimiterToleranceForPointClouds} && value < 1.0)
+    rgba.rgb *= 0.0;
+}
+
+return rgba;
+`;
+
+function _getShader(isPointCloud: boolean) {
+  return isPointCloud ?
+    applyThematicColorPrelude + applyThematicColorPostludeForPointClouds : // do not include slope and hillshade for point clouds
+    applyThematicColorPrelude + slopeAndHillShadeShader + applyThematicColorPostlude; // include all modes for everything else
+}
+
 // Compute the value for the varying to be interpolated to the fragment shader in order to access the color in the thematic gradient texture
 // We will project a vector onto another vector using this equation: proju = (v . u) / (v . v) * v
-export function getComputeThematicIndex(instanced: boolean): string {
+export function getComputeThematicIndex(instanced: boolean, isPointCloud = false): string {
   const modelPos = instanced ? "(g_instancedRtcMatrix * rawPosition).xyz" : "rawPosition.xyz";
-  return `
-  if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
-    vec3 u = u_modelToWorld + ${modelPos};
-    vec3 v = u_thematicAxis;
-    vec3 proju = (dot(v, u) / dot(v, v)) * v;
-    vec3 a = v * u_thematicRange.s;
-    vec3 b = v * u_thematicRange.t;
-    vec3 c = proju;
-    v_thematicIndex = findFractionalPositionOnLine(a, b, c);
-  } else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
+  const heightMode = `
+if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
+  vec3 u = u_modelToWorld + ${modelPos};
+  vec3 v = u_thematicAxis;
+  vec3 proju = (dot(v, u) / dot(v, v)) * v;
+  vec3 a = v * u_thematicRange.s;
+  vec3 b = v * u_thematicRange.t;
+  vec3 c = proju;
+  v_thematicIndex = findFractionalPositionOnLine(a, b, c);
+}
+`;
+  const hillShadeMode = `else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
     vec2 tc = g_vertexBaseCoords;
     tc.x += 3.0 * g_vert_stepX;
     vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
     vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
     vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
     v_thematicIndex = norm.z;
-  }
-  `;
+  } `;
+  return isPointCloud ? heightMode : heightMode + hillShadeMode;
 }
 
 // Determine the fractional position of c on line segment ab.  Assumes the three points are aligned on the same axis.
 const findFractionalPositionOnLine = `
-float abDist = distance(a, b);
-return dot(b - a, c - a) / (abDist * abDist);
-`;
+  float abDist = distance(a, b);
+  return dot(b - a, c - a) / (abDist * abDist);
+  `;
 
 function addThematicDisplayModeConstants(builder: ShaderBuilder) {
   builder.addDefine("kThematicDisplayMode_Height", ThematicDisplayMode.Height.toFixed(1));
@@ -193,13 +230,17 @@ function addThematicGradientModeConstants(builder: ShaderBuilder) {
 }
 
 /** @internal */
-export function addThematicDisplay(builder: ProgramBuilder) {
+export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = false) {
   const frag = builder.frag;
   const vert = builder.vert;
 
   addRenderPass(builder.frag);
 
-  addProjectionMatrix(vert);
+  if (!isForPointClouds)
+    addProjectionMatrix(vert);
+
+  addEyeSpace(builder);
+
   if (vert.usesInstancedGeometry)
     addInstancedRtcMatrix(vert);
 
@@ -223,11 +264,13 @@ export function addThematicDisplay(builder: ProgramBuilder) {
     });
   });
 
-  builder.addUniform("u_thematicSunDirection", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_thematicSunDirection", (uniform, params) => {
-      params.target.uniforms.thematic.bindSunDirection(uniform);
+  if (!isForPointClouds) {
+    builder.addUniform("u_thematicSunDirection", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_thematicSunDirection", (uniform, params) => {
+        params.target.uniforms.thematic.bindSunDirection(uniform);
+      });
     });
-  });
+  }
 
   addThematicGradientModeConstants(builder.frag);
 
@@ -247,7 +290,7 @@ export function addThematicDisplay(builder: ProgramBuilder) {
   });
 
   // gradientMode, distanceCutoff, stepCount
-  frag.addUniform("u_thematicSettings", VariableType.Vec3, (prog) => {
+  builder.addUniform("u_thematicSettings", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_thematicSettings", (uniform, params) => {
       params.target.uniforms.thematic.bindFragSettings(uniform);
     });
@@ -300,5 +343,5 @@ export function addThematicDisplay(builder: ProgramBuilder) {
   frag.addFunction(getColor);
   frag.addFunction(getIsoLineColor);
 
-  frag.set(FragmentShaderComponent.ApplyThematicDisplay, applyThematicColor);
+  frag.set(FragmentShaderComponent.ApplyThematicDisplay, _getShader(isForPointClouds));
 }

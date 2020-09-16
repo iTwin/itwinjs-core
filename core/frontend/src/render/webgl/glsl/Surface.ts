@@ -473,10 +473,11 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
 }
 
-function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic) {
-  if (isThematic)
-    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry));
-  else {
+/** @internal */
+export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic, isPointCloud = false) {
+  if (isThematic) {
+    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, isPointCloud));
+  } else {
     builder.vert.addFunction(unquantize2d);
     addChooseWithBitFlagFunctions(builder.vert);
     builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);

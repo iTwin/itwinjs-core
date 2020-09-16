@@ -8,12 +8,14 @@
 
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { FeatureMode, IsClassified, IsThematic } from "../TechniqueFlags";
+import { FeatureMode, IsAnimated, IsClassified, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addUniformHiliter } from "./FeatureSymbology";
 import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification";
 import { addLineWeight, addModelViewProjectionMatrix } from "./Vertex";
 import { addViewportTransformation } from "./Viewport";
+import { addThematicDisplay } from "./Thematic";
+import { addTexture } from "./Surface";
 
 const computeColor = "return (u_pointCloudParams.x == 1.0)?  vec4(a_color.z, a_color.y, a_color.x, 1.0) : vec4(a_color, 1.0);";
 const computeBaseColor = "return v_color;";
@@ -50,7 +52,7 @@ function createBuilder(): ProgramBuilder {
 
 const scratchPointCloudParams = new Float32Array(2);
 /** @internal */
-export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode): ProgramBuilder {
+export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
   const builder = createBuilder();
 
   builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeNonUniformColor", computeColor);
@@ -58,11 +60,16 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundPointDiscard);
   if (classified) {
-    addColorPlanarClassifier(builder, false, IsThematic.No);
+    addColorPlanarClassifier(builder, false, thematic);
     builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
 
     if (FeatureMode.None !== featureMode)
       addFeaturePlanarClassifier(builder);
+  }
+
+  if (IsThematic.Yes === thematic) {
+    addThematicDisplay(builder, true);
+    addTexture(builder, IsAnimated.No, IsThematic.Yes, true);
   }
 
   builder.vert.addUniform("u_pointCloudParams", VariableType.Vec2, (prog) => {

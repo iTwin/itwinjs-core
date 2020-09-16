@@ -327,8 +327,9 @@ const overrideClassifierEmphasisForThematic = `
     return vec4(0.0, 0.0, currentColor.a, 1.0);
 `;
 
+// Thematic classifiers use alpha of 1 to blend; we just want thematic colors to largely win out except when selecting and flashing classifiers.
 const overrideClassifierColorPostludeClipForThematic = `
-  return isElem ? vec4(0.0, 0.0, currentColor.a, 1.0) : currentColor;
+  return isElem ? vec4(0.0, 0.0, 1.0, 1.0) : currentColor;
 `;
 
 const overrideClassifierWithFeaturesForThematic = overrideClassifierColorPreludeForThematic + overrideClassifierEmphasisForThematic + overrideClassifierColorPostlude;

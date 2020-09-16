@@ -35,6 +35,7 @@ export class PointCloudGeometry extends CachedGeometry {
 
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
   public get asPointCloud(): PointCloudGeometry | undefined { return this; }
+  public get supportsThematicDisplay() { return true; }
 
   public dispose() {
     dispose(this.buffers);

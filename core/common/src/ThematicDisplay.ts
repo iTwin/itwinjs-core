@@ -292,16 +292,20 @@ export class ThematicDisplaySensorSettings {
  * @beta
  */
 export enum ThematicDisplayMode {
-  /** The color gradient will be mapped to surface geometry based on world height in meters. */
+  /** The color gradient will be mapped to surface geometry and point clouds based on world height in meters. */
   Height = 0,
-  /** The color gradient will be mapped to surface geometry using inverse distance weighting based on world positions and corresponding values from a list of sensors.
+  /** The color gradient will be mapped to surface geometry and point clouds using inverse distance weighting based on world positions and corresponding values from a list of sensors.
    * @note In its alpha state, this mode has been measured to run at 60 frames per second with 64 sensors, and 30 frames per second with 150 sensors. Performance continues to decrease as more sensors are added. These measurements were recorded using a developer laptop running on a 1080p monitor.
    * @alpha
    */
   InverseDistanceWeightedSensors = 1,
-  /** The color gradient will be mapped to surface geometry based on the slope of the surface. The slope value is calculated based on the angle between the surface and the axis specified in the associated [[ThematicDisplay]] object. */
+  /** The color gradient will be mapped to surface geometry based on the slope of the surface. The slope value is calculated based on the angle between the surface and the axis specified in the associated [[ThematicDisplay]] object.
+   * @note This display mode does not affect point clouds.
+   */
   Slope = 2,
-  /** The color gradient will be mapped to surface geometry based on the direction of a sun shining on the surface. */
+  /** The color gradient will be mapped to surface geometry based on the direction of a sun shining on the surface.
+   * @note This display mode does not affect point clouds.
+   */
   HillShade = 3,
 }
 

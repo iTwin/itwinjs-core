@@ -206,10 +206,14 @@ export class PrimitiveCommand {
     const thematic = this.primitive.cachedGeometry.supportsThematicDisplay && target.wantThematicDisplay;
     const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows && !thematic;
     const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
-    const isThematic = thematic ? IsThematic.Yes : IsThematic.No;
+    let isThematic = thematic ? IsThematic.Yes : IsThematic.No;
     const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
     const isInstanced = this.primitive.isInstanced ? IsInstanced.Yes : IsInstanced.No;
     const isAnimated = this.primitive.hasAnimation ? IsAnimated.Yes : IsAnimated.No;
+
+    // Point clouds do not support hillshade or slope mode for thematic display.
+    if (isThematic && undefined !== this.primitive.cachedGeometry.asPointCloud && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
+      isThematic = IsThematic.No;
 
     const flags = PrimitiveCommand._scratchTechniqueFlags;
     flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic);
