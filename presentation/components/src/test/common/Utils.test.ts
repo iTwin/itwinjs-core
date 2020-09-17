@@ -78,8 +78,7 @@ describe("Utils", () => {
     it("returns undefined for invalid name when there are nested fields", () => {
       const nestedField = createRandomPropertiesField();
       const nestingField = createRandomNestedContentField([nestedField]);
-      const descriptor = createRandomDescriptor();
-      descriptor.fields = [nestingField];
+      const descriptor = createRandomDescriptor(undefined, [nestingField]);
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, "doesn't exist"));
       expect(result).to.be.undefined;
     });
@@ -94,10 +93,9 @@ describe("Utils", () => {
     it("finds nested field", () => {
       const nestedField = createRandomPropertiesField();
       const nestingField = createRandomNestedContentField([nestedField]);
-      const descriptor = createRandomDescriptor();
-      descriptor.fields = [nestingField];
+      const descriptor = createRandomDescriptor(undefined, [nestingField]);
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, nestingField.name));
-      expect(result).to.eq(nestedField);
+      expect(result!.name).to.eq(nestedField.name);
     });
 
   });

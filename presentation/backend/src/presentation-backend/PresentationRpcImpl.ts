@@ -272,10 +272,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.successResponse(content.result ? content.result.contentSet : { total: 0, items: [] });
   }
 
-  public async getDistinctValues(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): PresentationRpcResponse<string[]> {
+  public async getDistinctValues(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptor: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON, fieldName: string, maximumValueCount: number): PresentationRpcResponse<string[]> {
     return this.makeRequest(token, "getDistinctValues", requestOptions, async (options) => {
       const { requestContext, ...optionsNoRequestContext } = options;
-      return this.getManager(requestOptions.clientId).getDistinctValues(requestContext, optionsNoRequestContext, Descriptor.fromJSON(descriptor)!, KeySet.fromJSON(keys), fieldName, maximumValueCount);
+      return this.getManager(requestOptions.clientId).getDistinctValues(requestContext, optionsNoRequestContext, descriptorFromJson(descriptor), KeySet.fromJSON(keys), fieldName, maximumValueCount);
     });
   }
 
@@ -283,7 +283,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, "getPagedDistinctValues", requestOptions, async (options) => {
       options = enforceValidPageSize({
         ...options,
-        descriptor: Descriptor.fromJSON(options.descriptor),
+        descriptor: descriptorFromJson(options.descriptor),
         keys: KeySet.fromJSON(options.keys),
       });
       const response = await this.getManager(requestOptions.clientId).getPagedDistinctValues(options);

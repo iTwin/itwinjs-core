@@ -141,8 +141,8 @@ export const isExtendedContentRequestOptions = <TIModel, TDescriptor, TKeySet>(o
  * @alpha
  */
 export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet> extends Paged<ContentRequestOptions<TIModel>> {
-  /** Content descriptor for content we're requesting distinct values for */
-  descriptor: TDescriptor;
+  /** Content descriptor for content we're requesting distinct values for or overrides for customizing the returned content */
+  descriptor: TDescriptor | DescriptorOverrides;
   /** Input keys for getting the content */
   keys: TKeySet;
   /** Descriptor for a field distinct values are requested for */

@@ -132,7 +132,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.5.0";
+  public static interfaceVersion = "2.6.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -181,7 +181,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> { return this.forward(arguments); }
 
   // TODO: deprecate when [[getPagedDistinctValues]] starts supporting related content and becomes @beta (#370762)
-  public async getDistinctValues(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
+  public async getDistinctValues(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
   /** @alpha */
   public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 

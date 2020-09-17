@@ -207,7 +207,7 @@ export class PresentationManager implements IDisposable {
     getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
     // @beta (undocumented)
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
-    getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
+    getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
     getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
     // @deprecated

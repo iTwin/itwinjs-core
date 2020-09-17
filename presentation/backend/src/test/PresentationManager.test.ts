@@ -1648,8 +1648,6 @@ describe("PresentationManager", () => {
             keys: keys.toJSON(),
             descriptorOverrides: {
               displayType: descriptor.displayType,
-              hiddenFieldNames: [],
-              contentFlags: 0,
             },
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
@@ -1993,8 +1991,6 @@ describe("PresentationManager", () => {
             keys: keys.toJSON(),
             descriptorOverrides: {
               displayType: descriptor.displayType,
-              hiddenFieldNames: [],
-              contentFlags: 0,
             },
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),

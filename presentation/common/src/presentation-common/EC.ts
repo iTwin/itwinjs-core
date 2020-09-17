@@ -196,13 +196,16 @@ export interface RelatedClassInfo {
   /** Information about the target ECClass */
   targetClassInfo: ClassInfo;
 
+  /** Is target class handled polymorphically */
+  isPolymorphicTargetClass: boolean;
+
   /** Information about the ECRelationship */
   relationshipInfo: ClassInfo;
 
-  /** Should the relationship be followed in a forward direction to access the related class. */
+  /** Should relationship be followed in a forward direction to access the related class. */
   isForwardRelationship: boolean;
 
-  /** Is the relationship handled polymorphically */
+  /** Is relationship handled polymorphically */
   isPolymorphicRelationship: boolean;
 }
 
@@ -224,7 +227,9 @@ export namespace RelatedClassInfo {
       ...json,
       sourceClassInfo: ClassInfo.fromJSON(json.sourceClassInfo),
       targetClassInfo: ClassInfo.fromJSON(json.targetClassInfo),
+      isPolymorphicTargetClass: json.isPolymorphicTargetClass ?? false,
       relationshipInfo: ClassInfo.fromJSON(json.relationshipInfo),
+      isPolymorphicRelationship: json.isPolymorphicRelationship ?? false,
     };
   }
 
@@ -267,9 +272,10 @@ export namespace RelatedClassInfo {
 export interface RelatedClassInfoJSON {
   sourceClassInfo: ClassInfoJSON;
   targetClassInfo: ClassInfoJSON;
+  isPolymorphicTargetClass?: boolean;
   relationshipInfo: ClassInfoJSON;
   isForwardRelationship: boolean;
-  isPolymorphicRelationship: boolean;
+  isPolymorphicRelationship?: boolean;
 }
 
 /**

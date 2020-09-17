@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Descriptor, Field, NestedContentField, PropertyValueFormat, StructTypeDescription } from "../../presentation-common";
-import { DescriptorJSON, DescriptorSource } from "../../presentation-common/content/Descriptor";
+import { DescriptorJSON, DescriptorSource, SortDirection } from "../../presentation-common/content/Descriptor";
+import { FieldDescriptorType } from "../../presentation-common/content/Fields";
 import {
   createRandomCategory, createRandomCategoryJSON, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfo,
   createRandomNestedFieldJSON, createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomRelationshipPath,
@@ -101,8 +102,7 @@ describe("Descriptor", () => {
   describe("getFieldByName", () => {
 
     it("returns undefined when there are no fields", () => {
-      const descriptor = createRandomDescriptor();
-      descriptor.fields = [];
+      const descriptor = createRandomDescriptor("type", []);
       expect(descriptor.getFieldByName("test")).to.be.undefined;
     });
 
@@ -161,36 +161,79 @@ describe("Descriptor", () => {
   describe("createDescriptorOverrides", () => {
 
     it("creates a valid object with default parameters", () => {
-      const descriptor = createRandomDescriptor();
-      expect(descriptor.createDescriptorOverrides()).to.matchSnapshot();
+      const descriptor = createRandomDescriptor("");
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({});
     });
 
-    it("creates a valid object with sorting field", () => {
-      const descriptor = createRandomDescriptor();
-      descriptor.sortingField = descriptor.fields[0];
-      expect(descriptor.createDescriptorOverrides()).to.matchSnapshot();
+    it("creates a valid object with display type", () => {
+      const descriptorJSON = {
+        ...createRandomDescriptorJSON(),
+        displayType: "test display type",
+      };
+      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
+      const overrides = descriptor.createDescriptorOverrides();
+      expect(overrides).to.deep.eq({
+        displayType: descriptorJSON.displayType,
+      });
     });
 
-  });
+    it("creates a valid object with content flags", () => {
+      const descriptorJSON = {
+        ...createRandomDescriptorJSON(""),
+        contentFlags: 123,
+      };
+      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
+      const overrides = descriptor.createDescriptorOverrides();
+      expect(overrides).to.deep.eq({
+        contentFlags: descriptorJSON.contentFlags,
+      });
+    });
 
-  describe("createStrippedDescriptor", () => {
+    it("creates a valid object with filter expression", () => {
+      const descriptorJSON = {
+        ...createRandomDescriptorJSON(""),
+        filterExpression: "test filter",
+      };
+      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
+      const overrides = descriptor.createDescriptorOverrides();
+      expect(overrides).to.deep.eq({
+        filterExpression: descriptorJSON.filterExpression,
+      });
+    });
 
-    it("creates a descriptor copy with empty fields and selectClasses member arrays", () => {
-      // create original and verify it's valid for testing
-      const descriptor = createRandomDescriptor();
-      expect(descriptor.fields.length).to.be.above(0);
-      expect(descriptor.selectClasses.length).to.be.above(0);
+    it("creates a valid object with sorting field ascending", () => {
+      const categoryJSON = createRandomCategoryJSON();
+      const fieldJSON = createRandomPrimitiveFieldJSON(categoryJSON.name);
+      const descriptorJSON = {
+        ...createRandomDescriptorJSON("", [fieldJSON], [categoryJSON]),
+        sortingFieldName: fieldJSON.name,
+      };
+      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
+      const overrides = descriptor.createDescriptorOverrides();
+      expect(overrides).to.deep.eq({
+        sorting: {
+          field: { type: FieldDescriptorType.Name, fieldName: descriptorJSON.sortingFieldName, parent: undefined },
+          direction: SortDirection.Ascending,
+        },
+      });
+    });
 
-      // create a stripped descriptor and verify it's a different object
-      // and doesn't contain stripped data
-      const stripped = descriptor.createStrippedDescriptor();
-      expect(stripped).to.not.eq(descriptor);
-      expect(stripped.fields.length).to.eq(0);
-      expect(stripped.selectClasses.length).to.eq(0);
-
-      // verify original wasn't changed
-      expect(descriptor.fields.length).to.be.above(0);
-      expect(descriptor.selectClasses.length).to.be.above(0);
+    it("creates a valid object with sorting field descending", () => {
+      const fieldJSON = createRandomPrimitiveFieldJSON(createRandomCategoryJSON());
+      const descriptorJSON = {
+        ...createRandomDescriptorJSON("", [fieldJSON]),
+        categories: undefined,
+        sortingFieldName: fieldJSON.name,
+        sortDirection: SortDirection.Descending,
+      };
+      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
+      const overrides = descriptor.createDescriptorOverrides();
+      expect(overrides).to.deep.eq({
+        sorting: {
+          field: { type: FieldDescriptorType.Name, fieldName: descriptorJSON.sortingFieldName, parent: undefined },
+          direction: SortDirection.Descending,
+        },
+      });
     });
 
   });

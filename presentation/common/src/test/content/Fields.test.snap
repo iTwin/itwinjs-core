@@ -25,12 +25,12 @@ Object {
 exports[`Field fromJSON creates valid Field from valid JSON with categories 1`] = `
 Object {
   "category": Object {
-    "description": "Iusto repellat nihil ut soluta et dolores modi aliquam consequuntur.",
-    "expand": false,
-    "label": "info-mediaries Handmade",
-    "name": "virtual",
+    "description": "Exercitationem voluptatum beatae minus molestiae iusto.",
+    "expand": true,
+    "label": "virtual",
+    "name": "Music",
     "parent": undefined,
-    "priority": 82519,
+    "priority": 99622,
   },
   "editor": undefined,
   "isReadonly": true,
@@ -70,7 +70,7 @@ Object {
 
 exports[`Field fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
-  "autoExpand": false,
+  "autoExpand": true,
   "category": Object {
     "description": "Tempora consequuntur quam eveniet distinctio quos labore corporis neque distinctio.",
     "expand": false,
@@ -91,32 +91,33 @@ Object {
   "nestedFields": Array [
     Object {
       "category": Object {
-        "description": "Dolores natus qui accusamus velit similique et dicta rerum nisi.",
-        "expand": false,
-        "label": "whiteboard Plains",
-        "name": "Ferry",
+        "description": "Dicta rerum nisi quos et recusandae quia.",
+        "expand": true,
+        "label": "Borders transition salmon",
+        "name": "Plains",
         "parent": undefined,
-        "priority": 49022,
+        "priority": 15985,
       },
       "editor": undefined,
-      "isReadonly": true,
-      "label": "neural",
-      "name": "Directives",
-      "priority": 24586,
+      "isReadonly": false,
+      "label": "Total middleware parse",
+      "name": "back-end",
+      "priority": 50694,
       "type": Object {
-        "typeName": "date",
+        "typeName": "set",
         "valueFormat": "Primitive",
       },
     },
   ],
   "pathToPrimaryClass": Array [
     Object {
-      "isForwardRelationship": true,
+      "isForwardRelationship": false,
       "isPolymorphicRelationship": false,
+      "isPolymorphicTargetClass": false,
       "relationshipInfo": Object {
-        "id": "0x17b830000012270",
-        "label": "Ridges streamline",
-        "name": "silver",
+        "id": "0x56420000017b83",
+        "label": "Kenyan Shilling Handmade Cotton Table",
+        "name": "Orchestrator",
       },
       "sourceClassInfo": Object {
         "id": "0x1526a0000012015",
@@ -130,22 +131,23 @@ Object {
       },
     },
     Object {
-      "isForwardRelationship": true,
-      "isPolymorphicRelationship": false,
+      "isForwardRelationship": false,
+      "isPolymorphicRelationship": true,
+      "isPolymorphicTargetClass": false,
       "relationshipInfo": Object {
-        "id": "0x13572000000f162",
-        "label": "Soap",
-        "name": "Iowa",
+        "id": "0x6fb3000000e4ec",
+        "label": "Belgium Ferry",
+        "name": "Wooden",
       },
       "sourceClassInfo": Object {
-        "id": "0x4b30000000b1c3",
-        "label": "algorithm Massachusetts",
-        "name": "Niue",
+        "id": "0xa80a000000ff8b",
+        "label": "ROI generating",
+        "name": "algorithm",
       },
       "targetClassInfo": Object {
-        "id": "0x149e900000066ed",
-        "label": "Buckinghamshire architecture",
-        "name": "South Carolina",
+        "id": "0x845700000135b3",
+        "label": "Generic",
+        "name": "Buckinghamshire",
       },
     },
   ],
@@ -197,12 +199,13 @@ Object {
       },
       "relatedClassPath": Array [
         Object {
-          "isForwardRelationship": false,
+          "isForwardRelationship": true,
           "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": Object {
-            "id": "0xb220000013beb",
-            "label": "Avon Plastic calculating",
-            "name": "card",
+            "id": "0x117dc0000000b22",
+            "label": "Wooden stable",
+            "name": "service-desk",
           },
           "sourceClassInfo": Object {
             "id": "0x3b01000000711f",
@@ -231,8 +234,8 @@ Object {
   "category": Object {
     "description": "Est fugit nisi occaecati ea eos maiores distinctio.",
     "expand": true,
-    "label": "Borders",
-    "name": "clicks-and-mortar",
+    "label": "Books Borders",
+    "name": "Keyboard",
     "parent": undefined,
     "priority": 65673,
   },
@@ -250,20 +253,20 @@ Object {
   "nestedFields": Array [
     Object {
       "category": Object {
-        "description": "Error delectus est ea omnis rerum perferendis optio voluptatibus.",
-        "expand": false,
-        "label": "Investor Designer",
-        "name": "Colombian Peso Unidad de Valor Real",
+        "description": "Omnis rerum perferendis optio voluptatibus maiores.",
+        "expand": true,
+        "label": "COM Producer",
+        "name": "Personal Loan Account",
         "parent": undefined,
-        "priority": 98459,
+        "priority": 3086,
       },
       "editor": undefined,
-      "isReadonly": false,
-      "label": "FTP",
-      "name": "override",
-      "priority": 56796,
+      "isReadonly": true,
+      "label": "Graphical User Interface local IB",
+      "name": "purple",
+      "priority": 67841,
       "type": Object {
-        "typeName": "mediumint",
+        "typeName": "float",
         "valueFormat": "Primitive",
       },
     },
@@ -272,10 +275,11 @@ Object {
     Object {
       "isForwardRelationship": true,
       "isPolymorphicRelationship": false,
+      "isPolymorphicTargetClass": true,
       "relationshipInfo": Object {
-        "id": "0xd10e0000002a8d",
-        "label": "granular",
-        "name": "mesh",
+        "id": "0xdc500000009cf0",
+        "label": "Hong Kong Dollar",
+        "name": "Incredible",
       },
       "sourceClassInfo": Object {
         "id": "0x15498000000676f",
@@ -290,16 +294,17 @@ Object {
     },
     Object {
       "isForwardRelationship": false,
-      "isPolymorphicRelationship": false,
+      "isPolymorphicRelationship": true,
+      "isPolymorphicTargetClass": false,
       "relationshipInfo": Object {
-        "id": "0x43400000015918",
-        "label": "EXE Credit Card Account",
-        "name": "Montana",
+        "id": "0xe52e0000004340",
+        "label": "Nepal deposit bandwidth",
+        "name": "Berkshire",
       },
       "sourceClassInfo": Object {
-        "id": "0x138c200000180f5",
+        "id": "0xa186000000115c",
         "label": "Frozen Arkansas calculating",
-        "name": "Practical Metal Hat",
+        "name": "payment",
       },
       "targetClassInfo": Object {
         "id": "0x1275a00000169f4",
@@ -330,98 +335,102 @@ exports[`NestedContentField fromJSON creates valid NestedContentField from valid
 Object {
   "autoExpand": true,
   "category": Object {
-    "description": "Ut molestiae voluptatum et.",
+    "description": "Sequi tempore consequuntur hic et repellat veritatis soluta.",
     "expand": true,
-    "label": "Argentine Peso",
-    "name": "Ergonomic",
+    "label": "Vietnam",
+    "name": "program",
     "parent": undefined,
-    "priority": 3546,
+    "priority": 4276,
   },
   "contentClassInfo": Object {
-    "id": "0x10a8700000017ef",
-    "label": "1080p Towels",
-    "name": "Generic Granite Chair",
+    "id": "0x4e7b000000ae07",
+    "label": "navigating",
+    "name": "International",
   },
-  "editor": undefined,
+  "editor": Object {
+    "name": "Crossing",
+  },
   "isReadonly": false,
-  "label": "Gloves wireless input",
-  "name": "Sleek Rubber Tuna",
+  "label": "1080p Towels",
+  "name": "Argentina",
   "nestedFields": Array [
     Object {
       "category": Object {
-        "description": "Ut molestiae voluptatum et.",
+        "description": "Sequi tempore consequuntur hic et repellat veritatis soluta.",
         "expand": true,
-        "label": "Argentine Peso",
-        "name": "Ergonomic",
+        "label": "Vietnam",
+        "name": "program",
         "parent": undefined,
-        "priority": 3546,
+        "priority": 4276,
       },
       "editor": Object {
-        "name": "connecting",
+        "name": "Borders",
       },
       "isReadonly": false,
-      "label": "Future sensor",
-      "name": "Small Metal Mouse",
-      "priority": 78139,
+      "label": "Product multi-tasking Refined Metal Car",
+      "name": "parse",
+      "priority": 76738,
       "type": Object {
-        "typeName": "blob",
+        "typeName": "tinyint",
         "valueFormat": "Primitive",
       },
     },
   ],
   "pathToPrimaryClass": Array [
     Object {
-      "isForwardRelationship": true,
+      "isForwardRelationship": false,
       "isPolymorphicRelationship": false,
+      "isPolymorphicTargetClass": true,
       "relationshipInfo": Object {
-        "id": "0xa158000001455d",
-        "label": "Frozen Sao Tome and Principe Dynamic",
-        "name": "Colorado",
+        "id": "0x171d2000000c72a",
+        "label": "forecast cyan",
+        "name": "dynamic",
       },
       "sourceClassInfo": Object {
-        "id": "0x357800000164ee",
-        "label": "Steel Buckinghamshire",
-        "name": "bypassing",
+        "id": "0x2c13000000d9f5",
+        "label": "Sao Tome and Principe Dynamic primary",
+        "name": "hacking",
       },
       "targetClassInfo": Object {
-        "id": "0x1b6000000156b4",
-        "label": "Berkshire azure Colombian Peso Unidad de Valor Real",
-        "name": "Metal",
-      },
-    },
-    Object {
-      "isForwardRelationship": true,
-      "isPolymorphicRelationship": true,
-      "relationshipInfo": Object {
-        "id": "0x1569a00000052f4",
-        "label": "Metal parse",
-        "name": "Fresh",
-      },
-      "sourceClassInfo": Object {
         "id": "0x16c82000000a1ea",
         "label": "user-centric application Gorgeous",
         "name": "Georgia",
       },
+    },
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": false,
+      "isPolymorphicTargetClass": false,
+      "relationshipInfo": Object {
+        "id": "0x1db8000000ca36",
+        "label": "PNG lavender Fish",
+        "name": "PNG",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x36fb000000d839",
+        "label": "Denar Small Metal Mouse Personal Loan Account",
+        "name": "El Salvador Colon US Dollar",
+      },
       "targetClassInfo": Object {
-        "id": "0x125d8000000910b",
-        "label": "incubate forecast",
-        "name": "Cambridgeshire",
+        "id": "0x1199f0000005966",
+        "label": "auxiliary connecting",
+        "name": "Shore",
       },
     },
   ],
-  "priority": 55212,
+  "priority": 81712,
   "type": Object {
     "members": Array [
       Object {
-        "label": "Vision-oriented",
-        "name": "Frozen",
+        "label": "Libyan Dinar",
+        "name": "Metal",
         "type": Object {
-          "typeName": "boolean",
+          "typeName": "varchar",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "typeName": "panel",
+    "typeName": "Sleek Soft Salad",
     "valueFormat": "Struct",
   },
 }
@@ -429,12 +438,12 @@ Object {
 
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid serialized JSON 1`] = `
 Object {
-  "autoExpand": false,
+  "autoExpand": true,
   "category": Object {
     "description": "Et rerum saepe odio quidem incidunt blanditiis.",
     "expand": true,
-    "label": "primary 1080p",
-    "name": "Diverse",
+    "label": "1080p",
+    "name": "Spurs",
     "parent": undefined,
     "priority": 34887,
   },
@@ -452,32 +461,33 @@ Object {
   "nestedFields": Array [
     Object {
       "category": Object {
-        "description": "Omnis exercitationem ut rerum sunt quo iste.",
-        "expand": true,
-        "label": "Mews content",
-        "name": "seize",
+        "description": "Et soluta fuga sint enim voluptatem consequatur quis ipsam.",
+        "expand": false,
+        "label": "Shoes e-business Applications",
+        "name": "Armenia",
         "parent": undefined,
-        "priority": 4186,
+        "priority": 68447,
       },
       "editor": undefined,
-      "isReadonly": true,
-      "label": "Chief Street",
-      "name": "Shoes",
-      "priority": 62421,
+      "isReadonly": false,
+      "label": "Specialist calculate bypassing",
+      "name": "Avon",
+      "priority": 94829,
       "type": Object {
-        "typeName": "bit",
+        "typeName": "geometry",
         "valueFormat": "Primitive",
       },
     },
   ],
   "pathToPrimaryClass": Array [
     Object {
-      "isForwardRelationship": false,
+      "isForwardRelationship": true,
       "isPolymorphicRelationship": false,
+      "isPolymorphicTargetClass": false,
       "relationshipInfo": Object {
-        "id": "0xf4ff0000013d2a",
-        "label": "protocol",
-        "name": "Practical",
+        "id": "0x1cf5000000f4ff",
+        "label": "Incredible red Customer",
+        "name": "ROI",
       },
       "sourceClassInfo": Object {
         "id": "0x142c90000011ff8",
@@ -491,22 +501,23 @@ Object {
       },
     },
     Object {
-      "isForwardRelationship": false,
+      "isForwardRelationship": true,
       "isPolymorphicRelationship": false,
+      "isPolymorphicTargetClass": false,
       "relationshipInfo": Object {
-        "id": "0xa5e10000008592",
-        "label": "Sudanese Pound",
-        "name": "users",
+        "id": "0xae0f000000a81f",
+        "label": "Representative",
+        "name": "Rhode Island",
       },
       "sourceClassInfo": Object {
-        "id": "0x15fe00000000bdf",
-        "label": "white",
-        "name": "Wallis and Futuna",
+        "id": "0x11f420000005af7",
+        "label": "Jersey overriding Future-proofed",
+        "name": "Louisiana",
       },
       "targetClassInfo": Object {
-        "id": "0xe3bf0000011f42",
-        "label": "Stravenue white",
-        "name": "customized",
+        "id": "0xa9f3000000a5e1",
+        "label": "card functionalities engage",
+        "name": "copy",
       },
     },
   ],
@@ -556,12 +567,13 @@ Object {
       },
       "relatedClassPath": Array [
         Object {
-          "isForwardRelationship": false,
-          "isPolymorphicRelationship": true,
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": Object {
-            "id": "0x1da9000000c48c",
-            "label": "calculating Creek Forks",
-            "name": "Syrian Arab Republic",
+            "id": "0xd42c0000001da9",
+            "label": "system Cotton Centralized",
+            "name": "SCSI",
           },
           "sourceClassInfo": Object {
             "id": "0x17efb000000da5f",
@@ -587,12 +599,12 @@ Object {
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON with categories 1`] = `
 Object {
   "category": Object {
-    "description": "Doloremque saepe assumenda debitis qui voluptas et ipsa et sint.",
+    "description": "Architecto mollitia in natus nostrum deserunt rerum sapiente nihil impedit.",
     "expand": true,
-    "label": "protocol Chicken",
-    "name": "Mill",
+    "label": "Ergonomic Granite Mouse redundant",
+    "name": "Kentucky",
     "parent": undefined,
-    "priority": 18828,
+    "priority": 86204,
   },
   "editor": Object {
     "name": "Massachusetts",
@@ -614,12 +626,13 @@ Object {
       },
       "relatedClassPath": Array [
         Object {
-          "isForwardRelationship": false,
-          "isPolymorphicRelationship": false,
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": Object {
-            "id": "0x87d60000013379",
-            "label": "RAM",
-            "name": "input",
+            "id": "0x12b9200000087d6",
+            "label": "Steel focus group digital",
+            "name": "card",
           },
           "sourceClassInfo": Object {
             "id": "0x6ca60000012eb1",
@@ -672,12 +685,13 @@ Object {
       },
       "relatedClassPath": Array [
         Object {
-          "isForwardRelationship": true,
+          "isForwardRelationship": false,
           "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": Object {
-            "id": "0xb447000000b6b8",
-            "label": "Rustic Plastic Shoes e-commerce",
-            "name": "front-end",
+            "id": "0xe1540000009046",
+            "label": "dot-com",
+            "name": "Checking Account",
           },
           "sourceClassInfo": Object {
             "id": "0xce2800000043fa",

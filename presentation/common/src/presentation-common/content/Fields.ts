@@ -198,7 +198,7 @@ export class Field {
 
   /**
    * Get descriptor for this field.
-   * @alpha
+   * @beta
    */
   public getFieldDescriptor(): FieldDescriptor {
     return {
@@ -284,7 +284,7 @@ export class PropertiesField extends Field {
 
   /**
    * Get descriptor for this field.
-   * @alpha
+   * @beta
    */
   public getFieldDescriptor(): FieldDescriptor {
     return {
@@ -400,18 +400,6 @@ export class NestedContentField extends Field {
     for (const nestedField of this.nestedFields)
       nestedField.rebuildParentship(this);
   }
-
-  /**
-   * Get descriptor for this field.
-   * @alpha
-   */
-  public getFieldDescriptor(): FieldDescriptor {
-    return {
-      type: FieldDescriptorType.RelatedContent,
-      parent: this.parent ? this.parent.getFieldDescriptor() : undefined,
-      pathFromContentToSelectClass: RelationshipPath.strip(this.pathToPrimaryClass),
-    } as RelatedContentFieldDescriptor;
-  }
 }
 
 /** @internal */
@@ -431,17 +419,16 @@ export const getFieldByName = (fields: Field[], name: string, recurse?: boolean)
 
 /**
  * Types of different field descriptors.
- * @alpha
+ * @beta
  */
 export enum FieldDescriptorType {
   Name = "name",
   Properties = "properties",
-  RelatedContent = "related-content",
 }
 
 /**
  * Base for a field descriptor
- * @alpha
+ * @beta
  */
 export interface FieldDescriptorBase {
   type: FieldDescriptorType;
@@ -450,10 +437,10 @@ export interface FieldDescriptorBase {
 
 /**
  * A union of all possible field descriptor types
- * @alpha
+ * @beta
  */
-export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor | RelatedContentFieldDescriptor;
-/** @alpha */
+export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor;
+/** @beta */
 export namespace FieldDescriptor {
   /** Is this a named field descriptor */
   export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor {
@@ -463,15 +450,11 @@ export namespace FieldDescriptor {
   export function isProperties(d: FieldDescriptor): d is PropertiesFieldDescriptor {
     return d.type === FieldDescriptorType.Properties;
   }
-  /** Is this a related content field descriptor */
-  export function isRelatedContent(d: FieldDescriptor): d is RelatedContentFieldDescriptor {
-    return d.type === FieldDescriptorType.RelatedContent;
-  }
 }
 
 /**
  * Field descriptor that identifies a content field by its unique name.
- * @alpha
+ * @beta
  */
 export interface NamedFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Name;
@@ -480,21 +463,11 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 
 /**
  * Field descriptor that identifies a properties field using a property that it contains.
- * @alpha
+ * @beta
  */
 export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Properties;
   propertyClass: string;
   propertyName: string;
   pathFromSelectToPropertyClass: StrippedRelationshipPath;
-}
-
-/**
- * Field descriptor that identifies a related content field using its relationship path
- * from content class to select class.
- * @alpha
- */
-export interface RelatedContentFieldDescriptor extends FieldDescriptorBase {
-  type: FieldDescriptorType.RelatedContent;
-  pathFromContentToSelectClass: StrippedRelationshipPath;
 }
