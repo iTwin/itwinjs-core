@@ -4584,6 +4584,30 @@ export abstract class MapLayerImageryProvider {
     protected _usesCachedTiles: boolean;
 }
 
+// @internal (undocumented)
+export interface MapLayerSetting {
+    // (undocumented)
+    formatId: string;
+    // (undocumented)
+    maxZoom: number | undefined;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    transparentBackground: boolean | undefined;
+    // (undocumented)
+    url: string;
+}
+
+// @internal (undocumented)
+export class MapLayerSettingsService {
+    static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
+    // (undocumented)
+    static readonly onNewCustomLayerSource: BeEvent<(source: MapLayerSource) => void>;
+    // (undocumented)
+    static get SourceNamespace(): string;
+    static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+}
+
 // @internal
 export class MapLayerSource implements MapLayerProps {
     // (undocumented)
@@ -4622,6 +4646,8 @@ export class MapLayerSource implements MapLayerProps {
 
 // @internal
 export class MapLayerSources {
+    // (undocumented)
+    static addSourceToMapLayerSources(mapLayerSource?: MapLayerSource): Promise<MapLayerSources | undefined>;
     // (undocumented)
     get allSource(): MapLayerSource[];
     // (undocumented)

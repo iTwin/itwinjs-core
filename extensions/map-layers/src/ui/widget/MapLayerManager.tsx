@@ -11,11 +11,11 @@ import * as React from "react";
 import { DragDropContext, Draggable, DraggableChildrenFn, Droppable, DropResult } from "react-beautiful-dnd";
 import { MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
 import {
-  DisplayStyleState, IModelApp, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  DisplayStyleState, IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { ContextMenu, ContextMenuItem, Icon, Slider } from "@bentley/ui-core";
-import { assert } from "@bentley/ui-ninezone";
+import { assert } from "@bentley/bentleyjs-core";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
@@ -221,14 +221,30 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       sourceLayers?.layers.forEach((source: MapLayerSource) => {
         sources.push(source);
       });
-      setMapSources(sources);
-
+      setMapSources(sources); // This is where the list of layers first gets populated.. I need to update it
+      // MapUrlDialog gets around knowing MapLayerManager exists and vice versa by affecting the viewports displayStyle which MapLayerManager is listening for
+      // We know when displayStyle changes we've added a layer, this layer may not be a custom layer
+      //
       sourceLayers?.bases.forEach((source: MapLayerSource) => {
         bases.push(source);
       });
       setBaseSources(bases);
     }
     fetchWmsMapData(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [setMapSources]);
+  React.useEffect(() => {
+    const handleNewCustomLayer = async (source: MapLayerSource) => {
+      const sources = await MapLayerSources.addSourceToMapLayerSources(source);
+      if (!sources) {
+        return;
+      }
+      const newSources: MapLayerSource[] = [];
+      sources.layers.forEach((sourceLayer: MapLayerSource) => {
+        newSources.push(sourceLayer);
+      });
+      setMapSources(newSources);
+    };
+    MapLayerSettingsService.onNewCustomLayerSource.addListener(handleNewCustomLayer);
   }, [setMapSources]);
 
   // update when a different display style is loaded.
@@ -355,7 +371,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   }, [activeViewport, loadMapLayerSettingsFromStyle]);
 
   const renderOverlayItem: DraggableChildrenFn = (overlayDragProvided, _, rubric) => {
-    assert(overlayMapLayers);
+    assert(overlayMapLayers !== undefined);
 
     return (
       <div className="map-manager-source-item" data-id={rubric.source.index} key={overlayMapLayers[rubric.source.index].name}
@@ -375,7 +391,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   };
 
   const renderUnderlayItem: DraggableChildrenFn = (underlayDragProvided, _, rubric) => {
-    assert(backgroundMapLayers);
+    assert(backgroundMapLayers !== undefined);
     return (
       <div className="map-manager-source-item" data-id={rubric.source.index} key={backgroundMapLayers[rubric.source.index].name}
         {...underlayDragProvided.draggableProps}

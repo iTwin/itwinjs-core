@@ -260,6 +260,8 @@ internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
+internal;MapLayerSetting
+internal;MapLayerSettingsService
 internal;MapLayerSource 
 internal;MapLayerSources
 internal;MapLayerSourceStatus

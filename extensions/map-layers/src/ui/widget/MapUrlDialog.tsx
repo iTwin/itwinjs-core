@@ -5,9 +5,9 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { Dialog, DialogButtonType, Input, Select } from "@bentley/ui-core";
+import { Dialog, DialogButtonType, Input, Radio, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { IModelApp, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./MapUrlDialog.scss";
 
@@ -17,6 +17,9 @@ export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, on
   const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));
   const [nameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Name"));
   const [urlLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.URL"));
+  const [projectSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnProjectSettings"));
+  const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnModelSettings"));
+  const [settingsStorage, setSettingsStorageRadio] = React.useState("Project");
   const [mapTypes] = React.useState(["ArcGIS", "WMS", "WMTS", "TileURL"]);
   const [mapType, setMapType] = React.useState("ArcGIS");
 
@@ -31,12 +34,15 @@ export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, on
 
   const doAttach = React.useCallback((source: MapLayerSource) => {
     const vp = IModelApp.viewManager.selectedView;
-    if (vp === undefined || source === undefined)
+    if (vp === undefined || source === undefined || vp.iModel === undefined || vp.iModel.contextId === undefined || vp.iModel.iModelId === undefined)
       return;
 
-    source.validateSource().then((validation) => {
+    const storeOnIModel = "Model" === settingsStorage;
+    source.validateSource().then(async (validation) => {
       if (validation.status === MapLayerSourceStatus.Valid) {
         source.subLayers = validation.subLayers;
+        if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.contextId!, vp.iModel.iModelId!)))
+          return;
         vp.displayStyle.attachMapLayer(source, isOverlay);
         vp.invalidateRenderPlan();
         const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttacheInfo");
@@ -51,7 +57,7 @@ export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, on
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}-${error}`));
     });
 
-  }, [isOverlay, onOkResult]);
+  }, [isOverlay, onOkResult, settingsStorage]);
 
   const [mapUrl, setMapUrl] = React.useState("");
   const [mapName, setMapName] = React.useState("");
@@ -59,6 +65,10 @@ export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, on
   const onNameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setMapName(event.target.value);
   }, [setMapName]);
+
+  const onRadioChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setSettingsStorageRadio(event.target.value);
+  }, [setSettingsStorageRadio]);
 
   const onUrlChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setMapUrl(event.target.value);
@@ -103,6 +113,10 @@ export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, on
             <Input placeholder="Enter Map Name" onChange={onNameChange} />
             <span className="map-layer-source-label">{urlLabel}</span>
             <Input placeholder="Enter Map Source URL" onChange={onUrlChange} />
+            <div onChange={onRadioChange} defaultValue={settingsStorage}>
+              <Radio name="settingsStorage" value="Project" label={projectSettingsLabel} defaultChecked />
+              <Radio name="settingsStorage" value="Model" label={modelSettingsLabel} />
+            </div>
           </div>
         </div>
       </Dialog>

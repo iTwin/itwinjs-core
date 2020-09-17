@@ -188,3 +188,7 @@ export * from "./BackgroundMapGeometry";
  * @docs-group-description Authentication
  * Classes for managing authentication.
  */
+/**
+ * @docs-group-description MapLayerSettingsService
+ * Class for managing the storing and retrieval of map layers added by a user on the frontend
+ */

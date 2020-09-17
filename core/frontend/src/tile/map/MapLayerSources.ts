@@ -12,6 +12,8 @@ import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
+import { MapLayerSettingsService } from "./MapLayerSettingsService";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 
 /** @internal */
 export enum MapLayerSourceStatus {
@@ -141,10 +143,32 @@ export class MapLayerSources {
       (await ArcGisUtilities.getServiceDirectorySources("https://land.discomap.eea.europa.eu/arcgis/rest/services")).forEach((source) => addSource(source));
 
     (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
+    if (iModel && iModel.contextId && iModel.iModelId) {
+      try {
+        (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.contextId, iModel.iModelId)).forEach((source) => addSource(source));
+      } catch (err) {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), err.toString()));
+      }
+    }
+
+
     sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
+
     const mapLayerSources = new MapLayerSources(sources);
     if (!queryForUSGSSources) MapLayerSources._instance = mapLayerSources;
 
     return mapLayerSources;
+  }
+  public static async addSourceToMapLayerSources(mapLayerSource?: MapLayerSource): Promise<MapLayerSources | undefined> {
+    if (!MapLayerSources._instance || !mapLayerSource) {
+      return undefined;
+    }
+    MapLayerSources._instance._sources = MapLayerSources._instance._sources.filter((source) => {
+      return !(source.name === mapLayerSource.name || source.url === mapLayerSource.url);
+    });
+
+    MapLayerSources._instance._sources.push(mapLayerSource);
+    MapLayerSources._instance._sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
+    return MapLayerSources._instance;
   }
 }
