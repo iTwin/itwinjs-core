@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PinToggle should render 1`] = `
+<button
+  class="nz-widget-pinToggle"
+>
+  <i
+    class="icon icon-chevron-left"
+  />
+</button>
+`;
+
+exports[`PinToggle should render with \`pin panel\` title 1`] = `
+<button
+  class="nz-widget-pinToggle"
+  title="Pin panel"
+>
+  <i
+    class="icon icon-pin"
+  />
+</button>
+`;

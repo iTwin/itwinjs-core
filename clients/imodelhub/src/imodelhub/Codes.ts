@@ -162,7 +162,7 @@ export class ConflictingCodesError extends IModelHubError {
       error.errorNumber !== IModelHubStatus.ConflictsAggregate) {
       return undefined;
     }
-    const result = new ConflictingCodesError(error.errorNumber!);
+    const result = new ConflictingCodesError(error.errorNumber);
     deepAssign(result, error);
     result.addCodes(error);
     return result;

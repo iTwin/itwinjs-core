@@ -226,11 +226,11 @@ describe("Timeline", () => {
       expect(milestoneThree).not.to.be.undefined;
       childCount = timelineProvider.getMilestonesCount(milestoneThree);
       expect(childCount).to.be.greaterThan(0);
-      expect(timelineProvider.getMilestones(milestoneThree!).length).to.be.equal(childCount);
+      expect(timelineProvider.getMilestones(milestoneThree).length).to.be.equal(childCount);
 
       foundMilestone = timelineProvider.findMilestoneById("3-3-3", milestoneThree!.children);
       expect(foundMilestone).not.to.be.undefined;
-      expect(timelineProvider.getMilestones(foundMilestone!).length).to.be.equal(0);
+      expect(timelineProvider.getMilestones(foundMilestone).length).to.be.equal(0);
 
       foundMilestone = timelineProvider.findMilestoneById("44", []);
       expect(foundMilestone).to.be.undefined;

@@ -11,23 +11,22 @@ exports[`StagePanel should not render w/o runtime props 1`] = `""`;
 exports[`StagePanel should pass down maxSize number property 1`] = `
 <FrameworkStagePanel
   changeHandler={[Function]}
+  location={103}
   maxSize={200}
   panelState={2}
   renderPane={[Function]}
   resizable={true}
+  stagePanelWidgets={Array []}
 />
 `;
 
 exports[`StagePanel should render collapsed pane 1`] = `
 <div
-  key="wd-0"
   style={
     Object {
       "display": "none",
       "height": "100%",
     }
   }
->
-  <Component />
-</div>
+/>
 `;

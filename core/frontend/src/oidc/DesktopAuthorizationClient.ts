@@ -7,19 +7,19 @@
  * @module Authentication
  */
 
-import { assert, BeEvent, ClientRequestContext, electronRenderer, isElectronRenderer, Logger } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 
-const ipc = isElectronRenderer ? electronRenderer.ipcRenderer : undefined;
+const ipc = (typeof window !== "undefined") ? (window as any).imodeljs_api : undefined;
 
 const loggerCategory: string = FrontendLoggerCategory.Authorization;
 
 /**
- * Ipc Wrapper around OidcDestkopClient for use in the electron render process
+ * Ipc Wrapper around DesktopAuthorizationClient for use in the electron render process
  * @alpha
  */
 export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
@@ -63,15 +63,15 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
 
-    this.ipcOn("DesktopAuthorizationClient.onUserStateChanged", (_event: any, accessTokenObj: AccessToken | undefined, _additionalArgs: any) => {
+    this.ipcOn(DesktopAuthorizationClientMessages.onUserStateChanged, (_event: any, accessTokenObj: AccessToken | undefined, _additionalArgs: any) => {
       const accessToken = this.createAccessToken(accessTokenObj);
       this._accessToken = accessToken;
       this.onUserStateChanged.raiseEvent(accessToken);
     });
 
     return new Promise<void>((resolve, reject) => {
-      this.ipcSend("DesktopAuthorizationClient.initialize", requestContext, this._clientConfiguration);
-      this.ipcOn("DesktopAuthorizationClient.initialize:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
+      this.ipcSend(DesktopAuthorizationClientMessages.initialize, requestContext, this._clientConfiguration);
+      this.ipcOn(DesktopAuthorizationClientMessages.initializeComplete, (_event: any, err: Error) => err ? reject(err) : resolve());
     });
   }
 
@@ -79,8 +79,8 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   public async signIn(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     return new Promise<void>((resolve, reject) => {
-      this.ipcSend("DesktopAuthorizationClient.signIn", requestContext);
-      this.ipcOn("DesktopAuthorizationClient.signIn:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
+      this.ipcSend(DesktopAuthorizationClientMessages.signIn, requestContext);
+      this.ipcOn(DesktopAuthorizationClientMessages.signInComplete, (_event: any, err: Error) => err ? reject(err) : resolve());
     });
   }
 
@@ -88,8 +88,8 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     return new Promise<void>((resolve, reject) => {
-      this.ipcSend("DesktopAuthorizationClient.signOut", requestContext);
-      this.ipcOn("DesktopAuthorizationClient.signOut:complete", (_event: any, err: Error) => err ? reject(err) : resolve());
+      this.ipcSend(DesktopAuthorizationClientMessages.signOut, requestContext);
+      this.ipcOn(DesktopAuthorizationClientMessages.signOutComplete, (_event: any, err: Error) => err ? reject(err) : resolve());
     });
   }
 
@@ -102,7 +102,7 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
 
     const expiresAt = this._accessToken.getExpiresAt();
     assert(!!expiresAt, "Invalid token in DesktopAuthorizationClient");
-    if (expiresAt!.getTime() - Date.now() > (this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer) * 1000)
+    if (expiresAt.getTime() - Date.now() > (this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer) * 1000)
       return true;
 
     return false;
@@ -134,8 +134,8 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
       return this._accessToken!;
 
     return new Promise<AccessToken>((resolve, reject) => {
-      this.ipcSend("DesktopAuthorizationClient.getAccessToken", requestContext);
-      this.ipcOn("DesktopAuthorizationClient.getAccessToken:complete", (_event: any, err: Error, accessTokenObj: AccessToken) => {
+      this.ipcSend(DesktopAuthorizationClientMessages.getAccessToken, requestContext);
+      this.ipcOn(DesktopAuthorizationClientMessages.getAccessTokenComplete, (_event: any, err: Error, accessTokenObj: AccessToken) => {
         if (err) {
           reject(err);
         } else {

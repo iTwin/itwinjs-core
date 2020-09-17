@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
+
+// cspell:ignore simpleicon
 
 export interface ToolButtonProps {
   iconUnicode: string;
@@ -147,9 +148,9 @@ export class ToolBar {
     for (const currentlyOpen of this._currentlyOpen) {
       const item = this._dropDowns[currentlyOpen];
       assert(undefined !== item.dropDown);
-      assert(item.dropDown!.isOpen);
+      assert(item.dropDown.isOpen);
 
-      const closeSuccess = item.dropDown!.close();
+      const closeSuccess = item.dropDown.close();
       if (closeSuccess)
         this._currentlyOpen.delete(currentlyOpen);
     }

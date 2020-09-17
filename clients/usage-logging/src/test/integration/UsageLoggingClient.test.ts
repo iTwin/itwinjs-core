@@ -105,7 +105,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
   it("Post feature log with project id (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
-    entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
+    entry.additionalData.imodelid = Guid.createValue();
+    entry.additionalData.imodelsize = "596622";
     const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
@@ -117,7 +118,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
   it("Post feature log without product version (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
-    entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
+    entry.additionalData.imodelid = Guid.createValue();
+    entry.additionalData.imodelsize = "596622";
     const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
@@ -134,7 +136,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
       "localhost",
     ]) {
       const entry = new FeatureLogEntry(Guid.createValue(), hostName, UsageType.Beta);
-      entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
+      entry.additionalData.imodelid = Guid.createValue();
+      entry.additionalData.imodelsize = "596622";
       const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
       assert(resp);
       assert.equal(resp.status, BentleyStatus.SUCCESS);
@@ -149,12 +152,14 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     const feature1Id: GuidString = Guid.createValue();
     const feature2Id: GuidString = Guid.createValue();
     const entry1 = new FeatureLogEntry(feature1Id, os.hostname(), UsageType.HomeUse);
-    entry1.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
+    entry1.additionalData.imodelid = Guid.createValue();
+    entry1.additionalData.imodelsize = "596622";
 
     // omit product version in second entry
     requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry2 = new FeatureLogEntry(feature2Id, os.hostname(), UsageType.Beta);
-    entry2.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 400 });
+    entry2.additionalData.imodelid = Guid.createValue();
+    entry2.additionalData.imodelsize = "400";
     const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry1, entry2);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
@@ -176,7 +181,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4");
     const myFeatureId: GuidString = Guid.createValue();
     const startEntry = new StartFeatureLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
-    startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
+    startEntry.additionalData.imodelid = Guid.createValue();
+    startEntry.additionalData.user = "123-123";
 
     const startResp: LogPostingResponse = await client.logFeatureUsage(requestContext, startEntry);
     assert(startResp);
@@ -196,7 +202,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const myFeatureId: GuidString = Guid.createValue();
     const startEntry = new StartFeatureLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
-    startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
+    startEntry.additionalData.imodelid = Guid.createValue();
+    startEntry.additionalData.user = "123-123";
 
     const startResp: LogPostingResponse = await client.logFeatureUsage(requestContext, startEntry);
     assert(startResp);

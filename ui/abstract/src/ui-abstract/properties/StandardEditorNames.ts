@@ -21,4 +21,5 @@ export enum StandardEditorNames {
   Toggle = "toggle",
   WeightPicker = "weight-picker",
   ImageCheckBox = "image-check-box",
+  ThemedEnum = "themed-enum",
 }

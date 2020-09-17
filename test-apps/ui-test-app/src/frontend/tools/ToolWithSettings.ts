@@ -58,7 +58,7 @@ class PointOnePopupSettingsProvider extends UiDataProvider {
 
   // ------------- Color ---------------
   private static _colorOptionPropertyName = "colorOption";
-  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Options." + str); }
+  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
   private static getEnumAsPicklistDescription(): PropertyDescription {
     return {
       name: this._colorOptionPropertyName,
@@ -623,7 +623,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   private syncLengthState(): void {
-    const lengthValue: DialogItemValue = { value: this.length, displayValue: this._lengthDescription.format(this.length as number) };
+    const lengthValue: DialogItemValue = { value: this.length, displayValue: this._lengthDescription.format(this.length) };
     const syncItem: DialogPropertySyncItem = { value: lengthValue, propertyName: ToolWithSettings._lengthName, isDisabled: !this.useLength };
     this.syncToolSettingsProperties([syncItem]);
   }

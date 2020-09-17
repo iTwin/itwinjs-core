@@ -157,7 +157,7 @@ export class I18N {
   }
 
   /** @internal */
-  public loadNamespace(name: string, i18nCallback: any) { this._i18next!.loadNamespaces(name, i18nCallback); }
+  public loadNamespace(name: string, i18nCallback: any) { this._i18next.loadNamespaces(name, i18nCallback); }
 
   /** Get an already registered Namespace.
    * @param name - the name of the namespace
@@ -195,7 +195,7 @@ export class I18N {
         // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
         // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
         const errorList = err as string[];
-        let locales: string[] = this.languageList().map((thisLocale: any) => "/" + thisLocale + "/");
+        let locales: string[] = this.languageList().map((thisLocale: any) => `/${thisLocale}/`);
         for (const thisError of errorList) {
           if (!thisError.includes(name))
             continue;
@@ -203,7 +203,7 @@ export class I18N {
         }
         // if we removed every locale from the array, it wasn't loaded.
         if (locales.length === 0)
-          Logger.logError("I81N", "The resource for namespace " + name + " could not be loaded");
+          Logger.logError("I81N", `The resource for namespace ${name} could not be loaded`);
 
         resolve();
       });

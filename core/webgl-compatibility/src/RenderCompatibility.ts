@@ -37,6 +37,8 @@ export enum WebGLFeature {
    * This feature allows the renderer to achieve accurate contour lines for isoline and stepped delimiter modes of thematic display.
    */
   StandardDerivatives = "standard derivatives",
+  /** This feature allows the renderer to smooth curved lines. */
+  AntiAliasing = "anti-aliasing",
 }
 
 /** A general "compatibility rating" based on the contents of a [[WebGLRenderCompatibilityInfo]].

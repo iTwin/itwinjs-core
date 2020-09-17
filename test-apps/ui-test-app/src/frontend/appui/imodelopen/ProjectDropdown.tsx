@@ -85,10 +85,10 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
   private renderProjects() {
     const projects: ProjectInfo[] = this.getProjects();
     const ulStyle: React.CSSProperties = {
-      height: (this.props.numVisibleProjects! * this._itemHeight) + "em",
+      height: `${this.props.numVisibleProjects! * this._itemHeight}em`,
     };
     const liStyle: React.CSSProperties = {
-      height: this._itemHeight + "em",
+      height: `${this._itemHeight}em`,
     };
 
     if (projects && projects.length === 0) {
@@ -114,7 +114,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
 
   private renderDropdown() {
     const liStyle: React.CSSProperties = {
-      height: this._itemHeight + "em",
+      height: `${this._itemHeight}em`,
     };
     return (
       <Popup isOpen={this.state.isDropdownOpen} position={RelativePosition.Bottom} onClose={this._handleOnOutsideClick} target={this._target}>

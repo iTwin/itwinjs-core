@@ -52,7 +52,7 @@ export class Sprite {
     }).catch((err) => {
       const str = err.toString();
       console.log(str); // eslint-disable-line no-console
-      Logger.logError(FrontendLoggerCategory.Package + ".sprites", str);
+      Logger.logError(`${FrontendLoggerCategory.Package}.sprites`, str);
     });
   }
 }

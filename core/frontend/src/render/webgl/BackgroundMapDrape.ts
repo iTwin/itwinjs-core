@@ -73,7 +73,7 @@ export class BackgroundMapDrape extends TextureDrape {
     if (undefined === context.viewingSpace)
       return;
 
-    const viewState = context.viewingSpace!.view as ViewState3d;
+    const viewState = context.viewingSpace.view as ViewState3d;
     if (undefined === viewState)
       return;
 

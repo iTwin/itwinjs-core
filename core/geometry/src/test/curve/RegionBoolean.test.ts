@@ -520,6 +520,35 @@ describe("GeneralSweepBooleans", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "HoleInA");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("SharedEdgeElimination", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let y0 = 0;
+    let x0 = 0;
+    const rectangle1A = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 10, 8, 0, true)));
+    const rectangle1B = Loop.create(LineString3d.create(Sample.createRectangle(10, 0, 15, 8, 0, true)));
+    const rectangle1C = Loop.create(LineString3d.create(Sample.createRectangle(5, 5, 12, 10, 0, true)));
+
+    y0 = 0;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangle1A, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangle1B, x0, y0);
+    y0 += 10;
+    const rectangleArray = [rectangle1A.getPackedStrokes()!, rectangle1B.getPackedStrokes()!];
+    const fixup2 = RegionOps.polygonBooleanXYToLoops(rectangleArray, RegionBinaryOpType.Union, []);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, fixup2, x0, y0, 0);
+
+    x0 += 30;
+    y0 = 0;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangle1A, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangle1B, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangle1C, x0, y0);
+    y0 += 15;
+    rectangleArray.push(rectangle1C.getPackedStrokes()!);
+    const fixup3 = RegionOps.polygonBooleanXYToLoops(rectangleArray, RegionBinaryOpType.Union, []);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, fixup3, x0, y0, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "SharedEdgeElimination");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
   it("DocDemo", () => {
     const ck = new Checker();

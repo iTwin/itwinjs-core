@@ -63,7 +63,7 @@ export class TestPushUtility {
   }
 
   private createStandalone(): string {
-    const pathname: string = path.join(KnownTestLocations.outputDir, this.iModelName + ".bim");
+    const pathname: string = path.join(KnownTestLocations.outputDir, `${this.iModelName}.bim`);
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 
@@ -174,14 +174,14 @@ export class TestPushUtility {
     this.insertTestElement(this._currentLevel, 0);
     this.insertTestElement(this._currentLevel, 1);
     if (this._iModelDb instanceof BriefcaseDb) {
-      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-      this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
+      await this._iModelDb.concurrencyControl.request(this._requestContext!);
+      this._iModelDb.saveChanges(`Inserted elements into level ${this._currentLevel}`);
       this.updateTestElement(this._currentLevel - 1, 0);
-      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-      this._iModelDb!.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
+      await this._iModelDb.concurrencyControl.request(this._requestContext!);
+      this._iModelDb.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
       this.deleteTestElements(this._currentLevel - 1, 1);
-      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-      this._iModelDb!.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
+      await this._iModelDb.concurrencyControl.request(this._requestContext!);
+      this._iModelDb.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
     }
   }
 
@@ -192,7 +192,7 @@ export class TestPushUtility {
   private async pushTestChangeSet() {
     const description = TestPushUtility.getChangeSetDescription(this._currentLevel);
     if (this._iModelDb instanceof BriefcaseDb) {
-      await this._iModelDb!.pushChanges(this._requestContext!, description);
+      await this._iModelDb.pushChanges(this._requestContext!, description);
     }
   }
 

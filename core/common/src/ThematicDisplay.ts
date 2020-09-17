@@ -246,7 +246,7 @@ export class ThematicDisplaySensorSettings {
     this.sensors = [];
     if (undefined !== json) {
       if (json.sensors !== undefined && json.sensors !== null) {
-        json.sensors.forEach((sensorJSON) => this.sensors!.push(ThematicDisplaySensor.fromJSON(sensorJSON)));
+        json.sensors.forEach((sensorJSON) => this.sensors.push(ThematicDisplaySensor.fromJSON(sensorJSON)));
       }
       this.distanceCutoff = (typeof json.distanceCutoff === "number") ? json.distanceCutoff : 0;
     } else {

@@ -7,6 +7,8 @@ import { DbResult, Id64 } from "@bentley/bentleyjs-core";
 import { IModelDb, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
+// cspell:ignore mirukuru ibim
+
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
   for await (const row of iModel.query(ecsql, bindings)) {
@@ -61,6 +63,7 @@ describe("ECSql Query", () => {
     const cb = async () => {
       return new Promise(async (resolve, reject) => {
         try {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element")) {
             rowCount++;
           }

@@ -22,7 +22,7 @@ class BasicAccessToken extends AccessToken {
    */
   public static fromCredentials(userCredentials: any): AccessToken {
     const basicToken = new BasicAccessToken("");
-    basicToken._tokenString = Buffer.from(userCredentials.email + ":" + userCredentials.password).toString("base64");
+    basicToken._tokenString = Buffer.from(`${userCredentials.email}:${userCredentials.password}`).toString("base64");
     return basicToken;
   }
   /**
@@ -32,7 +32,7 @@ class BasicAccessToken extends AccessToken {
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     let token: string = "";
     if (includePrefix === IncludePrefix.Yes)
-      token += this._prefix + " ";
+      token += `${this._prefix} `;
 
     token += this._tokenString;
     return token;

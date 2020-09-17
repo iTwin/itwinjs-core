@@ -216,8 +216,8 @@ export class Marker implements CanvasDecoration {
         this.image = resolvedImage,
       ).catch((err: Event) => {
         const target = err.target as any;
-        const msg = "Could not load image " + (target && target.src ? target.src : "unknown");
-        Logger.logError(FrontendLoggerCategory.Package + ".markers", msg);
+        const msg = `Could not load image ${target && target.src ? target.src : "unknown"}`;
+        Logger.logError(`${FrontendLoggerCategory.Package}.markers`, msg);
         console.log(msg); // eslint-disable-line no-console
       });
     } else
@@ -276,8 +276,8 @@ export class Marker implements CanvasDecoration {
     style.position = "absolute";
     const size = html.getBoundingClientRect(); // Note: only call this *after* setting position = absolute
     const markerPos = this.position;
-    style.left = markerPos.x - (size.width / 2) + "px";
-    style.top = markerPos.y - (size.height / 2) + "px";
+    style.left = `${markerPos.x - (size.width / 2)}px`;
+    style.top = `${markerPos.y - (size.height / 2)}px`;
   }
 
   /** Add this Marker to the supplied DecorateContext. */

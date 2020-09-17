@@ -76,6 +76,8 @@ beta;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
 beta;FieldProps 
 beta;FieldValues
 public;FillCentered(props: CommonDivProps): JSX.Element
+alpha;FilteredText(props: FilteredTextProps): JSX.Element
+alpha;FilteredTextProps 
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer(props: CommonDivProps): JSX.Element
 internal;FocusTrap(props: FocusTrapProps): JSX.Element | null
@@ -86,6 +88,7 @@ beta;FormContextState
 beta;FormProps
 beta;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
 internal;getBestBWContrastColor(hexColor: string): "black" | "white"
+internal;getButtonTypeClassName(buttonType?: ButtonType): string
 internal;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
 internal;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
 internal;getDisplayName: (component: React.ComponentType
@@ -141,7 +144,7 @@ alpha;ListboxValue = string
 public;LoadingBar 
 public;LoadingBarProps 
 public;LoadingPrompt 
-public;LoadingPromptProps
+public;LoadingPromptProps 
 public;LoadingSpinner 
 public;LoadingSpinnerProps 
 public;LoadingStatus 
@@ -174,11 +177,16 @@ beta;OptionsType = Array
 beta;OptionType
 public;Orientation
 internal;OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent
+internal;percentInRange(percent: number): number
 internal;placementToPosition(placement: TooltipPlacement | undefined): RelativePosition
 internal;Point 
 public;PointProps
 public;Popup 
+alpha;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
+alpha;PopupContextMenuProps 
 public;PopupProps 
+beta;ProgressBar(props: ProgressBarProps): JSX.Element
+beta;ProgressBarProps 
 internal;PROXIMITY_THRESHOLD_DEFAULT = 100
 beta;RadialButton 
 beta;RadialButtonProps 
@@ -231,7 +239,6 @@ public;TextareaProps
 public;TextProps 
 beta;ThemedSelect(props: ThemedSelectProps): JSX.Element
 beta;ThemedSelectProps =
-internal;TildeFinder
 beta;Tile 
 internal;TileDefaultProps = Pick
 beta;TileProps 

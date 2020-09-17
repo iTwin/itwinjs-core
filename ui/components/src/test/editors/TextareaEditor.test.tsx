@@ -11,7 +11,7 @@ import * as React from "react";
 import { InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo, PropertyEditorParamTypes, StandardEditorNames } from "@bentley/ui-abstract";
 import { TextareaEditor } from "../../ui-components/editors/TextareaEditor";
 import TestUtils from "../TestUtils";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { EditorContainer } from "../../ui-components/editors/EditorContainer";
 
 describe("<TextareaEditor />", () => {
   before(async () => {
@@ -181,32 +181,4 @@ describe("<TextareaEditor />", () => {
     expect(renderedComponent.container.querySelector(".components-textarea-editor")).to.not.be.empty;
     cleanup();
   });
-
-  it("calls onCommit for Enter", async () => {
-    const editorInfo: PropertyEditorInfo = {
-      name: StandardEditorNames.MultiLine,
-    };
-    const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "MyValue", undefined, editorInfo);
-    const spyOnCommit = sinon.spy();
-    function handleCommit(_commit: PropertyUpdatedArgs): void {
-      spyOnCommit();
-    }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
-
-    const button = wrapper.find(".components-popup-button");
-    expect(button.length).to.eq(1);
-    button.first().simulate("click");
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-
-    const textareaNode = wrapper.find("textarea");
-    expect(textareaNode.length).to.eq(1);
-
-    textareaNode.simulate("keyDown", { key: "Enter" });
-    await TestUtils.flushAsyncOperations();
-    expect(spyOnCommit.calledOnce).to.be.true;
-
-    wrapper.unmount();
-  });
-
 });

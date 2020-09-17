@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react-hooks";
 import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useWidgetTarget } from "../../ui-ninezone";
 import { createDragItemInfo, createDragStartArgs, setRefValue } from "../Providers";
-
-/* eslint-disable @typescript-eslint/no-floating-promises */
 
 describe("DragManager", () => {
   describe("isDraggedType", () => {
@@ -61,15 +59,15 @@ describe("useTabTarget", () => {
     const element = document.createElement("div");
     sandbox.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
-    act(() => {
-      dragManager.handleDragStart(createDragStartArgs());
-      dragManager.handleDrag(10, 20);
 
-      spy.resetHistory();
+    dragManager.handleDragStart(createDragStartArgs());
+    dragManager.handleDrag(10, 20);
 
-      setRefValue(result.current[0], document.createElement("div"));
-      dragManager.handleDrag(10, 20);
-    });
+    spy.resetHistory();
+
+    setRefValue(result.current[0], document.createElement("div"));
+    dragManager.handleDrag(10, 20);
+
     spy.calledOnceWithExactly(undefined).should.true;
   });
 });
@@ -93,15 +91,15 @@ describe("usePanelTarget", () => {
     const element = document.createElement("div");
     sandbox.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
-    act(() => {
-      dragManager.handleDragStart(createDragStartArgs());
-      dragManager.handleDrag(10, 20);
 
-      spy.resetHistory();
+    dragManager.handleDragStart(createDragStartArgs());
+    dragManager.handleDrag(10, 20);
 
-      setRefValue(result.current[0], document.createElement("div"));
-      dragManager.handleDrag(10, 20);
-    });
+    spy.resetHistory();
+
+    setRefValue(result.current[0], document.createElement("div"));
+    dragManager.handleDrag(10, 20);
+
     spy.calledOnceWithExactly(undefined).should.true;
   });
 });
@@ -126,15 +124,15 @@ describe("useWidgetTarget", () => {
     const element = document.createElement("div");
     sandbox.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
-    act(() => {
-      dragManager.handleDragStart(createDragStartArgs());
-      dragManager.handleDrag(10, 20);
 
-      spy.resetHistory();
+    dragManager.handleDragStart(createDragStartArgs());
+    dragManager.handleDrag(10, 20);
 
-      setRefValue(result.current[0], document.createElement("div"));
-      dragManager.handleDrag(10, 20);
-    });
+    spy.resetHistory();
+
+    setRefValue(result.current[0], document.createElement("div"));
+    dragManager.handleDrag(10, 20);
+
     spy.calledOnceWithExactly(undefined).should.true;
   });
 });
@@ -146,14 +144,12 @@ describe("useIsDraggedType", () => {
       wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });
 
-    act(() => {
-      dragManager.handleDragStart({
-        info: createDragItemInfo(),
-        item: {
-          type: "tab",
-          id: "",
-        },
-      });
+    dragManager.handleDragStart({
+      info: createDragItemInfo(),
+      item: {
+        type: "tab",
+        id: "",
+      },
     });
     result.current.should.true;
   });

@@ -1,6 +1,17 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- GrowableArray pushFront; correct doc comments in degreesPerRadian and radiansPerDegree; czech spiral distance methods
+- In polyface builder, identify and ignore more degenerate cases.
+- Moved ESLint configuration to a plugin
+- Fixed: GrowableXYZArray failed to correctly initialize when array of doubles were given
+- Refactor test code to pass lint validations
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

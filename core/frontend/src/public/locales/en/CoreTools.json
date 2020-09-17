@@ -74,6 +74,7 @@
           "AcceptLookPoint": "Accept point to begin looking around",
           "WalkKeys": "Move forward, backward, left, right",
           "ElevateKeys": "Move up and down",
+          "CollideKeys": "Toggle collisions and floor detection",
           "SpeedIncrease": "Hold to increase speed over time",
           "SpeedDecrease": "Hold to decrease speed over time",
           "TouchZoneLL": "Lower left to move forward, backward, left, right",
@@ -141,6 +142,15 @@
         "Labels": {
           "CameraHeight": "Camera Height",
           "TargetHeight": "Target Height"
+        }
+      },
+      "SetupWalkCamera": {
+        "keyin": "set up walk camera",
+        "description": "Set up walk camera",
+        "flyover": "Set Up Walk Camera",
+        "Prompts": {
+          "FirstPoint": "Define floor position",
+          "NextPoint": "Define look direction"
         }
       },
       "ToggleCamera": {

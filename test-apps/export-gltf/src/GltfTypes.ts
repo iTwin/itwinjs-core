@@ -92,9 +92,11 @@ const enum MeshPrimitiveMode {
   GlTriangles = 4,
 }
 
+type GltfMeshAttributeName = "POSITION" | "NORMAL" | "TEXCOORD_0";
+
 interface GltfMeshPrimitive {
   attributes: {
-    [k: string]: number;
+    [k in GltfMeshAttributeName]?: number;
   };
   indices: number;
   material: number;

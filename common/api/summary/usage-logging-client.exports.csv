@@ -4,7 +4,7 @@ internal;EndFeatureLogEntry
 internal;FeatureLogEntry
 internal;FeatureLogEntryAttributeJson
 internal;FeatureLogEntryJson 
-internal;FeatureLogEntryMetadata
+internal;FrontendFeatureUsageTelemetryClient 
 internal;LogEntryConverter
 internal;LogPostingResponse
 internal;ProductVersion

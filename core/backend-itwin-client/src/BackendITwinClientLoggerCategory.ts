@@ -18,4 +18,10 @@ export enum BackendITwinClientLoggerCategory {
 
   /** The logger category used for Authorization */
   Authorization = "backend-itwin-client.Authorization",
+
+  /** The logger category used for Introspection */
+  Introspection = "backend-itwin-client.Introspection",
+
+  /** The logger category used for Telemetry */
+  Telemetry = "backend-itwin-client.Telemetry",
 }

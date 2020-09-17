@@ -18,7 +18,7 @@ describe("WidgetContentContainer ", () => {
     };
     const { container } = render(
       <WidgetContentManagerContext.Provider value={widgetContentManager}>
-        <WidgetStateContext.Provider value={createWidgetState("w1", { activeTabId: "t1", minimized: true })}>
+        <WidgetStateContext.Provider value={createWidgetState("w1", ["t1"], { minimized: true })}>
           <WidgetContentContainer />
         </WidgetStateContext.Provider>
       </WidgetContentManagerContext.Provider>,

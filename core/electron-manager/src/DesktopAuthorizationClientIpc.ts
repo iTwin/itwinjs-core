@@ -5,7 +5,7 @@
 import * as electron from "electron";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { DesktopAuthorizationClient, IModelHost } from "@bentley/imodeljs-backend";
-import { DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";
 
@@ -53,13 +53,13 @@ export class DesktopAuthorizationClientIpc {
 
   /** Initialize the IPC communication for DesktopAuthorizationClient */
   public static initializeIpc(mainWindow: electron.BrowserWindow) {
-    this.ipcOn("DesktopAuthorizationClient.initialize", async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext, configuration: DesktopAuthorizationClientConfiguration) => {
+    this.ipcOn(DesktopAuthorizationClientMessages.initialize, async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext, configuration: DesktopAuthorizationClientConfiguration) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       try {
         this._desktopAuthorizationClient = new DesktopAuthorizationClient(configuration);
         this._desktopAuthorizationClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
-          this.ipcSend(mainWindow, "DesktopAuthorizationClient.onUserStateChanged", token);
+          this.ipcSend(mainWindow, DesktopAuthorizationClientMessages.onUserStateChanged, token);
         });
         await this._desktopAuthorizationClient.initialize(requestContext);
 
@@ -70,57 +70,57 @@ export class DesktopAuthorizationClientIpc {
          */
         IModelHost.authorizationClient = this._desktopAuthorizationClient;
 
-        this.ipcReply(event, "DesktopAuthorizationClient.initialize:complete", null);
+        this.ipcReply(event, DesktopAuthorizationClientMessages.initializeComplete, null);
       } catch (err) {
-        this.ipcReply(event, "DesktopAuthorizationClient.initialize:complete", err);
+        this.ipcReply(event, DesktopAuthorizationClientMessages.initializeComplete, err);
       }
     });
 
-    this.ipcOn("DesktopAuthorizationClient.signIn", async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext) => {
+    this.ipcOn(DesktopAuthorizationClientMessages.signIn, async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       if (!this._desktopAuthorizationClient) {
-        this.ipcReply(event, "DesktopAuthorizationClient.signIn:complete", new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory));
+        this.ipcReply(event, DesktopAuthorizationClientMessages.signInComplete, new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory));
         return;
       }
 
       try {
         await this._desktopAuthorizationClient.signIn(requestContext);
-        this.ipcReply(event, "DesktopAuthorizationClient.signIn:complete", null);
+        this.ipcReply(event, DesktopAuthorizationClientMessages.signInComplete, null);
       } catch (err) {
-        this.ipcReply(event, "DesktopAuthorizationClient.signIn:complete", err);
+        this.ipcReply(event, DesktopAuthorizationClientMessages.signInComplete, err);
       }
     });
 
-    this.ipcOn("DesktopAuthorizationClient.signOut", async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext) => {
+    this.ipcOn(DesktopAuthorizationClientMessages.signOut, async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       if (!this._desktopAuthorizationClient) {
-        this.ipcReply(event, "DesktopAuthorizationClient.signOut:complete", new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory));
+        this.ipcReply(event, DesktopAuthorizationClientMessages.signOutComplete, new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory));
         return;
       }
 
       try {
         await this._desktopAuthorizationClient.signOut(requestContext);
-        this.ipcReply(event, "DesktopAuthorizationClient.signOut:complete", null);
+        this.ipcReply(event, DesktopAuthorizationClientMessages.signOutComplete, null);
       } catch (err) {
-        this.ipcReply(event, "DesktopAuthorizationClient.signOut:complete", err);
+        this.ipcReply(event, DesktopAuthorizationClientMessages.signOutComplete, err);
       }
     });
 
-    this.ipcOn("DesktopAuthorizationClient.getAccessToken", async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext) => {
+    this.ipcOn(DesktopAuthorizationClientMessages.getAccessToken, async (event: electron.IpcMainEvent, requestContextObj: ClientRequestContext) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       if (!this._desktopAuthorizationClient) {
-        this.ipcReply(event, "DesktopAuthorizationClient.getAccessToken:complete", new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory));
+        this.ipcReply(event, DesktopAuthorizationClientMessages.getAccessTokenComplete, new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory));
         return;
       }
 
       try {
         const token = await this._desktopAuthorizationClient.getAccessToken(requestContext);
-        this.ipcReply(event, "DesktopAuthorizationClient.getAccessToken:complete", null, token);
+        this.ipcReply(event, DesktopAuthorizationClientMessages.getAccessTokenComplete, null, token);
       } catch (err) {
-        this.ipcReply(event, "DesktopAuthorizationClient.getAccessToken:complete", err);
+        this.ipcReply(event, DesktopAuthorizationClientMessages.getAccessTokenComplete, err);
       }
     });
   }

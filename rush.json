@@ -22,8 +22,22 @@
   },
   "projects": [
     {
+      "packageName": "@bentley/backend-application-insights-client",
+      "projectFolder": "clients/backend-application-insights",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/eslint-plugin",
+      "projectFolder": "tools/eslint-plugin",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -52,6 +66,13 @@
     {
       "packageName": "@bentley/frontend-authorization-client",
       "projectFolder": "clients/frontend-authorization",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/frontend-application-insights-client",
+      "projectFolder": "clients/frontend-application-insights",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -94,6 +115,13 @@
     {
       "packageName": "@bentley/reality-data-client",
       "projectFolder": "clients/reality-data",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/telemetry-client",
+      "projectFolder": "clients/telemetry",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

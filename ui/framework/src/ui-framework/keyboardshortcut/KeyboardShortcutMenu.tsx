@@ -107,7 +107,7 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
     let label = shortcut.label;
     const iconSpec = shortcut.iconSpec;
 
-    label = "~" + shortcutKey.toLocaleUpperCase() + " " + label;
+    label = `~${shortcutKey.toLocaleUpperCase()} ${label}`;
 
     if (shortcut.shortcutContainer.areKeyboardShortcutsAvailable()) {
       const shortcuts = shortcut.shortcutContainer.getAvailableKeyboardShortcuts();

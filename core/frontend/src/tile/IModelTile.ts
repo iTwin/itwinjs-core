@@ -9,7 +9,7 @@
 import { assert, BeTimePoint, ByteStream } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  ColorDef, computeChildTileProps, computeChildTileRanges, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
+  ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -65,6 +65,13 @@ export class IModelTile extends Tile {
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     super(params, tree);
     this._sizeMultiplier = params.sizeMultiplier;
+
+    if (!this.isLeaf && this.tree.is3d) { // ###TODO: Want to know specifically if tree is *spatial*.
+      // Do not sub-divide such that chord tolerance would be below specified minimum, if minimum defined.
+      const minTolerance = IModelApp.tileAdmin.minimumSpatialTolerance;
+      if (minTolerance > 0 && computeTileChordTolerance(this, this.tree.is3d) <= minTolerance)
+        this.setLeaf();
+    }
   }
 
   public get iModelTree(): IModelTileTree { return this.tree as IModelTileTree; }

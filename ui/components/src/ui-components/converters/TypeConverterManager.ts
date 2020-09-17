@@ -19,7 +19,7 @@ export class TypeConverterManager {
   public static registerConverter(typename: string, converter: new () => TypeConverter): void {
     if (TypeConverterManager._converters.hasOwnProperty(typename)) {
       const nameOfConverter = TypeConverterManager._converters[typename].constructor.name;
-      throw Error("TypeConverterManager.registerConverter error: type '" + typename + "' already registered to '" + nameOfConverter + "'");
+      throw Error(`TypeConverterManager.registerConverter error: type '${typename}' already registered to '${nameOfConverter}'`);
     }
 
     const instance = new converter();

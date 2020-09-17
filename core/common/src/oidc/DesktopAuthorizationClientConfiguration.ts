@@ -37,3 +37,27 @@ export interface DesktopAuthorizationClientConfiguration {
  * @alpha
  */
 export const defaultDesktopAuthorizationClientExpiryBuffer: number = 10 * 60 * 1;  // 10 mins in seconds
+
+/**
+ * IPC messages passed for authorization
+ * @internal
+ */
+export class DesktopAuthorizationClientMessages {
+  private static readonly prefix = "imodeljs.auth.";
+  private static readonly completeSuffix = ":complete";
+
+  public static readonly signIn = `${DesktopAuthorizationClientMessages.prefix}signIn`;
+  public static readonly signInComplete = `${DesktopAuthorizationClientMessages.signIn}${DesktopAuthorizationClientMessages.completeSuffix}`;
+
+  public static readonly initialize = `${DesktopAuthorizationClientMessages.prefix}initialize`;
+  public static readonly initializeComplete = `${DesktopAuthorizationClientMessages.initialize}${DesktopAuthorizationClientMessages.completeSuffix}`;
+
+  public static readonly signOut = `${DesktopAuthorizationClientMessages.prefix}signOut`;
+  public static readonly signOutComplete = `${DesktopAuthorizationClientMessages.signOut}${DesktopAuthorizationClientMessages.completeSuffix}`;
+
+  public static readonly getAccessToken = `${DesktopAuthorizationClientMessages.prefix}getAccessToken`;
+  public static readonly getAccessTokenComplete = `${DesktopAuthorizationClientMessages.getAccessToken}${DesktopAuthorizationClientMessages.completeSuffix}`;
+
+  public static readonly onUserStateChanged = `${DesktopAuthorizationClientMessages.prefix}onUserStateChanged`;
+  public static readonly onUserStateChangedComplete = `${DesktopAuthorizationClientMessages.onUserStateChanged}${DesktopAuthorizationClientMessages.completeSuffix}`;
+}

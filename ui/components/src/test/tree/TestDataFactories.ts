@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { BeInspireTree, DelayLoadedTreeNodeItem, DEPRECATED_Tree as Tree, ITreeDataProvider, PageOptions, TreeNodeItem } from "../../ui-components";
+import { BeInspireTree, DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, DEPRECATED_Tree as Tree, TreeNodeItem } from "../../ui-components";
 import { ResolvablePromise } from "../test-helpers/misc";
 
 /* eslint-disable deprecation/deprecation */
@@ -42,7 +42,7 @@ export class TestTreeDataProvider implements ITreeDataProvider {
     if (page === undefined)
       throw new Error("TestTreeDataProvider requires pagination being used");
 
-    const children = this._getChildren(parent).slice(page.start!, page.start! + page.size!);
+    const children = this._getChildren(parent).slice(page.start, page.start! + page.size!);
     const nodesToDelayLoad = children.filter((node) => node.delayedLoad);
     await Promise.all(nodesToDelayLoad.map((node) => {
       if (!this._delayedLoads[node.id]) // eslint-disable-line @typescript-eslint/no-misused-promises

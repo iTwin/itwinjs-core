@@ -16,6 +16,8 @@ import { PanelWidget } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
 import { PanelTarget } from "./PanelTarget";
+import { RectangleProps } from "@bentley/ui-core";
+import { assert } from "../base/assert";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -82,11 +84,31 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
   const captured = draggedPanelSide === props.panel.side;
   const { panel } = props;
   const horizontalPanel = isHorizontalPanelState(panel) ? panel : undefined;
-  const sizeStyle = React.useMemo(() => {
-    return panel.size === undefined ? undefined
-      : isHorizontalPanelSide(panel.side) ? { height: `${panel.size}px` }
-        : { width: `${panel.size}px` };
-  }, [panel.size, panel.side]);
+  const [transition, setTransition] = React.useState<"prepared" | "transitioning">();
+  const [size, setSize] = React.useState<number | undefined>(panel.size);
+  const mounted = React.useRef<boolean>(false);
+  const style = React.useMemo(() => {
+    if (size === undefined)
+      return undefined;
+    const s: React.CSSProperties = {};
+    if (isHorizontalPanelSide(panel.side)) {
+      s.height = `${size}px`;
+    } else {
+      s.width = `${size}px`;
+    }
+    return s;
+  }, [size, panel.side]);
+  const contentStyle = React.useMemo(() => {
+    if (size === undefined)
+      return undefined;
+    const s: React.CSSProperties = {};
+    if (isHorizontalPanelSide(panel.side)) {
+      s.height = `${panel.size}px`;
+    } else {
+      s.width = `${panel.size}px`;
+    }
+    return s;
+  }, [panel.size, panel.side, size]);
   const ref = React.useRef<HTMLDivElement>(null);
   React.useLayoutEffect(() => {
     if (panel.size !== undefined)
@@ -99,6 +121,34 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
       size: newSize,
     });
   });
+  React.useLayoutEffect(() => {
+    setTransition(undefined);
+    setSize(panel.size);
+  }, [panel.size])
+  React.useLayoutEffect(() => {
+    if (!mounted.current)
+      return;
+    setTransition("prepared");
+  }, [panel.collapsed, panel.side]);
+  React.useLayoutEffect(() => {
+    if (transition === "prepared") {
+      const transitionTo = panel.collapsed ? 0 : panel.size;
+      setTransition("transitioning");
+      setSize(transitionTo);
+    }
+  }, [transition, panel.side, panel.size, panel.collapsed]);
+  React.useEffect(() => {
+    mounted.current = true;
+  }, []);
+  const getBounds = React.useCallback(() => {
+    assert(ref.current);
+    return ref.current.getBoundingClientRect();
+  }, []);
+  const widgetPanel = React.useMemo<WidgetPanelContextArgs>(() => {
+    return {
+      getBounds,
+    }
+  }, [getBounds]);
   if (panel.widgets.length === 0)
     return (
       <PanelTarget />
@@ -107,23 +157,28 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
   const className = classnames(
     "nz-widgetPanels-panel",
     `nz-${panel.side}`,
+    panel.pinned && "nz-pinned",
     horizontalPanel && "nz-horizontal",
     panel.collapsed && "nz-collapsed",
     captured && "nz-captured",
     horizontalPanel?.span && "nz-span",
     !horizontalPanel && props.spanTop && "nz-span-top",
     !horizontalPanel && props.spanBottom && "nz-span-bottom",
+    !!transition && "nz-transition",
   );
   return (
-    <div
-      className={className}
-      ref={ref}
-      style={panel.collapsed ? undefined : sizeStyle}
-    >
-      <div>
+    <WidgetPanelContext.Provider value={widgetPanel}>
+      <div
+        className={className}
+        ref={ref}
+        style={style}
+        onTransitionEnd={() => {
+          setTransition(undefined);
+        }}
+      >
         <div
           className="nz-content"
-          style={panel.collapsed ? sizeStyle : undefined}
+          style={contentStyle}
         >
           {panel.widgets.map((widgetId, index, array) => {
             const last = index === array.length - 1;
@@ -144,9 +199,13 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
             );
           })}
         </div>
-        <WidgetPanelGrip />
+        {panel.resizable &&
+          <div className="nz-grip-container">
+            <WidgetPanelGrip className="nz-grip" />
+          </div>
+        }
       </div>
-    </div>
+    </WidgetPanelContext.Provider>
   );
 });
 
@@ -165,6 +224,15 @@ PanelSpanContext.displayName = "nz:PanelStateContext";
 /** @internal */
 export const PanelStateContext = React.createContext<PanelState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 PanelStateContext.displayName = "nz:PanelStateContext";
+
+/** @internal */
+export interface WidgetPanelContextArgs {
+  getBounds(): RectangleProps;
+}
+
+/** @internal */
+export const WidgetPanelContext = React.createContext<WidgetPanelContextArgs | undefined>(undefined);
+WidgetPanelContext.displayName = "nz:WidgetPanelContext";
 
 /** @internal */
 export const isHorizontalPanelSide = (side: PanelSide): side is HorizontalPanelSide => {

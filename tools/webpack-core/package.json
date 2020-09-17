@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.5.5",
+  "version": "2.6.0",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -32,7 +32,8 @@
     "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.5.5",
+    "@bentley/build-tools": "2.6.0",
+    "@bentley/eslint-plugin": "2.6.0",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "10.14.1",
@@ -44,7 +45,10 @@
     "webpack": "4.42.0"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js",
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended",
     "rules": {
       "@typescript-eslint/no-misused-promises": "off",
       "@typescript-eslint/no-var-requires": "off",

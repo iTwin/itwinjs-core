@@ -114,7 +114,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
   private _handleEditorBlur = (_e: React.FocusEvent) => {
     // istanbul ignore else
-    if (!this.props.ignoreEditorBlur)
+    if (!this.props.ignoreEditorBlur && this._propertyEditor?.containerHandlesBlur)
       this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
@@ -149,30 +149,41 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   }
 
   private onPressEscape(e: React.KeyboardEvent): void {
-    // istanbul ignore next
-    if (this._editorRef && this._editorRef === document.activeElement)
-      e.stopPropagation();
-    this._commitCancel();
+    // istanbul ignore else
+    if (this._propertyEditor?.containerHandlesEscape) {
+      // istanbul ignore else
+      if (this._editorRef && this._editorRef === document.activeElement)
+        e.stopPropagation();
+      this._commitCancel();
+    }
   }
 
   private onPressEnter(e: React.KeyboardEvent): void {
-    // istanbul ignore next
-    if (this._editorRef && this._editorRef === document.activeElement)
-      e.stopPropagation();
-    this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    // istanbul ignore else
+    if (this._propertyEditor?.containerHandlesEnter) {
+      // istanbul ignore else
+      if (this._editorRef && this._editorRef === document.activeElement)
+        e.stopPropagation();
+      this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    }
   }
 
   private onPressTab(e: React.KeyboardEvent): void {
-    e.stopPropagation();
-    this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    // istanbul ignore else
+    if (this._propertyEditor?.containerHandlesTab) {
+      e.stopPropagation();
+      this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    }
   }
 
   private async isNewValueValid(value: PropertyValue): Promise<boolean> {
     // istanbul ignore else
     if (this._propertyEditor && this.props.propertyRecord) {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
+      // istanbul ignore else
       if (validateResult.encounteredError) {
         const errorMessage = validateResult.errorMessage;
+        // istanbul ignore next
         if (errorMessage && this._editorRef) {
           const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage);
           details.setInputFieldTypeDetails(this._editorRef);

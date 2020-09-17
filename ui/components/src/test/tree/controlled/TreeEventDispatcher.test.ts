@@ -18,7 +18,7 @@ import {
   isTreeModelNode, isTreeModelRootNode, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, VisibleTreeNodes,
 } from "../../../ui-components/tree/controlled/TreeModel";
 import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
-import { extractSequence } from "../ObservableTestHelpers";
+import { extractSequence } from "../../common/ObservableTestHelpers";
 import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "./RandomTreeNodesHelpers";
 
 describe("TreeEventDispatcher", () => {

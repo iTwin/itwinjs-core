@@ -271,7 +271,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public clearBindings(): void {
     if (this._stmt) {
-      const stat: DbResult = this._stmt!.clearBindings();
+      const stat: DbResult = this._stmt.clearBindings();
       if (stat !== DbResult.BE_SQLITE_OK)
         throw new IModelError(stat, "Error clearing bindings", Logger.logWarning, loggerCategory);
     }
@@ -353,7 +353,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     else {
       suffix++;
       duplicatePropNames.set(jsName, suffix);
-      jsName += "_" + suffix;
+      jsName += `_${suffix}`;
     }
 
     return jsName;
@@ -925,7 +925,6 @@ class ECSqlValueHelper {
 
         return ecsqlValue.getId();
       }
-      // JS doesn't tell between int32 and larger ints, so retrieve them with the getInt64 method
       case ECSqlValueType.Int:
       case ECSqlValueType.Int64:
         return ecsqlValue.getInteger();
@@ -944,14 +943,13 @@ class ECSqlValueHelper {
     if (!tableSpace)
       tableSpace = "main";
 
-    return ecdb.withPreparedStatement("SELECT s.Name, c.Name FROM [" + tableSpace
-      + "].meta.ECSchemaDef s, JOIN [" + tableSpace + "].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?",
+    return ecdb.withPreparedStatement(`SELECT s.Name, c.Name FROM [${tableSpace}].meta.ECSchemaDef s, JOIN [${tableSpace}].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?`,
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, classId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId + " in table space " + tableSpace + ".");
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, `No class found with ECClassId ${classId} in table space ${tableSpace}.`);
 
-        return stmt.getValue(0).getString() + "." + stmt.getValue(1).getString();
+        return `${stmt.getValue(0).getString()}.${stmt.getValue(1).getString()}`;
       });
   }
 }

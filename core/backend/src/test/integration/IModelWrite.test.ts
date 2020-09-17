@@ -21,7 +21,7 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
   requestContext.enter();
 
   // Find or create a SpatialCategory.
-  const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+  const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value!);
   await rwIModel.concurrencyControl.requestResourcesForInsert(requestContext, [category]);
@@ -242,7 +242,7 @@ describe("IModelWriteTest (#integration)", () => {
     // firstUser: modify el1.userLabel
     if (true) {
       const el1cc: Element = firstIModel.elements.getElement(el1);
-      el1cc.userLabel = el1cc.userLabel + " -> changed by firstUser";
+      el1cc.userLabel = `${el1cc.userLabel} -> changed by firstUser`;
       firstIModel.elements.updateElement(el1cc);
       firstIModel.saveChanges("firstUser modified el1.userLabel");
       await firstIModel.pushChanges(firstUserRequestContext, "test");
@@ -252,12 +252,12 @@ describe("IModelWriteTest (#integration)", () => {
     let expectedValueOfEl1UserLabel: string;
     if (true) {
       const el1before: Element = (secondIModel.elements.getElement(el1));
-      expectedValueOfEl1UserLabel = el1before.userLabel + " -> changed by secondUser";
+      expectedValueOfEl1UserLabel = `${el1before.userLabel} -> changed by secondUser`;
       el1before.userLabel = expectedValueOfEl1UserLabel;
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userLabel");
 
-      // pull + merge => take secondUser's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
+      // pull + merge => take secondUser's change (RejectIncomingChange). That's because the default updateVsUpdate setting is RejectIncomingChange
       await secondIModel.pullAndMergeChanges(secondUserRequestContext);
       const el1after = secondIModel.elements.getElement(el1);
       assert.equal(el1after.userLabel, expectedValueOfEl1UserLabel);
@@ -378,7 +378,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
+    const initialCodes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -404,7 +404,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
+    const codes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId);
     timer.end();
     expect(codes.length > initialCodes.length);
     assert.isTrue(codes.some((hcode) => (hcode.value === code.value) && (hcode.state === CodeState.Used)), "verify that I got the code that I reserved and used");
@@ -418,7 +418,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(postPushChangeSetId, rwIModel.changeSetId), "no changeset created or pushed";
     assert.isFalse(rwIModel.concurrencyControl.hasReservedCode(code2), "I released my reservation of the code anotherCode");
 
-    const codesAfter = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
+    const codesAfter = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId);
     assert.deepEqual(codesAfter, codes, "The code that used above is still marked as used");
   });
 
@@ -436,7 +436,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
 
-    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     const newCategoryCode2 = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory2");
     assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
@@ -534,7 +534,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // The iModel should have code1 marked as used and not code2
     timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
+    const codes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId);
     timer.end();
     assert.isTrue(codes.find((code) => (code.value === "newPhysicalModel2" && code.state === CodeState.Used)) !== undefined);
     assert.isFalse(codes.find((code) => (code.value === "newPhysicalModel" && code.state === CodeState.Used)) !== undefined);
@@ -562,7 +562,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     //  Create a new model and put two elements in it
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
-    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
     const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
@@ -577,7 +577,7 @@ describe("IModelWriteTest (#integration)", () => {
     adminRequestContext.enter();
 
     //  Have another briefcase take out an exclusive lock on element #1
-    const otherBriefcase = await BriefcaseManager.imodelClient.briefcases.create(adminRequestContext, rwIModelId!);
+    const otherBriefcase = await BriefcaseManager.imodelClient.briefcases.create(adminRequestContext, rwIModelId);
     assert.notEqual(otherBriefcase.briefcaseId, rwIModel.briefcase.briefcaseId);
     const otherBriefcaseLockReq = ConcurrencyControl.Request.toHubLock(rwIModel.concurrencyControl, ConcurrencyControl.Request.getElementLock(elid1, LockLevel.Exclusive));
     otherBriefcaseLockReq.briefcaseId = otherBriefcase.briefcaseId; // We want this lock to be held by another briefcase
@@ -617,7 +617,7 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal((rejectedWithError as IModelHubError).errorNumber, IModelHubStatus.LockOwnedByAnotherBriefcase);
     }
 
-    // This briefcase has no choice but to abandon everthing it did since the last call to saveChanges. That includes both the change to the locked element and the insert of the new element.
+    // This briefcase has no choice but to abandon everything it did since the last call to saveChanges. That includes both the change to the locked element and the insert of the new element.
     rwIModel.abandonChanges();
 
     // Verify that all uncommitted changes and temporary locks were rolled back
@@ -678,9 +678,9 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    const otherBriefcase = await BriefcaseManager.imodelClient.briefcases.create(adminRequestContext, rwIModelId!);
+    const otherBriefcase = await BriefcaseManager.imodelClient.briefcases.create(adminRequestContext, rwIModelId);
 
-    let codesReserved = (await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!)).filter((c) => c.state === CodeState.Reserved);
+    let codesReserved = (await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
     assert.equal(codesReserved.length, 0);
 
     const hubCode = new HubCode();
@@ -689,13 +689,13 @@ describe("IModelWriteTest (#integration)", () => {
     hubCode.codeScope = code.scope;
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
-    await BriefcaseManager.imodelClient.codes.update(adminRequestContext, rwIModelId!, [hubCode]);
+    await BriefcaseManager.imodelClient.codes.update(adminRequestContext, rwIModelId, [hubCode]);
     adminRequestContext.enter();
     await rwIModel.concurrencyControl.syncCache(adminRequestContext); // I must tell ConcurrencyControl whenever I make changes to locks/codes in iModelHub by using the lower-level API directly.
     adminRequestContext.enter();
 
     timer = new Timer("querying codes");
-    codesReserved = (await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!)).filter((c) => c.state === CodeState.Reserved);
+    codesReserved = (await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId)).filter((c) => c.state === CodeState.Reserved);
     timer.end();
     assert.equal(codesReserved.length, 1);
     assert.equal(codesReserved[0].value, hubCode.value);
@@ -739,7 +739,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Show that we can modify the properties of an element. In this case, we modify the root element itself.
     const rootEl: Element = rwIModel.elements.getRootSubject();
-    rootEl.userLabel = rootEl.userLabel + "changed";
+    rootEl.userLabel = `${rootEl.userLabel}changed`;
     rwIModel.elements.updateElement(rootEl);
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
@@ -751,7 +751,7 @@ describe("IModelWriteTest (#integration)", () => {
     adminRequestContext.enter();
 
     // Find or create a SpatialCategory.
-    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
     const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
@@ -822,7 +822,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     // Open a readonly copy of the iModel
-    const roIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId!, SyncMode.FixedVersion, IModelVersion.latest());
+    const roIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.FixedVersion, IModelVersion.latest());
     assert.exists(roIModel);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);

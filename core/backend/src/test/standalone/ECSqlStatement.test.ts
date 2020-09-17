@@ -339,7 +339,7 @@ describe("ECSqlStatement", () => {
         const part = [0, 4, 6, 8, 10, 16];
         for (let z = 0; z < part.length - 1; z++) {
           guidArray.subarray(part[z], part[z + 1]).forEach((c) => {
-            guidStr += ("00" + c.toString(16)).substr(-2);
+            guidStr += (`00${c.toString(16)}`).substr(-2);
           });
           if (z < part.length - 2)
             guidStr += "-";
@@ -417,12 +417,12 @@ describe("ECSqlStatement", () => {
           const row = stmt.getRow();
           assert.equal(row.id, expectedECInstanceId);
           assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
-          assert.equal(row.name, Id64.getLocalId(expectedECInstanceId).toString() + ".txt");
+          assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);
         });
         assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?", [expectedId], 1, (row) => {
           assert.equal(row.id, expectedECInstanceId);
           assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
-          assert.equal(row.name, Id64.getLocalId(expectedECInstanceId).toString() + ".txt");
+          assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);
         }), 1);
       };
 
@@ -1671,7 +1671,7 @@ describe("ECSqlStatement", () => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
           const row = stmt.getRow();
-          assert.equal(row.name, "Child " + rowCount);
+          assert.equal(row.name, `Child ${rowCount}`);
           const parent: NavigationValue = row.parent as NavigationValue;
           assert.equal(parent.id, parentId);
           assert.equal(parent.relClassName, "Test.ParentHasChildren");
@@ -1682,7 +1682,7 @@ describe("ECSqlStatement", () => {
       let rowCount2: number = 0;
       assert.equal(await query(ecdb, "SELECT Name,Parent FROM test.Child ORDER BY Name", [], undefined, (row: any) => {
         rowCount2++;
-        assert.equal(row.name, "Child " + rowCount2);
+        assert.equal(row.name, `Child ${rowCount2}`);
         const parent: NavigationValue = row.parent as NavigationValue;
         assert.equal(parent.id, parentId);
         assert.equal(parent.relClassName, "Test.ParentHasChildren");
@@ -2033,7 +2033,7 @@ describe("ECSqlStatement", () => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
           const row = stmt.getRow();
-          assert.equal(row.name, "Child " + rowCount);
+          assert.equal(row.name, `Child ${rowCount}`);
           assert.equal(row.parent.id, parentId);
           assert.equal(row.parent.relClassName, "Test.ParentHasChildren");
         }
@@ -2043,32 +2043,32 @@ describe("ECSqlStatement", () => {
       rowCount = 0;
       assert.equal(await query(ecdb, "SELECT Name,Parent FROM test.Child ORDER BY Name", [], undefined, (row: any) => {
         rowCount++;
-        assert.equal(row.name, "Child " + rowCount);
+        assert.equal(row.name, `Child ${rowCount}`);
         assert.equal(row.parent.id, parentId);
         assert.equal(row.parent.relClassName, "Test.ParentHasChildren");
       }), 2);
 
-      ecdb.withPreparedStatement("SELECT Name,Parent.Id,Parent.RelECClassId, Parent.Id myParentid, Parent.RelECClassId myParentRelClassId FROM test.Child ORDER BY Name", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT Name,Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM test.Child ORDER BY Name", (stmt: ECSqlStatement) => {
         rowCount = 0;
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
           const row = stmt.getRow();
-          assert.equal(row.name, "Child " + rowCount);
+          assert.equal(row.name, `Child ${rowCount}`);
           assert.equal(row["parent.id"], parentId);
           assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
-          assert.equal(row.myParentid, parentId);
+          assert.equal(row.myParentId, parentId);
           assert.isTrue(Id64.isValidId64(row.myParentRelClassId));
         }
         assert.equal(rowCount, 2);
       });
 
       rowCount = 0;
-      assert.equal(await query(ecdb, "SELECT Name,Parent.Id,Parent.RelECClassId, Parent.Id myParentid, Parent.RelECClassId myParentRelClassId FROM test.Child ORDER BY Name", [], undefined, (row: any) => {
+      assert.equal(await query(ecdb, "SELECT Name,Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM test.Child ORDER BY Name", [], undefined, (row: any) => {
         rowCount++;
-        assert.equal(row.name, "Child " + rowCount);
+        assert.equal(row.name, `Child ${rowCount}`);
         assert.equal(row["parent.id"], parentId);
         assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
-        assert.equal(row.myParentid, parentId);
+        assert.equal(row.myParentId, parentId);
         assert.isTrue(Id64.isValidId64(row.myParentRelClassId));
       }), 2);
 

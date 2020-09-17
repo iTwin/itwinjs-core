@@ -177,9 +177,9 @@ export namespace RenderScheduleState {
 
     public getVisibilityOverride(time: number, interval: Interval): number {
       if (undefined === this.visibilityTimeline ||
-        !ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
+        !ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline[interval.index0].value !== null)
         return 100.0;
-      const timeline = this.visibilityTimeline!;
+      const timeline = this.visibilityTimeline;
       let visibility = timeline[interval.index0].value;
       if (visibility === undefined || visibility === null)
         return 100.0;
@@ -192,10 +192,10 @@ export namespace RenderScheduleState {
 
     public getColorOverride(time: number, interval: Interval): RgbColor | undefined {
       let colorOverride;
-      if (undefined !== this.colorTimeline && Timeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
-        const entry0 = this.colorTimeline![interval.index0].value;
+      if (undefined !== this.colorTimeline && Timeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline[interval.index0].value !== null) {
+        const entry0 = this.colorTimeline[interval.index0].value;
         if (interval.fraction > 0) {
-          const entry1 = this.colorTimeline![interval.index1].value;
+          const entry1 = this.colorTimeline[interval.index1].value;
           colorOverride = new RgbColor(interpolate(entry0.red, entry1.red, interval.fraction), interpolate(entry0.green, entry1.green, interval.fraction), interpolate(entry0.blue, entry1.blue, interval.fraction));
         } else
           colorOverride = new RgbColor(entry0.red, entry0.green, entry0.blue);
@@ -406,7 +406,7 @@ export namespace RenderScheduleState {
       const transform = timeline.getAnimationTransform(scheduleTime, interval);
       const clip = timeline.getAnimationClip(scheduleTime, interval);
       if (transform || clip)
-        branches.set(this.modelId + ((branchId < 0) ? "" : ("_Node_" + branchId.toString())), new AnimationBranchState(transform, clip));
+        branches.set(this.modelId + ((branchId < 0) ? "" : (`_Node_${branchId.toString()}`)), new AnimationBranchState(transform, clip));
     }
 
     public getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number) {
@@ -415,7 +415,7 @@ export namespace RenderScheduleState {
       for (let i = 0; i < this.elementTimelines.length; i++) {
         const elementTimeline = this.elementTimelines[i];
         if (elementTimeline.getVisibilityOverride(scheduleTime, interval) <= 0.0) {
-          branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(undefined, undefined, true));
+          branches.set(`${this.modelId}_Node_${(i + 1).toString()}`, new AnimationBranchState(undefined, undefined, true));
         } else {
           this.getAnimationBranch(elementTimeline, i + 1, branches, scheduleTime, interval);
 

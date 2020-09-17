@@ -174,6 +174,7 @@ describe("<KeyinBrowser>", () => {
     const input = autoSuggest.find("input");
     expect(input.length).to.eq(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const inputNode = input.getDOMNode() as HTMLInputElement;
     expect(inputNode).to.not.be.undefined;
     inputNode.focus();

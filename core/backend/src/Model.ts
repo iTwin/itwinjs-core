@@ -6,6 +6,8 @@
  * @module Models
  */
 
+// cspell:ignore elid
+
 import { assert, DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodelhub-client";

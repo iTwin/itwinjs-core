@@ -42,10 +42,12 @@
     }
   }
 
-  &:hover {
-    > .nz-icon {
-      color: $hovered-icon-color;
-      transition-duration: 150ms;
+  @media (hover: hover) {
+    &:hover {
+      > .nz-icon {
+        color: $hovered-icon-color;
+        transition-duration: 150ms;
+      }
     }
   }
 

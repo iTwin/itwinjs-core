@@ -12,7 +12,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
 import {
-  HorizontalAnchor, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps, Zones as NZ_Zones,
+  HorizontalAnchor, Zones as NZ_Zones, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps,
   ZonesManagerProps,
 } from "@bentley/ui-ninezone";
 import { ContentGroup } from "../content/ContentGroup";

@@ -111,9 +111,9 @@ function calcEquationOfTime(t: number) {
   return radToDeg(eTime) * 4.0;	// in minutes of time
 }
 
-function calcAzEl(T: number, localTime: number, latitude: number, longitude: number, zone: number): { azimuth: number, elevation: number } {
-  const eqTime = calcEquationOfTime(T);
-  const theta = calcSunDeclination(T);
+function calcAzEl(t: number, localTime: number, latitude: number, longitude: number, zone: number): { azimuth: number, elevation: number } {
+  const eqTime = calcEquationOfTime(t);
+  const theta = calcSunDeclination(t);
   const solarTimeFix = eqTime + 4.0 * longitude - 60.0 * zone;
   let trueSolarTime = localTime + solarTimeFix;
   while (trueSolarTime > 1440)

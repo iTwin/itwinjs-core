@@ -120,7 +120,7 @@ export class PropertyValueRendererManager {
   /** Register a specified property type renderer */
   public registerRenderer(rendererType: string, propertyRenderer: IPropertyValueRenderer, overwrite = false) {
     if (!overwrite && this._propertyRenderers.has(rendererType)) {
-      throw Error("PropertyValueRendererManager.registerRenderer error: type '" + rendererType + "' already registered to '" + propertyRenderer.constructor.name + "'");
+      throw Error(`PropertyValueRendererManager.registerRenderer error: type '${rendererType}' already registered to '${propertyRenderer.constructor.name}'`);
     }
 
     this._propertyRenderers.set(rendererType, propertyRenderer);

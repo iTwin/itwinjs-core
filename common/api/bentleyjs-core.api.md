@@ -255,6 +255,9 @@ export function compareStringsOrUndefined(lhs?: string, rhs?: string): number;
 // @public
 export function compareWithTolerance(a: number, b: number, tolerance?: number): number;
 
+// @beta
+export type CompressedId64Set = string;
+
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
 
@@ -482,9 +485,6 @@ export function disposeArray(list?: IDisposable[]): undefined;
 // @public
 export type DisposeFunc = () => void;
 
-// @internal
-export const electronRenderer: any;
-
 // @public
 export class Entry<K, V> {
     constructor(key: K, value: V);
@@ -592,6 +592,18 @@ export enum HttpStatus {
 
 // @public
 export namespace Id64 {
+    // @beta
+    export function compare(lhs: Id64String, rhs: Id64String): number;
+    // @beta
+    export function compressArray(ids: Id64Array): CompressedId64Set;
+    // @beta
+    export function compressSet(ids: Id64Set): CompressedId64Set;
+    // @beta
+    export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
+    // @beta
+    export function decompressIds(ids: CompressedId64Set, func: (id: Id64String) => boolean): boolean;
+    // @beta
+    export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
     export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void;
     export function fromJSON(prop?: string): Id64String;
     export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String;
@@ -601,19 +613,21 @@ export namespace Id64 {
     export function getFirst(arg: Id64Arg): Id64String;
     export function getLocalId(id: Id64String): number;
     export function getLowerUint32(id: Id64String): number;
-    export function getUint32Pair(id: Id64String): Uint32Pair;
+    export function getUint32Pair(id: Id64String, out?: Uint32Pair): Uint32Pair;
     export function getUpperUint32(id: Id64String): number;
+    const invalid = "0";
     export function has(arg: Id64Arg, id: Id64String): boolean;
     export function isId64(id: string): boolean;
     export function isInvalid(id: Id64String): boolean;
     export function isTransient(id: Id64String): boolean;
     export function isTransientId64(id: string): boolean;
     export function isValid(id: Id64String): boolean;
-    const invalid = "0";
     export function isValidId64(id: string): boolean;
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
     export function sizeOf(arg: Id64Arg): number;
+    // @beta
+    export function sortArray(ids: Id64Array): Id64Array;
     export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
     export class Uint32Map<T> {
         clear(): void;
@@ -963,6 +977,9 @@ export class IndexMap<T> {
     // (undocumented)
     protected readonly _maximumSize: number;
 }
+
+// @internal
+export const isElectronMain: boolean;
 
 // @internal
 export const isElectronRenderer: boolean;

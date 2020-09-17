@@ -13,7 +13,7 @@ import assert = require("assert");
 
 const translationNamespace = "ECSchemaMetaData";
 const subTranslationNamespace = "Diagnostics";
-const baseTranslationKey = translationNamespace + ":" + subTranslationNamespace;
+const baseTranslationKey = `${translationNamespace}:${subTranslationNamespace}`;
 
 /**
  * Interface used to report [[IDiagnostic]] objects created during schema validation.
@@ -150,7 +150,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
   }
 
   private getTranslationKey(diagnostic: AnyDiagnostic): string {
-    return baseTranslationKey + "." + diagnostic.code;
+    return `${baseTranslationKey}.${diagnostic.code}`;
   }
 
   private assertDefined<T>(value: T | null | undefined, message?: string): T {

@@ -110,6 +110,8 @@ export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
+export * from "./ui-framework/popup/KeyinPalettePanel";
+export * from "./ui-framework/popup/KeyinPalettePopup";
 export * from "./ui-framework/popup/HTMLElementPopup";
 export * from "./ui-framework/popup/InputEditorPopup";
 export * from "./ui-framework/popup/PopupManager";
@@ -147,6 +149,8 @@ export * from "./ui-framework/stagepanels/StagePanelDef";
 export * from "./ui-framework/stagepanels/StagePanelHeader";
 export * from "./ui-framework/stagepanels/StagePanelEnums";
 
+export * from "./ui-framework/statusbar/ActivityMessage";
+export * from "./ui-framework/statusbar/ActivityMessagePopup";
 export * from "./ui-framework/statusbar/StatusBar";
 export * from "./ui-framework/statusbar/StatusBarWidgetControl";
 export * from "./ui-framework/statusbar/StatusBarComposer";
@@ -219,6 +223,7 @@ export * from "./ui-framework/widget-panels/Frontstage";
 export * from "./ui-framework/widget-panels/FrontstageContent";
 export * from "./ui-framework/widget-panels/ModalFrontstageComposer";
 export * from "./ui-framework/widget-panels/StatusBar";
+export * from "./ui-framework/widget-panels/Tab";
 export * from "./ui-framework/widget-panels/Toolbars";
 export * from "./ui-framework/widget-panels/ToolSettings";
 export * from "./ui-framework/widget-panels/useWidgetDirection";

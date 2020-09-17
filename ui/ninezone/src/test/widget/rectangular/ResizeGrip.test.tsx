@@ -30,7 +30,7 @@ describe("<ResizeGrip />", () => {
       direction={ResizeDirection.NorthEast_SouthWest}
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
-    const gripElement = pointerCaptor.find("div").at(2).getDOMNode() as HTMLDivElement;
+    const gripElement = pointerCaptor.find("div").at(2).getDOMNode();
     sinon.stub(gripElement, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 25, 200));
 
     const pointerDown = createPointerEvent();

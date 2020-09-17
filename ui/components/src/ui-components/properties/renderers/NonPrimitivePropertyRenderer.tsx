@@ -8,11 +8,12 @@
 
 import "./NonPrimitivePropertyRenderer.scss";
 import * as React from "react";
-import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer";
 import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyRenderer } from "./PropertyRenderer";
 import { PropertyView } from "./PropertyView";
+import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 
 /** Properties of [[NonPrimitivePropertyRenderer]] React component
  * @public
@@ -54,11 +55,11 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
 
   private getLabel(props: NonPrimitivePropertyRendererProps, state: NonPrimitivePropertyRendererState): React.ReactNode {
     const { orientation, indentation, width, columnRatio, columnInfo } = props;
-    const offset = PropertyRenderer.getLabelOffset(indentation, orientation, width, columnRatio, columnInfo?.minLabelWidth);
+    const offset = CommonPropertyRenderer.getLabelOffset(indentation, orientation, width, columnRatio, columnInfo?.minLabelWidth);
 
     let displayLabel = props.propertyRecord.property.displayLabel;
     if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Array)
-      displayLabel = `${displayLabel} (${(this.props.propertyRecord.value as ArrayValue).items.length})`;
+      displayLabel = `${displayLabel} (${this.props.propertyRecord.value.items.length})`;
 
     return (
       <NonPrimitivePropertyLabelRenderer
@@ -73,16 +74,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
     );
   }
 
-  private getStructProperties(items: { [name: string]: PropertyRecord }) {
-    const members = new Array<PropertyRecord>();
-    for (const key in items) {
-      if (items.hasOwnProperty(key))
-        members.push(items[key]);
-    }
-    return members;
-  }
-
-  private getArrayProperties(items: PropertyRecord[]) {
+  private overrideArrayChildrenNames(items: PropertyRecord[]) {
     const modifiedProperties: PropertyRecord[] = items.map((item, index): PropertyRecord => {
       const newProperty = { ...item.property };
       newProperty.displayLabel = `[${index + 1}]`;
@@ -105,7 +97,6 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
         orientation={this.props.orientation}
         columnRatio={this.props.columnRatio}
         actionButtonRenderers={this.props.actionButtonRenderers}
-        // eslint-disable-next-line deprecation/deprecation
         onColumnRatioChanged={this.props.onColumnRatioChanged}
         width={this.props.width}
         isResizeHandleHovered={this.props.isResizeHandleHovered}
@@ -119,11 +110,9 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
 
   /** @internal */
   public render() {
-    let items: PropertyRecord[];
-    if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Struct)
-      items = this.getStructProperties((this.props.propertyRecord.value as StructValue).members);
-    else
-      items = this.getArrayProperties((this.props.propertyRecord.value as ArrayValue).items);
+    let items: PropertyRecord[] = this.props.propertyRecord.getChildrenRecords();
+    if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Array)
+      items = this.overrideArrayChildrenNames(items);
 
     const { children, indentation, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (

@@ -40,11 +40,12 @@ describe("<Toolbar />", () => {
 
   it("renders with item", () => {
     const rendered = mount(
-      <Toolbar items={
-        <>
-          <Item />
-        </>
-      }
+      <Toolbar
+        items={
+          <>
+            <Item />
+          </>
+        }
         expandsTo={Direction.Right}
       />,
     );

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, Dictionary, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
   defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
   RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
@@ -15,7 +15,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
-import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet } from "./internal";
+import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -98,6 +98,8 @@ export abstract class TileAdmin {
   public abstract get alwaysRequestEdges(): boolean;
   /** @internal */
   public abstract get alwaysSubdivideIncompleteTiles(): boolean;
+  /** @internal */
+  public abstract get minimumSpatialTolerance(): number;
 
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
@@ -126,10 +128,18 @@ export abstract class TileAdmin {
    */
   public abstract getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
 
-  /** Returns the union of the input set and the input viewport, to be associated with a [[TileUsageMarker]].
+  /** Marks the Tile as "in use" by the specified Viewport, where the tile defines what "in use" means.
+   * A tile will not be discarded while it is in use by any Viewport.
+   * @see [[TileTree.prune]]
    * @internal
    */
-  public abstract getViewportSetForUsage(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
+  public abstract markTileUsedByViewport(marker: TileUsageMarker, vp: Viewport): void;
+
+  /** Returns true if the Tile is currently in use by any Viewport.
+   * @see [[markTileUsedByViewport]].
+   * @internal
+   */
+  public abstract isTileInUse(marker: TileUsageMarker): boolean;
 
   /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles.
    * @internal
@@ -420,7 +430,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
 
     /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
      * already loaded as the view is manipulated.  This value controls the depth above the the selected tile depth that will be preloaded. The default
-     * value (2) with default contextPreloadParentDepth of one will load only grandparents and great grandparents.  This generally preloas around 20% more tiles than are required.
+     * value (2) with default contextPreloadParentDepth of one will load only grandparents and great grandparents. This generally preloads around 20% more tiles than are required.
      * Default value: 2.
      * Minimum value 0.
      * Maximum value 8.
@@ -429,7 +439,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     contextPreloadParentDepth?: number;
 
     /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
-     * already loaded as the view is manipulated.  This value controls the number of parents that are skipped before parents are preloaded.  The default value of 1 will skip
+     * already loaded as the view is manipulated.  This value controls the number of parents that are skipped before parents are preloaded. The default value of 1 will skip
      * immediate parents and significantly reduce the number of preloaded tiles without significant reducing the value of preloading.
      * Default value: 1;
      * Minimum value: 0.
@@ -459,7 +469,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * This can improve user experience in cases in which the user or application is expected to frequently switch between views of the same models with
      * different edge settings, because otherwise, toggling edge display may require loading completely new tiles.
      * However, edges require additional memory and bandwidth that may be wasted if they are never displayed.
-     * Defalt value: false
+     * Default value: false
      * @alpha
      */
     alwaysRequestEdges?: boolean;
@@ -469,6 +479,14 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @internal
      */
     alwaysSubdivideIncompleteTiles?: boolean;
+
+    /** If defined and greater than zero, specifies the minimum chord tolerance in meters of a tile. A tile with chord tolerance less than this minimum will not be refined.
+     * Applies only to spatial models, which model real-world assets on real-world scales.
+     * A reasonable value is on the order of millimeters.
+     * Default value: undefined
+     * @alpha
+     */
+    minimumSpatialTolerance?: number;
   }
 }
 
@@ -487,18 +505,6 @@ class Queue extends PriorityQueue<TileRequest> {
 
   public has(request: TileRequest): boolean {
     return this._array.indexOf(request) >= 0;
-  }
-}
-
-class TilesPerViewport extends Dictionary<Viewport, Set<Tile>> {
-  public constructor() {
-    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
-  }
-}
-
-class SelectedAndReadyTilesPerViewport extends Dictionary<Viewport, SelectedAndReadyTiles> {
-  public constructor() {
-    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
   }
 }
 
@@ -575,9 +581,9 @@ export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | un
 
 class Admin extends TileAdmin {
   private readonly _viewports = new Set<Viewport>();
-  private readonly _requestsPerViewport = new TilesPerViewport();
-  private readonly _selectedAndReady = new SelectedAndReadyTilesPerViewport();
-  private readonly _viewportSetsForUsage = new UniqueViewportSets();
+  private readonly _requestsPerViewport = new Map<Viewport, Set<Tile>>();
+  private readonly _tileUsagePerViewport = new Map<Viewport, Set<TileUsageMarker>>();
+  private readonly _selectedAndReady = new Map<Viewport, SelectedAndReadyTiles>();
   private readonly _viewportSetsForRequests = new UniqueViewportSets();
   private _maxActiveRequests: number;
   private readonly _maxActiveTileTreePropsRequests: number;
@@ -589,6 +595,7 @@ class Admin extends TileAdmin {
   private readonly _disableMagnification: boolean;
   private readonly _alwaysRequestEdges: boolean;
   private readonly _alwaysSubdivideIncompleteTiles: boolean;
+  private readonly _minimumSpatialTolerance: number;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
   private readonly _maximumLevelsToSkip: number;
@@ -675,6 +682,9 @@ class Admin extends TileAdmin {
     else
       this._maximumLevelsToSkip = 1;
 
+    const minSpatialTol = options.minimumSpatialTolerance;
+    this._minimumSpatialTolerance = minSpatialTol ? Math.max(minSpatialTol, 0) : 0;
+
     this._cancelBackendTileRequests = true === options.cancelBackendTileRequests;
 
     const clamp = (seconds: number, min: number, max: number): BeDuration => {
@@ -701,7 +711,7 @@ class Admin extends TileAdmin {
 
     // If unspecified preload 2 levels of parents for context tiles.
     this._contextPreloadParentDepth = Math.max(0, Math.min((options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth), 8));
-    // If unspecified skip one leveo before prealoading  of parents of context tiles.
+    // If unspecified skip one level before preloading  of parents of context tiles.
     this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
   }
 
@@ -713,6 +723,7 @@ class Admin extends TileAdmin {
   public get disableMagnification() { return this._disableMagnification; }
   public get alwaysRequestEdges() { return this._alwaysRequestEdges; }
   public get alwaysSubdivideIncompleteTiles() { return this._alwaysSubdivideIncompleteTiles; }
+  public get minimumSpatialTolerance() { return this._minimumSpatialTolerance; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
   public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }
@@ -753,7 +764,7 @@ class Admin extends TileAdmin {
     this._swapPendingRequests = previouslyPending;
 
     // We will repopulate pending requests queue from each viewport. We do NOT sort by priority while doing so.
-    this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
+    this._requestsPerViewport.forEach((value, key) => this.processRequests(key, value));
 
     // Recompute priority of each request.
     for (const req of this._pendingRequests)
@@ -956,7 +967,7 @@ class Admin extends TileAdmin {
   }
 
   private onIModelClosed(iModel: IModelConnection): void {
-    this._requestsPerViewport.forEach((vp, _req) => {
+    this._requestsPerViewport.forEach((_req, vp) => {
       if (vp.iModel === iModel)
         this.onViewportIModelClosed(vp);
     });
@@ -990,7 +1001,7 @@ class Admin extends TileAdmin {
 
     this._requestsPerViewport.clear();
     this._viewportSetsForRequests.clear();
-    this._viewportSetsForUsage.clear();
+    this._tileUsagePerViewport.clear();
     this._tileTreePropsRequests.length = 0;
   }
 
@@ -1018,12 +1029,24 @@ class Admin extends TileAdmin {
     return this._viewportSetsForRequests.getViewportSet(vp, vps);
   }
 
-  public getViewportSetForUsage(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet {
-    return this._viewportSetsForUsage.getViewportSet(vp, vps);
+  public markTileUsedByViewport(marker: TileUsageMarker, vp: Viewport): void {
+    let set = this._tileUsagePerViewport.get(vp);
+    if (!set)
+      this._tileUsagePerViewport.set(vp, set = new Set<TileUsageMarker>());
+
+    set.add(marker);
+  }
+
+  public isTileInUse(marker: TileUsageMarker): boolean {
+    for (const [_viewport, markers] of this._tileUsagePerViewport)
+      if (markers.has(marker))
+        return true;
+
+    return false;
   }
 
   public clearUsageForViewport(vp: Viewport): void {
-    this._viewportSetsForUsage.remove(vp);
+    this._tileUsagePerViewport.delete(vp);
   }
 
   public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
@@ -1051,7 +1074,7 @@ class Admin extends TileAdmin {
       guid = iModelRpcProps.changeSetId || "first";
 
     if (qualifier)
-      guid = guid + "_" + qualifier;
+      guid = `${guid}_${qualifier}`;
 
     const intfc = IModelTileRpcInterface.getClient();
     return intfc.requestTileContent(iModelRpcProps, treeId, contentId, isCanceled, guid);

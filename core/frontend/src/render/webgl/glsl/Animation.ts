@@ -198,11 +198,11 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
     prog.addGraphicUniform("u_animLUTParams", (uniform, params) => {
       const geom = params.geometry.asLUT!;
       assert(undefined !== geom && undefined !== geom.lut.auxChannels);
-      const tex = geom.lut.auxChannels!.texture;
+      const tex = geom.lut.auxChannels.texture;
       const array = getAnimParams(3);
       array[0] = tex.width;
       array[1] = tex.height;
-      array[2] = geom.lut.auxChannels!.numBytesPerVertex / 2;
+      array[2] = geom.lut.auxChannels.numBytesPerVertex / 2;
       uniform.setUniform3fv(array);
     });
   });

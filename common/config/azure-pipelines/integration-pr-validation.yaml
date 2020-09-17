@@ -50,7 +50,11 @@ jobs:
 
       node ./common/scripts/install-run-rush rebuild -v --to rbac-client
 
+      node ./common/scripts/install-run-rush rebuild -v --to reality-data-client
+
       node ./common/scripts/install-run-rush rebuild -v --to rpcinterface-full-stack-tests
+
+      node ./common/scripts/install-run-rush rebuild -v --to presentation-full-stack-tests
 
       node ./common/scripts/install-run-rush rebuild -v --to oidc-signin-tool
     displayName: 'Rush build'
@@ -81,14 +85,30 @@ jobs:
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
+    workingDirectory: clients/reality-data
+    displayName: 'Run Reality Data Client Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
     workingDirectory: 'full-stack-tests/core'
     displayName: 'Run Core Full Stack Tests'
     enabled: false
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
+    workingDirectory: 'full-stack-tests/imodelhub-client'
+    displayName: 'Run iModelHub Client Full Stack Tests'
+    enabled: false
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
     workingDirectory: 'full-stack-tests/rpc-interface'
     displayName: 'Run RPC Interface Full Stack Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
+    workingDirectory: 'full-stack-tests/presentation'
+    displayName: 'Run Presentation Full Stack Tests'
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -150,7 +170,6 @@ jobs:
     inputs:
       testResultsFiles: 'clients/reality-data/lib/test/junit_results.xml'
       testRunTitle: 'Client - Reality Data Tests - $(Node_Version)'
-    enabled: false
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -181,6 +200,14 @@ jobs:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
+    displayName: 'Publish iModelHub Client Integration Test Results'
+    inputs:
+      testResultsFiles: 'full-stack-tests/imodelhub-client/lib/test/junit_results.xml'
+      testRunTitle: 'iModelHub Client - Integration Tests - $(Node_Version)'
+    enabled: false
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
     displayName: 'Publish Native App Integration Test Results'
     inputs:
       testResultsFiles: 'full-stack-tests/native-app/lib/test/junit_results.xml'
@@ -200,7 +227,6 @@ jobs:
     inputs:
       testResultsFiles: full-stack-tests/presentation/lib/test/junit_results.xml
       testRunTitle: 'Presentation - Integration Tests - $(Node_Version)'
-    enabled: false
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

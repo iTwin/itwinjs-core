@@ -180,10 +180,10 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
     let realityDataName: string = "";
     let validRd: boolean = true;
     if (currentRealityData.name && currentRealityData.name !== "") {
-      realityDataName = currentRealityData.name as string;
+      realityDataName = currentRealityData.name;
     } else if (currentRealityData.rootDocument) {
       // In case root document contains a relative path we only keep the filename
-      const rootDocParts = (currentRealityData.rootDocument as string).split("/");
+      const rootDocParts = (currentRealityData.rootDocument).split("/");
       realityDataName = rootDocParts[rootDocParts.length - 1];
     } else {
       // This case would not occur normally but if it does the RD is considered invalid
@@ -192,9 +192,9 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
 
     // If the RealityData is valid then we add it to the list.
     if (currentRealityData.id && validRd === true) {
-      const url = await client.getRealityDataUrl(requestContext, contextId, currentRealityData.id as string);
+      const url = await client.getRealityDataUrl(requestContext, contextId, currentRealityData.id);
       requestContext.enter();
-      if (!modelRealityDataIds.has(currentRealityData.id as string))
+      if (!modelRealityDataIds.has(currentRealityData.id))
         availableRealityModels.push({ tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : "") });
     }
   }

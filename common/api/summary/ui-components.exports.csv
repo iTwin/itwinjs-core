@@ -55,6 +55,9 @@ beta;BreadcrumbProps
 beta;BreadcrumbTreeUtils
 beta;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
+alpha;CategorizedPropertyItem 
+alpha;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
+alpha;CategoryRecordsDict
 beta;CellEditingEngine
 public;CellItem
 public;CellProps
@@ -74,9 +77,12 @@ beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
 beta;ColorSwatchProps 
 public;ColumnDescription
 beta;ColumnFilterDescriptor 
+public;CommonPropertyGridProps 
 public;CompletionObserver
 beta;CompositeFilterDescriptor 
 beta;CompositeFilterDescriptorCollection
+alpha;CompositeFilterType
+alpha;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 internal;ContextMenu 
 internal;ContextMenuItem 
@@ -106,6 +112,7 @@ public;DEPRECATED_Tree
 beta;DEPRECATED_withTreeDragDrop
 beta;Direction
 internal;DirectionHelpers
+alpha;DisplayValuePropertyDataFilterer 
 beta;DistinctValueCollection
 beta;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
@@ -148,12 +155,17 @@ beta;FilterDescriptorCollection
 beta;class FilterDescriptorCollectionBase
 public;FilteringInput 
 public;FilteringInputProps 
+alpha;FilteringPropertyDataProvider 
 beta;FilterOperator
 beta;FilterRenderer
+alpha;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
+alpha;FlatGridItemBase
+alpha;FlatGridItemType
 public;FloatTypeConverter 
 public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
+alpha;GridCategoryItem 
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
@@ -178,12 +190,22 @@ beta;ImageCheckBoxPropertyEditor
 public;ImageFileFormat = "png" | "jpg" | "jpge"
 public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 
+alpha;IMutableCategorizedPropertyItem 
+alpha;IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem
+alpha;IMutableFlatPropertyGridItem
+alpha;IMutableGridCategoryItem 
+alpha;IMutableGridItemFactory
+alpha;IMutablePropertyGridModel
 internal;InlineEdit 
 internal;InputContext
 internal;InputSwitchComponent 
 internal;InputSwitchProps
 public;IntTypeConverter 
+alpha;IPropertyDataFilterer
 public;IPropertyDataProvider
+alpha;IPropertyGridEventHandler
+alpha;IPropertyGridModel
+alpha;IPropertyGridModelSource
 public;IPropertyValueRenderer
 internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
@@ -200,6 +222,7 @@ public;ITreeDataProvider
 public;ITreeImageLoader 
 beta;ITreeNodeLoader
 beta;ITreeNodeLoaderWithProvider
+alpha;LabelPropertyDataFilterer 
 public;LessGreaterOperatorProcessor
 beta;LineWeightSwatch 
 beta;LineWeightSwatchProps 
@@ -214,7 +237,15 @@ internal;MenuItem
 alpha;Milestone
 alpha;MilestoneRange
 internal;MultiSelectionHandler
+alpha;MutableCategorizedArrayProperty 
+alpha;MutableCategorizedPrimitiveProperty 
+alpha;class MutableCategorizedProperty 
+alpha;MutableCategorizedStructProperty 
 beta;MutableCheckBoxInfo 
+alpha;class MutableFlatPropertyGridItem 
+alpha;MutableGridCategory 
+alpha;MutableGridItemFactory 
+alpha;MutablePropertyGridModel 
 beta;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
 beta;MutableTreeModel 
@@ -274,14 +305,26 @@ public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
 public;PropertyDataChangesListener = () => void
+alpha;class PropertyDataFiltererBase 
+alpha;PropertyDataFilterResult
 public;PropertyDialogState
 public;PropertyEditingArgs
 beta;class PropertyEditorBase 
 beta;PropertyEditorManager
 beta;PropertyEditorProps 
+alpha;PropertyFilterChangeEvent 
+alpha;PropertyFilterChangesListener = () => void
 public;PropertyGrid 
 public;PropertyGridCategory
+internal;PropertyGridCommons
 public;PropertyGridContextMenuArgs
+alpha;PropertyGridEventHandler
+internal;PropertyGridEventsRelatedProps = Pick
+internal;PropertyGridEventsRelatedPropsSupplier 
+internal;PropertyGridEventsRelatedPropsSupplierProps 
+alpha;PropertyGridModelChangeEvent 
+alpha;PropertyGridModelChangeListener = () => void
+alpha;PropertyGridModelSource 
 public;PropertyGridProps 
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
@@ -300,7 +343,6 @@ public;RowItem
 public;RowProps
 beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
 beta;SaturationPickerProps 
-internal;scheduleSubscription
 internal;Scrubber 
 internal;ScrubberProps 
 beta;SelectableContent(props: SelectableContentProps): JSX.Element
@@ -344,7 +386,6 @@ public;StringTypeConverter
 public;StructPropertyValueRenderer 
 public;Subscribable
 public;Subscription 
-internal;SubscriptionScheduler
 public;Table 
 public;TableArrayValueRenderer 
 beta;TableCellContextMenuArgs
@@ -370,10 +411,15 @@ public;TableStructValueRenderer
 beta;TextareaEditor 
 beta;TextareaPropertyEditor 
 beta;TextEditor 
+beta;ThemedEnumEditor 
+beta;ThemedEnumEditorProps 
+beta;ThemedEnumPropertyEditor 
 internal;Timeline 
 alpha;TimelineComponent 
 alpha;TimelineDataProvider
 alpha;TimelineDateDisplay
+beta;TimelinePausePlayAction
+beta;TimelinePausePlayArgs 
 internal;TimelineProps 
 alpha;TimelineScale
 beta;ToggleEditor 
@@ -448,7 +494,12 @@ beta;TypeEditor
 public;UiComponents
 public;Unsubscribable
 beta;useAsyncValue: 
+alpha;useDebouncedAsyncValue
 beta;usePagedTreeNodeLoader
+alpha;usePropertyData(props:
+alpha;usePropertyGridEventHandler(props:
+alpha;usePropertyGridModel(props:
+alpha;usePropertyGridModelSource(props:
 internal;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs
@@ -466,6 +517,11 @@ public;ViewportProps
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
 public;ViewStateProp = ViewState | (() => ViewState)
+alpha;VirtualizedPropertyGrid 
+internal;VirtualizedPropertyGridContext
+alpha;VirtualizedPropertyGridProps 
+alpha;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
+alpha;VirtualizedPropertyGridWithDataProviderProps 
 beta;VisibleTreeNodes 
 beta;WeightEditor 
 beta;WeightPickerButton 

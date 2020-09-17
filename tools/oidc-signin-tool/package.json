@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "2.5.5",
+  "version": "2.6.0",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -29,16 +29,17 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.5.5",
-    "@bentley/certa": "2.5.5",
-    "@bentley/config-loader": "2.5.5",
-    "@bentley/frontend-authorization-client": "2.5.5",
-    "@bentley/itwin-client": "2.5.5",
+    "@bentley/bentleyjs-core": "2.6.0",
+    "@bentley/certa": "2.6.0",
+    "@bentley/config-loader": "2.6.0",
+    "@bentley/frontend-authorization-client": "2.6.0",
+    "@bentley/itwin-client": "2.6.0",
     "openid-client": "^3.15.3",
     "puppeteer": "chrome-80"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.5.5",
+    "@bentley/build-tools": "2.6.0",
+    "@bentley/eslint-plugin": "2.6.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
@@ -56,6 +57,9 @@
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

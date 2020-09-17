@@ -10,8 +10,7 @@
  *  It should NOT be imported by any *.scss or other ui-core files.
  */
 
-html,
-html[data-theme="light"] {
+@mixin light-theme {
   --buic-background-1-rgb:            255, 255, 255;
   --buic-background-2-rgb:            248, 249, 251;
   --buic-background-3-rgb:            234, 237, 239;
@@ -48,7 +47,7 @@ html[data-theme="light"] {
   --buic-button-gradient2:            rgba(255, 255, 255, 0.00);
 }
 
-html[data-theme="dark"] {
+@mixin dark-theme {
   --buic-background-1-rgb:            090, 105, 115;
   --buic-background-2-rgb:            079, 093, 101;
   --buic-background-3-rgb:            068, 080, 088;
@@ -83,6 +82,27 @@ html[data-theme="dark"] {
 
   --buic-button-gradient1:            rgba(0, 0, 0, 0.00);
   --buic-button-gradient2:            rgba(0, 0, 0, 0.25);
+}
+
+html,
+html[data-theme="light"] {
+  @include light-theme;
+}
+
+html[data-theme="dark"] {
+  @include dark-theme;
+}
+
+@media (prefers-color-scheme: light) {
+  html[data-theme="SYSTEM_PREFERRED"] {
+    @include light-theme;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="SYSTEM_PREFERRED"] {
+    @include dark-theme;
+  }
 }
 
 html.theme-transition,

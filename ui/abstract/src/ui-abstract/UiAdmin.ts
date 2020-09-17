@@ -15,11 +15,42 @@ import { Primitives } from "./properties/PrimitiveTypes";
 import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
 import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
+
+
+/** The Generic UI Event args contains information useful for any UI message
+ * @beta
+ */
+export interface GenericUiEventArgs {
+  uiComponentId: string;
+}
+
+/** The GenericUiEvent is the base event class for UI events that target a specific component, as identified in uiComponentId.
+ * @beta
+ */
+export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> { }
+
+/** Flags that control enabling/disabling certain UI feature
+ * @beta
+ */
+export  interface UiFlags {
+  /** if true then Ctrl+F2 will show popup key-in palette */
+  allowKeyinPalette?: boolean;
+}
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
  */
 export class UiAdmin {
+  private _featureFlags: UiFlags = { };
+
+  public get featureFlags(): UiFlags {
+    return {...this._featureFlags}; // return copy so no direct access to modify value
+  }
+
+  public updateFeatureFlags(uiFlags: UiFlags) {
+    this._featureFlags = {...this._featureFlags, ...uiFlags}
+  }
 
   /** @internal */
   public onInitialized() { }
@@ -208,4 +239,19 @@ export class UiAdmin {
   /** Closes the Tool Settings Ui popup. */
   public closeToolSettingsPopup(): boolean { return false; }
 
+  /** Show the Keyin Palette to display all support Tool key-ins.
+   * @param _htmlElement The HTMLElement that anchors the Keyin Palette. If undefined, the location is relative to the overall window.
+   * @return true if the Keyin Palette was displayed, false if it could not be displayed.
+   */
+  public showKeyinPalette(_htmlElement?: HTMLElement): boolean { return false; }
+
+  /** Hides the Keyin Palette. */
+  public hideKeyinPalette(): boolean { return false; }
+
+  /** Send a UI event */
+  public static sendUiEvent(args: GenericUiEventArgs) {
+    UiAdmin.onGenericUiEvent.emit(args);
+  }
+  /** GenericUiEvent  */
+  public static readonly onGenericUiEvent = new GenericUiEvent();
 }

@@ -19,7 +19,7 @@ import {
   FillCentered, HorizontalTabs, Icon, LabeledToggle, LocalUiSettings, SvgSprite, UiCore, UiSetting, UiSettings, UiSettingsResult, UiSettingsStatus,
 } from "@bentley/ui-core";
 import {
-  FooterPopup, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceItem,
+  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@bentley/ui-ninezone";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
@@ -64,8 +64,8 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
 /** Default properties of [[ToolAssistanceField]] component.
  * @internal
  */
-export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps,
-  "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
+export type ToolAssistanceFieldDefaultProps =
+  Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
 
 /** @internal */
 interface ToolAssistanceFieldState {
@@ -312,7 +312,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
                   {this._getDisplayableInstructions(section).map((instruction: ToolAssistanceInstruction, index2: number) => {
                     return (
                       <NZ_ToolAssistanceInstruction
-                        key={index1.toString() + "-" + index2.toString()}
+                        key={`${index1.toString()}-${index2.toString()}`}
                         image={ToolAssistanceField.getInstructionImage(instruction)}
                         text={instruction.text}
                         isNew={instruction.isNew} />

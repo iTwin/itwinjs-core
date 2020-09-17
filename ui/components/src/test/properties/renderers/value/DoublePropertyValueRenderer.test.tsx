@@ -57,7 +57,7 @@ describe("DoublePropertyValueRenderer", () => {
       const renderer = new DoublePropertyValueRenderer();
       const property = createDoubleProperty(0.45, "zero point forty five meters");
 
-      const highlightNode = (text: string) => <span>{text + " Highlighted"}</span>;
+      const highlightNode = (text: string) => <span>{`${text} Highlighted`}</span>;
       const renderContext: PropertyValueRendererContext = {
         textHighlighter: highlightNode,
       };

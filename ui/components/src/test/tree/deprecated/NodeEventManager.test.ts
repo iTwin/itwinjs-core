@@ -24,7 +24,7 @@ describe("NodeEventManager", () => {
         return false;
       }
 
-      const unmatchedNodes = expectedNodes.map((id) => id!.toString());
+      const unmatchedNodes = expectedNodes.map((id) => id.toString());
       for (const node of nodes) {
         const matchedNode = unmatchedNodes.findIndex((id) => id === node.id);
         if (matchedNode === -1) {

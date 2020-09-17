@@ -14,7 +14,7 @@ import { TabsStateContext } from "../base/NineZone";
 import { getChildKey, useOverflow } from "../tool-settings/Docked";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 import { WidgetOverflow } from "./Overflow";
-import { WidgetTab } from "./Tab";
+import { WidgetTabProvider } from "./Tab";
 import { WidgetTabTarget } from "./TabTarget";
 import { WidgetStateContext } from "./Widget";
 
@@ -24,10 +24,10 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
   assert(widget);
-  const activeTabIndex = widget.activeTabId ? widget.tabs.indexOf(widget.activeTabId) : undefined;
+  const activeTabIndex = widget.tabs.indexOf(widget.activeTabId);
   const children = React.useMemo<React.ReactNode>(() => {
     return widget.tabs.map((tabId, index, array) => {
-      const firstInactive = activeTabIndex === undefined ? false : activeTabIndex + 1 === index;
+      const firstInactive = activeTabIndex + 1 === index;
       return (
         <React.Fragment
           key={tabId}
@@ -36,7 +36,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
             tabIndex={index}
             first
           />}
-          <WidgetTab
+          <WidgetTabProvider
             first={index === 0}
             firstInactive={firstInactive}
             last={index === array.length - 1}

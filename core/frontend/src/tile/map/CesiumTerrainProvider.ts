@@ -28,14 +28,14 @@ enum QuantizedMeshExtensionIds {
 
 /** @internal */
 export async function getCesiumAccessTokenAndEndpointUrl(): Promise<{ token?: string, url?: string }> {
-  const _requestContext = new ClientRequestContext("");
-  const _requestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
-  const _requestTemplate = "https://api.cesium.com/v1/assets/1/endpoint?access_token={CesiumRequestToken}";
-  const apiUrl: string = _requestTemplate.replace("{CesiumRequestToken}", _requestKey);
+  const requestContext = new ClientRequestContext("");
+  const requestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
+  const requestTemplate = "https://api.cesium.com/v1/assets/1/endpoint?access_token={CesiumRequestToken}";
+  const apiUrl: string = requestTemplate.replace("{CesiumRequestToken}", requestKey);
   const apiRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
   try {
-    const apiResponse: Response = await request(_requestContext, apiUrl, apiRequestOptions);
+    const apiResponse: Response = await request(requestContext, apiUrl, apiRequestOptions);
     if (undefined === apiResponse || undefined === apiResponse.body || undefined === apiResponse.body.url) {
       assert(false);
       return {};
@@ -58,8 +58,8 @@ export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId
     return undefined;
 
   try {
-    const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: "Bearer " + accessTokenAndEndpointUrl.token } };
-    const layerUrl = accessTokenAndEndpointUrl.url + "layer.json";
+    const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
+    const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
     const layerResponse = await request(requestContext, layerUrl, layerRequestOptions);
     if (undefined === layerResponse) {
       assert(false);
@@ -179,7 +179,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
     assert(data instanceof Uint8Array);
     assert(tile instanceof MapTile);
-    const blob = data as Uint8Array;
+    const blob = data;
     const streamBuffer = new ByteStream(blob.buffer);
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
@@ -189,7 +189,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const boundCenter = nextPoint3d64FromByteStream(streamBuffer);
     const boundRadius = streamBuffer.nextFloat64;
     const horizonOcclusion = nextPoint3d64FromByteStream(streamBuffer);
-    const terrainTile = tile as MapTile;
+    const terrainTile = tile;
 
     terrainTile.adjustHeights(minHeight, maxHeight);
 
@@ -357,7 +357,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     }
   }
   public get requestOptions(): RequestOptions {
-    return { method: "GET", responseType: "arraybuffer", headers: { authorization: "Bearer " + this._accessToken }, accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01" };
+    return { method: "GET", responseType: "arraybuffer", headers: { authorization: `Bearer ${this._accessToken}` }, accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01" };
   }
 
   public constructUrl(row: number, column: number, zoomLevel: number): string {
@@ -365,7 +365,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
-    return (quadId.level <= ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent as MapTile).heightRange;
+    return (quadId.level <= ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
   }
   /**
    * Specifies the quality of terrain created from heightmaps.  A value of 1.0 will

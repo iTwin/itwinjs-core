@@ -7,8 +7,10 @@
  */
 
 import { Transform } from "@bentley/geometry-core";
-import { Box, Element as MarkupElement, extend, G, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
+import { Box, extend, G, Element as MarkupElement, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
+
+// cspell:ignore lmultiply matrixify dmove
 
 /** @beta */
 export interface MarkupColor {
@@ -155,7 +157,7 @@ extend(G, {
   markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as G).attr("transform", mtx); },
 });
 extend(Text, {
-  getFontSize(): number { const me = this as Text; return parseFloat(window.getComputedStyle(me.node).fontSize!); },
+  getFontSize(): number { const me = this as Text; return parseFloat(window.getComputedStyle(me.node).fontSize); },
   markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as Text).attr("transform", mtx); },
   getMarkup() {
     const node = (this as Text).node;

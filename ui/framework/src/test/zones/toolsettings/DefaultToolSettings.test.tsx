@@ -303,11 +303,11 @@ describe("Default ToolSettings", () => {
       // simulate tool changing property value which should trigger change handler
       mockPlaceLineTool.length = 16.67;
       expect(mockPlaceLineTool.length).to.be.equal(16.67);
-      expect((lineToolSettings[1].value as DialogItemValue).value).to.be.equal(16.67);
+      expect(lineToolSettings[1].value.value).to.be.equal(16.67);
 
       mockPlaceLineTool.angle = 1.57;
       expect(mockPlaceLineTool.angle).to.be.equal(1.57);
-      expect((lineToolSettings[3].value as DialogItemValue).value).to.be.equal(1.57);
+      expect(lineToolSettings[3].value.value).to.be.equal(1.57);
     }
   });
 

@@ -76,12 +76,12 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
-      scope: baseOidcScope + " offline_access",
+      scope: `${baseOidcScope} offline_access`,
     }
     : {
       clientId: "imodeljs-spa-test",
       redirectUri,
-      scope: baseOidcScope + " imodeljs-router",
+      scope: `${baseOidcScope} imodeljs-router`,
       responseType: "code",
     };
 }
@@ -143,7 +143,7 @@ class FakeTileCache extends CloudStorageTileCache {
       method: "GET",
     };
 
-    const url = container.url + `/${this.formResourceName(id)}`;
+    const url = `${container.url}/${this.formResourceName(id)}`;
     return fetch(url, init);
   }
 }
@@ -192,6 +192,7 @@ async function main() {
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
   tileAdminProps.alwaysRequestEdges = true === configuration.alwaysLoadEdges;
+  tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
 
   if (configuration.useFakeCloudStorageTileCache)

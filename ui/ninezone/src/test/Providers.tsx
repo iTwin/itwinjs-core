@@ -16,7 +16,8 @@ import { DragManager } from "../ui-ninezone/base/DragManager";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-export type NineZoneProviderProps = PartialBy<RealNineZoneProviderProps, "measure" | "state" | "dispatch"> &
+export type NineZoneProviderProps =
+  PartialBy<RealNineZoneProviderProps, "measure" | "state" | "dispatch"> &
   Pick<DragManagerConsumerProps, "dragManagerRef">;
 
 export function NineZoneProvider(props: NineZoneProviderProps) {

@@ -986,6 +986,64 @@ describe("PolyfaceClip", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("ArnoldasClip", () => {
+    const ck = new Checker();
+    for (const caseDirectory of ["case1", "case2"]) {
+      const allGeometry: GeometryQuery[] = [];
+      const meshFile = `./src/test/testInputs/clipping/arnoldasInOut/${caseDirectory}/source.json`;
+      const clipperFile = `./src/test/testInputs/clipping/arnoldasInOut/${caseDirectory}/clipper.json`;
+      const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(meshFile, "utf8")));
+      const clipper = UnionOfConvexClipPlaneSets.fromJSON(JSON.parse(fs.readFileSync(clipperFile, "utf8")));
+      if (ck.testType<IndexedPolyface>(meshA as IndexedPolyface, "Expect mesh") && meshA instanceof IndexedPolyface && ck.testType<UnionOfConvexClipPlaneSets>(clipper, "expect clipper")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, 0, 0);
+        const range = meshA.range();
+        const dx = 0.2 * range.xLength();
+        const dy = range.yLength();
+        const dz = 0.1 * range.zLength();
+        range.low.addXYZInPlace(-dx, -dy, -dz);
+        range.high.addXYZInPlace(dx, dy, dz);
+        const clipperLoopsA = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, range, true, false, true);
+        const clipperLoopsB = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, range, true, false, false);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperLoopsA, 0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperLoopsB, 0, - dy);
+        const builders = ClippedPolyfaceBuilders.create(true, true, true);
+        PolyfaceClip.clipPolyfaceInsideOutside(meshA, clipper, builders);
+        const inside = builders.builderA?.claimPolyface();
+        const outside = builders.builderB?.claimPolyface();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inside, 0, range.yLength());
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, outside, 0, 2 * range.yLength());
+      }
+      GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", `arnoldas${caseDirectory}`);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ArnoldasSimpleClip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // make a rectangle clipper with interior planes ...
+    const clipRectangle = Sample.createRectangle(1, 0, 4, 8, 0, true);
+    const contour = SweepContour.createForPolygon(clipRectangle);
+    const clipper = contour?.sweepToUnionOfConvexClipPlaneSets();
+    const rectangleB = Sample.createRectangle(0, 1, 6, 2, 0, true);
+    const mesh = PolyfaceBuilder.polygonToTriangulatedPolyface(rectangleB);
+    const builders = ClippedPolyfaceBuilders.create(false, true, true);
+    PolyfaceClip.clipPolyfaceInsideOutside(mesh!, clipper!, builders);
+    // const inside = builders.builderA?.claimPolyface();
+    const outside = builders.builderB?.claimPolyface();
+    if (ck.testType<IndexedPolyface>(outside)) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipRectangle, 0, 0);
+
+      // GeometryCoreTestIO.captureCloneGeometry(allGeometry, inside, 0, 10);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, outside, 0, 20);
+      ck.testExactNumber(4, outside.facetCount);
+      ck.testExactNumber(10, outside.pointCount);
+    }
+    // make a single-face mesh that cuts all the way across . .
+    GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "arnoldasSimpleClip");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });
 /** Estimate a volume for a mesh that may be missing side faces.

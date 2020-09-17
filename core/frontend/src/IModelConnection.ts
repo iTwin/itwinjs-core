@@ -1089,7 +1089,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
           if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
-            this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
+            this.loaded.set(modelState.id, modelState); // save it in loaded set
           }
         }
       } catch (err) {
@@ -1253,7 +1253,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     public async getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]> {
       const views: ViewSpec[] = [];
       const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
-      viewProps.forEach((viewProp) => { views.push({ id: viewProp.id as string, name: viewProp.code!.value!, class: viewProp.classFullName }); });
+      viewProps.forEach((viewProp) => { views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName }); });
       return views;
     }
 

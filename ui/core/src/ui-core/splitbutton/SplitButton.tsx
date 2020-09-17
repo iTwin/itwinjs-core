@@ -9,10 +9,11 @@
 import "./SplitButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ContextMenu } from "../contextmenu/ContextMenu";
+import { PopupContextMenu } from "../contextmenu/PopupContextMenu";
 import { Icon, IconSpec } from "../icons/IconComponent";
 import { CommonProps } from "../utils/Props";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
+import { ButtonType, getButtonTypeClassName } from "../button/Button";
 
 // TODO: implement
 /** @internal */
@@ -37,6 +38,13 @@ export interface SplitButtonProps extends CommonProps {
   drawBorder?: boolean;
   /** ToolTip text */
   toolTip?: string;
+  /** Direction relative to the button to which the popup is expanded (defaults to Bottom) */
+  popupPosition?: RelativePosition;
+  /** 4 styles to tweak the content of the button */
+  buttonType?: ButtonType;
+
+  /** @internal */
+  initialExpanded?: boolean;
 }
 
 /** @internal */
@@ -51,7 +59,6 @@ interface SplitButtonState {
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
   private _arrowElement = React.createRef<HTMLDivElement>();
   private _buttonRef = React.createRef<HTMLDivElement>();
-  private _menu: ContextMenu | null = null;
   private _closing: boolean = false;
 
   /** @internal */
@@ -59,6 +66,10 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
 
   constructor(props: SplitButtonProps) {
     super(props);
+
+    this.state = {
+      expanded: props.initialExpanded !== undefined ? props.initialExpanded : false,
+    };
   }
 
   public render(): JSX.Element {
@@ -69,11 +80,15 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
       );
     }
 
+    const borderClassName = (this.props.drawBorder && this.props.buttonType === undefined) ? "core-split-button-border" : undefined;
+    const typeClassName = this.props.buttonType !== undefined ? getButtonTypeClassName(this.props.buttonType) : "core-split-button-default-colors";
     const classNames = classnames(
       "core-split-button",
-      this.props.className,
+      typeClassName,
+      borderClassName,
       this.state.expanded && "core-expanded",
-      this.props.drawBorder && "core-split-button-border");
+      this.props.className);
+    const position = this.props.popupPosition !== undefined ? this.props.popupPosition : RelativePosition.BottomLeft;
 
     return (
       <div data-testid="core-split-button-root" title={this.props.toolTip}
@@ -85,7 +100,8 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
         role="button"
       >
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-        <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}
+        <div data-testid="core-split-button-label" onClick={this.props.onClick}
+          className={classnames("core-split-button-label", this.props.drawBorder && "core-split-button-border")}
           role="button" tabIndex={-1}
         >
           {icon} {this.props.label}
@@ -96,16 +112,18 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
           role="button" tabIndex={-1}
         >
           <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} />
-          <ContextMenu
-            ref={(el) => { this._menu = el; }}
+          <PopupContextMenu
+            position={position}
+            target={this._buttonRef.current}
+            animate={false}
             selectedIndex={0}
             onSelect={this._handleClose}
             onOutsideClick={this._handleClose}
             onEsc={this._handleClose}
-            opened={this.state.expanded}
+            isOpen={this.state.expanded}
             autoflip={false}>
             {this.props.children}
-          </ContextMenu>
+          </PopupContextMenu>
         </div>
       </div>
     );
@@ -125,13 +143,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   private _open = () => {
     // istanbul ignore else
     if (!this.state.expanded && !this._closing) {
-      this.setState(
-        { expanded: true },
-        () => {
-          // istanbul ignore else
-          if (this._menu && this.state.expanded)
-            this._menu.focus();
-        });
+      this.setState({ expanded: true });
     } else {
       this._closing = false;
     }

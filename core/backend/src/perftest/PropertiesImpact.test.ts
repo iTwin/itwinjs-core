@@ -36,7 +36,7 @@ function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String
 }
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
-  imodel.withPreparedStatement("SELECT count(*) AS [count] FROM " + className, (stmt: ECSqlStatement) => {
+  imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();
     count = row.count;
@@ -58,7 +58,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
   const reporter = new Reporter();
 
   function createSchema(propCount: number): string {
-    const schemaPath = path.join(outDir, "TestPropsSchema-" + propCount + ".01.00.00.ecschema.xml");
+    const schemaPath = path.join(outDir, `TestPropsSchema-${propCount}.01.00.00.ecschema.xml`);
     if (!IModelJsFs.existsSync(schemaPath)) {
       let sxml = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestPropsSchema" alias="tps" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -66,10 +66,10 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         <ECEntityClass typeName="PropElement">
             <BaseClass>bis:PhysicalElement</BaseClass>`;
       for (let i = 0; i < propCount; ++i) {
-        const propName: string = "PrimProp" + i.toString();
-        sxml = sxml + `<ECProperty propertyName="` + propName + `" typeName="string"/>`;
+        const propName: string = `PrimProp${i.toString()}`;
+        sxml = `${sxml}<ECProperty propertyName="${propName}" typeName="string"/>`;
       }
-      sxml = sxml + `</ECEntityClass>
+      sxml = `${sxml}</ECEntityClass>
         </ECSchema>`;
       IModelJsFs.writeFileSync(schemaPath, sxml);
     }
@@ -90,9 +90,9 @@ describe("SchemaDesignPerf Impact of Properties", () => {
     for (const pCount of propCounts) {
       const st = createSchema(pCount);
       assert(IModelJsFs.existsSync(st));
-      const seedName = path.join(outDir, "props_" + pCount + ".bim");
+      const seedName = path.join(outDir, `props_${pCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", `props_${pCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
         assert.equal(DbResult.BE_SQLITE_OK, result);
@@ -124,8 +124,8 @@ describe("SchemaDesignPerf Impact of Properties", () => {
   it("Insert", async () => {
     for (const propCount of propCounts) {
       let totalTime = 0.0;
-      const seedFileName = path.join(outDir, "props_" + propCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Insert_" + propCount + ".bim");
+      const seedFileName = path.join(outDir, `props_${propCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", `PropsPerf_Insert_${propCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
@@ -152,8 +152,8 @@ describe("SchemaDesignPerf Impact of Properties", () => {
   });
   it("Delete", async () => {
     for (const propCount of propCounts) {
-      const seedFileName = path.join(outDir, "props_" + propCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Delete_" + propCount + ".bim");
+      const seedFileName = path.join(outDir, `props_${propCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", `PropsPerf_Delete_${propCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
@@ -179,8 +179,8 @@ describe("SchemaDesignPerf Impact of Properties", () => {
   });
   it("Read", async () => {
     for (const propCount of propCounts) {
-      const seedFileName = path.join(outDir, "props_" + propCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Read_" + propCount + ".bim");
+      const seedFileName = path.join(outDir, `props_${propCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", `PropsPerf_Read_${propCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
@@ -199,7 +199,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.exists(elemFound);
         for (let k = 0; k < propCount; ++k) {
-          const key = "primProp" + k.toString();
+          const key = `primProp${k.toString()}`;
           assert.equal(elemFound[key], "Test value");
         }
       }
@@ -209,8 +209,8 @@ describe("SchemaDesignPerf Impact of Properties", () => {
   });
   it("Update", async () => {
     for (const propCount of propCounts) {
-      const seedFileName = path.join(outDir, "props_" + propCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Update_" + propCount + ".bim");
+      const seedFileName = path.join(outDir, `props_${propCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", `PropsPerf_Update_${propCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
@@ -267,64 +267,64 @@ describe("SchemaDesignPerf Number of Indices", () => {
   function createSchema(indexCount: number, perClass: boolean = false): string {
     let schemaPath = "";
     if (perClass)
-      schemaPath = path.join(outDir, "TestIndexSchema-PerClass" + indexCount + ".01.00.00.ecschema.xml");
+      schemaPath = path.join(outDir, `TestIndexSchema-PerClass${indexCount}.01.00.00.ecschema.xml`);
     else
-      schemaPath = path.join(outDir, "TestIndexSchema-" + indexCount + ".01.00.00.ecschema.xml");
+      schemaPath = path.join(outDir, `TestIndexSchema-${indexCount}.01.00.00.ecschema.xml`);
     if (!IModelJsFs.existsSync(schemaPath)) {
       let sxml = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestIndexSchema" alias="tps" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>`;
       if (perClass) {
         for (let i = 0; i < indexCount; ++i) {
-          const className: string = "PropElement" + i.toString();
-          const indexName: string = "ix_pe_prop" + i.toString();
-          const propName: string = "PrimProp" + i.toString();
-          sxml = sxml + `<ECEntityClass typeName="` + className + `">
+          const className: string = `PropElement${i.toString()}`;
+          const indexName: string = `ix_pe_prop${i.toString()}`;
+          const propName: string = `PrimProp${i.toString()}`;
+          sxml = `${sxml}<ECEntityClass typeName="${className}">
             <BaseClass>bis:PhysicalElement</BaseClass>
             <ECCustomAttributes>
               <DbIndexList xmlns="ECDbMap.02.00">
                   <Indexes>`;
-          sxml = sxml + `<DbIndex>
-                          <Name>` + indexName + `</Name>
+          sxml = `${sxml}<DbIndex>
+                          <Name>${  indexName}</Name>
                           <Properties>
-                              <string>` + propName + `</string>
+                              <string>${  propName}</string>
                           </Properties>
                       </DbIndex>`;
-          sxml = sxml + `</Indexes>
+          sxml = `${sxml}</Indexes>
               </DbIndexList>
             </ECCustomAttributes>`;
           for (let j = 0; j < propCounts; ++j) {
-            const propName1: string = "PrimProp" + j.toString();
-            sxml = sxml + `<ECProperty propertyName="` + propName1 + `" typeName="string"/>`;
+            const propName1: string = `PrimProp${j.toString()}`;
+            sxml = `${sxml}<ECProperty propertyName="${propName1}" typeName="string"/>`;
           }
-          sxml = sxml + `</ECEntityClass>`;
+          sxml = `${sxml}</ECEntityClass>`;
         }
       } else {
-        sxml = sxml + `<ECEntityClass typeName="PropElement">
+        sxml = `${sxml}<ECEntityClass typeName="PropElement">
             <BaseClass>bis:PhysicalElement</BaseClass>
             <ECCustomAttributes>
               <DbIndexList xmlns="ECDbMap.02.00">
                   <Indexes>`;
         for (let i = 0; i < indexCount; ++i) {
-          const indexName: string = "ix_pe_prop" + i.toString();
-          const propName: string = "PrimProp" + i.toString();
-          sxml = sxml + `<DbIndex>
-                          <Name>` + indexName + `</Name>
+          const indexName: string = `ix_pe_prop${i.toString()}`;
+          const propName: string = `PrimProp${i.toString()}`;
+          sxml = `${sxml}<DbIndex>
+                          <Name>${  indexName}</Name>
                           <Properties>
-                              <string>` + propName + `</string>
+                              <string>${  propName}</string>
                           </Properties>
                       </DbIndex>`;
         }
-        sxml = sxml + `</Indexes>
+        sxml = `${sxml}</Indexes>
               </DbIndexList>
             </ECCustomAttributes>`;
         for (let j = 0; j < propCounts; ++j) {
-          const propName: string = "PrimProp" + j.toString();
-          sxml = sxml + `<ECProperty propertyName="` + propName + `" typeName="string"/>`;
+          const propName: string = `PrimProp${j.toString()}`;
+          sxml = `${sxml}<ECProperty propertyName="${propName}" typeName="string"/>`;
         }
-        sxml = sxml + `</ECEntityClass>`;
+        sxml = `${sxml}</ECEntityClass>`;
       }
-      sxml = sxml + `</ECSchema>`;
+      sxml = `${sxml}</ECSchema>`;
 
       IModelJsFs.writeFileSync(schemaPath, sxml);
     }
@@ -343,9 +343,9 @@ describe("SchemaDesignPerf Number of Indices", () => {
     for (const iCount of indexCounts) {
       const st = createSchema(iCount);
       assert(IModelJsFs.existsSync(st));
-      const seedName = path.join(outDir, "index_" + iCount + ".bim");
+      const seedName = path.join(outDir, `index_${iCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_${iCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
         assert.equal(DbResult.BE_SQLITE_OK, result);
@@ -371,9 +371,9 @@ describe("SchemaDesignPerf Number of Indices", () => {
     for (const iCount of indexCounts) {
       const st = createSchema(iCount, true);
       assert(IModelJsFs.existsSync(st));
-      const seedName = path.join(outDir, "index_perclass_" + iCount + ".bim");
+      const seedName = path.join(outDir, `index_perclass_${iCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_perclass_${iCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
         assert.equal(DbResult.BE_SQLITE_OK, result);
@@ -408,8 +408,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
   it("Insert", async () => {
     for (const indexCount of indexCounts) {
       let totalTime = 0.0;
-      const seedFileName = path.join(outDir, "index_" + indexCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_Insert_" + indexCount + ".bim");
+      const seedFileName = path.join(outDir, `index_${indexCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_Insert_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
@@ -436,8 +436,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
     // second round for per Class Index
     for (const indexCount of indexCounts) {
       let totalTime = 0.0;
-      const seedFileName = path.join(outDir, "index_perclass_" + indexCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_PerClass_Insert_" + indexCount + ".bim");
+      const seedFileName = path.join(outDir, `index_perclass_${indexCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_PerClass_Insert_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
@@ -464,8 +464,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
   });
   it("Delete", async () => {
     for (const indexCount of indexCounts) {
-      const seedFileName = path.join(outDir, "index_" + indexCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_Delete_" + indexCount + ".bim");
+      const seedFileName = path.join(outDir, `index_${indexCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_Delete_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
@@ -490,8 +490,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
     }
     // second round for per class Index
     for (const indexCount of indexCounts) {
-      const seedFileName = path.join(outDir, "index_perclass_" + indexCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_PerClass_Delete_" + indexCount + ".bim");
+      const seedFileName = path.join(outDir, `index_perclass_${indexCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_PerClass_Delete_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
@@ -517,8 +517,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
   });
   it("Read", async () => {
     for (const indexCount of indexCounts) {
-      const seedFileName = path.join(outDir, "index_" + indexCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_Read_" + indexCount + ".bim");
+      const seedFileName = path.join(outDir, `index_${indexCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_Read_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
@@ -537,7 +537,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.exists(elemFound);
         for (let k = 0; k < propCounts; ++k) {
-          const key = "primProp" + k.toString();
+          const key = `primProp${k.toString()}`;
           assert.equal(elemFound[key], "Test value");
         }
       }
@@ -546,8 +546,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
     }
     // second round for per class
     for (const indexCount of indexCounts) {
-      const seedFileName = path.join(outDir, "index_perclass_" + indexCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_PerClass_Read_" + indexCount + ".bim");
+      const seedFileName = path.join(outDir, `index_perclass_${indexCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_PerClass_Read_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
@@ -566,7 +566,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.exists(elemFound);
         for (let k = 0; k < propCounts; ++k) {
-          const key = "primProp" + k.toString();
+          const key = `primProp${k.toString()}`;
           assert.equal(elemFound[key], "Test value");
         }
       }
@@ -576,8 +576,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
   });
   it("Update", async () => {
     for (const indexCount of indexCounts) {
-      const seedFileName = path.join(outDir, "index_" + indexCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "PropsPerf_Update_" + indexCount + ".bim");
+      const seedFileName = path.join(outDir, `index_${indexCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `PropsPerf_Update_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
@@ -618,8 +618,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
     }
     // second round for per class
     for (const indexCount of indexCounts) {
-      const seedFileName = path.join(outDir, "index_perclass_" + indexCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "PropsPerf_PerClassUpdate_" + indexCount + ".bim");
+      const seedFileName = path.join(outDir, `index_perclass_${indexCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `PropsPerf_PerClassUpdate_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];

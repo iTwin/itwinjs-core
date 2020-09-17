@@ -337,7 +337,7 @@ describe("Table", () => {
       }
       expect(actualItems.length).to.be.equal(expectedItemKeys.length);
       for (let i = 0; i < expectedItemKeys.length; i++) {
-        expect(actualItems.find((x) => x.key === expectedItemKeys[i], "expectedItemKeys[" + i + "]")).to.not.be.undefined;
+        expect(actualItems.find((x) => x.key === expectedItemKeys[i], `expectedItemKeys[${i}]`)).to.not.be.undefined;
       }
     };
 
@@ -352,7 +352,7 @@ describe("Table", () => {
 
       expect(expectedItemKeys.length).to.be.equal(actualItems.length);
       for (let i = 0; i < expectedItemKeys.length; i++) {
-        expect(actualItems.find((x) => x[1].key === expectedItemKeys[i].columnKey && x[0].key === expectedItemKeys[i].rowKey), "expectedItemKeys[" + i + "]").to.not.be.undefined;
+        expect(actualItems.find((x) => x[1].key === expectedItemKeys[i].columnKey && x[0].key === expectedItemKeys[i].rowKey), `expectedItemKeys[${i}]`).to.not.be.undefined;
       }
     };
 
@@ -1361,7 +1361,7 @@ describe("Table", () => {
       });
       row.cells.push({
         key: filteringColumns[1].key,
-        record: TestUtils.createPropertyRecord("Title " + i, filteringColumns[1], "text"),
+        record: TestUtils.createPropertyRecord(`Title ${i}`, filteringColumns[1], "text"),
       });
       row.cells.push({
         key: filteringColumns[2].key,

@@ -119,7 +119,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectName = "iModelJsIntegrationTest";
     const iModelName = "Orlando"; // Attempts to upload <iModelRootDir>/Orlando/Orlando.bim
 
-    const iModelDir = path.join(iModelRootDir, iModelName, iModelName + ".bim");
+    const iModelDir = path.join(iModelRootDir, iModelName, `${iModelName}.bim`);
     const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
     await HubUtility.pushIModel(requestContext, projectId, iModelDir);
   });

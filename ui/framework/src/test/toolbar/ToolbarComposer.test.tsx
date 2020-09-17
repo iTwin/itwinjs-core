@@ -18,6 +18,10 @@ import TestUtils from "../TestUtils";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "ToolbarComposer-TestUiProvider";
+  public readonly syncEventId = "syncvisibility";
+  public hidden = false;
+  private _isHiddenCondition = new ConditionalBooleanValue(() => this.hidden, [this.syncEventId]);
+
   public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const groupChildSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool-in-group", 200, "icon-developer", "addon-tool-added-to-test-group", (): void => { }, { parentToolGroupId: "test.group" });
@@ -26,7 +30,8 @@ class TestUiProvider implements UiItemsProvider {
       const childActionSpec = ToolbarItemUtilities.createActionButton("child-test-action-tool", 210, "icon-developer", "addon-group-child-tool-2", (): void => { });
       const addonActionSpec = ToolbarItemUtilities.createActionButton("addon-action-tool-2", 220, "icon-developer", "addon-tool-2", (): void => { });
       const groupSpec = ToolbarItemUtilities.createGroupButton("test-tool-group", 230, "icon-developer", "addon-group-1", [childActionSpec, simpleActionSpec], { badgeType: BadgeType.TechnicalPreview, parentToolGroupId: "tool-formatting-setting" });
-      return [simpleActionSpec, addonActionSpec, groupSpec, groupChildSpec, nestedGroupChildSpec];
+      const visibilityTestActionSpec = ToolbarItemUtilities.createActionButton("visibility-test-action-tool", 240, "icon-developer", "visibility-test-tool", (): void => { }, { isHidden: this._isHiddenCondition });
+      return [simpleActionSpec, addonActionSpec, groupSpec, groupChildSpec, nestedGroupChildSpec, visibilityTestActionSpec];
     }
     return [];
   }
@@ -277,4 +282,21 @@ describe("<ToolbarComposer  />", async () => {
     // expect(renderedComponent.queryByTitle("tool-added-to-group")).not.to.be.null;
   });
 
+  it("should update items from an external provider's visibility properly", async () => {
+    const testUiProvider = new TestUiProvider();
+    UiItemsManager.register(testUiProvider);
+
+    const renderedComponent = render(
+      <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+        orientation={ToolbarOrientation.Horizontal}
+        items={[]} />);
+
+    expect(renderedComponent.queryByTitle("visibility-test-tool")).not.to.be.null;
+
+    testUiProvider.hidden = true;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testUiProvider.syncEventId);
+    await TestUtils.tick(500);
+
+    expect(renderedComponent.queryByTitle("visibility-test-tool")).to.be.null;
+  });
 });

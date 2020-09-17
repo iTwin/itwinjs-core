@@ -176,7 +176,7 @@ export class Formatter {
     if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
       componentText = componentText + spec.format.uomSeparator + label;
     } else {
-      if (!isLastPart) componentText = componentText + ":";
+      if (!isLastPart) componentText = `${componentText}:`;
     }
 
     return componentText;
@@ -277,7 +277,7 @@ export class Formatter {
       formattedValue = Formatter.integerPartToText(wholePart, spec);
       if (isPrecisionZero) {
         if (isKeepSingleZero) {
-          formattedValue = formattedValue + spec.format.decimalSeparator + "0";
+          formattedValue = `${formattedValue + spec.format.decimalSeparator}0`;
         }
       } else {
         fractionPart = Math.floor(fractionPart) / precisionScale;
@@ -294,7 +294,7 @@ export class Formatter {
       }
 
       if (isSci) {
-        const expString = "e" + expInt.toFixed(0);
+        const expString = `e${expInt.toFixed(0)}`;
         formattedValue = formattedValue + expString;
       }
     } else if (isFractional) {
@@ -303,7 +303,7 @@ export class Formatter {
 
       if (!fn.isZero && fn.hasFractionPart) {
         const wholeFractionSeparator = spec.format.hasFormatTraitSet(FormatTraits.FractionDash) ? "-" : " ";
-        const fractionString = fn.getNumeratorString() + "/" + fn.getDenominatorString();
+        const fractionString = `${fn.getNumeratorString()}/${fn.getDenominatorString()}`;
         formattedValue = formattedValue + wholeFractionSeparator + fractionString;
       }
     } else /* if (usesStops)*/ {

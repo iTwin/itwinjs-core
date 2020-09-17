@@ -21,12 +21,12 @@ export class HexadecimalTypeConverter extends TypeConverter {
 
     // Need to Uppercase without changing 0x part
     const hexString = value.toString();
-    return "0x" + hexString.substring(2, hexString.length).toUpperCase();
+    return `0x${hexString.substring(2, hexString.length).toUpperCase()}`;
   }
 
   public convertFromString(value: string) {
     if (value.substr(0, 2) !== "0x")
-      value = "0x" + value;
+      value = `0x${value}`;
 
     value = Id64.fromString(value);
     if (Id64.isValidId64(value))

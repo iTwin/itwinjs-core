@@ -96,7 +96,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getThumbnail(contextId: string, iModelId: GuidString): Promise<string | undefined> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     try {
-      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId: contextId!, size: "Small" });
+      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available
@@ -176,13 +176,13 @@ export class DefaultIModelServices implements IModelServices {
 
   private createVersionInfo(thisVersion: Version): VersionInfo {
     const createDate: Date = new Date(thisVersion.createdDate!);
-    const thisVersionInfo: VersionInfo = new VersionInfoImpl(thisVersion.name!, thisVersion.description!, createDate, thisVersion.changeSetId!, thisVersion.userCreated!, thisVersion.smallThumbnailId!.toString(), thisVersion.largeThumbnailId!.toString());
+    const thisVersionInfo: VersionInfo = new VersionInfoImpl(thisVersion.name!, thisVersion.description!, createDate, thisVersion.changeSetId!, thisVersion.userCreated, thisVersion.smallThumbnailId!.toString(), thisVersion.largeThumbnailId!.toString());
     return thisVersionInfo;
   }
 
   private createChangeSetInfo(thisChangeSet: ChangeSet): ChangeSetInfo {
     const pushDate: Date = new Date(thisChangeSet.pushDate!);
-    const thisChangeSetInfo: ChangeSetInfo = new ChangeSetInfoImpl(thisChangeSet.name!, thisChangeSet.description!, pushDate, thisChangeSet.changeSetId!, thisChangeSet.userCreated!, thisChangeSet.smallThumbnailId!, thisChangeSet.largeThumbnailId!);
+    const thisChangeSetInfo: ChangeSetInfo = new ChangeSetInfoImpl(thisChangeSet.name!, thisChangeSet.description!, pushDate, thisChangeSet.changeSetId!, thisChangeSet.userCreated, thisChangeSet.smallThumbnailId!, thisChangeSet.largeThumbnailId!);
     return thisChangeSetInfo;
   }
 

@@ -8,6 +8,7 @@
 
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { GenericUiEventArgs } from "@bentley/ui-abstract";
 
 /**
  * A range of time which can be used to focus in on activities scheduled around a milestone.
@@ -103,6 +104,20 @@ export type AnimationFractionChangeHandler = (animationFraction: number) => void
  */
 export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void;
 
+/** Actions for Pause/Play event
+ * @beta
+ */
+export enum TimelinePausePlayAction {
+  Toggle,
+  Pause,
+  Play,
+}
+/** Args for event to pause or play the timeline component
+ * @beta
+ */
+export interface TimelinePausePlayArgs extends GenericUiEventArgs {
+  timelineAction: TimelinePausePlayAction;
+}
 /** Interface for a timeline data provider class
  * @alpha
  */

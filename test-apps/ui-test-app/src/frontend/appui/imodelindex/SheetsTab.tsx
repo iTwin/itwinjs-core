@@ -96,7 +96,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
     if (!SheetsTab._viewsInitialized) {
       if (views.length === 0) {
         this.setState({ showPrompt: true }, () => {
-          this._timer.setOnExecute(() => this._updatePercent!());
+          this._timer.setOnExecute(() => this._updatePercent());
           this._timer.start();
         });
       }

@@ -74,6 +74,7 @@ public;CommonLoggerCategory
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
+internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
 internal;class ContentIdProvider
 public;ContextRealityModelProps
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
@@ -91,6 +92,7 @@ alpha;defaultMobileAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DesktopAuthorizationClientConfiguration
+internal;DesktopAuthorizationClientMessages
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
@@ -229,6 +231,7 @@ public;class IModel
 internal;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
+internal;IModelElectronIpc
 public;IModelEncryptionProps
 public;IModelError 
 public;IModelNotFoundResponse 

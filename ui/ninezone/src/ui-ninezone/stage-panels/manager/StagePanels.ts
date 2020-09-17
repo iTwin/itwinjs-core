@@ -42,7 +42,8 @@ type StagePanelPropNames = PickNames<StagePanelsManagerProps, "left" | "top" | "
 type MapPropNameToType<T, K extends keyof T, N> = {
   [P in K]: N;
 };
-type StagePanelPropNameToType = MapPropNameToType<StagePanelsManagerProps, "left", StagePanelType.Left> &
+type StagePanelPropNameToType =
+  MapPropNameToType<StagePanelsManagerProps, "left", StagePanelType.Left> &
   MapPropNameToType<StagePanelsManagerProps, "top", StagePanelType.Top> &
   MapPropNameToType<StagePanelsManagerProps, "right", StagePanelType.Right> &
   MapPropNameToType<StagePanelsManagerProps, "bottom", StagePanelType.Bottom>;

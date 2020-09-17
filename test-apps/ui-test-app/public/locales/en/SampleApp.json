@@ -31,6 +31,7 @@
     "settings": "Settings",
     "light": "Light",
     "dark": "Dark",
+    "systemPreferred": "System preferred",
     "themeTitle": "Theme",
     "themeDescription": "Toggle the theme between light and dark",
     "autoHideTitle": "Auto-Hide UI",
@@ -174,7 +175,8 @@
     "showContextMenu": "Show Context Menu",
     "showToolbar": "Show Toolbar",
     "showHTMLElement": "Show HTML Element",
-    "clearMessages": "Clear Messages"
+    "clearMessages": "Clear Messages",
+    "toggleTimelinePlay": "Toggle Timeline Pause/Play"
   },
   "tools": {
     "ToolWithSettings": {
@@ -361,5 +363,8 @@
     "dark": "Dark",
     "themeTitle": "Theme",
     "themeDescription": "Toggle the theme between light and dark"
+  },
+  "property-grid": {
+    "too-many-elements-selected": "Too many elements selected"
   }
 }

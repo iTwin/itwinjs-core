@@ -6,12 +6,14 @@
  * @module MarkupTools
  */
 
+// cspell:ignore rtmp stmp
+
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import {
   BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
 } from "@bentley/imodeljs-frontend";
-import { Element as MarkupElement, G, Marker, SVG } from "@svgdotjs/svg.js";
+import { G, Marker, Element as MarkupElement, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
@@ -311,8 +313,8 @@ export class ArrowTool extends RedlineTool {
     const arrowProps = MarkupApp.props.active.arrow;
     const arrowLength = arrowProps.length;
     const arrowWidth = arrowProps.width;
-    const arrowMarkerId = "ArrowMarker" + arrowLength + "x" + arrowWidth + "-" + color;
-    let marker = SVG("#" + arrowMarkerId) as Marker;
+    const arrowMarkerId = `ArrowMarker${arrowLength}x${arrowWidth}-${color}`;
+    let marker = SVG(`#${arrowMarkerId}`) as Marker;
     if (null === marker) {
       marker = this.markup.svgMarkup!.marker(arrowLength, arrowWidth).id(arrowMarkerId);
       marker.polygon([0, 0, arrowLength, arrowWidth * 0.5, 0, arrowWidth]);
@@ -450,7 +452,7 @@ export class SymbolTool extends RedlineTool {
   constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) { super(); }
 
   public onInstall(): boolean { if (undefined === this._symbolData) return false; return super.onInstall(); }
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? (MarkupTool.toolKey + "Symbol.Prompts.FirstPoint") : CoreTools.tools + "ElementSet.Prompts.OppositeCorner", true); }
+  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? (`${MarkupTool.toolKey}Symbol.Prompts.FirstPoint`) : `${CoreTools.tools}ElementSet.Prompts.OppositeCorner`, true); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (undefined === this._symbolData)

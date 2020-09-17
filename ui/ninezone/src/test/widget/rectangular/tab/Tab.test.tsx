@@ -73,7 +73,7 @@ describe("<Tab />", () => {
       mode={TabMode.Open}
       verticalAnchor={VerticalAnchor.Middle}
     />);
-    const element = sut.getDOMNode() as HTMLDivElement;
+    const element = sut.getDOMNode();
     sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
@@ -94,7 +94,7 @@ describe("<Tab />", () => {
       mode={TabMode.Open}
       verticalAnchor={VerticalAnchor.Middle}
     />);
-    const element = sut.getDOMNode() as HTMLDivElement;
+    const element = sut.getDOMNode();
     sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
@@ -257,7 +257,7 @@ describe("<Tab />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const pointerCaptor = sut.find(PointerCaptor);
-    const tabElement = sut.find("div").first().getDOMNode() as HTMLDivElement;
+    const tabElement = sut.find("div").first().getDOMNode();
     sinon.stub(tabElement, "getBoundingClientRect").returns(createBoundingClientRect(10, 10, 15, 15));
 
     const pointerUp = createPointerEvent();

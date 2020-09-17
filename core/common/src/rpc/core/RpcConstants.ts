@@ -83,6 +83,8 @@ export enum RpcEndpoint {
   Backend,
 }
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /** @internal */
 export const WEB_RPC_CONSTANTS = {
   CONTENT: "Content-Type",

@@ -187,6 +187,7 @@ export interface IContentDataProvider extends IPresentationDataProvider {
     getContent: (pageOptions?: PageOptions) => Promise<Content | undefined>;
     getContentDescriptor: () => Promise<Descriptor | undefined>;
     getContentSetSize: () => Promise<number>;
+    getFieldByPropertyRecord: (propertyRecord: PropertyRecord) => Promise<Field | undefined>;
     keys: KeySet;
     selectionInfo: SelectionInfo | undefined;
 }
@@ -274,6 +275,8 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 
 // @public
 export interface PresentationPropertyDataProviderProps {
+    // @alpha
+    disableFavoritesCategory?: boolean;
     // @alpha
     enableContentAutoUpdate?: boolean;
     imodel: IModelConnection;
@@ -365,10 +368,18 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
     preloadingEnabled?: boolean;
 }
 
-// @public
+// @beta
+export interface PropertyDataProviderWithUnifiedSelectionProps {
+    dataProvider: IPresentationPropertyDataProvider;
+    requestedContentInstancesLimit?: number;
+    // @internal (undocumented)
+    selectionHandler?: SelectionHandler;
+}
+
+// @public @deprecated
 export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<P & PropertyGridWithUnifiedSelectionProps>;
 
-// @public
+// @public @deprecated
 export interface PropertyGridWithUnifiedSelectionProps {
     dataProvider: IPresentationPropertyDataProvider;
     requestedContentInstancesLimit?: number;
@@ -447,6 +458,11 @@ export function useControlledTreeFiltering(props: ControlledTreeFilteringProps):
 
 // @beta
 export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+
+// @beta
+export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): {
+    isOverLimit: boolean;
+};
 
 // @public
 export function useRulesetRegistration(ruleset: Ruleset): void;

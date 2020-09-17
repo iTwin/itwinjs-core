@@ -9,7 +9,7 @@
 import "./WeightEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PrimitiveValue, PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { WeightPickerButton } from "../lineweight/WeightPickerButton";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
@@ -117,7 +117,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      initialValue = (record.value as PrimitiveValue).value as number;
+      initialValue = record.value.value as number;
     }
 
     const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;
@@ -156,6 +156,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
  * @beta
  */
 export class WeightPropertyEditor extends PropertyEditorBase {
+  // istanbul ignore next
   public get reactNode(): React.ReactNode {
     return <WeightEditor />;
   }

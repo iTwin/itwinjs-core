@@ -1,6 +1,6 @@
 {
   "name": "@bentley/forms-data-management-client",
-  "version": "2.5.5",
+  "version": "2.6.0",
   "description": "iModel.js Forms Data Management Client",
   "main": "lib/forms-data-management-client.js",
   "typings": "lib/forms-data-management-client",
@@ -34,17 +34,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.5.5"
+    "@bentley/itwin-client": "^2.6.0"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.5.5"
+    "@bentley/bentleyjs-core": "2.6.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.5.5",
-    "@bentley/certa": "2.5.5",
-    "@bentley/config-loader": "2.5.5",
-    "@bentley/itwin-client": "2.5.5",
-    "@bentley/oidc-signin-tool": "2.5.5",
+    "@bentley/build-tools": "2.6.0",
+    "@bentley/eslint-plugin": "2.6.0",
+    "@bentley/certa": "2.6.0",
+    "@bentley/config-loader": "2.6.0",
+    "@bentley/itwin-client": "2.6.0",
+    "@bentley/oidc-signin-tool": "2.6.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -61,6 +62,9 @@
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

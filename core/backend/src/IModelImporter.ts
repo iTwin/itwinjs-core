@@ -7,7 +7,7 @@
  */
 import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModelError, ModelProps, Placement3d,
+  AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModel, IModelError, ModelProps, Placement3d,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { Element, GeometricElement3d } from "./Element";
@@ -37,6 +37,10 @@ export class IModelImporter {
   public readonly targetDb: IModelDb;
   /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are imported. If `false`, throw an Error if an element would be outside of the projectExtents. */
   public readonly autoExtendProjectExtents: boolean = true;
+  /** The set of elements that should not be updated by this IModelImporter.
+   * @note Adding an element to this set is typically necessary when remapping a source element to one that already exists in the target and already has the desired properties.
+   */
+  public readonly doNotUpdateElementIds = new Set<Id64String>();
 
   /** Construct a new IModelImporter
    * @param targetDb The target IModelDb
@@ -47,12 +51,20 @@ export class IModelImporter {
     if (undefined !== options) {
       if (undefined !== options.autoExtendProjectExtents) this.autoExtendProjectExtents = options.autoExtendProjectExtents;
     }
+    // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
+    this.doNotUpdateElementIds.add(IModel.rootSubjectId);
+    this.doNotUpdateElementIds.add(IModel.dictionaryId);
+    this.doNotUpdateElementIds.add("0xe"); // RealityDataSources LinkPartition
   }
 
   /** Import the specified ModelProps (either as an insert or an update) into the target iModel. */
   public importModel(modelProps: ModelProps): void {
     if ((undefined === modelProps.id) || !Id64.isValidId64(modelProps.id)) {
       throw new IModelError(IModelStatus.InvalidId, "Model Id not provided, should be the same as the ModeledElementId", Logger.logError, loggerCategory);
+    }
+    if (this.doNotUpdateElementIds.has(modelProps.id)) {
+      Logger.logInfo(loggerCategory, `Do not update target model ${modelProps.id}`);
+      return;
     }
     try {
       const model: Model = this.targetDb.models.getModel(modelProps.id); // throws IModelError.NotFound if model does not exist
@@ -115,6 +127,10 @@ export class IModelImporter {
   /** Import the specified ElementProps (either as an insert or an update) into the target iModel. */
   public importElement(elementProps: ElementProps): Id64String {
     if (undefined !== elementProps.id) {
+      if (this.doNotUpdateElementIds.has(elementProps.id)) {
+        Logger.logInfo(loggerCategory, `Do not update target element ${elementProps.id}`);
+        return elementProps.id;
+      }
       this.onUpdateElement(elementProps);
     } else {
       this.onInsertElement(elementProps); // targetElementProps.id assigned by insertElement

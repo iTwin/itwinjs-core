@@ -179,7 +179,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
           !runStatus && this._outputMessage(UiFramework.translate("keyinbrowser.failedToRun"));
         } catch (e) {
           // istanbul ignore next
-          this._outputMessage(UiFramework.translate("keyinbrowser.exceptionOccurred") + ": " + e);
+          this._outputMessage(`${UiFramework.translate("keyinbrowser.exceptionOccurred")}: ${e}`);
         }
       }
     }

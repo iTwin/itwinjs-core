@@ -13,7 +13,7 @@ import { MultiSelectionHandler, SelectionHandler, SingleSelectionHandler } from 
 import { SelectionMode } from "../../../common/selection/SelectionModes";
 import { Observable } from "../Observable";
 import { TreeActions } from "../TreeActions";
-import { TreeModelNode, VisibleTreeNodes, isTreeModelNode } from "../TreeModel";
+import { isTreeModelNode, TreeModelNode, VisibleTreeNodes } from "../TreeModel";
 import { isNavigationKey, ItemKeyboardNavigator, Orientation } from "@bentley/ui-core";
 
 /** @internal */
@@ -81,11 +81,11 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
       } else {
         if (replacement) {
           this.onSelectionReplaced.emit({
-            selectedNodeIds: selections[0] as RangeSelection,
+            selectedNodeIds: selections[0],
           });
         } else {
           this.onSelectionChanged.emit({
-            selectedNodes: selections[0] as RangeSelection,
+            selectedNodes: selections[0],
             deselectedNodes: [],
           });
         }
@@ -102,6 +102,7 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
 
     this._selectionHandler = new SelectionHandler(selectionMode, onItemsSelected, onItemsDeselected);
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
     const itemHandlers = new Proxy({}, {
       get(_target, prop) {
@@ -294,7 +295,7 @@ class ItemHandler implements SingleSelectionHandler<string> {
   /* istanbul ignore next: noop */
   public deselect() { }
 
-  // eslint-disable-next-line rulesdir/prefer-get
+  // eslint-disable-next-line @bentley/prefer-get
   public isSelected(): boolean {
     return this._node.isSelected;
   }

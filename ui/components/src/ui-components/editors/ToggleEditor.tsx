@@ -9,7 +9,7 @@
 import "./ToggleEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PrimitiveValue, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
+import { PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { Toggle } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
@@ -88,7 +88,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
-      const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
+      const primitiveValue = propertyRecord.value.value;
       toggleValue = primitiveValue as boolean;
     }
 
@@ -120,7 +120,6 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
  * @beta
  */
 export class TogglePropertyEditor extends PropertyEditorBase {
-
   public get reactNode(): React.ReactNode {
     return <ToggleEditor />;
   }

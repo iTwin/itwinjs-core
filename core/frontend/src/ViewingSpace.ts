@@ -273,7 +273,7 @@ export class ViewingSpace {
 
         // if the camera is on, don't allow front plane behind camera
         if (this.eyePoint) {
-          const eyeOrg = this.eyePoint!.minus(origin); // vector from eye to origin
+          const eyeOrg = this.eyePoint.minus(origin); // vector from eye to origin
           this.toViewOrientation(eyeOrg);
 
           const frontDist = eyeOrg.z - delta.z; // front distance is backDist - delta.z

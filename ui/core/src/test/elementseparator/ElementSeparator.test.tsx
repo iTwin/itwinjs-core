@@ -529,4 +529,60 @@ describe("ElementSeparator", () => {
     moveElement({ clientX: 40 });
     expect(onRatioChanged.callCount, "Ratio change should be called again after pointer is hovering").to.be.equal(2);
   });
+
+  it("should call drag stop callback when unmounted while being dragged", () => {
+    const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
+    const onResizeHandleDragChangedSpy = sinon.spy();
+
+    const elementSeparator = mount(
+      <ElementSeparator
+        orientation={Orientation.Horizontal}
+        movableArea={100}
+        onRatioChanged={onRatioChanged}
+        ratio={0.5}
+        isResizeHandleBeingDragged={false}
+        isResizeHandleHovered={false}
+        onResizeHandleDragChanged={onResizeHandleDragChangedSpy}
+      />);
+
+    elementSeparator.simulate("pointerdown", { clientX: 50 });
+    expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(1);
+
+
+    moveElement({ clientX: 70 });
+    expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
+
+    moveElement({ clientX: 90 });
+    expect(onRatioChanged.callCount, "Called ratio change when it was not hovered and update was not needed").to.be.equal(1);
+
+    expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(1);
+
+    elementSeparator.unmount();
+
+    expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(2)
+  });
+
+  it("should call hover stop callback when unmounted while being hovered", () => {
+    const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
+    const onResizeHandleHoverChanged = sinon.spy();
+
+    const elementSeparator = mount(
+      <ElementSeparator
+        orientation={Orientation.Horizontal}
+        movableArea={100}
+        onRatioChanged={onRatioChanged}
+        ratio={0.5}
+        isResizeHandleBeingDragged={false}
+        isResizeHandleHovered={false}
+        onResizeHandleHoverChanged={onResizeHandleHoverChanged}
+      />);
+
+    elementSeparator.simulate("pointerover")
+
+    expect(onResizeHandleHoverChanged.callCount).to.be.equal(1);
+
+    elementSeparator.unmount();
+
+    expect(onResizeHandleHoverChanged.callCount).to.be.equal(2);
+  });
 });

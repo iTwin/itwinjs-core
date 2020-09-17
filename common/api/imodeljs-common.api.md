@@ -1358,6 +1358,9 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 }>;
 
 // @internal
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
+
+// @internal
 export abstract class ContentIdProvider {
     // (undocumented)
     protected abstract computeId(depth: number, i: number, j: number, k: number, mult: number): string;
@@ -1468,6 +1471,30 @@ export interface DesktopAuthorizationClientConfiguration {
     expiryBuffer?: number;
     redirectUri: string;
     scope: string;
+}
+
+// @internal
+export class DesktopAuthorizationClientMessages {
+    // (undocumented)
+    static readonly getAccessToken: string;
+    // (undocumented)
+    static readonly getAccessTokenComplete: string;
+    // (undocumented)
+    static readonly initialize: string;
+    // (undocumented)
+    static readonly initializeComplete: string;
+    // (undocumented)
+    static readonly onUserStateChanged: string;
+    // (undocumented)
+    static readonly onUserStateChangedComplete: string;
+    // (undocumented)
+    static readonly signIn: string;
+    // (undocumented)
+    static readonly signInComplete: string;
+    // (undocumented)
+    static readonly signOut: string;
+    // (undocumented)
+    static readonly signOutComplete: string;
 }
 
 // @internal
@@ -1904,7 +1931,7 @@ export enum Editor3dRpcInterfaceWriteReturnType {
 // @beta
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
     // (undocumented)
-    static get isElectron(): boolean;
+    static readonly isElectron: boolean;
     abstract protocol: ElectronRpcProtocol;
 }
 
@@ -3431,6 +3458,16 @@ export interface IModelCoordinatesResponseProps {
     fromCache: number;
     // (undocumented)
     iModelCoords: PointWithStatus[];
+}
+
+// @internal (undocumented)
+export interface IModelElectronIpc {
+    // (undocumented)
+    on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+    // (undocumented)
+    send: (channel: string, ...data: any[]) => void;
+    // (undocumented)
+    showOpenDialogSync: (options: any) => any;
 }
 
 // @public

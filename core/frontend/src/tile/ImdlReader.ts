@@ -644,7 +644,7 @@ export class ImdlReader extends GltfReader {
           }
         } else if (undefined === layerId) {
           const branch = new GraphicBranch(true);
-          branch.animationId = this._modelId + "_" + nodeKey;
+          branch.animationId = `${this._modelId}_${nodeKey}`;
           for (const primitive of primitives) {
             const graphic = this.readMeshGraphic(primitive);
             if (undefined !== graphic)

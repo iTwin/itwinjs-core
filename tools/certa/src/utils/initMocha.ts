@@ -5,8 +5,8 @@
 // NB: This file is not a CommonJs module - it needs to run in the browser. Do not import or export modules here!
 
 type CertaConfig = import("../CertaConfig").CertaConfig;
-declare let _CERTA_CONFIG: CertaConfig;
-declare let _CertaConsole: undefined | ((name: string, args: any[]) => void);
+declare let _CERTA_CONFIG: CertaConfig; // eslint-disable-line @typescript-eslint/naming-convention
+declare let _CertaConsole: undefined | ((name: string, args: any[]) => void); // eslint-disable-line @typescript-eslint/naming-convention
 
 // Redirect all console output back to the main (backend) process, if necessary
 if (typeof _CertaConsole !== "undefined") {

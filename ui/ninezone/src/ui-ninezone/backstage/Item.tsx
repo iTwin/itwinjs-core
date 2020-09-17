@@ -30,6 +30,8 @@ export interface BackstageItemProps extends CommonProps {
   safeAreaInsets?: SafeAreaInsets;
   /** Backstage item subtitle. */
   subtitle?: string;
+  /** A badge to draw. */
+  badge?: React.ReactNode;
 }
 
 /** Item in the [[Backstage]].
@@ -53,6 +55,11 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
         role="menuitem"
       >
         <div className="nz-icon">{this.props.icon}</div>
+        {this.props.badge &&
+          <div className="nz-badge">
+            {this.props.badge}
+          </div>
+        }
         <div>
           <span>{this.props.children}</span>
           {this.props.subtitle && <span>{this.props.subtitle}</span>}

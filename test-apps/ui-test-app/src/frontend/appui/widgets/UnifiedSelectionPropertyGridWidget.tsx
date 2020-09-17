@@ -5,15 +5,16 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
-import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
+import {
+  IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
+} from "@bentley/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { ActionButtonRendererProps, PropertyGrid, PropertyGridContextMenuArgs, useAsyncValue } from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
+import {
+  ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  VirtualizedPropertyGridWithDataProviderProps,
+} from "@bentley/ui-components";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
-
-// create a HOC property grid component that supports unified selection
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const UnifiedSelectionPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -163,6 +164,15 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 
     return null;
   }
+}
+
+function UnifiedSelectionPropertyGrid(props: VirtualizedPropertyGridWithDataProviderProps & { dataProvider: IPresentationPropertyDataProvider }) {
+  const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider: props.dataProvider });
+
+  if (isOverLimit) {
+    return (<FillCentered>{IModelApp.i18n.translate("SampleApp:property-grid.too-many-elements-selected")}</FillCentered>);
+  }
+  return <VirtualizedPropertyGridWithDataProvider {...props} />;
 }
 
 function createDataProvider(imodel: IModelConnection): PresentationPropertyDataProvider {

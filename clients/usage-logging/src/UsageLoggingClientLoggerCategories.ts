@@ -13,5 +13,7 @@
  */
 export enum UsageLoggingClientLoggerCategory {
   /** The logger category used by base clients */
-  Client = "usage-logging-client",
+  Client = "usage-logging-client.Client",
+  /** The logger category used by telemetry clients */
+  Telemetry = "usage-logging-client.Telemetry",
 }

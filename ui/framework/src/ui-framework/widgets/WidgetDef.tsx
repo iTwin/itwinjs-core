@@ -150,7 +150,7 @@ export class WidgetDef {
       this._id = widgetProps.id;
     else {
       WidgetDef._sId++;
-      this._id = "Widget-" + WidgetDef._sId;
+      this._id = `Widget-${WidgetDef._sId}`;
     }
 
     WidgetDef.initializeFromWidgetProps(widgetProps, this);
@@ -296,7 +296,7 @@ export class WidgetDef {
       // istanbul ignore else
       if (this._widgetControl) {
         if (this._widgetControl.getType() !== type) {
-          throw new UiError(UiFramework.loggerCategory(this), "getWidgetControl: '" + usedClassId + "' is NOT a " + type + "; it is a " + this._widgetControl.getType());
+          throw new UiError(UiFramework.loggerCategory(this), `getWidgetControl: '${usedClassId}' is NOT a ${type}; it is a ${this._widgetControl.getType()}`);
         }
 
         this._widgetControl.widgetDef = this;

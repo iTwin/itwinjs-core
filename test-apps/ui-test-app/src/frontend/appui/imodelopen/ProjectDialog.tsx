@@ -83,7 +83,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
     if (!value || value.trim().length === 0) {
       this.setState({ isLoading: false, projects: undefined, activeFilter: ProjectScope.All, filter: value });
     } else {
-      const filter = "Name like '" + value + "'";
+      const filter = `Name like '${value}'`;
       this.setState({ isLoading: true, projects: undefined, activeFilter: ProjectScope.All });
       UiFramework.projectServices.getProjects(ProjectScope.All, 40, 0, filter).then((projectInfos: ProjectInfo[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
         this.setState({ isLoading: false, projects: projectInfos, filter: value });
@@ -101,7 +101,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
         return "You have no projects assigned. Try a search.";
       default:
         if (this.state.filter.trim() !== "")
-          return "No matches found for '" + this.state.filter + "'";
+          return `No matches found for '${this.state.filter}'`;
         else
           return "Search all projects by name, number, or other project attribute.";
     }

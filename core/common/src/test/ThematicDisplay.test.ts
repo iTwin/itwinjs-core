@@ -64,17 +64,17 @@ describe("ThematicDisplay", () => {
       distanceCutoff: 5.0,
     };
     td = ThematicDisplay.fromJSON({ sensorSettings: sensorSettingsProps });
-    expect(td.sensorSettings.sensors!.length).to.equal(5);
-    expect(td.sensorSettings.sensors![0].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[0].position));
-    expect(td.sensorSettings.sensors![0].value).to.equal(sensorSettingsProps.sensors[0].value);
-    expect(td.sensorSettings.sensors![1].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[1].position));
-    expect(td.sensorSettings.sensors![1].value).to.equal(sensorSettingsProps.sensors[1].value);
-    expect(td.sensorSettings.sensors![2].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[2].position));
-    expect(td.sensorSettings.sensors![2].value).to.equal(sensorSettingsProps.sensors[2].value);
-    expect(td.sensorSettings.sensors![3].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[3].position));
-    expect(td.sensorSettings.sensors![3].value).to.equal(0); // verify that the 'bad' value of -1 gets clamped to 0
-    expect(td.sensorSettings.sensors![4].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[4].position));
-    expect(td.sensorSettings.sensors![4].value).to.equal(1); // verify that the 'bad' value of 2 gets clamped to 1
+    expect(td.sensorSettings.sensors.length).to.equal(5);
+    expect(td.sensorSettings.sensors[0].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[0].position));
+    expect(td.sensorSettings.sensors[0].value).to.equal(sensorSettingsProps.sensors[0].value);
+    expect(td.sensorSettings.sensors[1].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[1].position));
+    expect(td.sensorSettings.sensors[1].value).to.equal(sensorSettingsProps.sensors[1].value);
+    expect(td.sensorSettings.sensors[2].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[2].position));
+    expect(td.sensorSettings.sensors[2].value).to.equal(sensorSettingsProps.sensors[2].value);
+    expect(td.sensorSettings.sensors[3].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[3].position));
+    expect(td.sensorSettings.sensors[3].value).to.equal(0); // verify that the 'bad' value of -1 gets clamped to 0
+    expect(td.sensorSettings.sensors[4].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[4].position));
+    expect(td.sensorSettings.sensors[4].value).to.equal(1); // verify that the 'bad' value of 2 gets clamped to 1
     expect(td.sensorSettings.distanceCutoff).to.equal(sensorSettingsProps.distanceCutoff);
     verifyBackAndForth(td); // verify round-trip
 

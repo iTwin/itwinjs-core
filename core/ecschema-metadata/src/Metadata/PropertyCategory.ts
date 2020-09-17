@@ -18,7 +18,7 @@ export class PropertyCategory extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.PropertyCategory; // eslint-disable-line
   protected _priority: number;
 
-  get priority() { return this._priority; }
+  public get priority() { return this._priority; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name);

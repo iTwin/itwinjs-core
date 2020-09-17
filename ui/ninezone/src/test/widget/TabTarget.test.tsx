@@ -10,7 +10,7 @@ import { NineZoneProvider } from "../Providers";
 describe("WidgetTabTarget ", () => {
   it("should render with cursor type", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -27,7 +27,7 @@ describe("WidgetTabTarget ", () => {
 
   it("should render hidden in dragged widget", () => {
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
       <NineZoneProvider
         state={nineZone}

@@ -34,4 +34,10 @@ describe("<Item />", () => {
   it("should render subtitle", () => {
     shallow(<BackstageItem subtitle="custom subtitle" />).should.matchSnapshot();
   });
+
+  it("renders with badge correctly", () => {
+    const sut = mount(<BackstageItem badge />);
+    const badge = sut.find("div.nz-badge");
+    badge.length.should.eq(1);
+  });
 });

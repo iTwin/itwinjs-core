@@ -131,7 +131,7 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
 
 type GlobalEventConstructor = (new (handler?: IModelBaseHandler, sasToken?: string) => IModelHubGlobalEvent);
 /** Get constructor from GlobalEventType name. */
-function ConstructorFromEventType(type: GlobalEventType): GlobalEventConstructor {
+function constructorFromEventType(type: GlobalEventType): GlobalEventConstructor {
   switch (type) {
     case "SoftiModelDeleteEvent":
       return SoftiModelDeleteEvent;
@@ -151,8 +151,9 @@ function ConstructorFromEventType(type: GlobalEventType): GlobalEventConstructor
  * @returns Appropriate global event object.
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent {
-  const constructor: GlobalEventConstructor = ConstructorFromEventType(response.header["content-type"]);
+  const constructor: GlobalEventConstructor = constructorFromEventType(response.header["content-type"]);
   const globalEvent = new constructor(handler, sasToken);
   globalEvent.fromJson({ ...response.header, ...response.body });
   return globalEvent;
@@ -326,7 +327,7 @@ export class GlobalEventHandler extends EventBaseHandler {
     let url: string = `${baseAddress}/Subscriptions/${subscriptionId}/messages/head`;
 
     if (timeout) {
-      url = url + `?timeout=${timeout}`;
+      url = `${url}?timeout=${timeout}`;
     }
 
     return url;

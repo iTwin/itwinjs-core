@@ -261,6 +261,13 @@ describe("<Popup />", () => {
           <Popup isOpen onOpen={() => { }} onClose={() => { }} showShadow showArrow position={RelativePosition.BottomRight} />
         </div>).should.matchSnapshot();
     });
+
+    it("renders correctly with no animation", () => {
+      shallow(
+        <div>
+          <Popup isOpen animate={false} />
+        </div>).should.matchSnapshot();
+    });
   });
 
   describe("componentDidUpdate", () => {

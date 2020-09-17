@@ -8,6 +8,7 @@
 
 import { BadgeType } from "./BadgeType";
 import { ConditionalBooleanValue } from "./ConditionalBooleanValue";
+import { ConditionalStringValue } from "./ConditionalStringValue";
 
 /** Prototype for string getter function.
  * @beta
@@ -23,10 +24,10 @@ export interface CommonItemProps {
   /** Badge to be overlaid on the item. */
   badgeType?: BadgeType;
   /** if set, it is used to explicitly set the description shown by components that support a description. */
-  description?: string;
+  description?: string | ConditionalStringValue;
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
-  icon?: string;
-  /** optional data to used by item implementor. */
+  icon?: string | ConditionalStringValue;
+  /** optional data to be used by item implementor. */
   readonly internalData?: Map<string, any>;
 
   /** if true component will be hidden - defaults to false */
@@ -38,9 +39,9 @@ export interface CommonItemProps {
   /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
   isPressed?: boolean;
   /** if set, it is used to explicitly set the label shown by a component. */
-  label?: string;
+  label?: string | ConditionalStringValue;
   /** used to explicitly set the tooltip shown by a component. */
-  tooltip?: string;
+  tooltip?: string | ConditionalStringValue;
 }
 
 /** Definition for a command handler.

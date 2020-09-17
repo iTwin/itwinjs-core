@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { createButton, createComboBox } from "@bentley/frontend-devtools";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@bentley/geometry-core";
@@ -102,17 +101,17 @@ export class SectionsPanel extends ToolBarDropDown {
 }
 
 class ModelClipTool {
-  private static _leftModels: string [] = [];
-  private static _rightModels: string [] = [];
+  private static _leftModels: string[] = [];
+  private static _rightModels: string[] = [];
   public static applyModelClipping(vp: Viewport, clipPoint: Point3d, negate: boolean): void {
     const view = vp.view;
     if (!view || !view.isSpatialView())
       return;
     const createClip = (vector: Vector3d, p: Point3d) => {
       const plane = ClipPlane.createNormalAndPoint(vector, p)!;
-      const planes = ConvexClipPlaneSet.createPlanes([ plane ]);
+      const planes = ConvexClipPlaneSet.createPlanes([plane]);
       const primitive = ClipPrimitive.createCapture(planes);
-      return ClipVector.createCapture([ primitive ]);
+      return ClipVector.createCapture([primitive]);
     };
 
     let point = clipPoint.clone();
@@ -149,7 +148,7 @@ export interface DividingLineProps {
 
 export class TwoPanelDivider {
   private limitToBounds(n: number): number {
-    n = Math.min(n, this._bounds.right - (this.dividerElem!.clientWidth + this._buffer));
+    n = Math.min(n, this._bounds.right - (this.dividerElem.clientWidth + this._buffer));
     n = Math.max(n, this._bounds.left + this._buffer);
     return n;
   }

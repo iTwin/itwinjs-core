@@ -470,6 +470,14 @@ describe("GrowableXYArray", () => {
     const pointC = GrowableXYZArray.create(dataC);
     ck.testTrue(GrowableXYZArray.isAlmostEqual(pointA, pointB));
     ck.testTrue(GrowableXYZArray.isAlmostEqual(pointA, pointC));
+    ck.testExactNumber(pointA.length, pointB.length);
+    ck.testExactNumber(pointA.length, pointC.length);
+
+    // GrowableXYZArray might hold some additional points exceeding the actual point length
+    // Make sure that there are no hidden points
+    ck.testUndefined(pointA.component(n, 0));
+    ck.testUndefined(pointB.component(n, 0));
+    ck.testUndefined(pointC.component(n, 0));
     expect(ck.getNumErrors()).equals(0);
   });
 

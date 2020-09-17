@@ -91,9 +91,9 @@ export class WebAppRpcLogging {
       operation: object.operation.operationName,
       rpcInterface: WebAppRpcLogging.getRpcInterfaceName(object.operation.interfaceDefinition),
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
-      ActivityId: object.id,
-      TimeElapsed: ("elapsed" in object) ? object.elapsed : 0,
-      MachineName: getHostname(),
+      ActivityId: object.id, // eslint-disable-line @typescript-eslint/naming-convention
+      TimeElapsed: ("elapsed" in object) ? object.elapsed : 0, // eslint-disable-line @typescript-eslint/naming-convention
+      MachineName: getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
     }));
   }
@@ -109,9 +109,9 @@ export class WebAppRpcLogging {
       rpcInterface: WebAppRpcLogging.getRpcInterfaceName(object.operation.interfaceDefinition),
       status,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
-      ActivityId: object.id,
-      TimeElapsed: elapsed,
-      MachineName: getHostname(),
+      ActivityId: object.id, // eslint-disable-line @typescript-eslint/naming-convention
+      TimeElapsed: elapsed, // eslint-disable-line @typescript-eslint/naming-convention
+      MachineName: getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
     }));
   }
@@ -124,8 +124,8 @@ export class WebAppRpcLogging {
       method: request.method,
       path: request.path,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
-      ActivityId: request.id,
-      MachineName: getHostname(),
+      ActivityId: request.id, // eslint-disable-line @typescript-eslint/naming-convention
+      MachineName: getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
     }));
   }
@@ -142,8 +142,8 @@ export class WebAppRpcLogging {
       status: invocation.status,
       errorMessage,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
-      ActivityId: invocation.request.id,
-      MachineName: getHostname(),
+      ActivityId: invocation.request.id, // eslint-disable-line @typescript-eslint/naming-convention
+      MachineName: getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
     }));
   }

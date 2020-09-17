@@ -736,7 +736,7 @@ export class BentleyError extends Error {
         return "Success";
 
       default:
-        return "Error (" + this.errorNumber + ")";
+        return `Error (${this.errorNumber})`;
     }
   }
 }

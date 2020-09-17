@@ -31,7 +31,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
-function translateBold(key: string) { return "<b>" + CoreTools.translate("Measure.Labels." + key) + ":</b> "; }
+function translateBold(key: string) { return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `; }
 
 /** @alpha */
 class MeasureLabel implements CanvasDecoration {
@@ -88,7 +88,7 @@ class MeasureMarker extends Marker {
       ctx.lineWidth = 2;
       ctx.strokeStyle = "black";
       const hilite = this.isSelected && this._hiliteColor ? this._hiliteColor.colors : undefined;
-      ctx.fillStyle = undefined !== hilite ? "rgba(" + (hilite.r | 0) + "," + (hilite.g | 0) + "," + (hilite.b | 0) + ", 0.5)" : "rgba(255,255,255,.5)";
+      ctx.fillStyle = undefined !== hilite ? `rgba(${hilite.r | 0},${hilite.g | 0},${hilite.b | 0}, 0.5)` : "rgba(255,255,255,.5)";
       ctx.fill();
       ctx.stroke();
     };
@@ -341,7 +341,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   protected reportMeasurements(): void {
     if (undefined === this._totalDistanceMarker)
       return;
-    const briefMsg = CoreTools.translate(this._acceptedSegments.length > 1 ? "Measure.Labels.CumulativeDistance" : "Measure.Labels.Distance") + ": " + this._totalDistanceMarker.label;
+    const briefMsg = `${CoreTools.translate(this._acceptedSegments.length > 1 ? "Measure.Labels.CumulativeDistance" : "Measure.Labels.Distance")}: ${this._totalDistanceMarker.label}`;
     const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.Sticky);
     IModelApp.notifications.outputMessage(msgDetail);
   }
@@ -374,13 +374,13 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     let toolTipHtml = "";
     const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, distanceFormatterSpec);
-    toolTipHtml += translateBold("Distance") + formattedDistance + "<br>";
+    toolTipHtml += `${translateBold("Distance") + formattedDistance}<br>`;
 
     if (is3d) {
       const angleFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Angle);
       if (undefined !== angleFormatterSpec) {
         const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, angleFormatterSpec);
-        toolTipHtml += translateBold("Slope") + formattedSlope + "<br>";
+        toolTipHtml += `${translateBold("Slope") + formattedSlope}<br>`;
       }
     }
 
@@ -398,17 +398,17 @@ export class MeasureDistanceTool extends PrimitiveTool {
         const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, coordFormatterSpec);
         const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, coordFormatterSpec);
         const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, coordFormatterSpec);
-        toolTipHtml += translateBold("StartCoord") + formattedStartX + ", " + formattedStartY;
+        toolTipHtml += `${translateBold("StartCoord") + formattedStartX}, ${formattedStartY}`;
         if (is3d)
-          toolTipHtml += ", " + formattedStartZ;
+          toolTipHtml += `, ${formattedStartZ}`;
         toolTipHtml += "<br>";
       }
       const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, coordFormatterSpec);
       const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, coordFormatterSpec);
       const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, coordFormatterSpec);
-      toolTipHtml += translateBold("EndCoord") + formattedEndX + ", " + formattedEndY;
+      toolTipHtml += `${translateBold("EndCoord") + formattedEndX}, ${formattedEndY}`;
       if (is3d)
-        toolTipHtml += ", " + formattedEndZ;
+        toolTipHtml += `, ${formattedEndZ}`;
       toolTipHtml += "<br>";
     }
 
@@ -416,9 +416,9 @@ export class MeasureDistanceTool extends PrimitiveTool {
       const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.x), distanceFormatterSpec);
       const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.y), distanceFormatterSpec);
       const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.z), distanceFormatterSpec);
-      toolTipHtml += translateBold("Delta") + formattedDeltaX + ", " + formattedDeltaY;
+      toolTipHtml += `${translateBold("Delta") + formattedDeltaX}, ${formattedDeltaY}`;
       if (is3d)
-        toolTipHtml += ", " + formattedDeltaZ;
+        toolTipHtml += `, ${formattedDeltaZ}`;
       toolTipHtml += "<br>";
     }
 
@@ -635,9 +635,9 @@ export class MeasureLocationTool extends PrimitiveTool {
       const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
       const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
       const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-      toolTipHtml += translateBold("Coordinate") + formattedPointX + ", " + formattedPointY;
+      toolTipHtml += `${translateBold("Coordinate") + formattedPointX}, ${formattedPointY}`;
       if (is3d)
-        toolTipHtml += ", " + formattedPointZ;
+        toolTipHtml += `, ${formattedPointZ}`;
 
       toolTipHtml += "<br>";
     }
@@ -652,8 +652,8 @@ export class MeasureLocationTool extends PrimitiveTool {
           const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
           const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
           const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
-          toolTipHtml += translateBold("LatLong") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
-          toolTipHtml += translateBold("Altitude") + formattedHeight + "<br>";
+          toolTipHtml += `${translateBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
+          toolTipHtml += `${translateBold("Altitude") + formattedHeight}<br>`;
         } catch { }
       }
     }
@@ -732,7 +732,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
   protected static _orientationName = "enumAsOrientation";
-  protected static enumAsOrientationMessage(str: string) { return CoreTools.translate("Settings.Orientation." + str); }
+  protected static enumAsOrientationMessage(str: string) { return CoreTools.translate(`Settings.Orientation.${str}`); }
   protected static _getEnumAsOrientationDescription = (): PropertyDescription => {
     return {
       name: MeasureAreaByPointsTool._orientationName,
@@ -932,12 +932,12 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
     if (undefined !== areaFormatterSpec) {
       const formattedArea = IModelApp.quantityFormatter.formatQuantity(this._area, areaFormatterSpec);
-      toolTipHtml += translateBold("Area") + formattedArea + "<br>";
+      toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
     }
     const perimeterFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
     if (undefined !== perimeterFormatterSpec) {
       const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(this._perimeter, perimeterFormatterSpec);
-      toolTipHtml += translateBold("Perimeter") + formattedPerimeter + "<br>";
+      toolTipHtml += `${translateBold("Perimeter") + formattedPerimeter}<br>`;
     }
     const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
     if (undefined !== coordFormatterSpec) {
@@ -949,9 +949,9 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
       const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
       const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-      toolTipHtml += translateBold("Centroid") + formattedPointX + ", " + formattedPointY;
+      toolTipHtml += `${translateBold("Centroid") + formattedPointX}, ${formattedPointY}`;
       if (is3d)
-        toolTipHtml += ", " + formattedPointZ;
+        toolTipHtml += `, ${formattedPointZ}`;
 
       toolTipHtml += "<br>";
     }
@@ -963,7 +963,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   protected reportMeasurements(): void {
     if (undefined === this._marker)
       return;
-    const briefMsg = CoreTools.translate("Measure.Labels.Area") + ": " + this._marker.label;
+    const briefMsg = `${CoreTools.translate("Measure.Labels.Area")}: ${this._marker.label}`;
     const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.Sticky);
     IModelApp.notifications.outputMessage(msgDetail);
   }
@@ -1146,7 +1146,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
       default:
         return;
     }
-    const briefMsg = CoreTools.translate(label) + ": " + this._totalMarker.label;
+    const briefMsg = `${CoreTools.translate(label)}: ${this._totalMarker.label}`;
     const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.Sticky);
     IModelApp.notifications.outputMessage(msgDetail);
   }
@@ -1162,7 +1162,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
         if (undefined !== distanceFormatterSpec) {
           const formattedLength = IModelApp.quantityFormatter.formatQuantity(responseProps.length ? responseProps.length : 0, distanceFormatterSpec);
-          toolTipHtml += translateBold("Length") + formattedLength + "<br>";
+          toolTipHtml += `${translateBold("Length") + formattedLength}<br>`;
         }
         break;
       }
@@ -1170,13 +1170,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
         if (undefined !== areaFormatterSpec) {
           const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area ? responseProps.area : 0, areaFormatterSpec);
-          toolTipHtml += translateBold("Area") + formattedArea + "<br>";
+          toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
         }
         if (responseProps.perimeter) {
           const perimeterFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
           if (undefined !== perimeterFormatterSpec) {
             const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(responseProps.perimeter, perimeterFormatterSpec);
-            toolTipHtml += translateBold("Perimeter") + formattedPerimeter + "<br>";
+            toolTipHtml += `${translateBold("Perimeter") + formattedPerimeter}<br>`;
           }
         }
         break;
@@ -1185,13 +1185,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const volumeFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Volume);
         if (undefined !== volumeFormatterSpec) {
           const formattedVolume = IModelApp.quantityFormatter.formatQuantity(responseProps.volume ? responseProps.volume : 0, volumeFormatterSpec);
-          toolTipHtml += translateBold("Volume") + formattedVolume + "<br>";
+          toolTipHtml += `${translateBold("Volume") + formattedVolume}<br>`;
         }
         if (responseProps.area) {
           const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
           if (undefined !== areaFormatterSpec) {
             const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area, areaFormatterSpec);
-            toolTipHtml += translateBold("Area") + formattedArea + "<br>";
+            toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
           }
         }
         break;
@@ -1209,9 +1209,9 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
         const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
         const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-        toolTipHtml += translateBold("Centroid") + formattedPointX + ", " + formattedPointY;
+        toolTipHtml += `${translateBold("Centroid") + formattedPointX}, ${formattedPointY}`;
         if (is3d)
-          toolTipHtml += ", " + formattedPointZ;
+          toolTipHtml += `, ${formattedPointZ}`;
         toolTipHtml += "<br>";
       }
     }

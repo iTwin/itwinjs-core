@@ -90,7 +90,7 @@ export class SelectionTool extends PrimitiveTool {
   public get selectionMode(): SelectionMode { return this._selectionModeValue.value as SelectionMode; }
   public set selectionMode(mode: SelectionMode) { this._selectionModeValue.value = mode; }
 
-  private static methodsMessage(str: string) { return CoreTools.translate("ElementSet.SelectionMethods." + str); }
+  private static methodsMessage(str: string) { return CoreTools.translate(`ElementSet.SelectionMethods.${str}`); }
   private static _methodsName = "selectionMethods";
   /* The property descriptions used to generate ToolSettings UI. */
   private static _getMethodsDescription(): PropertyDescription {
@@ -123,7 +123,7 @@ export class SelectionTool extends PrimitiveTool {
     };
   }
 
-  private static modesMessage(str: string) { return CoreTools.translate("ElementSet.SelectionModes." + str); }
+  private static modesMessage(str: string) { return CoreTools.translate(`ElementSet.SelectionModes.${str}`); }
   private static _modesName = "selectionModes";
   /* The property descriptions used to generate ToolSettings UI. */
   private static _getModesDescription(): PropertyDescription {
@@ -574,7 +574,7 @@ export class SelectionTool extends PrimitiveTool {
     const isSelected = this.iModel.selectionSet.has(hit.sourceId);
     const status = ((SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
     if (out && LocateFilterStatus.Reject === status)
-      out.explanation = CoreTools.translate("ElementSet.Error." + (isSelected ? "AlreadySelected" : "NotSelected"));
+      out.explanation = CoreTools.translate(`ElementSet.Error.${isSelected ? "AlreadySelected" : "NotSelected"}`);
     return status;
   }
 

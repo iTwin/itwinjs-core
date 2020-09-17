@@ -14,8 +14,12 @@ public;ActiveContentChangedEvent
 public;ActiveContentChangedEventArgs
 internal;ActiveFrontstageDefProvider({ frontstageDef }:
 public;ActivityCenterField 
+beta;ActivityMessage(props: ActivityMessageProps): JSX.Element
 public;ActivityMessageCancelledEvent 
 public;ActivityMessageEventArgs
+beta;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null
+beta;ActivityMessagePopupProps 
+beta;ActivityMessageProps
 public;ActivityMessageUpdatedEvent 
 internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
@@ -72,6 +76,7 @@ public;CategoryTreeProps
 internal;ChangeSetInfo
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
+internal;clearKeyinPaletteHistory(): void
 public;COLOR_THEME_DEFAULT = ColorTheme.Light
 public;ColorTheme
 public;CombinedReducerState
@@ -210,6 +215,7 @@ internal;FrontstageRuntimeProps
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
+internal;getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" | "uifw-badge-tp" | undefined
 alpha;getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
 beta;getFeatureOverrideSyncEventIds(): string[]
@@ -255,7 +261,7 @@ beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
-internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide): NineZoneState
+internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
 alpha;InputEditorCommitHandler
 alpha;InputEditorPopup 
 alpha;InputEditorPopupProps 
@@ -286,6 +292,11 @@ public;KeyboardShortcutProps
 beta;KeyinBrowser 
 beta;KeyinBrowserExecuteArgs
 beta;KeyinBrowserProps 
+beta;KeyinEntry
+beta;KeyinFieldLocalization
+internal;KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element
+alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element
+alpha;KeyinPalettePopupProps
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
 public;LayoutSplit
@@ -494,6 +505,7 @@ public;SyncUiEvent
 public;SyncUiEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
+public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
 public;TargetChangeHandler
 public;Task 
 public;TaskActivatedEvent 
@@ -637,6 +649,7 @@ beta;WidgetManager
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
 internal;WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null
+internal;WidgetPanelsTab(): JSX.Element
 internal;WidgetPanelsToolbars(): JSX.Element
 internal;WidgetPanelsToolSettings(): JSX.Element | null
 public;WidgetProps 

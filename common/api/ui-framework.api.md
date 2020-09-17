@@ -60,6 +60,7 @@ import { IconSpec } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
@@ -286,6 +287,9 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
     render(): React.ReactNode;
 }
 
+// @beta
+export function ActivityMessage(props: ActivityMessageProps): JSX.Element;
+
 // @public
 export class ActivityMessageCancelledEvent extends UiEvent<{}> {
 }
@@ -296,6 +300,27 @@ export interface ActivityMessageEventArgs {
     message: NotifyMessageType;
     percentage: number;
     restored?: boolean;
+}
+
+// @beta
+export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null;
+
+// @beta
+export interface ActivityMessagePopupProps extends CommonProps {
+    // (undocumented)
+    cancelActivityMessage?: () => void;
+    // (undocumented)
+    dismissActivityMessage?: () => void;
+}
+
+// @beta
+export interface ActivityMessageProps {
+    // (undocumented)
+    activityMessageInfo: ActivityMessageEventArgs;
+    // (undocumented)
+    cancelActivityMessage: () => void;
+    // (undocumented)
+    dismissActivityMessage: () => void;
 }
 
 // @public
@@ -758,7 +783,10 @@ export enum ClassGroupingOption {
 // @beta
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
-// @public
+// @internal (undocumented)
+export function clearKeyinPaletteHistory(): void;
+
+// @public @deprecated
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
 
 // @public
@@ -1166,6 +1194,8 @@ export class CoreTools {
     static get flyViewCommand(): ToolItemDef;
     // @beta
     static get keyinBrowserButtonItemDef(): CustomItemDef;
+    // (undocumented)
+    static get keyinPaletteButtonItemDef(): ToolItemDef;
     // (undocumented)
     static get measureDistanceToolItemDef(): ToolItemDef;
     // (undocumented)
@@ -1753,6 +1783,7 @@ export const expandWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -1764,6 +1795,7 @@ export const expandWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -1775,6 +1807,7 @@ export const expandWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -1787,6 +1820,7 @@ export const expandWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -1801,6 +1835,7 @@ export const expandWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -1810,7 +1845,7 @@ export const expandWidget: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -1896,13 +1931,13 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     panelState: StagePanelState;
     // (undocumented)
-    renderPane: (index: number) => React.ReactNode;
+    renderPane: (widgetDefId: WidgetDef["id"]) => React.ReactNode;
     // (undocumented)
     resizable: boolean;
     // (undocumented)
-    widgetChangeHandler: WidgetChangeHandler;
+    stagePanelWidgets: ReadonlyArray<WidgetDef["id"]>;
     // (undocumented)
-    widgetCount: number;
+    widgetChangeHandler: WidgetChangeHandler;
     // (undocumented)
     widgets: ZonesManagerWidgetsProps;
     // (undocumented)
@@ -1921,13 +1956,19 @@ export interface FrameworkState {
 export class FrameworkUiAdmin extends UiAdmin {
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
+    // (undocumented)
+    getKeyins(): KeyinEntry[];
     hideCalculator(): boolean;
     hideCard(): boolean;
     hideHTMLElement(): boolean;
     hideInputEditor(): boolean;
+    hideKeyinPalette(): boolean;
     hideMenuButton(id: string): boolean;
     hideToolbar(): boolean;
     get isFocusOnHome(): boolean;
+    // (undocumented)
+    get localizedKeyinPreference(): KeyinFieldLocalization;
+    set localizedKeyinPreference(preference: KeyinFieldLocalization);
     // @internal (undocumented)
     onInitialized(): void;
     openToolSettingsPopup(dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
@@ -1939,6 +1980,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showInputEditor(initialValue: Primitives.Value, propertyDescription: PropertyDescription, location: XAndY, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
+    showKeyinPalette(htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
@@ -2438,6 +2480,9 @@ export type FunctionType = (...args: any[]) => any;
 // @public @deprecated
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 
+// @internal (undocumented)
+export function getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" | "uifw-badge-tp" | undefined;
+
 // @alpha
 export function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise<string[]>;
 
@@ -2793,7 +2838,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState;
 
 // @internal (undocumented)
-export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide): NineZoneState;
+export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState;
 
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
@@ -2895,7 +2940,7 @@ export abstract class ItemDefBase {
     // (undocumented)
     iconElement?: React.ReactNode;
     // (undocumented)
-    iconSpec?: string | ConditionalStringValue | React.ReactNode;
+    iconSpec?: IconSpec;
     // (undocumented)
     abstract get id(): string;
     // (undocumented)
@@ -3089,6 +3134,40 @@ export interface KeyinBrowserProps extends CommonProps {
     onExecute?: (args: KeyinBrowserExecuteArgs) => void;
 }
 
+// @beta
+export interface KeyinEntry {
+    isHistory?: boolean;
+    matches?: IMatch[];
+    value: string;
+}
+
+// @beta
+export enum KeyinFieldLocalization {
+    Both = 2,
+    Localized = 1,
+    NonLocalized = 0
+}
+
+// @internal (undocumented)
+export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element;
+
+// @alpha
+export function KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface KeyinPalettePopupProps {
+    // (undocumented)
+    el: HTMLElement;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    keyins: KeyinEntry[];
+    // (undocumented)
+    onCancel?: OnCancelFunc;
+    // (undocumented)
+    onItemExecuted?: OnItemExecutedFunc;
+}
+
 // @public
 export interface LayoutFragmentProps {
     horizontalSplit?: LayoutHorizontalSplitProps;
@@ -3163,7 +3242,7 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     // (undocumented)
     static get Key_Separator(): number;
     render(): JSX.Element;
-}
+    }
 
 // @beta
 export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
@@ -3283,6 +3362,8 @@ export class MenuItem extends ItemDefBase {
     constructor(props: MenuItemProps, onSelection?: () => void);
     // (undocumented)
     get actionItem(): ActionButtonItemDef | undefined;
+    // (undocumented)
+    iconRightSpec?: IconSpec;
     // (undocumented)
     get id(): string;
     // (undocumented)
@@ -3822,6 +3903,8 @@ export class PopupManager {
     // (undocumented)
     static hideInputEditor(): boolean;
     // (undocumented)
+    static hideKeyinPalette(): boolean;
+    // (undocumented)
     static hideToolbar(): boolean;
     // (undocumented)
     static readonly onPopupsChangedEvent: PopupsChangedEvent;
@@ -3840,6 +3923,8 @@ export class PopupManager {
     static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static showInputEditor(el: HTMLElement, pt: XAndY, value: Primitives.Value, propertyDescription: PropertyDescription, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showKeyinPalette(keyins: KeyinEntry[], el: HTMLElement, onItemExecuted?: OnItemExecutedFunc, onCancel?: OnCancelFunc): boolean;
     // (undocumented)
     static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     }
@@ -4317,6 +4402,7 @@ export const setPanelSize: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4328,6 +4414,7 @@ export const setPanelSize: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4339,6 +4426,7 @@ export const setPanelSize: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4351,6 +4439,7 @@ export const setPanelSize: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4365,6 +4454,7 @@ export const setPanelSize: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4374,7 +4464,7 @@ export const setPanelSize: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -4431,6 +4521,7 @@ export const setWidgetLabel: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4442,6 +4533,7 @@ export const setWidgetLabel: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4453,6 +4545,7 @@ export const setWidgetLabel: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4465,6 +4558,7 @@ export const setWidgetLabel: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4479,6 +4573,7 @@ export const setWidgetLabel: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4488,7 +4583,7 @@ export const setWidgetLabel: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -4542,6 +4637,7 @@ export const setWidgetState: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4553,6 +4649,7 @@ export const setWidgetState: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4564,6 +4661,7 @@ export const setWidgetState: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4576,6 +4674,7 @@ export const setWidgetState: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4590,6 +4689,7 @@ export const setWidgetState: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4599,7 +4699,7 @@ export const setWidgetState: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -4717,6 +4817,7 @@ export const showWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4728,6 +4829,7 @@ export const showWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4739,6 +4841,7 @@ export const showWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4751,6 +4854,7 @@ export const showWidget: <Base extends {
             readonly maxSize: number;
             readonly minSize: number;
             readonly pinned: boolean;
+            readonly resizable: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
@@ -4765,6 +4869,7 @@ export const showWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
+            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4774,7 +4879,7 @@ export const showWidget: <Base extends {
     };
     readonly widgets: {
         readonly [x: string]: {
-            readonly activeTabId: string | undefined;
+            readonly activeTabId: string;
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
@@ -4943,6 +5048,7 @@ export class StagePanelDef extends WidgetHost {
     set panelState(panelState: StagePanelState);
     // @internal
     get panelZones(): StagePanelZonesDef | undefined;
+    get pinned(): boolean;
     get resizable(): boolean;
     get size(): number | undefined;
     set size(size: number | undefined);
@@ -4995,6 +5101,7 @@ export interface StagePanelProps {
     maxSize?: StagePanelMaxSizeSpec;
     minSize?: number;
     panelZones?: StagePanelZonesProps;
+    pinned?: boolean;
     resizable: boolean;
     // @internal (undocumented)
     runtimeProps?: StagePanelRuntimeProps;
@@ -5327,10 +5434,14 @@ export enum SyncUiEventId {
     SelectionSetChanged = "selectionsetchanged",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
+    UiSettingsChanged = "uisettingschanged",
     ViewStateChanged = "viewstatechanged",
     WidgetStateChanged = "widgetstatechanged",
     WorkflowActivated = "workflowactivated"
 }
+
+// @public
+export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
 
 // @public
 export interface TargetChangeHandler {
@@ -5878,6 +5989,8 @@ export class UiFramework {
     // (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
+    static getUiSettings(): UiSettings;
+    // @beta (undocumented)
     static getUserInfo(): UserInfo | undefined;
     // (undocumented)
     static getWidgetOpacity(): number;
@@ -5924,6 +6037,8 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
+    // @beta (undocumented)
+    static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): void;
     // @beta (undocumented)
     static setUserInfo(userInfo: UserInfo | undefined, immediateSync?: boolean): void;
     // (undocumented)
@@ -6569,6 +6684,9 @@ export function WidgetPanelsFrontstageContent(): JSX.Element | null;
 
 // @internal (undocumented)
 export function WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null;
+
+// @internal (undocumented)
+export function WidgetPanelsTab(): JSX.Element;
 
 // @internal (undocumented)
 export function WidgetPanelsToolbars(): JSX.Element;

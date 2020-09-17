@@ -46,10 +46,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
  * @deprecated - Use [[VisibilityTree]] instead
  */
 // istanbul ignore next
-export class ModelSelectorWidget extends React.Component<
-  ModelSelectorWidgetProps,
-  ModelSelectorWidgetState
-  > {
+export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
   private _groups: ModelGroup[] = [];
   private _modelRuleset?: RegisteredRuleset;
   private _categoryRuleset?: RegisteredRuleset;
@@ -175,7 +172,7 @@ export class ModelSelectorWidget extends React.Component<
         key: modelProps.id ? modelProps.id.toString() : "",
         name: modelProps.name ? modelProps.name : "",
         enabled: modelProps.id
-          ? (vp.view as SpatialViewState).modelSelector.has(modelProps.id)
+          ? vp.view.modelSelector.has(modelProps.id)
           : false,
         type: ListItemType.Item,
       };
@@ -268,6 +265,7 @@ export class ModelSelectorWidget extends React.Component<
       ? selectUsedSpatialCategoryIds
       : selectUsedDrawingCategoryIds;
     const ecsql2 =
+      // eslint-disable-next-line prefer-template
       "SELECT ECInstanceId as id, UserLabel as label, CodeValue as code FROM " +
       (vp.view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory") +
       " WHERE ECInstanceId IN (" +

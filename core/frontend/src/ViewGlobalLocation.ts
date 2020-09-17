@@ -12,6 +12,7 @@ import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 
+
 /** Describes a rectangular area of the earth using cartographic data structures.
  * @alpha
  */
@@ -61,7 +62,7 @@ export function metersToRange(inputMeters: number, minimumOutput: number = 500, 
 export async function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number> {
   const bingElevationProvider = new BingElevationProvider();
   if (viewport && viewport.view instanceof ViewState3d && viewport.iModel.isGeoLocated) {
-    const view3d = viewport.view as ViewState3d;
+    const view3d = viewport.view;
     if (view3d.displayStyle.displayTerrain) {
       const elevationOffset = await bingElevationProvider.getHeight(carto, view3d.globeMode === GlobeMode.Ellipsoid);
       if (elevationOffset !== undefined)
@@ -103,7 +104,7 @@ export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeigh
   if (!(viewport.view instanceof ViewState3d) || !viewport.iModel.isGeoLocated)
     return undefined;
 
-  const view3d = viewport.view as ViewState3d;
+  const view3d = viewport.view;
 
   const eyePointCartographic = view3d.rootToCartographic(view3d.getEyePoint());
   if (eyePointCartographic !== undefined) {
@@ -126,7 +127,7 @@ export function viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean,
   }
 
   const before = viewport.getFrustum();
-  const view3d = viewport.view as ViewState3d;
+  const view3d = viewport.view;
 
   const transitionDistance = view3d.lookAtGlobalLocation(eyeHeight, pitchAngleRadians, location);
   viewport.synchWithView(true);

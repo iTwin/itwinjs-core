@@ -6,6 +6,7 @@
 @import "../inputs/variables";
 @import "../style/baseline";
 @import "../style/colors";
+@import "../style/opacity";
 @import "../style/themecolors";
 @import "../style/typography";
 @import "../z-index";
@@ -128,7 +129,12 @@ $uicore-menu-top-bottom-padding:  $uicore-menu-padding * 2/3;
         line-height: $uicore-line-height;
         text-align: center;
         margin-right: $uicore-unbordered-padding;
-        opacity: 0.85;
+        opacity: $uicore-opacity-2;
+
+        &.core-context-menu-icon-right {
+          margin-left: $uicore-unbordered-padding;
+          margin-right: 0;
+        }
       }
 
       > .core-context-menu-content {
@@ -144,6 +150,9 @@ $uicore-menu-top-bottom-padding:  $uicore-menu-padding * 2/3;
         left: 0;
       }
 
+      &:focus {
+        outline: none;
+      }
     }
 
     &:focus {

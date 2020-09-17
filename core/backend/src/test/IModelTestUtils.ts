@@ -36,7 +36,7 @@ export class Timer {
   private _label: string;
   private _start: Date;
   constructor(label: string) {
-    this._label = "\t" + label;
+    this._label = `\t${label}`;
     this._start = new Date();
   }
 
@@ -104,7 +104,7 @@ export class DisableNativeAssertions implements IDisposable {
     if (!this._native)
       return;
 
-    this._native!.dispose();
+    this._native.dispose();
     this._native = undefined;
   }
 }

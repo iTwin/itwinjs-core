@@ -278,16 +278,16 @@ describe("iModelHub VersionHandler", () => {
   it("should handle special characters in get by name query", async () => {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
     utils.mockGetChangeSet(imodelId, false, "?$top=1000", ...mockedChangeSets);
-    const changeSetsCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
+    const changeSetsCount: number = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
     const changeSet = (await utils.createChangeSets(requestContext, imodelId, briefcase, changeSetsCount, 1))[0];
 
-    const versionName = "Д";
+    const versionName = `Д-${changeSetsCount + 1}`;
     utils.mockCreateVersion(imodelId, versionName, changeSet.id);
     const version: Version = await iModelClient.versions.create(requestContext, imodelId, changeSet.id!, versionName);
     chai.assert(!!version);
 
     const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
-    utils.mockGetVersions(imodelId, `?$filter=Name+eq+%27%D0%94%27`, ...mockedVersions);
+    utils.mockGetVersions(imodelId, `?$filter=Name+eq+%27%D0%94-${changeSetsCount + 1}%27`, ...mockedVersions);
     const versions: Version[] = await iModelClient.versions.get(requestContext, imodelId, new VersionQuery().byName(versionName));
     chai.expect(versions.length).to.be.equal(1);
   });

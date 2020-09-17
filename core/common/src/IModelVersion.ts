@@ -124,6 +124,6 @@ export class IModelVersion {
     if (!versions[0] || !versions[0].changeSetId)
       throw new IModelError(BentleyStatus.ERROR, "Problem getting versions");
 
-    return versions[0].changeSetId!;
+    return versions[0].changeSetId;
   }
 }

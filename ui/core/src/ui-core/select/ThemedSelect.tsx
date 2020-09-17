@@ -180,6 +180,8 @@ export type ThemedSelectProps = {
   pageSize?: number;
   /* Placeholder for the select value */
   placeholder?: string;
+  /* Sets additional styling */
+  styles?: React.CSSProperties;
   /* Sets the tabIndex attribute on the input */
   tabIndex?: string;
   /* Select the currently focused option when the user presses tab */
@@ -198,6 +200,7 @@ const ThemedMenu = (props: MenuProps<any>) => { // eslint-disable-line @typescri
 /** ThemedSelect is a wrapper for react-select with iModel.js UI theming applied
  * @beta
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ThemedSelect(props: ThemedSelectProps) {
   const noOptionLabel = React.useRef<string | undefined>();
   const defaultOptionMessage = React.useCallback(() => {
@@ -215,6 +218,11 @@ export function ThemedSelect(props: ThemedSelectProps) {
     // eslint-disable-next-line comma-dangle
     ...otherProps // pass-through props
   } = props as any;
+  const selectStyles = {
+    ...props.styles,
+    menuPortal: (base: React.CSSProperties) => ({ ...base, zIndex }),
+  };
+
   const zIndex = getCssVariableAsNumber("--uicore-z-index-dialog-popup");
   return (
     <div className={className}>
@@ -222,7 +230,8 @@ export function ThemedSelect(props: ThemedSelectProps) {
         classNamePrefix="react-select"
         noOptionsMessage={noOptionFunction}
         menuPortalTarget={portalTarget}
-        styles={{ menuPortal: (base) => ({ ...base, zIndex }) }}
+        styles={ selectStyles }
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         components={{ Menu: ThemedMenu, ...props.components }}
         {...otherProps}
       />

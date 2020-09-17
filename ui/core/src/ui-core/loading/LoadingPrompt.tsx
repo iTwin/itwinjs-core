@@ -7,20 +7,25 @@
  */
 
 import "./LoadingPrompt.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { LoadingBar } from "./LoadingBar";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { LoadingStatus } from "./LoadingStatus";
+import { ProgressBar } from "../progress-indicators/ProgressBar";
+import { CommonProps } from "../utils/Props";
+
+// cspell:ignore loadingprompt
 
 /** Properties for [[LoadingPrompt]] component
  * @public
  */
-export interface LoadingPromptProps {
+export interface LoadingPromptProps extends CommonProps {
   /** Title */
   title: string;
   /** Message displayed below the title (optional) */
   message?: string;
-  /** Determine if a loading bar is displayed (isDeterminate=true), otherwise a loading spinner is shown */
+  /** Determine if a percentage bar is displayed (isDeterminate=true), otherwise a loading spinner or indeterminate progress bar is shown. */
   isDeterminate: boolean;
   /** Show current status and percentage. Default is false (not shown) */
   showStatus: boolean;
@@ -32,10 +37,12 @@ export interface LoadingPromptProps {
   percent: number;
   /** Show percentage at the end of the loading bar (optional). Only shown if isDeterminate=true and showStatus=false */
   showPercentage: boolean;
+  /** Show indeterminate progress bar instead of loading spinner */
+  showIndeterminateBar: boolean;
   /** Function called when Cancel button is clicked. */
   onCancel?: () => void;
 
-  /** Determine if a loading bar is displayed (isDeterminate=true), otherwise a loading spinner is shown
+  /** Determine if a loading bar is displayed (isDeterminate=true), otherwise a loading spinner or indeterminate progress bar is shown
    * @deprecated Use isDeterminate instead
    */
   isDeterministic: boolean;
@@ -51,6 +58,7 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     showStatus: false,
     showCancel: false,
     isDeterminate: false,
+    showIndeterminateBar: false,
     percent: 0,
     status: "",
   };
@@ -60,13 +68,13 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     const isDeterminate = this.props.isDeterminate || this.props.isDeterministic;
 
     return (
-      <div className="core-loadingprompt">
+      <div className={classnames("core-loadingprompt", this.props.className)} style={this.props.style}>
         <span className="title">{this.props.title}</span>
         {this.props.message && <span className="message">{this.props.message}</span>}
         {isDeterminate && <LoadingBar style={{ width: "100%" }} percent={this.props.percent} showPercentage={this.props.showPercentage} />}
         {(isDeterminate && this.props.showStatus) &&
           <LoadingStatus style={{ marginTop: ".5em", width: "100%", fontSize: ".75em" }} percent={this.props.percent} message={this.props.status} />}
-        {!isDeterminate && <LoadingSpinner />}
+        {!isDeterminate && (this.props.showIndeterminateBar ? <ProgressBar indeterminate /> : <LoadingSpinner />)}
         {this.props.showCancel && <button className="loading-prompt-cancel" type="button" onClick={this.props.onCancel}>Cancel</button>}
       </div>
     );

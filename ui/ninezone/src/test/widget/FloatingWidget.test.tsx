@@ -5,13 +5,14 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addFloatingWidget, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone";
+import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 
 describe("FloatingWidget", () => {
   it("should render", () => {
     let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1");
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -27,7 +28,8 @@ describe("FloatingWidget", () => {
 
   it("should render minimized", () => {
     let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", undefined, { minimized: true });
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -43,7 +45,8 @@ describe("FloatingWidget", () => {
 
   it("should render dragged", () => {
     let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", undefined, { minimized: true });
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
@@ -66,7 +69,8 @@ describe("FloatingWidget", () => {
   it("should dispatch FLOATING_WIDGET_RESIZE", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", undefined, { minimized: true });
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
+    nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}

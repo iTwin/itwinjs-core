@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import {
-  CommonToolbarItem, StageUsage, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager,
+  CommonToolbarItem, StageUsage, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager,
 } from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
@@ -27,6 +27,10 @@ export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, too
   // current stage's composer allows entries from extensions.
   React.useEffect(() => {
     const uiProviders = uiItemsProviderIds.join("-");
+    const handleChanged = (args: ToolbarItemsChangedArgs) => {
+      setItems(args.items);
+    };
+    manager.onItemsChanged.addListener(handleChanged);
     // istanbul ignore else
     if (providersRef.current !== uiProviders || currentStageRef.current !== stageId) {
       const frontstageDef = FrontstageManager.findFrontstageDef(stageId);
@@ -39,6 +43,9 @@ export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, too
       manager.loadItems(updatedToolbarItems);
       setItems(manager.items);
     }
+    return () => {
+      manager.onItemsChanged.removeListener(handleChanged);
+    };
   }, [uiItemsProviderIds, stageId, manager, toolbarUsage, toolbarOrientation]);
   return items;
 };

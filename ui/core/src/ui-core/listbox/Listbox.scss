@@ -21,6 +21,9 @@ ul.core-listbox {
   border: 1px solid $buic-foreground-disabled; // default border: disabled or muted foreground
   position: relative; // required to properly set scrollTop position
 
+  @include uicore-touch-scrolling;
+  @include uicore-scrollbar();
+
   &:focus {
     border-color: $buic-foreground-focus;
     li.core-listbox-item.focused {

@@ -44,7 +44,7 @@ describe("BisCore test correct inheritance", () => {
 </ECSchema>`;
 
     const expectedElementSchemaString =
-`import { Entity, IModelDb } from "@bentley/imodeljs-backend";
+      `import { Entity, IModelDb } from "@bentley/imodeljs-backend";
 import { EntityProps } from "@bentley/imodeljs-common";
 import { DerivedElementProps } from "./BisCoreElementProps";
 
@@ -75,7 +75,7 @@ export class DerivedElement extends Element implements DerivedElementProps {
 }\n\n`;
 
     const expectedPropsSchemaString =
-`import { ElementProps } from "@bentley/imodeljs-common";
+      `import { ElementProps } from "@bentley/imodeljs-common";
 
 export interface DerivedElementProps extends ElementProps {
   derivedTestProp?: string;
@@ -91,7 +91,7 @@ export interface DerivedElementProps extends ElementProps {
 
   it("of class that subclasses Element without additional properties", () => {
     const schemaXml =
-`<?xml version="1.0" encoding="UTF-8"?>
+      `<?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="BisCore" alias="bis" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECEntityClass typeName="Element" modifier="Abstract">
     <ECCustomAttributes>
@@ -118,7 +118,7 @@ export interface DerivedElementProps extends ElementProps {
 </ECSchema>`;
 
     const expectedElementSchemaString =
-`import { Entity, IModelDb } from "@bentley/imodeljs-backend";
+      `import { Entity, IModelDb } from "@bentley/imodeljs-backend";
 import { EntityProps, ElementProps } from "@bentley/imodeljs-common";
 
 export abstract class Element extends Entity {
@@ -202,7 +202,7 @@ export class DerivedElement extends Element {
 </ECSchema>`;
 
     const expectedElementSchemaString =
-`import { Entity, IModelDb } from "@bentley/imodeljs-backend";
+      `import { Entity, IModelDb } from "@bentley/imodeljs-backend";
 import { EntityProps, ElementProps } from "@bentley/imodeljs-common";
 import { SubjectProps } from "./BisCoreElementProps";
 
@@ -249,7 +249,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
 }\n\n`;
 
     const expectedPropSchemaString =
-`import { ElementProps } from "@bentley/imodeljs-common";
+      `import { ElementProps } from "@bentley/imodeljs-common";
 
 export interface IParentElement {
 }
@@ -284,7 +284,7 @@ describe("Referencing BisCore", () => {
 </ECSchema>`;
 
     const expectedElementSchemaString =
-`import { DefinitionModel, IModelDb } from "@bentley/imodeljs-backend";
+      `import { DefinitionModel, IModelDb } from "@bentley/imodeljs-backend";
 import { ModelProps } from "@bentley/imodeljs-common";
 
 /**
@@ -310,7 +310,7 @@ export class SchemaModel extends DefinitionModel {
 }\n\n`;
 
     const schemaLocator = new SchemaXmlFileLocater();
-    schemaLocator.addSchemaSearchPath(utils.getAssetsDir() + "schema3.2");
+    schemaLocator.addSchemaSearchPath(`${utils.getAssetsDir()}schema3.2`);
     const context = new SchemaContext();
     context.addLocater(schemaLocator);
     const schema = utils.deserializeXml(context, schemaXml);

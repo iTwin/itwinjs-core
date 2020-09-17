@@ -47,12 +47,16 @@ export interface PresentationPropertyDataProviderProps {
    * set, default presentation rules are used which return content for the selected elements.
    */
   ruleset?: string | Ruleset;
-
   /**
    * Auto-update property data when ruleset, ruleset variables or data in the iModel changes.
    * @alpha
    */
   enableContentAutoUpdate?: boolean;
+  /**
+   * If true, additional 'favorites' category is not created.
+   * @alpha
+   */
+  disableFavoritesCategory?: boolean;
 }
 
 /**
@@ -66,6 +70,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   private _includeFieldsWithCompositeValues: boolean;
   private _isNestedPropertyCategoryGroupingEnabled: boolean;
   private _onFavoritesChangedRemoveListener: () => void;
+  private _shouldCreateFavoritesCategory: boolean;
 
   /**
    * Constructor
@@ -82,6 +87,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     this._includeFieldsWithCompositeValues = true;
     this._isNestedPropertyCategoryGroupingEnabled = false;
     this._onFavoritesChangedRemoveListener = Presentation.favoriteProperties.onFavoritesChanged.addListener(() => this.invalidateCache({}));
+    this._shouldCreateFavoritesCategory = !props.disableFavoritesCategory;
   }
 
   /**
@@ -170,7 +176,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 
   /** Should the specified field be included in the favorites category. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  protected isFieldFavorite = (field: Field): boolean => (Presentation.favoriteProperties.has(field, this.imodel, FavoritePropertiesScope.IModel));
+  protected isFieldFavorite = (field: Field): boolean => (this._shouldCreateFavoritesCategory && Presentation.favoriteProperties.has(field, this.imodel, FavoritePropertiesScope.IModel));
 
   /**
    * Sorts the specified list of categories by priority. May be overriden
@@ -263,7 +269,14 @@ class PropertyDataBuilder {
   private _wantNestedCategories: boolean;
   private _callbacks: PropertyPaneCallbacks;
 
-  constructor(props: { descriptor: Descriptor, item: Item, includeWithNoValues: boolean, includeWithCompositeValues: boolean, callbacks: PropertyPaneCallbacks, wantNestedCategories: boolean }) {
+  constructor(props: {
+    descriptor: Descriptor;
+    item: Item;
+    includeWithNoValues: boolean;
+    includeWithCompositeValues: boolean;
+    callbacks: PropertyPaneCallbacks;
+    wantNestedCategories: boolean;
+  }) {
     this._descriptor = props.descriptor;
     this._contentItem = props.item;
     this._includeWithNoValues = props.includeWithNoValues;
@@ -361,15 +374,20 @@ class PropertyDataBuilder {
     for (const category of fields.categories) {
       const records = new Array<PropertyRecord>();
       const addRecord = (field: Field, record: PropertyRecord) => {
-        if (category.name !== favoritesCategory.name) {
-          // note: favorite fields should be displayed even if they're hidden
-          if (this._callbacks.isHidden(field))
-            return;
-          if (!this._includeWithNoValues && !record.isMerged && isValueEmpty(record.value))
-            return;
-        }
         if (records.some((r) => r.property.name === record.property.name))
           return;
+
+        // note: favorite fields should be displayed even if they're hidden
+        if (category.name === favoritesCategory.name) {
+          records.push(record);
+          return;
+        }
+
+        if (this._callbacks.isHidden(field))
+          return;
+        if (!this._includeWithNoValues && !record.isMerged && isValueEmpty(record.value))
+          return;
+
         records.push(record);
       };
       const handleNestedContentRecord = (field: NestedContentField, record: PropertyRecord) => {

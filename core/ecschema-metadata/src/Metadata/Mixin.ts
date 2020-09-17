@@ -27,7 +27,7 @@ export class Mixin extends ECClass {
   public readonly schemaItemType!: SchemaItemType.Mixin; // eslint-disable-line
   protected _appliesTo?: LazyLoadedEntityClass;
 
-  get appliesTo(): LazyLoadedEntityClass | undefined {
+  public get appliesTo(): LazyLoadedEntityClass | undefined {
     return this._appliesTo;
   }
 

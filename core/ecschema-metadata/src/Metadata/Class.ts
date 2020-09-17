@@ -15,7 +15,6 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { EntityClass } from "./EntityClass";
 import { Enumeration } from "./Enumeration";
 import {
   EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property, StructArrayProperty, StructProperty,
@@ -34,15 +33,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
 
-  get modifier() { return this._modifier; }
-
-  get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
-
-  set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
-
-  get properties(): Property[] | undefined { return this._properties; }
-
-  get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+  public get modifier() { return this._modifier; }
+  public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
+  public set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
+  public get properties(): Property[] | undefined { return this._properties; }
+  public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name);
@@ -266,7 +261,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (structType) === "string") {
       correctType = await schema.lookupItem<StructClass>(structType);
     } else
-      correctType = structType as StructClass | undefined;
+      correctType = structType;
 
     if (!correctType)
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
@@ -279,7 +274,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (structType) === "string") {
       correctType = schema.lookupItemSync<StructClass>(structType);
     } else
-      correctType = structType as StructClass | undefined;
+      correctType = structType;
 
     if (!correctType)
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
@@ -428,8 +423,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
       if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (let i = (ecClass as EntityClass).mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await (ecClass as EntityClass).mixins[i]);
+        for (let i = (ecClass).mixins.length - 1; i >= 0; i--) {
+          baseClasses.push(await (ecClass).mixins[i]);
         }
       }
 
@@ -571,7 +566,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       return false;
     });
 
-    return customAttributes!;
+    return customAttributes;
   }
 
   /**
@@ -619,7 +614,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (schemaName !== undefined) {
       assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
 
-      const key = new SchemaItemKey(targetClass as string, new SchemaKey(schemaName));
+      const key = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
       if (SchemaItem.equalByKey(this, key))
         return true;
 
@@ -627,7 +622,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     } else {
       assert(targetClass instanceof ECClass, "Expected targetClass to be of type ECClass");
 
-      if (SchemaItem.equalByKey(this, targetClass as ECClass))
+      if (SchemaItem.equalByKey(this, targetClass))
         return true;
 
       return this.traverseBaseClasses(SchemaItem.equalByKey, targetClass);

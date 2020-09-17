@@ -54,11 +54,13 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx hypermodeling testapp urlps
+// cSpell:ignore toggledraginteraction toggleframeworkversion setdraginteraction setframeworkversion
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
@@ -90,7 +92,6 @@ const initialState: SampleAppState = {
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
@@ -105,7 +106,7 @@ class SampleAppAccuSnap extends AccuSnap {
   public getActiveSnapModes(): SnapMode[] {
     const snaps: SnapMode[] = [];
     if (SampleAppIModelApp.store.getState().frameworkState) {
-      const snapMode = SampleAppIModelApp.store.getState().frameworkState!.configurableUiState.snapMode;
+      const snapMode = SampleAppIModelApp.store.getState().frameworkState.configurableUiState.snapMode;
       if ((snapMode & SnapMode.Bisector) === SnapMode.Bisector as number) snaps.push(SnapMode.Bisector);
       if ((snapMode & SnapMode.Center) === SnapMode.Center as number) snaps.push(SnapMode.Center);
       if ((snapMode & SnapMode.Intersection) === SnapMode.Intersection as number) snaps.push(SnapMode.Intersection);
@@ -166,7 +167,6 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _uiSettings: UiSettings | undefined;
   private static _appUiSettings = new AppUiSettings();
 
   // Favorite Properties Support
@@ -176,10 +176,14 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static get uiSettings(): UiSettings { return SampleAppIModelApp._uiSettings || new LocalUiSettings(); }
-  public static set uiSettings(v: UiSettings) {
-    SampleAppIModelApp._uiSettings = v;
+  public static get uiSettings(): UiSettings {
+    const settings = UiFramework.getUiSettings();
+    SampleAppIModelApp._appUiSettings.apply(settings);  // eslint-disable-line @typescript-eslint/no-floating-promises
+    return settings;
+  }
 
+  public static set uiSettings(v: UiSettings) {
+    UiFramework.setUiSettings(v);
     SampleAppIModelApp._appUiSettings.apply(v);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
@@ -250,6 +254,7 @@ export class SampleAppIModelApp {
     }
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
+    IModelApp.uiAdmin.updateFeatureFlags ({allowKeyinPalette: true});
 
     // store name of this registered control in Redux store so it can be access by extensions
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
@@ -266,7 +271,7 @@ export class SampleAppIModelApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
-    await MapLayersUI.initialize(true); // if false then add widget in FrontstageDef
+    await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
   }
 
   // cSpell:enable
@@ -418,14 +423,14 @@ export class SampleAppIModelApp {
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const project = await (new ContextRegistryClient()).getProject(requestContext, {
         $select: "*",
-        $filter: "Name+eq+'" + projectName + "'",
+        $filter: `Name+eq+'${projectName}'`,
       });
 
       const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.wsgId, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId!]);
+        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId]);
       } else {
         // open to the IModelIndex frontstage
         await SampleAppIModelApp.showIModelIndex(project.wsgId, iModel.wsgId);
@@ -528,12 +533,10 @@ function mapFrameworkVersionStateToProps(state: RootState) {
   return { frameworkVersion: state.sampleAppState.frameworkVersion };
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
+class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettings: UiSettings }> {
   constructor(props: any) {
     super(props);
 
@@ -544,23 +547,28 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
 
     this.state = {
       authorized,
+      uiSettings: this.getUiSettings(authorized),
     };
   }
 
   private _initializeSignin = async (authorized: boolean): Promise<void> => {
-    this.setUiSettings(authorized);
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   }
 
   private _onUserStateChanged = (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-
-    this.setState({ authorized });
+    this.setState({ authorized, uiSettings: this.getUiSettings(authorized)});
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  private setUiSettings(authorized: boolean): void {
-    SampleAppIModelApp.uiSettings = authorized ? new IModelAppUiSettings() : new LocalUiSettings();
+  private getUiSettings(authorized: boolean): UiSettings {
+    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized ) {
+      SampleAppIModelApp.uiSettings = new LocalUiSettings();
+    } else {
+      SampleAppIModelApp.uiSettings = new IModelAppUiSettings();
+    }
+
+    return SampleAppIModelApp.uiSettings;
   }
 
   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
@@ -596,7 +604,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
               <AppDragInteraction>
                 <AppFrameworkVersion>
                   {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                  <UiSettingsProvider uiSettings={SampleAppIModelApp.uiSettings}>
+                  <UiSettingsProvider uiSettings={this.state.uiSettings}>
                     <ConfigurableUiContent
                       appBackstage={<AppBackstageComposer />}
                     />
@@ -688,6 +696,7 @@ async function main() {
       snapshotPath: process.env.imjs_TESTAPP_SNAPSHOT_FILEPATH,
       startWithSnapshots: process.env.imjs_TESTAPP_START_WITH_SNAPSHOTS,
       reactAxeConsole: process.env.imjs_TESTAPP_REACT_AXE_CONSOLE,
+      useLocalSettings: process.env.imjs_TESTAPP_USE_LOCAL_SETTINGS,
     } as TestAppConfiguration;
     Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
   }
@@ -717,6 +726,13 @@ async function main() {
 
   // Start the app.
   await SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
+
+  // Add ApplicationInsights telemetry client
+  const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
+  if (iModelJsApplicationInsightsKey) {
+    const applicationInsightsClient = new FrontendApplicationInsightsClient(iModelJsApplicationInsightsKey);
+    IModelApp.telemetry.addClient(applicationInsightsClient);
+  }
 
   // wait for both our i18n namespaces to be read.
   await SampleAppIModelApp.initialize();

@@ -49,7 +49,7 @@ export class SchemaWalker {
     await this._visitorHelper.visitSchemaPart(schemaItem);
 
     if (schemaItem instanceof ECClass)
-      await this.traverseClass(schemaItem as ECClass);
+      await this.traverseClass(schemaItem);
   }
 
   private async traverseClass(ecClass: ECClass): Promise<void> {

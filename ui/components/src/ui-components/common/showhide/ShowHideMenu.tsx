@@ -136,7 +136,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
           const visible = this.state.hiddenColumns.indexOf(item.id) === -1;
           const sel = () => this._toggleItem(item);
           const label = item.label || UiComponents.translate("showhide.noLabel");
-          const id = "show-hide-menu-input-" + index;
+          const id = `show-hide-menu-input-${index}`;
           return (
             <ContextMenuItem key={index}
               onSelect={sel}

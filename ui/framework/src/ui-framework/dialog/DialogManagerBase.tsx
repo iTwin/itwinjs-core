@@ -48,7 +48,7 @@ export class DialogManagerBase {
 
   public openDialog(dialog: React.ReactNode, id?: string): void {
     if (!id)
-      id = "Dialog-" + ++DialogManagerBase._sId;
+      id = `Dialog-${++DialogManagerBase._sId}`;
 
     this.pushDialog({ reactNode: dialog, id });
   }

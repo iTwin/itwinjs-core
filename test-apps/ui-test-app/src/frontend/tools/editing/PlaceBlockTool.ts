@@ -14,7 +14,7 @@ import {
 import { PrimitiveToolEx } from "./PrimitiveToolEx";
 
 function translate(prompt: string) {
-  return IModelApp.i18n.translate("SampleApp:tools.PlaceBlockTool." + prompt);
+  return IModelApp.i18n.translate(`SampleApp:tools.PlaceBlockTool.${prompt}`);
 }
 
 export class PlaceBlockTool extends PrimitiveToolEx {
@@ -167,7 +167,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
 
     const geomProps = IModelJson.Writer.toIModelJson(primitive);
 
-    const model = this.targetModelId!;
+    const model = this.targetModelId;
     const category = this.targetCategory;
 
     const props3d: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };
@@ -216,7 +216,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix!.getColumn(2), ev.viewport!, true);
+      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }

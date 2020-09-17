@@ -34,12 +34,12 @@ export class IModelBankHandler extends IModelBaseHandler {
 
   public async getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
     if (this._url)
-      return this._url!;
+      return this._url;
 
     this._url = this._baseUrl;
     if (!excludeApiVersion) {
-      this._url += "/" + this.apiVersion;
+      this._url += `/${this.apiVersion}`;
     }
-    return this._url!;
+    return this._url;
   }
 }

@@ -74,16 +74,6 @@ export class UsageLogEntry {
 }
 
 /**
- * Represents arbitrary metadata that can be attached to a
- * [[FeatureLogEntry]] when collecting information about feature usage.
- * @internal
- */
-export interface FeatureLogEntryMetadata {
-  name: string;
-  value: any;
-}
-
-/**
  * Standard feature log entry data that is submitted to the ULAS Posting Service.
  * See also
  *  - [[UlasClient]]
@@ -93,7 +83,7 @@ export interface FeatureLogEntryMetadata {
  */
 export class FeatureLogEntry {
   /** Additional user-defined metadata for the feature usage. */
-  public usageData: FeatureLogEntryMetadata[] = [];
+  public additionalData: { [key: string]: string } = {};
 
   public correlationId = Guid.createValue();
 
@@ -218,7 +208,6 @@ export class UsageLoggingClient extends Client {
 
   /**
    * Logs one or more feature entries via the ULAS service.
-   * For use in the frontend only. All backend feature usage should be done via [[UlasUtilities]] instead.
    * @param requestContext The client request context.
    * @param featureEntries One or more feature log entries.
    * @returns Response from the service.
@@ -261,7 +250,7 @@ export class UsageLoggingClient extends Client {
 
     const respBody: any = resp.body;
     if (!respBody || !respBody.status || respBody.status.toLowerCase() !== "success")
-      throw new Error(`Post Usage Log REST request failed ${!!respBody.msg ? ": " + respBody.msg : ""}. Details: ${JSON.stringify(requestDetails)}`);
+      throw new Error(`Post Usage Log REST request failed ${!!respBody.msg ? `: ${respBody.msg}` : ""}. Details: ${JSON.stringify(requestDetails)}`);
 
     return { status: BentleyStatus.SUCCESS, message: !!respBody.msg ? respBody.msg : "", time: !!respBody.time ? respBody.time : -1, requestId: respBody.reqID };
   }

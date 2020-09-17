@@ -82,7 +82,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
     if (this.props.showThumbnail) {
       const thumbnail = await ThumbnailCache.getThumbnail(this.props.iModelConnection, this.props.viewProps);
       if (thumbnail) {
-        const blob = new Blob([thumbnail!.image], { type: "image/" + thumbnail!.format });
+        const blob = new Blob([thumbnail.image], { type: `image/${thumbnail.format}` });
         // Load thumbnails
         this.setState({ thumbnail: URL.createObjectURL(blob) });
       }

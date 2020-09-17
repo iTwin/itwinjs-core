@@ -33,6 +33,12 @@ export interface PropertyData {
   description?: string;
   categories: PropertyCategory[];
   records: { [categoryName: string]: PropertyRecord[] };
+
+  /**
+   * Should state of existing property data in the component be  re-used for this property data
+   * @alpha
+   */
+  reusePropertyDataState?: boolean;
 }
 
 /** A signature for property data change listeners

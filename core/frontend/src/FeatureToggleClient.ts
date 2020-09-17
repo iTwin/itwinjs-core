@@ -22,7 +22,7 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 export class FeatureToggleClient {
   /** App-defined options */
   /** App ids for Launch Darkly deployment environments environments */
-  /** Direct reference to the Launch Darkly client in the event the app wants to make its own asynch calls */
+  /** Direct reference to the Launch Darkly client in the event the app wants to make its own async calls */
   protected _ldClient?: LDClient;
   protected _offlineValue: boolean = false;
 
@@ -70,5 +70,5 @@ export class FeatureToggleClient {
   }
 
   /** The native LaunchDarkly client if the basic methods do not suffice. */
-  public get ldClient(): LDClient { assert(!!this._ldClient, "FeatureToggleClient.initialize hasn't been called yet."); return this._ldClient!; }
+  public get ldClient(): LDClient { assert(!!this._ldClient, "FeatureToggleClient.initialize hasn't been called yet."); return this._ldClient; }
 }

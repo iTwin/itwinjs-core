@@ -79,7 +79,7 @@ describe("SnapModeField", () => {
       expect(snapMode).to.eq(modes[i]);
 
       // the indicator field should contain the selected snap icon.
-      const itemId = ".nz-footer-snapMode-snap ." + icons[i];
+      const itemId = `.nz-footer-snapMode-snap .${icons[i]}`;
       expect(wrapper.find(itemId).length).to.eq(1);
     }
 

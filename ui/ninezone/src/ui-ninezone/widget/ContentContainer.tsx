@@ -18,8 +18,6 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
   const widget = React.useContext(WidgetStateContext);
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   assert(widget);
-  if (!widget.activeTabId)
-    return null;
   const ref = widgetContentManager.getWidgetContentContainerRef(widget.activeTabId);
   const className = classnames(
     "nz-widget-content-container",

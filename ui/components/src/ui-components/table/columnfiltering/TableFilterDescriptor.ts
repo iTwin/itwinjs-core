@@ -176,12 +176,12 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
       return "";
 
     if (this.memberType === StandardTypeNames.DateTime)
-      return "(" + this.memberKey + " " + filterOperator + this.getJulianDaysFromValue(false) + ")";
-    return this.memberKey + " " + filterOperator + " \"" + this._value.toString() + "\"";
+      return `(${this.memberKey} ${filterOperator}${this.getJulianDaysFromValue(false)})`;
+    return `${this.memberKey} ${filterOperator} "${this._value.toString()}"`;
   }
 
   private constructRangeExpression(rangeData: NumericRangeData): string {
-    return "(" + rangeData.begin.toString() + " <= " + this.memberKey + ") AND (" + this.memberKey + " <= " + rangeData.end.toString() + ")";
+    return `(${rangeData.begin.toString()} <= ${this.memberKey}) AND (${this.memberKey} <= ${rangeData.end.toString()})`;
   }
 
   private getEqualsExpression(inverse: boolean): string {
@@ -195,8 +195,8 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
     switch (this.memberType) {
       case StandardTypeNames.DateTime: {
         if (this._value == null)
-          return this.memberKey + operator + " Null";
-        return prefix + "(" + this.memberKey + " >= " + this.getJulianDaysFromValue(false) + ") AND (" + this.memberKey + " < " + this.getJulianDaysFromValue(true) + ")";
+          return `${this.memberKey + operator} Null`;
+        return `${prefix}(${this.memberKey} >= ${this.getJulianDaysFromValue(false)}) AND (${this.memberKey} < ${this.getJulianDaysFromValue(true)})`;
       }
 
       case StandardTypeNames.Bool:
@@ -210,18 +210,18 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
 
       case StandardTypeNames.Point2d: {
         if (typeof this._value === "object")
-          return prefix + " (ArePointsEqualByValue(" + this.memberKey + ", " + this._value.x + ", " + this._value.y + ") = 1)";
+          return `${prefix} (ArePointsEqualByValue(${this.memberKey}, ${this._value.x}, ${this._value.y}) = 1)`;
         if (typeof this._value === "string")
-          return prefix + this._filterableTable.getPropertyDisplayValueExpression(this.memberKey) + " = \"" + this.value + "\"";
+          return `${prefix + this._filterableTable.getPropertyDisplayValueExpression(this.memberKey)} = "${this.value}"`;
         Logger.logError(UiComponents.loggerCategory(this), `getEqualsExpression - invalid value type: ${typeof this._value}`);
         break;
       }
 
       case StandardTypeNames.Point3d: {
         if (typeof this._value === "object")
-          return prefix + " (ArePointsEqualByValue(" + this.memberKey + ", " + this._value.x + ", " + this._value.y + ", " + this._value.z + ") = 1)";
+          return `${prefix} (ArePointsEqualByValue(${this.memberKey}, ${this._value.x}, ${this._value.y}, ${this._value.z}) = 1)`;
         if (typeof this._value === "string")
-          return prefix + this._filterableTable.getPropertyDisplayValueExpression(this.memberKey) + " = \"" + this.value + "\"";
+          return `${prefix + this._filterableTable.getPropertyDisplayValueExpression(this.memberKey)} = "${this.value}"`;
         Logger.logError(UiComponents.loggerCategory(this), `getEqualsExpression - invalid value type: ${typeof this._value}`);
         break;
       }
@@ -229,15 +229,15 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
       case StandardTypeNames.Double:
       case StandardTypeNames.Float: {
         if (typeof this._value === "number")
-          return prefix + " (AreDoublesEqualByValue(" + this.memberKey + ", " + this._value + ") = 1)";
+          return `${prefix} (AreDoublesEqualByValue(${this.memberKey}, ${this._value}) = 1)`;
         if (typeof this._value === "string")
-          return prefix + this._filterableTable.getPropertyDisplayValueExpression(this.memberKey) + " = \"" + this.value + "\"";
+          return `${prefix + this._filterableTable.getPropertyDisplayValueExpression(this.memberKey)} = "${this.value}"`;
         Logger.logError(UiComponents.loggerCategory(this), `getEqualsExpression - invalid value type: ${typeof this._value}`);
         break;
       }
     }
 
-    return this.memberKey + operator + "\"" + this._value.toString() + "\"";
+    return `${this.memberKey + operator}"${this._value.toString()}"`;
   }
 
   /** Returns filter as ECExpression */
@@ -249,10 +249,10 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
         return this.getEqualsExpression(true);
       case FilterOperator.IsNull:
       case FilterOperator.IsEmpty:
-        return this.memberKey + " = Null";
+        return `${this.memberKey} = Null`;
       case FilterOperator.IsNotNull:
       case FilterOperator.IsNotEmpty:
-        return this.memberKey + " <> Null";
+        return `${this.memberKey} <> Null`;
       case FilterOperator.IsLessThan:
         return this.constructComparisonFilterExpression("<");
       case FilterOperator.IsLessThanOrEqualTo:
@@ -264,17 +264,17 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
       case FilterOperator.Range:
         return this.constructRangeExpression(this._value);
       case FilterOperator.StartsWith:
-        return this.memberKey + " ~ " + (null === this._value ? "Null" : "\"" + this._value.toString() + "%\"");
+        return `${this.memberKey} ~ ${null === this._value ? "Null" : `"${this._value.toString()}%"`}`;
       case FilterOperator.EndsWith:
-        return this.memberKey + " ~ " + (null === this._value ? "Null" : "\"%" + this._value.toString() + "\"");
+        return `${this.memberKey} ~ ${null === this._value ? "Null" : `"%${this._value.toString()}"`}`;
       case FilterOperator.Contains:
-        return this.memberKey + " ~ " + (null === this._value ? "Null" : "\"%" + this._value.toString() + "%\"");
+        return `${this.memberKey} ~ ${null === this._value ? "Null" : `"%${this._value.toString()}%"`}`;
       case FilterOperator.DoesNotContain:
-        return "NOT(" + this.memberKey + " ~ " + (null === this._value ? "Null" : "\"%" + this._value.toString() + "%\"") + ")";
+        return `NOT(${this.memberKey} ~ ${null === this._value ? "Null" : `"%${this._value.toString()}%"`})`;
       case FilterOperator.IsContainedIn:
-        return (null === this._value ? "Null" : "\"" + this._value.toString() + "\"") + " ~ \"%\" & " + this.memberKey + " & \"%\" ";
+        return `${null === this._value ? "Null" : `"${this._value.toString()}"`} ~ "%" & ${this.memberKey} & "%" `;
       case FilterOperator.IsNotContainedIn:
-        return "NOT(" + (null === this._value ? "Null" : "\"" + this._value.toString() + "\"") + " ~ \"%\" & " + this.memberKey + " & \"%\" )";
+        return `NOT(${null === this._value ? "Null" : `"${this._value.toString()}"`} ~ "%" & ${this.memberKey} & "%" )`;
     }
 
     // istanbul ignore next

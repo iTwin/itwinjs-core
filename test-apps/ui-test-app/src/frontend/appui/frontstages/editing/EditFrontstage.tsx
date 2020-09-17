@@ -74,7 +74,7 @@ export class EditFrontstage extends FrontstageProvider {
     // first find an appropriate layout
     const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
     if (!contentLayoutProps) {
-      throw (Error("Could not find layout ContentLayoutProps when number of viewStates=" + this.viewStates.length));
+      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
     }
 
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);

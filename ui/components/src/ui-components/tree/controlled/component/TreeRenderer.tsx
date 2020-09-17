@@ -14,9 +14,7 @@ import { areEqual, ListChildComponentProps, VariableSizeList } from "react-windo
 import { concat } from "rxjs/internal/observable/concat";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { timer } from "rxjs/internal/observable/timer";
-import { getClassName, UiError } from "@bentley/ui-abstract";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
-import { UiComponents } from "../../../UiComponents";
 import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
 import { TreeActions } from "../TreeActions";
 import {
@@ -24,6 +22,7 @@ import {
 } from "../TreeModel";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
+import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
 
 const NODE_LOAD_DELAY = 500;
 
@@ -232,7 +231,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
 
     const context = useTreeRendererContext(Node);
     const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered, highlightingEngine, onNodeWidthMeasured } = context;
-    const node = visibleNodes!.getAtIndex(index)!;
+    const node = visibleNodes.getAtIndex(index)!;
 
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
     const className = classnames("node-wrapper", { "is-selected": isTreeModelNode(node) && node.isSelected });
@@ -315,27 +314,4 @@ function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightabl
     }, [highlightableTreeProps, treeRef]);
 
   return onLabelRendered;
-}
-
-function createContextWithMandatoryProvider<T>(
-  contextName: string,
-): [
-    React.ProviderExoticComponent<React.ProviderProps<T>>,
-    React.ExoticComponent<React.ConsumerProps<T>>,
-    <P>(component: React.ComponentType<P>) => T,
-  ] {
-  const context = React.createContext<T>(undefined as any as T);
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  function useContextWithoutDefaultValue<P>(ConsumingComponent: React.ComponentType<P>) {
-    const value = React.useContext(context);
-    /* istanbul ignore if */
-    if (value === undefined) {
-      throw new UiError(
-        UiComponents.loggerCategory(ConsumingComponent),
-        `'${getClassName(ConsumingComponent)}' expects to be wrapped by a '${contextName}' provider.`,
-      );
-    }
-    return value;
-  }
-  return [context.Provider, context.Consumer, useContextWithoutDefaultValue];
 }

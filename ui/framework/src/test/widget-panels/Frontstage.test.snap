@@ -11,9 +11,11 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
         "dockToolSettingsTitle": "widget.tooltips.dockToolSettings",
         "moreToolSettingsTitle": "widget.tooltips.moreToolSettings",
         "moreWidgetsTitle": "widget.tooltips.moreWidgets",
+        "pinPanelTitle": "widget.tooltips.pinPanel",
         "resizeGripTitle": "widget.tooltips.resizeGrip",
         "sendWidgetHomeTitle": "widget.tooltips.sendHome",
         "toolSettingsHandleTitle": "widget.tooltips.toolSettingsHandle",
+        "unpinPanelTitle": "widget.tooltips.unpinPanel",
       }
     }
     state={
@@ -31,6 +33,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "maxWidgetCount": 2,
             "minSize": 100,
             "pinned": true,
+            "resizable": true,
             "side": "bottom",
             "size": undefined,
             "span": true,
@@ -43,6 +46,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "maxWidgetCount": 3,
             "minSize": 200,
             "pinned": true,
+            "resizable": true,
             "side": "left",
             "size": undefined,
             "widgets": Array [],
@@ -54,6 +58,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "maxWidgetCount": 3,
             "minSize": 200,
             "pinned": true,
+            "resizable": true,
             "side": "right",
             "size": undefined,
             "widgets": Array [],
@@ -65,6 +70,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "maxWidgetCount": 2,
             "minSize": 100,
             "pinned": true,
+            "resizable": true,
             "side": "top",
             "size": undefined,
             "span": true,
@@ -77,6 +83,11 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
         },
         "tabs": Object {
           "nz-tool-settings-tab": Object {
+            "allowedPanelTargets": Array [
+              "bottom",
+              "left",
+              "right",
+            ],
             "id": "nz-tool-settings-tab",
             "label": "Tool Settings",
           },
@@ -87,6 +98,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
         "widgets": Object {},
       }
     }
+    tab={<WidgetPanelsTab />}
     toolSettingsContent={<ToolSettingsContent />}
     widgetContent={<WidgetContent />}
   >
@@ -166,6 +178,7 @@ Object {
       "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
+      "resizable": true,
       "side": "bottom",
       "size": undefined,
       "span": true,
@@ -178,6 +191,7 @@ Object {
       "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
+      "resizable": true,
       "side": "left",
       "size": undefined,
       "widgets": Array [],
@@ -189,6 +203,7 @@ Object {
       "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
+      "resizable": true,
       "side": "right",
       "size": undefined,
       "widgets": Array [],
@@ -200,6 +215,7 @@ Object {
       "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
+      "resizable": true,
       "side": "top",
       "size": undefined,
       "span": true,
@@ -212,6 +228,11 @@ Object {
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {
+      "allowedPanelTargets": Array [
+        "bottom",
+        "left",
+        "right",
+      ],
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
     },
@@ -255,6 +276,7 @@ Object {
       "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
+      "resizable": true,
       "side": "bottom",
       "size": undefined,
       "span": true,
@@ -267,6 +289,7 @@ Object {
       "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
+      "resizable": true,
       "side": "left",
       "size": undefined,
       "widgets": Array [],
@@ -278,6 +301,7 @@ Object {
       "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
+      "resizable": true,
       "side": "right",
       "size": undefined,
       "widgets": Array [],
@@ -289,6 +313,7 @@ Object {
       "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
+      "resizable": true,
       "side": "top",
       "size": undefined,
       "span": true,
@@ -301,6 +326,7 @@ Object {
   },
   "tabs": Object {
     "t1": Object {
+      "allowedPanelTargets": undefined,
       "id": "t1",
       "preferredFloatingWidgetSize": undefined,
     },
@@ -310,7 +336,7 @@ Object {
   },
   "widgets": Object {
     "w1": Object {
-      "activeTabId": undefined,
+      "activeTabId": "t1",
       "id": "w1",
       "minimized": false,
       "tabs": Array [
@@ -343,6 +369,7 @@ Object {
       "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
+      "resizable": true,
       "side": "bottom",
       "size": undefined,
       "span": true,
@@ -355,6 +382,7 @@ Object {
       "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
+      "resizable": true,
       "side": "left",
       "size": undefined,
       "widgets": Array [],
@@ -366,6 +394,7 @@ Object {
       "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
+      "resizable": true,
       "side": "right",
       "size": undefined,
       "widgets": Array [],
@@ -377,6 +406,7 @@ Object {
       "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
+      "resizable": true,
       "side": "top",
       "size": undefined,
       "span": true,
@@ -389,13 +419,17 @@ Object {
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {
+      "allowedPanelTargets": Array [
+        "bottom",
+        "left",
+        "right",
+      ],
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
     },
     "t1": Object {
       "id": "t1",
       "label": "Widget",
-      "preferredFloatingWidgetSize": undefined,
     },
   },
   "toolSettings": Object {
@@ -420,6 +454,7 @@ Object {
       "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
+      "resizable": true,
       "side": "bottom",
       "size": undefined,
       "span": true,
@@ -432,6 +467,7 @@ Object {
       "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
+      "resizable": true,
       "side": "left",
       "size": undefined,
       "widgets": Array [],
@@ -443,6 +479,7 @@ Object {
       "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
+      "resizable": true,
       "side": "right",
       "size": undefined,
       "widgets": Array [],
@@ -454,6 +491,7 @@ Object {
       "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
+      "resizable": true,
       "side": "top",
       "size": undefined,
       "span": true,
@@ -466,6 +504,11 @@ Object {
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {
+      "allowedPanelTargets": Array [
+        "bottom",
+        "left",
+        "right",
+      ],
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
     },

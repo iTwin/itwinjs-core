@@ -121,6 +121,8 @@ export class Capabilities {
     return this.supportsTextureFloat || this.supportsTextureHalfFloat;
   }
 
+  public get supportsAntiAliasing(): boolean { return this._isWebGL2 && this.maxAntialiasSamples > 1 }
+
   private findExtension(name: WebGLExtensionName): any {
     const ext = this._extensionMap[name];
     return null !== ext ? ext : undefined;
@@ -140,6 +142,7 @@ export class Capabilities {
     WebGLFeature.ShadowMaps,
     WebGLFeature.FragDepth,
     WebGLFeature.StandardDerivatives,
+    WebGLFeature.AntiAliasing,
   ];
   public static readonly requiredFeatures: WebGLFeature[] = [
     WebGLFeature.UintElementIndex,
@@ -180,6 +183,8 @@ export class Capabilities {
       features.push(WebGLFeature.FragDepth);
     if (this.supportsStandardDerivatives)
       features.push(WebGLFeature.StandardDerivatives);
+    if (this.supportsAntiAliasing)
+      features.push(WebGLFeature.AntiAliasing);
 
     if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType)
       features.push(WebGLFeature.DepthTexture);

@@ -2,6 +2,48 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@bentley/ui-core_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added PopupContextMenu component. Added 'iconRight' support to menu items."
+          },
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "Added ability to collapse all ExpandableList blocks when using singleExpandOnly"
+          },
+          {
+            "comment": "Hide the icon container if no icon is passed to fix alignment issues"
+          },
+          {
+            "comment": "Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names."
+          },
+          {
+            "comment": "Added Indeterminate Progress Indicator"
+          },
+          {
+            "comment": "Add component to highlight matching filter text."
+          },
+          {
+            "comment": "Sanitizing HTMLElement before using React rendering"
+          },
+          {
+            "comment": "SplitButton popupPosition & buttonType props support"
+          },
+          {
+            "comment": "Add prefers-color-scheme media query for SYSTEM_PREFERRED theme."
+          },
+          {
+            "comment": "Add ThemedEnumEditor for DialogItems and ToolSettings, using the ThemedSelect component."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.5",
       "tag": "@bentley/ui-core_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",

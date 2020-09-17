@@ -87,7 +87,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   }
 
   public get id(): string {
-    return this.props.workflowId + ":" + this.props.taskId;
+    return `${this.props.workflowId}:${this.props.taskId}`;
   }
 
   public execute = (): void => {

@@ -98,7 +98,7 @@ export class TableFilterDescriptorCollection extends FilterDescriptorCollection 
             break;
         }
       }
-      result += ("(" + this.filterDescriptorCollection.descriptors[i].getFilterExpression() + ")");
+      result += (`(${this.filterDescriptorCollection.descriptors[i].getFilterExpression()})`);
     }
     return result;
   }

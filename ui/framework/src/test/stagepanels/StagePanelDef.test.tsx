@@ -57,6 +57,12 @@ describe("StagePanelDef", () => {
     expect(panelDef.panelZones).to.exist;
   });
 
+  it("should initialize pinned", () => {
+    const panelDef = new StagePanelDef();
+    panelDef.initializeFromProps({ resizable: false, pinned: false });
+    expect(panelDef.pinned).to.false;
+  });
+
   it("should emit onPanelSizeChangedEvent", () => {
     const spy = sinon.spy();
     FrontstageManager.onPanelSizeChangedEvent.addListener(spy);

@@ -41,6 +41,14 @@ export class ToolSettings {
   public static walkVelocity = 3.5;
   /** Whether the walk tool requests pointer lock to hide the cursor for mouse look */
   public static walkRequestPointerLock = true;
+  /** @beta Whether the look and move tool detects collisions while moving forward */
+  public static walkCollisions = false;
+  /** @beta Whether the look and move tool adjusts the camera height for stairs/ramps when collisions are enabled */
+  public static walkDetectFloor = false;
+  /** @beta Maximum step height in meters above floor/ground to use when floor detection is enabled */
+  public static walkStepHeight = 0.3;
+  /** @beta Camera height in meters above floor/ground to use for set up walk tool */
+  public static walkEyeHeight = 1.6;
   /** Scale factor applied for wheel events with "per-line" modifier. */
   public static wheelLineFactor = 40;
   /** Scale factor applied for wheel events with "per-page" modifier. */

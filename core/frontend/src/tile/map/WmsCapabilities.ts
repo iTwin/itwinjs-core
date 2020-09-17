@@ -52,7 +52,7 @@ function initArray<T>(input: any): undefined | T[] {
   return Array.isArray(input) ? input.slice() : undefined;
 }
 
-/** Encapsulation of the capablitiles for an WMS server
+/** Encapsulation of the capabilities for an WMS server
  * @internal
  */
 export namespace WmsCapability {
@@ -143,9 +143,11 @@ export namespace WmsCapability {
     public readonly title: string;
     public readonly cartoRange?: MapCartoRectangle;
     public readonly children?: SubLayer[];
+    public readonly queryable: boolean;
     public constructor(_json: any, public readonly parent?: SubLayer) {
       this.name = _json.Name ? _json.Name : "";
       this.title = _json.Title;
+      this.queryable = _json.queryable ? true : false;
       this.cartoRange = rangeFromJSON(_json);
       if (Array.isArray(_json.Layer)) {
         this.children = new Array<SubLayer>();
@@ -180,7 +182,7 @@ export class WmsCapabilities {
     if (cached !== undefined)
       return cached;
 
-    const xmlCapabilities = await getXml(new ClientRequestContext(""), WmsUtilities.getBaseUrl(url) + "?request=GetCapabilities&service=WMS", credentials);
+    const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
 
     if (!xmlCapabilities)
       return undefined;

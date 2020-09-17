@@ -56,7 +56,7 @@ export class NativeAppBackend {
       configuration = new IModelHostConfiguration();
     }
     /** Override applicationType to NativeApp */
-    configuration!.applicationType = ApplicationType.NativeApp;
+    configuration.applicationType = ApplicationType.NativeApp;
     if (MobileRpcConfiguration.isMobileBackend) {
       MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
         const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};

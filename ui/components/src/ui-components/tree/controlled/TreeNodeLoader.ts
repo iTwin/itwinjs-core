@@ -23,10 +23,10 @@ import {
   ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
   TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
 } from "../TreeDataProvider";
-import { scheduleSubscription, SubscriptionScheduler } from "./internal/SubscriptionScheduler";
 import { Observable } from "./Observable";
 import { isTreeModelNode, MutableTreeModel, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "./TreeModel";
 import { TreeModelSource } from "./TreeModelSource";
+import { scheduleSubscription, SubscriptionScheduler } from "../../common/SubscriptionScheduler";
 
 /**
  * Data structure that describes node load result
@@ -416,7 +416,7 @@ export class TreeDataSource implements IDisposable {
     // eslint-disable-next-line deprecation/deprecation
     if (isTreeDataProviderInterface(this._dataProvider) && this._dataProvider.onTreeNodeChanged) {
       // eslint-disable-next-line deprecation/deprecation
-      this._disposeTreeNodesChangedListener = this._dataProvider.onTreeNodeChanged!.addListener(
+      this._disposeTreeNodesChangedListener = this._dataProvider.onTreeNodeChanged.addListener(
         (changedItems) => this.onItemsChanged.raiseEvent(changedItems),
       );
     }

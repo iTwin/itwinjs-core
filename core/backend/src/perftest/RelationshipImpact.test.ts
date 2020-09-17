@@ -44,7 +44,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
-    imodel.withPreparedStatement("SELECT count(*) AS [count] FROM " + className, (stmt: ECSqlStatement) => {
+    imodel.withPreparedStatement(`SELECT COUNT(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
       count = row.count;
@@ -58,7 +58,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
   function createSchema(): string {
     const schemaPath = path.join(outDir, "TestRelationshipSchema.01.00.00.ecschema.xml");
     if (!IModelJsFs.existsSync(schemaPath)) {
-      const sxml = `<?xml version="1.0" encoding="UTF-8"?>
+      const schemaXml = `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestRelationSchema" alias="trs" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
           <ECEntityClass typeName="TestElement">
@@ -102,7 +102,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
             </Target>
           </ECRelationshipClass>
         </ECSchema>`;
-      IModelJsFs.writeFileSync(schemaPath, sxml);
+      IModelJsFs.writeFileSync(schemaPath, schemaXml);
     }
     return schemaPath;
   }
@@ -111,7 +111,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const geomElement = imodel.elements.createElement(elementProps);
     setPropVal(geomElement, "propBase", "Test Value");
     const cType: string = cName.substring(cName.length - 1);
-    setPropVal(geomElement, "propChild" + cType, cType + " Value");
+    setPropVal(geomElement, `propChild${cType}`, `${cType} Value`);
     const id = imodel.elements.insertElement(geomElement);
     assert.isTrue(Id64.isValidId64(id), "insert failed");
     return id;
@@ -255,7 +255,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     for (let i = 0; i < opCount; ++i) {
       try {
         const tId: Id64String = Id64.fromLocalAndBriefcaseIds((stat.minId + elementIdIncrement * i), 0);
-        const query = IModelTestUtils.executeQuery(perfimodel, "SELECT SourceECInstanceId FROM TestRelationSchema.CIsRelatedToD WHERE TargetECInstanceId=" + tId)[0];
+        const query = IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.CIsRelatedToD WHERE TargetECInstanceId=${tId}`)[0];
         assert.isTrue(Id64.isValidId64(query.sourceId));
       } catch (err) {
         assert.isTrue(false);
@@ -270,7 +270,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     for (let i = 0; i < opCount; ++i) {
       try {
         const tId: Id64String = Id64.fromLocalAndBriefcaseIds((stat.minId + elementIdIncrement * i), 0);
-        const query = IModelTestUtils.executeQuery(perfimodel, "SELECT SourceECInstanceId FROM TestRelationSchema.ADrivesB WHERE TargetECInstanceId=" + tId)[0];
+        const query = IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.ADrivesB WHERE TargetECInstanceId=${tId}`)[0];
         assert.isTrue(Id64.isValidId64(query.sourceId));
       } catch (err) {
         assert.isTrue(false);

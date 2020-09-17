@@ -15,6 +15,7 @@ import { getOptionLabel } from 'react-select/src/builtins';
 import { getOptionValue } from 'react-select/src/builtins';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IMatch } from '@bentley/ui-abstract';
 import { InputActionMeta } from 'react-select/src/types';
 import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -343,7 +344,9 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     badgeType?: BadgeType;
     disabled?: boolean;
-    icon?: string | React.ReactNode;
+    hideIconContainer?: boolean;
+    icon?: IconSpec;
+    iconRight?: IconSpec;
     // (undocumented)
     isSelected?: boolean;
     // @internal (undocumented)
@@ -696,6 +699,7 @@ export class ExpandableList extends React.PureComponent<ExpandableListProps, Exp
 export interface ExpandableListProps extends CommonProps {
     defaultActiveBlock?: number;
     singleExpandOnly?: boolean;
+    singleIsCollapsible?: boolean;
 }
 
 // @public
@@ -780,6 +784,17 @@ export interface FieldValues {
 // @public
 export function FillCentered(props: CommonDivProps): JSX.Element;
 
+// @alpha
+export function FilteredText(props: FilteredTextProps): JSX.Element;
+
+// @alpha
+export interface FilteredTextProps extends CommonProps {
+    matchClassName?: string;
+    matches?: IMatch[];
+    matchStyle?: React.CSSProperties;
+    value: string;
+}
+
 // @internal
 export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 
@@ -825,6 +840,9 @@ export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
 // @internal
 export function getBestBWContrastColor(hexColor: string): "black" | "white";
+
+// @internal (undocumented)
+export function getButtonTypeClassName(buttonType?: ButtonType): string;
 
 // @internal
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
@@ -1102,7 +1120,7 @@ export interface ListboxContextProps {
     // (undocumented)
     listboxValue?: ListboxValue;
     // (undocumented)
-    onListboxValueChange: ((newValue: ListboxValue) => void);
+    onListboxValueChange: ((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => void);
 }
 
 // @alpha
@@ -1123,7 +1141,7 @@ export interface ListboxProps extends React.DetailedHTMLProps<React.HTMLAttribut
     // (undocumented)
     id?: string;
     // (undocumented)
-    onListboxValueChange?: ((newValue: ListboxValue) => void);
+    onListboxValueChange?: ((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => void);
     // (undocumented)
     selectedValue?: ListboxValue;
 }
@@ -1155,7 +1173,7 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
 }
 
 // @public
-export interface LoadingPromptProps {
+export interface LoadingPromptProps extends CommonProps {
     isDeterminate: boolean;
     // @deprecated
     isDeterministic: boolean;
@@ -1163,6 +1181,7 @@ export interface LoadingPromptProps {
     onCancel?: () => void;
     percent: number;
     showCancel: boolean;
+    showIndeterminateBar: boolean;
     showPercentage: boolean;
     showStatus: boolean;
     status: string;
@@ -1267,9 +1286,7 @@ export function MessageRenderer(props: MessageRendererProps): JSX.Element | null
 
 // @beta
 export interface MessageRendererProps extends ClassNameProps {
-    // (undocumented)
     message: MessageType;
-    // (undocumented)
     useSpan?: boolean;
 }
 
@@ -1374,6 +1391,9 @@ export enum Orientation {
 // @internal (undocumented)
 export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
 
+// @internal
+export function percentInRange(percent: number): number;
+
 // @internal (undocumented)
 export function placementToPosition(placement: TooltipPlacement | undefined): RelativePosition;
 
@@ -1429,8 +1449,35 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
+// @alpha
+export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
+
+// @alpha
+export interface PopupContextMenuProps extends CommonProps {
+    animate?: boolean;
+    ariaLabel?: string;
+    autoflip?: boolean;
+    children?: React.ReactNode;
+    edgeLimit?: boolean;
+    hotkeySelect?: boolean;
+    isOpen: boolean;
+    left?: number;
+    offset?: number;
+    onClose?: () => void;
+    onEnter?: () => void;
+    onEsc?: (event: React.KeyboardEvent) => void;
+    onOpen?: () => void;
+    onOutsideClick?: (e: MouseEvent) => void;
+    onSelect?: (event: React.MouseEvent | undefined) => void;
+    position?: RelativePosition;
+    selectedIndex?: number;
+    target?: HTMLElement | null;
+    top?: number;
+}
+
 // @public
 export interface PopupProps extends CommonProps {
+    animate?: boolean;
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
@@ -1448,6 +1495,18 @@ export interface PopupProps extends CommonProps {
     showShadow: boolean;
     target?: HTMLElement | null;
     top: number;
+}
+
+// @beta
+export function ProgressBar(props: ProgressBarProps): JSX.Element;
+
+// @beta
+export interface ProgressBarProps extends CommonProps {
+    barHeight?: number;
+    indeterminate?: boolean;
+    labelLeft?: string;
+    labelRight?: string;
+    percent?: number;
 }
 
 // @internal
@@ -1848,11 +1907,15 @@ export enum SplitButtonActionType {
 
 // @public
 export interface SplitButtonProps extends CommonProps {
+    buttonType?: ButtonType;
     drawBorder?: boolean;
     icon?: IconSpec;
+    // @internal (undocumented)
+    initialExpanded?: boolean;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
     onExecute?: () => any;
+    popupPosition?: RelativePosition;
     toolTip?: string;
 }
 
@@ -1998,18 +2061,11 @@ export type ThemedSelectProps = {
     options: OptionsType;
     pageSize?: number;
     placeholder?: string;
+    styles?: React.CSSProperties;
     tabIndex?: string;
     tabSelectsValue?: boolean;
     value?: ValueType<OptionType>;
 };
-
-// @internal
-export class TildeFinder {
-    static findAfterTilde: (node: React.ReactNode) => {
-        character: string | undefined;
-        node: React.ReactNode;
-    };
-}
 
 // @beta
 export class Tile extends React.Component<TileProps> {

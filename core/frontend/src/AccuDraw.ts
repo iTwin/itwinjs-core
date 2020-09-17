@@ -552,7 +552,7 @@ export class AccuDraw {
       return;
 
     const rMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, this.currentView, true);
-    rMatrix!.multiplyTransposeVectorInPlace(vec);
+    rMatrix.multiplyTransposeVectorInPlace(vec);
   }
 
   private static useACSContextRotation(vp: Viewport, isSnap: boolean): boolean {
@@ -1119,8 +1119,8 @@ export class AccuDraw {
       case ItemField.X_Item:
       case ItemField.Y_Item:
         this.locked |= (ItemField.X_Item === index) ? LockedStates.X_BM : LockedStates.Y_BM;
-      /* falls through */
 
+      // falls through
       case ItemField.Z_Item:
         this.setFieldLock(index, true);
         if (synchText) {
@@ -1889,7 +1889,7 @@ export class AccuDraw {
     if (!this.isActive)
       return;
 
-    const vp = context.viewport!;
+    const vp = context.viewport;
     if (this.currentView !== vp) // Do nothing if AccuDraw is not enabled for this view...
       return;
 

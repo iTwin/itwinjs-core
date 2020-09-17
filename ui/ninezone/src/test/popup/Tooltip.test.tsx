@@ -29,7 +29,7 @@ describe("<Tooltip />", () => {
         onSizeChanged={spy}
       />,
     );
-    const element = sut.getDOMNode() as HTMLElement;
+    const element = sut.getDOMNode();
     sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 1, 50, 22));
 
     sut.setProps({
@@ -53,7 +53,8 @@ describe("<Tooltip />", () => {
         left: 0,
         right: 10,
         top: 11,
-      }, {
+      },
+      {
         height: 200,
         width: 100,
       },
@@ -69,10 +70,12 @@ describe("<Tooltip />", () => {
         left: 90,
         right: 110,
         top: 12,
-      }, {
+      },
+      {
         height: 50,
         width: 100,
-      }, {
+      },
+      {
         x: 0,
         y: 0,
       },

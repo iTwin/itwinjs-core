@@ -43,6 +43,6 @@ export class TestMemoizer extends PromiseMemoizer<string> {
 
     deleteMemoizedTestFn(param, waitTime);
 
-    return testQP.isFulfilled ? testQP.result! : testQP.error!;
+    return testQP.isFulfilled ? testQP.result! : testQP.error;
   }
 }

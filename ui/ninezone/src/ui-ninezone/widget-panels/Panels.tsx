@@ -16,6 +16,7 @@ import { AppContent } from "./AppContent";
 import { CenterContent } from "./CenterContent";
 import { useCursor } from "./CursorOverlay";
 import { panelSides, WidgetPanel } from "./Panel";
+import { WidgetPanelExpanders } from "./Expander";
 
 /** Properties of [[WidgetPanels]] component.
  * @internal
@@ -58,6 +59,7 @@ const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsCompo
     >
       <WidgetContentRenderers />
       <AppContent />
+      <WidgetPanelExpanders />
       <CenterContent />
       {panelSides.map((side) => {
         const panel = panels[side];

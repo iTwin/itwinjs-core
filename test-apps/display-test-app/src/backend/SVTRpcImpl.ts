@@ -10,13 +10,13 @@ import SVTRpcInterface from "../common/SVTRpcInterface";
 /** The backend implementation of SVTRpcImpl. */
 export default class SVTRpcImpl extends SVTRpcInterface {
 
-  public async readExternalSavedViews(bimfileName: string): Promise<string> {
+  public async readExternalSavedViews(bimFileName: string): Promise<string> {
     if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
-      bimfileName = path.join(docPath, bimfileName);
+      bimFileName = path.join(docPath, bimFileName);
     }
 
-    const esvFileName = this.createEsvFilename(bimfileName);
+    const esvFileName = this.createEsvFilename(bimFileName);
     if (!fs.existsSync(esvFileName))
       return "";
 
@@ -24,13 +24,13 @@ export default class SVTRpcImpl extends SVTRpcInterface {
     return jsonStr ?? "";
   }
 
-  public async writeExternalSavedViews(bimfileName: string, namedViews: string): Promise<void> {
+  public async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
     if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
-      bimfileName = path.join(docPath, bimfileName);
+      bimFileName = path.join(docPath, bimFileName);
     }
 
-    const esvFileName = this.createEsvFilename(bimfileName);
+    const esvFileName = this.createEsvFilename(bimFileName);
     return this.writeExternalFile(esvFileName, namedViews);
   }
 
@@ -52,7 +52,7 @@ export default class SVTRpcImpl extends SVTRpcInterface {
       if (file === "")
         break;
 
-      curFile += file + "\\";
+      curFile += `${file}\\`;
       if (!fs.existsSync(curFile))
         fs.mkdirSync(curFile);
     }
@@ -70,8 +70,8 @@ export default class SVTRpcImpl extends SVTRpcInterface {
   private createEsvFilename(fileName: string): string {
     const dotIndex = fileName.lastIndexOf(".");
     if (-1 !== dotIndex)
-      return fileName.substring(0, dotIndex) + "_ESV.json";
-    return fileName + ".sv";
+      return `${fileName.substring(0, dotIndex)}_ESV.json`;
+    return `${fileName}.sv`;
   }
 }
 

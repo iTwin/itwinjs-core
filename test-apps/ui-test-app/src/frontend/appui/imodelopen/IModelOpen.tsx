@@ -6,12 +6,15 @@ import "./IModelOpen.scss";
 import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { IModelInfo, ProjectInfo, ProjectScope, UiFramework } from "@bentley/ui-framework";
+import { ActivityMessagePopup, IModelInfo, ProjectInfo, ProjectScope, UiFramework } from "@bentley/ui-framework";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
+import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@bentley/imodeljs-frontend";
+import { BeDuration } from "@bentley/bentleyjs-core";
+import { Button } from "@bentley/ui-core";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -53,8 +56,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         isLoadingProjects: false,
         isLoadingiModels: false,
         isLoadingiModel: false,
-        currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line rulesdir/react-set-state-usage
-        iModels: this.props.initialIModels,  // eslint-disable-line rulesdir/react-set-state-usage
+        currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line @bentley/react-set-state-usage
+        iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
 
       return;
@@ -98,7 +101,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
     this.setState({
-      prompt: "Opening '" + iModelInfo.name + "'...",
+      prompt: `Opening '${iModelInfo.name}'...`,
       isLoadingiModel: true,
     }, () => {
       if (this.props.onIModelSelected)
@@ -124,35 +127,61 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     }
   }
 
+  /** Tool that will start a sample activity and display ActivityMessage.
+   */
+  private _activityTool = async () => {
+    let isCancelled = false;
+    let progress = 0;
+
+    const details = new ActivityMessageDetails(true, true, true, true);
+    details.onActivityCancelled = () => {
+      isCancelled = true;
+    };
+    IModelApp.notifications.setupActivityMessage(details);
+
+    while (!isCancelled && progress <= 100) {
+      IModelApp.notifications.outputActivityMessage("This is a sample activity message", progress);
+      await BeDuration.wait(100);
+      progress++;
+    }
+
+    const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
+    IModelApp.notifications.endActivityMessage(endReason);
+  }
+
   public render() {
     const contentStyle = classnames("open-content", this.state.isNavigationExpanded && "pinned");
     return (
-      <div>
-        <div className="open-appbar">
-          <div className="backstage-icon">
-            <span className="icon icon-home" onPointerUp={() => AppTools.backstageToggleCommand.execute()} />
-          </div>
-          <div className="project-picker-content">
-            <span className="projects-label">Projects</span>
-            <div className="project-picker">
-              <ProjectDropdown currentProject={this.state.currentProject} recentProjects={this.state.recentProjects} onProjectClicked={this._selectProject.bind(this)} />
+      <>
+        <div>
+          <div className="open-appbar">
+            <div className="backstage-icon">
+              <span className="icon icon-home" onPointerUp={() => AppTools.backstageToggleCommand.execute()} />
             </div>
+            <div className="project-picker-content">
+              <span className="projects-label">Projects</span>
+              <div className="project-picker">
+                <ProjectDropdown currentProject={this.state.currentProject} recentProjects={this.state.recentProjects} onProjectClicked={this._selectProject.bind(this)} />
+              </div>
+            </div>
+            <Button style={{ display: "none" }} className="activity-button" onClick={this._activityTool}>Activity Message</Button>
+          </div>
+          <NavigationList defaultTab={0} onExpandChanged={this._onNavigationChanged}>
+            <NavigationItem label="Recent" icon="icon-placeholder" />
+            <NavigationItem label="Offline" icon="icon-placeholder" />
+            <NavigationItem label="Browse History" icon="icon-placeholder" />
+            <NavigationItem label="iModels" icon="icon-placeholder" />
+            <NavigationItem label="Share" icon="icon-placeholder" />
+            <NavigationItem label="Share Point" icon="icon-placeholder" />
+            <NavigationItem label="Reality Data" icon="icon-placeholder" />
+            <NavigationItem label="New Project..." icon="icon-placeholder" />
+          </NavigationList>
+          <div className={contentStyle}>
+            {this.renderIModels()}
           </div>
         </div>
-        <NavigationList defaultTab={0} onExpandChanged={this._onNavigationChanged}>
-          <NavigationItem label="Recent" icon="icon-placeholder" />
-          <NavigationItem label="Offline" icon="icon-placeholder" />
-          <NavigationItem label="Browse History" icon="icon-placeholder" />
-          <NavigationItem label="iModels" icon="icon-placeholder" />
-          <NavigationItem label="Share" icon="icon-placeholder" />
-          <NavigationItem label="Share Point" icon="icon-placeholder" />
-          <NavigationItem label="Reality Data" icon="icon-placeholder" />
-          <NavigationItem label="New Project..." icon="icon-placeholder" />
-        </NavigationList>
-        <div className={contentStyle}>
-          {this.renderIModels()}
-        </div>
-      </div>
+        <ActivityMessagePopup />
+      </>
     );
   }
 }

@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { DebugShaderFile, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
 import SVTRpcInterface from "../common/SVTRpcInterface";
+
+// cspell:disable
 
 const makeShadeBat = `
 
@@ -293,15 +294,15 @@ function skipThisShader(entry: DebugShaderFile, usedFlag: string, typeFlag: stri
 
 async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag: string, langFlag: string, dir: string) {
   // output shader make file
-  let fname = dir + "_makeShade.bat";
+  let fname = `${dir}_makeShade.bat`;
   await SVTRpcInterface.getClient().writeExternalFile(fname, makeShadeBat);
 
   // output output list
-  fname = dir + "_OutputList.txt";
+  fname = `${dir}_OutputList.txt`;
   let src = "";
   for (const entry of dsf) {
     if (!skipThisShader(entry, usedFlag, typeFlag, langFlag))
-      src = src + entry.filename + "  isUsed: " + entry.isUsed + "\n";
+      src = `${src + entry.filename}  isUsed: ${entry.isUsed}\n`;
   }
   await SVTRpcInterface.getClient().writeExternalFile(fname, src);
 
@@ -311,11 +312,11 @@ async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag:
       continue;
 
     fname = dir + entry.filename;
-    src = (entry.isGL ? "" : "// " + entry.filename + "  isUsed: " + entry.isUsed + "\n") + entry.src;
+    src = (entry.isGL ? "" : `// ${entry.filename}  isUsed: ${entry.isUsed}\n`) + entry.src;
     await SVTRpcInterface.getClient().writeExternalFile(fname, src);
   }
 
-  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Shaders output to directory " + dir));
+  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Shaders output to directory ${dir}`));
 }
 
 export class OutputShadersTool extends Tool {

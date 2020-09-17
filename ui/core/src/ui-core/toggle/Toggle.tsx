@@ -106,7 +106,7 @@ export function Toggle(props: ToggleProps) {
     }
   }, []);
 
-  const _getOffset = (): number => {
+  const getOffset = (): number => {
     return (checked) ? width - height : 0;
   };
 
@@ -132,7 +132,7 @@ export function Toggle(props: ToggleProps) {
     props.className);
   const toggleHandleStyle: React.CSSProperties = {
     width: height - (padding * 2),
-    transform: "translateX(" + _getOffset() + "px)",
+    transform: `translateX(${getOffset()}px)`,
     top: padding,
     bottom: padding,
     left: padding,

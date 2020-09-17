@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client-tests",
-  "version": "2.5.5",
+  "version": "2.6.0",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
@@ -34,17 +34,18 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "2.5.5",
-    "@bentley/bentleyjs-core": "2.5.5",
-    "@bentley/build-tools": "2.5.5",
-    "@bentley/config-loader": "2.5.5",
-    "@bentley/context-registry-client": "2.5.5",
-    "@bentley/frontend-authorization-client": "2.5.5",
-    "@bentley/imodelhub-client": "2.5.5",
-    "@bentley/imodeljs-common": "2.5.5",
-    "@bentley/itwin-client": "2.5.5",
-    "@bentley/oidc-signin-tool": "2.5.5",
-    "@bentley/rbac-client": "2.5.5",
+    "@bentley/backend-itwin-client": "2.6.0",
+    "@bentley/bentleyjs-core": "2.6.0",
+    "@bentley/build-tools": "2.6.0",
+    "@bentley/eslint-plugin": "2.6.0",
+    "@bentley/config-loader": "2.6.0",
+    "@bentley/context-registry-client": "2.6.0",
+    "@bentley/frontend-authorization-client": "2.6.0",
+    "@bentley/imodelhub-client": "2.6.0",
+    "@bentley/imodeljs-common": "2.6.0",
+    "@bentley/itwin-client": "2.6.0",
+    "@bentley/oidc-signin-tool": "2.6.0",
+    "@bentley/rbac-client": "2.6.0",
     "chai": "^4.1.2",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",
@@ -66,6 +67,9 @@
     "typescript": "~3.7.4"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

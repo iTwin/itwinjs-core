@@ -20,7 +20,7 @@ export class MyAppFrontend {
 
   public static async openIModel(path: string): Promise<IModelConnection> {
     this.iModel = await SnapshotConnection.openFile(path);
-    Logger.logInfo("presentation", "Opened: " + this.iModel.name);
+    Logger.logInfo("presentation", `Opened: ${this.iModel.name}`);
     return this.iModel;
   }
 

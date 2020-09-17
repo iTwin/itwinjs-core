@@ -8,9 +8,10 @@ import React from "react";
 import * as sinon from "sinon";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
-import { Milestone, PlaybackSettings } from "../../ui-components/timeline/interfaces";
+import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-components/timeline/interfaces";
 import { TimelineComponent } from "../../ui-components/timeline/TimelineComponent";
 import TestUtils from "../TestUtils";
+import { UiAdmin } from "@bentley/ui-abstract";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public playing = false;
@@ -560,5 +561,30 @@ describe("<TimelineComponent showDuration={true} />", () => {
         alwaysMinimized={false}
       />,
     );
+  });
+  it("onPlayPause called for TimerPausePlay event", () => {
+    const dataProvider = new TestTimelineDataProvider(false);
+    const spyOnPlayPause = sinon.spy();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const renderedComponent = render(<TimelineComponent
+      initialDuration={dataProvider.initialDuration}
+      totalDuration={dataProvider.duration}
+      minimized={true}
+      showDuration={true}
+      onChange={dataProvider.onAnimationFractionChanged}
+      onJump={dataProvider.onJump}
+      onPlayPause={spyOnPlayPause}
+      componentId={"TestTimeline"} />);
+
+    const args: TimelinePausePlayArgs = { uiComponentId: "TestTimeline", timelineAction: TimelinePausePlayAction.Play };
+    UiAdmin.sendUiEvent(args);
+    args.timelineAction = TimelinePausePlayAction.Pause;
+    UiAdmin.sendUiEvent(args);
+    args.timelineAction = TimelinePausePlayAction.Toggle;
+    UiAdmin.sendUiEvent(args);
+    expect (spyOnPlayPause.calledThrice).to.be.true;
+    UiAdmin.sendUiEvent({ uiComponentId: "TestTimeline"});
+    // onPlayPause should not be called again, since the args don't include an action
+    expect (spyOnPlayPause.calledThrice).to.be.true;
   });
 });

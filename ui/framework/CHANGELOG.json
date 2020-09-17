@@ -2,6 +2,69 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@bentley/ui-framework_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for a feature flag to control the display of the keyin palette.     "
+          },
+          {
+            "comment": "BadgeType support for Backstage items"
+          },
+          {
+            "comment": "add itemschanged handler so that items provided can be conditionally hidden"
+          },
+          {
+            "comment": "Lower case syncEventIds prior to comparison"
+          },
+          {
+            "comment": "Added PopupContextMenu component. Added 'iconRight' support to menu items."
+          },
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "Exported ActivityMessage. Added ActivityMessagePopup component."
+          },
+          {
+            "comment": "react to creation of telemetry client"
+          },
+          {
+            "comment": "Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names."
+          },
+          {
+            "comment": "Add support for opening a key-in palette to run key-ins."
+          },
+          {
+            "comment": "ModelsTree: Fix search hierarchy"
+          },
+          {
+            "comment": "Avoid exception during keyin palette test."
+          },
+          {
+            "comment": "Render only visible stage panel widgets."
+          },
+          {
+            "comment": "Prevent useWidgetDirection from crashing in 1.0 UI."
+          },
+          {
+            "comment": "Enable stage panel resizable prop for 2.0."
+          },
+          {
+            "comment": "Add pinned flag to StagePanelProps."
+          },
+          {
+            "comment": "Add system preferred theme as default theme."
+          },
+          {
+            "comment": "Deny tool settings tab from docking to top panel target."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.5",
       "tag": "@bentley/ui-framework_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",

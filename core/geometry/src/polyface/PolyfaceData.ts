@@ -375,6 +375,7 @@ export class PolyfaceData {
     const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point);
     this.point = packedPoints.growablePackedPoints!;
     packedPoints.updateIndices(this.pointIndex);
+    //  compressUnusedGrowableXYZArray(this.point, this.pointIndex);
 
     if (this.normalIndex && this.normal) {
       const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(this.normal);
@@ -475,3 +476,40 @@ export class PolyfaceData {
     return false;
   }
 }
+
+/*
+ * pack out data entries that are unreferenced.
+ * @param data data to pack
+ * @param indices indices into the data.
+
+function compressUnusedGrowableXYZArray(data: GrowableXYZArray, indices: number[]): boolean {
+  // 1 entry per data[i]
+  // pass 0: number of references
+  // pass 1: post-compression index (or -1)
+  const n0 = data.length;
+  const work = new Int32Array(data.length);
+  for (const k of indices) {
+    if (k < 0 || k >= n0)
+      return false;
+    work[k]++;
+  }
+  let n1 = 0;
+  for (let i = 0; i < n0; i++) {
+    if (work[i] === 0)
+      work[i] = -1;
+    else
+      work[i] = n1++;
+  }
+  const numIndex = indices.length;
+  for (let i = 0; i < numIndex; i++) {
+    indices[i] = work[indices[i]];
+  }
+  for (let i = 0; i < n0; i++) {
+    const j = work[i];
+    if (j >= 0)
+      data.moveIndexToIndex(i, j);
+  }
+  data.length = n1;
+  return true;
+}
+*/

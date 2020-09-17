@@ -98,7 +98,7 @@ export class Element extends Entity implements ElementProps {
 
         // Elements.deleteElement will automatically delete children, so we must automatically request the necessary resources for the children.
         iModel.elements.queryChildren(props.id).forEach((childId) => {
-          this.populateRequest(req, {...props, id: childId } as ElementProps, iModel, opcode, original); // (Rather than load the child's props, just fake it. We know that only the id property is needed. Likewise, pass anything for "original", since it's not used in the delete case. )
+          this.populateRequest(req, { ...props, id: childId } as ElementProps, iModel, opcode, original); // (Rather than load the child's props, just fake it. We know that only the id property is needed. Likewise, pass anything for "original", since it's not used in the delete case. )
         });
         break;
       }
@@ -193,9 +193,9 @@ export class Element extends Entity implements ElementProps {
       val.code = this.code;
 
     val.model = this.model;
+    val.userLabel = this.userLabel;
+    val.federationGuid = this.federationGuid;
     if (this.parent) val.parent = this.parent;
-    if (this.federationGuid) val.federationGuid = this.federationGuid;
-    if (this.userLabel) val.userLabel = this.userLabel;
     if (Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
     return val;
@@ -251,10 +251,10 @@ export class Element extends Entity implements ElementProps {
    * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.
    */
   public getToolTipMessage(): string[] {
-    const addKey = (key: string) => "<b>%{iModelJs:Element." + key + "}:</b> "; // %{iModelJs:Element.xxx} is replaced with localized value of xxx in frontend.
+    const addKey = (key: string) => `<b>%{iModelJs:Element.${key}}:</b> `; // %{iModelJs:Element.xxx} is replaced with localized value of xxx in frontend.
     const msg: string[] = [];
     const display = this.getDisplayLabel();
-    msg.push(display ? display : addKey("Id") + this.id + ", " + addKey("Type") + this.className);
+    msg.push(display ? display : `${addKey("Id") + this.id}, ${addKey("Type")}${this.className}`);
 
     if (this instanceof GeometricElement)
       msg.push(addKey("Category") + this.iModel.elements.getElement(this.category).getDisplayLabel());
@@ -686,7 +686,7 @@ export class Drawing extends Document {
     const model: DrawingModel = iModelDb.models.createModel({
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
-    }) as DrawingModel;
+    });
     return iModelDb.models.insertModel(model);
   }
 }

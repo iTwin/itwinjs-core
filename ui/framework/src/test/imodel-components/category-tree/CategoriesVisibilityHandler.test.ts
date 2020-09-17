@@ -57,7 +57,7 @@ describe("CategoryVisibilityHandler", () => {
     perModelCategoryVisibilityMock.reset();
 
     imodelMock.setup((x) => x.subcategories).returns(() => subCategoriesCacheMock.object);
-    subCategoriesCacheMock.setup((x) => x.getSubCategories("CategoryId")).returns(() => new Set(categories[0].children!));
+    subCategoriesCacheMock.setup((x) => x.getSubCategories("CategoryId")).returns(() => new Set(categories[0].children));
     viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
     selectedViewMock.setup((x) => x.view).returns(() => selectedViewStateMock.object);
     selectedViewMock.setup((x) => x.perModelCategoryVisibility).returns(() => perModelCategoryVisibilityMock.object);

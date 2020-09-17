@@ -9,6 +9,8 @@ import { Transform } from "../../geometry3d/Transform";
 import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { Range1d } from "../../geometry3d/Range";
+import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
+import { Quadrature } from "../../numerics/Quadrature";
 
 /* eslint-disable no-console */
 describe("AustralianRailCorpSpiral", () => {
@@ -60,4 +62,35 @@ describe("AustralianRailCorpSpiral", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("CzechDistanceApproximation", () => {
+    const ck = new Checker();
+    const nominalLength1 = 100.0;
+    const noisy = Checker.noisy.czechSpiralDistanceChecks;
+    for (const nominalRadius1 of [400, 1000]) {
+      const spiral = DirectSpiral3d.createCzechCubic(Transform.createIdentity(), nominalLength1, nominalRadius1)!;
+      const evaluator = spiral.evaluator as CzechSpiralEvaluator;
+      const gaussLength10 = Quadrature.doGaussIntegral(0, 1, (f1: number) => evaluator.fractionToTangentMagnitude(f1), 10);
+      const gaussLength5 = Quadrature.doGaussIntegral(0, 1, (f2: number) => evaluator.fractionToTangentMagnitude(f2), 10);
+      ck.testCoordinate(gaussLength10, gaussLength5, "gauss length comparison");
+      const czechLength = evaluator.xToCzechApproximateDistance(nominalLength1);
+      // crude test ...
+      const e = gaussLength10 - nominalLength1;
+      const f = Math.abs(czechLength - gaussLength10);
+      ck.testLE(f, 0.01 * e, " confirm czech excess length within 1%");
+      if (noisy)
+        console.log({ czechLengthA: czechLength, gaussLengthA: gaussLength10, fOverE: f / e });
+      const distanceRoundTripErrorRange = Range1d.createNull();
+      for (const fractionOfX of [0, 0.2, 0.8, 1.0]) {
+        const xA = fractionOfX * spiral.nominalL1;
+        const distanceA = evaluator.xToCzechApproximateDistance(xA);
+        const xB = evaluator.czechApproximateDistanceToX(distanceA);
+        if (ck.testIsFinite(xB, "czech invert"))
+          distanceRoundTripErrorRange.extendX(xA - xB);
+      }
+      if (noisy)
+        console.log(distanceRoundTripErrorRange);
+      ck.testLT(distanceRoundTripErrorRange.length(), 1.e-12);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

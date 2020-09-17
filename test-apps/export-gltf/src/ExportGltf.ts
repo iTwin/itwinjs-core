@@ -31,7 +31,7 @@ class GltfGlobals {
     process.stdout.write(`Opened ${iModelName} successfully...\n`);
 
     const gltfPathParts = path.parse(gltfName);
-    const binName = gltfPathParts.name + ".bin";
+    const binName = `${gltfPathParts.name}.bin`;
     GltfGlobals.binFile = fs.openSync(path.join(gltfPathParts.dir, binName), "w");
     GltfGlobals.texturesDir = gltfPathParts.dir;
     process.stdout.write(`Writing to ${gltfName} and ${binName}...\n`);
@@ -66,7 +66,7 @@ function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
     GltfGlobals.gltf.samplers = [{}]; // Just use default sampler values
   }
 
-  const textureInfo = GltfGlobals.iModel.elements.getElement(textureId) as Texture;
+  const textureInfo = GltfGlobals.iModel.elements.getElement<Texture>(textureId);
   const textureName = textureId + (textureInfo.format === ImageSourceFormat.Jpeg ? ".jpg" : ".png");
   const texturePath = path.join(GltfGlobals.texturesDir, textureName);
   fs.writeFile(texturePath, Buffer.from(textureInfo.data, "base64"), () => { }); // async is fine
@@ -214,7 +214,9 @@ function addMesh(mesh: ExportGraphicsMesh, color: number, textureId?: Id64String
     material,
     indices: GltfGlobals.gltf.accessors.length,
     attributes: {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       POSITION: GltfGlobals.gltf.accessors.length + 1,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       NORMAL: GltfGlobals.gltf.accessors.length + 2,
     },
   };
@@ -238,6 +240,7 @@ function addLines(lines: ExportGraphicsLines, color: number) {
     material: findOrAddMaterialIndexForColor(color),
     indices: GltfGlobals.gltf.accessors.length,
     attributes: {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       POSITION: GltfGlobals.gltf.accessors.length + 1,
     },
   };
@@ -397,11 +400,28 @@ function exportInstances(partInstanceArray: ExportPartInstanceInfo[]) {
   }
 }
 
-async function doExport(iModelName: string, gltfName: string): Promise<void> {
+interface ExportGltfArgs {
+  input: string;
+  output: string;
+}
+
+const exportGltfArgs: yargs.Arguments<ExportGltfArgs> = yargs
+  .usage("Usage: $0 --input [Snapshot iModel] --output [GLTF file]")
+  .string("input")
+  .alias("input", "i")
+  .demandOption(["input"])
+  .describe("input", "Path to the Snapshot iModel")
+  .string("output")
+  .alias("output", "o")
+  .demandOption(["output"])
+  .describe("output", "Path to the GLTF file that will be created")
+  .argv;
+
+(async () => {
   await IModelHost.startup();
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
-  GltfGlobals.initialize(iModelName, gltfName);
+  GltfGlobals.initialize(exportGltfArgs.input, exportGltfArgs.output);
 
   const elementIdArray: Id64Array = [];
   const sql = "SELECT ECInstanceId FROM bis.GeometricElement3d";
@@ -417,20 +437,9 @@ async function doExport(iModelName: string, gltfName: string): Promise<void> {
   exportInstances(partInstanceArray);
 
   GltfGlobals.gltf.buffers[0].byteLength = GltfGlobals.binBytesWritten;
-  fs.writeFileSync(gltfName, JSON.stringify(GltfGlobals.gltf));
+  fs.writeFileSync(exportGltfArgs.output, JSON.stringify(GltfGlobals.gltf));
   fs.closeSync(GltfGlobals.binFile);
   process.stdout.write(`Export successful, wrote ${GltfGlobals.binBytesWritten} bytes.\n`);
-}
-
-interface ExportGltfArgs { input: string, output: string }
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-  try {
-    yargs.usage("Export a GLTF from an existing BIM file.");
-    yargs.required("input", "The input BIM");
-    yargs.required("output", "The output GLTF file");
-    const args = yargs.parse() as yargs.Arguments<ExportGltfArgs>;
-    await doExport(args.input, args.output);
-  } catch (error) {
-    process.stdout.write(error.message + "\n" + error.stack);
-  }
-})();
+})().catch((error) => {
+  process.stdout.write(`${error.message}\n${error.stack}\n`);
+});

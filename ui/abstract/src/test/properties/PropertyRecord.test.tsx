@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardTypeNames } from "../../ui-abstract";
+import { ArrayValue, PrimitiveValue, StructValue } from "../../ui-abstract/properties/Value";
 
 const value1: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 3 };
 const value2: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 10 };
@@ -25,6 +26,22 @@ describe("PropertyRecord", () => {
       const newRecord = sut.copyWithNewValue(value2);
 
       expect(newRecord.value).to.eq(value2);
+    });
+
+    it("should copy all attributes from source", () => {
+      const src = new PropertyRecord(value1, getPropertyDescription());
+      src.autoExpand = true;
+      src.description = "test";
+      src.extendedData = { a: "b" };
+      src.isDisabled = true;
+      src.isMerged = true;
+      src.isReadonly = true;
+      src.links = {
+        matcher: () => [],
+        onClick: () => { },
+      };
+      const newRecord = src.copyWithNewValue(value2);
+      expect(newRecord).to.deep.eq({ ...src, value: value2 });
     });
 
   });
@@ -49,4 +66,51 @@ describe("PropertyRecord", () => {
 
   });
 
+  describe("getChildrenRecords", () => {
+    it("should return empty array for primitive record", () => {
+      const arrayValue: PrimitiveValue = {
+        valueFormat: PropertyValueFormat.Primitive,
+        value: "value",
+        displayValue: "display value",
+      };
+
+      const record = new PropertyRecord(arrayValue, getPropertyDescription());
+
+      expect(record.getChildrenRecords()).to.deep.equal([]);
+    });
+
+    it("should return array children for array record", () => {
+      const arrayValue: ArrayValue = {
+        valueFormat: PropertyValueFormat.Array,
+        items: [
+          PropertyRecord.fromString("ArrayChild1"),
+          PropertyRecord.fromString("ArrayChild2"),
+        ],
+        itemsTypeName: StandardTypeNames.String,
+      };
+
+      const record = new PropertyRecord(arrayValue, getPropertyDescription());
+
+      expect(record.getChildrenRecords()).to.deep.equal(arrayValue.items);
+    });
+
+    it("should return members children for struct record", () => {
+      const structChildren: PropertyRecord[] = [
+        PropertyRecord.fromString("structChild1"),
+        PropertyRecord.fromString("structChild2"),
+      ];
+
+      const structValue: StructValue = {
+        valueFormat: PropertyValueFormat.Struct,
+        members: {
+          structChild1: structChildren[0],
+          structChild2: structChildren[1],
+        },
+      };
+
+      const record = new PropertyRecord(structValue, getPropertyDescription());
+
+      expect(record.getChildrenRecords()).to.deep.equal(structChildren);
+    });
+  });
 });

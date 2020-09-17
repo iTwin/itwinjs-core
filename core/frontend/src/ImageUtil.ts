@@ -276,7 +276,7 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void {
       return;
 
     const div = win.document.createElement("div");
-    div.innerHTML = "<img src='" + url + "'/>";
+    div.innerHTML = `<img src='${url}'/>`;
     win.document.body.append(div);
     if (undefined !== title)
       win.document.title = title;

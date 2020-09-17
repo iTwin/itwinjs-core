@@ -11,7 +11,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import {
   BackstageActionItem, BackstageItem, BackstageStageLauncher, ConditionalBooleanValue, ConditionalStringValue, isStageLauncher,
 } from "@bentley/ui-abstract";
-import { Icon } from "@bentley/ui-core";
+import { BadgeUtilities, Icon } from "@bentley/ui-core";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { useActiveFrontstageId } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -35,6 +35,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
       subtitle={ConditionalStringValue.getValue(item.subtitle)}
+      badge={BadgeUtilities.getComponentForBadgeType(item.badgeType)}
     >
       {ConditionalStringValue.getValue(item.label)}
     </NZ_BackstageItem>
@@ -64,6 +65,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
       subtitle={ConditionalStringValue.getValue(item.subtitle)}
+      badge={BadgeUtilities.getComponentForBadgeType(item.badgeType)}
     >
       {ConditionalStringValue.getValue(item.label)}
     </NZ_BackstageItem>

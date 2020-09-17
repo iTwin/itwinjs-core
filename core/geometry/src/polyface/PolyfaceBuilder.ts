@@ -1331,8 +1331,21 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addPolygonGrowableXYZArray(points: GrowableXYZArray) {
     // don't use trailing points that match start point.
     let numPointsToUse = points.length;
-    while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
+    while (numPointsToUse > 2 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
       numPointsToUse--;
+    // strip trailing duplicates
+    while (numPointsToUse > 2 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(numPointsToUse - 2, numPointsToUse - 1)!))
+      numPointsToUse--;
+    // ignore triangles for which the height is less than smallMetricDistance times length
+    // sum of edge lengths is twice the perimeter.   If it is flat that's twice the largest base dimension.
+    // cross product magnitude is twice the area.
+    if (numPointsToUse === 3) {
+      const cross = points.crossProductIndexIndexIndex(0, 1, 2)!;
+      const q = cross.magnitude();
+      const p = points.distanceIndexIndex(0, 1)! + points.distanceIndexIndex(0, 2)! + points.distanceIndexIndex(1, 2)!;
+      if (q < Geometry.smallMetricDistance * p)
+        numPointsToUse = 0;
+    }
     if (numPointsToUse > 2) {
       let index = 0;
       if (!this._reversed) {

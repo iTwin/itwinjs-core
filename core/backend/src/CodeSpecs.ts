@@ -108,13 +108,13 @@ export class CodeSpecs {
   public insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
   public insert(codeSpecOrName: CodeSpec | string, scopeType?: CodeScopeSpec.Type): Id64String {
     if (codeSpecOrName instanceof CodeSpec) {
-      const codeSpec = codeSpecOrName as CodeSpec;
+      const codeSpec = codeSpecOrName;
       const id: Id64String = this._imodel.insertCodeSpec(codeSpec);
       codeSpec.id = id;
       return id;
     }
     if (typeof codeSpecOrName === "string") {
-      const name = codeSpecOrName as string;
+      const name = codeSpecOrName;
       if (scopeType)
         return this._imodel.insertCodeSpec(CodeSpec.create(this._imodel, name, scopeType));
     }

@@ -99,6 +99,9 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
       name: TestUiProviderDialog._optionsName,
       displayLabel: "Options",
       typename: "enum",
+      editor: {
+        name: "themed-enum",
+      },
       enum: {
         choices: [
           { label: "Red", value: ColorOptions.Red },

@@ -24,6 +24,7 @@ export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
 export * from "./ui-components/common/StandardTypeNames";
 export * from "./ui-components/common/UseAsyncValue";
+export * from "./ui-components/common/UseDebouncedAsyncValue";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";
@@ -58,6 +59,7 @@ export * from "./ui-components/editors/SliderEditor";
 export * from "./ui-components/editors/StandardEditorNames";
 export * from "./ui-components/editors/TextEditor";
 export * from "./ui-components/editors/TextareaEditor";
+export * from "./ui-components/editors/ThemedEnumEditor";
 export * from "./ui-components/editors/ToggleEditor";
 export * from "./ui-components/editors/WeightEditor";
 
@@ -115,7 +117,29 @@ export * from "./ui-components/properties/ItemStyle";
 export * from "./ui-components/propertygrid/PropertyDataProvider";
 export * from "./ui-components/propertygrid/SimplePropertyDataProvider";
 export * from "./ui-components/propertygrid/component/PropertyGrid";
+export * from "./ui-components/propertygrid/component/VirtualizedPropertyGrid";
+export * from "./ui-components/propertygrid/component/VirtualizedPropertyGridWithDataProvider";
 export * from "./ui-components/propertygrid/component/PropertyCategoryBlock";
+export * from "./ui-components/propertygrid/component/PropertyGridEventsRelatedPropsSupplier";
+export * from "./ui-components/propertygrid/component/PropertyGridCommons";
+export * from "./ui-components/propertygrid/internal/flat-items/FlatGridItem";
+export * from "./ui-components/propertygrid/internal/flat-items/MutableCategorizedArrayProperty";
+export * from "./ui-components/propertygrid/internal/flat-items/MutableCategorizedPrimitiveProperty";
+export * from "./ui-components/propertygrid/internal/flat-items/MutableCategorizedStructProperty";
+export * from "./ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
+export * from "./ui-components/propertygrid/internal/flat-items/MutableGridCategory";
+export * from "./ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
+export * from "./ui-components/propertygrid/internal/PropertyGridEventHandler";
+export * from "./ui-components/propertygrid/internal/PropertyGridHooks";
+export * from "./ui-components/propertygrid/internal/PropertyGridModel";
+export * from "./ui-components/propertygrid/internal/PropertyGridModelChangeEvent";
+export * from "./ui-components/propertygrid/internal/PropertyGridModelSource";
+export * from "./ui-components/propertygrid/dataproviders/FilteringDataProvider";
+export * from "./ui-components/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer";
+export * from "./ui-components/propertygrid/dataproviders/filterers/DisplayValuePropertyDataFilterer";
+export * from "./ui-components/propertygrid/dataproviders/filterers/LabelPropertyDataFilterer";
+export * from "./ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
+
 export * from "./ui-components/color/Swatch";
 export * from "./ui-components/color/HueSlider";
 export * from "./ui-components/color/AlphaSlider";
@@ -161,7 +185,6 @@ export * from "./ui-components/tree/controlled/component/ControlledTree";
 export * from "./ui-components/tree/controlled/component/TreeNodeRenderer";
 export * from "./ui-components/tree/controlled/component/TreeRenderer";
 export * from "./ui-components/tree/controlled/internal/SparseTree";
-export * from "./ui-components/tree/controlled/internal/SubscriptionScheduler";
 
 export * from "./ui-components/viewport/ViewportComponent";
 export * from "./ui-components/viewport/ViewportComponentEvents";
@@ -225,6 +248,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description Table
  * Classes and components for working with a Table.
+ */
+/**
+ * @docs-group-description Timeline
+ * Classes and components that provide a timeline
  */
 /**
  * @docs-group-description Toolbar

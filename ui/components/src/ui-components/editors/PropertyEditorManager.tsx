@@ -44,6 +44,19 @@ export interface DataController {
  * @beta
  */
 export abstract class PropertyEditorBase implements DataController {
+
+  public get containerHandlesBlur(): boolean {
+    return true;
+  }
+  public get containerHandlesEscape(): boolean {
+    return true;
+  }
+  public get containerHandlesEnter(): boolean {
+    return true;
+  }
+  public get containerHandlesTab(): boolean {
+    return true;
+  }
   public customDataController: DataController | undefined = undefined;
 
   public abstract get reactNode(): React.ReactNode;
@@ -91,7 +104,7 @@ export class PropertyEditorManager {
 
     if (PropertyEditorManager._editors.hasOwnProperty(fullEditorName)) {
       const nameOfEditor = PropertyEditorManager._editors[fullEditorName].name;
-      throw Error("PropertyEditorManager.registerEditor error: type '" + fullEditorName + "' already registered to '" + nameOfEditor + "'");
+      throw Error(`PropertyEditorManager.registerEditor error: type '${fullEditorName}' already registered to '${nameOfEditor}'`);
     }
     PropertyEditorManager._editors[fullEditorName] = editor;
   }
@@ -99,13 +112,13 @@ export class PropertyEditorManager {
   private static getFullEditorName(editType: string, editorName?: string): string {
     let fullEditorName = editType;
     if (editorName)
-      fullEditorName += ":" + editorName;
+      fullEditorName += `:${editorName}`;
     return fullEditorName;
   }
 
   public static registerDataController(controllerName: string, controller: new () => DataControllerBase): void {
     if (PropertyEditorManager._dataControllers.hasOwnProperty(controllerName)) {
-      throw Error("PropertyEditorManager.registerDataController error: type '" + controllerName + "' already registered to '" + (typeof PropertyEditorManager._dataControllers[controllerName]).toString() + "'");
+      throw Error(`PropertyEditorManager.registerDataController error: type '${controllerName}' already registered to '${(typeof PropertyEditorManager._dataControllers[controllerName]).toString()}'`);
     }
     PropertyEditorManager._dataControllers[controllerName] = controller;
   }
@@ -125,7 +138,7 @@ export class PropertyEditorManager {
       if (PropertyEditorManager._dataControllers.hasOwnProperty(dataControllerName))
         editor.customDataController = new PropertyEditorManager._dataControllers[dataControllerName]();
       else
-        throw Error("PropertyEditorManager.createEditor error: data controller '" + dataControllerName + "' is not registered");
+        throw Error(`PropertyEditorManager.createEditor error: data controller '${dataControllerName}' is not registered`);
     }
 
     return editor;
@@ -142,7 +155,6 @@ export class PropertyEditorManager {
  * @beta
  */
 export class BasicPropertyEditor extends PropertyEditorBase {
-
   public get reactNode(): React.ReactNode {
     return <TextEditor />;
   }

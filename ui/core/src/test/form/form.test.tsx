@@ -20,6 +20,8 @@ describe("<Form />", () => {
 
   afterEach(cleanup);
 
+  /* eslint-disable @typescript-eslint/naming-convention */
+
   const fields: FieldDefinitions = {
     SiteUrl: {
       label: "site",
@@ -77,29 +79,29 @@ describe("<Form />", () => {
     const form = render(<Form handleFormSubmit={handleFormSubmit} fields={fields} submitButtonLabel="Submit" />);
     const siteUrlInput = form.container.querySelector("input#SiteUrl") as HTMLInputElement;
     expect(siteUrlInput).not.to.be.null;
-    expect(siteUrlInput!.value).to.be.eq("");
-    fireEvent.change(siteUrlInput!, { target: { value: "https://www.bentley.com/" } });
-    expect(siteUrlInput!.value).to.be.eq("https://www.bentley.com/");
+    expect(siteUrlInput.value).to.be.eq("");
+    fireEvent.change(siteUrlInput, { target: { value: "https://www.bentley.com/" } });
+    expect(siteUrlInput.value).to.be.eq("https://www.bentley.com/");
 
     const nameInput = form.container.querySelector("input#Name") as HTMLInputElement;
     expect(nameInput).not.to.be.null;
-    expect(nameInput!.value).to.be.eq("John Smith");
+    expect(nameInput.value).to.be.eq("John Smith");
 
     const notesInput = form.container.querySelector("textarea#Notes") as HTMLTextAreaElement;
     expect(notesInput).not.to.be.null;
-    expect(notesInput!.value).to.be.eq("");
-    fireEvent.change(notesInput!, { target: { value: "hello world" } });
+    expect(notesInput.value).to.be.eq("");
+    fireEvent.change(notesInput, { target: { value: "hello world" } });
 
     const lockInput = form.container.querySelector("input#Lock") as HTMLInputElement;
     expect(lockInput).not.to.be.null;
-    expect(lockInput!.value).to.be.eq("on");
+    expect(lockInput.value).to.be.eq("on");
     fireEvent.click(lockInput); // associated lock value should be false
 
     const pickList = form.container.querySelector("select#PickList") as HTMLSelectElement;
     expect(pickList).not.to.be.null;
-    expect(pickList!.value).to.be.eq("one");
-    fireEvent.change(pickList!, { target: { value: "four" } });
-    expect(pickList!.value).to.be.eq("four");
+    expect(pickList.value).to.be.eq("one");
+    fireEvent.change(pickList, { target: { value: "four" } });
+    expect(pickList.value).to.be.eq("four");
 
     const button = form.container.querySelector("button") as HTMLButtonElement;
     expect(submitProcessed).to.be.eq(false);

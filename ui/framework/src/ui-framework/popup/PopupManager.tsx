@@ -21,6 +21,8 @@ import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup";
 import { ToolbarPopup } from "./ToolbarPopup";
 import { CardPopup } from "./CardPopup";
 import { ToolSettingsPopup } from "./ToolSettingsPopup";
+import { KeyinPalettePopup } from "./KeyinPalettePopup";
+import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 
 /** Information maintained by PopupManager about a Popup
  * @alpha
@@ -61,6 +63,8 @@ export class PopupManager {
   private static _htmlElementId = "HTMLElement";
   private static _cardId = "Card";
   private static _toolSettingsId = "ToolSettings";
+  private static _keyPalettePopupId = "KeyinPalette";
+
   private static _defaultOffset = { x: 8, y: 8 };
 
   public static readonly onPopupsChangedEvent = new PopupsChangedEvent();
@@ -153,6 +157,31 @@ export class PopupManager {
 
   public static hideInputEditor(): boolean {
     return PopupManager.removePopup(PopupManager._editorId);
+  }
+
+  public static showKeyinPalette(
+    keyins: KeyinEntry[], el: HTMLElement, onItemExecuted?: OnItemExecutedFunc, onCancel?: OnCancelFunc,
+  ): boolean {
+
+    const id = PopupManager._keyPalettePopupId;
+    const component = (
+      <KeyinPalettePopup keyins={keyins}
+        id={id} el={el} onCancel={onCancel} onItemExecuted={onItemExecuted} />
+    );
+
+    // since the command palette popup is always at top center of specified HTML element and it does not need to move like
+    // cursor popups just set pt to 0,0.
+    const pt = { x: 0, y: 0 };
+    const popupInfo: PopupInfo = {
+      id, pt, component,
+    };
+    PopupManager.addOrUpdatePopup(popupInfo);
+
+    return true;
+  }
+
+  public static hideKeyinPalette(): boolean {
+    return PopupManager.removePopup(PopupManager._keyPalettePopupId);
   }
 
   public static showToolbar(

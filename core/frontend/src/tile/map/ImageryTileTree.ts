@@ -32,7 +32,7 @@ export class ImageryMapTile extends RealityTile {
   }
   public get texture() { return this._texture; }
   public get tilingScheme() { return this.imageryTree.tilingScheme; }
-  public get isDisplayable() { return (this.depth > 2) && super.isDisplayable; }    // Level 1 has signficant projection distortion.
+  public get isDisplayable() { return (this.depth > 1) && super.isDisplayable; }
 
   public setContent(content: ImageryTileContent): void {
     this._texture = content.imageryTexture;        // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
@@ -190,7 +190,7 @@ class ImageryTileLoader extends RealityTileLoader {
     assert(data instanceof ImageSource);
     assert(tile instanceof ImageryMapTile);
     const content: ImageryTileContent = {};
-    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
+    const texture = await this.loadTextureImage(data, this._iModel, system, isCanceled);
     if (undefined === texture)
       return content;
 

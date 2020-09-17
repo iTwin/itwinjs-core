@@ -32,7 +32,7 @@ export class EntityClass extends ECClass {
     this.schemaItemType = SchemaItemType.EntityClass;
   }
 
-  get mixins(): LazyLoadedMixin[] {
+  public get mixins(): LazyLoadedMixin[] {
     if (!this._mixins)
       return [];
     return this._mixins;

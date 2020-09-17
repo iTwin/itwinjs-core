@@ -6,17 +6,18 @@
  * @module Views
  */
 
-import { asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
+import {
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable,
+  isInstanceOf, SortedArray, StopWatch,
+} from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
   Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction, ElementProps,
-  FeatureAppearance,
-  Frustum, GlobeMode,
-  GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
-  PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -80,7 +81,7 @@ export interface TiledGraphicsProvider {
 export interface ViewportDecorator {
   /** Override to enable cached decorations for this decorator.
    * By default, a decorator is asked to recreate its decorations from scratch via its [[decorate]] method whenever the viewport's decorations are invalidated.
-   * Decorations become invaliated for a variety of reasons, including when the scene changes and when the mouse moves.
+   * Decorations become invalidated for a variety of reasons, including when the scene changes and when the mouse moves.
    * Most decorators care only about when the scene changes, and may create decorations that are too expensive to recreate on every mouse motion.
    * If `useCachedDecorations` is true, then the viewport will cache the most-recently-created decorations for this decorator, and only invoke its [[decorate]] method if it has no cached decorations for it.
    * The cached decorations are discarded:
@@ -91,15 +92,16 @@ export interface ViewportDecorator {
   readonly useCachedDecorations?: true;
 
   /** Implement this method to add [[Decorations}} into the supplied DecorateContext.
-   * @see [[useCachedDecorations]] to avoid unncessarily recreating decorations.
+   * @see [[useCachedDecorations]] to avoid unnecessarily recreating decorations.
    */
   decorate(context: DecorateContext): void;
 }
 
 /** @internal */
-export type CachedDecoration = { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner }
-  | { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean }
-  | { type: "html", htmlElement: HTMLElement };
+export type CachedDecoration =
+  { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner } |
+  { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean } |
+  { type: "html", htmlElement: HTMLElement };
 
 function disposeCachedDecoration(dec: CachedDecoration): void {
   if ("graphic" === dec.type)
@@ -415,8 +417,8 @@ class GlobeAnimator implements Animator {
     // We will "fix" the initial frustum so it smoothly transitions to some point along the travel arc depending on the starting height.
     // Alternatively, if the distance to travel is small enough, we will _only_ do a frustum transition to the destination location - ignoring the flight arc.
     const beforeTakeoff = viewport.getWorldFrustum();
-    this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : metersToRange(this._startHeight!, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
-    this._moveFlightToFraction(this._fixTakeoffFraction!);
+    this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : metersToRange(this._startHeight, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
+    this._moveFlightToFraction(this._fixTakeoffFraction);
     const afterTakeoff = viewport.getWorldFrustum();
     this._fixTakeoffInterpolator = SmoothTransformBetweenFrusta.create(beforeTakeoff.points, afterTakeoff.points);
 
@@ -451,6 +453,7 @@ class GlobeAnimator implements Animator {
  */
 class FrustumAnimator implements Animator {
   private _tweens = new Tweens();
+  private _duration = 0;
 
   public constructor(public options: ViewAnimationOptions, viewport: ScreenViewport, begin: ViewPose, end: ViewPose) {
     const settings = ScreenViewport.animation;
@@ -460,6 +463,7 @@ class FrustumAnimator implements Animator {
     if (duration <= 0 || begin.cameraOn !== end.cameraOn) // no duration means skip animation. We can't animate if the camera toggles.
       return;
 
+    this._duration = duration;
     let extentBias: Vector3d | undefined;
     let eyeBias: Vector3d | undefined;
     const zVec = begin.zVec;
@@ -527,8 +531,9 @@ class FrustumAnimator implements Animator {
   }
 
   public interrupt() {
-    if (!this.options.cancelOnAbort)
-      this._tweens.update(Infinity); // jump to end pose
+    // We were interrupted. Either go to: the final frame (normally) or, add a small fraction of the total duration (30ms for a .5 second duration) to
+    // the current time for cancelOnAbort. That makes aborted animations show some progress, as happens when the mouse wheel rolls quickly.
+    this._tweens.update(this.options.cancelOnAbort ? Date.now() + (this._duration * .06) : Infinity);
   }
 }
 
@@ -1047,7 +1052,7 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get target(): RenderTarget {
     assert(undefined !== this._target, "Accessing RenderTarget of a disposed Viewport");
-    return this._target!;
+    return this._target;
   }
 
   /** Returns true if this Viewport's [[dispose]] method has been invoked. It is an error to attempt to interact with a disposed Viewport.
@@ -1403,12 +1408,14 @@ export abstract class Viewport implements IDisposable {
    * @note this method clones the current ViewState2d and sets its baseModelId to the supplied value. The DisplayStyle and CategorySelector remain unchanged.
    */
   public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     if (!this.view.is2d)
       return;
 
     const newView = this.view.clone() as ViewState2d; // start by cloning the current ViewState
     // NOTE: the cast below is necessary since baseModelId is marked as readonly after construction.
     //  We know this is a special case where it is safe to change it.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     (newView.baseModelId as Id64String) = baseModelId; // change its baseModelId.
 
     await newView.load(); // make sure new model is loaded.
@@ -2433,7 +2440,7 @@ export abstract class Viewport implements IDisposable {
 
   private getGridOrientation(origin: Point3d, rMatrix: Matrix3d) {
     if (this.view.isSpatialView())
-      origin.setFrom(this.iModel!.globalOrigin);
+      origin.setFrom(this.iModel.globalOrigin);
 
     switch (this.view.getGridOrientation()) {
       case GridOrientationType.View: {
@@ -3358,7 +3365,7 @@ export class ScreenViewport extends Viewport {
      */
     const now = BeTimePoint.now();
     if (Viewport.undoDelay.isZero || backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
-      this._currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
+      this._currentBaseline.undoTime = now; // save time we put this entry in undo buffer
       this._backStack.push(this._currentBaseline); // save previous state
       this._forwardStack.length = 0; // not possible to do redo after this
     }
@@ -3383,7 +3390,7 @@ export class ScreenViewport extends Viewport {
     if (0 === this._forwardStack.length || this._currentBaseline === undefined)
       return;
 
-    this._backStack.push(this._currentBaseline!);
+    this._backStack.push(this._currentBaseline);
     this._currentBaseline = this._forwardStack.pop()!;
     this.view.applyPose(this._currentBaseline);
     this.finishUndoRedo(animationTime);
@@ -3484,7 +3491,7 @@ export class ScreenViewport extends Viewport {
     const webglCanvas = this.target.setRenderToScreen(toScreen);
     if (undefined === webglCanvas) {
       assert(undefined !== this._webglCanvas); // see getter...
-      this.vpDiv.removeChild(this._webglCanvas!);
+      this.vpDiv.removeChild(this._webglCanvas);
       this._webglCanvas = undefined;
     } else {
       assert(undefined === this._webglCanvas); // see getter...

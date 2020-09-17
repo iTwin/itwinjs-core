@@ -51,6 +51,21 @@ function getCurrentGlobalPosition(orientation: Orientation, e: PointerEvent | Re
   return orientation === Orientation.Horizontal ? e.clientX : e.clientY;
 }
 
+const useConditionalCleanup = (condition: boolean, cleanup: () => void) => {
+  const conditionRef = useRef(condition);
+  const cleanupRef = useRef(cleanup);
+
+  conditionRef.current = condition;
+  cleanupRef.current = cleanup;
+
+  useEffect(() => {
+    return () => {
+      if (conditionRef.current)
+        cleanupRef.current();
+    };
+  }, []);
+};
+
 const useElementSeparatorPointerHandler = ({
   onResizeHandleDragChanged,
   onResizeHandleHoverChanged,
@@ -68,6 +83,9 @@ const useElementSeparatorPointerHandler = ({
   const [isElementHovered, setIsHovered] = useState(false);
   const isGroupDragged = isResizeHandleBeingDragged ?? isElementDragged;
   const isGroupHovered = isResizeHandleHovered ?? isElementHovered;
+
+  useConditionalCleanup(isElementDragged && !!onResizeHandleDragChanged, () => onResizeHandleDragChanged!(false));
+  useConditionalCleanup(isElementHovered && !!onResizeHandleHoverChanged, () => onResizeHandleHoverChanged!(false));
 
   if (isGroupHovered && pointerOutOfBounds.current)
     pointerOutOfBounds.current = false;

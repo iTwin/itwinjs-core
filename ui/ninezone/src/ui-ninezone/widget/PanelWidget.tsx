@@ -67,7 +67,7 @@ export const PanelWidget = React.memo<PanelWidgetProps>(function PanelWidget({ w
     setMaxSize(animateFrom.current);
     setTransition("prepared");
   }, [horizontal]);
-  useTabTransientState(widget.activeTabId || "", onSave, onRestore);
+  useTabTransientState(widget.activeTabId, onSave, onRestore);
   React.useLayoutEffect(() => {
     assert(widgetRef.current);
     if (lastActiveTabId.current !== currentActiveTabId.current) {
@@ -140,8 +140,8 @@ export function usePreferredPanelWidgetSize(widgetId: WidgetState["id"]) {
   const widgets = React.useContext(WidgetsStateContext);
   const tabs = React.useContext(TabsStateContext);
   const widget = widgets[widgetId];
-  const tab = widget.activeTabId ? tabs[widget.activeTabId] : undefined;
-  return tab?.preferredPanelWidgetSize;
+  const tab = tabs[widget.activeTabId];
+  return tab.preferredPanelWidgetSize;
 }
 
 /** Returns `true` when there are no widgets that will fill the panel.

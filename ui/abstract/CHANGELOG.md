@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- Add support for a feature flag to control the display of the keyin palette.
+- Added ConditionalStringValue type to ui-abstract CommonItemProps & AbstractMenuItemProps fields
+- Added PopupContextMenu component. Added 'iconRight' support to menu items.
+- Moved ESLint configuration to a plugin
+- Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names.
+- Add support for opening a key-in palette to run key-ins.
+- Fix PropertyRecord.copyWithNewValue not copying all attributes from source
+- Added new getChildrenRecords method to PropertyRecord class.
+- Add event processing for apps to send messages to the UI components.
+- Add ThemedEnumEditor for DialogItems and ToolSettings.
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

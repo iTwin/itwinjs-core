@@ -6,6 +6,8 @@ export * from "./LogEntryConverter";
 export * from "./UsageLoggingClient";
 export * from "./UsageLoggingClientLoggerCategories";
 
+export * from "./FrontendFeatureUsageTelemetryClient";
+
 /** @docs-package-description
  * The usage-logging-client package allows for direct communication with the Bentley Usage Logging and Analytics Service via a lightweight frontend client.
  */

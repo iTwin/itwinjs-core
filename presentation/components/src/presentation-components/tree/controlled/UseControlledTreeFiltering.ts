@@ -6,13 +6,10 @@
  * @module Tree
  */
 
-import { useEffect, useMemo, useState } from "react";
-import { defer } from "rxjs/internal/observable/defer";
-import { refCount } from "rxjs/internal/operators/refCount";
-import { publish } from "rxjs/internal/operators/publish";
-import { NodePathElement } from "@bentley/presentation-common";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, PagedTreeNodeLoader, scheduleSubscription, SubscriptionScheduler, TreeModelSource,
+  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider,
+  PagedTreeNodeLoader, TreeModelSource, useDebouncedAsyncValue,
 } from "@bentley/ui-components";
 import { FilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
@@ -56,7 +53,7 @@ export function useFilteredNodeLoader(
 ) {
   const normalizedFilter = normalizeFilter(filter);
   const dataProvider = normalizeDataProvider(nodeLoader.dataProvider);
-  const { nodePaths, inProgress } = useNodePaths(dataProvider, normalizedFilter);
+  const { value: nodePaths, inProgress } = useNodePaths(dataProvider, normalizedFilter);
 
   const { filteredProvider, matchesCount } = useMemo(() => {
     if (nodePaths !== undefined) {
@@ -85,37 +82,8 @@ export function useFilteredNodeLoader(
 }
 
 const useNodePaths = (dataProvider: IPresentationTreeDataProvider, filter: string) => {
-  const scheduler = useMemo(() => new SubscriptionScheduler<NodePathElement[]>(), []);
-
-  const [nodePaths, setNodePaths] = useState<NodePathElement[]>();
-  const [inProgress, setInProgress] = useState(false);
-
-  useEffect(() => {
-    if (!filter) {
-      setNodePaths(undefined);
-      setInProgress(false);
-      return;
-    }
-
-    setInProgress(true);
-    // schedule and subscribe to the observable emitting filteredNodePaths
-    const subscription = defer(async () => dataProvider.getFilteredNodePaths(filter))
-      .pipe(
-        publish(),
-        refCount(),
-        scheduleSubscription(scheduler),
-      )
-      .subscribe({
-        next: (paths) => {
-          setNodePaths(paths);
-          setInProgress(false);
-        },
-      });
-
-    return () => { subscription.unsubscribe(); };
-  }, [dataProvider, filter, scheduler]);
-
-  return { nodePaths, inProgress };
+  const getFilteredNodePaths = useCallback(async () => dataProvider.getFilteredNodePaths(filter), [dataProvider, filter]);
+  return useDebouncedAsyncValue(filter ? getFilteredNodePaths : undefined);
 };
 
 /** @internal */

@@ -6,6 +6,8 @@
  * @module Ids
  */
 
+import { assert } from "./Assert";
+
 /** A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
  * See [Working with Ids]($docs/learning/common/Id64.md).
  * @public
@@ -21,6 +23,15 @@ export type GuidString = string;
  * @public
  */
 export type Id64Set = Set<Id64String>;
+
+/** A compact string representation of an [[Id64Set]]. Such a representation is useful when serializing potentially very large
+ * sets of Ids.
+ * @see [[Id64.compressSet]] and [[Id64.compressArray]] to produce a compact string from a collection of Ids.
+ * @see [[Id64.decompressSet]] and [[Id64.decompressArray]] to produce a collection of Ids from a compact string.
+ * @see [[Id64.decompressIds]] to iterate the Ids represented by a compact string.
+ * @beta
+ */
+export type CompressedId64Set = string;
 
 /** An array of [[Id64String]]s.
  * @public
@@ -168,11 +179,11 @@ export namespace Id64 {
 
     briefcaseId = Math.floor(briefcaseId);
     const lowStr = localId.toString(16);
-    return "0x" + ((briefcaseId === 0) ? lowStr : (briefcaseId.toString(16) + (_localIdPrefixByLocalIdLength[lowStr.length] + lowStr)));
+    return `0x${(briefcaseId === 0) ? lowStr : (briefcaseId.toString(16) + (_localIdPrefixByLocalIdLength[lowStr.length] + lowStr))}`;
   }
 
   // Used as a buffer when converting a pair of 32-bit integers to an Id64String. Significant performance optimization.
-  const _scratchCharCodes = [ // eslint-disable-line @typescript-eslint/naming-convention
+  const scratchCharCodes = [
     0x30, // "0"
     0x78, // "x"
     0x30, // "0"
@@ -230,7 +241,7 @@ export namespace Id64 {
       return invalid;
 
     // Need to omit or preserve leading zeroes...
-    const buffer = _scratchCharCodes;
+    const buffer = scratchCharCodes;
     let index = 2;
     for (let i = 7; i >= 0; i--) {
       const shift = i << 2;
@@ -251,7 +262,7 @@ export namespace Id64 {
     if (buffer.length !== index)
       buffer.length = index;
 
-    return String.fromCharCode(..._scratchCharCodes);
+    return String.fromCharCode(...scratchCharCodes);
   }
 
   /** Returns true if the inputs represent two halves of a valid 64-bit Id.
@@ -273,12 +284,18 @@ export namespace Id64 {
     upper: number;
   }
 
-  /** Convert an Id64String to a 64-bit unsigned integer represented as a pair of unsigned 32-bit integers. */
-  export function getUint32Pair(id: Id64String): Uint32Pair {
-    return {
-      lower: getLowerUint32(id),
-      upper: getUpperUint32(id),
-    };
+  /** Convert an Id64String to a 64-bit unsigned integer represented as a pair of unsigned 32-bit integers.
+   * @param id The well-formed string representation of a 64-bit Id.
+   * @param out Used as the return value if supplied; otherwise a new object is returned.
+   * @returns An object containing the parsed lower and upper 32-bit integers comprising the 64-bit Id.
+   */
+  export function getUint32Pair(id: Id64String, out?: Uint32Pair): Uint32Pair {
+    if (!out)
+      out = { lower: 0, upper: 0 };
+
+    out.lower = getLowerUint32(id);
+    out.upper = getUpperUint32(id);
+    return out;
   }
 
   /** Extract an unsigned 32-bit integer from the lower 4 bytes of an Id64String. */
@@ -627,6 +644,354 @@ export namespace Id64 {
           func(innerEntry[0], outerEntry[0], innerEntry[1]);
     }
   }
+
+  /** This exists strictly for the purposes of compressed sets of 64-bit Ids, to avoid the overhead of BigInt for handling 64-bit integers. */
+  class Uint64 implements Uint32Pair {
+    private static readonly _base = 0x100000000;
+
+    private static assertUint32(num: number): void {
+      assert(num >= 0);
+      assert(num < Uint64._base);
+      assert(Math.floor(num) === num);
+    }
+
+    private assertConstraints(): void {
+      Uint64.assertUint32(this.lower);
+      Uint64.assertUint32(this.upper);
+    }
+
+    constructor(public lower = 0, public upper = 0) {
+      this.assertConstraints();
+    }
+
+    public compare(rhs: Uint64): number {
+      const diff = this.upper - rhs.upper;
+      return 0 === diff ? this.lower - rhs.lower : diff;
+    }
+
+    public equals(rhs: Uint64): boolean { return 0 === this.compare(rhs); }
+    public isLessThan(rhs: Uint64): boolean { return this.compare(rhs) < 0; }
+    public isGreaterThan(rhs: Uint64): boolean { return this.compare(rhs) > 0; }
+
+    public get isZero(): boolean { return 0 === this.lower && 0 === this.upper; }
+
+    public setFromDifference(lhs: Uint64, rhs: Uint64): void {
+      assert(!rhs.isGreaterThan(lhs));
+
+      this.lower = lhs.lower - rhs.lower;
+      this.upper = lhs.upper - rhs.upper;
+      if (this.lower < 0) {
+        this.lower += Uint64._base;
+        this.upper -= 1;
+      }
+    }
+
+    public add(rhs: Uint64): void {
+      let lower = rhs.lower;
+      let upper = rhs.upper;
+      if (lower >= Uint64._base) {
+        lower -= Uint64._base;
+        upper += 1;
+      }
+
+      this.lower += lower;
+      this.upper += upper;
+      this.assertConstraints();
+    }
+
+    public setFromId(id: Id64String): void {
+      getUint32Pair(id, this);
+    }
+
+    public copyFrom(other: Uint64): void {
+      this.lower = other.lower;
+      this.upper = other.upper;
+    }
+
+    public toString(): string {
+      if (0 === this.upper)
+        return this.lower.toString(16).toUpperCase();
+
+      const upper = this.upper.toString(16);
+      const lower = this.lower.toString(16).padStart(8, "0");
+      assert(lower.length === 8);
+      return `${upper}${lower}`.toUpperCase();
+    }
+
+    public toId64String(): string {
+      return Id64.fromUint32Pair(this.lower, this.upper);
+    }
+  }
+
+  /** An ordered comparison of [[Id64String]]s suitable for use with sorting routines like `Array.sort` and sorted containers
+   * like [[SortedArray]] and [[Dictionary]]. The comparison compares the 64-bit numerical values of the two Ids, returning a negative number if lhs < rhs,
+   * a positive number if lhs > rhs, or zero if lhs == rhs.
+   * The default string comparison is fine (and more efficient) when numerical ordering is not required; use this instead if you want e.g., "0x100" to be greater than "0xf".
+   * @see [[Id64.sortArray]] for a convenient way to sort an array of Id64Strings.
+   * @beta
+   */
+  export function compare(lhs: Id64String, rhs: Id64String): number {
+    if (lhs.length !== rhs.length)
+      return lhs.length < rhs.length ? -1 : 1;
+
+    // This is faster than localeCompare(). Unclear why there is no string.compare() - would be generally useful in
+    // array sort functions...
+    if (lhs !== rhs)
+      return lhs < rhs ? -1 : 1;
+
+    return 0;
+  }
+
+  /** Sort an array of [[Id64String]]s **in-place** in ascending order by their 64-bit numerical values.
+   * @see [[Id64.compare]] for the comparison routine used.
+   * @returns the input array.
+   * @note This function returns its input for consistency with Javascript's `Array.sort` method. It **does not** create a **new** array.
+   * @beta
+   */
+  export function sortArray(ids: Id64Array): Id64Array {
+    ids.sort((x, y) => Id64.compare(x, y));
+    return ids;
+  }
+
+  function compactRange(increment: Uint64, length: number): string {
+    assert(length > 0);
+    const inc = `+${increment.toString()}`;
+    if (length <= 1)
+      return inc;
+
+    const len = length.toString(16).toUpperCase();
+    return `${inc}*${len}`;
+  }
+
+  /** Given a set of [[Id64String]]s, produce a compact string representation. Useful when serializing potentially large sets of Ids.
+   * @note Invalid Ids are ignored.
+   * @see [[Id64.compressArray]] to perform the same operation on an [[Id64Array]].
+   * @see [[Id64.decompressSet]] to perform the inverse operation.
+   * @beta
+   */
+  export function compressSet(ids: Id64Set): CompressedId64Set {
+    const arr = Array.from(ids);
+    sortArray(arr);
+    return compressArray(arr);
+  }
+
+  /** Give a **numerically-ordered** array of [[Id64String]]s, produce a compact string representation. Useful when serializing potentially large sets of Ids.
+   * Duplicate Ids are included only once in the string representation.
+   * @throws Error if two consecutive Ids `x` and `y` exist such that the numerical value of `x` is greater than that of `y` - i.e., the array is not properly sorted.
+   * @note The array must be sorted according to the 64-bit numerical value of each Id.
+   * @note Invalid Ids are ignored.
+   * @see [[Id64.decompressArray]] to perform the inverse operation.
+   * @see [[Id64.sortArray]] to ensure the Ids are properly sorted.
+   * @beta
+   */
+  export function compressArray(ids: Id64Array): CompressedId64Set {
+    let str = "";
+
+    const prevId = new Uint64();
+    const rangeIncrement = new Uint64();
+    let rangeLen = 0;
+
+    const curId = new Uint64();
+    const curIncrement = new Uint64();
+    for (const id of ids) {
+      if (!Id64.isValidId64(id))
+        continue; // ignore garbage and invalid Ids ("0")
+
+      curId.setFromId(id);
+      curIncrement.setFromDifference(curId, prevId);
+
+      const cmp = prevId.compare(curId);
+      if (0 === cmp)
+        continue; // ignore duplicates
+      else if (cmp > 0)
+        throw new Error("Id64.compressArray requires a sorted array as input");
+
+      prevId.copyFrom(curId);
+
+      if (0 === rangeLen) {
+        rangeIncrement.copyFrom(curIncrement);
+        rangeLen = 1;
+      } else if (curIncrement.equals(rangeIncrement)) {
+        ++rangeLen;
+      } else {
+        str += compactRange(rangeIncrement, rangeLen);
+        rangeIncrement.copyFrom(curIncrement);
+        rangeLen = 1;
+      }
+    }
+
+    if (0 < rangeLen)
+      str += compactRange(rangeIncrement, rangeLen);
+
+    return str;
+  }
+
+  /** Decompress the compact string representation of an [[Id64Set]] into an [[Id64Set]].
+   * @param compressedIds The compact string representation.
+   * @param out If supplied, the Ids will be inserted into this set rather than allocating and returning a new set.
+   * @returns The set containing the decompressed Ids.
+   * @throws Error if `compressedIds` is not a well-formed [[CompressedId64Set]].
+   * @see [[Id64.compressSet]] to perform the inverse operation.
+   * @see [[Id64.decompressArray]] to decompress as an [[Id64Array]] instead.
+   * @beta
+   */
+  export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set {
+    const set = out ?? new Set<string>();
+    decompressIds(compressedIds, (x) => { set.add(x); return true; });
+    return set;
+  }
+
+  /** Decompress the compact string representation of an [[Id64Set]] into an [[Id64Array].
+   * @param compressedIds The compact string representation.
+   * @param out If supplied, the Ids will be appended to this array rather than allocating and returning a new array.
+   * @returns The array containing the decompressed Ids.
+   * @throws Error if `compressedIds` is not a well-formed [[CompressedId64Set]].
+   * @note The Ids are decompressed and appended to the array in ascending order based on their 64-bit numerical values.
+   * @see [[Id64.compressArray]] to perform the inverse operation.
+   * @see [[Id64.decompressSet]] to decompress as an [[Id64Set]] instead.
+   * @beta
+   */
+  export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array {
+    const arr = out ?? [];
+    decompressIds(compressedIds, (x) => { arr.push(x); return true; });
+    return arr;
+  }
+
+  function isHexDigit(ch: number): boolean {
+    // ascii values...
+    const zero = 48;
+    const nine = 57;
+    const a = 65;
+    const f = 70;
+
+    return (ch >= zero && ch <= nine) || (ch >= a && ch <= f);
+  }
+
+  /** An object is useful for holding onto the state and temp objects, rather than writing awkward individual functions
+   * that must accept and return multiple values.
+   */
+  class Decompressor {
+    private _curIndex = 1; // Skip the leading "+".
+    private _curId = new Uint64();
+
+    private constructor(private readonly _str: CompressedId64Set, private readonly _func: (id: Id64String) => boolean) { }
+
+    public static decompress(str: CompressedId64Set, func: (id: Id64String) => boolean): boolean {
+      const decompressor = new Decompressor(str, func);
+      return decompressor.decompress();
+    }
+
+    private parseUint32(): number {
+      let value = 0;
+      let nChars = 0;
+      while (this._curIndex < this._str.length && nChars < 8) {
+        ++nChars;
+        const ch = this._str.charCodeAt(this._curIndex);
+        if (!isHexDigit(ch))
+          break; // not a hex digit in [0..9] or [A..F]
+
+        value <<= 4;
+        value |= (ch >= 65 ? ch - 65 + 10 : ch - 48); // ch - 'A' + 10 or ch - '0'
+        value = value >>> 0; // restore unsignedness because silly javascript.
+        ++this._curIndex;
+      }
+
+      return value;
+    }
+
+    private parseUint64(uint64: Uint64): void {
+      let lower = 0;
+      let upper = 0;
+
+      // Read up to the first 8 digits.
+      const startIndex = this._curIndex;
+      const first = this.parseUint32();
+
+      const nFirstDigits = this._curIndex - startIndex;
+      assert(nFirstDigits <= 8);
+
+      if (8 === nFirstDigits && this._curIndex + 1 < this._str.length && isHexDigit(this._str.charCodeAt(this._curIndex + 1))) {
+        // We've got up to 8 more digits remaining
+        const secondIndex = this._curIndex;
+        const second = this.parseUint32();
+
+        // Transfer excess digits from upper to lower.
+        const nSecondDigits = this._curIndex - secondIndex;
+        assert(nSecondDigits > 0 && nSecondDigits <= 8);
+
+        const nDigitsToTransfer = 8 - nSecondDigits;
+        upper = first >>> (4 * nDigitsToTransfer);
+        const transfer = first - ((upper << (4 * nDigitsToTransfer)) >>> 0);
+        lower = (second | ((transfer << (4 * nSecondDigits)) >>> 0)) >>> 0;
+      } else {
+        lower = first;
+      }
+
+      uint64.lower = lower;
+      uint64.upper = upper;
+    }
+
+    private emit(increment: Uint64, multiplier: number): boolean {
+      for (let i = 0; i < multiplier; i++) {
+        this._curId.add(increment);
+        if (!this._func(this._curId.toId64String()))
+          return false;
+      }
+
+      return true;
+    }
+
+    private decompress(): boolean {
+      const increment = new Uint64();
+
+      if (0 === this._str.length || "+" !== this._str[0])
+        throw new Error("Invalid CompressedId64Set");
+
+      while (this._curIndex < this._str.length) {
+        let multiplier = 1;
+        this.parseUint64(increment);
+        if (increment.isZero)
+          throw new Error("Invalid CompressedId64Set");
+
+        if (this._curIndex < this._str.length) {
+          switch (this._str[this._curIndex++]) {
+            case "*":
+              multiplier = this.parseUint32();
+              if (0 === multiplier)
+                throw new Error("Invalid CompressedId64Set");
+
+              if (this._curIndex !== this._str.length && this._str[this._curIndex++] !== "+")
+                return true;
+
+              break;
+            case "+":
+              break;
+            default:
+              throw new Error("Invalid CompressedId64Set");
+          }
+        }
+
+        if (!this.emit(increment, multiplier))
+          return false;
+      }
+
+      return true;
+    }
+  }
+
+  /** Decompress the compact string representation of an [[Id64Set]].
+   * @param ids The compact string representation.
+   * @param func A function to be invoked with each decompressed Id in sequence, returning `true` to continue iterating the Ids or `false` to abort.
+   * @returns true if all Ids were processed - i.e., `func` did not abort by returning `false`.
+   * @throws Error if `compressedIds` is not a well-formed [[CompressedId64Set]].
+   * @note The Ids are emitted in ascending order based on their 64-bit numerical values.
+   * @see [[Id64.decompressSet]] or [[Id64.decompressArray]] to produce an [[Id64Set]] or [[Id64Array]].
+   * @see [[Id64.compressSet]] or [[Id64.compressArray]] to produce the compact string representation.
+   * @beta
+   */
+  export function decompressIds(ids: CompressedId64Set, func: (id: Id64String) => boolean): boolean {
+    return Decompressor.decompress(ids, func);
+  }
 }
 
 /**
@@ -694,7 +1059,7 @@ export namespace Guid {
     if (noDashPattern.test(noDashValue)) {
       return noDashValue.replace(noDashPattern,
         (_match: string, p1: string, p2: string, p3: string, p4: string, p5: string) =>
-          p1 + "-" + p2 + "-" + p3 + "-" + p4 + "-" + p5);
+          `${p1}-${p2}-${p3}-${p4}-${p5}`);
     }
 
     // Return unmodified string - (note: it is *not* a valid Guid)

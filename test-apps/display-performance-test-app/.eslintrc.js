@@ -6,8 +6,6 @@
 // The plugins need to be loaded to avoid getting errors from eslint-disable comments
 // npm lint script uses an alternative configuration provided in package.json
 
-const rulesDirPlugin = require("eslint-plugin-rulesdir");
-rulesDirPlugin.RULES_DIR = "./node_modules/@bentley/build-tools/eslint-rules";
 module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -18,12 +16,12 @@ module.exports = {
     sourceType: "module"
   },
   plugins: [
+    "@bentley",
     "@typescript-eslint",
     "react",
     "react-hooks",
     "import",
     "prefer-arrow",
-    "rulesdir",
     "deprecation"
   ]
 }

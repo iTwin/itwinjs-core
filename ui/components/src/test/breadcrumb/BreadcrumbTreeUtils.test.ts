@@ -154,7 +154,7 @@ describe("BreadcrumbTreeUtils", () => {
       const testProp = await getColFromRowByKey(row, "testProp");
       expect(testProp).to.exist;
       expect((testProp!.record!.value as any).value).to.equal("test prop");
-      expect((row.extendedData!.testProp.value as any).value).to.equal("test prop");
+      expect(row.extendedData!.testProp.value.value).to.equal("test prop");
     });
     it("should transfer string through, and add as a text cell", async () => {
       const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(treeDataProvider, columns, treeDataProvider);

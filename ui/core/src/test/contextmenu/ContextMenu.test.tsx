@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { BadgeType, SpecialKey } from "@bentley/ui-abstract";
 import { cleanup, render } from "@testing-library/react";
-import { ContextMenu, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
-import { ContextMenuDirection, TildeFinder } from "../../ui-core/contextmenu/ContextMenu";
+import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
+import { TildeFinder } from "../../ui-core/contextmenu/TildeFinder";
 import TestUtils from "../TestUtils";
 
 describe("ContextMenu", () => {
@@ -332,13 +332,13 @@ describe("ContextMenu", () => {
       it("should support changing direction", () => {
         const wrapper = mount<ContextMenu>(<ContextMenu opened={true} direction={ContextMenuDirection.Right} />);
         expect(wrapper.state().direction === ContextMenuDirection.Right);
-        wrapper.setProps({ direction: ContextMenuDirection.Left });
+        wrapper.setProps({ direction: ContextMenuDirection.Left, opened: false });
         expect(wrapper.state().direction === ContextMenuDirection.Left);
         wrapper.unmount();
       });
     });
   });
-  // TODO: tests for hover/current active menu item
+
   describe("<GlobalContextMenu />", () => {
     it("renders correctly", () => {
       const component = render(<GlobalContextMenu opened={true} identifier="test" x="0" y="0" />);
@@ -353,12 +353,14 @@ describe("ContextMenu", () => {
       wrapper.unmount();
     });
   });
+
   describe("<ContextMenuDivider />", () => {
     it("renders correctly", () => {
       const component = render(<ContextMenuDivider />);
       expect(component.getByTestId("core-context-menu-divider")).to.exist;
     });
   });
+
   describe("<ContextMenuItem />", () => {
     it("renders correctly", () => {
       const component = render(<ContextMenuItem>Test</ContextMenuItem>);
@@ -368,6 +370,14 @@ describe("ContextMenu", () => {
     it("renders with icon correctly", () => {
       const component = render(<ContextMenuItem icon="icon-placeholder">Test</ContextMenuItem>);
       expect(component.container.querySelector(".icon-placeholder")).not.to.be.null;
+      expect(component.container.querySelector(".core-context-menu-icon")).not.to.be.null;
+    });
+
+    it("renders with iconRight correctly", () => {
+      const component = render(<ContextMenuItem iconRight="icon-checkmark">Test</ContextMenuItem>);
+      expect(component.container.querySelector(".icon-checkmark")).not.to.be.null;
+      expect(component.container.querySelector(".core-context-menu-icon")).not.to.be.null;
+      expect(component.container.querySelector(".core-context-menu-icon-right")).not.to.be.null;
     });
 
     it("handles props changes correctly", () => {
@@ -431,6 +441,7 @@ describe("ContextMenu", () => {
       handleSelect.should.not.have.been.called;
     });
   });
+
   describe("<ContextSubMenu />", () => {
     it("renders correctly", () => {
       const component = render(
@@ -517,6 +528,7 @@ describe("ContextMenu", () => {
     });
 
   });
+
   describe("ContextMenu.autoFlip", () => {
     it("should handle rect overflowing right side of window", () => {
       expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, { left: 51, top: 25, right: 101, bottom: 75, height: 50, width: 50 }, 100, 100))
@@ -567,6 +579,7 @@ describe("ContextMenu", () => {
         .to.equal(ContextMenuDirection.TopLeft);
     });
   });
+
   describe("TildeFinder", () => {
     it("should not find character in string when there is no tilde", () => {
       const tildeFindRet = TildeFinder.findAfterTilde("s");
@@ -628,4 +641,5 @@ describe("ContextMenu", () => {
       expect(tildeFindRet.node).to.equal(node);
     });
   });
+
 });

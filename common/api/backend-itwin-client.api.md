@@ -10,12 +10,16 @@ import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClientTelemetryEvent } from '@bentley/telemetry-client';
 import { FileHandler } from '@bentley/itwin-client';
 import * as https from 'https';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
+import { IntrospectionResponse as IntrospectionResponse_2 } from 'openid-client';
 import { Issuer } from 'openid-client';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { SamlAccessToken } from '@bentley/itwin-client';
+import { TelemetryClient } from '@bentley/telemetry-client';
+import { TelemetryEvent } from '@bentley/telemetry-client';
 import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
 
@@ -68,10 +72,59 @@ export interface BackendAuthorizationClientConfiguration {
     scope: string;
 }
 
+// @internal
+export class BackendFeatureUsageTelemetryClient extends BackendTelemetryClient {
+    constructor(config: {
+        backendMachineName: string;
+        backendApplicationId?: string;
+        backendApplicationVersion?: string;
+        clientAuthManager?: ImsClientAuthIntrospectionManager;
+    });
+    // (undocumented)
+    protected readonly _backendMachineName: string;
+    // (undocumented)
+    protected _postTelemetry(requestContext: AuthorizedClientRequestContext, backendTelemetryEvent: BackendTelemetryEvent): Promise<void>;
+    }
+
 // @public
 export enum BackendITwinClientLoggerCategory {
     Authorization = "backend-itwin-client.Authorization",
-    FileHandlers = "backend-itwin-client.FileHandlers"
+    FileHandlers = "backend-itwin-client.FileHandlers",
+    Introspection = "backend-itwin-client.Introspection",
+    Telemetry = "backend-itwin-client.Telemetry"
+}
+
+// @alpha
+export abstract class BackendTelemetryClient implements TelemetryClient {
+    constructor(_backendMachineName?: string | undefined, _backendApplicationId?: string | undefined, _backendApplicationVersion?: string | undefined, _clientAuthManager?: ClientAuthIntrospectionManager | undefined);
+    // (undocumented)
+    protected readonly _backendApplicationId?: string | undefined;
+    // (undocumented)
+    protected readonly _backendApplicationVersion?: string | undefined;
+    // (undocumented)
+    protected readonly _backendMachineName?: string | undefined;
+    // (undocumented)
+    protected readonly _clientAuthManager?: ClientAuthIntrospectionManager | undefined;
+    // (undocumented)
+    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    // (undocumented)
+    protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: BackendTelemetryEvent): Promise<void>;
+}
+
+// @alpha
+export class BackendTelemetryEvent extends ClientTelemetryEvent {
+    constructor(telemetryEvent: TelemetryEvent, requestContext: AuthorizedClientRequestContext, backendMachineName?: string | undefined,
+    backendApplicationId?: string | undefined,
+    backendApplicationVersion?: string | undefined,
+    clientAuth?: ClientAuthDetail | undefined);
+    backendApplicationId?: string | undefined;
+    backendApplicationVersion?: string | undefined;
+    // (undocumented)
+    backendMachineName?: string | undefined;
+    clientAuth?: ClientAuthDetail | undefined;
+    getProperties(): {
+        [key: string]: any;
+    };
 }
 
 // @internal
@@ -79,6 +132,25 @@ export class BufferedStream extends Transform {
     constructor(bufferSize: number);
     _flush(callback: TransformCallback): void;
     _transform(chunk: any, encoding: string, callback: TransformCallback): void;
+}
+
+// @alpha
+export class ClientAuthDetail {
+    constructor(response: IntrospectionResponse);
+    readonly clientAuthClientId?: string;
+    readonly clientAuthUserId?: string;
+    getProperties(): {
+        [key: string]: any;
+    };
+}
+
+// @alpha
+export class ClientAuthIntrospectionManager {
+    constructor(introspectionClient: IntrospectionClient);
+    // (undocumented)
+    getClientAuthDetails(requestContext: AuthorizedClientRequestContext): Promise<ClientAuthDetail>;
+    // (undocumented)
+    readonly introspectionClient: IntrospectionClient;
 }
 
 // @beta
@@ -92,6 +164,87 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 // @beta
 export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
+// @internal (undocumented)
+export class ImsClientAuthDetail extends ClientAuthDetail {
+    constructor(response: ImsIntrospectionResponse);
+    // (undocumented)
+    readonly clientAuthEmail?: string;
+    // (undocumented)
+    readonly clientAuthOrgId?: string;
+    // (undocumented)
+    readonly clientAuthOrgName?: string;
+    // (undocumented)
+    readonly clientAuthUltimateSite?: string;
+    getProperties(): {
+        [key: string]: any;
+    };
+}
+
+// @internal (undocumented)
+export class ImsClientAuthIntrospectionManager extends ClientAuthIntrospectionManager {
+    // (undocumented)
+    getClientAuthDetails(requestContext: AuthorizedClientRequestContext): Promise<ImsClientAuthDetail>;
+}
+
+// @internal (undocumented)
+export interface ImsIntrospectionResponse extends IntrospectionResponse {
+    // (undocumented)
+    email?: string;
+    // (undocumented)
+    entitlement?: string[];
+    // (undocumented)
+    family_name?: string;
+    // (undocumented)
+    given_name?: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    org?: string;
+    // (undocumented)
+    org_name?: string;
+    // (undocumented)
+    preferred_username?: string;
+    // (undocumented)
+    role?: string[];
+    // (undocumented)
+    ultimate_site?: string;
+    // (undocumented)
+    usage_country_iso?: string;
+}
+
+// @alpha (undocumented)
+export class IntrospectionClient {
+    constructor(_clientId: string, _clientSecret: string, _issuerUrl?: string | undefined, _cache?: IntrospectionResponseCache);
+    // (undocumented)
+    protected readonly _clientId: string;
+    // (undocumented)
+    protected readonly _clientSecret: string;
+    // (undocumented)
+    protected getIssuerUrl(requestContext: AuthorizedClientRequestContext): Promise<string>;
+    // (undocumented)
+    introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse>;
+    // (undocumented)
+    protected _issuerUrl?: string | undefined;
+}
+
+// @alpha (undocumented)
+export interface IntrospectionResponse extends IntrospectionResponse_2 {
+    // (undocumented)
+    sub?: string;
+}
+
+// @alpha
+export abstract class IntrospectionResponseCache {
+    add(key: string, response: IntrospectionResponse): Promise<void>;
+    // (undocumented)
+    protected abstract deleteResponse(key: string): Promise<void>;
+    get(key: string): Promise<IntrospectionResponse | undefined>;
+    // (undocumented)
+    protected abstract getResponse(key: string): Promise<IntrospectionResponse | undefined>;
+    // (undocumented)
+    protected abstract storeResponse(key: string, response: IntrospectionResponse): Promise<void>;
+}
+
 // @internal
 export class LocalhostHandler implements FileHandler {
     // (undocumented)
@@ -104,6 +257,16 @@ export class LocalhostHandler implements FileHandler {
     join(...paths: string[]): string;
     unlink(filePath: string): void;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+}
+
+// @alpha (undocumented)
+export class MemoryIntrospectionResponseCache extends IntrospectionResponseCache {
+    // (undocumented)
+    protected deleteResponse(key: string): Promise<void>;
+    // (undocumented)
+    protected getResponse(key: string): Promise<IntrospectionResponse | undefined>;
+    // (undocumented)
+    protected storeResponse(key: string, response: IntrospectionResponse): Promise<void>;
 }
 
 // @beta @deprecated

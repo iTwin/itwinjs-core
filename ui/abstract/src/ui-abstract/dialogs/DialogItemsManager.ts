@@ -137,7 +137,7 @@ export class DialogItemsManager {
     if (value === undefined)
       return !!baseDialogItem.isDisabled;
 
-    return !value.value as boolean;
+    return !value.value;
   }
 
   /** Gets a property record for a given dialog item */

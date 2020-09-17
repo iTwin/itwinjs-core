@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import { mount, ReactWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -15,6 +15,11 @@ describe("AutoSuggest", () => {
     { value: "def", label: "label2" },
     { value: "ghi", label: "label3" },
   ];
+
+  const getInputElement = (wrapper: ReactWrapper): HTMLInputElement => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    return wrapper.getDOMNode() as HTMLInputElement;
+  }
 
   it("renders", () => {
     const spyMethod = sinon.spy();
@@ -64,7 +69,7 @@ describe("AutoSuggest", () => {
     const input = autoSuggest.find("input[type='text']");
     expect(input.length).to.eq(1);
 
-    const inputNode = input.getDOMNode() as HTMLInputElement;
+    const inputNode = getInputElement(input);
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
@@ -101,7 +106,7 @@ describe("AutoSuggest", () => {
     const input = autoSuggest.find("input[type='text']");
     expect(input.length).to.eq(1);
 
-    const inputNode = input.getDOMNode() as HTMLInputElement;
+    const inputNode = getInputElement(input);
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
@@ -146,7 +151,7 @@ describe("AutoSuggest", () => {
     const input = autoSuggest.find("input[type='text']");
     expect(input.length).to.eq(1);
 
-    const inputNode = input.getDOMNode() as HTMLInputElement;
+    const inputNode = getInputElement(input);
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
@@ -171,7 +176,7 @@ describe("AutoSuggest", () => {
     const input = autoSuggest.find("input[type='text']");
     expect(input.length).to.eq(1);
 
-    const inputNode = input.getDOMNode() as HTMLInputElement;
+    const inputNode = getInputElement(input);
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
@@ -197,7 +202,7 @@ describe("AutoSuggest", () => {
     const input = autoSuggest.find("input[type='text']");
     expect(input.length).to.eq(1);
 
-    const inputNode = input.getDOMNode() as HTMLInputElement;
+    const inputNode = getInputElement(input);
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
@@ -274,7 +279,7 @@ describe("AutoSuggest", () => {
     const input = autoSuggest.find("input[type='text']");
     expect(input.length).to.eq(1);
 
-    const inputNode = input.getDOMNode() as HTMLInputElement;
+    const inputNode = getInputElement(input);
     inputNode.focus();
 
     expect(spyFocus.called).to.be.true;

@@ -3,18 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using } from "@bentley/bentleyjs-core";
-import { GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, DomainOptions, ElementProps,
-  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
-  IModel, IModelError, IModelStatus, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps,
-  SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
+import {
+  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
+} from "@bentley/bentleyjs-core";
+import {
+  GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
+  GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, ModelProps,
+  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
+} from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import {
   AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
   ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
@@ -93,7 +98,7 @@ describe("iModel", () => {
   };
 
   it("should verify object vault", () => {
-    const platform = IModelHost.platform!;
+    const platform = IModelHost.platform;
 
     const o1 = "o1";
     platform.storeObjectInVault({ thisIs: "obj1" }, o1);
@@ -332,11 +337,11 @@ describe("iModel", () => {
         category: seedElement.category,
         code: Code.createEmpty(),
         federationGuid: Guid.createValue(),
-        userLabel: "UserLabel-" + i,
+        userLabel: `UserLabel-${i}`,
       };
 
       const element: Element = imodel2.elements.createElement(elementProps);
-      element.setUserProperties("performanceTest", { s: "String-" + i, n: i });
+      element.setUserProperties("performanceTest", { s: `String-${i}`, n: i });
 
       const elementId: Id64String = imodel2.elements.insertElement(element);
       assert.isTrue(Id64.isValidId64(elementId));
@@ -344,7 +349,7 @@ describe("iModel", () => {
   });
 
   it("should insert a Texture", () => {
-    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
 
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
@@ -372,7 +377,7 @@ describe("iModel", () => {
   });
 
   it("should insert a RenderMaterial", () => {
-    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
 
     const testMaterialName = "test material name";
@@ -531,7 +536,7 @@ describe("iModel", () => {
   });
 
   it("should insert a DisplayStyle", () => {
-    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
 
     const settings: DisplayStyleSettingsProps = {
@@ -640,14 +645,14 @@ describe("iModel", () => {
     roundtripThroughJson(model2);
     let model = imodel1.models.getModel(IModel.repositoryModelId);
     assert.exists(model);
-    roundtripThroughJson(model!);
+    roundtripThroughJson(model);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = imodel1.models.getSubModel(code1);
     // By this point, we expect the submodel's class to be in the class registry *cache*
     const geomModel = ClassRegistry.getClass(PhysicalModel.classFullName, imodel1);
     assert.exists(model);
-    assert.isTrue(model instanceof geomModel!);
-    roundtripThroughJson(model!);
+    assert.isTrue(model instanceof geomModel);
+    roundtripThroughJson(model);
     const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents();
     assert.isBelow(modelExtents.low.x, modelExtents.high.x);
     assert.isBelow(modelExtents.low.y, modelExtents.high.y);
@@ -1034,7 +1039,7 @@ describe("iModel", () => {
     assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
     assert.equal(thumbnail.width, 768);
-    assert.equal(thumbnail.image!.length, 18062);
+    assert.equal(thumbnail.image.length, 18062);
 
     thumbnail.width = 100;
     thumbnail.height = 200;
@@ -1050,8 +1055,8 @@ describe("iModel", () => {
     assert.equal(thumbnail2.format, "png");
     assert.equal(thumbnail2.height, 200);
     assert.equal(thumbnail2.width, 100);
-    assert.equal(thumbnail2.image!.length, 200);
-    assert.equal(thumbnail2.image![0], 12);
+    assert.equal(thumbnail2.image.length, 200);
+    assert.equal(thumbnail2.image[0], 12);
   });
 
   it("ecefLocation for iModels", () => {
@@ -2072,6 +2077,72 @@ describe("iModel", () => {
     assert.isFalse(imodel1.containsClass("BisCore:InvalidClassName"));
     assert.isFalse(imodel1.containsClass("InvalidSchemaName:Element"));
   });
+
+  it("should clear UserLabel", () => {
+    // type coercion reminder!
+    const s: string = "";
+    assert.isTrue(s === "");
+    assert.isFalse(s ? true : false);
+
+    // insert element with an undefined UserLabel
+    const elementProps: DefinitionElementProps = {
+      classFullName: SpatialCategory.classFullName,
+      model: IModel.dictionaryId,
+      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearUserLabel"),
+    };
+    const elementId = imodel1.elements.insertElement(elementProps);
+    let element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.isUndefined(element.userLabel);
+
+    // update element with a defined UserLabel
+    element.userLabel = "UserLabel";
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.userLabel, "UserLabel");
+
+    // update UserLabel to undefined
+    element.userLabel = undefined;
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.userLabel, "UserLabel"); // NOTE: UserLabel is not cleared in this case!
+
+    // update UserLabel to ""
+    element.userLabel = "";
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.isUndefined(element.userLabel);
+  });
+
+  it("should clear FederationGuid", () => {
+    // insert element with an undefined FederationGuid
+    const elementProps: DefinitionElementProps = {
+      classFullName: SpatialCategory.classFullName,
+      model: IModel.dictionaryId,
+      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearFederationGuid"),
+    };
+    const elementId = imodel1.elements.insertElement(elementProps);
+    let element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.isUndefined(element.federationGuid);
+
+    // update element with a defined FederationGuid
+    const federationGuid: GuidString = Guid.createValue();
+    element.federationGuid = federationGuid;
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.federationGuid, federationGuid);
+
+    // update FederationGuid to undefined
+    element.federationGuid = undefined;
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.federationGuid, federationGuid); // NOTE: FederationGuid is not cleared in this case!
+
+    // update FederationGuid to ""
+    element.federationGuid = "";
+    element.update();
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.isUndefined(element.federationGuid);
+  });
 });
 
 describe("computeProjectExtents", () => {
@@ -2105,7 +2176,7 @@ describe("computeProjectExtents", () => {
   });
 
   it("should report outliers", () => {
-    const elemProps = imodel.elements.getElementProps({ id: "0x38", wantGeometry: true }) as GeometricElement3dProps;
+    const elemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: "0x38", wantGeometry: true });
     elemProps.id = Id64.invalid;
     const placement = Placement3d.fromJSON(elemProps.placement);
     const originalOrigin = placement.origin.clone();
@@ -2119,7 +2190,7 @@ describe("computeProjectExtents", () => {
     expect(Id64.isValid(newId)).to.be.true;
     imodel.saveChanges();
 
-    const newElem = imodel.elements.getElement(newId) as GeometricElement3d;
+    const newElem = imodel.elements.getElement<GeometricElement3d>(newId);
     expect(newElem).instanceof(GeometricElement3d);
     expect(newElem.placement.origin.x).to.equal(originalOrigin.x * mult);
     expect(newElem.placement.origin.y).to.equal(originalOrigin.y * mult);

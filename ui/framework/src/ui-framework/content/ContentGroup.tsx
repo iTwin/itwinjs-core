@@ -58,7 +58,7 @@ export class ContentGroup {
       this.groupId = groupProps.id;
     else {
       ContentGroup._sId++;
-      this.groupId = "ContentGroup-" + ContentGroup._sId;
+      this.groupId = `ContentGroup-${ContentGroup._sId}`;
     }
 
     this.contentPropsList = groupProps.contents;
@@ -70,7 +70,7 @@ export class ContentGroup {
     if (contentProps.id !== undefined)
       id = contentProps.id;
     else
-      id = this.groupId + "-" + index;
+      id = `${this.groupId}-${index}`;
 
     let contentControl: ContentControl | undefined;
 

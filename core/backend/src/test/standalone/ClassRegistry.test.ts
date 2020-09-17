@@ -100,7 +100,7 @@ describe("Class Registry", () => {
 
 class Base {
   public static staticProperty: string = "base";
-  public static get sqlName(): string { return "s." + this.staticProperty; }
+  public static get sqlName(): string { return `s.${this.staticProperty}`; }
 }
 
 class Derived extends Base {

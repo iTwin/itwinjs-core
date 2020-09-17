@@ -92,28 +92,32 @@ export const isStageLauncher = (item: BackstageItem): item is BackstageStageLaun
  */
 export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item */
-  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string | ConditionalStringValue,
-    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({
-      groupPriority,
-      icon,
-      id: frontstageId,
-      itemPriority,
-      label,
-      stageId: frontstageId,
-      subtitle,
-      ...overrides,
-    })
+  public static createStageLauncher = (
+    frontstageId: string, groupPriority: number, itemPriority: number, label: string | ConditionalStringValue,
+    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageStageLauncher>
+  ): BackstageStageLauncher => ({
+    groupPriority,
+    icon,
+    id: frontstageId,
+    itemPriority,
+    label,
+    stageId: frontstageId,
+    subtitle,
+    ...overrides,
+  })
 
   /** Creates an action backstage item */
-  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string | ConditionalStringValue,
-    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageActionItem>): BackstageActionItem => ({
-      execute,
-      groupPriority,
-      icon,
-      id: itemId,
-      itemPriority,
-      label,
-      subtitle,
-      ...overrides,
-    })
+  public static createActionItem = (
+    itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string | ConditionalStringValue,
+    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageActionItem>
+  ): BackstageActionItem => ({
+    execute,
+    groupPriority,
+    icon,
+    id: itemId,
+    itemPriority,
+    label,
+    subtitle,
+    ...overrides,
+  })
 }

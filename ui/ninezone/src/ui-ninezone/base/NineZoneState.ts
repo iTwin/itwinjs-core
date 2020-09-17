@@ -17,6 +17,7 @@ export interface TabState {
   readonly label: string;
   readonly preferredFloatingWidgetSize?: SizeProps;
   readonly preferredPanelWidgetSize?: "fit-content";
+  readonly allowedPanelTargets?: PanelSide[];
 }
 
 /** @internal future */
@@ -24,7 +25,7 @@ export interface TabsState { readonly [id: string]: TabState }
 
 /** @internal future */
 export interface WidgetState {
-  readonly activeTabId: TabState["id"] | undefined;
+  readonly activeTabId: TabState["id"];
   readonly id: string;
   readonly minimized: boolean;
   readonly tabs: ReadonlyArray<TabState["id"]>;
@@ -124,6 +125,7 @@ export interface PanelState {
   readonly maxSize: number;
   readonly minSize: number;
   readonly pinned: boolean;
+  readonly resizable: boolean;
   readonly side: PanelSide;
   readonly size: number | undefined;
   readonly widgets: ReadonlyArray<WidgetState["id"]>;
@@ -178,6 +180,20 @@ export interface PanelToggleCollapsedAction {
 }
 
 /** @internal future */
+export interface PanelSetCollapsedAction {
+  readonly type: "PANEL_SET_COLLAPSED";
+  readonly collapsed: boolean;
+  readonly side: PanelSide;
+}
+
+/** @internal future */
+export interface PanelSetSizeAction {
+  readonly type: "PANEL_SET_SIZE";
+  readonly side: PanelSide;
+  readonly size: number;
+}
+
+/** @internal future */
 export interface PanelToggleSpanAction {
   readonly type: "PANEL_TOGGLE_SPAN";
   readonly side: HorizontalPanelSide;
@@ -187,13 +203,6 @@ export interface PanelToggleSpanAction {
 export interface PanelTogglePinnedAction {
   readonly type: "PANEL_TOGGLE_PINNED";
   readonly side: PanelSide;
-}
-
-/** @internal future */
-export interface PanelResizeAction {
-  readonly type: "PANEL_RESIZE";
-  readonly side: PanelSide;
-  readonly resizeBy: number;
 }
 
 /** @internal future */
@@ -300,9 +309,10 @@ export interface ToolSettingsDockAction {
 export type NineZoneActionTypes =
   ResizeAction |
   PanelToggleCollapsedAction |
+  PanelSetCollapsedAction |
+  PanelSetSizeAction |
   PanelToggleSpanAction |
   PanelTogglePinnedAction |
-  PanelResizeAction |
   PanelInitializeAction |
   FloatingWidgetResizeAction |
   FloatingWidgetBringToFrontAction |
@@ -340,7 +350,18 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     }
     case "PANEL_TOGGLE_COLLAPSED": {
       const panel = state.panels[action.side];
-      state.panels[action.side].collapsed = !panel.collapsed;
+      panel.collapsed = !panel.collapsed;
+      return;
+    }
+    case "PANEL_SET_COLLAPSED": {
+      const panel = state.panels[action.side];
+      panel.collapsed = action.collapsed;
+      return;
+    }
+    case "PANEL_SET_SIZE": {
+      const panel = state.panels[action.side];
+      const newSize = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
+      state.panels[action.side].size = newSize;
       return;
     }
     case "PANEL_TOGGLE_SPAN": {
@@ -351,31 +372,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "PANEL_TOGGLE_PINNED": {
       const panel = state.panels[action.side];
       state.panels[action.side].pinned = !panel.pinned;
-      return;
-    }
-    case "PANEL_RESIZE": {
-      const panel = state.panels[action.side];
-      if (panel.size === undefined)
-        return;
-
-      const requestedSize = panel.size + action.resizeBy;
-      if (panel.collapsed) {
-        if (action.resizeBy >= panel.collapseOffset) {
-          state.panels[action.side].collapsed = false;
-          return;
-        }
-        return;
-      }
-
-      const collapseThreshold = Math.max(panel.minSize - panel.collapseOffset, 0);
-      if (requestedSize <= collapseThreshold) {
-        state.panels[action.side].collapsed = true;
-        state.panels[action.side].size = panel.minSize;
-        return;
-      }
-
-      const size = Math.min(Math.max(requestedSize, panel.minSize), panel.maxSize);
-      state.panels[action.side].size = size;
       return;
     }
     case "PANEL_INITIALIZE": {
@@ -423,14 +419,21 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "WIDGET_DRAG_END": {
       const target = action.target;
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
+      const draggedWidget = state.widgets[action.floatingWidgetId];
       if (isWidgetTargetFloatingWidgetState(target)) {
         const nzBounds = Rectangle.createFromSize(state.size);
-        const containedBounds = Rectangle.create(floatingWidget.bounds).containIn(nzBounds);
-        setRectangleProps(floatingWidget.bounds, containedBounds);
+        if (draggedWidget.minimized) {
+          const bounds = Rectangle.create(floatingWidget.bounds);
+          const containedBounds = bounds.setHeight(35).containIn(nzBounds);
+          const newBounds = Rectangle.create(floatingWidget.bounds).setPosition(containedBounds.topLeft());
+          setRectangleProps(floatingWidget.bounds, newBounds);
+        } else {
+          const containedBounds = Rectangle.create(floatingWidget.bounds).containIn(nzBounds);
+          setRectangleProps(floatingWidget.bounds, containedBounds);
+        }
         floatingWidgetBringToFront(state, action.floatingWidgetId);
         return;
       }
-      const draggedWidget = state.widgets[action.floatingWidgetId];
       if (isWidgetTargetTabState(target)) {
         if (isToolSettingsFloatingWidget(state, target.widgetId)) {
           state.floatingWidgets.byId[target.widgetId].home = floatingWidget.home;
@@ -448,6 +451,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         state.widgets[target.newWidgetId] = {
           ...draggedWidget,
           id: target.newWidgetId,
+          minimized: false,
         };
       }
       delete state.widgets[action.floatingWidgetId];
@@ -466,8 +470,8 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
 
       const widget = state.widgets[action.id];
       const size = newBounds.getSize();
-      const tab = widget.activeTabId ? state.tabs[widget.activeTabId] : undefined;
-      tab && initSizeProps(tab, "preferredFloatingWidgetSize", size);
+      const tab = state.tabs[widget.activeTabId];
+      initSizeProps(tab, "preferredFloatingWidgetSize", size);
       return;
     }
     case "FLOATING_WIDGET_BRING_TO_FRONT": {
@@ -492,6 +496,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         removeWidget(state, widget.id);
       } else {
         panel.widgets.splice(home.widgetIndex, 0, widget.id);
+        widget.minimized = false;
         removeFloatingWidget(state, widget.id);
       }
       return;
@@ -697,12 +702,9 @@ function removeWidgetTab(
   const widget = state.widgets[widgetId];
   const tabs = widget.tabs;
   const tabIndex = tabs.indexOf(tabId);
-  if (tabIndex < 0)
-    return;
-
   tabs.splice(tabIndex, 1);
   if (tabId === widget.activeTabId) {
-    setWidgetActiveTabId(state, widget.id, widget.tabs.length > 0 ? widget.tabs[0] : undefined);
+    setWidgetActiveTabId(state, widget.id, widget.tabs[0]);
   }
 
   if (tabs.length === 0) {
@@ -754,12 +756,13 @@ function setWidgetActiveTabId(
 }
 
 /** @internal */
-export function createPanelsState(): PanelsState {
+export function createPanelsState(args?: Partial<PanelsState>): PanelsState {
   return {
     bottom: createHorizontalPanelState("bottom"),
     left: createVerticalPanelState("left"),
     right: createVerticalPanelState("right"),
     top: createHorizontalPanelState("top"),
+    ...args,
   };
 }
 
@@ -768,6 +771,7 @@ export function createTabsState(args?: Partial<TabsState>): TabsState {
   return {
     [toolSettingsTabId]: createTabState(toolSettingsTabId, {
       label: "Tool Settings",
+      allowedPanelTargets: ["bottom", "left", "right"],
     }),
     ...args,
   };
@@ -796,12 +800,13 @@ export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneStat
 }
 
 /** @internal */
-export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetState>): WidgetState {
+export function createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial<WidgetState>): WidgetState {
+  assert(tabs.length !== 0);
   return {
-    activeTabId: undefined,
+    activeTabId: tabs[0],
     id,
     minimized: false,
-    tabs: [],
+    tabs,
     ...args,
   };
 }
@@ -823,6 +828,7 @@ export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: 
 /** @internal */
 export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
   return {
+    allowedPanelTargets: undefined,
     id,
     label: "",
     ...args,
@@ -844,8 +850,8 @@ export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Pa
 }
 
 /** @internal */
-export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial<WidgetState>): NineZoneState {
-  const widget = createWidgetState(id, widgetArgs);
+export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState {
+  const widget = createWidgetState(id, tabs, widgetArgs);
   return produce(state, (stateDraft) => {
     stateDraft.widgets[widget.id] = castDraft(widget);
     stateDraft.panels[side].widgets.push(widget.id);
@@ -853,11 +859,11 @@ export function addPanelWidget(state: NineZoneState, side: PanelSide, id: Widget
 }
 
 /** @internal */
-export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
+export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
   widgetArgs?: Partial<WidgetState>,
 ): NineZoneState {
   const floatingWidget = createFloatingWidgetState(id, floatingWidgetArgs);
-  const widget = createWidgetState(id, widgetArgs);
+  const widget = createWidgetState(id, tabs, widgetArgs);
   return produce(state, (stateDraft) => {
     stateDraft.floatingWidgets.byId[id] = floatingWidget;
     stateDraft.floatingWidgets.allIds.push(id);
@@ -866,13 +872,12 @@ export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState[
 }
 
 /** @internal */
-export function addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
+export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
   const tab = {
     ...createTabState(id),
     ...tabArgs,
   };
   return produce(state, (stateDraft) => {
-    stateDraft.widgets[widgetId].tabs.push(tab.id);
     stateDraft.tabs[id] = tab;
   });
 }
@@ -885,6 +890,7 @@ export function createPanelState(side: PanelSide) {
     maxSize: 600,
     minSize: 200,
     pinned: true,
+    resizable: true,
     side,
     size: undefined,
     widgets: [],
@@ -893,20 +899,22 @@ export function createPanelState(side: PanelSide) {
 }
 
 /** @internal */
-export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState {
+export function createVerticalPanelState(side: VerticalPanelSide, args?: Partial<VerticalPanelState>): VerticalPanelState {
   return {
     ...createPanelState(side),
     side,
+    ...args,
   };
 }
 
 /** @internal */
-export function createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState {
+export function createHorizontalPanelState(side: HorizontalPanelSide, args?: Partial<HorizontalPanelState>): HorizontalPanelState {
   return {
     ...createPanelState(side),
     minSize: 100,
     side,
     span: true,
+    ...args,
   };
 }
 

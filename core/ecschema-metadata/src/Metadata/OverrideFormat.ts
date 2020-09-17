@@ -38,24 +38,24 @@ export class OverrideFormat {
   }
 
   // Properties that can be overriden
-  get precision(): DecimalPrecision | FractionalPrecision { return (undefined === this._precision) ? this.parent.precision : this._precision; }
-  get units() { return (undefined === this._units) ? this.parent.units : this._units; }
+  public get precision(): DecimalPrecision | FractionalPrecision { return (undefined === this._precision) ? this.parent.precision : this._precision; }
+  public get units() { return (undefined === this._units) ? this.parent.units : this._units; }
 
   // Properties that cannot be overriden
-  get fullName(): string { return this.name; }
-  get roundFactor(): number { return this.parent.roundFactor; }
-  get type(): FormatType { return this.parent.type; }
-  get minWidth(): number | undefined { return this.parent.minWidth; }
-  get scientificType(): ScientificType | undefined { return this.parent.scientificType; }
-  get showSignOption(): ShowSignOption { return this.parent.showSignOption; }
-  get decimalSeparator(): string { return this.parent.decimalSeparator; }
-  get thousandSeparator(): string { return this.parent.thousandSeparator; }
-  get uomSeparator(): string { return this.parent.uomSeparator; }
-  get stationSeparator(): string { return this.parent.stationSeparator; }
-  get stationOffsetSize(): number | undefined { return this.parent.stationOffsetSize; }
-  get formatTraits(): FormatTraits { return this.parent.formatTraits; }
-  get spacer(): string | undefined { return this.parent.spacer; }
-  get includeZero(): boolean | undefined { return this.parent.includeZero; }
+  public get fullName(): string { return this.name; }
+  public get roundFactor(): number { return this.parent.roundFactor; }
+  public get type(): FormatType { return this.parent.type; }
+  public get minWidth(): number | undefined { return this.parent.minWidth; }
+  public get scientificType(): ScientificType | undefined { return this.parent.scientificType; }
+  public get showSignOption(): ShowSignOption { return this.parent.showSignOption; }
+  public get decimalSeparator(): string { return this.parent.decimalSeparator; }
+  public get thousandSeparator(): string { return this.parent.thousandSeparator; }
+  public get uomSeparator(): string { return this.parent.uomSeparator; }
+  public get stationSeparator(): string { return this.parent.stationSeparator; }
+  public get stationOffsetSize(): number | undefined { return this.parent.stationOffsetSize; }
+  public get formatTraits(): FormatTraits { return this.parent.formatTraits; }
+  public get spacer(): string | undefined { return this.parent.spacer; }
+  public get includeZero(): boolean | undefined { return this.parent.includeZero; }
 
   public hasFormatTrait(formatTrait: FormatTraits) {
     return (this.parent.formatTraits & formatTrait) === formatTrait;

@@ -11,6 +11,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@bentley/backend-application-insights-client",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
@@ -24,7 +28,7 @@
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/config-loader",
@@ -47,6 +51,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/eslint-plugin",
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
       "name": "@bentley/express-server",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -57,6 +65,10 @@
     {
       "name": "@bentley/extension-webpack-tools",
       "allowedCategories": [ "extensions", "internal" ]
+    },
+    {
+      "name": "@bentley/frontend-application-insights-client",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/frontend-authorization-client",
@@ -183,6 +195,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@bentley/telemetry-client",
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+    },
+    {
       "name": "@bentley/ui-abstract",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
@@ -204,7 +220,7 @@
     },
     {
       "name": "@bentley/usage-logging-client",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@bentley/webgl-compatibility",
@@ -217,6 +233,10 @@
     {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "@microsoft/applicationinsights-web",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@openid/appauth",
@@ -249,6 +269,10 @@
     {
       "name": "@ungap/url-search-params",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "applicationinsights",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "autoprefixer",
@@ -375,6 +399,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "dompurify",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "dotenv",
       "allowedCategories": [ "integration-testing", "internal", "tools" ]
     },
@@ -420,7 +448,7 @@
     },
     {
       "name": "eslint-plugin-jsx-a11y",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "eslint-plugin-prefer-arrow",
@@ -432,10 +460,6 @@
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
-    },
-    {
-      "name": "eslint-plugin-rulesdir",
       "allowedCategories": [ "tools" ]
     },
     {
@@ -644,7 +668,7 @@
     },
     {
       "name": "oidc-client",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "open",
@@ -759,6 +783,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "react-select-event",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-split-pane",
       "allowedCategories": [ "frontend" ]
     },
@@ -803,6 +831,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "require-dir",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "resize-observer-polyfill",
       "allowedCategories": [ "frontend" ]
     },
@@ -829,6 +861,10 @@
     {
       "name": "serve-handler",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "shortid",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "sinon",

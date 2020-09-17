@@ -705,7 +705,7 @@ export class IModelsHandler {
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
       throw IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file.");
 
-    await this._fileHandler.downloadFile(requestContext, seedFiles[0].downloadUrl!, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
+    await this._fileHandler.downloadFile(requestContext, seedFiles[0].downloadUrl, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Finished downloading seed file", () => ({ iModelId }));
   }

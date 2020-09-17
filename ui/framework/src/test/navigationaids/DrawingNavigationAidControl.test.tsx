@@ -31,7 +31,7 @@ describe("DrawingNavigationAidControl", () => {
     const widgetDef = new NavigationWidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
     expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // eslint-disable-line deprecation/deprecation
 
-    const navigationWidgetDef = widgetDef as NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
+    const navigationWidgetDef = widgetDef;
 
     const reactNode = navigationWidgetDef.reactNode;
     expect(reactNode).to.not.be.undefined;

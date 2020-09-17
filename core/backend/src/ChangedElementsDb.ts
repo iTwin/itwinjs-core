@@ -33,7 +33,7 @@ export class ChangedElementsDb implements IDisposable {
       return;
 
     this.closeDb();
-    this._nativeDb!.dispose();
+    this._nativeDb.dispose();
     this._nativeDb = undefined;
   }
 
@@ -175,6 +175,6 @@ export class ChangedElementsDb implements IDisposable {
     if (!this._nativeDb)
       throw new IModelError(IModelStatus.BadRequest, "ChangedElementsDb object has already been disposed.");
 
-    return this._nativeDb!;
+    return this._nativeDb;
   }
 }

@@ -164,12 +164,34 @@ describe("UiAdmin", () => {
     expect(uiAdmin.closeToolSettingsPopup()).to.be.false;
   });
 
+  it("showKeyinPalette should return false by default", () => {
+    expect(uiAdmin.showKeyinPalette()).to.be.false;
+    expect(uiAdmin.hideKeyinPalette()).to.be.false;
+  });
+
   it("isFocusOnHome should return false by default", () => {
     expect(uiAdmin.isFocusOnHome).to.be.false;
   });
 
   it("setFocusToHome does nothing by default", () => {
     uiAdmin.setFocusToHome();
+  });
+
+  it("sendUiEvent calls event handler", () => {
+    const spyOnHandler = sinon.spy();
+    UiAdmin.onGenericUiEvent.addListener(spyOnHandler);
+    UiAdmin.sendUiEvent({uiComponentId:"TestId"});
+    UiAdmin.onGenericUiEvent.removeListener(spyOnHandler);
+    expect(spyOnHandler.calledOnce).to.be.true;
+  });
+
+  it("get set feature flags", () => {
+    let flags = uiAdmin.featureFlags;
+    expect (Object.keys(flags).length === 0);
+    uiAdmin.updateFeatureFlags ({allowKeyinPalette:true});
+    flags = uiAdmin.featureFlags;
+    expect (Object.keys(flags).length === 1);
+    expect (flags.allowKeyinPalette).not.to.be.undefined;
   });
 
 });

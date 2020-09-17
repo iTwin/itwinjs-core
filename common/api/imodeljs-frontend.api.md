@@ -229,6 +229,7 @@ import { StrokeOptions } from '@bentley/geometry-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { SubLayerId } from '@bentley/imodeljs-common';
+import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
@@ -3811,8 +3812,6 @@ export class IModelApp {
     // @beta
     static get extensionAdmin(): ExtensionAdmin;
     // @internal
-    static get features(): FeatureTrackingManager;
-    // @internal
     static get featureToggles(): FeatureToggleClient;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
@@ -3868,6 +3867,8 @@ export class IModelApp {
     // @internal (undocumented)
     static startEventLoop(): void;
     static startup(opts?: IModelAppOptions): Promise<void>;
+    // @internal
+    static readonly telemetry: TelemetryManager;
     // @internal (undocumented)
     static get tentativePoint(): TentativePoint;
     // @alpha
@@ -3888,8 +3889,6 @@ export interface IModelAppOptions {
     authorizationClient?: FrontendAuthorizationClient;
     // @beta
     extensionAdmin?: ExtensionAdmin;
-    // @internal
-    features?: FeatureTrackingManager;
     // @internal
     featureToggles?: FeatureToggleClient;
     i18n?: I18N | I18NOptions;
@@ -4916,7 +4915,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
-    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
+    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides;
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)
@@ -6048,15 +6047,15 @@ export class PendingExtension {
     // (undocumented)
     args?: string[] | undefined;
     // (undocumented)
-    executor(resolve: resolveFunc, reject: rejectFunc): void;
+    executor(resolve: ResolveFunc, reject: RejectFunc): void;
     // (undocumented)
     loader: ExtensionLoader;
     // (undocumented)
     promise: Promise<Extension>;
     // (undocumented)
-    reject: rejectFunc | undefined;
+    reject: RejectFunc | undefined;
     // (undocumented)
-    resolve: resolveFunc | undefined;
+    resolve: ResolveFunc | undefined;
     }
 
 // @internal (undocumented)
@@ -7724,6 +7723,8 @@ export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
     decorateSuspended(context: DecorateContext): void;
     // (undocumented)
+    static drawCameraFrustum(context: DecorateContext, vp: ScreenViewport, eyePtWorld: Point3d, targetPtWorld: Point3d, eyeSnapPtWorld?: Point3d, targetSnapPtWorld?: Point3d): void;
+    // (undocumented)
     protected _eyePtWorld: Point3d;
     // (undocumented)
     protected getAdjustedEyePoint(): Point3d;
@@ -7772,6 +7773,52 @@ export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
     get useTargetHeight(): boolean;
     set useTargetHeight(option: boolean);
+    // (undocumented)
+    viewport?: ScreenViewport;
+}
+
+// @beta
+export class SetupWalkCameraTool extends PrimitiveTool {
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected _eyePtWorld: Point3d;
+    // (undocumented)
+    protected getAdjustedEyePoint(): Point3d;
+    // (undocumented)
+    protected getAdjustedTargetPoint(): Point3d;
+    // (undocumented)
+    protected _haveEyePt: boolean;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    protected provideToolAssistance(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected _targetPtWorld: Point3d;
+    // (undocumented)
+    static toolId: string;
     // (undocumented)
     viewport?: ScreenViewport;
 }
@@ -8804,16 +8851,20 @@ export abstract class TileAdmin {
     abstract getTilesForViewport(vp: Viewport): SelectedAndReadyTiles | undefined;
     // @internal
     abstract getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
-    // @internal
-    abstract getViewportSetForUsage(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
     // @internal (undocumented)
     abstract get ignoreAreaPatterns(): boolean;
+    // @internal
+    abstract isTileInUse(marker: TileUsageMarker): boolean;
+    // @internal
+    abstract markTileUsedByViewport(marker: TileUsageMarker, vp: Viewport): void;
     abstract get maxActiveRequests(): number;
     abstract set maxActiveRequests(max: number);
     // @internal (undocumented)
     abstract get maximumLevelsToSkip(): number;
     // @internal (undocumented)
     abstract get maximumMajorTileFormatVersion(): number;
+    // @internal (undocumented)
+    abstract get minimumSpatialTolerance(): number;
     // @internal (undocumented)
     abstract onActiveRequestCanceled(tile: Tile): void;
     // @internal (undocumented)
@@ -8878,6 +8929,7 @@ export namespace TileAdmin {
         maximumLevelsToSkip?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
+        minimumSpatialTolerance?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
@@ -9547,8 +9599,16 @@ export class ToolSettings {
     };
     static viewToolPickRadiusInches: number;
     static walkCameraAngle: Angle;
+    // @beta
+    static walkCollisions: boolean;
+    // @beta
+    static walkDetectFloor: boolean;
     static walkEnforceZUp: boolean;
+    // @beta
+    static walkEyeHeight: number;
     static walkRequestPointerLock: boolean;
+    // @beta
+    static walkStepHeight: number;
     static walkVelocity: number;
     static wheelLineFactor: number;
     static wheelPageFactor: number;
@@ -10618,6 +10678,8 @@ export abstract class ViewManip extends ViewTool {
     setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean): void;
     // @internal (undocumented)
     startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled>;
+    // @internal (undocumented)
+    protected _startPose?: ViewPose;
     // (undocumented)
     targetCenterLocked: boolean;
     // (undocumented)
@@ -11604,6 +11666,8 @@ export namespace WmsCapability {
         readonly name: string;
         // (undocumented)
         readonly parent?: SubLayer | undefined;
+        // (undocumented)
+        readonly queryable: boolean;
         // (undocumented)
         readonly title: string;
     }

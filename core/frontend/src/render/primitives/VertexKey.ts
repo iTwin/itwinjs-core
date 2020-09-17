@@ -52,7 +52,7 @@ export class VertexKey {
       return true;
     } else {
       assert(undefined !== rhs.uvParam);
-      return this.uvParam.isAlmostEqual(rhs.uvParam!, 0.1);
+      return this.uvParam.isAlmostEqual(rhs.uvParam, 0.1);
     }
   }
 
@@ -67,9 +67,9 @@ export class VertexKey {
         diff = this.fillColor - rhs.fillColor;
         if (0 === diff && undefined !== this.uvParam) {
           assert(undefined !== rhs.uvParam);
-          diff = compareWithTolerance(this.uvParam.x, rhs.uvParam!.x);
+          diff = compareWithTolerance(this.uvParam.x, rhs.uvParam.x);
           if (0 === diff) {
-            diff = compareWithTolerance(this.uvParam.x, rhs.uvParam!.y);
+            diff = compareWithTolerance(this.uvParam.x, rhs.uvParam.y);
           }
         }
       }

@@ -56,7 +56,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
         }
       }
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this._setTimelineDataProvider(this.props.viewport as ScreenViewport);
+      this._setTimelineDataProvider(this.props.viewport);
     });
   }
 
@@ -149,7 +149,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
         timelineDataProvider.updateSettings({ duration: 40 * 1000 });
         viewport.onViewChanged.removeListener(this._onHandleViewChanged);
         viewport.onViewChanged.addListener(this._onHandleViewChanged);
-        return timelineDataProvider as TimelineDataProvider;
+        return timelineDataProvider;
       }
     } else {
       timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewport.view, viewport);
@@ -158,7 +158,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
         if (dataLoaded) {
           viewport.onViewChanged.removeListener(this._onHandleViewChanged);
           viewport.onViewChanged.addListener(this._onHandleViewChanged);
-          return timelineDataProvider as TimelineDataProvider;
+          return timelineDataProvider;
         }
       }
     }

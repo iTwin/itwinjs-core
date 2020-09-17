@@ -7,11 +7,20 @@
  */
 
 import { assert, ByteStream, compareNumbers, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+import { Range3d, Vector3d } from "@bentley/geometry-core";
 import { BatchType } from "../FeatureTable";
 import { TileProps } from "../TileProps";
 import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
 import { TileReadError, TileReadStatus } from "./TileIO";
+
+// cspell:ignore imdl mult bitfield
+
+// NB: These constants correspond to those defined in Tile.cpp.
+namespace Constants {
+  export const tileScreenSize = 512;
+  export const minToleranceRatioMultiplier = 2;
+  export const minToleranceRatio = tileScreenSize * minToleranceRatioMultiplier;
+}
 
 /** Describes an iModel tile tree.
  * @internal
@@ -123,29 +132,29 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
-      idStr = idStr + "A:" + treeId.animationId + "_";
+      idStr = `${idStr}A:${treeId.animationId}_`;
     else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
     if (!treeId.edgesRequired) {
       // Tell backend not to bother generating+returning edges - we would just discard them anyway
-      idStr = idStr + "E:0_";
+      idStr = `${idStr}E:0_`;
     }
   } else {
     const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
-    idStr = idStr + typeStr + ":" + treeId.expansion.toFixed(6) + "_";
+    idStr = `${idStr + typeStr}:${treeId.expansion.toFixed(6)}_`;
 
     if (BatchType.VolumeClassifier === treeId.type)
       flags |= TreeFlags.UseProjectExtents;
 
     if (undefined !== treeId.animationId) {
-      idStr = idStr + "A:" + treeId.animationId + "_";
+      idStr = `${idStr}A:${treeId.animationId}_`;
     }
   }
 
   const version = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion);
   if (version >= 4) {
-    const prefix = version.toString(16) + "_" + flags.toString(16) + "-";
+    const prefix = `${version.toString(16)}_${flags.toString(16)}-`;
     idStr = prefix + idStr;
   }
 
@@ -392,7 +401,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
       contentRange: parent.contentRange,
       sizeMultiplier,
       isLeaf: false,
-      maximumSize: 512,
+      maximumSize: Constants.tileScreenSize,
     });
 
     return { children, numEmpty };
@@ -444,7 +453,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
         childSpec.k = parentSpec.k * 2 + k;
 
         const childId = idProvider.idFromSpec(childSpec);
-        children.push({ contentId: childId, range, maximumSize: 512 });
+        children.push({ contentId: childId, range, maximumSize: Constants.tileScreenSize });
       }
     }
   }
@@ -508,6 +517,22 @@ export function readTileContentDescription(stream: ByteStream, sizeMultiplier: n
     sizeMultiplier,
     emptySubRangeMask: header.emptySubRanges,
   };
+}
+
+const scratchRangeDiagonal = new Vector3d();
+
+/** Compute the chord tolerance for the specified tile of the given range with the specified size multiplier.
+ * @internal
+ */
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number {
+  if (tile.range.isNull)
+    return 0;
+
+  const diagonal = tile.range.diagonal(scratchRangeDiagonal);
+  const diagDist = is3d ? diagonal.magnitude() : diagonal.magnitudeXY();
+
+  const mult = Math.max(tile.sizeMultiplier ?? 1, 1);
+  return diagDist / (Constants.minToleranceRatio * Math.max(1, mult));
 }
 
 /** Deserializes tile metadata.

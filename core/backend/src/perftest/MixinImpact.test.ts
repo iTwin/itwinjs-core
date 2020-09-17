@@ -43,7 +43,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
-    imodel.withPreparedStatement("SELECT count(*) AS [count] FROM " + className, (stmt: ECSqlStatement) => {
+    imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
       count = row.count;
@@ -61,7 +61,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
     elem[key] = val;
   }
   function createSchema(hierarchyCount: number): string {
-    const schemaPath = path.join(outDir, "TestMixinSchema-" + hierarchyCount + ".01.00.00.ecschema.xml");
+    const schemaPath = path.join(outDir, `TestMixinSchema-${hierarchyCount}.01.00.00.ecschema.xml`);
     if (!IModelJsFs.existsSync(schemaPath)) {
       let sxml = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestMixinSchema" alias="tps" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -73,39 +73,39 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
               </IsMixin>
           </ECCustomAttributes>`;
       for (let j = 0; j < propCount; ++j) {
-        const pName: string = "MixinProp" + j.toString();
-        sxml = sxml + `<ECProperty propertyName="` + pName + `" typeName="string" />\n\t\t\t`;
+        const pName: string = `MixinProp${j.toString()}`;
+        sxml = `${sxml}<ECProperty propertyName="${pName}" typeName="string" />\n\t\t\t`;
       }
-      sxml = sxml + `</ECEntityClass>\n\t\t`;
-      sxml = sxml + `<ECEntityClass typeName="PropElement">
+      sxml = `${sxml}</ECEntityClass>\n\t\t`;
+      sxml = `${sxml}<ECEntityClass typeName="PropElement">
       <BaseClass>bis:PhysicalElement</BaseClass>`;
       for (let i = 0; i < propCount; ++i) {
-        const propName: string = "PrimProp" + i.toString();
-        sxml = sxml + `<ECProperty propertyName="` + propName + `" typeName="string"/>\n\t\t\t`;
+        const propName: string = `PrimProp${i.toString()}`;
+        sxml = `${sxml}<ECProperty propertyName="${propName}" typeName="string"/>\n\t\t\t`;
       }
-      sxml = sxml + `</ECEntityClass>\n\t\t`;
+      sxml = `${sxml}</ECEntityClass>\n\t\t`;
 
       // number of levels, each A has PropElement as base, each B has Mixin as base
       for (let i = 0; i < hierarchyCount; ++i) {
-        const className: string = "Child" + i.toString();
+        const className: string = `Child${i.toString()}`;
         let baseClassName: string = "";
         if (i === 0)
           baseClassName = "PropElement";
         else
-          baseClassName = "Child" + (i - 1).toString() + "A";
+          baseClassName = `Child${(i - 1).toString()}A`;
 
-        sxml = sxml + `<ECEntityClass typeName = "` + className + `A" >\n\t\t`;
-        sxml = sxml + `<BaseClass>` + baseClassName + `</BaseClass>`;
-        sxml = sxml + `<ECProperty propertyName="` + className + "APrimProp" + `" typeName="string" />\n\t\t\t`;
-        sxml = sxml + `</ECEntityClass>\n\t\t`;
+        sxml = `${sxml}<ECEntityClass typeName = "${className}A" >\n\t\t`;
+        sxml = `${sxml}<BaseClass>${baseClassName}</BaseClass>`;
+        sxml = `${sxml}<ECProperty propertyName="${className}APrimProp` + `" typeName="string" />\n\t\t\t`;
+        sxml = `${sxml}</ECEntityClass>\n\t\t`;
 
-        sxml = sxml + `<ECEntityClass typeName = "` + className + `B" >\n\t\t`;
-        sxml = sxml + `<BaseClass>` + baseClassName + `</BaseClass>\n\t\t`;
-        sxml = sxml + `<BaseClass>MixinElement</BaseClass>`;
-        sxml = sxml + `<ECProperty propertyName="` + className + "BPrimProp" + `" typeName="string" />\n\t\t\t`;
-        sxml = sxml + `</ECEntityClass>\n\t\t`;
+        sxml = `${sxml}<ECEntityClass typeName = "${className}B" >\n\t\t`;
+        sxml = `${sxml}<BaseClass>${baseClassName}</BaseClass>\n\t\t`;
+        sxml = `${sxml}<BaseClass>MixinElement</BaseClass>`;
+        sxml = `${sxml}<ECProperty propertyName="${className}BPrimProp` + `" typeName="string" />\n\t\t\t`;
+        sxml = `${sxml}</ECEntityClass>\n\t\t`;
       }
-      sxml = sxml + `</ECSchema>`;
+      sxml = `${sxml}</ECSchema>`;
       IModelJsFs.writeFileSync(schemaPath, sxml);
     }
     return schemaPath;
@@ -123,9 +123,9 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
     for (const hCount of hierarchyCounts) {
       const st = createSchema(hCount);
       assert(IModelJsFs.existsSync(st));
-      const seedName = path.join(outDir, "mixin_" + hCount + ".bim");
+      const seedName = path.join(outDir, `mixin_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", "mixin_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
         assert.equal(DbResult.BE_SQLITE_OK, result);
@@ -143,18 +143,18 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
           assert.isTrue(Id64.isValidId64(id), "insert failed");
           // create elements of base upto required level
           for (let j = 0; j < hCount; ++j) {
-            const className: string = "child" + j.toString() + "A";
-            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestMixinSchema:" + className);
+            const className: string = `child${j.toString()}A`;
+            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
             geomElement = seedIModel.elements.createElement(elementProps);
-            setPropVal(geomElement, className + "PrimProp", "AChild Value");
+            setPropVal(geomElement, `${className}PrimProp`, "AChild Value");
             id = seedIModel.elements.insertElement(geomElement);
             assert.isTrue(Id64.isValidId64(id), "insert failed");
           }
           for (let j = 0; j < hCount; ++j) {
-            const className: string = "child" + j.toString() + "B";
-            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestMixinSchema:" + className);
+            const className: string = `child${j.toString()}B`;
+            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
             geomElement = seedIModel.elements.createElement(elementProps);
-            setPropVal(geomElement, className + "PrimProp", "BChild Value");
+            setPropVal(geomElement, `${className}PrimProp`, "BChild Value");
             setPropVals(geomElement, propCount, "mixinProp", "Mixin Value");
             id = seedIModel.elements.insertElement(geomElement);
             assert.isTrue(Id64.isValidId64(id), "insert failed");
@@ -172,8 +172,8 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   });
   it("Read", async () => {
     for (const hCount of hierarchyCounts) {
-      const seedFileName = path.join(outDir, "mixin_" + hCount + ".bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("MixinPerformance", "MixinPerf_Read_" + hCount + ".bim");
+      const seedFileName = path.join(outDir, `mixin_${hCount}.bim`);
+      const testFileName = IModelTestUtils.prepareOutputFile("MixinPerformance", `MixinPerf_Read_${hCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const startTime = new Date().getTime();

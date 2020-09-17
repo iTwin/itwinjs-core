@@ -129,7 +129,7 @@ export namespace XmlSerializationUtils {
       if (enumeration.type === undefined)
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The enumeration on property class '${propertyClass.fullName}' has an invalid primitive type.`);
 
-      primitiveType = enumeration.type!;
+      primitiveType = enumeration.type;
     } else
       primitiveType = (propertyClass as PrimitiveProperty).primitiveType;
 
@@ -172,7 +172,7 @@ export namespace XmlSerializationUtils {
     if (typeSchema.alias === undefined)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaAlias, `The schema '${typeSchema.name}' has an invalid alias.`);
 
-    return typeSchema.alias + ":" + typeName;
+    return `${typeSchema.alias}:${typeName}`;
   }
 
   async function resolveCustomAttributeNamespace(caName: string, schema: Schema): Promise<[string, string | undefined]> {

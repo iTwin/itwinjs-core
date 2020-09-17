@@ -251,7 +251,7 @@ export const treeDropTargetDropCallback = (args: DropTargetArguments<DemoTreeDra
     const { id: originalId, label, description, icon, children, type, parentId, dataProvider } = args.dataObject;
     let id = "";
     if (args.dropEffect === DropEffects.Copy) {
-      id = Math.round(Math.random() * 1e14) + ""; // Copy means new ID, don't delete old.
+      id = `${Math.round(Math.random() * 1e14)}`; // Copy means new ID, don't delete old.
     } else {
       id = originalId; // Link means keep ID and old node, Move means keep ID and delete old node.
     }

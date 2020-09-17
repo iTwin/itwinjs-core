@@ -203,7 +203,7 @@ export class GeometryStreamBuilder {
    * @see [[Placement2d]]
    */
   public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
-    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)!));
+    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)));
   }
 
   /** Store local ranges in GeometryStream for all subsequent geometry appended. Can improve performance of range testing for elements with a GeometryStream
@@ -231,7 +231,7 @@ export class GeometryStreamBuilder {
       subCategory: geomParams.subCategoryId,
       color: geomParams.lineColor?.toJSON(),
       weight: geomParams.weight,
-      style: geomParams.styleInfo ? geomParams.styleInfo!.styleId : undefined,
+      style: geomParams.styleInfo?.styleId,
       transparency: geomParams.elmTransparency,
       displayPriority: geomParams.elmPriority,
       geometryClass: geomParams.geometryClass,
@@ -525,6 +525,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get entry() {
     if (undefined === this._entry)
       this._entry = new IteratorEntry(this._appearance, this._localToWorld);

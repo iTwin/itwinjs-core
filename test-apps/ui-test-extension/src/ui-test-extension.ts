@@ -50,7 +50,7 @@ export class UiTestExtension extends Extension {
      * We'll pass the i18n member to the rest of the classes in the Extension to allow them to translate strings in the UI they implement.
      */
     this._i18NNamespace = this.i18n.registerNamespace("uiTestExtension");
-    await this._i18NNamespace!.readFinished;
+    await this._i18NNamespace.readFinished;
     this.registerUiComponents();
   }
 

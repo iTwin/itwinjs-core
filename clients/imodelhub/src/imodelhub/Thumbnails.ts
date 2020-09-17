@@ -133,7 +133,7 @@ export class ThumbnailHandler {
     }
 
     const base64Data = Base64.btoa(byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), ""));
-    return "data:image/png;base64," + base64Data;
+    return `data:image/png;base64,${base64Data}`;
   }
 
   /** Download the latest iModel's thumbnail.
@@ -205,7 +205,7 @@ export class ThumbnailHandler {
 
     Logger.logInfo(loggerCategory, `Downloading ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, size, thumbnailId) + "/$file";
+    const url: string = `${await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, size, thumbnailId)}/$file`;
     const pngImage = await this.downloadThumbnail(requestContext, url);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));

@@ -53,7 +53,7 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
   }
   // Create props
   const elementProps: TestElementProps = {
-    classFullName: "PerfTestDomain:" + className,
+    classFullName: `PerfTestDomain:${className}`,
     model: modId,
     category: catId,
     code: Code.createEmpty(),
@@ -108,7 +108,7 @@ function verifyProps(testElement: TestElementProps) {
 
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
-  imodel.withPreparedStatement("SELECT count(*) AS [count] FROM " + className, (stmt: ECSqlStatement) => {
+  imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();
     count = row.count;
@@ -124,7 +124,7 @@ describe("PerformanceElementsTests", () => {
     // Create all of the seed iModels
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const fileName = "Performance_seed_" + name + "_" + size + ".bim";
+        const fileName = `Performance_seed_${name}_${size}.bim`;
         const pathname = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", fileName);
 
         if (IModelJsFs.existsSync(pathname))
@@ -135,7 +135,7 @@ describe("PerformanceElementsTests", () => {
         await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
         const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
         assert.equal(DbResult.BE_SQLITE_OK, result);
-        assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + name), name + "is present in iModel.");
+        assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
@@ -148,7 +148,7 @@ describe("PerformanceElementsTests", () => {
           assert.isTrue(Id64.isValidId64(id), "insert worked");
         }
 
-        assert.equal(getCount(seedIModel, "PerfTestDomain:" + name), size);
+        assert.equal(getCount(seedIModel, `PerfTestDomain:${name}`), size);
         seedIModel.saveChanges();
         seedIModel.close();
       }
@@ -162,12 +162,12 @@ describe("PerformanceElementsTests", () => {
   it("ElementsInsert", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + name + "_" + size + ".bim");
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Insert for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Insert_" + name + "_" + opCount + ".bim");
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Insert_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
@@ -187,7 +187,7 @@ describe("PerformanceElementsTests", () => {
           }
 
           reporter.addEntry("PerformanceElementsTests", "ElementsInsert", "Execution time(s)", totalTime, { ElementClassName: name, InitialCount: size, opCount });
-          assert.equal(getCount(perfimodel, "PerfTestDomain:" + name), size + opCount);
+          assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size + opCount);
           perfimodel.close();
         }
       }
@@ -197,12 +197,12 @@ describe("PerformanceElementsTests", () => {
   it("ElementsDelete", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + name + "_" + size + ".bim");
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Delete for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Delete_" + name + "_" + opCount + ".bim");
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Delete_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
@@ -219,7 +219,7 @@ describe("PerformanceElementsTests", () => {
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsDelete", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          assert.equal(getCount(perfimodel, "PerfTestDomain:" + name), size - opCount);
+          assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size - opCount);
           perfimodel.close();
         }
       }
@@ -229,12 +229,12 @@ describe("PerformanceElementsTests", () => {
   it("ElementsRead", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + name + "_" + size + ".bim");
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Read_" + name + "_" + opCount + ".bim");
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Read_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
@@ -266,12 +266,12 @@ describe("PerformanceElementsTests", () => {
   it("ElementsUpdate", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + name + "_" + size + ".bim");
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Update for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Update_" + name + "_" + opCount + ".bim");
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Update_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
@@ -332,7 +332,7 @@ describe("PerformanceElementsTests2d", () => {
     // Create all of the seed iModels
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const fileName = "Performance2d_seed_" + name + "_" + size + ".bim";
+        const fileName = `Performance2d_seed_${name}_${size}.bim`;
         const pathname = path.join(outDir, fileName);
 
         if (IModelJsFs.existsSync(pathname))
@@ -343,7 +343,7 @@ describe("PerformanceElementsTests2d", () => {
         await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
         const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
         assert.equal(DbResult.BE_SQLITE_OK, result);
-        assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + name), name + "is present in iModel.");
+        assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const codeProps = Code.createEmpty();
         codeProps.value = "DrawingModel";
@@ -360,7 +360,7 @@ describe("PerformanceElementsTests2d", () => {
         }
 
         seedIModel.saveChanges();
-        assert.equal(getCount(seedIModel, "PerfTestDomain:" + name), size);
+        assert.equal(getCount(seedIModel, `PerfTestDomain:${name}`), size);
         seedIModel.close();
       }
     }
@@ -373,12 +373,12 @@ describe("PerformanceElementsTests2d", () => {
   it("ElementsInsert2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", "Performance2d_seed_" + name + "_" + size + ".bim");
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Insert for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", "IModelPerformance2d_Insert_" + name + "_" + opCount + ".bim");
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Insert_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
           const codeProps = Code.createEmpty();
@@ -400,7 +400,7 @@ describe("PerformanceElementsTests2d", () => {
           }
 
           reporter.addEntry("PerformanceElementsTests2d", "ElementsInsert2d", "Execution time(s)", totalTime, { ElementClassName: name, InitialCount: size, opCount });
-          assert.equal(getCount(perfimodel, "PerfTestDomain:" + name), size + opCount);
+          assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size + opCount);
           perfimodel.close();
         }
       }
@@ -410,12 +410,12 @@ describe("PerformanceElementsTests2d", () => {
   it("ElementsDelete2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", "Performance2d_seed_" + name + "_" + size + ".bim");
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Delete for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", "IModelPerformance2d_Delete_" + name + "_" + opCount + ".bim");
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Delete_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GraphicalElement2d")[0];
           const elementIdIncrement = Math.floor(size / opCount);
@@ -432,7 +432,7 @@ describe("PerformanceElementsTests2d", () => {
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests2d", "ElementsDelete2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          assert.equal(getCount(perfimodel, "PerfTestDomain:" + name), size - opCount);
+          assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size - opCount);
           perfimodel.close();
         }
       }
@@ -442,12 +442,12 @@ describe("PerformanceElementsTests2d", () => {
   it("ElementsRead2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", "Performance2d_seed_" + name + "_" + size + ".bim");
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", "IModelPerformance2d_Read_" + name + "_" + opCount + ".bim");
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Read_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GraphicalElement2d")[0];
           const elementIdIncrement = Math.floor(size / opCount);
@@ -479,12 +479,12 @@ describe("PerformanceElementsTests2d", () => {
   it("ElementsUpdate2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
-        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", "Performance2d_seed_" + name + "_" + size + ".bim");
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Update for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", "IModelPerformance2d_Update_" + name + "_" + opCount + ".bim");
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Update_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GraphicalElement2d")[0];
           const elementIdIncrement = Math.floor(size / opCount);

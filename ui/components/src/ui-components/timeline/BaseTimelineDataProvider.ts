@@ -109,7 +109,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     }
 
     if (parent && parent.children)
-      return parent.children!;
+      return parent.children;
 
     return [];
   }

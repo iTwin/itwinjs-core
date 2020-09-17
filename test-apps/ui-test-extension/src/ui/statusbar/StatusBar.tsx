@@ -28,22 +28,22 @@ export class ExtensionStatusBarWidgetControl extends StatusBarWidgetControl {
 
   public getReactNode(_args: StatusBarWidgetControlArgs): React.ReactNode {
     return (
-      <StatusBarComposer items={this.items} />
+      <StatusBarComposer items={this._items} />
     );
   }
 
-  private get footerModeOnlySeparator(): React.ReactNode {
+  private get _footerModeOnlySeparator(): React.ReactNode {
     return (<FooterOnlyDisplay> <FooterSeparator /> </FooterOnlyDisplay>);
   }
 
-  private get items(): StatusBarItem[] {
+  private get _items(): StatusBarItem[] {
     if (!this._statusBarItems) {
       const statusBarItems: StatusBarItem[] = [];
 
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Left, 10, <MessageCenter />));
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("PreToolAssistance", StatusBarSection.Left, 15, this.footerModeOnlySeparator));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("PreToolAssistance", StatusBarSection.Left, 15, this._footerModeOnlySeparator));
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 20, <ToolAssistance />));
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("PostToolAssistance", StatusBarSection.Left, 25, this.footerModeOnlySeparator));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("PostToolAssistance", StatusBarSection.Left, 25, this._footerModeOnlySeparator));
 
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("Sections", StatusBarSection.Center, 35, <Sections />));
 

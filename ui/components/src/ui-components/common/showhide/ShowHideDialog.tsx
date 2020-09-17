@@ -99,7 +99,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
             this._toggleItem(item);
           };
           const label = item.label || UiComponents.translate("showhide.noLabel");
-          const id = "show-hide-dialog-input-" + index;
+          const id = `show-hide-dialog-input-${index}`;
           return (
             <div key={index}>
               <input data-testid={id} id={id} type="checkbox" checked={visible} onChange={() => undefined} onClick={sel} />

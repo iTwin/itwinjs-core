@@ -103,10 +103,10 @@ export class Logger {
   public static initializeToConsole(): void {
     /* eslint-disable no-console */
     Logger.initialize(
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Error   |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Warning |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Info    |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Trace   |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log(`Error   |${category}| ${message}${Logger.formatMetaData(getMetaData)}`),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log(`Warning |${category}| ${message}${Logger.formatMetaData(getMetaData)}`),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log(`Info    |${category}| ${message}${Logger.formatMetaData(getMetaData)}`),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log(`Trace   |${category}| ${message}${Logger.formatMetaData(getMetaData)}`),
     );
     /* eslint-enable no-console */
   }
@@ -180,9 +180,7 @@ export class Logger {
 
   /** Format the metadata for a log message.  */
   private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData)
-      return "";
-    return " " + JSON.stringify(Logger.makeMetaData(getMetaData));
+    return getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : "";
   }
 
   /** Set the least severe level at which messages should be displayed by default. Call setLevel to override this default setting for specific categories. */
@@ -233,19 +231,19 @@ export class Logger {
     const validProps = ["defaultLevel", "categoryLevels"];
     for (const prop of Object.keys(config)) {
       if (!validProps.includes(prop))
-        throw new BentleyError(IModelStatus.BadArg, "LoggerLevelsConfig - unrecognized property: " + prop);
+        throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig - unrecognized property: ${prop}`);
       if (prop === "defaultLevel") {
         if (!Logger.isLogLevel(config.defaultLevel))
-          throw new BentleyError(IModelStatus.BadArg, "LoggerLevelsConfig.defaultLevel must be a LogLevel. Invalid value: " + JSON.stringify(config.defaultLevel));
+          throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig.defaultLevel must be a LogLevel. Invalid value: ${JSON.stringify(config.defaultLevel)}`);
       } else if (prop === "categoryLevels") {
         const value = config[prop];
         if (!Array.isArray(value))
-          throw new BentleyError(IModelStatus.BadArg, "LoggerLevelsConfig.categoryLevels must be an array. Invalid value: " + JSON.stringify(value));
+          throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig.categoryLevels must be an array. Invalid value: ${JSON.stringify(value)}`);
         for (const item of config[prop]) {
           if (!item.hasOwnProperty("category") || !item.hasOwnProperty("logLevel"))
-            throw new BentleyError(IModelStatus.BadArg, "LoggerLevelsConfig.categoryLevels - each item must be a LoggerCategoryAndLevel {category: logLevel:}. Invalid value: " + JSON.stringify(item));
+            throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig.categoryLevels - each item must be a LoggerCategoryAndLevel {category: logLevel:}. Invalid value: ${JSON.stringify(item)}`);
           if (!Logger.isLogLevel(item.logLevel))
-            throw new BentleyError(IModelStatus.BadArg, "LoggerLevelsConfig.categoryLevels - each item's logLevel property must be a LogLevel. Invalid value: " + JSON.stringify(item.logLevel));
+            throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig.categoryLevels - each item's logLevel property must be a LogLevel. Invalid value: ${JSON.stringify(item.logLevel)}`);
         }
       }
     }
@@ -299,7 +297,7 @@ export class Logger {
   private static getExceptionMessage(err: Error): string {
     let msg = err.toString();
     if (Logger.logExceptionCallstacks && err.stack)
-      msg += "\n" + err.stack;
+      msg += `\n${err.stack}`;
     return msg;
   }
 

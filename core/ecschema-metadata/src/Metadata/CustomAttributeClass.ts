@@ -22,7 +22,7 @@ export class CustomAttributeClass extends ECClass {
   public readonly schemaItemType!: SchemaItemType.CustomAttributeClass; // eslint-disable-line
   protected _containerType?: CustomAttributeContainerType;
 
-  get containerType(): CustomAttributeContainerType {
+  public get containerType(): CustomAttributeContainerType {
     if (undefined === this._containerType)
       throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`);
     return this._containerType;

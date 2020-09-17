@@ -27,11 +27,12 @@ import {
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass,
 } from "./Diagnostic";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /**
  * The unique diagnostic codes for Schema comparison.
  * @beta
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SchemaCompareCodes = {
   SchemaDelta: "SC-100",
   SchemaReferenceMissing: "SC-101",
@@ -68,7 +69,6 @@ export const SchemaCompareCodes = {
  * The list of [[IDiagnostic]] implementation classes used by the Schema comparison framework.
  * @beta
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SchemaCompareDiagnostics = {
   /** Required message parameters: property name, property A value, property B value */
   SchemaDelta: createSchemaDiagnosticClass<[string, any, any]>(SchemaCompareCodes.SchemaDelta, ""),

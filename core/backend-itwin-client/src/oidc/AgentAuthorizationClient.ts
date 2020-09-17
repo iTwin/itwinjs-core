@@ -6,10 +6,10 @@
  * @module Authentication
  */
 
-import { decode } from "jsonwebtoken";
-import { GrantBody, TokenSet } from "openid-client";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { decode } from "jsonwebtoken";
+import { GrantBody, TokenSet } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
@@ -77,7 +77,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
       ? decode(tokenSet.access_token, { json: true, complete: false })
       : undefined;
     this._accessToken = AccessToken.fromTokenResponseJson(tokenSet, userProfile);
-    return this._accessToken!;
+    return this._accessToken;
   }
 
   /**

@@ -13,8 +13,8 @@ import {
 } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
-  ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
-  ToolbarDirectionContext, withDragInteraction,
+  ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
+  Group as ToolGroupComponent, withDragInteraction,
 } from "@bentley/ui-ninezone";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
@@ -216,21 +216,23 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                 key={this.state.groupItem.id}
                 panel={this.getGroupTray(dragInteraction)}
               >
-                {dragInteraction ? (
-                  <div ref={this._ref}>
-                    <ItemWithDragInteraction
-                      badge={badge}
-                      direction={direction}
-                      icon={ToolbarHelper.getIconReactNode(activeItem)}
-                      isActive={this.state.activeToolId === this.state.activeItemId}
-                      isDisabled={!this.state.isEnabled}
-                      onClick={this._handleDragInteractionClick}
-                      onKeyDown={this._handleKeyDown}
-                      onOpenPanel={this._handleOpenPanel}
-                      title={ConditionalStringValue.getValue(activeItem.label)}
-                    />
-                  </div>
-                ) : (
+                {dragInteraction ?
+                  (
+                    <div ref={this._ref}>
+                      <ItemWithDragInteraction
+                        badge={badge}
+                        direction={direction}
+                        icon={ToolbarHelper.getIconReactNode(activeItem)}
+                        isActive={this.state.activeToolId === this.state.activeItemId}
+                        isDisabled={!this.state.isEnabled}
+                        onClick={this._handleDragInteractionClick}
+                        onKeyDown={this._handleKeyDown}
+                        onOpenPanel={this._handleOpenPanel}
+                        title={ConditionalStringValue.getValue(activeItem.label)}
+                      />
+                    </div>
+                  ) :
+                  (
                     <div ref={this._ref}>
                       <Item
                         badge={badge}
@@ -302,12 +304,13 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
 
   private handleToolGroupItemClicked(trayKey: string, itemKey: string) {
     const trayId = this.resetTrayId();
-    this.setState({
-      activeItemId: itemKey,
-      isPressed: false,
-      trayId,
-      backTrays: [],
-    },
+    this.setState(
+      {
+        activeItemId: itemKey,
+        isPressed: false,
+        trayId,
+        backTrays: [],
+      },
       () => {
         const tray = this.getTray(trayKey);
         const childItem = tray.groupItem.items.find((item) => itemKey === item.id);

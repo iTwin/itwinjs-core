@@ -1303,7 +1303,7 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
       return true;
     }
 
-    CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts" + (1 === this._points.length ? ".SecondPoint" : ".NextPoint"));
+    CoreTools.outputPromptByKey(`AccuDraw.DefineACSByPoints.Prompts${1 === this._points.length ? ".SecondPoint" : ".NextPoint"}`);
     return false;
   }
 

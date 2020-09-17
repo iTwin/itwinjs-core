@@ -108,7 +108,7 @@ describe("Convert from ECSchema xml file to typescript file", () => {
 
   it("success without trailing slash on out directory", async () => {
     const schemaFilePath = path.join(assetDir, "BasicTest.01.00.00.ecschema.xml");
-    let outdir = utils.getOutDir() + "async/";
+    let outdir = `${utils.getOutDir()}async/`;
     fs.ensureDirSync(outdir);
     outdir = outdir.slice(0, outdir.length - 1);
     cleanGeneratedTsFile(assetDir, "BasicTest");

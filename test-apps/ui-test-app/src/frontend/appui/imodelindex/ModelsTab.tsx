@@ -200,7 +200,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const uniqueValues: Map<number, DocCodeCategory> = new Map<number, DocCodeCategory>();
     for (const model of this._models) {
       if (model.docCodes) {
-        for (const entry of Array.from(model.docCodes!.entries())) {
+        for (const entry of Array.from(model.docCodes.entries())) {
           const key = entry[0];
           const docCode = entry[1];
           const uniqueValue = uniqueValues.get(key);
@@ -248,7 +248,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     // Query categories and add them to state
     const ecsql = "SELECT c.ecinstanceid FROM meta.ECClassDef c WHERE c.Name='PhysicalPartition'";
     const rows = [];
-    for await (const row of this.props.iModelConnection!.query(ecsql)) {
+    for await (const row of this.props.iModelConnection.query(ecsql)) {
       rows.push(row);
     }
     if (rows.length !== 1)
@@ -257,7 +257,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const physicalClassId = rows[0].id as string;
 
     const ecsql2 = "SELECT me.ecinstanceid, me.codevalue as codevalue, me.ecclassid as classid, l.userlabel as userlabel, l.jsonproperties as jsonproperties FROM bis.InformationContentElement me JOIN bis.repositorylink l USING bis.ElementHasLinks";
-    for await (const model of this.props.iModelConnection!.query(ecsql2)) {
+    for await (const model of this.props.iModelConnection.query(ecsql2)) {
       const name: string = model.codevalue ? model.codevalue as string : "";
       const description: string = model.userlabel ? model.userlabel as string : "";
       const attributes = model.jsonproperties;
@@ -452,7 +452,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   private _isOkButtonEnabled(): boolean {
     let count = 0;
     if (this.state.docCodes) {
-      this.state.docCodes!.forEach((pair: DocCodeCategory) => {
+      this.state.docCodes.forEach((pair: DocCodeCategory) => {
         pair.values.forEach((vp: ValueDescPair) => {
           if (vp.checked) {
             ++count;
@@ -523,7 +523,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   private _getSelectedNodes(): string[] {
     const selectedNodes: string[] = [];
     this.state.selectedNodes.forEach((node: TreeNodeItem) => {
-      selectedNodes.push(node!.id);
+      selectedNodes.push(node.id);
     });
     return selectedNodes;
   }
@@ -542,7 +542,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     } else if (this.state.docCodes) {
       return (
         <div className="documentcode-container">
-          {this.state.docCodes!.map((pair: DocCodeCategory) => (
+          {this.state.docCodes.map((pair: DocCodeCategory) => (
             // eslint-disable-next-line react/jsx-key
             <div className="dc-table" >
               <div className="dc-table-header">

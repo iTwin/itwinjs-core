@@ -53,7 +53,7 @@ describe("useActiveIModelConnection", () => {
         <div><HookTester /></div>
       </Provider>);
 
-      const initialLabel = result.getByTestId("mylabel") as HTMLElement;
+      const initialLabel = result.getByTestId("mylabel");
       expect(initialLabel.innerHTML).to.be.eq("NoConnection");
 
       UiFramework.setIModelConnection(imodelMock.object, true);

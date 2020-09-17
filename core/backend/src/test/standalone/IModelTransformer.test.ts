@@ -9,9 +9,9 @@ import { Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geomet
 import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, PhysicalElementProps, Placement3d } from "@bentley/imodeljs-common";
 import {
   BackendLoggerCategory, BackendRequestContext, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel,
-  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner,
-  TemplateRecipe3d,
+  ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs, IModelTransformer,
+  InformationRecordModel, InformationRecordPartition, Model, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, SnapshotDb,
+  SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
@@ -84,7 +84,7 @@ describe("IModelTransformer", () => {
       assert.equal(3, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
       targetDb.saveChanges();
       IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
-      transformer.context.dump(targetDbFile + ".context.txt");
+      transformer.context.dump(`${targetDbFile}.context.txt`);
       transformer.dispose();
     }
 
@@ -232,6 +232,55 @@ describe("IModelTransformer", () => {
     });
     cloner.dispose();
     componentLibraryDb.close();
+    targetDb.close();
+  });
+
+  it("should combine models", async () => {
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "source-separate-models.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Separate Models" } });
+    const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "Category", {});
+    const sourceModelId1 = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "M1");
+    const sourceModelId2 = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "M2");
+    const elementProps11: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: sourceModelId1,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject-M1-E1",
+      category: sourceCategoryId,
+    };
+    const sourceElementId11 = sourceDb.elements.insertElement(elementProps11);
+    const elementProps21: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: sourceModelId2,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject-M2-E1",
+      category: sourceCategoryId,
+    };
+    const sourceElementId21 = sourceDb.elements.insertElement(elementProps21);
+    sourceDb.saveChanges();
+
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "target-combined-model.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Combined Model" } });
+    const targetModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "PhysicalModel-Combined");
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    transformer.context.remapElement(sourceModelId1, targetModelId);
+    transformer.context.remapElement(sourceModelId2, targetModelId);
+    transformer.importer.doNotUpdateElementIds.add(targetModelId); // don't want the target partition CodeValue, etc. to be updated from either source partition
+    transformer.processAll();
+    targetDb.saveChanges();
+
+    const targetElement11 = targetDb.elements.getElement(transformer.context.findTargetElementId(sourceElementId11));
+    assert.equal(targetElement11.userLabel, "PhysicalObject-M1-E1");
+    assert.equal(targetElement11.model, targetModelId);
+    const targetElement21 = targetDb.elements.getElement(transformer.context.findTargetElementId(sourceElementId21));
+    assert.equal(targetElement21.userLabel, "PhysicalObject-M2-E1");
+    assert.equal(targetElement21.model, targetModelId);
+    const targetPartition = targetDb.elements.getElement(targetModelId);
+    assert.equal(targetPartition.code.value, "PhysicalModel-Combined", "Original CodeValue should be retained");
+
+    transformer.dispose();
+    sourceDb.close();
     targetDb.close();
   });
 
@@ -459,6 +508,83 @@ describe("IModelTransformer", () => {
     assert.throws(() => cloneContext.remapCodeSpec("SourceNotFound", "TargetNotFound"));
     cloneContext.dispose();
     iModelDb.close();
+  });
+
+  it("should clone across schema versions", async () => {
+    // NOTE: schema differences between 01.00.00 and 01.00.01 were crafted to reproduce a cloning bug. The goal of this test is to prevent regressions.
+    const cloneTestSchema100: string = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
+    const cloneTestSchema101: string = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.01.ecschema.xml");
+
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneWithSchemaChanges-Source.bim");
+    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbFile);
+    await sourceDb.importSchemas(new BackendRequestContext(), [cloneTestSchema100]);
+    const sourceElementProps = {
+      classFullName: "CloneTest:PhysicalType",
+      model: IModel.dictionaryId,
+      code: PhysicalType.createCode(sourceDb, IModel.dictionaryId, "Type1"),
+      string1: "a",
+      string2: "b",
+    };
+    const sourceElementId = sourceDb.elements.insertElement(sourceElementProps);
+    const sourceElement = sourceDb.elements.getElement(sourceElementId);
+    assert.equal(sourceElement.asAny.string1, "a");
+    assert.equal(sourceElement.asAny.string2, "b");
+    sourceDb.saveChanges();
+
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneWithSchemaChanges-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "CloneWithSchemaChanges-Target" } });
+    await targetDb.importSchemas(new BackendRequestContext(), [cloneTestSchema101]);
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    transformer.processElement(sourceElementId);
+    targetDb.saveChanges();
+
+    const targetElementId = transformer.context.findTargetElementId(sourceElementId);
+    const targetElement = targetDb.elements.getElement(targetElementId);
+    assert.equal(targetElement.asAny.string1, "a");
+    assert.equal(targetElement.asAny.string2, "b");
+
+    seedDb.close();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("Should not visit elements or relationships", async () => {
+    // class that asserts if it encounters an element or relationship
+    class TestExporter extends IModelExportHandler {
+      public iModelExporter: IModelExporter;
+      public modelCount: number = 0;
+      public constructor(iModelDb: IModelDb) {
+        super();
+        this.iModelExporter = new IModelExporter(iModelDb);
+        this.iModelExporter.registerHandler(this);
+      }
+      protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
+        ++this.modelCount;
+      }
+      protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
+        assert.fail("Should not visit element when visitElements=false");
+      }
+      protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
+        assert.fail("Should not visit relationship when visitRelationship=false");
+      }
+    }
+    const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const sourceDb: SnapshotDb = SnapshotDb.openFile(sourceFileName);
+    const exporter = new TestExporter(sourceDb);
+    exporter.iModelExporter.visitElements = false;
+    exporter.iModelExporter.visitRelationships = false;
+    // call various methods to make sure the onExport* callbacks don't assert
+    exporter.iModelExporter.exportAll();
+    exporter.iModelExporter.exportElement(IModel.rootSubjectId);
+    exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
+    exporter.iModelExporter.exportRepositoryLinks();
+    exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
+    exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);
+    // make sure the exporter actually visited something
+    assert.isAtLeast(exporter.modelCount, 4);
+    sourceDb.close();
   });
 
   // WIP: Included as skipped until test file management strategy can be refined.

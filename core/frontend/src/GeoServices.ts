@@ -111,7 +111,7 @@ class GCtoIMCResultCache {
             const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
 
             // put the answer in the cache.
-            const thisGeoCoord: XYZProps = remainingRequest!.geoCoords[iResponse];
+            const thisGeoCoord: XYZProps = remainingRequest.geoCoords[iResponse];
             const thisCacheKey: string = JSON.stringify(thisGeoCoord);
             this._cache[thisCacheKey] = thisPoint;
 

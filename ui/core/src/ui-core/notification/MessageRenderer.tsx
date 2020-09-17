@@ -7,14 +7,19 @@
  */
 
 import * as React from "react";
+import * as DOMPurify from "dompurify";
 import { isHTMLElement, isReactMessage, MessageType } from "./MessageType";
 import { ClassNameProps } from "../utils/Props";
+
+// cSpell:ignore dompurify
 
 /** Properties for the [[MessageRenderer]] component
  * @beta
  */
 export interface MessageRendererProps extends ClassNameProps {
+  /** Message to render */
   message: MessageType;
+  /** Indicates whether to use a `span` or `div` element for rendering */
   useSpan?: boolean;
 }
 
@@ -23,27 +28,18 @@ export interface MessageRendererProps extends ClassNameProps {
  */
 export function MessageRenderer(props: MessageRendererProps) {
   let messageNode = null;
+  const OutElement = props.useSpan ? "span" : "div";
 
-  if (props.useSpan) {
-    if (typeof props.message === "string")
-      messageNode = <span className={props.className}>{props.message}</span>;
-    else if (isHTMLElement(props.message))
-      messageNode = <span className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
-    else {
-      /* istanbul ignore else */
-      if (isReactMessage(props.message))
-        messageNode = <span className={props.className}>{props.message.reactNode}</span>;
-    }
+  if (typeof props.message === "string") {
+    messageNode = <OutElement className={props.className}>{props.message}</OutElement>;
+  } else if (isHTMLElement(props.message)) {
+    const cleanHTML = DOMPurify.sanitize(props.message.outerHTML);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    messageNode = <OutElement className={props.className} dangerouslySetInnerHTML={{ __html: cleanHTML }} />;
   } else {
-    if (typeof props.message === "string")
-      messageNode = <div className={props.className}>{props.message}</div>;
-    else if (isHTMLElement(props.message))
-      messageNode = <div className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
-    else {
-      /* istanbul ignore else */
-      if (isReactMessage(props.message))
-        messageNode = <div className={props.className}>{props.message.reactNode}</div>;
-    }
+    /* istanbul ignore else */
+    if (isReactMessage(props.message))
+      messageNode = <OutElement className={props.className}>{props.message.reactNode}</OutElement>;
   }
 
   return messageNode;

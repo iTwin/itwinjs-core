@@ -1396,19 +1396,70 @@ it("Synchro", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-/**
- * This reads a big (35930 points) Synchro mesh and converts it to polyface using direct push to various arrays.
- * It's a nice exercise but doesn't add to unit test needs, so it's marked skip.
- */
-it.skip("BigSynchroMesh", () => {
+it("SmallSynchroMesh", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/polyface/vg/synchroMesh.json", "utf8"));
-  const polyface = createPolyfaceFromSynchro(synchroMesh);
-  if (polyface)
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, 0);
-  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "BigSynchroMesh");
+  // const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020/synchroMesh.json", "utf8"));
+  // const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020A/synchroMesh.json", "utf8"));
+  const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020B/synchromesh.json", "utf8"));
+  let x0 = 0;
+  for (const polyfaceA of [createPolyfaceFromSynchro(synchroMesh), createPolyfaceFromSynchroA(synchroMesh)]) {
+    if (polyfaceA)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, 0);
+    x0 += 10.0;
+    if (polyfaceA instanceof IndexedPolyface) {
+      const errorsA = checkPolyfaceIndexErrors(polyfaceA);
+      if (ck.testUndefined(errorsA, "Index Check before compress")) {
+        polyfaceA.data.compress();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, 10.0);
+        const errorsB = checkPolyfaceIndexErrors(polyfaceA);
+        ck.testUndefined(errorsB, "Index Check after compress");
+      }
+    }
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "082020BFromSynchro");
   expect(ck.getNumErrors()).equals(0);
+});
+
+it("synchroPolyface", () => {
+  const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020B/synchromesh.json", "utf8"));
+
+  const ck = new Checker();
+  for (const polyfaceA of [createPolyfaceFromSynchro(synchroMesh)]) {
+    const polyfaceJson = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020B/polyface.json", "utf8"));
+    const xyzArray = enumerateToNumberArray(polyfaceJson.data.point._data);
+    xyzArray.length = 3 * polyfaceJson.data.point._xyzInUse;
+    const paramArray = enumerateToNumberArray(polyfaceJson.data.param._data);
+    paramArray.length = 2 * polyfaceJson.data.param._xyInUse;
+    const normalArray = enumerateToNumberArray(polyfaceJson.data.normal._data);
+    normalArray.length = 3 * polyfaceJson.data.normal._xyzInUse;
+    const pointIndexArray = enumerateToNumberArray(polyfaceJson.data.pointIndex);
+    const paramIndexArray = enumerateToNumberArray(polyfaceJson.data.paramIndex);
+    const normalIndexArray = enumerateToNumberArray(polyfaceJson.data.normalIndex);
+    console.log({ numXYZ: xyzArray.length });
+    const polyfaceB = IndexedPolyface.create(true, true, false, true);
+    polyfaceB.data.point.pushFrom(xyzArray);
+    for (let i = 0; i + 1 < paramArray.length; i += 2)
+      polyfaceB.data.param!.pushXY(paramArray[i], paramArray[i + 1]);
+    polyfaceB.data.normal!.pushFrom(normalArray);
+    polyfaceB.data.pointIndex.push(...pointIndexArray);
+    polyfaceB.data.paramIndex!.push(...paramIndexArray);
+    polyfaceB.data.normalIndex!.push(...normalIndexArray);
+    const facetStartB = (polyfaceB as any)._facetStart;
+    // purge initialization from ctor ...
+    facetStartB.length = 0;
+    for (const s of polyfaceJson._facetStart) {
+      facetStartB.push(s);
+    }
+    for (const visible of polyfaceJson.data.edgeVisible) {
+      polyfaceB.data.edgeVisible.push(visible);
+    }
+    const errors = checkPolyfaceIndexErrors(polyfaceB);
+    if (!ck.testUndefined(errors, "index error description"))
+      console.log(errors);
+
+    ck.testTrue(polyfaceA.isAlmostEqual(polyfaceB), "Compare polyfaces");
+  }
 });
 /**
  * This is the Synchro mesh structure, as deduced by looking at prior code to transfer to polyface.
@@ -1477,5 +1528,109 @@ function createPolyfaceFromSynchro(geom: any): Polyface {
     if (lastJ !== -1)
       console.log(`lastJ error ${lastJ}`);
   }
+  return polyface;
+}
+function enumerateToNumberArray(data: any): number[] {
+  const result = [];
+  for (let i = 0; ; i++) {
+    if (data.hasOwnProperty(i)) {
+      result.push(data[i]);
+    } else break;
+  }
+  return result;
+}
+function appendIndexErrors(name: string, data: number[], numValues: number, errors: object[]) {
+  if (data === undefined)
+    return;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  if (min >= 0 && min < numValues && max >= 0 && max < numValues)
+    return;
+  let i, k;
+  for (i = 0; i < data.length; i++) {
+    k = data[i];
+    if (k < 0 || k >= numValues) {
+      errors.push({ indexArrayName: name, indexOfBadPointIndex: i, badPointIndex: k })
+      return;
+    }
+  }
+}
+
+/**
+ * Return an array of objects whose members describe various error conditions.
+ * * If the array is undefined, no errors were detected.
+ */
+function checkPolyfaceIndexErrors(polyface: IndexedPolyface): object[] | undefined {
+  const errors: object[] = [];
+  appendIndexErrors("pointIndex", polyface.data.pointIndex, polyface.data.point.length, errors);
+  if (polyface.data.paramIndex && polyface.data.param)
+    appendIndexErrors("paramIndex", polyface.data.paramIndex, polyface.data.param.length, errors);
+  if (polyface.data.normalIndex && polyface.data.normal)
+    appendIndexErrors("normalIndex", polyface.data.normalIndex, polyface.data.normal.length, errors);
+  if (errors.length === 0)
+    return undefined;
+  return errors;
+}
+function createPolyfaceFromSynchroA(geom: any): Polyface {
+  // const options: StrokeOptions = StrokeOptions.createForFacets();
+  const hasUV: boolean = geom.uv_array != null && geom.uv_array.length !== 0;
+  const hasNormals: boolean = geom.normal_array != null && geom.normal_array.length !== 0;
+  const polyface = IndexedPolyface.create(hasNormals, hasUV);
+  // const numVertex = geom.vertex_array.length;
+
+  // Always load point data ...
+  for (const xyz of geom.vertex_array)
+    polyface.data.point.pushXYZ(xyz.x, xyz.y, xyz.z);
+
+  // OPTIONAL uv array
+  if (hasUV) {
+    for (const xy of geom.uv_array)
+      polyface.data.param!.pushXY(xy.x, xy.y);
+  }
+
+  // OPTIONAL normal array
+  if (hasNormals) {
+    for (const xyz of geom.normal_array)
+      polyface.data.normal!.pushXYZ(xyz.x, xyz.y, xyz.z);
+  }
+
+  // build up the index sets one facet at a time, let terminateFacet () get the facetStart table right . . .
+  // Note that polyface has separate index arrays for params and normals.
+  // (When there are sharp edges in the mesh, this allows smaller param, point, and normal arrays.
+  //    The single-index style of Synchro and other
+  //   browser software saves memory by sharing the index array but wastes it with redundant data arrays.
+  //   The polyface compress function can get this effect)
+  const indexArray = geom.index_array;
+  let i0, i1, i2;
+  for (let k = 0; k + 2 < indexArray.length; k += 3) {
+    i0 = indexArray[k];
+    i1 = indexArray[k + 1];
+    i2 = indexArray[k + 2];
+
+    polyface.data.pointIndex.push(i0, i1, i2);
+    polyface.data.edgeVisible.push(true, true, true);
+
+    if (polyface.data.paramIndex)
+      polyface.data.paramIndex.push(i0, i1, i2);
+
+    if (polyface.data.normalIndex)
+      polyface.data.normalIndex.push(i0, i1, i2);
+
+    polyface.terminateFacet();
+  }
+
+  // check if paramIndex refers to param out of bounds
+  // if (polyface.data.paramIndex) {
+  //     let paramCount = polyface.data.paramCount;
+  //     if(polyface.data.point.length >= 35000) {
+  //         let bp = 1;
+  //     }
+  //     for (let j = 0; j < polyface.data.paramIndex.length; j++) {
+  //         if (polyface.data.paramIndex[j] > paramCount) {
+  //             let bp = 1;
+  //         }
+  //     }
+  // }
+
   return polyface;
 }

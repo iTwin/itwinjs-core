@@ -17,16 +17,16 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.5.5",
-    "@bentley/context-registry-client": "2.5.5",
-    "@bentley/imodelhub-client": "2.5.5",
-    "@bentley/geometry-core": "2.5.5",
-    "@bentley/imodeljs-backend": "2.5.5",
-    "@bentley/itwin-client": "2.5.5",
-    "@bentley/imodeljs-common": "2.5.5",
-    "@bentley/imodeljs-frontend": "2.5.5",
-    "@bentley/logger-config": "2.5.5",
-    "@bentley/rbac-client": "2.5.5",
+    "@bentley/bentleyjs-core": "2.6.0",
+    "@bentley/context-registry-client": "2.6.0",
+    "@bentley/imodelhub-client": "2.6.0",
+    "@bentley/geometry-core": "2.6.0",
+    "@bentley/imodeljs-backend": "2.6.0",
+    "@bentley/itwin-client": "2.6.0",
+    "@bentley/imodeljs-common": "2.6.0",
+    "@bentley/imodeljs-frontend": "2.6.0",
+    "@bentley/logger-config": "2.6.0",
+    "@bentley/rbac-client": "2.6.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "electron": "^8.2.1",
@@ -41,9 +41,10 @@
     "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/config-loader": "2.5.5",
-    "@bentley/build-tools": "2.5.5",
-    "@bentley/oidc-signin-tool": "2.5.5",
+    "@bentley/config-loader": "2.6.0",
+    "@bentley/build-tools": "2.6.0",
+    "@bentley/eslint-plugin": "2.6.0",
+    "@bentley/oidc-signin-tool": "2.6.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",
@@ -62,6 +63,9 @@
     "xmlhttprequest": "^1.8.0"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

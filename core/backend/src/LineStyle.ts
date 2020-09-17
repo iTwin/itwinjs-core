@@ -397,7 +397,7 @@ export namespace LineStyleDefinition {
         return (undefined === lsId0 ? this.createStyle(imodel, scopeModelId, name0, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap }) : lsId0);
       }
 
-      const name = "Continuous-" + width;
+      const name = `Continuous-${width}`;
       const lsId = this.queryStyle(imodel, scopeModelId, name);
       if (undefined !== lsId)
         return lsId;
@@ -406,7 +406,7 @@ export namespace LineStyleDefinition {
       if (undefined === strokePatternData)
         throw new IModelError(IModelStatus.BadArg, "Unable to insert stroke component");
 
-      return this.createStyle(imodel, scopeModelId, name, { compId: strokePatternData!.compId, compType: strokePatternData!.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
+      return this.createStyle(imodel, scopeModelId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
     }
 
     /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.
@@ -441,7 +441,7 @@ export namespace LineStyleDefinition {
         default:
           throw new IModelError(IModelStatus.BadArg, "Invalid LinePixels");
       }
-      const name = "LinePixelsCodeNumber-" + lineCode;
+      const name = `LinePixelsCodeNumber-${lineCode}`;
       const lsId = this.queryStyle(imodel, scopeModelId, name);
       return (undefined === lsId ? this.createStyle(imodel, scopeModelId, name, { compId: lineCode, compType: ComponentType.Internal }) : lsId);
     }

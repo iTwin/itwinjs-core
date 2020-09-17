@@ -10,6 +10,8 @@ import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
 import { RpcProtocol } from "./RpcProtocol";
 
+// cspell:ignore unmarshal
+
 let marshalingTarget: RpcSerializedValue;
 let chunkThreshold = 0;
 
@@ -131,7 +133,7 @@ class WireFormat {
           chunk = Math.min(chunkThreshold, remaining);
         }
       } else {
-        marker.index = marshalingTarget.data.push(value as Uint8Array) - 1;
+        marker.index = marshalingTarget.data.push(value) - 1;
       }
 
       return marker;

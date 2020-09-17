@@ -43,7 +43,7 @@ export class FpsMonitor {
     this._enabled = enabled;
     this._frameCount = 0;
     IModelApp.viewManager.forEachViewport((vp) => vp.continuousRendering = enabled);
-    this._label.innerText = "FPS" + (this.enabled ? ":" : "");
+    this._label.innerText = `FPS${this.enabled ? ":" : ""}`;
     this._output.innerText = "";
     if (enabled) {
       this._prevTime = performance.now();
@@ -122,7 +122,7 @@ export class RecordFpsTool extends Tool {
     const metrics = this._metrics!;
     const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
 
-    const msg = new NotifyMessageDetails(OutputMessagePriority.Info, "FPS " + fps);
+    const msg = new NotifyMessageDetails(OutputMessagePriority.Info, `FPS ${fps}`);
     IModelApp.notifications.outputMessage(msg);
   }
 }

@@ -21,7 +21,7 @@ import { InformationPartitionElement, Subject } from "../../Element";
 import { HubIModel } from "@bentley/imodelhub-client";
 
 function createAndInsertSpatialCategory(testIModel: IModelDb, name: string): Id64String {
-  const dictionary: DictionaryModel = testIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+  const dictionary: DictionaryModel = testIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, name);
   return SpatialCategory.insert(testIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 }

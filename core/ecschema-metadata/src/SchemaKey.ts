@@ -33,11 +33,9 @@ export class ECVersion {
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
   }
 
-  get read() { return this._read; }
-
-  get write() { return this._write; }
-
-  get minor() { return this._minor; }
+  public get read() { return this._read; }
+  public get write() { return this._write; }
+  public get minor() { return this._minor; }
 
   /**
    * Creates a string, in the format 'RR.ww.mm', representing this ECVersion.
@@ -111,7 +109,7 @@ export class ECName {
     return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
   }
 
-  get name() { return this._name; }
+  public get name() { return this._name; }
 }
 
 /**
@@ -134,15 +132,11 @@ export class SchemaKey {
       this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
   }
 
-  get version() { return this._version; }
-
-  get name() { return this._name.name; }
-
-  get readVersion() { return this.version.read; }
-
-  get writeVersion() { return this.version.write; }
-
-  get minorVersion() { return this.version.minor; }
+  public get version() { return this._version; }
+  public get name() { return this._name.name; }
+  public get readVersion() { return this.version.read; }
+  public get writeVersion() { return this.version.write; }
+  public get minorVersion() { return this.version.minor; }
 
   /**
    * Creates a string, in the format 'RR.ww.mm', representing this SchemaKey.
@@ -233,13 +227,13 @@ export class SchemaItemKey {
     this._schemaKey = schema;
   }
 
-  get schemaKey() { return this._schemaKey; }
-  get name() { return this._name.name; }
+  public get schemaKey() { return this._schemaKey; }
+  public get name() { return this._name.name; }
 
-  get schemaName() { return this.schemaKey.name; }
+  public get schemaName() { return this.schemaKey.name; }
 
   /** Returns the name in the format, {schemaName}.{name}. */
-  get fullName() { return this.schemaName + "." + this.name; }
+  public get fullName() { return `${this.schemaName}.${this.name}`; }
 
   /**
    * Checks whether this SchemaItemKey matches the one provided.

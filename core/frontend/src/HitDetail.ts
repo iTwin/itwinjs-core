@@ -270,7 +270,7 @@ export class SnapDetail extends HitDetail {
       return this.primitive;
 
     if (this.primitive instanceof LineString3d) {
-      const ls = this.primitive as LineString3d;
+      const ls = this.primitive;
       if (ls.points.length > 2) {
         const loc = ls.closestPoint(this.snapPoint, false);
         const nSegments = ls.points.length - 1;

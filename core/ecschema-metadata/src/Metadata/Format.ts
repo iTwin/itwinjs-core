@@ -57,21 +57,21 @@ export class Format extends SchemaItem {
     this._includeZero = true;
   }
 
-  get roundFactor(): number { return this._roundFactor; }
-  get type(): FormatType { return this._type; }
-  get precision(): DecimalPrecision | FractionalPrecision { return this._precision; }
-  get minWidth(): number | undefined { return this._minWidth; }
-  get scientificType(): ScientificType | undefined { return this._scientificType; }
-  get showSignOption(): ShowSignOption { return this._showSignOption; }
-  get decimalSeparator(): string { return this._decimalSeparator; }
-  get thousandSeparator(): string { return this._thousandSeparator; }
-  get uomSeparator(): string { return this._uomSeparator; }
-  get stationSeparator(): string { return this._stationSeparator; }
-  get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
-  get formatTraits(): FormatTraits { return this._formatTraits; }
-  get spacer(): string | undefined { return this._spacer; }
-  get includeZero(): boolean | undefined { return this._includeZero; }
-  get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
+  public get roundFactor(): number { return this._roundFactor; }
+  public get type(): FormatType { return this._type; }
+  public get precision(): DecimalPrecision | FractionalPrecision { return this._precision; }
+  public get minWidth(): number | undefined { return this._minWidth; }
+  public get scientificType(): ScientificType | undefined { return this._scientificType; }
+  public get showSignOption(): ShowSignOption { return this._showSignOption; }
+  public get decimalSeparator(): string { return this._decimalSeparator; }
+  public get thousandSeparator(): string { return this._thousandSeparator; }
+  public get uomSeparator(): string { return this._uomSeparator; }
+  public get stationSeparator(): string { return this._stationSeparator; }
+  public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
+  public get formatTraits(): FormatTraits { return this._formatTraits; }
+  public get spacer(): string | undefined { return this._spacer; }
+  public get includeZero(): boolean | undefined { return this._includeZero; }
+  public get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
 
   private parseFormatTraits(formatTraitsFromJson: string | string[]) {
     const formatTraits = Array.isArray(formatTraitsFromJson) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
@@ -235,7 +235,7 @@ export class Format extends SchemaItem {
    */
   public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): FormatProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    schemaJson.type = formatTypeToString(this.type!);
+    schemaJson.type = formatTypeToString(this.type);
     schemaJson.precision = this.precision;
 
     // this._spacer = " ";

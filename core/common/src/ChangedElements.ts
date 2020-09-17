@@ -5,6 +5,8 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { AxisAlignedBox3dProps } from "./geometry/Placement";
 
+// cspell:ignore bboxes
+
 /** @packageDocumentation
  * @module Entities
  */

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore focustrap imagecheckbox iconinput hocs
+// cSpell:ignore focustrap imagecheckbox iconinput hocs numericinput
 
 export * from "./ui-core/UiCore";
 
@@ -26,6 +26,12 @@ export * from "./ui-core/button/UnderlinedButton";
 export * from "./ui-core/checklistbox/CheckListBox";
 
 export * from "./ui-core/contextmenu/ContextMenu";
+export * from "./ui-core/contextmenu/ContextMenuDirection";
+export * from "./ui-core/contextmenu/ContextMenuDivider";
+export * from "./ui-core/contextmenu/ContextMenuItem";
+export * from "./ui-core/contextmenu/ContextSubMenu";
+export * from "./ui-core/contextmenu/GlobalContextMenu";
+export * from "./ui-core/contextmenu/PopupContextMenu";
 
 export * from "./ui-core/cube/Cube";
 
@@ -90,6 +96,8 @@ export * from "./ui-core/notification/MessageType";
 
 export * from "./ui-core/popup/Popup";
 
+export * from "./ui-core/progress-indicators/ProgressBar";
+
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";
 export * from "./ui-core/radio/Radio";
@@ -110,6 +118,7 @@ export * from "./ui-core/tabs/Tabs";
 export * from "./ui-core/text/BodyText";
 export * from "./ui-core/text/BlockText";
 export * from "./ui-core/text/DisabledText";
+export * from "./ui-core/text/FilteredText";
 export * from "./ui-core/text/Headline";
 export * from "./ui-core/text/LeadingText";
 export * from "./ui-core/text/LeadingText2";
@@ -233,7 +242,7 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
  */
 /**
  * @docs-group-description Loading
- * Components for working with Loading spinner and progress indicator.
+ * Components for working with Loading spinners and progress indicators and bars.
  */
 /**
  * @docs-group-description Notification

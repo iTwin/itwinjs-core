@@ -318,6 +318,7 @@ export class MutableTreeModel implements TreeModel {
   public clearChildren(parentId: string | undefined) {
     const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
     if (parentNode !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       (parentNode.numChildren as number | undefined) = undefined;
     }
     this._tree.deleteSubtree(parentId, false);
@@ -346,6 +347,7 @@ export class MutableTreeModel implements TreeModel {
 
   /** Iterates over all nodes present in the tree model. */
   public * iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
     function* iterateDescendants(subParentId: string | undefined): IterableIterator<MutableTreeModelNode> {
       const children = _this.getChildren(subParentId);
@@ -370,6 +372,7 @@ export class MutableTreeModel implements TreeModel {
     if (node.numChildren === numChildren)
       return;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     (node.numChildren as number | undefined) = numChildren;
   }
 

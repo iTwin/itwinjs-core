@@ -25,10 +25,7 @@ import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelS
  * @internal @deprecated
  */
 // istanbul ignore next
-export class CategoryModelTree extends React.Component<
-  CategoryModelTreeProps,
-  CategoryModelTreeState
-  > {
+export class CategoryModelTree extends React.Component<CategoryModelTreeProps, CategoryModelTreeState> {
   private _optionsElement: HTMLElement | null = null;
   private _allNodeIds: string[] = [];
   private _isMounted = false;
@@ -233,6 +230,7 @@ export class CategoryModelTree extends React.Component<
       ? selectUsedSpatialCategoryIds
       : selectUsedDrawingCategoryIds;
     const ecsql2 =
+      // eslint-disable-next-line prefer-template
       "SELECT ECInstanceId as id, UserLabel as label, CodeValue as code FROM " +
       (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory") +
       " WHERE ECInstanceId IN (" +
@@ -482,7 +480,7 @@ export class CategoryModelTree extends React.Component<
     return (
       <CategoryModelFilterTree
         dataProvider={this.state.activeGroup.dataProvider}
-        filter={this.state.filterInfo ? this.state.filterInfo!.filter : ""}
+        filter={this.state.filterInfo ? this.state.filterInfo.filter : ""}
         onFilterApplied={async (filter) => this.onFilterApplied(filter)}
         onMatchesCounted={(count) => this._onMatchesCounted(count)}
         activeMatchIndex={
@@ -509,9 +507,7 @@ export class CategoryModelTree extends React.Component<
     const categories: ListItem[] = this.state.activeGroup.items;
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
     const nodeId = NodeKey.isInstancesNodeKey(key) ? key.instanceKeys[0].id : "";
-    const ecsql =
-      "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" +
-      nodeId;
+    const ecsql = `SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=${nodeId}`;
     const rows = [];
 
     if (this.props.iModelConnection) {
@@ -617,9 +613,7 @@ export class CategoryModelTree extends React.Component<
   }
 
   private async _fetchChildNodes(nodeId: string): Promise<string[]> {
-    const ecsql =
-      "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" +
-      nodeId;
+    const ecsql = `SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=${nodeId}`;
     const childIds = [];
 
     if (this.props.iModelConnection) {

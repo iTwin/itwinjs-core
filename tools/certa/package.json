@@ -1,6 +1,6 @@
 {
   "name": "@bentley/certa",
-  "version": "2.5.5",
+  "version": "2.6.0",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
@@ -44,7 +44,8 @@
     "yargs": "^15.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.5.5",
+    "@bentley/build-tools": "2.6.0",
+    "@bentley/eslint-plugin": "2.6.0",
     "@types/chai": "^4.1.4",
     "@types/detect-port": "~1.1.0",
     "@types/express": "^4.16.1",
@@ -59,7 +60,10 @@
     "typescript": "~3.7.4"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js",
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended",
     "rules": {
       "@typescript-eslint/no-misused-promises": "off",
       "@typescript-eslint/no-var-requires": "off",

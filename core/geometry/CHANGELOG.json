@@ -2,6 +2,30 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@bentley/geometry-core_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "GrowableArray pushFront; correct doc comments in degreesPerRadian and radiansPerDegree; czech spiral distance methods"
+          },
+          {
+            "comment": "In polyface builder, identify and ignore more degenerate cases."
+          },
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "Fixed: GrowableXYZArray failed to correctly initialize when array of doubles were given"
+          },
+          {
+            "comment": "Refactor test code to pass lint validations"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.5",
       "tag": "@bentley/geometry-core_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",

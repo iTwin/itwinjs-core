@@ -9,6 +9,8 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
+// cspell:ignore ppid elap
+
 const loggerCategory: string = BackendLoggerCategory.DevTools;
 
 interface StringIndexedObject<T> {
@@ -61,13 +63,13 @@ export class DevToolsStatsFormatter {
   /** Replacer that includes units - can be used with JSON.stringify()  */
   private static _replacer = (key: string, value: any) => {
     if (DevToolsStatsFormatter._megaByteProps.includes(key))
-      return value.toFixed() + " MB";
+      return `${value.toFixed()} MB`;
     if (DevToolsStatsFormatter._percentProps.includes(key))
-      return value.toFixed() + "%";
+      return `${value.toFixed()}%`;
     if (DevToolsStatsFormatter._mHzProps.includes(key))
-      return value.toString() + " MHz";
+      return `${value.toString()} MHz`;
     if (DevToolsStatsFormatter._secondsProps.includes(key))
-      return value.toFixed() + " secs";
+      return `${value.toFixed()} secs`;
     return value;
   }
 

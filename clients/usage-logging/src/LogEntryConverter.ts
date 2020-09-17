@@ -96,7 +96,7 @@ export class LogEntryConverter {
    * @param requestContext The client request context
    * @returns The application version for the request context
    */
-  private static getApplicationVersion(requestContext: AuthorizedClientRequestContext): ProductVersion {
+  public static getApplicationVersion(requestContext: AuthorizedClientRequestContext): ProductVersion {
     const applicationVersion = requestContext.applicationVersion;
     const defaultVersion = { major: 1, minor: 0 };
     if (!applicationVersion) {
@@ -211,8 +211,8 @@ export class LogEntryConverter {
     const endDateZ = entry.endTime?.toISOString();
 
     const featureMetaData: FeatureLogEntryAttributeJson[] = [];
-    for (const att of entry.usageData) {
-      featureMetaData.push({ name: att.name, value: att.value.toString() });
+    for (const att in entry.additionalData) { // eslint-disable-line guard-for-in
+      featureMetaData.push({ name: att, value: entry.additionalData[att] });
     }
 
     const entryJson: FeatureLogEntryJson = {

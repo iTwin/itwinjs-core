@@ -47,15 +47,15 @@ describe("ColorIndex", () => {
     }
     ci.initNonUniform(colors, indices, true);
     assert.isFalse(ci.isUniform, "NonUniform ColorIndex should not be Uniform");
-    assert.isTrue(numColors === ci.numColors, "NonUniform ColorIndex with " + numColors + "should have numColors of " + numColors + " but has " + ci.numColors);
+    assert.isTrue(numColors === ci.numColors, `NonUniform ColorIndex with ${numColors} should have numColors of ${numColors} but has ${ci.numColors}`);
     assert.isTrue(ci.hasAlpha, "NonUniform ColorIndex which has alpha in its colors should return true from hasAlpha");
     assert.isTrue(undefined !== ci.nonUniform, "NonUniform ColorIndex should not have an undefined nonUniform");
     if (undefined !== ci.nonUniform) {
       for (let i = 0; i < numColors; ++i) {
         assert.isTrue(ci.nonUniform.colors[i] === colors[i],
-          "NonUniform ColorIndex has colors[" + i + "] of " + ci.nonUniform.colors[i].toString(16) + "but should be " + colors[i].toString(16));
+          `NonUniform ColorIndex has colors[${i}] of ${ci.nonUniform.colors[i].toString(16)} but should be ${colors[i].toString(16)}`);
         assert.isTrue(ci.nonUniform.indices[i] === indices[i],
-          "NonUniform ColorIndex has indices[" + i + "] of " + ci.nonUniform.indices[i] + "but should be " + indices[i]);
+          `NonUniform ColorIndex has indices[${i}] of ${ci.nonUniform.indices[i]} but should be ${indices[i]}`);
       }
     }
 

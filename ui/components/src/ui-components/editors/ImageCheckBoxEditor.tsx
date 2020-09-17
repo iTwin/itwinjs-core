@@ -9,7 +9,9 @@
 import "./ImageCheckBoxEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ImageCheckBoxParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
+import {
+  ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
+} from "@bentley/ui-abstract";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { ImageCheckBox } from "@bentley/ui-core";
@@ -78,7 +80,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
-      const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
+      const primitiveValue = propertyRecord.value.value;
       checkboxValue = primitiveValue as boolean;
     }
 
@@ -134,7 +136,6 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
  * @beta
  */
 export class ImageCheckBoxPropertyEditor extends PropertyEditorBase {
-
   public get reactNode(): React.ReactNode {
     return <ImageCheckBoxEditor />;
   }

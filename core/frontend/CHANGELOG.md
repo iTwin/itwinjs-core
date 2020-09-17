@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- Supply symbology overrides for map geometry so that view defaults (isolate) are not applied.
+- Moved ESLint configuration to a plugin
+- Fix potential unbounded growth of an array each time a Viewport's scene is recreated.
+- react to telemetry and introspection client changes
+- Allow level 1 imagery tiles to be used (the planar projection requires them at max zoom).  Force depth buffer for large globe tiles.
+- Add optional TileAdmin.Props.minimumSpatialTolerance as terminating condition for tile refinement.
+- Add support for opening a key-in palette to run key-ins.
+- Remove azure map support.  Don't expose mapbox sources by default.
+- Add support for quoted strings during key-in parsing
+- Added validation to select only queryable layer in the GetFeatureInfo of the WMS layers
+- #437338 First attempt at walk tool collisions using depth buffer w/o changing view.
+- reduce jumpiness when zooming with mouse wheel quickly
+- make zoom with wheel faster when rolling quickly
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

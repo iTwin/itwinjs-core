@@ -17,12 +17,12 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.5.5",
-    "@bentley/express-server": "2.5.5",
-    "@bentley/imodeljs-backend": "2.5.5",
-    "@bentley/imodeljs-frontend": "2.5.5",
-    "@bentley/itwin-client": "2.5.5",
-    "@bentley/imodeljs-common": "2.5.5",
+    "@bentley/bentleyjs-core": "2.6.0",
+    "@bentley/express-server": "2.6.0",
+    "@bentley/imodeljs-backend": "2.6.0",
+    "@bentley/imodeljs-frontend": "2.6.0",
+    "@bentley/itwin-client": "2.6.0",
+    "@bentley/imodeljs-common": "2.6.0",
     "chai": "^4.1.2",
     "electron": "^8.2.1",
     "express": "^4.16.3",
@@ -30,9 +30,10 @@
     "spdy": "^4.0.1"
   },
   "devDependencies": {
-    "@bentley/certa": "2.5.5",
-    "@bentley/config-loader": "2.5.5",
-    "@bentley/build-tools": "2.5.5",
+    "@bentley/certa": "2.6.0",
+    "@bentley/config-loader": "2.6.0",
+    "@bentley/build-tools": "2.6.0",
+    "@bentley/eslint-plugin": "2.6.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",
     "@types/mocha": "^5.2.5",
@@ -49,6 +50,9 @@
     "webpack": "4.42.0"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

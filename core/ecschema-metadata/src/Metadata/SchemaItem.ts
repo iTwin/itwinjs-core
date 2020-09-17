@@ -30,15 +30,12 @@ export abstract class SchemaItem {
     this.schema = schema;
   }
 
-  get name() { return this.key.name; }
+  public get name() { return this.key.name; }
+  public get fullName() { return this.key.schemaKey ? `${this.key.schemaName}.${this.name}` : this.name; }
+  public get key() { return this._key; }
+  public get label() { return this._label; }
+  public get description() { return this._description; }
 
-  get fullName() { return this.key.schemaKey ? `${this.key.schemaName}.${this.name}` : this.name; }
-
-  get key() { return this._key; }
-
-  get label() { return this._label; }
-
-  get description() { return this._description; }
   // Proposal: Create protected setter methods for description and label? For UnitSystems as an example, where using createFromProps isn't that necessary and can just use basic create().
   /**
    * Save this SchemaItem's properties to an object for serializing to JSON.

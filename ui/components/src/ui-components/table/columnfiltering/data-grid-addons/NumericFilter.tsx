@@ -74,7 +74,7 @@ export class NumericFilter extends React.Component<NumericFilterProps> {
   }
 
   public render() {
-    const inputKey = "header-filter-" + this.props.column.key;
+    const inputKey = `header-filter-${this.props.column.key}`;
     const columnStyle: React.CSSProperties = {
       float: "left",
       marginRight: 5,

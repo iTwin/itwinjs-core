@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/eslint-plugin",
+  "entries": [
+    {
+      "version": "2.6.0",
+      "tag": "@bentley/eslint-plugin_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          }
+        ]
+      }
+    }
+  ]
+}

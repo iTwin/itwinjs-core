@@ -64,6 +64,8 @@ export enum SyncUiEventId {
   SelectionSetChanged = "selectionsetchanged",
   /** The current view state has changed (used by view undo/redo toolbar buttons). */
   ViewStateChanged = "viewstatechanged",
+  /** The current object the reads and write UI Settings has changed. */
+  UiSettingsChanged = "uisettingschanged",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
@@ -270,8 +272,8 @@ export class SyncUiEventDispatcher {
           IModelApp.toolAdmin.startDefaultTool();
         } else {
           // istanbul ignore next
-          if (args.previous!.onViewChanged && typeof args.previous!.onViewChanged.removeListener === "function")  // not set during unit test
-            args.previous!.onViewChanged.removeListener(SyncUiEventDispatcher._dispatchViewChange);
+          if (args.previous.onViewChanged && typeof args.previous.onViewChanged.removeListener === "function")  // not set during unit test
+            args.previous.onViewChanged.removeListener(SyncUiEventDispatcher._dispatchViewChange);
         }
         // istanbul ignore next
         if (args.current) {
@@ -328,7 +330,7 @@ export class SyncUiEventDispatcher {
     const activeSelectionScope = Presentation.selection.scopes.activeScope;
     if (activeSelectionScope) {
       if (typeof (activeSelectionScope) === "object") {
-        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, (activeSelectionScope as SelectionScope).id);
+        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope.id);
       } else {
         UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope);
       }

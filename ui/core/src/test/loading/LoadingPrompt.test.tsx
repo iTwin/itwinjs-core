@@ -28,6 +28,10 @@ describe("<LoadingPrompt />", () => {
     shallow(<LoadingPrompt title="title" message="description" />).should.matchSnapshot();
   });
 
+  it("renders with indeterminate ProgressBar", () => {
+    shallow(<LoadingPrompt showIndeterminateBar />).should.matchSnapshot();
+  });
+
   it("renders with text and message, and deterministic", () => {
     shallow(<LoadingPrompt title="title" message="description" isDeterminate={true} />).should.matchSnapshot();
   });

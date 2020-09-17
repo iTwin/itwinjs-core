@@ -11,8 +11,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
-  Direction, ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
-  ToolbarDirectionContext, withDragInteraction,
+  Direction, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
+  Group as ToolGroupComponent, withDragInteraction,
 } from "@bentley/ui-ninezone";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
@@ -380,25 +380,27 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                 key={this.state.groupItemDef.id}
                 panel={this.getGroupTray(dragInteraction)}
               >
-                {dragInteraction ? (
-                  <div ref={this._ref}>
-                    <ItemWithDragInteraction
-                      badge={badge}
-                      className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
-                      direction={direction}
-                      icon={<Icon
-                        iconSpec={groupItemDef.overflow ? "nz-ellipsis" : activeItem.iconSpec}
-                      />}
-                      isActive={groupItemDef.overflow ? false : this.state.activeToolId === this.state.activeItemId}
-                      isDisabled={!this.state.isEnabled}
-                      onClick={groupItemDef.overflow ? this._handleOverflowClick : this._handleDragInteractionClick}
-                      onKeyDown={this._handleKeyDown}
-                      onOpenPanel={this._handleOpenPanel}
-                      onSizeKnown={this.props.onSizeKnown}
-                      title={groupItemDef.overflow ? groupItemDef.label : activeItem.label}
-                    />
-                  </div>
-                ) : (
+                {dragInteraction ?
+                  (
+                    <div ref={this._ref}>
+                      <ItemWithDragInteraction
+                        badge={badge}
+                        className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
+                        direction={direction}
+                        icon={<Icon
+                          iconSpec={groupItemDef.overflow ? "nz-ellipsis" : activeItem.iconSpec}
+                        />}
+                        isActive={groupItemDef.overflow ? false : this.state.activeToolId === this.state.activeItemId}
+                        isDisabled={!this.state.isEnabled}
+                        onClick={groupItemDef.overflow ? this._handleOverflowClick : this._handleDragInteractionClick}
+                        onKeyDown={this._handleKeyDown}
+                        onOpenPanel={this._handleOpenPanel}
+                        onSizeKnown={this.props.onSizeKnown}
+                        title={groupItemDef.overflow ? groupItemDef.label : activeItem.label}
+                      />
+                    </div>
+                  ) :
+                  (
                     <div ref={this._ref}>
                       <Item
                         badge={badge}
@@ -491,12 +493,13 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
   private handleToolGroupItemClicked(trayKey: string, itemKey: string) {
     const trayId = this.resetTrayId();
-    this.setState({
-      activeItemId: itemKey,
-      isPressed: false,
-      trayId,
-      backTrays: [],
-    },
+    this.setState(
+      {
+        activeItemId: itemKey,
+        isPressed: false,
+        trayId,
+        backTrays: [],
+      },
       () => {
         const tray = this.getTray(trayKey);
         const childItem = tray.groupItemDef.getItemById(itemKey);

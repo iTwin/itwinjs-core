@@ -129,10 +129,10 @@ describe("<Splitter />", () => {
       </Splitter>,
     );
 
-    const splitterNode = sut.getDOMNode() as HTMLElement;
+    const splitterNode = sut.getDOMNode();
     sinon.stub(splitterNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 100, 0));
     const grip = sut.find(".nz-grip");
-    const gripNode = grip.getDOMNode() as HTMLElement;
+    const gripNode = grip.getDOMNode();
     sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(40, 0, 60, 0));
 
     grip.simulate("pointerDown");
@@ -154,10 +154,10 @@ describe("<Splitter />", () => {
       </Splitter>,
     );
 
-    const splitterNode = sut.getDOMNode() as HTMLElement;
+    const splitterNode = sut.getDOMNode();
     sinon.stub(splitterNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 0, 100));
     const grip = sut.find(".nz-grip");
-    const gripNode = grip.getDOMNode() as HTMLElement;
+    const gripNode = grip.getDOMNode();
     sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 40, 0, 60));
 
     grip.simulate("pointerDown");
@@ -192,7 +192,7 @@ describe("<Splitter />", () => {
     });
 
     const grip = sut.find(".nz-grip");
-    const gripNode = grip.getDOMNode() as HTMLElement;
+    const gripNode = grip.getDOMNode();
     sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 30, 0));
 
     grip.simulate("pointerDown");
@@ -223,7 +223,7 @@ describe("<Splitter />", () => {
     });
 
     const grip = sut.find(".nz-grip");
-    const gripNode = grip.getDOMNode() as HTMLElement;
+    const gripNode = grip.getDOMNode();
     sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 30, 0));
 
     grip.simulate("pointerDown");

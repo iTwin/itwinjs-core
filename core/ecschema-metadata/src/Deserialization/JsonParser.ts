@@ -120,7 +120,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         if (typeof (item.schemaItemType) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
-        this._currentItemFullName = this._schemaName + "." + itemName;
+        this._currentItemFullName = `${this._schemaName}.${itemName}`;
         yield [itemName, item.schemaItemType, item];
       }
     }
@@ -145,7 +145,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         if (typeof (item.schemaItemType) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
-        this._currentItemFullName = this._schemaName + "." + itemName;
+        this._currentItemFullName = `${this._schemaName}.${itemName}`;
         return [itemName, item.schemaItemType, item];
       }
     }
@@ -388,7 +388,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator that is missing the required attribute 'value'.`);
 
       // TODO: Should this really be handled here?
-      const expectedType = jsonObj.type as string;
+      const expectedType = jsonObj.type;
       const receivedType = (typeof (enumerator.value) === "number") ? "int" : typeof (enumerator.value);
       if (!expectedType.includes(receivedType)) // is receivedType a substring of expectedType? - easiest way to check "int" === "int" | "integer" && "string" === "string"
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an incompatible type. It must be "${expectedType}", not "${receivedType}".`);

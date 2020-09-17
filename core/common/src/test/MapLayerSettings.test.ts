@@ -21,7 +21,7 @@ describe("MapSubLayerSettings", () => {
     if (expected.children) {
       expect(output.children).not.to.be.undefined;
       expect(expected.children.length).to.equal(output.children!.length);
-      for (let i = 0; i < expected.children!.length; i++)
+      for (let i = 0; i < expected.children.length; i++)
         expect(expected.children[i]).to.equal(output.children![i]);
     }
 

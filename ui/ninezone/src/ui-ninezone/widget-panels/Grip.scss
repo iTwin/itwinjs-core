@@ -3,99 +3,75 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "variables";
+
+@mixin hover-style {
+  background-color: $buic-accessory-primary;
+
+  > .nz-dot {
+    background-color: $buic-foreground-accessory;
+  }
+}
 
 .nz-widgetPanels-grip {
-  background-color: $buic-background-5;
-  padding: 0.25em;
-  border-radius: 3px;
+  $handle-length: 3em;
+  $handle-width: 1.5em;
 
-  &:not(.nz-collapsed) {
+  background-color: $buic-background-5;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  position: relative;
+  display: flex;
+
+  > .nz-handle {
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
-  &.nz-collapsed {
-    position: relative;
+  > .nz-dot {
+    $size: 0.25em;
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    background-color: $buic-foreground-disabled;
   }
 
   &.nz-left, &.nz-right {
-    display: flex;
     flex-direction: column;
     cursor: ew-resize;
-    top: 50%;
+    width: $nz-grip-width;
+    height: $nz-grip-height;
 
     > .nz-dot {
       &:not(:first-child) {
         margin-top: 3px;
       }
     }
-  }
 
-  &.nz-left {
-    right: 0;
-
-    &.nz-collapsed {
-      transform: translateY(-50%);
-    }
-
-    &:not(.nz-collapsed) {
-      transform: translate(50%, -50%);
-    }
-  }
-
-  &.nz-right {
-    left: 0;
-
-    &.nz-collapsed {
-      transform: translateY(-50%);
-    }
-
-    &:not(.nz-collapsed) {
-      transform: translate(-50%, -50%);
+    > .nz-handle {
+      height: $handle-length;
+      width: $handle-width;
     }
   }
 
   &.nz-top, &.nz-bottom {
-    display: inline-flex;
     flex-direction: row;
     cursor: ns-resize;
-    left: 50%;
+    width: $nz-grip-height;
+    height: $nz-grip-width;
 
     > .nz-dot {
       &:not(:first-child) {
         margin-left: 3px;
       }
     }
-  }
 
-  &.nz-top {
-    bottom: 0;
-
-    &.nz-collapsed {
-      transform: translate(-50%);
-    }
-
-    &:not(.nz-collapsed) {
-      transform: translate(-50%, 50%);
-    }
-  }
-
-  &.nz-bottom {
-    top: 0;
-
-    &.nz-collapsed {
-      transform: translateX(-50%);
-    }
-
-    &:not(.nz-collapsed) {
-      transform: translate(-50%, -50%);
-    }
-  }
-
-  @mixin hover-style {
-    background-color: $buic-accessory-primary;
-
-    > .nz-dot {
-      background-color: $buic-foreground-accessory;
+    > .nz-handle {
+      height: $handle-width;
+      width: $handle-length;
     }
   }
 
@@ -107,13 +83,5 @@
 
   &.nz-active, &.nz-resizing {
     @include hover-style;
-  }
-
-  > .nz-dot {
-    $size: 0.25em;
-    width: $size;
-    height: $size;
-    border-radius: 50%;
-    background-color: $buic-foreground-disabled;
   }
 }

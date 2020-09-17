@@ -10,7 +10,7 @@ import { CommonProps } from "@bentley/ui-core";
 // istanbul ignore next - WIP
 const formatDuration = (value: number) => {
   const addZero = (i: number) => {
-    return (i < 10) ? "0" + i : i;
+    return (i < 10) ? `0${i}` : i;
   };
 
   const date = new Date(value);
@@ -94,7 +94,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     let toolTip = "";
 
     if (startDate && endDate && showTime)
-      toolTip = formatDate(startDate, endDate, percent! / 100) + " " + formatTime(startDate, endDate, percent! / 100);
+      toolTip = `${formatDate(startDate, endDate, percent! / 100)} ${formatTime(startDate, endDate, percent! / 100)}`;
     else if (startDate && endDate)
       toolTip = formatDate(startDate, endDate, percent! / 100);
     else
@@ -179,7 +179,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
     let toolTip = "";
 
     if (startDate && endDate && showTime)
-      toolTip = formatDate(startDate, endDate, percent / 100) + " " + formatTime(startDate, endDate, percent / 100);
+      toolTip = `${formatDate(startDate, endDate, percent / 100)} ${formatTime(startDate, endDate, percent / 100)}`;
     else if (startDate && endDate)
       toolTip = formatDate(startDate, endDate, percent / 100);
     else

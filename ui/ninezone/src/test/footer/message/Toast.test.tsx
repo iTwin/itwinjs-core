@@ -49,6 +49,7 @@ describe("<Toast />", () => {
     fakeTimers = sinon.useFakeTimers();
 
     const animateOutTo = document.createElement("div");
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const sut = mount(<Toast
       animateOutTo={animateOutTo}
     />).find(".nz-toast").getDOMNode() as HTMLElement;
@@ -72,6 +73,7 @@ describe("<Toast />", () => {
     const mounted = mount(<Toast
       animateOutTo={animateOutTo}
     />);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const sut = mounted.find(".nz-toast").getDOMNode() as HTMLDivElement;
 
     fakeTimers.tick(2000);
@@ -89,6 +91,7 @@ describe("<Toast />", () => {
     const mounted = mount(<Toast
       animateOutTo={animateOutTo}
     />);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const sut = mounted.find(".nz-toast").getDOMNode() as HTMLDivElement;
     sinon.stub(sut, "getBoundingClientRect").returns(createBoundingClientRect(10, 20, 40, 80));
 

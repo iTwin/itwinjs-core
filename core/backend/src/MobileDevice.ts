@@ -59,7 +59,7 @@ class MobileDeviceRpcImpl {
 }
 
 export class MobileDevice {
-  private get impl(): MobileDeviceRpcImpl {
+  private get _impl(): MobileDeviceRpcImpl {
     const client = (global as any).MobileDeviceRpcImpl as MobileDeviceRpcImpl;
     if (!client) {
       throw new Error("MobileDeviceRpcImpl is not registered.");
@@ -79,10 +79,10 @@ export class MobileDevice {
    * @internal
    */
   public reconnect(connection: number) {
-    if (!this.impl.reconnect) {
+    if (!this._impl.reconnect) {
       throw new Error("Native backend did not registered reconnect() functions");
     }
-    this.impl.reconnect!(connection);
+    this._impl.reconnect(connection);
   }
 
   public emit(eventName: DeviceEvents, ...args: any[]) {
@@ -100,7 +100,7 @@ export class MobileDevice {
     }
   }
   public get hasAuthClient(): boolean {
-    return !(!this.impl.authSignIn || !this.impl.authSignOut || !this.impl.authInit || !this.impl.authGetAccessToken);
+    return !(!this._impl.authSignIn || !this._impl.authSignOut || !this._impl.authInit || !this._impl.authGetAccessToken);
   }
   public async authInit(ctx: ClientRequestContext, settings: MobileDeviceAuthSettings) {
     if (!this.hasAuthClient) {
@@ -110,7 +110,7 @@ export class MobileDevice {
       return;
     }
     // Set callback for ios
-    this.impl.authStateChanged = (accessToken?: string, err?: string) => {
+    this._impl.authStateChanged = (accessToken?: string, err?: string) => {
       if (accessToken) {
         // Patch user info
         const tmp = JSON.parse(accessToken);
@@ -123,7 +123,7 @@ export class MobileDevice {
     };
 
     return new Promise<void>((resolve, reject) => {
-      this.impl.authInit!(ctx, settings, (err?: string) => {
+      this._impl.authInit!(ctx, settings, (err?: string) => {
         if (!err) {
           this._authInitialized = true;
           resolve();
@@ -141,7 +141,7 @@ export class MobileDevice {
       throw new Error("App did not registered any native auth client or implement all required functions");
     }
     return new Promise<void>((resolve, reject) => {
-      this.impl.authSignIn!(ctx, (err?: string) => {
+      this._impl.authSignIn!(ctx, (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -156,7 +156,7 @@ export class MobileDevice {
       throw new Error("App did not registered any native auth client or implement all required functions");
     }
     return new Promise<void>((resolve, reject) => {
-      this.impl.authSignOut!(ctx, (err?: string) => {
+      this._impl.authSignOut!(ctx, (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -170,7 +170,7 @@ export class MobileDevice {
       throw new Error("App did not registered any native auth client or implement all required functions");
     }
     return new Promise<AccessToken>((resolve, reject) => {
-      this.impl.authGetAccessToken!(ctx, (accessToken?: string, err?: string) => {
+      this._impl.authGetAccessToken!(ctx, (accessToken?: string, err?: string) => {
         if (!err) {
           resolve(AccessToken.fromJson(accessToken));
         } else {

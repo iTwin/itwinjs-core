@@ -7,6 +7,7 @@
  */
 
 // cspell:ignore ulas postrc pollrc CANTOPEN
+/* eslint-disable @typescript-eslint/unbound-method */
 
 import * as os from "os";
 import {
@@ -39,13 +40,14 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { Entity } from "./Entity";
 import { EventSink, EventSinkManager } from "./EventSink";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
-import { ApplicationType, IModelHost } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
-import { AdditionalFeatureData, UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
+import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { TelemetryEvent } from "@bentley/telemetry-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -78,14 +80,6 @@ export class OpenParams {
     public readonly syncMode?: SyncMode,
   ) {
   }
-}
-
-/**
- * @internal
- * Defines a base set of additional properties that might be useful to attach to feature logs
- */
-export interface IModelJsAdditionalFeatureData extends AdditionalFeatureData {
-  iModelJsVersion?: string;
 }
 
 /** Options supplied to [[IModelDb.computeProjectExtents]].
@@ -314,7 +308,7 @@ export abstract class IModelDb extends IModel {
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
     const stats = this._concurrentQueryStats;
-    const config = IModelHost.configuration!.concurrentQuery!;
+    const config = IModelHost.configuration!.concurrentQuery;
     stats.lastActivityTime = Date.now();
     if (!this._concurrentQueryInitialized) {
       // Initialize concurrent query and setup statistics reset timer
@@ -610,10 +604,10 @@ export abstract class IModelDb extends IModel {
     if (params.only)
       sql += "ONLY ";
     sql += params.from;
-    if (params.where) sql += " WHERE " + params.where;
-    if (typeof params.limit === "number" && params.limit > 0) sql += " LIMIT " + params.limit;
-    if (typeof params.offset === "number" && params.offset > 0) sql += " OFFSET " + params.offset;
-    if (params.orderBy) sql += " ORDER BY " + params.orderBy;
+    if (params.where) sql += ` WHERE ${params.where}`;
+    if (typeof params.limit === "number" && params.limit > 0) sql += ` LIMIT ${params.limit}`;
+    if (typeof params.offset === "number" && params.offset > 0) sql += ` OFFSET ${params.offset}`;
+    if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
@@ -850,7 +844,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
     const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, JSON.stringify(codeSpec.properties));
-    if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
+    if (error) throw new IModelError(error.status, `inserting CodeSpec ${codeSpec}`, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
   }
 
@@ -1214,7 +1208,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getModelJson(modelIdArg: string): string {
       const modelJson: string | undefined = this.tryGetModelJson(modelIdArg);
       if (undefined === modelJson) {
-        throw new IModelError(IModelStatus.NotFound, "Model=" + modelIdArg);
+        throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`);
       }
       return modelJson;
     }
@@ -1231,7 +1225,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         if (IModelStatus.NotFound === val.error.status) {
           return undefined;
         }
-        throw new IModelError(val.error.status, "Model=" + modelIdArg);
+        throw new IModelError(val.error.status, `Model=${modelIdArg}`);
       }
       return val.result!;
     }
@@ -1302,7 +1296,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
       const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, "updating model id=" + props.id, Logger.logWarning, loggerCategory);
+        throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
 
       jsClass.onUpdated(props, this._iModel);
     }
@@ -1319,7 +1313,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
         const error = this._iModel.nativeDb.deleteModel(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, "deleting model id " + id, Logger.logWarning, loggerCategory);
+          throw new IModelError(error, `deleting model id ${id}`, Logger.logWarning, loggerCategory);
 
         jsClass.onDeleted(props, this._iModel);
       });
@@ -1343,7 +1337,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getElementJson<T extends ElementProps>(elementIdArg: string): T {
       const elementProps: T | undefined = this.tryGetElementJson(elementIdArg);
       if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementIdArg}`, Logger.logWarning, loggerCategory);
       }
       return elementProps;
     }
@@ -1360,7 +1354,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         if (IModelStatus.NotFound === val.error.status) {
           return undefined;
         }
-        throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
+        throw new IModelError(val.error.status, `reading element=${elementIdArg}`, Logger.logWarning, loggerCategory);
       }
       return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
     }
@@ -1372,7 +1366,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
       const elementProps: T | undefined = this.tryGetElementProps(elementId);
       if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementId, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
       return elementProps;
     }
@@ -1400,7 +1394,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
       const element: T | undefined = this.tryGetElement(elementId);
       if (undefined === element) {
-        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementId, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
       return element;
     }
@@ -1756,7 +1750,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
         viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
           from: "BisCore.ViewAttachment",
-          where: "Model.Id=" + viewDefinitionElement.baseModelId,
+          where: `Model.Id=${viewDefinitionElement.baseModelId}`,
         }));
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
@@ -1839,9 +1833,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
-            reject(new IModelError(ret.error.status, "TreeId=" + id));
+            reject(new IModelError(ret.error.status, `TreeId=${id}`));
           else
-            resolve(ret.result! as TileTreeProps);
+            resolve(ret.result as TileTreeProps);
         });
       });
     }
@@ -1917,7 +1911,7 @@ export class TxnManager {
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
 
-  private get _nativeDb() { return this._iModel.nativeDb!; }
+  private get _nativeDb() { return this._iModel.nativeDb; }
   private _getElementClass(elClassName: string): typeof Element { return this._iModel.getJsClass(elClassName) as unknown as typeof Element; }
   private _getRelationshipClass(relClassName: string): typeof Relationship { return this._iModel.getJsClass<typeof Relationship>(relClassName); }
 
@@ -2198,6 +2192,8 @@ export class BriefcaseDb extends IModelDb {
    */
   public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb> {
     requestContext.enter();
+    const startTime = new Date();
+
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcaseKey);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb.open: Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => briefcaseKey);
@@ -2230,7 +2226,9 @@ export class BriefcaseDb extends IModelDb {
       briefcaseDb = briefcaseEntry.iModelDb as BriefcaseDb; // NEEDS_WORK: change iModelDb type in BriefcaseEntry
       Logger.logTrace(loggerCategory, "BriefcaseDb.open: Reusing an existing open briefcase", () => briefcaseEntry.getDebugInfo());
 
-      await briefcaseDb.logUsage(requestContext);
+      const alreadyOpenEndTime = new Date();
+      Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
+      await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime);
       return briefcaseDb;
     }
 
@@ -2268,47 +2266,43 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
+    const endTime = new Date();
+    Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
+    await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime);
+
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
-    await briefcaseDb.logUsage(requestContext);
     return briefcaseDb;
   }
 
-  /** Log usage when opening the iModel
-   * @note Failure to log usage is not considered a critical error - we simply log the error and move on
-   */
-  private async logUsage(requestContext: ClientRequestContext | AuthorizedClientRequestContext) {
-    requestContext.enter();
-
+  /** Log usage when opening the iModel */
+  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string, startTime: Date, endTime: Date) {
+    // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.briefcase.getDebugInfo());
       return;
     }
-    if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent) {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage in agents", () => this.briefcase.getDebugInfo());
-      return; // Note: The usage logging service has not been setup to log usage for agents
-    }
 
-    const contextId = this.briefcase.contextId;
-    const authType = IModelJsNative.AuthType.OIDC;
+    requestContext.enter();
+    const telemetryEvent = new TelemetryEvent(
+      "imodeljs-backend - Open iModel",
+      "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
+      contextId,
+      iModelId,
+      changeSetId,
+      {
+        startTime,
+        endTime,
+      },
+    );
+    Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage/telemetry", () => this.briefcase.getDebugInfo());
+    await IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent);
+
     try {
       Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
-      await UsageLoggingUtilities.postUserUsage(requestContext, contextId, authType, os.hostname(), IModelJsNative.UsageType.Trial);
+      await UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
     } catch (err) {
       requestContext.enter();
       Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
-    }
-
-    const featureId = "7a6424d1-2114-4e89-b13b-43670a38ccd4"; // Feature: "iModel Use" - registration is pending
-    const additionalFeatureData: IModelJsAdditionalFeatureData = {
-      iModelId: this.getGuid(),
-      iModelJsVersion: IModelHost.backendVersion,
-    };
-    try {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage", () => this.briefcase.getDebugInfo());
-      await UsageLoggingUtilities.postFeatureUsage(requestContext, featureId, authType, os.hostname(), IModelJsNative.UsageType.Trial, contextId, new Date(), new Date(), additionalFeatureData);
-    } catch (err) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, `Could not log feature usage: ${featureId}`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
     }
   }
 

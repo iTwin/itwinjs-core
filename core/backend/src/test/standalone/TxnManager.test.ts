@@ -68,7 +68,7 @@ describe("TxnManager", () => {
     const elements = imodel.elements;
     const modelId = props.model;
 
-    let model = models.getModel(modelId) as PhysicalModel;
+    let model = models.getModel<PhysicalModel>(modelId);
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
 
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");

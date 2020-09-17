@@ -153,7 +153,7 @@ export interface PresentationManagerProps {
    * A directory for Presentation hierarchy caches. If not set hierarchy cache is created
    * along side iModel.
    *
-   * @internal
+   * @beta
    */
   cacheDirectory?: string;
 
@@ -818,7 +818,7 @@ const getKeysForContentRequest = (imodel: IModelDb, keys: KeySet): KeySet => {
 const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
   if (descriptorOrOverrides instanceof Descriptor)
     return descriptorOrOverrides.createDescriptorOverrides();
-  return descriptorOrOverrides as DescriptorOverrides;
+  return descriptorOrOverrides;
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {

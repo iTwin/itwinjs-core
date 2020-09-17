@@ -22,6 +22,8 @@ import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
 import { ChannelRootAspect } from "./ElementAspect";
 
+// cspell:ignore rqctx req's cpid cctl stmts specid
+
 const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
 
 /** ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
@@ -175,7 +177,7 @@ export class ConcurrencyControl {
 
   private buildRequestForModelTo(request: ConcurrencyControl.Request, model: ModelProps, opcode: DbOpcode, modelClass?: typeof Model): void {
     if (modelClass === undefined)
-      modelClass = this.iModel.getJsClass(model.classFullName) as typeof Model;
+      modelClass = this.iModel.getJsClass<typeof Model>(model.classFullName);
     modelClass.populateRequest(request, model, this.iModel, opcode);
   }
 
@@ -224,7 +226,7 @@ export class ConcurrencyControl {
   public buildRequestForElementTo(request: ConcurrencyControl.Request, element: ElementProps, opcode: DbOpcode, elementClass?: typeof Element): void {
     const original = (DbOpcode.Update === opcode) ? this.iModel.elements.getElement(element.id!) : undefined;
     if (elementClass === undefined)
-      elementClass = this.iModel.getJsClass(element.classFullName) as typeof Element;
+      elementClass = this.iModel.getJsClass<typeof Element>(element.classFullName);
     elementClass.populateRequest(request, element, this.iModel, opcode, original);
   }
 
@@ -405,9 +407,9 @@ export class ConcurrencyControl {
 
   private cull(req: ConcurrencyControl.Request, notLocks?: boolean, notCodes?: boolean) {
     if (!notLocks)
-      req.removeLocks(this._cache.isLockHeld, this._cache);
+      req.removeLocks(this._cache.isLockHeld, this._cache);    // eslint-disable-line @typescript-eslint/unbound-method
     if (!notCodes)
-      req.removeCodes(this._cache.isCodeReserved, this._cache);
+      req.removeCodes(this._cache.isCodeReserved, this._cache); // eslint-disable-line @typescript-eslint/unbound-method
   }
 
   public async onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void> {
@@ -452,13 +454,13 @@ export class ConcurrencyControl {
 
     assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
 
-    this._iModel.txns.onCommitted.addListener(this.emitOnSavedChangesEvent, this);
+    this._iModel.txns.onCommitted.addListener(this.emitOnSavedChangesEvent, this); // eslint-disable-line @typescript-eslint/unbound-method
 
     return this.openOrCreateCache(requestContext);
   }
 
   public onClose() {
-    this._iModel.txns.onCommitted.removeListener(this.emitOnSavedChangesEvent, this);
+    this._iModel.txns.onCommitted.removeListener(this.emitOnSavedChangesEvent, this); // eslint-disable-line @typescript-eslint/unbound-method
     this._cache.close(true);
   }
 
@@ -770,7 +772,7 @@ export class ConcurrencyControl {
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
     let rc: RepositoryStatus;
     if (policy instanceof ConcurrencyControl.OptimisticPolicy) {
-      const oc: ConcurrencyControl.OptimisticPolicy = policy as ConcurrencyControl.OptimisticPolicy;
+      const oc: ConcurrencyControl.OptimisticPolicy = policy;
       rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
     } else {
       rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
@@ -984,7 +986,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       if (info instanceof RepositoryChannelInfo)
         return "the repository channel";
 
-      return "the channel owned by " + JSON.stringify(info.ownerInfo);
+      return `the channel owned by ${JSON.stringify(info.ownerInfo)}`;
     }
 
     private getChannelRootDescriptionById(channelRootId: Id64String): string {
@@ -1256,16 +1258,16 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
      * @param deleteVsUpdate What to do with the incoming change in the case where an element was deleted locally and would be updated by the incoming change
      */
     constructor(updateVsUpdate?: OnConflict, updateVsDelete?: OnConflict, deleteVsUpdate?: OnConflict) {
-      this.updateVsUpdate = updateVsUpdate ? updateVsUpdate! : ConcurrencyControl.OnConflict.RejectIncomingChange;
-      this.updateVsDelete = updateVsDelete ? updateVsDelete! : ConcurrencyControl.OnConflict.AcceptIncomingChange;
-      this.deleteVsUpdate = deleteVsUpdate ? deleteVsUpdate! : ConcurrencyControl.OnConflict.RejectIncomingChange;
+      this.updateVsUpdate = updateVsUpdate ? updateVsUpdate : ConcurrencyControl.OnConflict.RejectIncomingChange;
+      this.updateVsDelete = updateVsDelete ? updateVsDelete : ConcurrencyControl.OnConflict.AcceptIncomingChange;
+      this.deleteVsUpdate = deleteVsUpdate ? deleteVsUpdate : ConcurrencyControl.OnConflict.RejectIncomingChange;
     }
   }
 
   /** Specifies an optimistic concurrency policy. */
   export class OptimisticPolicy {
     public conflictResolution: ConflictResolutionPolicy;
-    constructor(policy?: ConflictResolutionPolicy) { this.conflictResolution = policy ? policy! : new ConflictResolutionPolicy(); }
+    constructor(policy?: ConflictResolutionPolicy) { this.conflictResolution = policy ? policy : new ConflictResolutionPolicy(); }
   }
 
   /** Specifies a pessimistic concurrency policy. */
@@ -1352,7 +1354,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     private computeCacheFileName(): string {
       this.mustHaveBriefcase();
       const fn = this.concurrencyControl.iModel.briefcase.pathname;
-      return path.join(path.dirname(fn), path.basename(fn, ".bim") + ".cctl.bim");
+      return path.join(path.dirname(fn), `${path.basename(fn, ".bim")}.cctl.bim`);
     }
 
     private isCorrupt(): boolean {

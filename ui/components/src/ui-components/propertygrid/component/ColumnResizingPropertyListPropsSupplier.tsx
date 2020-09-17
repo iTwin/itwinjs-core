@@ -48,12 +48,12 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
     columnRatio: this._initialRatio,
     isResizeHandleHovered: false,
     isResizeHandleBeingDragged: false,
-    isMinimumColumnSizeEnabled: true,
+    isMinimumColumnSizeEnabled: false,
   };
 
   public static defaultProps: Partial<ColumnResizingPropertyListPropsSupplierProps> = {
-    minLabelWidth: 128,
-    minValueWidth: 150,
+    minLabelWidth: 100,
+    minValueWidth: 100,
     actionButtonWidth: 90,
   };
 

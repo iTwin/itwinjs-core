@@ -47,6 +47,8 @@ export class Capabilities {
     // (undocumented)
     get supports32BitElementIndex(): boolean;
     // (undocumented)
+    get supportsAntiAliasing(): boolean;
+    // (undocumented)
     get supportsDisjointTimerQuery(): boolean;
     // (undocumented)
     get supportsDrawBuffers(): boolean;
@@ -110,6 +112,7 @@ export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint"
 
 // @beta
 export enum WebGLFeature {
+    AntiAliasing = "anti-aliasing",
     DepthTexture = "depth texture",
     FloatRendering = "float rendering",
     FragDepth = "fragment depth",

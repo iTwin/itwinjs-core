@@ -41,12 +41,12 @@ export class Unit extends SchemaItem {
     this._offset = 0.0;
   }
 
-  get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
-  get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
-  get definition(): string { return this._definition; }
-  get numerator(): number { return this._numerator; }
-  get offset(): number { return this._offset; }
-  get denominator(): number { return this._denominator; }
+  public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
+  public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
+  public get definition(): string { return this._definition; }
+  public get numerator(): number { return this._numerator; }
+  public get offset(): number { return this._offset; }
+  public get denominator(): number { return this._denominator; }
 
   /**
    * Save this Unit's properties to an object for serializing to JSON.

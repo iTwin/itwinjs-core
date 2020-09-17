@@ -57,6 +57,7 @@ export class PropertyGridColumnStyleProvider {
         return this.getHorizontalStyle(needActionButtons, ratio, needElementSeparator);
       case Orientation.Vertical:
         return this.getVerticalStyle(needActionButtons);
+      /* istanbul ignore next */
       default:
         const unhandledOrientationType: never = orientation; // Compile time check that all cases handled
         throw new Error(`Unhandled orientation type: ${unhandledOrientationType}. Was new orientation added ? `);

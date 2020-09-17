@@ -325,7 +325,7 @@ export class Tween {
   }
 
   public update(time: number) {
-    if (undefined === this._startTime || time < this._startTime!)
+    if (undefined === this._startTime || time < this._startTime)
       return true;
 
     if (this._onStartCallbackFired === false) {

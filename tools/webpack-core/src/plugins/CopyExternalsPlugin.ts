@@ -19,7 +19,7 @@ class MissingExternalWarning extends WebpackError {
     super();
 
     this.name = "MissingExternalWarning";
-    this.message = `Can't copy external package "${pkgName}" because it is not a direct dependency.\n`;
+    this.message = `\nCan't copy external package "${pkgName}" because it is not a direct dependency.\n`;
     this.message += `To fix this, run ${chalk.cyan("npm install -P " + pkgName)}`;
     Error.captureStackTrace(this, this.constructor);
   }
@@ -55,7 +55,7 @@ export class CopyExternalsPlugin {
 
   public async handleModule(currentModule: any, outputDir: string, compilation: any) {
     const pkgName = this.pathToPackageName(currentModule.request);
-    if (builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
+    if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
       return;
 
     if (!this._appDependencies.has(pkgName)) {

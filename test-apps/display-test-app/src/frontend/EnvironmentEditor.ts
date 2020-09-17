@@ -84,7 +84,7 @@ export class EnvironmentEditor {
 
     const showSkyboxControls = (enabled: boolean) => {
       eeDiv.hidden = !enabled;
-      this._eeBackgroundColor!.div.style.display = enabled ? "none" : "block";
+      this._eeBackgroundColor.div.style.display = enabled ? "none" : "block";
     };
 
     this.addEnvAttribute(nestedMenu, "Sky Box", "sky", showSkyboxControls);
@@ -102,10 +102,10 @@ export class EnvironmentEditor {
 
         // Hide elements not relevant to 2 colors
         const twoColors = value !== "4colors";
-        this._eeSkyColor!.div.hidden = twoColors;
-        this._eeGroundColor!.div.hidden = twoColors;
-        this._eeSkyExponent!.div.style.display = twoColors ? "none" : "block";
-        this._eeGroundExponent!.div.style.display = twoColors ? "none" : "block";
+        this._eeSkyColor.div.hidden = twoColors;
+        this._eeGroundColor.div.hidden = twoColors;
+        this._eeSkyExponent.div.style.display = twoColors ? "none" : "block";
+        this._eeGroundExponent.div.style.display = twoColors ? "none" : "block";
       },
       parent: eeDiv,
       defaultValue: (undefined !== currentEnvironment && currentEnvironment.twoColor) ? "2colors" : "4colors",
@@ -173,7 +173,7 @@ export class EnvironmentEditor {
       handler: (slider) => this.updateEnvironment({ groundExponent: parseFloat(slider.value) }),
     });
 
-    const buttonDiv = document.createElement("div") as HTMLDivElement;
+    const buttonDiv = document.createElement("div");
 
     createButton({
       parent: buttonDiv,
@@ -205,7 +205,7 @@ export class EnvironmentEditor {
     this._updates.push((view) => {
       let skyboxEnabled = false;
       if (view.is3d()) {
-        const env = (view as ViewState3d).getDisplayStyle3d().environment.sky;
+        const env = view.getDisplayStyle3d().environment.sky;
         skyboxEnabled = env.display;
       }
 
@@ -247,26 +247,26 @@ export class EnvironmentEditor {
   }
 
   private updateEnvironmentEditorUI(view: ViewState): void {
-    this._eeBackgroundColor!.input.value = view.backgroundColor.toHexString();
+    this._eeBackgroundColor.input.value = view.backgroundColor.toHexString();
     if (view.is2d())
       return;
 
     const getSkyEnvironment = (v: ViewState) => (v as ViewState3d).getDisplayStyle3d().environment.sky;
     const skyEnvironment = getSkyEnvironment(view) as SkyGradient;
 
-    this._eeSkyboxType!.setValue(skyEnvironment.twoColor ? "2colors" : "4colors");
-    this._eeZenithColor!.input.value = skyEnvironment.zenithColor.toHexString();
-    this._eeSkyColor!.input.value = skyEnvironment.skyColor.toHexString();
-    this._eeGroundColor!.input.value = skyEnvironment.groundColor.toHexString();
-    this._eeNadirColor!.input.value = skyEnvironment.nadirColor.toHexString();
-    this._eeSkyExponent!.slider.value = skyEnvironment.skyExponent!.toString();
-    this._eeGroundExponent!.slider.value = skyEnvironment.groundExponent!.toString();
+    this._eeSkyboxType.setValue(skyEnvironment.twoColor ? "2colors" : "4colors");
+    this._eeZenithColor.input.value = skyEnvironment.zenithColor.toHexString();
+    this._eeSkyColor.input.value = skyEnvironment.skyColor.toHexString();
+    this._eeGroundColor.input.value = skyEnvironment.groundColor.toHexString();
+    this._eeNadirColor.input.value = skyEnvironment.nadirColor.toHexString();
+    this._eeSkyExponent.slider.value = skyEnvironment.skyExponent.toString();
+    this._eeGroundExponent.slider.value = skyEnvironment.groundExponent.toString();
   }
 
   private resetEnvironmentEditor(): void {
     const skyEnvironment = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky;
     (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment({
-      sky: { display: (skyEnvironment as SkyBox).display },
+      sky: { display: (skyEnvironment).display },
     });
     this.sync();
     this.updateEnvironmentEditorUI(this._vp.view);
@@ -311,6 +311,6 @@ export class EnvironmentEditor {
   }
 
   private get _nextId(): string {
-    return "ee_checkbox_" + ++this._id;
+    return `ee_checkbox_${++this._id}`;
   }
 }

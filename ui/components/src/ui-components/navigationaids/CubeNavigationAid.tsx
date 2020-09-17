@@ -633,7 +633,7 @@ export class FaceCell extends React.Component<FaceCellProps> {
       onMouseOut={this._handleMouseOut}
       onTouchStart={this._handleTouchStart}
       onTouchEnd={this._handleTouchEnd}
-      data-testid={"nav-cube-face-cell-" + face + "-" + n}
+      data-testid={`nav-cube-face-cell-${face}-${n}`}
       className={classNames}
       role="presentation"
       {...props}

@@ -52,7 +52,7 @@ describe("ExcludedElements", () => {
     });
 
     // Verify that all elements exist in imodel1 when the set of excluded elements is undefined
-    let model = imodel1.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    let model = imodel1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
     let settings: DisplayStyleSettingsProps = {
       backgroundColor: ColorDef.blue.toJSON(),
@@ -87,7 +87,7 @@ describe("ExcludedElements", () => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) { elementIds.push(statement.getValue(0).getId()); }
     });
     // Verify that all elements exist in imodel2 when the set of excluded elements is undefined
-    model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
     settings = {
       backgroundColor: ColorDef.blue.toJSON(),
@@ -122,7 +122,7 @@ describe("ExcludedElements", () => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) { elementIds.push(statement.getValue(0).getId()); }
     });
     // Verify that all elements exist in imodel4 when the set of excluded elements is undefined
-    model = imodel4.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    model = imodel4.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
     settings = {
       backgroundColor: ColorDef.blue.toJSON(),
@@ -157,7 +157,7 @@ describe("ExcludedElements", () => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) { elementIds.push(statement.getValue(0).getId()); }
     });
     // Verify that all elements exist in imodel5 when the set of excluded elements is undefined
-    model = imodel5.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    model = imodel5.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
     settings = {
       backgroundColor: ColorDef.blue.toJSON(),
@@ -195,7 +195,7 @@ describe("ExcludedElements", () => {
     });
 
     // Add a style that contains a list of excluded elements & verify that elements persist
-    let model = imodel1.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    let model = imodel1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
     let settings: DisplayStyleSettingsProps = {
       backgroundColor: ColorDef.blue.toJSON(),
@@ -232,7 +232,7 @@ describe("ExcludedElements", () => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) { elementIds.push(statement.getValue(0).getId()); }
     });
     // Add a style that contains a list of excluded elements & verify that elements persist
-    model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
     settings = {
       backgroundColor: ColorDef.blue.toJSON(),
@@ -268,7 +268,7 @@ describe("ExcludedElements", () => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) { elementIds.push(statement.getValue(0).getId()); }
     });
     // Add a style that contains a list of excluded elements & verify that elements persist
-    model = imodel4.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    model = imodel4.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
     settings = {
       backgroundColor: ColorDef.blue.toJSON(),
@@ -304,7 +304,7 @@ describe("ExcludedElements", () => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) { elementIds.push(statement.getValue(0).getId()); }
     });
     // Add a style that contains a list of excluded elements & verify that elements persist
-    model = imodel5.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    model = imodel5.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
     settings = {
       backgroundColor: ColorDef.blue.toJSON(),

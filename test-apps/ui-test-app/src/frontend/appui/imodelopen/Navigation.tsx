@@ -40,7 +40,7 @@ export class NavigationItem extends React.Component<NavigationItemProps> {
 
   public renderMovebarIndicator() {
     const percentageOffset = this.props.selectedTabIndex! * 100;
-    const translate = "translate(0," + percentageOffset + "%)";
+    const translate = `translate(0,${percentageOffset}%)`;
     const translateStyle: React.CSSProperties = { transform: translate, zIndex: 2 };
     return (
       <div className="open-navbar-movebarindicator" style={translateStyle}></div>

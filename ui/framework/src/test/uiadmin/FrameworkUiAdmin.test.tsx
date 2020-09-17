@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
+
 import { AbstractMenuItemProps, AbstractToolbarProps, PropertyDescription, RelativePosition, UiDataProvider } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
 import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import TestUtils from "../TestUtils";
+import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
+import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
 
 // cSpell:ignore uiadmin
 
@@ -89,6 +92,15 @@ describe("FrameworkUiAdmin", () => {
     expect(uiAdmin.showMenuButton("test", menuItemProps, uiAdmin.createXAndY(150, 250), doc.documentElement)).to.be.true;
     expect(uiAdmin.showMenuButton("test", menuItemProps, uiAdmin.createXAndY(150, 250))).to.be.true;
     expect(uiAdmin.hideMenuButton("test")).to.be.true;
+  });
+
+  it("showKeyinPalette should return true", () => {
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    expect(uiAdmin.showKeyinPalette(doc.documentElement)).to.be.false;
+    expect(uiAdmin.hideKeyinPalette()).to.be.false;
+    uiAdmin.updateFeatureFlags ({allowKeyinPalette:true});
+    expect(uiAdmin.showKeyinPalette(doc.documentElement)).to.be.true;
+    expect(uiAdmin.hideKeyinPalette()).to.be.true;
   });
 
   it("showCalculator should return true", () => {
@@ -186,5 +198,25 @@ describe("FrameworkUiAdmin", () => {
     expect(uiAdmin.openToolSettingsPopup(uiDataProvider, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight)).to.be.true;
     expect(uiAdmin.openToolSettingsPopup(uiDataProvider, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel)).to.be.true;
     expect(uiAdmin.closeToolSettingsPopup()).to.be.true;
+  });
+
+  it("should ClearKeyinPaletteHistoryTool", async () => {
+    const stub = sinon.stub(keyinExports, "clearKeyinPaletteHistory").returns();
+    const tool = new ClearKeyinPaletteHistoryTool();
+    tool.parseAndRun();
+    expect (stub).to.be.calledOnce;
+    sinon.restore();
+  });
+
+  it("should get/set keyin preference", () => {
+    expect (uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.NonLocalized);
+    const nonLocalKeyins = uiAdmin.getKeyins();
+    uiAdmin.localizedKeyinPreference = KeyinFieldLocalization.Both;
+    const bothKeyins = uiAdmin.getKeyins();
+    expect (bothKeyins.length > nonLocalKeyins.length);
+    expect (uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.Both);
+    uiAdmin.localizedKeyinPreference = KeyinFieldLocalization.Localized;
+    const localizedKeyins = uiAdmin.getKeyins();
+    expect (localizedKeyins.length === nonLocalKeyins.length);
   });
 });

@@ -13,7 +13,7 @@ describe("Convert schema xml string to typescript string", () => {
   let context: SchemaContext;
   beforeEach(() => {
     const locator = new SchemaXmlFileLocater();
-    locator.addSchemaSearchPath(utils.getAssetsDir() + "schema3.2");
+    locator.addSchemaSearchPath(`${utils.getAssetsDir()}schema3.2`);
     context = new SchemaContext();
     context.addLocater(locator);
 
@@ -90,8 +90,7 @@ describe("Convert schema xml string to typescript string", () => {
         }
       }\n\n`;
 
-    const expectedElementTsString = utils.dedent
-      `import { Entity, IModelDb } from "@bentley/imodeljs-backend";
+    const expectedElementTsString = utils.dedent`import { Entity, IModelDb } from "@bentley/imodeljs-backend";
       import { TestEntityProps } from "./TestSchemaElementProps";
 
       export class TestEntity extends Entity implements TestEntityProps {

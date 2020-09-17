@@ -93,7 +93,7 @@ export class KindOfQuantity extends SchemaItem {
 
       if (tokens.length >= precisionIndx + 1) {
         if (tokens[precisionIndx].length > 0) {
-          const precision = Number.parseInt(tokens[precisionIndx], undefined);
+          const precision = Number.parseInt(tokens[precisionIndx], 10);
           if (Number.isNaN(precision))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The format string '${formatString}' on KindOfQuantity '${this.fullName}' has a precision override '${tokens[precisionIndx]}' that is not number.`);
           returnValue.precision = precision;
@@ -165,7 +165,7 @@ export class KindOfQuantity extends SchemaItem {
           if (undefined === unit)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit!, unitOverride[1]]);
+          unitAndLabels.push([unit, unitOverride[1]]);
         }
       }
 
@@ -199,7 +199,7 @@ export class KindOfQuantity extends SchemaItem {
           if (undefined === unit)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit!, unitOverride[1]]);
+          unitAndLabels.push([unit, unitOverride[1]]);
         }
       }
 

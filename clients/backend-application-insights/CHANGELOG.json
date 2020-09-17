@@ -1,0 +1,20 @@
+{
+  "name": "@bentley/backend-application-insights-client",
+  "entries": [
+    {
+      "version": "2.6.0",
+      "tag": "@bentley/backend-application-insights-client_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "add new client for application insights specific telemetry"
+          }
+        ]
+      }
+    }
+  ]
+}

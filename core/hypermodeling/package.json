@@ -1,6 +1,6 @@
 {
   "name": "@bentley/hypermodeling-frontend",
-  "version": "2.5.5",
+  "version": "2.6.0",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",
   "imodeljsSharedLibrary": true,
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/hypermodeling"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/hypermodeling-frontend"
   },
   "keywords": [
     "Bentley",
@@ -33,22 +33,23 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.5.5",
-    "@bentley/imodeljs-frontend": "^2.5.5",
-    "@bentley/imodeljs-common": "^2.5.5",
-    "@bentley/geometry-core": "^2.5.5",
-    "@bentley/imodeljs-i18n": "^2.5.5",
-    "@bentley/ui-abstract": "^2.5.5"
+    "@bentley/bentleyjs-core": "^2.6.0",
+    "@bentley/imodeljs-frontend": "^2.6.0",
+    "@bentley/imodeljs-common": "^2.6.0",
+    "@bentley/geometry-core": "^2.6.0",
+    "@bentley/imodeljs-i18n": "^2.6.0",
+    "@bentley/ui-abstract": "^2.6.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.5.5",
-    "@bentley/imodeljs-frontend": "2.5.5",
-    "@bentley/imodeljs-common": "2.5.5",
-    "@bentley/geometry-core": "2.5.5",
-    "@bentley/imodeljs-i18n": "2.5.5",
-    "@bentley/ui-abstract": "2.5.5",
-    "@bentley/build-tools": "2.5.5",
-    "@bentley/certa": "2.5.5",
+    "@bentley/bentleyjs-core": "2.6.0",
+    "@bentley/imodeljs-frontend": "2.6.0",
+    "@bentley/imodeljs-common": "2.6.0",
+    "@bentley/geometry-core": "2.6.0",
+    "@bentley/imodeljs-i18n": "2.6.0",
+    "@bentley/ui-abstract": "2.6.0",
+    "@bentley/build-tools": "2.6.0",
+    "@bentley/eslint-plugin": "2.6.0",
+    "@bentley/certa": "2.6.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -67,6 +68,9 @@
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
-    "extends": "./node_modules/@bentley/build-tools/.eslintrc.js"
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
   }
 }

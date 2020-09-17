@@ -34,9 +34,9 @@ export class Enumeration extends SchemaItem {
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];
 
-  get enumerators() { return this._enumerators; }
-  get type() { return this._type; }
-  get isStrict() { return this._isStrict; }
+  public get enumerators() { return this._enumerators; }
+  public get type() { return this._type; }
+  public get isStrict() { return this._isStrict; }
 
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
     super(schema, name);

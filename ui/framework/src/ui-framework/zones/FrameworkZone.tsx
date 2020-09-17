@@ -9,7 +9,7 @@
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
-  DisabledResizeHandles, DraggedWidgetManagerProps, WidgetManagerProps, WidgetZoneId, Zone as NZ_Zone, ZoneManagerProps, ZoneTargetType,
+  DisabledResizeHandles, DraggedWidgetManagerProps, Zone as NZ_Zone, WidgetManagerProps, WidgetZoneId, ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";

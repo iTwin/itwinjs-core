@@ -393,7 +393,7 @@ class QueryLinearLocationsECSQLGen {
         if (schemaNameClassName === undefined)
           throw new IModelError(0, "Invalid full class name");
 
-        where += "meta.ECSchemaDef.Name ='" + schemaNameClassName[0] + "' AND meta.ECClassDef.Name = '" + schemaNameClassName[1] + "' ";
+        where += `meta.ECSchemaDef.Name='${schemaNameClassName[0]}' AND meta.ECClassDef.Name='${schemaNameClassName[1]}' `;
       } else if (1 < this._params.linearlyLocatedClassFullNames.length) {
         where += "(";
         for (const classFullName of this._params.linearlyLocatedClassFullNames) {
@@ -404,7 +404,7 @@ class QueryLinearLocationsECSQLGen {
           if (schemaNameClassName === undefined)
             continue;
 
-          where += "(meta.ECSchemaDef.Name ='" + schemaNameClassName[0] + "' AND meta.ECClassDef.Name = '" + schemaNameClassName[1] + "') OR ";
+          where += `(meta.ECSchemaDef.Name='${schemaNameClassName[0]}' AND meta.ECClassDef.Name='${schemaNameClassName[1]}') OR `;
         }
 
         where = where.substr(0, where.length - 4); // Removing last OR
@@ -523,7 +523,7 @@ export class LinearlyLocated {
   private static queryFirstLinearLocationAspectId(iModel: IModelDb, linearlyLocatedElementId: Id64String, className: string): Id64String | undefined {
     let aspectId: Id64String | undefined;
 
-    iModel.withPreparedStatement("SELECT ECInstanceId FROM LinearReferencing." + className + " WHERE Element.Id = ? LIMIT 1",
+    iModel.withPreparedStatement(`SELECT ECInstanceId FROM LinearReferencing.${className} WHERE Element.Id=? LIMIT 1`,
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, linearlyLocatedElementId);
         if (stmt.step() === DbResult.BE_SQLITE_ROW)

@@ -4,5 +4,5 @@
 *--------------------------------------------------------------------------------------------*/
 
 export function setTitle(iModelName: string) {
-  document.title = iModelName + " - Display Test App";
+  document.title = `${iModelName} - Display Test App`;
 }

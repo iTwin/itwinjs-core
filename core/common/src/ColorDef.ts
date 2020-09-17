@@ -342,12 +342,12 @@ export class ColorDef {
 
   /** Convert the 0xTTBBGGRR value to a string in the form "#rrggbb". */
   public static toHexString(tbgr: number): string {
-    return "#" + ("000000" + this.getRgb(tbgr).toString(16)).slice(-6);
+    return `#${(`000000${this.getRgb(tbgr).toString(16)}`).slice(-6)}`;
   }
 
   private static getColorsString(tbgr: number) {
     const c = this.getColors(tbgr);
-    return c.r + "," + c.g + "," + c.b;
+    return `${c.r},${c.g},${c.b}`;
   }
 
   /** Convert this ColorDef to a string in the form "rgb(r,g,b)" where values are decimal digits of the respective colors. */
@@ -357,7 +357,7 @@ export class ColorDef {
 
   /** Convert the 0xTTBBGGRR color to a string in the form "rgb(r,g,b)" where each component is specified in decimal. */
   public static toRgbString(tbgr: number): string {
-    return "rgb(" + this.getColorsString(tbgr) + ")";
+    return `rgb(${this.getColorsString(tbgr)})`;
   }
 
   /** Convert this ColorDef to a string in the form "rgba(r,g,b,a)" where color values are decimal digits and a is a fraction */
@@ -367,7 +367,7 @@ export class ColorDef {
 
   /** Convert the 0xTTBBGGRR color to a string of the form "rgba(r,g,b,a)" where the color components are specified in decimal and the alpha component is a fraction. */
   public static toRgbaString(tbgr: number): string {
-    return "rgba(" + this.getColorsString(tbgr) + "," + this.getAlpha(tbgr) / 255. + ")";
+    return `rgba(${this.getColorsString(tbgr)},${this.getAlpha(tbgr) / 255.})`;
   }
 
   /** Create a ColorDef that is the linear interpolation of this ColorDef and another ColorDef, using a weighting factor.

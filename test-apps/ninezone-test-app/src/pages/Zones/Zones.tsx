@@ -5,9 +5,9 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import "./Zones.scss";
 import * as React from "react";
-import { ActionButton, GroupButton } from "@bentley/ui-abstract";
+import { ActionButton, GroupButton, BadgeType } from "@bentley/ui-abstract";
 import { ToolbarItem, ToolbarWithOverflow, UiComponents } from "@bentley/ui-components";
-import { Point } from "@bentley/ui-core";
+import { Point, BadgeUtilities } from "@bentley/ui-core";
 import {
   NineZone,
   addPanelWidget,
@@ -30,6 +30,11 @@ import {
   PanelSide,
   findTab,
   NineZoneContext,
+  createPanelsState,
+  createHorizontalPanelState,
+  WidgetTab,
+  TabStateContext,
+  createVerticalPanelState,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -303,6 +308,18 @@ const page = function () {
   }
 }();
 
+
+function Tab() {
+  const { id } = React.useContext(TabStateContext);
+  if (id === "topLeft_2")
+    return <WidgetTab className="nzdemo-tab-new" badge={BadgeUtilities.getComponentForBadgeType(BadgeType.New)} />;
+  else if (id === "bottomLeft_1" || id === "topLeft_4")
+    return <WidgetTab className="nzdemo-tab-tp" badge={BadgeUtilities.getComponentForBadgeType(BadgeType.TechnicalPreview)} />;
+  return <WidgetTab />;
+}
+
+const tab = <Tab />;
+
 export default function Zones() {
   page.initialize();
   React.useEffect(() => {
@@ -314,31 +331,45 @@ export default function Zones() {
   const { settings, remove, removeFromStart, add, addToStart, update } = useSettings();
   const settingsStr = React.useMemo(() => JSON.stringify(settings), [settings]);
   const [state, dispatch] = React.useReducer(NineZoneStateReducer, {}, () => {
-    let initialState = createNineZoneState();
-    initialState = addPanelWidget(initialState, "left", "topLeft", { activeTabId: "topLeft_1" });
-    initialState = addPanelWidget(initialState, "left", "centerLeft", { activeTabId: "centerLeft_1" });
-    initialState = addPanelWidget(initialState, "left", "bottomLeft", { activeTabId: "bottomLeft_1" });
-    initialState = addPanelWidget(initialState, "right", "topRight", { activeTabId: "topRight_1" });
-    initialState = addPanelWidget(initialState, "top", "topPanel", { activeTabId: "topPanel_1" });
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel1", { activeTabId: "bottomPanel1_1" });
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel2", { activeTabId: "bottomPanel2_1" });
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel3", { activeTabId: "bottomPanel3_1" });
-    initialState = addTab(initialState, "topLeft", "topLeft_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
-    initialState = addTab(initialState, "topLeft", "topLeft_2", { label: "Tab 2", preferredPanelWidgetSize: "fit-content" });
-    initialState = addTab(initialState, "topLeft", "topLeft_3", { label: "Tab 3" });
-    initialState = addTab(initialState, "topLeft", "topLeft_4", { label: "Tab 4" });
-    initialState = addTab(initialState, "bottomLeft", "bottomLeft_1", { label: "Tab 1 Of Bottom Left Widget" });
-    initialState = addTab(initialState, "centerLeft", "centerLeft_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "topRight", "topRight_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "topPanel", "topPanel_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "bottomPanel1", "bottomPanel1_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "bottomPanel2", "bottomPanel2_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
-    initialState = addTab(initialState, "bottomPanel3", "bottomPanel3_1", { label: "Tab 1" });
+    let initialState = createNineZoneState({
+      panels: createPanelsState({
+        top: createHorizontalPanelState("top", {
+          // resizable: false,
+        }),
+        left: createVerticalPanelState("left", {
+          pinned: false,
+        }),
+      }),
+    });
+    initialState = addPanelWidget(initialState, "left", "topLeft", ["topLeft_1", "topLeft_2", "topLeft_3", "topLeft_4"]);
+    initialState = addPanelWidget(initialState, "left", "centerLeft", ["centerLeft_1"]);
+    initialState = addPanelWidget(initialState, "left", "bottomLeft", ["bottomLeft_1"]);
+    initialState = addPanelWidget(initialState, "right", "topRight", ["topRight_1"]);
+    initialState = addPanelWidget(initialState, "top", "topPanel", ["topPanel_1"]);
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel1", ["bottomPanel1_1"]);
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel2", ["bottomPanel2_1"]);
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel3", ["bottomPanel3_1"]);
+    initialState = addTab(initialState, "topLeft_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
+    initialState = addTab(initialState, "topLeft_2", { label: "Tab 2", preferredPanelWidgetSize: "fit-content" });
+    initialState = addTab(initialState, "topLeft_3", { label: "Tab 3" });
+    initialState = addTab(initialState, "topLeft_4", { label: "Tab 4" });
+    initialState = addTab(initialState, "bottomLeft_1", { label: "Tab 1 Of Bottom Left Widget" });
+    initialState = addTab(initialState, "centerLeft_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "topRight_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "topPanel_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomPanel1_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomPanel2_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
+    initialState = addTab(initialState, "bottomPanel3_1", { label: "Tab 1" });
     return initialState;
   });
   const labels = React.useMemo<NineZoneLabels>(() => ({
     dockToolSettingsTitle: "Dock to top",
+    moreToolSettingsTitle: "More tool settings",
+    moreWidgetsTitle: "More widgets",
+    pinPanelTitle: "Pin panel",
     sendWidgetHomeTitle: "Send to panel",
+    resizeGripTitle: "Resize panel",
+    unpinPanelTitle: "Unpin panel",
   }), []);
   const widget = React.useMemo(() => <WidgetContent />, []);
   const toolSettings = React.useMemo(() => <div>{settingsStr}</div>, [settingsStr]);
@@ -381,6 +412,7 @@ export default function Zones() {
           dispatch={dispatch}
           labels={labels}
           state={state}
+          tab={tab}
           toolSettingsContent={toolSettings}
           widgetContent={widget}
         >

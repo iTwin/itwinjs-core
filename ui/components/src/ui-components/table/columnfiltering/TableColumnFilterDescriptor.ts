@@ -226,7 +226,7 @@ class CompositeFilterDescriptorImpl implements CompositeFilterDescriptor {
             break;
         }
       }
-      result += ("(" + this.filterDescriptorCollection.descriptors[i].getFilterExpression() + ")");
+      result += (`(${this.filterDescriptorCollection.descriptors[i].getFilterExpression()})`);
     }
     return result;
   }

@@ -15,15 +15,15 @@ import { CenterContentNodeContext } from "./Panels";
  */
 export const CenterContent = React.memo(function CenterContent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const content = React.useContext(CenterContentNodeContext);
-  const ref = React.useRef<HTMLDivElement>(null);
   return (
     <WidgetPanelsContent
-      children={content} // eslint-disable-line react/no-children-prop
-      ref={ref}
+      className="nz-widgetPanels-centerContent"
       pinnedLeft
       pinnedRight
       pinnedTop
       pinnedBottom
-    />
+    >
+      {content}
+    </WidgetPanelsContent>
   );
 });

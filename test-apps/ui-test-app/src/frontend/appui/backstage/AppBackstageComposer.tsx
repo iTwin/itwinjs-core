@@ -6,7 +6,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { UserInfo } from "@bentley/itwin-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities } from "@bentley/ui-abstract";
+import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue, IconSpecUtilities } from "@bentley/ui-abstract";
 import { BackstageComposer, FrontstageManager, UserProfileBackstageItem } from "@bentley/ui-framework";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
@@ -50,7 +50,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
 
     return [
       BackstageItemUtilities.createStageLauncher(ViewsFrontstage.stageId, 100, 10, IModelApp.i18n.translate("SampleApp:backstage.viewIModel"), IModelApp.i18n.translate("SampleApp:backstage.iModelStage"), `svg:${stageIconSvg}`),
-      BackstageItemUtilities.createStageLauncher("Test1", 200, 10, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage1"), undefined, "icon-placeholder"),
+      BackstageItemUtilities.createStageLauncher("Test1", 200, 10, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage1"), undefined, "icon-placeholder", { badgeType: BadgeType.TechnicalPreview }),
       BackstageItemUtilities.createStageLauncher("Test2", 200, 20, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage2"), undefined, "icon-placeholder"),
       BackstageItemUtilities.createStageLauncher("Test3", 200, 30, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage3"), undefined, "icon-placeholder", { isHidden: hiddenCondition3 }),
       BackstageItemUtilities.createStageLauncher("Test4", 200, 40, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage4"), undefined, "icon-placeholder", { isDisabled: enableCondition }),
@@ -59,7 +59,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
       BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.i18n.translate("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
       BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder"),
       BackstageItemUtilities.createActionItem("SampleApp.settings", 400, 10, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.testFrontstage6"), undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg)),
-      BackstageItemUtilities.createActionItem("SampleApp.componentExamples", 400, 20, () => FrontstageManager.openModalFrontstage(new ComponentExamplesModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.componentExamples"), undefined, "icon-details"),
+      BackstageItemUtilities.createActionItem("SampleApp.componentExamples", 400, 20, () => FrontstageManager.openModalFrontstage(new ComponentExamplesModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.componentExamples"), undefined, "icon-details", { badgeType: BadgeType.New }),
     ];
   });
 

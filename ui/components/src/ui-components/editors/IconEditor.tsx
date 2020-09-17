@@ -10,7 +10,7 @@ import "./IconEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  IconListEditorParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+  IconListEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { IconPickerButton } from "../iconpicker/IconPickerButton";
@@ -126,7 +126,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      initialValue = (record.value as PrimitiveValue).value as string;
+      initialValue = record.value.value as string;
     }
 
     const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;

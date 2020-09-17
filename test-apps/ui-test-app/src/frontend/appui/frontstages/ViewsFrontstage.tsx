@@ -45,7 +45,7 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
-// import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
+import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
 
 /* eslint-disable react/jsx-key */
 
@@ -183,7 +183,7 @@ export class ViewsFrontstage extends FrontstageProvider {
     // first find an appropriate layout
     const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
     if (!contentLayoutProps) {
-      throw (Error("Could not find layout ContentLayoutProps when number of viewStates=" + this.viewStates.length));
+      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
     }
 
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
@@ -259,8 +259,8 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={400}
             widgets={[
               // Used when using map-layers as a package and not using UiItemsProvider (compatible with V1 of framework)
-              // <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
-              //  iconSpec={MapLayersWidgetControl.iconSpec} />,
+              <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
+                iconSpec={MapLayersWidgetControl.iconSpec} />,
 
               // <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
               //   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
@@ -340,6 +340,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               title="Visibility tree"
             />}
             defaultState={StagePanelState.Minimized}
+            pinned={false}
             size={400}
             minSize={150}
             maxSize={800}
@@ -433,7 +434,7 @@ class AdditionalTools {
   private _tool4 = () => {
     const details = new NotifyMessageDetails(this._tool4Priority, this._tool4Message, this._tool4Detailed, OutputMessageType.Pointer);
     const wrapper = ConfigurableUiManager.getWrapperElement();
-    details.setPointerTypeDetails(wrapper!, { x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
+    details.setPointerTypeDetails(wrapper, { x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
     IModelApp.notifications.outputMessage(details);
     document.addEventListener("keyup", this._handleTool4Keypress);
     document.addEventListener("mousemove", this._handleTool4MouseMove);
@@ -550,7 +551,7 @@ class AdditionalTools {
 
   private openViewportDialog(): void {
     this._viewportDialogCnt++;
-    const id = "ViewportDialog_" + this._viewportDialogCnt.toString();
+    const id = `ViewportDialog_${this._viewportDialogCnt.toString()}`;
 
     const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
 
@@ -703,14 +704,14 @@ class AdditionalTools {
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
               dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </div>
+            </div>
             {false && <ViewportWidget projectName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
             <div>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
               dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </div>
+            </div>
           </ScrollView>
         </div>,
     });
@@ -727,7 +728,8 @@ class AdditionalTools {
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
+    // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
+    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinPaletteButtonItemDef, { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
@@ -796,7 +798,7 @@ class AdditionalTools {
         this._radialMenuItem, this._exampleFormItem, this._viewportDialogItem, this._spinnerTestDialogItem,
         this._reduceWidgetOpacity, this._defaultWidgetOpacity, this._openCalculatorItem,
       ],
-      badgeType: BadgeType.New,
+      badgeType: BadgeType.TechnicalPreview,
     }),
   ], 100, { groupPriority: 20 }), this.getMiscGroupItem()];
 }
