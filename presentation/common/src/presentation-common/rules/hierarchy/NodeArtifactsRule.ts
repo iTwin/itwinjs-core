@@ -24,6 +24,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * @note The rule is costly performance-wise and should only be used in very limited amount of specific cases where
  * hidden child nodes need to be used to used to determine parent node's visibility.
  *
+ * @see [More details]($docs/learning/presentation/Hierarchies/NodeArtifactsRule.md)
  * @public
  */
 export interface NodeArtifactsRule extends RuleBase, ConditionContainer {

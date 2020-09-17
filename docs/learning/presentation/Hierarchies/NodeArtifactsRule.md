@@ -1,5 +1,7 @@
 # Node Artifacts Rule
 
+> Based on [NodeArtifactsRule]($presentation-common) interface.
+
 Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be
 accessed when evaluating parent node's `hideExpression` to decide whether it should be hidden or not.
 

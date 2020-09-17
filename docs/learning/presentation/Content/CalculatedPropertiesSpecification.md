@@ -1,5 +1,7 @@
 # CalculatedProperties Content Modifier
 
+> Based on [CalculatedPropertiesSpecification]($presentation-common) interface.
+
 This content modifier allows including additional calculated properties into the content.
 
 ## Attributes

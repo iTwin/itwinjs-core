@@ -8,6 +8,8 @@
 
 /**
  * Specification to define a custom property category.
+ *
+ * @see [More details]($docs/learning/presentation/Content/PropertyCategorySpecification.md)
  * @public
  */
 export interface PropertyCategorySpecification {

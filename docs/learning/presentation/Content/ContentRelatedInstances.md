@@ -1,5 +1,7 @@
 # ContentRelatedInstances Specification
 
+> Based on [ContentRelatedInstancesSpecification]($presentation-common) interface.
+
 Returns content for instances related to the selected (input) instances.
 
 ## Attributes

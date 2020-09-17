@@ -18,6 +18,8 @@ export interface DEPRECATED_PropertyEditorsSpecification extends PropertyEditorS
 
 /**
  * Specification for custom property editor
+ *
+ * @see [More details]($docs/learning/presentation/Content/PropertyEditorSpecification.md)
  * @public
  */
 export interface PropertyEditorSpecification {

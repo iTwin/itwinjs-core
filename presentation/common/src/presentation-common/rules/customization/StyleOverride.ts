@@ -12,6 +12,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * Rule to override default node style and dynamically define a foreground/background
  * colors and a font style for a particular nodes.
  *
+ * @see [More details]($docs/learning/presentation/Customization/StyleOverride.md)
  * @public
  */
 export interface StyleOverride extends RuleBase, ConditionContainer {

@@ -1,5 +1,7 @@
 # RelationshipPath Specification
 
+> Based on [RepeatableRelationshipPathSpecification]($presentation-common) interface.
+
 Relationship path specification and it's *repeatable* counterpart are used to define paths from one ECClass to another, optionally traversing through multiple relationships.
 
 ## Attributes

@@ -36,6 +36,7 @@ export interface SortingRuleBase extends RuleBase, ConditionContainer {
 /**
  * Sorting rule implementations
  *
+ * @see [More details]($docs/learning/presentation/Customization/SortingRule.md)
  * @public
  */
 export type SortingRule = PropertySortingRule | DisabledSortingRule;

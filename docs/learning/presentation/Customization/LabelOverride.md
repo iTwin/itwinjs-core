@@ -1,5 +1,7 @@
 # LabelOverride Customization Rule
 
+> Based on [LabelOverride]($presentation-common) interface.
+
 Label override rules provide advanced ways to override instance labels and descriptions in
 exchange of some performance penalty. When possible, it's advised to use
 [InstanceLabelOverride](./InstanceLabelOverride.md) rules instead.

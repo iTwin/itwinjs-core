@@ -14,6 +14,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * Is also allows binding check box state with boolean properties by setting [[propertyName]] parameter.
  * If [[propertyName]] is not set, then [[defaultValue]] is used for default check box state.
  *
+ * @see [More details]($docs/learning/presentation/Customization/CheckBoxRule.md)
  * @public
  */
 export interface CheckBoxRule extends RuleBase, ConditionContainer {

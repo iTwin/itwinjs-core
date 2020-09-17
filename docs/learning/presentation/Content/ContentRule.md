@@ -1,5 +1,7 @@
 # ContentRule
 
+> Based on [ContentRule]($presentation-common) interface.
+
 Content rules are used to define content that is displayed for specific type of selection.
 
 Selection consists of either instances or nodes and to make things

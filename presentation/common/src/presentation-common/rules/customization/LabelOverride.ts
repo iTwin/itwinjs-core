@@ -15,6 +15,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * **Important:** Prefer [[InstanceLabelOverride]] over this rule when possible as it
  * has better performance.
  *
+ * @see [More details]($docs/learning/presentation/Customization/LabelOverride.md)
  * @public
  */
 export interface LabelOverride extends RuleBase, ConditionContainer {

@@ -1,5 +1,7 @@
 # Grouping Customization Rule
 
+> Based on [GroupingRule]($presentation-common) interface.
+
 Grouping rules provide advanced ways to group instances when creating hierarchies.
 
 It allows to define these types of groupings:

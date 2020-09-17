@@ -45,6 +45,8 @@ export enum RelatedPropertiesSpecialValues {
 
 /**
  * Sub-specification to include additional related instance properties
+ *
+ * @see [More details]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md)
  * @public
  */
 export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew; // eslint-disable-line deprecation/deprecation

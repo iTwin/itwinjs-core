@@ -16,6 +16,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  *
  * **Note:** Use [[ContentRule.condition]] to apply specification on correct selection.
  *
+ * @see [More details]($docs/learning/presentation/Content/ContentRelatedInstances.md)
  * @public
  */
 export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew; // eslint-disable-line deprecation/deprecation

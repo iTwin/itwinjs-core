@@ -14,6 +14,7 @@ import { ContentSpecification } from "./ContentSpecification";
  * property pane, etc.) and the content that's selected in
  * [unified selection]($docs/learning/presentation/unified-selection/index.md) controls
  *
+ * @see [More details]($docs/learning/presentation/Content/ContentRule.md)
  * @public
  */
 export interface ContentRule extends RuleBase, ConditionContainer {

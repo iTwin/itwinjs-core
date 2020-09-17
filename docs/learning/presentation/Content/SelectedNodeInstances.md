@@ -1,5 +1,7 @@
 # SelectedNodeInstances Specification
 
+> Based on [SelectedNodeInstancesSpecification]($presentation-common) interface.
+
 Returns content for selected (input) instances.
 
 ## Attributes

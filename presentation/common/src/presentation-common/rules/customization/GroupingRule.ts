@@ -28,6 +28,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  *           - Display label grouping node (specified by `groupByLabel` property)
  *             - ECInstance nodes (may be grouped under a single node by [[SameLabelInstanceGroup]])
  *
+ * @see [More details]($docs/learning/presentation/Hierarchies/GroupingRule.md)
  * @public
  */
 export interface GroupingRule extends RuleBase, ConditionContainer {

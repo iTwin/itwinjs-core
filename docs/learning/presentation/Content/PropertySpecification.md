@@ -1,12 +1,14 @@
 # Property Overrides Content Modifier
 
+> Based on [PropertySpecification]($presentation-common) interface.
+
 This content modifier allows overriding some attributes of ECProperty.
 
 ## Attributes
 
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
-`name` | Yes | `string` | | Name of the ECProperty.
+`name` | Yes | `string` | | Name of the ECProperty. A `"*"` may be specified to match all properties in current context.
 `overridesPriority` | No | `number` | 1000 | Priority of the specified overrides.
 `labelOverride` | No | `string` | `undefined` | Label override. May be [localized](../Localization.md).
 `categoryId` | No | `string` | `undefined` | ID of a category specified through `PropertyCategorySpecification` in this scope.

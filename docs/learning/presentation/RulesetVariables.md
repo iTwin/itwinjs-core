@@ -1,6 +1,6 @@
 # Ruleset Variables
 
-**Note:** *User Settings* is a deprecated name of the *Ruleset Variables* concept.
+> *User Settings* is a deprecated name of the *Ruleset Variables* concept.
 
 Presentation rulesets have a concept called *ruleset variables* whose purpose is
 to allow modifying ruleset behavior during the session without having to change
@@ -9,8 +9,8 @@ the ruleset itself. The values of ruleset variables can be accessed using
 
 ## User-Controllable Variables
 
-**Note:** this feature is not fully supported yet - there is no UI component for
-editing user-defined ruleset variables.
+> This feature is not fully supported yet - there is no UI component for
+> editing user-defined ruleset variables.
 
 There can be either internal variables or user-controllable ones. Internal
 variables are not visible to end users and can only be changed using API calls.

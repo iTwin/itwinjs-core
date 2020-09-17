@@ -12,6 +12,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * Rule that allows overriding default icon and dynamically define an icon
  * for a particular node based on the context.
  *
+ * @see [More details]($docs/learning/presentation/Customization/ImageIdOverride.md)
  * @public
  */
 export interface ImageIdOverride extends RuleBase, ConditionContainer {

@@ -1,5 +1,7 @@
 # RootNodeRule
 
+> Based on [RootNodeRule]($presentation-common) interface.
+
 Root node rules are used to define nodes that are displayed at the root hierarchy level.
 
 ## Attributes

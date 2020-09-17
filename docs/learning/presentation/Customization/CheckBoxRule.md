@@ -1,7 +1,8 @@
 # CheckBox Customization Rule
 
-CheckBox rules provide a way to create a checkbox for specific types of
-ECInstance's.
+> Based on [CheckBoxRule]($presentation-common) interface.
+
+CheckBox rules provide a way to create a checkbox for specific types of ECInstance's.
 
 ## Attributes
 

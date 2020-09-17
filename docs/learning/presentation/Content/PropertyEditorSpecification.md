@@ -1,5 +1,7 @@
 # PropertyEditor Specification
 
+> Based on [PropertyEditorSpecification]($presentation-common) interface.
+
 This specification allows specifying a custom property editor and its parameters.
 
 ## Attributes

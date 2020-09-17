@@ -95,7 +95,7 @@ export interface ChildNodeSpecificationBase {
    */
   suppressSimilarAncestorsCheck?: boolean;
 
-  /** Specifications of related instances that can be used in content creation. */
+  /** Specifications of related instances that can be used in nodes' creation. */
   relatedInstances?: RelatedInstanceSpecification[];
 
   /** [Nested rule]($docs/learning/presentation/Hierarchies/Terminology.md#nested-rules) specifications. */

@@ -1,5 +1,7 @@
 # InstanceLabelOverride Customization Rule
 
+> Based on [InstanceLabelOverride]($presentation-common) interface.
+
 Instance label override rule provides a way to set instance label to one of its property values, other attributes and/or combination of them. If more
 advanced labels are necessary, there's also a [LabelOverride rule](./LabelOverride.md) which uses [ECExpressions](../ECExpressions.md) to create the
 label, but costs more performance-wise.

@@ -11,6 +11,8 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
 
 /**
  * Creates nodes for all instances of specified ECClasses.
+ *
+ * @see [More details]($docs/learning/presentation/Hierarchies/InstanceNodesOfSpecificClasses.md)
  * @public
  */
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {

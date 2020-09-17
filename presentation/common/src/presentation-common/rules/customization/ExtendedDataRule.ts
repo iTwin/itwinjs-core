@@ -20,6 +20,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  *   application needs to additionally know element model's ID. The rule can be used
  *   to inject that ID into element's node.
  *
+ * @see [More details]($docs/learning/presentation/Customization/ExtendedDataRule.md)
  * @public
  */
 export interface ExtendedDataRule extends RuleBase, ConditionContainer {

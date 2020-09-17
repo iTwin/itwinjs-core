@@ -611,7 +611,7 @@
           "type": "integer"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
+          "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
             "anyOf": [
               {
@@ -710,7 +710,7 @@
           "type": "array"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
+          "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
             "anyOf": [
               {
@@ -789,7 +789,7 @@
           "type": "integer"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
+          "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
             "anyOf": [
               {
@@ -872,7 +872,7 @@
           "type": "integer"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
+          "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
             "anyOf": [
               {
@@ -1187,7 +1187,7 @@
           "description": "Related classes whose instances should be returned as content.\nOptional if `relationships` is specified."
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
+          "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
             "anyOf": [
               {
@@ -1908,7 +1908,7 @@
           "type": "integer"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
+          "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
             "anyOf": [
               {
@@ -2370,7 +2370,7 @@
           "type": "string"
         },
         "name": {
-          "description": "Name of the ECProperty",
+          "description": "Name of the ECProperty.\n\nA `\"*\"` may be specified to match all properties in current context:\n- when the specification is used in an ECClass context (e.g. in a `ContentModifier` rule),\n   all properties of that class are matched (including properties derived from base classes, but excluding\n   subclass properties).\n- when specification is used outside of class context, all properties found in that context are matched. E.g. when\n   used in `ContentSpecification.propertyOverrides` where `ContentSpecification` creates content with properties of\n   different classes.",
           "type": "string"
         },
         "overridesPriority": {
@@ -2435,7 +2435,7 @@
           "type": "integer"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
+          "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
             "anyOf": [
               {

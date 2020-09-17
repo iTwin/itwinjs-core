@@ -1,5 +1,7 @@
 # ChildNodeRule
 
+> Based on [ChildNodeRule]($presentation-common) interface.
+
 Child node rules are used to define child nodes. Generally, `priority`, `condition`, `onlyIfNotHandled` and `stopFurtherProcessing` attributes are used to determine where (under
 which parent node) the branch is placed.
 

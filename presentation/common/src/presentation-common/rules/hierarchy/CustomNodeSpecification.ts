@@ -10,6 +10,8 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./Child
 
 /**
  * Creates a custom-defined node.
+ *
+ * @see [More details]($docs/learning/presentation/Hierarchies/CustomNode.md)
  * @public
  */
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {

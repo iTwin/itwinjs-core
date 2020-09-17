@@ -1,5 +1,7 @@
 # ImageIdOverride Customization Rule
 
+> Based on [ImageIdOverride]($presentation-common) interface.
+
 ImageId override rules allow setting an image ID to specific types of ECInstances.
 
 ## Attributes

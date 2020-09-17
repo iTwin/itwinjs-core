@@ -1,5 +1,7 @@
 # Sorting Customization Rule
 
+> Based on [SortingRule]($presentation-common) interface.
+
 Sorting rules provide a way to either disable sorting or sort instances my specific properties. There are 2 types of sorting rules for both of these scenarios.
 
 ## Property Sorting Rule

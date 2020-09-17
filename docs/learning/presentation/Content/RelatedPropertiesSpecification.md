@@ -1,5 +1,7 @@
 # RelatedProperties Content Modifier
 
+> Based on [RelatedPropertiesSpecification]($presentation-common) interface.
+
 This content modifier allows including related instance properties into the selected instance content.
 
 ## Attributes

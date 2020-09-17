@@ -1,5 +1,7 @@
 # RelatedInstance Specification
 
+> Based on [RelatedInstanceSpecification]($presentation-common) interface.
+
 Related instance specification can be used in conjunction with both content
 and hierarchy related rules. It's primary purpose is to *join* primary instance
 with some related instance and allow using them both for:

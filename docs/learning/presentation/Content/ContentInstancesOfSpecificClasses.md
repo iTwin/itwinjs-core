@@ -1,5 +1,7 @@
 # ContentInstancesOfSpecificClasses Specification
 
+> Based on [ContentInstancesOfSpecificClassesSpecification]($presentation-common) interface.
+
 Returns content for instances of specific ECClasses.
 
 ## Attributes

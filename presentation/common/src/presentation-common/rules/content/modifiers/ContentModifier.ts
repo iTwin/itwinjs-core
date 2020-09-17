@@ -56,6 +56,7 @@ export interface ContentModifiersList {
  * Rule that allows supplementing content with additional
  * specifications for certain ECClasses.
  *
+ * @see [More details]($docs/learning/presentation/Content/ContentModifier.md)
  * @public
  */
 export interface ContentModifier extends RuleBase, ContentModifiersList {

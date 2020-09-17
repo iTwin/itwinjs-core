@@ -17,6 +17,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
  * **Precondition:** can be used only if parent node is ECInstance
  * node. If there is no immediate parent instance node it will go up until it finds one.
  *
+ * @see [More details]($docs/learning/presentation/Hierarchies/RelatedInstanceNodes.md)
  * @public
  */
 export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew; // eslint-disable-line deprecation/deprecation

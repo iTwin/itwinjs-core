@@ -15,6 +15,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  * **Note**: this specification doesn't rely on selection. It always returns instances no matter
  * what the selection is, so pre-filtering should be done in [[ContentRule]] condition and [[instanceFilter]].
  *
+ * @see [More details]($docs/learning/presentation/Content/ContentInstancesOfSpecificClasses.md)
  * @public
  */
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {

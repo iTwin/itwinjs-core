@@ -8,6 +8,8 @@
 
 /**
  * Sub-specification to include additional calculated properties into the content.
+ *
+ * @see [More details]($docs/learning/presentation/Content/CalculatedPropertiesSpecification.md)
  * @public
  */
 export interface CalculatedPropertiesSpecification {

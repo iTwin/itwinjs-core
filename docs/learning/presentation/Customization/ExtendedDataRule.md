@@ -1,5 +1,7 @@
 # Extended Data Rule
 
+> Based on [ExtendedDataRule]($presentation-common) interface.
+
 Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records).
 
 ## Typical Use Case

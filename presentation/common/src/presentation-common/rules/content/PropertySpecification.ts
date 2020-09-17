@@ -34,9 +34,21 @@ export interface PropertyOverrides {
 
 /**
  * Specification of an ECProperty and its overrides
+ *
+ * @see [More details]($docs/learning/presentation/Content/PropertySpecification.md)
  * @public
  */
 export interface PropertySpecification extends PropertyOverrides {
-  /** Name of the ECProperty */
+  /**
+   * Name of the ECProperty.
+   *
+   * A `"*"` may be specified to match all properties in current context:
+   * - when the specification is used in an ECClass context (e.g. in a [[ContentModifier]] rule),
+   *   all properties of that class are matched (including properties derived from base classes, but excluding
+   *   subclass properties).
+   * - when specification is used outside of class context, all properties found in that context are matched. E.g. when
+   *   used in [[ContentSpecification.propertyOverrides]] where [[ContentSpecification]] creates content with properties of
+   *   different classes.
+   */
   name: string;
 }
