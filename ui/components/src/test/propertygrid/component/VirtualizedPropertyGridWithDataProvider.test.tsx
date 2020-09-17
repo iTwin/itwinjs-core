@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { fireEvent, render } from "@testing-library/react";
+import { act, fireEvent, render, waitForDomChange } from "@testing-library/react";
 import * as faker from "faker";
 import * as React from "react";
 import sinon from "sinon";
@@ -379,38 +379,37 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
             [rootCategory2.name]: [TestUtils.createPrimitiveStringProperty("rootCategory2Property", "Test", "Test")],
             [childCategory2.name]: [TestUtils.createPrimitiveStringProperty("childCategory2Property", "Test", "Test")],
           },
+          reusePropertyDataState: true,
         }),
       };
 
-      const { container } = render(<VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
-      await TestUtils.flushAsyncOperations();
+      const { findByText, getByText, queryByText } = render(
+        <VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />,
+      );
 
-      const categoryBlocks = container.querySelectorAll(".virtualized-grid-node-category .header");
+      await findByText("Root1");
 
-      const rootCategoryBlock1 = categoryBlocks[0];
-      const rootCategoryBlock2 = categoryBlocks[2];
+      expect(getByText("rootCategory1Property")).to.be.not.null;
+      expect(getByText("childCategory1Property")).to.be.not.null;
+      expect(queryByText("rootCategory2Property")).to.be.null;
+      expect(queryByText("childCategory2Property")).to.be.null;
 
-      expect(container.querySelector(".virtualized-grid-node span[title=\"rootCategory1Property\"]")).to.be.not.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory1Property\"]")).to.be.not.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"rootCategory2Property\"]")).to.be.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory2Property\"]")).to.be.null;
+      fireEvent.click(getByText("Root1"));
+      fireEvent.click(getByText("Root2"));
 
-      fireEvent.click(rootCategoryBlock1);
-      fireEvent.click(rootCategoryBlock2);
-
-      expect(container.querySelector(".virtualized-grid-node span[title=\"rootCategory1Property\"]")).to.be.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory1Property\"]")).to.be.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"rootCategory2Property\"]")).to.be.not.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory2Property\"]")).to.be.not.null;
+      expect(queryByText("rootCategory1Property")).to.be.null;
+      expect(queryByText("childCategory1Property")).to.be.null;
+      expect(getByText("rootCategory2Property")).to.be.not.null;
+      expect(getByText("childCategory2Property")).to.be.not.null;
 
       // Refresh PropertyGrid data.
-      dataProvider.onDataChanged.raiseEvent();
-      await TestUtils.flushAsyncOperations();
+      act(() => dataProvider.onDataChanged.raiseEvent());
+      await waitForDomChange();
 
-      expect(container.querySelector(".virtualized-grid-node span[title=\"rootCategory1Property\"]")).to.be.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory1Property\"]")).to.be.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"rootCategory2Property\"]")).to.be.not.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory2Property\"]")).to.be.not.null;
+      expect(queryByText("rootCategory1Property")).to.be.null;
+      expect(queryByText("childCategory1Property")).to.be.null;
+      expect(getByText("rootCategory2Property")).to.be.not.null;
+      expect(getByText("childCategory2Property")).to.be.not.null;
     });
 
     it("keeps the collapsed state of PropertyCategoryBlock when nested data is refreshed", async () => {
@@ -421,7 +420,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       };
       const childCategory1: PropertyCategory = {
         name: "ChildCategory1",
-        label: "Child",
+        label: "Child1",
         expand: false,
         parentCategory: rootCategory1,
       };
@@ -433,7 +432,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       };
       const childCategory2: PropertyCategory = {
         name: "ChildCategory2",
-        label: "Child",
+        label: "Child2",
         expand: true,
         parentCategory: rootCategory2,
       };
@@ -450,32 +449,31 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
             [rootCategory2.name]: [TestUtils.createPrimitiveStringProperty("rootCategory2Property", "Test", "Test")],
             [childCategory2.name]: [TestUtils.createPrimitiveStringProperty("childCategory2Property", "Test", "Test")],
           },
+          reusePropertyDataState: true,
         }),
       };
 
-      const { container } = render(<VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
-      await TestUtils.flushAsyncOperations();
+      const { findByText, getByText, queryByText } = render(
+        <VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />,
+      );
 
-      const categoryBlocks = container.querySelectorAll(".virtualized-grid-node-category .header");
+      await findByText("Root1");
 
-      const childCategoryBlock1 = categoryBlocks[1];
-      const childCategoryBlock2 = categoryBlocks[3];
+      expect(queryByText("childCategory1Property")).to.be.null;
+      expect(getByText("childCategory2Property")).to.be.not.null;
 
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory1Property\"]")).to.be.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory2Property\"]")).to.be.not.null;
+      fireEvent.click(getByText("Child1"));
+      fireEvent.click(getByText("Child2"));
 
-      fireEvent.click(childCategoryBlock1);
-      fireEvent.click(childCategoryBlock2);
-
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory1Property\"]")).to.be.not.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory2Property\"]")).to.be.null;
+      expect(getByText("childCategory1Property")).to.be.not.null;
+      expect(queryByText("childCategory2Property")).to.be.null;
 
       // Refresh PropertyGrid data.
-      dataProvider.onDataChanged.raiseEvent();
-      await TestUtils.flushAsyncOperations();
+      act(() => dataProvider.onDataChanged.raiseEvent());
+      await waitForDomChange();
 
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory1Property\"]")).to.be.not.null;
-      expect(container.querySelector(".virtualized-grid-node span[title=\"childCategory2Property\"]")).to.be.null;
+      expect(getByText("childCategory1Property")).to.be.not.null;
+      expect(queryByText("childCategory2Property")).to.be.null;
     });
 
     it("rerenders if data in the provider changes", async () => {
