@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, Item, KeySet, PresentationError, SortDirection as ContentSortDirection, ValuesDictionary,
+  Content, SortDirection as ContentSortDirection, DefaultContentDisplayTypes, Descriptor, Item, KeySet, PresentationError, ValuesDictionary,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";

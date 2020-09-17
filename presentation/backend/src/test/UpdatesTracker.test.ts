@@ -64,7 +64,7 @@ describe("UpdatesTracker", () => {
       });
     });
     afterEach(() => {
-      tracker.dispose;
+      tracker.dispose();
     });
 
     it("doesn't emit events if there are no updates", () => {

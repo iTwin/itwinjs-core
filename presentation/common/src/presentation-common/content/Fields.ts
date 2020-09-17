@@ -272,6 +272,7 @@ export class PropertiesField extends Field {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get propertySourceInfo() {
     // note: properties fields should always have at least one property
     return {

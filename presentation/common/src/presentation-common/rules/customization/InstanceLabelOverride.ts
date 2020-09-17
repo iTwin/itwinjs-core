@@ -144,7 +144,8 @@ export interface InstanceLabelOverrideStringValueSpecification extends InstanceL
  * Specification to define how the label for [[InstanceLabelOverride]] should be created.
  * @public
  */
-export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification
-  | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification
-  | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification
-  | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification;
+export type InstanceLabelOverrideValueSpecification =
+  InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification |
+  InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification |
+  InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification |
+  InstanceLabelOverrideLocalIdSpecification;

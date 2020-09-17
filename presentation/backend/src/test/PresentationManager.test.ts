@@ -185,9 +185,9 @@ describe("PresentationManager", () => {
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
         using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123, eventSink }), (_) => {
           expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123, eventSink }));
-          expect(tracker.dispose).to.not.be.called;
+          expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
         });
-        expect(tracker.dispose).to.be.calledOnce;
+        expect(tracker.dispose).to.be.calledOnce; // eslint-disable-line @typescript-eslint/unbound-method
       });
 
     });
@@ -1307,7 +1307,7 @@ describe("PresentationManager", () => {
             editor: {
               name: faker.random.word(),
               params: {
-                some_param: faker.random.number(),
+                ["some_param"]: faker.random.number(),
               },
             },
             properties: [{
@@ -1461,7 +1461,7 @@ describe("PresentationManager", () => {
             editor: {
               name: faker.random.word(),
               params: {
-                some_param: faker.random.number(),
+                ["some_param"]: faker.random.number(),
               },
             },
             properties: [{

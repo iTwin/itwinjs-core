@@ -90,7 +90,8 @@ export class Presentation {
       });
       favoritePropertiesManager = new FavoritePropertiesManager({ storage });
     }
-    presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection.bind(favoritePropertiesManager);
     await LocalizationHelper.registerNamespaces();
     for (const handler of initializationHandlers) {
       const cleanup = await handler();

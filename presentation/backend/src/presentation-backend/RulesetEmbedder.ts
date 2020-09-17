@@ -110,7 +110,7 @@ export class RulesetEmbedder {
     this._imodel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();
-        const rulesetElement = this._imodel.elements.getElement({ id: row.id }) as RulesetElements.Ruleset;
+        const rulesetElement = this._imodel.elements.getElement({ id: row.id });
         const ruleset = rulesetElement.jsonProperties.jsonProperties;
         rulesetList.push(ruleset);
       }

@@ -11,7 +11,7 @@ import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayValue, Field, InstanceKey, Item,
-  NestedContentField, PresentationError, PresentationStatus, PropertyValueFormat as PresentationPropertyValueFormat, Ruleset, Value,
+  NestedContentField, PresentationError, PropertyValueFormat as PresentationPropertyValueFormat, PresentationStatus, Ruleset, Value,
 } from "@bentley/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";

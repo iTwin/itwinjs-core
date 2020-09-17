@@ -53,6 +53,8 @@ export interface IFavoritePropertiesStorage {
  * @internal
  */
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get isSignedIn() {
     // note: these checks are also done when creating `AuthorizedFrontendRequestContext` but instead of just
     // throwing it also logs error messages which we want to avoid

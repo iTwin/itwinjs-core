@@ -37,10 +37,7 @@ export interface PropertyEditorSpecification {
  * Parameters for [[PropertyEditorSpecification]]
  * @public
  */
-export declare type PropertyEditorParameters = PropertyEditorJsonParameters
-  | PropertyEditorMultilineParameters
-  | PropertyEditorRangeParameters
-  | PropertyEditorSliderParameters;
+export declare type PropertyEditorParameters = PropertyEditorJsonParameters | PropertyEditorMultilineParameters | PropertyEditorRangeParameters | PropertyEditorSliderParameters;
 
 /**
  * Used for serializing array of [[PropertyEditorParameters]] to JSON

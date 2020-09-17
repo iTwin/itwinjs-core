@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as moq from "typemoq";
 import sinon from "sinon";
+import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodePathElement } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -13,8 +13,6 @@ import { AbstractTreeNodeLoaderWithProvider, TreeModelSource } from "@bentley/ui
 import { renderHook } from "@testing-library/react-hooks";
 import { ControlledTreeFilteringProps, IPresentationTreeDataProvider, useControlledTreeFiltering } from "../../../presentation-components";
 import { FilteredPresentationTreeDataProvider } from "../../../presentation-components/tree/FilteredDataProvider";
-
-/* eslint-disable @typescript-eslint/promise-function-async */
 
 describe("useControlledTreeFiltering", () => {
   const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
@@ -45,7 +43,7 @@ describe("useControlledTreeFiltering", () => {
 
   it("starts filtering if filter is provided", async () => {
     const pathsResult1 = new ResolvablePromise<NodePathElement[]>();
-    dataProviderMock.setup((x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult1);
+    dataProviderMock.setup(async (x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult1);
 
     const { result } = renderHook(
       useControlledTreeFiltering,
@@ -65,8 +63,8 @@ describe("useControlledTreeFiltering", () => {
     const clock = sinon.useFakeTimers();
     const pathsResult1 = new ResolvablePromise<NodePathElement[]>();
     const pathsResult2 = new ResolvablePromise<NodePathElement[]>();
-    dataProviderMock.setup((x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult1);
-    dataProviderMock.setup((x) => x.getFilteredNodePaths("last")).returns(async () => pathsResult2);
+    dataProviderMock.setup(async (x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult1);
+    dataProviderMock.setup(async (x) => x.getFilteredNodePaths("last")).returns(async () => pathsResult2);
 
     const initialProps: ControlledTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,
@@ -79,7 +77,7 @@ describe("useControlledTreeFiltering", () => {
 
     // give time to start request
     await clock.tickAsync(1);
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
     expect(result.current).to.not.be.undefined;
     expect(result.current.isFiltering).to.be.true;
 
@@ -88,7 +86,7 @@ describe("useControlledTreeFiltering", () => {
 
     // give time to start request if necessary
     await clock.tickAsync(1);
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
     expect(result.current).to.not.be.undefined;
     expect(result.current.isFiltering).to.be.true;
 
@@ -97,22 +95,22 @@ describe("useControlledTreeFiltering", () => {
 
     // give time to start request if necessary
     await clock.tickAsync(1);
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
     expect(result.current).to.not.be.undefined;
     expect(result.current.isFiltering).to.be.true;
 
     clock.restore();
     // resolve first request and verify that new filtering request started
     await pathsResult1.resolve([]);
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.exactly(2));
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.exactly(2));
     expect(result.current).to.not.be.undefined;
     expect(result.current.isFiltering).to.be.true;
 
     // resolve second request and verify state
     await pathsResult2.resolve([]);
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.exactly(2));
-    dataProviderMock.verify((x) => x.getFilteredNodePaths("test"), moq.Times.once());
-    dataProviderMock.verify((x) => x.getFilteredNodePaths("last"), moq.Times.once());
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.exactly(2));
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths("test"), moq.Times.once());
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths("last"), moq.Times.once());
     expect(result.current).to.not.be.undefined;
     expect(result.current.isFiltering).to.be.false;
     expect(result.current.filteredNodeLoader).to.not.be.undefined;
@@ -124,7 +122,7 @@ describe("useControlledTreeFiltering", () => {
   it("clears filtering request still in progress", async () => {
     const clock = sinon.useFakeTimers();
     const pathsResult = new ResolvablePromise<NodePathElement[]>();
-    dataProviderMock.setup((x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult);
+    dataProviderMock.setup(async (x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult);
 
     const initialProps: ControlledTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,
@@ -137,7 +135,7 @@ describe("useControlledTreeFiltering", () => {
 
     // give time to start request if necessary
     await clock.tickAsync(1);
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
     expect(result.current).to.not.be.undefined;
     expect(result.current.isFiltering).to.be.true;
 
@@ -146,14 +144,14 @@ describe("useControlledTreeFiltering", () => {
 
     // give time to start request if necessary
     await clock.tickAsync(1);
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
     expect(result.current).to.not.be.undefined;
     expect(result.current.isFiltering).to.be.false;
 
     clock.restore();
     // resolve first request verify that filtering was not applied
     await pathsResult.resolve([]);
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.exactly(1));
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.exactly(1));
     expect(result.current).to.not.be.undefined;
     expect(result.current.isFiltering).to.be.false;
     expect(result.current.filteredNodeLoader).to.be.deep.eq(nodeLoaderMock.object);
@@ -163,7 +161,7 @@ describe("useControlledTreeFiltering", () => {
   it("filters when dataProvider changes", async () => {
     const pathsResult = new ResolvablePromise<NodePathElement[]>();
     const filter = "test";
-    dataProviderMock.setup((x) => x.getFilteredNodePaths(filter)).returns(async () => pathsResult);
+    dataProviderMock.setup(async (x) => x.getFilteredNodePaths(filter)).returns(async () => pathsResult);
 
     const initialProps: ControlledTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,
@@ -176,28 +174,28 @@ describe("useControlledTreeFiltering", () => {
 
     await pathsResult.resolve([]);
     expect(result.current).to.not.be.undefined;
-    expect(result.current!.isFiltering).to.be.false;
+    expect(result.current.isFiltering).to.be.false;
     expect(result.current.filteredNodeLoader).to.not.be.undefined;
-    dataProviderMock.verify((x) => x.getFilteredNodePaths(filter), moq.Times.once());
+    dataProviderMock.verify(async (x) => x.getFilteredNodePaths(filter), moq.Times.once());
 
     const newProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
     const newNodeLoader = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
     newNodeLoader.setup((x) => x.dataProvider).returns(() => newProvider.object);
     const newPathsResult = new ResolvablePromise<NodePathElement[]>();
-    newProvider.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString())).returns(async () => newPathsResult);
+    newProvider.setup(async (x) => x.getFilteredNodePaths(moq.It.isAnyString())).returns(async () => newPathsResult);
 
     rerender({ ...initialProps, nodeLoader: newNodeLoader.object });
 
     await newPathsResult.resolve([]);
     expect(result.current).to.not.be.undefined;
-    expect(result.current!.isFiltering).to.be.false;
+    expect(result.current.isFiltering).to.be.false;
     expect(result.current.filteredNodeLoader).to.not.be.undefined;
-    newProvider.verify((x) => x.getFilteredNodePaths(filter), moq.Times.once());
+    newProvider.verify(async (x) => x.getFilteredNodePaths(filter), moq.Times.once());
   });
 
   it("filters node loader with FilteredPresentationTreeDataProvider", async () => {
     const pathsResult = new ResolvablePromise<NodePathElement[]>();
-    dataProviderMock.setup((x) => x.getFilteredNodePaths(moq.It.isAny())).returns(async () => pathsResult);
+    dataProviderMock.setup(async (x) => x.getFilteredNodePaths(moq.It.isAny())).returns(async () => pathsResult);
 
     const initialProps: ControlledTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,

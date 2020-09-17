@@ -45,6 +45,7 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
     return (
       <div className="RulesetSelector">
         {IModelApp.i18n.translate("Sample:controls.notifications.select-ruleset")}:
+        {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select onChange={this.onSelectedRulesetIdChanged}>
           {this.state.availableRulesets.map((rulesetId: string) => (
             <option value={rulesetId} key={rulesetId}>{rulesetId}</option>

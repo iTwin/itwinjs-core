@@ -14,15 +14,15 @@
   "scripts": {
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
-    "build:frontend": "cross-env GENERATE_SOURCEMAP=false USE_FAST_SASS=true EXTEND_ESLINT=true react-scripts build",
+    "build:frontend": "cross-env GENERATE_SOURCEMAP=false USE_FAST_SASS=true react-scripts build",
     "copy:assets": "symlink-dir \"./assets\" ./lib/assets",
     "clean": "rimraf build lib .rush/temp/package-deps*.json",
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "lint": "eslint --config package.json --no-eslintrc ./src/**/*.{ts,tsx} 1>&2",
+    "lint": "eslint --config package.json --max-warnings 0 --no-eslintrc ./src/**/*.{ts,tsx} 1>&2",
     "electron": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",
-    "start:webserver": "cross-env BROWSER=none USE_FAST_SASS=true EXTEND_ESLINT=true react-scripts start",
+    "start:webserver": "cross-env BROWSER=none USE_FAST_SASS=true react-scripts start",
     "start:backend": "node --inspect --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p start:webserver start:backend",
     "test": "",
@@ -87,7 +87,7 @@
     "plugins": [
       "@bentley"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@bentley/ui",
     "parserOptions": {
       "project": [
         "tsconfig.json",

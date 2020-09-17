@@ -80,7 +80,7 @@ describe("RpcRequestsHandler", () => {
 
       it("returns result of the request", async () => {
         const result = faker.random.number();
-        const actualResult = await handler.request(undefined, async () => successResponse(result), defaultRpcHandlerOptions);
+        const actualResult = await handler.request(async () => successResponse(result), defaultRpcHandlerOptions);
         expect(actualResult).to.eq(result);
       });
 
@@ -90,7 +90,7 @@ describe("RpcRequestsHandler", () => {
 
       it("re-throws exception when request throws unknown exception", async () => {
         const func = async () => { throw new Error("test"); };
-        await expect(handler.request(undefined, func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(Error);
+        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(Error);
       });
 
     });
@@ -99,7 +99,7 @@ describe("RpcRequestsHandler", () => {
 
       it("throws an exception", async () => {
         const func = async () => errorResponse(PresentationStatus.Error);
-        await expect(handler.request(undefined, func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
+        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
       });
 
     });
@@ -108,7 +108,7 @@ describe("RpcRequestsHandler", () => {
 
       it("returns PresentationError", async () => {
         const func = async () => errorResponse(PresentationStatus.BackendTimeout);
-        await expect(handler.request(undefined, func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
+        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
       });
 
       it("calls request handler 10 times", async () => {
@@ -116,7 +116,7 @@ describe("RpcRequestsHandler", () => {
         requestHandlerStub.returns(Promise.resolve(errorResponse(PresentationStatus.BackendTimeout)));
         const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
 
-        await expect(handler.request(undefined, requestHandlerSpy, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
+        await expect(handler.request(requestHandlerSpy, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
         expect(requestHandlerSpy.callCount).to.be.equal(10);
       });
 

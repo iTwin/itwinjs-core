@@ -120,9 +120,8 @@ export interface DefaultGroupingPropertiesContainer {
  * Navigation rule specifications that define what content the rule results in.
  * @public
  */
-export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
+export type ChildNodeSpecification =
+  DEPRECATED_AllInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
   DEPRECATED_AllRelatedInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
-  CustomNodeSpecification |
-  InstanceNodesOfSpecificClassesSpecification |
-  RelatedInstanceNodesSpecification |
-  CustomQueryInstanceNodesSpecification;
+  CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification |
+  RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;

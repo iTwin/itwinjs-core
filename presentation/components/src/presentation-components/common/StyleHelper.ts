@@ -190,7 +190,7 @@ export class StyleHelper {
   /** Get color number from HEX format: `#ff3300` */
   private static getColorFromHex(name: string): number {
     name = name.substr(1, 7);
-    let color: number = parseInt("0x" + name, 16);
+    let color: number = parseInt(`0x${name}`, 16);
     color = color << 8 | 255;
     return color;
   }

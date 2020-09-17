@@ -204,6 +204,7 @@ function FavoriteFieldActionButton(props: { imodel: IModelConnection, field: Fie
       await Presentation.favoriteProperties.add(field, imodel, FAVORITES_SCOPE);
   }, [field, imodel]);
   return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div className="favorite-action-button" onClick={toggleFavoriteProperty}>
       {Presentation.favoriteProperties.has(field, imodel, FAVORITES_SCOPE) ?
         <div style={{ width: "20px", height: "20px", background: "orange" }} /> :

@@ -134,14 +134,14 @@ describe("ContentDataProvider", () => {
     });
 
     it("sets a different rulesetId and clears caches", () => {
-      const newId = rulesetId + " (changed)";
+      const newId = `${rulesetId} (changed)`;
       provider.rulesetId = newId;
       expect(provider.rulesetId).to.eq(newId);
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
     it("doesn't clear caches if setting to the same rulesetId", () => {
-      const newId = rulesetId + "";
+      const newId = `${rulesetId}`;
       provider.rulesetId = newId;
       expect(provider.rulesetId).to.eq(newId);
       expect(invalidateCacheSpy).to.not.be.called;

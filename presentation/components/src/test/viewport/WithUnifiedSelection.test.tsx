@@ -11,7 +11,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { Code, ElementProps } from "@bentley/imodeljs-common";
-import { HiliteSet as IModelHiliteSet, IModelApp, IModelConnection, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";

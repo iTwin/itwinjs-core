@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import * as _ from "lodash";
+
 import { BeEvent, IDisposable, isIDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@bentley/presentation-common";
@@ -99,7 +99,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
     if (!this._projectProperties.has(projectId)) {
       const projectProperties = await this._storage.loadProperties(projectId) || new Set<PropertyFullName>();
-      this._projectProperties.set(projectId!, projectProperties);
+      this._projectProperties.set(projectId, projectProperties);
     }
 
     if (!this._imodelProperties.has(getiModelInfo(projectId, imodelId))) {
@@ -206,7 +206,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
     const countBefore = favoriteProperties.size;
     const fieldInfos = getFieldInfos(field);
-    fieldInfos.forEach(favoriteProperties.add, favoriteProperties);
+    fieldInfos.forEach((info) => favoriteProperties.add(info));
     if (favoriteProperties.size !== countBefore) {
       const saves: Array<Promise<void>> = [];
       saves.push(saveProperties(favoriteProperties));
@@ -230,7 +230,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
     const countBefore = favoriteProperties.size;
     const fieldInfos = getFieldInfos(field);
-    fieldInfos.forEach(favoriteProperties.add, favoriteProperties);
+    fieldInfos.forEach((info) => favoriteProperties.add(info));
     if (favoriteProperties.size !== countBefore) {
       await this._storage.saveProperties(favoriteProperties, projectId, imodelId);
       this.onFavoritesChanged.raiseEvent();
@@ -290,7 +290,7 @@ export class FavoritePropertiesManager implements IDisposable {
     let favoritesChanged = false;
     for (const { properties, save } of workingScopes) {
       const countBefore = properties.size;
-      fieldInfos.forEach(properties.delete, properties);
+      fieldInfos.forEach((info) => properties.delete(info));
       if (properties.size !== countBefore) {
         saves.push(save(properties));
         favoritesChanged = true;
@@ -333,7 +333,7 @@ export class FavoritePropertiesManager implements IDisposable {
     let favoritesChanged = false;
     for (const { properties, save } of scopes) {
       const countBefore = properties.size;
-      fieldInfos.forEach(properties.delete, properties);
+      fieldInfos.forEach((info) => properties.delete(info));
       if (properties.size !== countBefore) {
         saves.push(save(properties));
         favoritesChanged = true;
@@ -521,7 +521,7 @@ export class FavoritePropertiesManager implements IDisposable {
     INNER JOIN ECDbMeta.ECSchemaDef derivedSchema ON derivedSchema.ECInstanceId = derivedClass.Schema.Id
     INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
     INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
-    WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => ("'" + className + "'")).join(",")})`;
+    WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
     for await (const row of imodel.query(query)) {
       if (!(row.classFullName in baseClasses))
         baseClasses[row.classFullName] = [];
@@ -657,7 +657,7 @@ enum Direction {
   Down = 1,
 }
 
-const getiModelInfo = (projectId: string, imodelId: string) => projectId + "/" + imodelId;
+const getiModelInfo = (projectId: string, imodelId: string) => `${projectId}/${imodelId}`;
 
 const getPropertiesFieldPropertyNames = (field: PropertiesField) => {
   const nestingPrefix = getNestingPrefix(field.parent);
@@ -684,7 +684,7 @@ const getNestingPrefix = (field: NestedContentField | undefined) => {
     return "";
 
   path.reverse();
-  return path.join("-") + "-";
+  return `${path.join("-")}-`;
 };
 
 const getPropertyClassName = (propertyName: PropertyFullName): string | undefined => {
@@ -702,7 +702,7 @@ const getPropertyClassName = (propertyName: PropertyFullName): string | undefine
 export const getFieldInfos = (field: Field): Set<PropertyFullName> => {
   const fieldInfos: Set<PropertyFullName> = new Set<PropertyFullName>();
   if (field.isPropertiesField())
-    getPropertiesFieldPropertyNames(field).forEach(fieldInfos.add, fieldInfos);
+    getPropertiesFieldPropertyNames(field).forEach((info) => fieldInfos.add(info));
   else if (field.isNestedContentField())
     fieldInfos.add(getNestedContentFieldPropertyName(field));
   else

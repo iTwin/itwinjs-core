@@ -673,7 +673,7 @@ describe("KeySet", () => {
         it("returns false when instance key classes are different", () => {
           const instanceKey1 = createRandomECInstanceKey();
           const instanceKey2: InstanceKey = {
-            className: instanceKey1.className + "_different",
+            className: `${instanceKey1.className}_different`,
             id: instanceKey1.id,
           };
           const set = new KeySet([instanceKey1]);

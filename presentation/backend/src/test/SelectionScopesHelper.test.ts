@@ -306,7 +306,7 @@ describe("SelectionScopesHelper", () => {
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
         expect(result.size).to.eq(1);
-        expect(result.has({ className: category.classFullName, id: element.category! })).to.be.true;
+        expect(result.has({ className: category.classFullName, id: element.category })).to.be.true;
       });
 
       it("skips non-geometric elementProps", async () => {
@@ -334,7 +334,7 @@ describe("SelectionScopesHelper", () => {
         const ids = [elementId, createTransientElementId()];
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "category");
         expect(result.size).to.eq(1);
-        expect(result.has({ className: category.classFullName, id: element.category! })).to.be.true;
+        expect(result.has({ className: category.classFullName, id: element.category })).to.be.true;
       });
 
     });

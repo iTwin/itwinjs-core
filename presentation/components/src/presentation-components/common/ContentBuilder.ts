@@ -12,7 +12,7 @@ import {
 } from "@bentley/presentation-common";
 import {
   ArrayValue, EnumerationChoicesInfo, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValue,
-  PropertyValueFormat as UiPropertyValueFormat, StructValue,
+  StructValue, PropertyValueFormat as UiPropertyValueFormat,
 } from "@bentley/ui-abstract";
 import { matchLinks } from "@bentley/ui-components";
 import { Omit } from "@bentley/ui-core";
@@ -188,7 +188,7 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, props:
     };
     // if array contains just one value, replace it with the value
     if (1 === value.items.length)
-      value = value.items[0].value!;
+      value = value.items[0].value;
   }
 
   const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field, props));
@@ -239,7 +239,7 @@ export class ContentBuilder {
       return createNestedContentRecord(field, item, props ? props : {});
 
     const isValueReadOnly = field.isReadonly || item.isFieldMerged(field.name);
-    return createRecord(ContentBuilder.createPropertyDescription(field, props!), field.type,
+    return createRecord(ContentBuilder.createPropertyDescription(field, props), field.type,
       item.values[field.name], item.displayValues[field.name],
       isValueReadOnly, item.isFieldMerged(field.name), item.extendedData);
   }

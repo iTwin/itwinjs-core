@@ -15,13 +15,13 @@ describe("UpdateInfo", () => {
 
     it("serializes `UpdateInfo` object to JSON", () => {
       const info: UpdateInfo = {
-        test_ruleset_1: {
+        ["test_ruleset_1"]: {
           content: "FULL",
         },
-        test_ruleset_2: {
+        ["test_ruleset_2"]: {
           hierarchy: "FULL",
         },
-        test_ruleset_3: {
+        ["test_ruleset_3"]: {
           hierarchy: [{
             type: "Delete",
             node: createRandomECInstancesNode(),
@@ -37,13 +37,13 @@ describe("UpdateInfo", () => {
 
     it("deserializes `UpdateInfo` object from JSON", () => {
       const json: UpdateInfoJSON = {
-        test_ruleset_1: {
+        ["test_ruleset_1"]: {
           content: "FULL",
         },
-        test_ruleset_2: {
+        ["test_ruleset_2"]: {
           hierarchy: "FULL",
         },
-        test_ruleset_3: {
+        ["test_ruleset_3"]: {
           hierarchy: [{
             type: "Delete",
             node: createRandomECInstancesNodeJSON(),

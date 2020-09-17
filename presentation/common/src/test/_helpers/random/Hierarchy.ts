@@ -81,8 +81,8 @@ export const createRandomECInstancesNode = (): Node => {
   return {
     key: createRandomECInstancesNodeKey(),
     label: createRandomLabelDefinition(),
-    description: nullable<string>(faker.lorem.sentence),
-    imageId: nullable<string>(faker.random.word),
+    description: nullable<string>(() => faker.lorem.sentence()),
+    imageId: nullable<string>(() => faker.random.word()),
     foreColor: nullable<string>(createRandomHexColor),
     backColor: nullable<string>(createRandomRgbColor),
     hasChildren: faker.random.boolean(),
@@ -99,7 +99,7 @@ export const createRandomECInstancesNodeJSON = (): NodeJSON => {
   return {
     key: createRandomECInstancesNodeKeyJSON(),
     labelDefinition: createRandomLabelDefinitionJSON(),
-    description: nullable<string>(faker.lorem.sentence),
+    description: nullable<string>(() => faker.lorem.sentence()),
     foreColor: nullable<string>(createRandomHexColor),
     backColor: nullable<string>(createRandomRgbColor),
     hasChildren: faker.random.boolean(),

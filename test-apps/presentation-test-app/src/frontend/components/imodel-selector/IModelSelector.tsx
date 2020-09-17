@@ -32,8 +32,8 @@ export default class IModelSelector extends React.Component<Props, State> {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onImodelSelected = async (e: any) => {
-    const imodelPath = e.target.value;
+  private onImodelSelected = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const imodelPath = e.currentTarget.value;
     if (MyAppFrontend.iModel) {
       await MyAppFrontend.iModel.close();
     }
@@ -60,6 +60,7 @@ export default class IModelSelector extends React.Component<Props, State> {
     return (
       <div className="IModelSelector">
         {IModelApp.i18n.translate("Sample:controls.notifications.select-imodel")}:
+        {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select onChange={this.onImodelSelected}>
           {this.state.availableImodels.map((path: string) => (
             <option key={path} value={path}>{path.split(/[\\/]/).pop()}</option>

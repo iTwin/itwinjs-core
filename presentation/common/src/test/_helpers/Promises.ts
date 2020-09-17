@@ -9,10 +9,9 @@ export class PromiseContainer<T> {
   private _reject!: PromiseRejectFunc;
   private _internal: Promise<T>;
   constructor() {
-    const self = this;
     this._internal = new Promise<T>((resolve: PromiseResolveFunc<T>, reject: PromiseRejectFunc) => {
-      self._resolve = resolve;
-      self._reject = reject;
+      this._resolve = resolve;
+      this._reject = reject;
     });
   }
   public get promise(): Promise<T> { return this._internal; }

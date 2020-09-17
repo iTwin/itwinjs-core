@@ -35,12 +35,6 @@ import { StyleOverride } from "./StyleOverride";
  *
  * @public
  */
-export declare type CustomizationRule = InstanceLabelOverride |
-  CheckBoxRule |
-  GroupingRule |
-  ImageIdOverride |
-  LabelOverride |
-  SortingRule |
-  StyleOverride |
-  ExtendedDataRule |
-  NodeArtifactsRule;
+export declare type CustomizationRule =
+  InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride |
+  SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;

@@ -39,6 +39,7 @@ export default function UnitSystemSelector(props: UnitSystemSelectorProps) { // 
   return (
     <div className="UnitSystemSelector">
       {IModelApp.i18n.translate("Sample:controls.notifications.select-unit-system")}:
+      {/* eslint-disable-next-line jsx-a11y/no-onchange */}
       <select onChange={memoizedOnUnitSystemSelected} value={selectedUnitSystem}>
         {availableUnitSystems.map(({ label, value }: { label: string, value: string }) => (
           <option value={value} key={value}>{label}</option>

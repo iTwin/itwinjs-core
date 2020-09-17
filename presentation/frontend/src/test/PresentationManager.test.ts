@@ -125,6 +125,7 @@ describe("PresentationManager", () => {
       sinon.stub(IModelApp, "isNativeApp").get(() => true);
       const eventSource = sinon.createStubInstance(EventSource) as unknown as EventSource;
       PresentationManager.create({ eventSource });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(eventSource.on).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
     });
 
@@ -141,6 +142,7 @@ describe("PresentationManager", () => {
       sinon.stub(IModelApp, "isNativeApp").get(() => true);
       const eventSource = sinon.createStubInstance(EventSource) as unknown as EventSource;
       using(PresentationManager.create({ eventSource }), (_) => { });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(eventSource.off).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
     });
 

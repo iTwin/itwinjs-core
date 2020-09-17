@@ -9,7 +9,7 @@
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";
+import { ContentDataProvider, ContentBuilder as PresentationContentBuilder } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 

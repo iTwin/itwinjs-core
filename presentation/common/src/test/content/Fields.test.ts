@@ -247,7 +247,7 @@ describe("NestedContentField", () => {
 
     it("returns undefined when field is not found", () => {
       const field = createRandomNestedContentField();
-      const name = field.nestedFields[0].name + "_does_not_exist";
+      const name = `${field.nestedFields[0].name}_does_not_exist`;
       expect(field.getFieldByName(name, true)).to.be.undefined;
     });
 

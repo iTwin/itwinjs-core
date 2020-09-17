@@ -2040,7 +2040,7 @@ export class RpcRequestsHandler implements IDisposable {
     loadHierarchy(options: HierarchyRequestOptions<IModelRpcProps>): Promise<void>;
     request<TResult, TOptions extends {
         imodel: IModelRpcProps;
-    }, TArg = any>(context: any, func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<Omit<TOptions, "imodel">>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
+    }, TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<Omit<TOptions, "imodel">>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
     }
 
 // @internal

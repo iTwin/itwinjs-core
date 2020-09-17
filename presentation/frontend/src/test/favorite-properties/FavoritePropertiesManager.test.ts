@@ -926,8 +926,11 @@ describe("FavoritePropertiesManager", () => {
       const b = createRandomPropertiesField(); b.properties[0].property.classInfo.name = "S:B";
       const allFields = [a, b];
 
-      const classBaseClass = [{ classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" }, { classFullName: "S:B", baseClassFullName: "S:A" }];
+      const classBaseClass = [
+        { classFullName: "S:A", baseClassFullName: "S:A" },
+        { classFullName: "S:B", baseClassFullName: "S:B" },
+        { classFullName: "S:B", baseClassFullName: "S:A" },
+      ];
       imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
@@ -968,9 +971,13 @@ describe("FavoritePropertiesManager", () => {
       const visibleFields = [a1, a2, c]; // imitating a selection of a class C instance
 
       // data of table ECDbMeta.ClassHasAllBaseClasses
-      const classBaseClass = [{ classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" }, { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" }, { classFullName: "S:C", baseClassFullName: "S:A" }];
+      const classBaseClass = [
+        { classFullName: "S:A", baseClassFullName: "S:A" },
+        { classFullName: "S:B", baseClassFullName: "S:B" },
+        { classFullName: "S:B", baseClassFullName: "S:A" },
+        { classFullName: "S:C", baseClassFullName: "S:C" },
+        { classFullName: "S:C", baseClassFullName: "S:A" },
+      ];
       imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
@@ -1010,9 +1017,13 @@ describe("FavoritePropertiesManager", () => {
       const visibleFields = [c, a2, a1]; // imitating a selection of a class C instance
 
       // data of table ECDbMeta.ClassHasAllBaseClasses
-      const classBaseClass = [{ classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" }, { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" }, { classFullName: "S:C", baseClassFullName: "S:A" }];
+      const classBaseClass = [
+        { classFullName: "S:A", baseClassFullName: "S:A" },
+        { classFullName: "S:B", baseClassFullName: "S:B" },
+        { classFullName: "S:B", baseClassFullName: "S:A" },
+        { classFullName: "S:C", baseClassFullName: "S:C" },
+        { classFullName: "S:C", baseClassFullName: "S:A" },
+      ];
       imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
@@ -1052,9 +1063,13 @@ describe("FavoritePropertiesManager", () => {
       const visibleFields = [c, a2, a1]; // imitating a selection of a class C instance
 
       // data of table ECDbMeta.ClassHasAllBaseClasses
-      const classBaseClass = [{ classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" }, { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" }, { classFullName: "S:C", baseClassFullName: "S:A" }];
+      const classBaseClass = [
+        { classFullName: "S:A", baseClassFullName: "S:A" },
+        { classFullName: "S:B", baseClassFullName: "S:B" },
+        { classFullName: "S:B", baseClassFullName: "S:A" },
+        { classFullName: "S:C", baseClassFullName: "S:C" },
+        { classFullName: "S:C", baseClassFullName: "S:A" },
+      ];
       imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
@@ -1096,9 +1111,13 @@ describe("FavoritePropertiesManager", () => {
       const visibleFields = [a, c]; // imitating a selection of a class C instance
 
       // data of table ECDbMeta.ClassHasAllBaseClasses
-      const classBaseClass = [{ classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" }, { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" }, { classFullName: "S:C", baseClassFullName: "S:A" }];
+      const classBaseClass = [
+        { classFullName: "S:A", baseClassFullName: "S:A" },
+        { classFullName: "S:B", baseClassFullName: "S:B" },
+        { classFullName: "S:B", baseClassFullName: "S:A" },
+        { classFullName: "S:C", baseClassFullName: "S:C" },
+        { classFullName: "S:C", baseClassFullName: "S:A" },
+      ];
       imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
@@ -1151,9 +1170,13 @@ describe("FavoritePropertiesManager", () => {
       const visibleFields = [a1, caa2]; // imitating a selection of a class C instance
 
       // data of table ECDbMeta.ClassHasAllBaseClasses
-      const classBaseClass = [{ classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" }, { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" }, { classFullName: "S:C", baseClassFullName: "S:A" }];
+      const classBaseClass = [
+        { classFullName: "S:A", baseClassFullName: "S:A" },
+        { classFullName: "S:B", baseClassFullName: "S:B" },
+        { classFullName: "S:B", baseClassFullName: "S:A" },
+        { classFullName: "S:C", baseClassFullName: "S:C" },
+        { classFullName: "S:C", baseClassFullName: "S:A" },
+      ];
       imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
