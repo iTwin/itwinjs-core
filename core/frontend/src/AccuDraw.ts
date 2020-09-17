@@ -18,7 +18,7 @@ import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { StandardViewId } from "./StandardView";
-import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoordSource, InputCollector } from "./tools/Tool";
+import { BeButton, BeButtonEvent, CoordinateLockOverrides, InputCollector, InputSource } from "./tools/Tool";
 import { ViewTool } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
 import { linePlaneIntersect, ScreenViewport, Viewport } from "./Viewport";
@@ -814,13 +814,13 @@ export class AccuDraw {
     if (!viewport)
       return;
 
-    const ev = new BeButtonEvent({ point: pt, rawPoint: pt, viewPoint: viewport.worldToView(pt), viewport, coordsFrom: CoordSource.User });
+    const ev = new BeButtonEvent({ point: pt, rawPoint: pt, viewPoint: viewport.worldToView(pt), viewport });
     IModelApp.toolAdmin.setAdjustedDataPoint(ev);
   }
 
   /** @internal */
   public async sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void> {
-    const ev = new BeButtonEvent({ point: pt, rawPoint: pt, viewPoint: viewport.worldToView(pt), viewport, coordsFrom: CoordSource.User });
+    const ev = new BeButtonEvent({ point: pt, rawPoint: pt, viewPoint: viewport.worldToView(pt), viewport, inputSource: InputSource.Mouse, isDown: true });
 
     // Send both down and up events...
     await IModelApp.toolAdmin.sendButtonEvent(ev);

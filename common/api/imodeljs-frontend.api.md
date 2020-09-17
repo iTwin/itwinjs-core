@@ -9657,6 +9657,8 @@ export class ToolSettings {
     // @beta
     static walkStepHeight: number;
     static walkVelocity: number;
+    // @beta
+    static walkVelocityChange: number;
     static wheelLineFactor: number;
     static wheelPageFactor: number;
     static wheelZoomBumpDistance: number;
@@ -10373,7 +10375,7 @@ export class ViewHandleArray {
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
-    onWheel(ev: BeWheelEvent): void;
+    onWheel(ev: BeWheelEvent): boolean;
     // (undocumented)
     setFocus(index: number): void;
     // (undocumented)
@@ -10517,7 +10519,7 @@ export abstract class ViewingToolHandle {
     // (undocumented)
     onTouchTap(_ev: BeTouchEvent): boolean;
     // (undocumented)
-    onWheel(_ev: BeWheelEvent): void;
+    onWheel(_ev: BeWheelEvent): boolean;
     // (undocumented)
     protected pickDepthPoint(ev: BeButtonEvent): void;
     // (undocumented)
