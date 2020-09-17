@@ -1670,6 +1670,48 @@ Object {
 }
 `;
 
+exports[`PropertyDataProvider with flat property categories overrides default property category 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "Custom Category",
+      "name": "default",
+    },
+  ],
+  "description": "Subject",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "DgnV8Bridge",
+      "value": "DgnV8Bridge",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "default": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "User Label",
+          "name": "pc_bis_Element_UserLabel",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
 exports[`PropertyDataProvider with nested property categories creates empty result when properties requested for 0 instances 1`] = `
 Object {
   "categories": Array [],
@@ -3446,6 +3488,48 @@ Object {
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
           "value": 28,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider with nested property categories overrides default property category 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "Custom Category",
+      "name": "default",
+    },
+  ],
+  "description": "Subject",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "DgnV8Bridge",
+      "value": "DgnV8Bridge",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "default": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "User Label",
+          "name": "pc_bis_Element_UserLabel",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
           "valueFormat": 0,
         },
       },

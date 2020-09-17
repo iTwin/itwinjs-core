@@ -7,6 +7,7 @@
  */
 
 import { ContentRule } from "./content/ContentRule";
+import { DefaultPropertyCategoryOverride } from "./content/DefaultPropertyCategoryOverride";
 import { ContentModifier } from "./content/modifiers/ContentModifier";
 import { CustomizationRule } from "./customization/CustomizationRule";
 import { NavigationRule } from "./hierarchy/NavigationRule";
@@ -39,7 +40,7 @@ export interface RuleBase {
  * Presentation rules allow configuring the hierarchy and content.
  * @public
  */
-export declare type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier;
+export declare type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride;
 
 /**
  * Container of a [[condition]] property. Used for rules that support conditions. Not
@@ -68,6 +69,7 @@ export enum RuleTypes {
   // content rules
   Content = "Content",
   ContentModifier = "ContentModifier", // eslint-disable-line no-shadow
+  DefaultPropertyCategoryOverride = "DefaultPropertyCategoryOverride", // eslint-disable-line no-shadow
 
   // customization rules
   Grouping = "Grouping",

@@ -348,6 +348,12 @@ export interface DefaultGroupingPropertiesContainer {
     groupByLabel?: boolean;
 }
 
+// @public
+export interface DefaultPropertyCategoryOverride extends RuleBase {
+    ruleType: RuleTypes.DefaultPropertyCategoryOverride;
+    specification: PropertyCategorySpecification;
+}
+
 // @public @deprecated
 export interface DEPRECATED_AllInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     specType: ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes;
@@ -2049,7 +2055,7 @@ export interface RpcRequestsHandlerProps {
 }
 
 // @public
-export type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier;
+export type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride;
 
 // @public
 export interface RuleBase {
@@ -2100,6 +2106,8 @@ export enum RuleTypes {
     Content = "Content",
     // (undocumented)
     ContentModifier = "ContentModifier",
+    // (undocumented)
+    DefaultPropertyCategoryOverride = "DefaultPropertyCategoryOverride",
     // (undocumented)
     DisabledSorting = "DisabledSorting",
     // (undocumented)

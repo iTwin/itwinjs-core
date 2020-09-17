@@ -1409,6 +1409,36 @@
       },
       "type": "object"
     },
+    "DefaultPropertyCategoryOverride": {
+      "additionalProperties": false,
+      "description": "A rule that allows overriding the default property category.\n\nThe default property category is a category that gets assigned to properties\nthat otherwise have no category.",
+      "properties": {
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "DefaultPropertyCategoryOverride"
+          ],
+          "type": "string"
+        },
+        "specification": {
+          "$ref": "#/definitions/PropertyCategorySpecification",
+          "description": "Specification of the category override"
+        }
+      },
+      "required": [
+        "ruleType",
+        "specification"
+      ],
+      "type": "object"
+    },
     "DisabledSortingRule": {
       "additionalProperties": false,
       "description": "Rule to disable sorting for certain ECInstances in the hierarchy and/or content.\n\nNote: Disabling sorting increases performance\n\nNote: This rule is not meant to be used to sort grouping nodes, custom nodes or\nother non ECInstance type of nodes.",
@@ -3136,6 +3166,9 @@
         "anyOf": [
           {
             "$ref": "#/definitions/ContentRule"
+          },
+          {
+            "$ref": "#/definitions/DefaultPropertyCategoryOverride"
           },
           {
             "$ref": "#/definitions/NodeArtifactsRule"
