@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import * as ec from "../../../presentation-common/EC";
-import { createRandomId } from "./Misc";
+import { createRandomId, nullable } from "./Misc";
 
 export const createRandomECInstanceId = (): ec.InstanceId => {
   return createRandomId();
@@ -44,6 +44,7 @@ export const createRandomRelatedClassInfo = (): ec.RelatedClassInfo => {
   return {
     sourceClassInfo: createRandomECClassInfo(),
     targetClassInfo: createRandomECClassInfo(),
+    isPolymorphicTargetClass: faker.random.boolean(),
     relationshipInfo: createRandomECClassInfo(),
     isForwardRelationship: faker.random.boolean(),
     isPolymorphicRelationship: faker.random.boolean(),
@@ -54,9 +55,10 @@ export const createRandomRelatedClassInfoJSON = (): ec.RelatedClassInfoJSON => {
   return {
     sourceClassInfo: createRandomECClassInfoJSON(),
     targetClassInfo: createRandomECClassInfoJSON(),
+    isPolymorphicTargetClass: nullable(() => faker.random.boolean()),
     relationshipInfo: createRandomECClassInfoJSON(),
     isForwardRelationship: faker.random.boolean(),
-    isPolymorphicRelationship: faker.random.boolean(),
+    isPolymorphicRelationship: nullable(() => faker.random.boolean()),
   };
 };
 

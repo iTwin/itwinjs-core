@@ -27,6 +27,7 @@ export interface ChangedElements {
   opcodes: number[];
   type: number[];
   modelIds?: Id64String[];
+  properties?: Id64String[][];
 }
 
 /** @internal */

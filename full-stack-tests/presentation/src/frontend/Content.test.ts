@@ -33,7 +33,7 @@ describe("Content", () => {
     await terminate();
   });
 
-  describe("DistinctValues", () => {
+  describe("Distinct Values", () => {
 
     it("[deprecated] gets distinct content values", async () => {
       const ruleset: Ruleset = {
@@ -86,20 +86,6 @@ describe("Content", () => {
           items: expectedResult.slice(i * pageSize, (i + 1) * pageSize),
         });
       }
-    }
-
-    function findFieldByLabel(fields: Field[], label: string): Field | undefined {
-      for (const field of fields) {
-        if (field.label === label)
-          return field;
-
-        if (field.isNestedContentField()) {
-          const nestedMatchingField = findFieldByLabel(field.nestedFields, label);
-          if (nestedMatchingField)
-            return nestedMatchingField;
-        }
-      }
-      return undefined;
     }
 
     it("gets paged distinct primitive content values", async () => {
@@ -248,6 +234,124 @@ describe("Content", () => {
 
   });
 
+  describe("Fields Selector", () => {
+
+    it("excludes fields from content", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["Element"] },
+            handleInstancesPolymorphically: true,
+            instanceFilter: `this.ECInstanceId = 1`,
+          }],
+        }],
+      };
+
+      const content1 = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {},
+        keys: new KeySet(),
+      });
+      expect(content1?.contentSet.length).to.eq(1);
+      const fieldsCount = content1!.descriptor.fields.length;
+
+      const content2 = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {
+          fieldsSelector: {
+            type: "exclude",
+            fields: [content1!.descriptor.fields[0].getFieldDescriptor()],
+          },
+        },
+        keys: new KeySet(),
+      });
+      expect(content2?.contentSet.length).to.eq(1);
+      expect(content2!.descriptor.fields.length).to.eq(fieldsCount - 1);
+    });
+
+    it("exclusively includes fields in content", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["Element"] },
+            handleInstancesPolymorphically: true,
+            instanceFilter: `this.ECInstanceId = 1`,
+          }],
+        }],
+      };
+
+      const content1 = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {},
+        keys: new KeySet(),
+      });
+      expect(content1?.contentSet.length).to.eq(1);
+      expect(content1!.descriptor.fields.length).to.be.greaterThan(1);
+
+      const content2 = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {
+          fieldsSelector: {
+            type: "include",
+            fields: [content1!.descriptor.fields[0].getFieldDescriptor()],
+          },
+        },
+        keys: new KeySet(),
+      });
+      expect(content2?.contentSet.length).to.eq(1);
+      expect(content2!.descriptor.fields.length).to.eq(1);
+    });
+
+  });
+
+  describe("Calculated Properties", () => {
+
+    it("creates calculated fields", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["Element"] },
+            handleInstancesPolymorphically: true,
+            instanceFilter: `this.ECInstanceId = 1`,
+          }],
+        }, {
+          ruleType: RuleTypes.ContentModifier,
+          class: { schemaName: "BisCore", className: "Element" },
+          calculatedProperties: [{
+            label: "Test",
+            value: `"Value"`,
+          }],
+        }],
+      };
+
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {},
+        keys: new KeySet(),
+      });
+      const field = findFieldByLabel(content!.descriptor.fields, "Test")!;
+
+      expect(content?.contentSet.length).to.eq(1);
+      expect(content?.contentSet[0].values[field.name]).to.eq("Value");
+      expect(content?.contentSet[0].displayValues[field.name]).to.eq("Value");
+    });
+
+  });
+
   describe("when request in the backend exceeds the backend timeout time", () => {
 
     let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
@@ -289,3 +393,17 @@ describe("Content", () => {
   });
 
 });
+
+function findFieldByLabel(fields: Field[], label: string): Field | undefined {
+  for (const field of fields) {
+    if (field.label === label)
+      return field;
+
+    if (field.isNestedContentField()) {
+      const nestedMatchingField = findFieldByLabel(field.nestedFields, label);
+      if (nestedMatchingField)
+        return nestedMatchingField;
+    }
+  }
+  return undefined;
+}

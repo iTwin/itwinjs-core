@@ -137,9 +137,9 @@ describe("Field", () => {
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Name,
         parent: {
-          type: FieldDescriptorType.RelatedContent,
+          type: FieldDescriptorType.Name,
           parent: undefined,
-          pathFromContentToSelectClass: RelationshipPath.strip(nestingField.pathToPrimaryClass),
+          fieldName: nestingField.name,
         },
         fieldName: field.name,
       });
@@ -211,9 +211,9 @@ describe("PropertiesField", () => {
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Properties,
         parent: {
-          type: FieldDescriptorType.RelatedContent,
+          type: FieldDescriptorType.Name,
           parent: undefined,
-          pathFromContentToSelectClass: RelationshipPath.strip(nestingField.pathToPrimaryClass),
+          fieldName: nestingField.name,
         },
         propertyClass: field.properties[0].property.classInfo.name,
         propertyName: field.properties[0].property.name,
@@ -329,33 +329,6 @@ describe("NestedContentField", () => {
 
   });
 
-  describe("getFieldDescriptor", () => {
-
-    it("creates `RelatedContentFieldDescriptor`", () => {
-      const field = createRandomNestedContentField();
-      expect(field.getFieldDescriptor()).to.deep.eq({
-        type: FieldDescriptorType.RelatedContent,
-        parent: undefined,
-        pathFromContentToSelectClass: RelationshipPath.strip(field.pathToPrimaryClass),
-      });
-    });
-
-    it("creates nested `RelatedContentFieldDescriptor`", () => {
-      const field = createRandomNestedContentField();
-      const nestingField = createRandomNestedContentField([field]);
-      expect(field.getFieldDescriptor()).to.deep.eq({
-        type: FieldDescriptorType.RelatedContent,
-        parent: {
-          type: FieldDescriptorType.RelatedContent,
-          parent: undefined,
-          pathFromContentToSelectClass: RelationshipPath.strip(nestingField.pathToPrimaryClass),
-        },
-        pathFromContentToSelectClass: RelationshipPath.strip(field.pathToPrimaryClass),
-      });
-    });
-
-  });
-
   describe("clone", () => {
 
     it("returns exact copy of itself", () => {
@@ -384,10 +357,6 @@ describe("FieldDescriptor", () => {
         propertyName: "test",
         pathFromSelectToPropertyClass: [],
       })).to.be.false;
-      expect(FieldDescriptor.isNamed({
-        type: FieldDescriptorType.RelatedContent,
-        pathFromContentToSelectClass: [],
-      })).to.be.false;
     });
 
     it("correctly checks 'Properties' descriptor", () => {
@@ -400,27 +369,6 @@ describe("FieldDescriptor", () => {
         propertyClass: "test",
         propertyName: "test",
         pathFromSelectToPropertyClass: [],
-      })).to.be.true;
-      expect(FieldDescriptor.isProperties({
-        type: FieldDescriptorType.RelatedContent,
-        pathFromContentToSelectClass: [],
-      })).to.be.false;
-    });
-
-    it("correctly checks 'RelatedContent' descriptor", () => {
-      expect(FieldDescriptor.isRelatedContent({
-        type: FieldDescriptorType.Name,
-        fieldName: "test",
-      })).to.be.false;
-      expect(FieldDescriptor.isRelatedContent({
-        type: FieldDescriptorType.Properties,
-        propertyClass: "test",
-        propertyName: "test",
-        pathFromSelectToPropertyClass: [],
-      })).to.be.false;
-      expect(FieldDescriptor.isRelatedContent({
-        type: FieldDescriptorType.RelatedContent,
-        pathFromContentToSelectClass: [],
       })).to.be.true;
     });
 

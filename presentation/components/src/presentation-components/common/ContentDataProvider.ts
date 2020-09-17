@@ -256,12 +256,15 @@ export class ContentDataProvider implements IContentDataProvider {
    *
    * The default method implementation takes care of hiding properties. Subclasses
    * should call the base class method to not lose this functionality.
+   *
+   * @deprecated Derived classes should override [[getDescriptorOverrides]] to customize content
    */
   protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
     const fields = descriptor.fields.slice();
     const fieldsCount = fields.length;
     for (let i = fieldsCount - 1; i >= 0; --i) {
       const field = fields[i];
+      // eslint-disable-next-line deprecation/deprecation
       if (this.shouldExcludeFromDescriptor(field))
         fields.splice(i, 1);
     }
@@ -274,6 +277,8 @@ export class ContentDataProvider implements IContentDataProvider {
    * to configure it before requesting content. If not, the provider calls
    * `getDescriptorOverrides()` to get basic configuration and immediately requests
    * content - that saves a trip to the backend.
+   *
+   * @deprecated Derived classes should override [[getDescriptorOverrides]] to customize content
    */
   protected shouldConfigureContentDescriptor(): boolean { return true; }
 
@@ -284,10 +289,19 @@ export class ContentDataProvider implements IContentDataProvider {
    */
   protected shouldRequestContentForEmptyKeyset(): boolean { return false; }
 
-  /** Called to check whether the field should be excluded from the descriptor. */
-  protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field); }
+  /**
+   * Called to check whether the field should be excluded from the descriptor.
+   * @deprecated Derived classes should override [[getDescriptorOverrides]] to customize content
+   */
+  protected shouldExcludeFromDescriptor(field: Field): boolean {
+    // eslint-disable-next-line deprecation/deprecation
+    return this.isFieldHidden(field);
+  }
 
-  /** Called to check whether the field should be hidden. */
+  /**
+   * Called to check whether the field should be hidden.
+   * @deprecated Derived classes should override [[getDescriptorOverrides]] to customize content
+   */
   protected isFieldHidden(_field: Field): boolean { return false; }
 
   /**
@@ -298,11 +312,7 @@ export class ContentDataProvider implements IContentDataProvider {
    * overrides.
    */
   protected getDescriptorOverrides(): DescriptorOverrides {
-    return {
-      displayType: this.displayType,
-      contentFlags: 0,
-      hiddenFieldNames: [],
-    };
+    return { displayType: this.displayType };
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -332,6 +342,7 @@ export class ContentDataProvider implements IContentDataProvider {
     if (!descriptor)
       return undefined;
 
+    // eslint-disable-next-line deprecation/deprecation
     return this.configureContentDescriptor(descriptor);
   });
 
@@ -370,13 +381,14 @@ export class ContentDataProvider implements IContentDataProvider {
     if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
       return undefined;
 
-    let descriptorOrOverrides;
-    if (this.shouldConfigureContentDescriptor()) {
-      descriptorOrOverrides = await this.getContentDescriptor();
-      if (!descriptorOrOverrides)
+    let descriptorOverrides: DescriptorOverrides;
+    if (this.shouldConfigureContentDescriptor()) { // eslint-disable-line deprecation/deprecation
+      const descriptor = await this.getContentDescriptor();
+      if (!descriptor)
         return undefined;
+      descriptorOverrides = descriptor.createDescriptorOverrides();
     } else {
-      descriptorOrOverrides = this.getDescriptorOverrides();
+      descriptorOverrides = this.getDescriptorOverrides();
     }
 
     // istanbul ignore if
@@ -389,7 +401,7 @@ export class ContentDataProvider implements IContentDataProvider {
     const requestSize = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;
     const options = {
       ...this.createRequestOptions(),
-      descriptor: descriptorOrOverrides,
+      descriptor: descriptorOverrides,
       keys: this.keys,
       paging: pageOptions,
     };

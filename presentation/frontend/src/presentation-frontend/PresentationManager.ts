@@ -368,7 +368,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
-      descriptor: createDescriptorParam(isExtendedContentRequestOptions(requestOptions) ? requestOptions.descriptor : descriptorOrOverrides!),
+      descriptor: getDescriptorOverrides(isExtendedContentRequestOptions(requestOptions) ? requestOptions.descriptor : descriptorOrOverrides!),
       keys: (isExtendedContentRequestOptions(requestOptions) ? requestOptions.keys : keys!).toJSON(),
     });
     return this._requestsHandler.getContentSetSize(rpcOptions);
@@ -402,7 +402,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
-      descriptor: createDescriptorParam(descriptorOrOverrides),
+      descriptor: getDescriptorOverrides(descriptorOrOverrides),
       keys: keys.toJSON(),
     });
     let descriptor = (descriptorOrOverrides instanceof Descriptor) ? descriptorOrOverrides : undefined;
@@ -428,18 +428,18 @@ export class PresentationManager implements IDisposable {
 
   /**
    * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
-   * @param requestOptions options for the request
-   * @param descriptor           Content descriptor which specifies how the content should be returned.
-   * @param keys                 Keys of ECInstances to get the content for.
-   * @param fieldName            Name of the field from which to take values.
-   * @param maximumValueCount    Maximum numbers of values that can be returned. Unlimited if 0.
+   * @param requestOptions        options for the request
+   * @param descriptorOrOverrides Content descriptor which specifies how the content should be returned.
+   * @param keys                  Keys of ECInstances to get the content for.
+   * @param fieldName             Name of the field from which to take values.
+   * @param maximumValueCount     Maximum numbers of values that can be returned. Unlimited if 0.
    * @return A promise object that returns either distinct values on success or an error string on error.
    */
-  public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+  public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     return this._requestsHandler.getDistinctValues(this.toRpcTokenOptions(options),
-      descriptor.createStrippedDescriptor(), keys.toJSON(), fieldName, maximumValueCount);
+      getDescriptorOverrides(descriptorOrOverrides), keys.toJSON(), fieldName, maximumValueCount);
   }
 
   /**
@@ -452,7 +452,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
       ...this.toRpcTokenOptions(options),
-      descriptor: options.descriptor.createStrippedDescriptor(),
+      descriptor: getDescriptorOverrides(options.descriptor),
       keys: options.keys.toJSON(),
     };
     const result = await buildPagedResponse(requestOptions.paging, async (partialPageOptions) => this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }));
@@ -494,9 +494,9 @@ export class PresentationManager implements IDisposable {
 
 }
 
-const createDescriptorParam = (descriptorOrOverrides: Descriptor | DescriptorOverrides) => {
+const getDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
   if (descriptorOrOverrides instanceof Descriptor)
-    return descriptorOrOverrides.createStrippedDescriptor();
+    return descriptorOrOverrides.createDescriptorOverrides();
   return descriptorOrOverrides;
 };
 

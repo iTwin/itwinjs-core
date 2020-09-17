@@ -118,7 +118,7 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changeData !== undefined);
     assert.isTrue(changeData!.changedElements !== undefined);
     assert.isTrue(changeData!.changedModels !== undefined);
-    assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.classIds.length && changeData!.changedElements.elements.length === changeData!.changedElements.opcodes.length && changeData!.changedElements.elements.length === changeData!.changedElements.type.length);
+    assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.classIds.length && changeData!.changedElements.elements.length === changeData!.changedElements.opcodes.length && changeData!.changedElements.elements.length === changeData!.changedElements.type.length && changeData?.changedElements.elements.length === changeData!.changedElements.properties!.length);
     assert.isTrue(changeData!.changedModels.modelIds.length === changeData!.changedModels.bboxes.length);
   });
 });

@@ -84,6 +84,7 @@ export class ContentBuilder {
 // @public
 export class ContentDataProvider implements IContentDataProvider {
     constructor(props: ContentDataProviderProps);
+    // @deprecated
     protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor;
     get displayType(): string;
     dispose(): void;
@@ -95,6 +96,7 @@ export class ContentDataProvider implements IContentDataProvider {
     get imodel(): IModelConnection;
     set imodel(imodel: IModelConnection);
     protected invalidateCache(props: CacheInvalidationProps): void;
+    // @deprecated
     protected isFieldHidden(_field: Field): boolean;
     get keys(): KeySet;
     set keys(keys: KeySet);
@@ -104,7 +106,9 @@ export class ContentDataProvider implements IContentDataProvider {
     set rulesetId(value: string);
     get selectionInfo(): SelectionInfo | undefined;
     set selectionInfo(info: SelectionInfo | undefined);
+    // @deprecated
     protected shouldConfigureContentDescriptor(): boolean;
+    // @deprecated
     protected shouldExcludeFromDescriptor(field: Field): boolean;
     protected shouldRequestContentForEmptyKeyset(): boolean;
 }
@@ -306,10 +310,10 @@ export interface PresentationPropertyDataProviderProps {
 // @public
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
     constructor(props: PresentationTableDataProviderProps);
-    protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor;
     get filterExpression(): string | undefined;
     set filterExpression(value: string | undefined);
     getColumns: import("micro-memoize").MicroMemoize.Memoized<() => Promise<ColumnDescription[]>>;
+    protected getDescriptorOverrides(): DescriptorOverrides;
     getLoadedRow(rowIndex: number): Readonly<RowItem> | undefined;
     getRow(rowIndex: number): Promise<RowItem>;
     getRowKey(row: RowItem): InstanceKey;
@@ -320,6 +324,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     onColumnsChanged: TableDataChangeEvent;
     // (undocumented)
     onRowsChanged: TableDataChangeEvent;
+    protected shouldConfigureContentDescriptor(): boolean;
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
     get sortColumn(): Promise<ColumnDescription | undefined>;
     get sortColumnKey(): string | undefined;

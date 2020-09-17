@@ -181,50 +181,6 @@ Object {
 }
 `;
 
-exports[`Utils createTreeNodeItem creates tree node without labelDefinition 1`] = `
-Object {
-  "__presentation-components/key": Object {
-    "instanceKeys": Array [
-      Object {
-        "className": "connect",
-        "id": "0x10bf900000157a6",
-      },
-      Object {
-        "className": "Cotton",
-        "id": "0xbd9e000001010f",
-      },
-    ],
-    "pathFromRoot": Array [
-      "b57b973f-341e-4d11-9d85-06c29d2bd13d",
-      "baba8d5a-16f1-41a6-bebd-45084f282f50",
-    ],
-    "type": "ECInstancesNode",
-  },
-  "autoExpand": true,
-  "description": "Aut quod rem odit odio saepe nesciunt necessitatibus sed fuga.",
-  "hasChildren": true,
-  "id": "baba8d5a-16f1-41a6-bebd-45084f282f50/b57b973f-341e-4d11-9d85-06c29d2bd13d",
-  "label": "calculate",
-  "labelDefinition": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "node_label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "calculate",
-      "value": "calculate",
-      "valueFormat": 0,
-    },
-  },
-  "style": Object {
-    "colorOverrides": Object {
-      "color": 143987199,
-    },
-  },
-}
-`;
-
 exports[`Utils createTreeNodeItems creates tree nodes 1`] = `
 Array [
   Object {

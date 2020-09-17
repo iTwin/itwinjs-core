@@ -258,7 +258,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord with nested content creates record with multiple nested content values which have links in them 1`] = `
 PropertyRecord {
-  "autoExpand": true,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "Awesome Granite Chips Checking Account Cambridgeshire",
@@ -338,11 +337,10 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord with nested content creates record with only properties in exclusive include path 1`] = `
 PropertyRecord {
-  "isReadonly": true,
   "property": Object {
-    "displayLabel": "Kip",
-    "name": "Field",
-    "typename": "double",
+    "displayLabel": "Arizona Legacy",
+    "name": "Kip",
+    "typename": "mediumint",
   },
   "value": Object {
     "members": Object {
@@ -350,7 +348,7 @@ PropertyRecord {
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Investor",
-          "name": "Field$XSS",
+          "name": "Kip$XSS",
           "typename": "bigint",
         },
         "value": Object {
@@ -360,7 +358,7 @@ PropertyRecord {
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "Investor",
-                "name": "Field$XSS",
+                "name": "Kip$XSS",
                 "typename": "bigint",
               },
               "value": Object {
@@ -369,7 +367,7 @@ PropertyRecord {
                     "description": "some display value 1.2",
                     "property": Object {
                       "displayLabel": "indigo",
-                      "name": "Field$XSS$Ohio",
+                      "name": "Kip$XSS$Ohio",
                       "typename": "int",
                     },
                     "value": Object {
@@ -387,7 +385,7 @@ PropertyRecord {
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "Investor",
-                "name": "Field$XSS",
+                "name": "Kip$XSS",
                 "typename": "bigint",
               },
               "value": Object {
@@ -396,7 +394,7 @@ PropertyRecord {
                     "description": "some display value 2.2",
                     "property": Object {
                       "displayLabel": "indigo",
-                      "name": "Field$XSS$Ohio",
+                      "name": "Kip$XSS$Ohio",
                       "typename": "int",
                     },
                     "value": Object {
@@ -422,7 +420,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord with nested content creates record with single nested content value 1`] = `
 PropertyRecord {
-  "autoExpand": true,
   "extendedData": Object {
     "test": "custom value",
   },
@@ -458,7 +455,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord with nested content creates record without properties in hidden fields path 1`] = `
 PropertyRecord {
-  "autoExpand": true,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "Licensed Granite Ball Qatar",
