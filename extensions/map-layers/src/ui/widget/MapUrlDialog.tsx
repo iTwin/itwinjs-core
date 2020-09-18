@@ -7,12 +7,14 @@
 import * as React from "react";
 import { Dialog, DialogButtonType, Input, Radio, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
+import { MapLayersUiItemsProvider, MapTypesOptions } from "../MapLayersUiItemsProvider";
 import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+
 import "./MapUrlDialog.scss";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, onOkResult: () => void }) {
+export function MapUrlDialog({ isOverlay, onOkResult, mapTypesOptions }: { isOverlay: boolean, onOkResult: () => void, mapTypesOptions: MapTypesOptions | undefined }) {
+
   const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachCustomLayer"));
   const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));
   const [nameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Name"));
@@ -20,8 +22,13 @@ export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, on
   const [projectSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnProjectSettings"));
   const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnModelSettings"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("Project");
-  const [mapTypes] = React.useState(["ArcGIS", "WMS", "WMTS", "TileURL"]);
   const [mapType, setMapType] = React.useState("ArcGIS");
+  const [mapTypes] = React.useState((): string[] => {
+    const types = ["ArcGIS", "WMS", "WMTS"];
+    if (mapTypesOptions?.supportTileUrl)
+      types.push("TileURL");
+    return types;
+  });
 
   const handleMapTypeSelection = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setMapType(e.target.value);

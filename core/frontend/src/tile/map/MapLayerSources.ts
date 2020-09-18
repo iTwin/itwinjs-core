@@ -83,7 +83,47 @@ export class MapLayerSources {
     return layers;
   }
 
-  public static async create(iModel?: IModelConnection, queryForPublicSources = false): Promise<MapLayerSources> {
+  /**
+   *  This function fetch the USG map layer sources. Those are free and publicly available but not worldwide.
+   *  Needs to validate the location of the user before fetching it.
+   */
+  private static async getUSGSSources(): Promise<MapLayerSource[]> {
+    const mapLayerSources: MapLayerSource[] = [];
+    (await ArcGisUtilities.getServiceDirectorySources("https://basemap.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
+    (await ArcGisUtilities.getServiceDirectorySources("https://index.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
+    (await ArcGisUtilities.getServiceDirectorySources("https://hydro.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
+    (await ArcGisUtilities.getServiceDirectorySources("https://carto.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
+    (await ArcGisUtilities.getServiceDirectorySources("https://elevation.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
+    return mapLayerSources;
+  }
+
+  private static getBingMapLayerSource(): MapLayerSource[] {
+    const mapLayerSources: MapLayerSource[] = [];
+    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
+    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
+    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    return mapLayerSources;
+  }
+
+  private static getMapBoxLayerSource(): MapLayerSource[] {
+    const mapLayerSources: MapLayerSource[] = [];
+    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
+    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
+    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    return mapLayerSources;
+  }
+
+  /**
+ *  This function fetch the Disco map layer sources. Those sources are for Europe but not very reliable.
+ *  Needs to validate the location of the user before fetching it.
+ */
+  private static async getDiscoSources(): Promise<MapLayerSource[]> {
+    const mapLayerSources: MapLayerSource[] = [];
+    (await ArcGisUtilities.getServiceDirectorySources("https://land.discomap.eea.europa.eu/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
+    return mapLayerSources;
+  }
+
+  public static async create(iModel?: IModelConnection, queryForPublicSources = false, addMapBoxSources = false): Promise<MapLayerSources> {
     if (!queryForPublicSources && MapLayerSources._instance)
       return MapLayerSources._instance;
 
@@ -108,41 +148,29 @@ export class MapLayerSources {
       }
     });
 
-    addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    this.getBingMapLayerSource().forEach((source) => {
+      addSource(source);
+    });
 
-    // For now just omit the search for Mapbox sources.
-    const addMapBoxSources = false;
     if (addMapBoxSources) {
-      addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-      addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-      addSource(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
-    }
-
-    const requestContext = new FrontendRequestContext();
-    const sourcesJson = await getJson(requestContext, "assets/MapLayerSources.json");
-
-    for (const sourceJson of sourcesJson) {
-      const source = MapLayerSource.fromJSON(sourceJson);
-      if (source)
+      this.getMapBoxLayerSource().forEach((source) => {
         addSource(source);
+      });
     }
 
-    // For now just omit the search for USGS or Disco sources.
-    const queryForUSGSSources = false /* queryForPublicSources */, queryForDiscoMapSources = false /* queryForPublicSources */;
+    if (queryForPublicSources) {
+      const requestContext = new FrontendRequestContext();
+      const sourcesJson = await getJson(requestContext, "assets/MapLayerSources.json");
 
-    if (queryForUSGSSources) {
-      (await ArcGisUtilities.getServiceDirectorySources("https://basemap.nationalmap.gov/arcgis/rest/services")).forEach((source) => addSource(source));
-      (await ArcGisUtilities.getServiceDirectorySources("https://index.nationalmap.gov/arcgis/rest/services")).forEach((source) => addSource(source));
-      (await ArcGisUtilities.getServiceDirectorySources("https://hydro.nationalmap.gov/arcgis/rest/services")).forEach((source) => addSource(source));
-      (await ArcGisUtilities.getServiceDirectorySources("https://carto.nationalmap.gov/arcgis/rest/services")).forEach((source) => addSource(source));
-      (await ArcGisUtilities.getServiceDirectorySources("https://elevation.nationalmap.gov/arcgis/rest/services")).forEach((source) => addSource(source));
+      for (const sourceJson of sourcesJson) {
+        const source = MapLayerSource.fromJSON(sourceJson);
+        if (source)
+          addSource(source);
+      }
+
+      (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
     }
-    if (queryForDiscoMapSources)
-      (await ArcGisUtilities.getServiceDirectorySources("https://land.discomap.eea.europa.eu/arcgis/rest/services")).forEach((source) => addSource(source));
 
-    (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
     if (iModel && iModel.contextId && iModel.iModelId) {
       try {
         (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.contextId, iModel.iModelId)).forEach((source) => addSource(source));
@@ -151,11 +179,10 @@ export class MapLayerSources {
       }
     }
 
-
     sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
 
     const mapLayerSources = new MapLayerSources(sources);
-    if (!queryForUSGSSources) MapLayerSources._instance = mapLayerSources;
+    MapLayerSources._instance = mapLayerSources;
 
     return mapLayerSources;
   }

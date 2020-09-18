@@ -32,7 +32,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     setSourceFilterString(event.target.value);
   }, []);
 
-  const { sources, activeViewport, backgroundLayers, overlayLayers } = useSourceMapContext();
+  const { sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
 
   const styleContainsLayer = React.useCallback((name: string) => {
     if (backgroundLayers) {
@@ -97,9 +97,9 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   }, [onLayerAttached]);
 
   const handleAddNewMapSource = React.useCallback(() => {
-    ModalDialogManager.openDialog(<MapUrlDialog isOverlay={isOverlay} onOkResult={handleModalUrlDialogOk} />);
+    ModalDialogManager.openDialog(<MapUrlDialog isOverlay={isOverlay} onOkResult={handleModalUrlDialogOk} mapTypesOptions={mapTypesOptions} />);
     return;
-  }, [handleModalUrlDialogOk, isOverlay]);
+  }, [handleModalUrlDialogOk, isOverlay, mapTypesOptions]);
 
   const handleAttach = React.useCallback((mapName: string) => {
     setLayerNameToAdd(mapName);

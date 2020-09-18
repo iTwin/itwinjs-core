@@ -6,15 +6,18 @@
 import * as React from "react";
 import { useActiveViewport } from "@bentley/ui-framework";
 import { FillCentered } from "@bentley/ui-core";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayerOptions, MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapLayerManager } from "./MapLayerManager";
 
 /**
  * Widget to Manage Map Layers
  * @beta
  */
+interface MapLayersWidgetProps {
+  mapLayerOptions?: MapLayerOptions;
+}
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapLayersWidget() {
+export function MapLayersWidget(props: MapLayersWidgetProps) {
   const [notGeoLocatedMsg] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.NotSupported"));
   const activeViewport = useActiveViewport();
   const ref = React.useRef<HTMLDivElement>(null);
@@ -22,7 +25,7 @@ export function MapLayersWidget() {
   if (activeViewport && !!activeViewport?.iModel.isGeoLocated && activeViewport.view.isSpatialView)
     return (
       <div ref={ref} className="map-manager-layer-host">
-        <MapLayerManager activeViewport={activeViewport} getContainerForClone={() => {
+        <MapLayerManager activeViewport={activeViewport} mapLayerOptions={props.mapLayerOptions} getContainerForClone={() => {
           return ref.current ? ref.current : document.body;
         }} />
       </div>

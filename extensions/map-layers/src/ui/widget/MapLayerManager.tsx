@@ -20,7 +20,7 @@ import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
 import { MapSettingsPanel } from "./MapSettingsPanel";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayerOptions, MapLayersUiItemsProvider, MapTypesOptions } from "../MapLayersUiItemsProvider";
 import "./MapLayerManager.scss";
 
 /** @internal */
@@ -31,6 +31,7 @@ export interface SourceMapContextProps {
   readonly activeViewport?: ScreenViewport;
   readonly backgroundLayers?: StyleMapLayerSettings[];
   readonly overlayLayers?: StyleMapLayerSettings[];
+  readonly mapTypesOptions?: MapTypesOptions;
 }
 
 /** @internal */
@@ -192,6 +193,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
 interface MapLayerManagerProps {
   getContainerForClone: () => HTMLElement;
   activeViewport: ScreenViewport;
+  mapLayerOptions?: MapLayerOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -203,7 +205,9 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoBackgroundLayers"));
   const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoOverlayLayers"));
   const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
-  const { activeViewport } = props;
+  const { activeViewport, mapLayerOptions } = props;
+  const [hideExternalMapLayersSection] = React.useState(mapLayerOptions?.hideExternalMapLayers ? mapLayerOptions.hideExternalMapLayers : false);
+  const [fetchPublicMapLayerSources] = React.useState(mapLayerOptions?.fetchPublicMapLayerSources ? mapLayerOptions.fetchPublicMapLayerSources : false);
   // map layer settings from display style
   const [backgroundMapLayers, setBackgroundMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, true));
   const [overlayMapLayers, setOverlayMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, false));
@@ -217,7 +221,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     async function fetchWmsMapData() {
       const sources: MapLayerSource[] = [];
       const bases: MapLayerSource[] = [];
-      const sourceLayers = await MapLayerSources.create();
+      const sourceLayers = await MapLayerSources.create(undefined, (fetchPublicMapLayerSources && !hideExternalMapLayersSection));
       sourceLayers?.layers.forEach((source: MapLayerSource) => {
         sources.push(source);
       });
@@ -231,7 +235,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       setBaseSources(bases);
     }
     fetchWmsMapData(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [setMapSources]);
+  }, [setMapSources, fetchPublicMapLayerSources, hideExternalMapLayersSection]);
   React.useEffect(() => {
     const handleNewCustomLayer = async (source: MapLayerSource) => {
       const sources = await MapLayerSources.addSourceToMapLayerSources(source);
@@ -417,56 +421,59 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       refreshFromStyle: handleRefreshFromStyle,
       backgroundLayers: backgroundMapLayers,
       overlayLayers: overlayMapLayers,
+      mapTypesOptions: mapLayerOptions?.mapTypeOptions,
     }}>
       <div className="map-manager-container">
         <div className="map-manager-basemap">
           <BasemapPanel />
         </div>
-        <DragDropContext onDragEnd={handleOnMapLayerDragEnd}>
-          <div className="map-manager-underlays" >
-            <span className="map-manager-underlays-label">{underlaysLabel}</span><AttachLayerPopupButton isOverlay={false} />
-          </div>
-          <Droppable
-            droppableId="backgroundMapLayers"
-            renderClone={renderUnderlayItem}
-            getContainerForClone={props.getContainerForClone as any}
-          >
-            {(underlayDropProvided, underlayDropSnapshot) =>
-              <div className={`map-manager-attachments${underlayDropSnapshot.isDraggingOver ? " is-dragging-map-over" : ""}`} ref={underlayDropProvided.innerRef} {...underlayDropProvided.droppableProps}>
-                {
-                  (backgroundMapLayers && backgroundMapLayers.length > 0) ?
-                    backgroundMapLayers.map((mapLayerSettings, i) =>
-                      <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
-                        {renderUnderlayItem}
-                      </Draggable>) :
-                    <div title={noBackgroundMapsSpecifiedLabel} className="map-manager-no-layers-label">{noBackgroundMapsSpecifiedLabel}</div>
-                }
-                {underlayDropProvided.placeholder}
-              </div>}
-          </Droppable>
-          <div className="map-manager-overlays" >
-            <span className="map-manager-overlays-label">{overlaysLabel}</span><AttachLayerPopupButton isOverlay={true} />
-          </div>
-          <Droppable
-            droppableId="overlayMapLayers"
-            renderClone={renderOverlayItem}
-            getContainerForClone={props.getContainerForClone as any}
-          >
-            {(overlayDropProvided, overlayDropSnapshot) => (
-              <div className={`map-manager-attachments${overlayDropSnapshot.isDraggingOver ? " is-dragging-map-over" : ""}`} ref={overlayDropProvided.innerRef} {...overlayDropProvided.droppableProps} >
-                {
-                  (overlayMapLayers && overlayMapLayers.length > 0) ?
-                    overlayMapLayers.map((mapLayerSettings, i) =>
-                      <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
-                        {renderOverlayItem}
-                      </Draggable>) :
-                    <div title={noUnderlaysSpecifiedLabel} className="map-manager-no-layers-label">{noUnderlaysSpecifiedLabel}</div>
-                }
-                {overlayDropProvided.placeholder}
-              </div>)
-            }
-          </Droppable>
-        </DragDropContext>
+        {!hideExternalMapLayersSection &&
+          <DragDropContext onDragEnd={handleOnMapLayerDragEnd}>
+            <div className="map-manager-underlays" >
+              <span className="map-manager-underlays-label">{underlaysLabel}</span><AttachLayerPopupButton isOverlay={false} />
+            </div>
+            <Droppable
+              droppableId="backgroundMapLayers"
+              renderClone={renderUnderlayItem}
+              getContainerForClone={props.getContainerForClone as any}
+            >
+              {(underlayDropProvided, underlayDropSnapshot) =>
+                <div className={`map-manager-attachments${underlayDropSnapshot.isDraggingOver ? " is-dragging-map-over" : ""}`} ref={underlayDropProvided.innerRef} {...underlayDropProvided.droppableProps}>
+                  {
+                    (backgroundMapLayers && backgroundMapLayers.length > 0) ?
+                      backgroundMapLayers.map((mapLayerSettings, i) =>
+                        <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
+                          {renderUnderlayItem}
+                        </Draggable>) :
+                      <div title={noBackgroundMapsSpecifiedLabel} className="map-manager-no-layers-label">{noBackgroundMapsSpecifiedLabel}</div>
+                  }
+                  {underlayDropProvided.placeholder}
+                </div>}
+            </Droppable>
+            <div className="map-manager-overlays" >
+              <span className="map-manager-overlays-label">{overlaysLabel}</span><AttachLayerPopupButton isOverlay={true} />
+            </div>
+            <Droppable
+              droppableId="overlayMapLayers"
+              renderClone={renderOverlayItem}
+              getContainerForClone={props.getContainerForClone as any}
+            >
+              {(overlayDropProvided, overlayDropSnapshot) => (
+                <div className={`map-manager-attachments${overlayDropSnapshot.isDraggingOver ? " is-dragging-map-over" : ""}`} ref={overlayDropProvided.innerRef} {...overlayDropProvided.droppableProps} >
+                  {
+                    (overlayMapLayers && overlayMapLayers.length > 0) ?
+                      overlayMapLayers.map((mapLayerSettings, i) =>
+                        <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
+                          {renderOverlayItem}
+                        </Draggable>) :
+                      <div title={noUnderlaysSpecifiedLabel} className="map-manager-no-layers-label">{noUnderlaysSpecifiedLabel}</div>
+                  }
+                  {overlayDropProvided.placeholder}
+                </div>)
+              }
+            </Droppable>
+          </DragDropContext>
+        }
         <div className="map-manager-settings-container">
           <MapSettingsPanel />
         </div>

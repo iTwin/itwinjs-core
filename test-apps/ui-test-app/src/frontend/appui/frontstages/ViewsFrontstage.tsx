@@ -259,8 +259,9 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={400}
             widgets={[
               // Used when using map-layers as a package and not using UiItemsProvider (compatible with V1 of framework)
-              <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
-                iconSpec={MapLayersWidgetControl.iconSpec} />,
+              <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label}
+                control={MapLayersWidgetControl} iconSpec={MapLayersWidgetControl.iconSpec}
+                applicationData={{ hideExternalMapLayers: false, mapTypeOptions: { supportTileUrl: true }, fetchPublicMapLayerSources: true }} />,
 
               // <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
               //   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,

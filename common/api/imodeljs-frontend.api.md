@@ -4653,7 +4653,7 @@ export class MapLayerSources {
     // (undocumented)
     get bases(): MapLayerSource[];
     // (undocumented)
-    static create(iModel?: IModelConnection, queryForPublicSources?: boolean): Promise<MapLayerSources>;
+    static create(iModel?: IModelConnection, queryForPublicSources?: boolean, addMapBoxSources?: boolean): Promise<MapLayerSources>;
     // (undocumented)
     findByName(name: string, baseMap?: boolean): MapLayerSource | undefined;
     // (undocumented)
