@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- Moved ESLint configuration to a plugin
+- Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names.
+- Implemented favorite property filter.
+- Added usePropertyDataProviderWithUnifiedSelection Hook
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

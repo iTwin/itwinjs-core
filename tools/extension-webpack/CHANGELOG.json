@@ -2,6 +2,12 @@
   "name": "@bentley/extension-webpack-tools",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@bentley/extension-webpack-tools_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.5.5",
       "tag": "@bentley/extension-webpack-tools_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",

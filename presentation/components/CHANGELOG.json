@@ -2,6 +2,27 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@bentley/presentation-components_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names."
+          },
+          {
+            "comment": "Implemented favorite property filter."
+          },
+          {
+            "comment": "Added usePropertyDataProviderWithUnifiedSelection Hook"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.5",
       "tag": "@bentley/presentation-components_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",

@@ -2,6 +2,21 @@
   "name": "@bentley/webgl-compatibility",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@bentley/webgl-compatibility_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "webgl2 now considered an optional feature"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.5",
       "tag": "@bentley/webgl-compatibility_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",

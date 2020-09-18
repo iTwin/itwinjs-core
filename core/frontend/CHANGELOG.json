@@ -2,6 +2,54 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@bentley/imodeljs-frontend_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Supply symbology overrides for map geometry so that view defaults (isolate) are not applied."
+          },
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "Fix potential unbounded growth of an array each time a Viewport's scene is recreated."
+          },
+          {
+            "comment": "react to telemetry and introspection client changes"
+          },
+          {
+            "comment": "Allow level 1 imagery tiles to be used (the planar projection requires them at max zoom).  Force depth buffer for large globe tiles."
+          },
+          {
+            "comment": "Add optional TileAdmin.Props.minimumSpatialTolerance as terminating condition for tile refinement."
+          },
+          {
+            "comment": "Add support for opening a key-in palette to run key-ins."
+          },
+          {
+            "comment": "Remove azure map support.  Don't expose mapbox sources by default."
+          },
+          {
+            "comment": "Add support for quoted strings during key-in parsing"
+          },
+          {
+            "comment": "Added validation to select only queryable layer in the GetFeatureInfo of the WMS layers"
+          },
+          {
+            "comment": "#437338 First attempt at walk tool collisions using depth buffer w/o changing view."
+          },
+          {
+            "comment": "reduce jumpiness when zooming with mouse wheel quickly"
+          },
+          {
+            "comment": "make zoom with wheel faster when rolling quickly"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.5",
       "tag": "@bentley/imodeljs-frontend_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",

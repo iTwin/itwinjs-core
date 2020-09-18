@@ -1,6 +1,30 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- Add support for a feature flag to control the display of the keyin palette.     
+- BadgeType support for Backstage items
+- add itemschanged handler so that items provided can be conditionally hidden
+- Lower case syncEventIds prior to comparison
+- Added PopupContextMenu component. Added 'iconRight' support to menu items.
+- Moved ESLint configuration to a plugin
+- Exported ActivityMessage. Added ActivityMessagePopup component.
+- react to creation of telemetry client
+- Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names.
+- Add support for opening a key-in palette to run key-ins.
+- ModelsTree: Fix search hierarchy
+- Avoid exception during keyin palette test.
+- Render only visible stage panel widgets.
+- Prevent useWidgetDirection from crashing in 1.0 UI.
+- Enable stage panel resizable prop for 2.0.
+- Add pinned flag to StagePanelProps.
+- Add system preferred theme as default theme.
+- Deny tool settings tab from docking to top panel target.
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

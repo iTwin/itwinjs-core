@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.6.0
+- Allow an Element's FederationGuid to be cleared with the empty string during update.
+- Allow "" to clear UserLabel when element is updated.
+- Moved ESLint configuration to a plugin
+- fix failing usageloggingutilities tests from missing productVersion
+- Add IModelExporter.visitElements and IModelExporter.visitRelationships flags to optimize exports that don't need to visit element and/or relationship instances.
+- react to telemetry and introspection client changes
+- Tile Gen Performance tests: use local paths
+- Tile generation performance test updates to use the latest tile format version
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

@@ -2,6 +2,42 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@bentley/imodeljs-backend_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.6.0"
+          },
+          {
+            "comment": "Allow an Element's FederationGuid to be cleared with the empty string during update."
+          },
+          {
+            "comment": "Allow \"\" to clear UserLabel when element is updated."
+          },
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "fix failing usageloggingutilities tests from missing productVersion"
+          },
+          {
+            "comment": "Add IModelExporter.visitElements and IModelExporter.visitRelationships flags to optimize exports that don't need to visit element and/or relationship instances."
+          },
+          {
+            "comment": "react to telemetry and introspection client changes"
+          },
+          {
+            "comment": "Tile Gen Performance tests: use local paths"
+          },
+          {
+            "comment": "Tile generation performance test updates to use the latest tile format version"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.5",
       "tag": "@bentley/imodeljs-backend_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",
