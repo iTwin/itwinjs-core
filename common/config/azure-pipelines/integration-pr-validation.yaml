@@ -52,8 +52,6 @@ jobs:
 
       node ./common/scripts/install-run-rush rebuild -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to @bentley/imodelhub-client-tests
-
       node ./common/scripts/install-run-rush rebuild -v --to rpcinterface-full-stack-tests
 
       node ./common/scripts/install-run-rush rebuild -v --to presentation-full-stack-tests
@@ -100,6 +98,7 @@ jobs:
   - script: 'npm run test:integration'
     workingDirectory: 'full-stack-tests/imodelhub-client'
     displayName: 'Run iModelHub Client Full Stack Tests'
+    enabled: false
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -205,6 +204,7 @@ jobs:
     inputs:
       testResultsFiles: 'full-stack-tests/imodelhub-client/lib/test/junit_results.xml'
       testRunTitle: 'iModelHub Client - Integration Tests - $(Node_Version)'
+    enabled: false
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
