@@ -96,157 +96,91 @@ export const DiagnosticCodes = {
  * @beta
  */
 export const Diagnostics = {
-  /**
-   * EC-001
-   * Required message parameters: schema name, referenced schema name
-   */
+  /** EC-001: Required message parameters: schema name, referenced schema name */
   SupplementalSchemasCannotBeReferenced: createSchemaDiagnosticClass<[string, string]>(getCode(1),
     "Referenced schema '{1}' of schema '{0}' is a supplemental schema. Supplemental schemas are not allowed to be referenced."),
 
-  /**
-   * EC-002
-   * Required message parameters: schema name, reference schema alias, first schema reference name, second schema reference name.
-   */
+  /** EC-002: Required message parameters: schema name, reference schema alias, first schema reference name, second schema reference name. */
   SchemaRefAliasMustBeUnique: createSchemaDiagnosticClass<[string, string, string, string]>(getCode(2),
     "Schema '{0}' has multiple schema references ({2}, {3}) with the same alias '{1}', which is not allowed."),
 
-  /**
-   * EC-003
-   * Required message parameters: schema name, cycle text
-   */
+  /** EC-003: Required message parameters: schema name, cycle text */
   ReferenceCyclesNotAllowed: createSchemaDiagnosticClass<[string, string]>(getCode(3),
     "Schema '{0}' has reference cycles: {1}"),
 
-  /**
-   * EC-100
-   * Required message parameters: childClass.FullName, baseClass.FullName
-   */
+  /** EC-100: Required message parameters: childClass.FullName, baseClass.FullName */
   BaseClassIsSealed: createClassDiagnosticClass<[string, string]>(DiagnosticCodes.BaseClassIsSealed,
     "Class '{0}' cannot derive from sealed base class '{1}'."),
 
-  /**
-   * EC-101
-   * Required message parameters: childClass.FullName, baseClass.FullName, baseClass.schemaItemType
-   */
+  /** EC-101: Required message parameters: childClass.FullName, baseClass.FullName, baseClass.schemaItemType */
   BaseClassIsOfDifferentType: createClassDiagnosticClass<[string, string, string]>(DiagnosticCodes.BaseClassOfDifferentType,
     "Class '{0}' cannot derive from base class '{1}' of type '{2}'."),
 
-  /**
-   * EC-500
-   * Required message parameters: CustomAttribute container name and CustomAttributeClass name.
-   */
+  /** EC-500: Required message parameters: CustomAttribute container name and CustomAttributeClass name. */
   CustomAttributeNotOfConcreteClass: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeNotOfConcreteClass,
     "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which is not a concrete class."),
 
-  /**
-   * EC-501
-   * Required message parameters: CustomAttribute container name, CustomAttributeClass name, CustomAttributeClass Schema name.
-   */
+  /** EC-501: Required message parameters: CustomAttribute container name, CustomAttributeClass name, CustomAttributeClass Schema name. */
   CustomAttributeSchemaMustBeReferenced: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeSchemaMustBeReferenced,
     "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' whose schema is not referenced by the container's Schema."),
 
-  /**
-   * EC-502
-   * Required message parameters: CustomAttribute container name and CustomAttributeClass name.
-   */
+  /** EC-502: Required message parameters: CustomAttribute container name and CustomAttributeClass name. */
   CustomAttributeClassNotFound: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeClassNotFound,
     "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which cannot be found."),
 
-  /**
-   * EC-700
-   * Required message parameters: Enumeration name
-   */
+  /** EC-700: Required message parameters: Enumeration name */
   EnumerationTypeUnsupported: createSchemaItemDiagnosticClass<Enumeration, [string]>(DiagnosticCodes.EnumerationTypeUnsupported,
     "Enumeration '{0}' has invalid primitive type."),
 
-  /**
-   * EC-1100
-   * Required message parameters: mixin class fullName, class fullName, applies to constraint class fullName
-   */
+  /** EC-1100: Required message parameters: mixin class fullName, class fullName, applies to constraint class fullName */
   MixinAppliedToClassMustDeriveFromConstraint: createSchemaItemDiagnosticClass<EntityClass, [string, string, string]>(DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint,
     "Mixin '{0}' cannot be applied to the class '{1}' because it does not satisfy the applies to constraint '{2}'."),
 
-  /**
-   * EC-1300
-   * Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type
-   */
+  /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
   IncompatibleValueTypePropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string]>(DiagnosticCodes.IncompatibleValueTypePropertyOverride,
     "The ECProperty '{0}.{1}' has a base property '{2}.{1}' with a value type of {3} which is incompatible with the value type of {4}."),
 
-  /**
-   * EC-1301
-   * Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type
-   */
+  /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
   IncompatibleTypePropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string]>(DiagnosticCodes.IncompatibleTypePropertyOverride,
     "The ECProperty '{0}.{1}' has a base property '{2}.{1}' with a type of {3} which is incompatible with the type of {4}."),
 
-  /**
-   * EC-1302
-   * Required message parameters: childClass.Name, property name, baseClass.Name, baseClass Koq name, baseClass Koq persistence unit name, child class Koq persistence unit name, child class Koq name
-   */
+  /** EC-1302: Required message parameters: childClass.Name, property name, baseClass.Name, baseClass Koq name, baseClass Koq persistence unit name, child class Koq persistence unit name, child class Koq name */
   IncompatibleUnitPropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string, string, string]>(DiagnosticCodes.IncompatibleUnitPropertyOverride,
     "The ECProperty '{0}.{1}' has a base property '{2}.{1}' with KindOfQuantity '{3}' with persistence unit '{4}' which is not the same as the persistence unit '{5}' of the provided KindOfQuantity '{6}'."),
 
-  /**
-   * EC-1303
-   * Required message parameters: property.fullName, navigation relationship.fullName
-   */
+  /** EC-1303: Required message parameters: property.fullName, navigation relationship.fullName */
   NavigationRelationshipMustBeRoot: createPropertyDiagnosticClass<[string, string]>(getCode(1303),
     "The referenced relationship '{1}', used in NavigationProperty '{0}' is not the root relationship."),
 
-  /**
-   * EC-1304
-   * Required message parameters: property.fullName, navigation relationship.fullName
-   */
+  /** EC-1304: Required message parameters: property.fullName, navigation relationship.fullName */
   NavigationTargetMustHaveSingularMultiplicity: createPropertyDiagnosticClass<[string, string, string]>(getCode(1304),
     "NavigationProperty '{0}' uses the relationship '{1}' that cannot be traversed in the '{2}' direction due to a max multiplicity greater than 1."),
 
-  /**
-   * EC-1305
-   * Required message parameters: property.fullName, navigation relationship.fullName
-   */
+  /** EC-1305: Required message parameters: property.fullName, navigation relationship.fullName */
   NavigationRelationshipAbstractConstraintEntityOrMixin: createPropertyDiagnosticClass<[string, string]>(getCode(1305),
     "The NavigationProperty '{0}', using the relationship '{1}', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin."),
 
-  /**
-   * EC-1306
-   * Required message parameters: class name, property name, navigation relationship.fullName
-   */
+  /** EC-1306: Required message parameters: class name, property name, navigation relationship.fullName */
   NavigationClassMustBeAConstraintClassOfRelationship: createPropertyDiagnosticClass<[string, string, string, string]>(getCode(1306),
     "The class '{0}' of NavigationProperty '{1}' is not supported by the {3} constraint of the referenced relationship '{2}'."),
 
-  /**
-   * EC-1500
-   * Required message parameters: abstract constraint class name, relationship end (source/target), relationship name, base relationship name
-   */
+  /** EC-1500: Required message parameters: abstract constraint class name, relationship end (source/target), relationship name, base relationship name */
   AbstractConstraintMustNarrowBaseConstraints: createSchemaItemDiagnosticClass<RelationshipClass, [string, string, string, string]>(DiagnosticCodes.AbstractConstraintMustNarrowBaseConstraints,
     "The abstract constraint class '{0}' on the {1}-Constraint of '{2}' is not supported by the base class constraint in '{3}'."),
 
-  /**
-   * EC-1501
-   * Required message parameters: constraint class name, relationship end (source/target), relationship name, base relationship name
-   */
+  /** EC-1501: Required message parameters: constraint class name, relationship end (source/target), relationship name, base relationship name */
   DerivedConstraintsMustNarrowBaseConstraints: createSchemaItemDiagnosticClass<RelationshipClass, [string, string, string, string]>(DiagnosticCodes.DerivedConstraintsMustNarrowBaseConstraints,
     "The constraint class '{0}' on the {1}-Constraint of '{2}' is not supported by the base class constraint in '{3}'."),
 
-  /**
-   * EC-1502
-   * Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name
-   */
+  /** EC-1502: Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name */
   ConstraintClassesDeriveFromAbstractContraint: createSchemaItemDiagnosticClass<RelationshipClass, [string, string, string, string]>(DiagnosticCodes.ConstraintClassesDeriveFromAbstractContraint,
     "The constraint class '{0}' on the {1}-Constraint of '{2}' is not derived from the abstract constraint class '{3}'."),
 
-  /**
-   * EC-1600
-   * Required message parameters: relationship end (source/target), relationship name
-   */
+  /** EC-1600: Required message parameters: relationship end (source/target), relationship name */
   AtLeastOneConstraintClassDefined: createRelationshipConstraintDiagnosticClass<[string, string]>(DiagnosticCodes.AtLeastOneConstraintClassDefined,
     "The {0}-Constraint of '{1}' does not contain any constraint classes."),
 
-  /**
-   * EC-1601
-   * Required message parameters: relationship end (source/target), relationship name
-   */
+  /** EC-1601: Required message parameters: relationship end (source/target), relationship name */
   AbstractConstraintMustExistWithMultipleConstraints: createRelationshipConstraintDiagnosticClass<[string, string]>(DiagnosticCodes.AbstractConstraintMustExistWithMultipleConstraints,
     "The {0}-Constraint of '{1}' has multiple constraint classes which requires an abstract constraint to be defined."),
 };
