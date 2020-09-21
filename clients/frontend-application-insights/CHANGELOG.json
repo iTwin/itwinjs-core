@@ -2,6 +2,12 @@
   "name": "@bentley/frontend-application-insights-client",
   "entries": [
     {
+      "version": "2.6.1",
+      "tag": "@bentley/frontend-application-insights-client_v2.6.1",
+      "date": "Fri, 18 Sep 2020 13:15:08 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.6.0",
       "tag": "@bentley/frontend-application-insights-client_v2.6.0",
       "date": "Thu, 17 Sep 2020 13:16:12 GMT",

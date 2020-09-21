@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webgl-compatibility",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/webgl-compatibility.js",
@@ -34,9 +34,9 @@
   "dependencies": {},
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.6.0",
-    "@bentley/eslint-plugin": "2.6.0",
-    "@bentley/certa": "2.6.0",
+    "@bentley/build-tools": "2.6.1",
+    "@bentley/eslint-plugin": "2.6.1",
+    "@bentley/certa": "2.6.1",
     "@types/node": "10.14.1",
     "@types/mocha": "^5.2.5",
     "@types/chai": "^4.1.4",
