@@ -1,0 +1,21 @@
+# iModel.js Regression Testing Build
+#
+# Tests all supported versions of iModel.js on all platforms.
+#
+# Starts with the minimum version (currently 10.16.0) and then follows the tip of each subsequent minor version
+#
+# The current LTS is tested in all normal CI/PR builds so no need to test it here.
+
+jobs:
+- template: ci-core.yaml
+    parameters:
+    name: Node_10_16
+    nodeVersion: 10.16.0
+    pool:
+        demands: Agent.OS -equals $(platform)
+- template: ci-core.yaml
+    parameters:
+    name: Node_10
+    nodeVersion: 10.x
+    pool:
+        demands: Agent.OS -equals $(platform)
