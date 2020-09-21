@@ -57,7 +57,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
+    if (!TestConfig.enableMocks)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 

@@ -98,9 +98,8 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
-    }
-    if (TestConfig.enableIModelBank)
       await utils.deleteIModelByName(requestContext, projectId, imodelName);
+    }
   });
 
   afterEach(() => {

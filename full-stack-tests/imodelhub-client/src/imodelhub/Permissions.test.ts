@@ -108,7 +108,8 @@ describe("iModelHub PermissionsManager", () => {
   });
 
   after(async () => {
-    await utils.deleteIModelByName(requestContext, projectId, imodelName);
+    if (!TestConfig.enableMocks)
+      await utils.deleteIModelByName(requestContext, projectId, imodelName);
   });
 
   it("should get Context permissions (#unit)", async () => {

@@ -41,6 +41,7 @@ function generateHubUserInfo(userInfos: UserInfo[]): HubUserInfo[] {
 
 describe("iModelHubClient UserInfoHandler", () => {
   const requestContexts: AuthorizedClientRequestContext[] = [];
+  let projectId: GuidString;
   let imodelId: GuidString;
 
   const imodelName = "imodeljs-clients UserInfo test";
@@ -53,6 +54,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
     requestContexts.sort((a: AuthorizedClientRequestContext, b: AuthorizedClientRequestContext) => a.accessToken.getUserInfo()!.id.localeCompare(b.accessToken.getUserInfo()!.id));
+    projectId = projectId = await utils.getProjectId(requestContexts[0]);
     await utils.createIModel(requestContexts[0], imodelName);
     imodelId = await utils.getIModelId(requestContexts[0], imodelName);
 
@@ -61,6 +63,11 @@ describe("iModelHubClient UserInfoHandler", () => {
       await utils.getBriefcases(requestContexts[1], imodelId, 1);
     }
   });
+
+  after(async () => {
+    if (!TestConfig.enableMocks)
+      await utils.deleteIModelByName(requestContexts[0], projectId, imodelName);
+  })
 
   afterEach(() => {
     ResponseBuilder.clearMocks();

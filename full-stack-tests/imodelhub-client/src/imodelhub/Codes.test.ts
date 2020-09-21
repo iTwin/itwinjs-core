@@ -54,7 +54,7 @@ describe("iModelHub CodeHandler", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
+    if (!TestConfig.enableMocks)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
@@ -401,7 +401,7 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
+    if (!TestConfig.enableMocks)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 

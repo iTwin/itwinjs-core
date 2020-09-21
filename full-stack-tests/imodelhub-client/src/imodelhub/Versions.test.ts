@@ -124,10 +124,8 @@ describe("iModelHub VersionHandler", () => {
     if (!TestConfig.enableMocks) {
       if (baselineiModelName)
         await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
-      if (TestConfig.enableIModelBank) {
-        await utils.deleteIModelByName(requestContext, contextId, imodelName);
-        await utils.deleteIModelByName(requestContext, contextId, imodelName2);
-      }
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+      await utils.deleteIModelByName(requestContext, contextId, imodelName2);
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       iModelClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
