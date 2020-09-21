@@ -14,8 +14,8 @@ import {
   SyncPropertiesChangeEventArgs,
 } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
-import { assert } from "@bentley/ui-ninezone";
 import { ToolSettingsEntry } from "../widget-panels/ToolSettings";
+import { assert } from "@bentley/bentleyjs-core";
 
 function EditorLabel({ itemsManager, item, isLeftmostRecord }: { itemsManager: DialogItemsManager, item: DialogItem, isLeftmostRecord?: boolean }) {
   const [isDisabled, setIsDisabled] = React.useState(!!item.isDisabled);

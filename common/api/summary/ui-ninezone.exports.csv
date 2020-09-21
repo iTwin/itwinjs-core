@@ -7,7 +7,6 @@ internal;addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial
 alpha;AppButton 
 alpha;AppButtonProps 
 internal;AppContent: React.NamedExoticComponent
-internal;assert(condition: any): asserts condition
 alpha;BackArrow 
 alpha;BackArrowProps 
 alpha;BackButton 
