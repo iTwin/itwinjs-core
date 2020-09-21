@@ -23,7 +23,6 @@ The following tools are very helpful and highly suggested for working with iMode
     - [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens) (great tools for using Git inside VS Code)
     - [MarkdownLint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) (for editing documentation)
 
-
 ### Recommended reading
 
 - [TypeScript](http://www.typescriptlang.org/)

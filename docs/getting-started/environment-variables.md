@@ -2,7 +2,7 @@
  ``` cmd
  set variable_name=<variable value>
  ```
- 
+
  ### PowerShell
 
   ``` cmd
