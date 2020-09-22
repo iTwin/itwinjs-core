@@ -4,6 +4,7 @@ exports[`<ToggleEditor /> renders correctly 1`] = `
 <Toggle
   className="components-cell-editor"
   data-testid="components-toggle-editor"
+  disabled={false}
   isOn={false}
   onChange={[Function]}
 />

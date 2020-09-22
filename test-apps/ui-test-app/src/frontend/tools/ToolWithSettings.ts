@@ -256,6 +256,7 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
+  private _lockToggleDisabled = false;
   private _lockValue: DialogItemValue = { value: true };
 
   public get lock(): boolean {
@@ -287,6 +288,8 @@ export class ToolWithSettings extends PrimitiveTool {
       },
     };
   }
+
+  private _imageCheckboxDisabled = false;
 
   private _imageCheckBoxValue: DialogItemValue = { value: true };
 
@@ -424,6 +427,7 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
+  private _isUseLengthCheckboxDisabled = false;
   private _useLengthValue: DialogItemValue = { value: true };
 
   public get useLength(): boolean {
@@ -575,6 +579,39 @@ export class ToolWithSettings extends PrimitiveTool {
     this.syncToolSettingsProperties([syncItem, stationSyncItem, surveySyncItem]);
   }
 
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (wentDown && keyEvent.key === "1") {
+      this._isUseLengthCheckboxDisabled = !this._isUseLengthCheckboxDisabled;
+
+      const syncItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._useLengthName, value: this._useLengthValue, isDisabled: this._isUseLengthCheckboxDisabled };
+      this.syncToolSettingsProperties([syncItem]);
+
+      const isDisabledStr = this._isUseLengthCheckboxDisabled ? "disabled" : "enabled";
+      const msg = `UseLength checkbox is now '${isDisabledStr}'`;
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+      return EventHandled.Yes;
+    } else if (wentDown && keyEvent.key === "2") {
+      this._imageCheckboxDisabled = !this._imageCheckboxDisabled;
+      const syncItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._imageCheckBoxName, value: this._imageCheckBoxValue, isDisabled: this._imageCheckboxDisabled };
+      this.syncToolSettingsProperties([syncItem]);
+
+      const isDisabledStr = this._imageCheckboxDisabled ? "disabled" : "enabled";
+      const msg = `ImageCheckbox is now '${isDisabledStr}'`;
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+      return EventHandled.Yes;
+    } else if (wentDown && keyEvent.key === "3") {
+      this._lockToggleDisabled = !this._lockToggleDisabled;
+      const syncItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._lockToggleName, value: this._lockValue, isDisabled: this._lockToggleDisabled };
+      this.syncToolSettingsProperties([syncItem]);
+
+      const isDisabledStr = this._lockToggleDisabled ? "disabled" : "enabled";
+      const msg = `Lock Toggle is now '${isDisabledStr}'`;
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+      return EventHandled.Yes;
+    }
+    return super.onKeyTransition(wentDown, keyEvent);
+  }
+
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
     if (!this._showCoordinatesOnPointerMove)
       return;
@@ -604,7 +641,7 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push({ value: this._stateValue, property: ToolWithSettings._getStateDescription(), editorPosition: { rowPriority: 10, columnIndex: 4 } });
     toolSettings.push({ value: this._coordinateValue, property: ToolWithSettings._getCoordinateDescription(), editorPosition: { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, isDisabled: readonly });
     toolSettings.push({ value: this._stationValue, property: ToolWithSettings._getStationDescription(), editorPosition: { rowPriority: 16, columnIndex: 2, columnSpan: 3 }, isDisabled: readonly });
-    const lengthLock = { value: this._useLengthValue, property: ToolWithSettings._getUseLengthDescription(), editorPosition: { rowPriority: 20, columnIndex: 0 } };
+    const lengthLock = { value: this._useLengthValue, property: ToolWithSettings._getUseLengthDescription(), editorPosition: { rowPriority: 20, columnIndex: 0 }, isDisabled: this._isUseLengthCheckboxDisabled };
     toolSettings.push({ value: this._lengthValue, property: this._lengthDescription, editorPosition: { rowPriority: 20, columnIndex: 2 }, isDisabled: false, lockProperty: lengthLock });
     toolSettings.push({ value: this._surveyLengthValue, property: this._surveyLengthDescription, editorPosition: { rowPriority: 21, columnIndex: 2 }, isDisabled: readonly });
     toolSettings.push({ value: this._angleValue, property: new AngleDescription(), editorPosition: { rowPriority: 25, columnIndex: 2 } });

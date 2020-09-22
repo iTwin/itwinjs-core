@@ -17,6 +17,7 @@ import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManag
 /** @internal */
 interface ToggleEditorState {
   toggleValue: boolean;
+  isDisabled?: boolean;
 }
 
 /** ToggleEditor React component that is a property editor with checkbox input
@@ -28,6 +29,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   /** @internal */
   public readonly state: Readonly<ToggleEditorState> = {
     toggleValue: false,
+    isDisabled: false,
   };
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -85,6 +87,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   private async setStateFromProps() {
     const { propertyRecord } = this.props;
     let toggleValue = false;
+    let isDisabled = false;
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
@@ -93,14 +96,19 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     }
 
     // istanbul ignore else
+    if (propertyRecord && propertyRecord.isDisabled)
+      isDisabled = propertyRecord.isDisabled;
+
+    // istanbul ignore else
     if (this._isMounted)
-      this.setState({ toggleValue });
+      this.setState({ toggleValue, isDisabled });
   }
 
   /** @internal */
   public render() {
     const className = classnames("components-cell-editor", this.props.className);
     const inOn = this.state.toggleValue;
+    const isDisabled = !!this.state.isDisabled;
 
     return (
       <Toggle
@@ -108,6 +116,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
         className={className}
         style={this.props.style}
         isOn={inOn}
+        disabled={isDisabled}
         onChange={this._updateToggleValue}
         data-testid="components-toggle-editor"
         setFocus={this.props.setFocus} />
