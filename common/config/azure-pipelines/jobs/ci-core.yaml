@@ -23,7 +23,7 @@ jobs:
 
   steps:
     - checkout: self
-      clean: all
+      clean: true
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
@@ -34,15 +34,15 @@ jobs:
         # Get the new version number.
         $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
         $currVersion = $json[0].version
-        
+
         $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
-        
+
         Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
       displayName: 'Set build number'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
     - template: ../templates/core-build.yaml
-  
+
     # Will run if even there is a failure somewhere else in the pipeline.
     - template: ../templates/publish-test-results.yaml
       parameters:
