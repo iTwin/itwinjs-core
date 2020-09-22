@@ -7,7 +7,7 @@ import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface, RpcConfiguration, SyncMode, IModelVersion } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, IModelVersion, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
   IModelAppOptions, IModelConnection, MobileAuthorizationClient, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
@@ -177,9 +177,7 @@ export class SampleAppIModelApp {
   }
 
   public static get uiSettings(): UiSettings {
-    const settings = UiFramework.getUiSettings();
-    SampleAppIModelApp._appUiSettings.apply(settings);  // eslint-disable-line @typescript-eslint/no-floating-promises
-    return settings;
+    return UiFramework.getUiSettings();
   }
 
   public static set uiSettings(v: UiSettings) {
@@ -223,8 +221,8 @@ export class SampleAppIModelApp {
 
     if (SampleAppIModelApp.testAppConfiguration?.reactAxeConsole) {
       if (process.env.NODE_ENV !== "production") {
-        const axe = require("react-axe"); // eslint-disable-line @typescript-eslint/no-var-requires
-        axe(React, ReactDOM, 1000);
+        // const axe = require("react-axe"); // eslint-disable-line @typescript-eslint/no-var-requires
+        // axe(React, ReactDOM, 1000);
       }
     }
   }

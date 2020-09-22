@@ -153,4 +153,25 @@ describe("<Tree />", () => {
 
   });
 
+  describe("setFocusByClassName", () => {
+
+    it("does not set focus when element not found", () => {
+      const instance = new Tree({});
+      expect(instance.setFocusByClassName(".test")).to.be.false;
+    });
+
+    it("sets focus by class name", () => {
+      const wrapper = mount(<Tree><button className="test" /></Tree>);
+      const instance = wrapper.instance() as Tree;
+      const button = wrapper.find("button").at(0).getDOMNode();
+      let activeElement = document.activeElement as HTMLElement;
+      expect(activeElement === button).to.be.false;
+
+      expect(instance.setFocusByClassName(".test")).to.be.true;
+      activeElement = document.activeElement as HTMLElement;
+      expect(activeElement === button).to.be.true;
+    });
+
+  });
+
 });

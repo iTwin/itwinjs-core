@@ -32,6 +32,8 @@ export interface TreeEvents {
 
   /** Called when selected tree node is clicked. */
   onDelayedNodeClick?(event: TreeNodeEventArgs): void;
+  /** Called when selected tree node editor is activated. */
+  onNodeEditorActivated?(event: TreeNodeEventArgs): void;
 
   /**
    * Called when tree selection is modified.

@@ -45,6 +45,12 @@ export interface TreeRendererProps {
 
   /** Properties used to highlight nodes and scroll to active match while filtering. */
   nodeHighlightingProps?: HighlightableTreeProps;
+
+  /**
+   * Callback used when an editor closes
+   * @internal
+   */
+  onNodeEditorClosed?: () => void;
 }
 
 /**
@@ -75,6 +81,12 @@ export interface TreeRendererContext {
    * @internal
    */
   onNodeWidthMeasured?: (width: number) => void;
+
+  /**
+   * Callback used when an editor closes
+   * @internal
+   */
+  onNodeEditorClosed?: () => void;
 }
 
 /**
@@ -135,7 +147,11 @@ export function TreeRenderer(props: TreeRendererProps) {
       if (width > minContainerWidth.current)
         minContainerWidth.current = width;
     },
-  }), [props.nodeRenderer, props.treeActions, props.nodeLoader, props.visibleNodes, onLabelRendered, highlightingEngine]);
+    onNodeEditorClosed: () => {
+      setFocusToSelected(coreTreeRef);
+      props.onNodeEditorClosed && props.onNodeEditorClosed();
+    },
+  }), [props, onLabelRendered, highlightingEngine]);
 
   const prevTreeWidth = React.useRef<number>(0);
   const onTreeSizeChanged = React.useCallback((width: number) => {
@@ -230,7 +246,9 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
     const { index, style } = props;
 
     const context = useTreeRendererContext(Node);
-    const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered, highlightingEngine, onNodeWidthMeasured } = context;
+    const {
+      nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered, highlightingEngine, onNodeWidthMeasured, onNodeEditorClosed,
+    } = context;
     const node = visibleNodes.getAtIndex(index)!;
 
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
@@ -262,6 +280,21 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
       if (onNodeWidthMeasured && ref.current)
         onNodeWidthMeasured(ref.current.offsetWidth);
     }, [onNodeWidthMeasured]);
+
+    const isEditing = React.useRef(false);
+    React.useEffect(() => {
+      if (!isTreeModelNode(node))
+        return;
+
+      if (!isEditing.current && node.editingInfo) {
+        isEditing.current = true;
+      } else if (isEditing.current && node.editingInfo === undefined) {
+        isEditing.current = false;
+        /* istanbul ignore else */
+        if (onNodeEditorClosed)
+          onNodeEditorClosed();
+      }
+    }, [node, onNodeEditorClosed])
 
     return (
       <div className={className} style={style} ref={ref}>
@@ -314,4 +347,10 @@ function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightabl
     }, [highlightableTreeProps, treeRef]);
 
   return onLabelRendered;
+}
+
+function setFocusToSelected(treeRef: React.RefObject<CoreTree>) {
+  /* istanbul ignore else */
+  if (treeRef.current)
+    treeRef.current.setFocusByClassName(".core-tree-node.is-selected");
 }

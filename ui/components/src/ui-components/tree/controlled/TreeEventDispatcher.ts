@@ -194,6 +194,16 @@ export class TreeEventDispatcher implements TreeActions {
     this._selectionManager.onNodeMouseMove(nodeId);
   }
 
+  public onNodeEditorActivated(nodeId: string) {
+    const node = this._getVisibleNodes ? this._getVisibleNodes().getModel().getNode(nodeId) : /* istanbul ignore next */ undefined;
+    const isNodeSelected = node ? node.isSelected : false;
+
+    // if node was already selected, fire onNodeEditorActivated event
+    if (isNodeSelected && this._treeEvents.onNodeEditorActivated !== undefined) {
+      this._treeEvents.onNodeEditorActivated({ nodeId });
+    }
+  }
+
   public onTreeKeyDown(event: React.KeyboardEvent): void {
     this._selectionManager.onTreeKeyDown(event, this);
   }

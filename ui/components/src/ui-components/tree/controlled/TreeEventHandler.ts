@@ -117,8 +117,18 @@ export class TreeEventHandler implements TreeEvents, IDisposable {
     return stateChanges.subscribe((changes) => this._modelMutator.setCheckboxStates(changes));
   }
 
-  /** Activates node editing if editing parameters is supplied and node is editable. */
+  /** Activates node editing if editing parameters are supplied and node is editable. */
   public onDelayedNodeClick({ nodeId }: TreeNodeEventArgs) {
+    this.activateEditor(nodeId);
+  }
+
+  /** Activates node editing if editing parameters are supplied and node is editable. */
+  public onNodeEditorActivated({ nodeId }: TreeNodeEventArgs) {
+    this.activateEditor(nodeId);
+  }
+
+  /** Activates node editing if editing parameters are supplied and node is editable. */
+  private activateEditor(nodeId: string) {
     if (this._editingParams === undefined)
       return;
 

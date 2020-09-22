@@ -2180,6 +2180,8 @@ export class Tree extends React.PureComponent<TreeProps> {
     render(): JSX.Element;
     // (undocumented)
     scrollToElement(element: Element): void;
+    // (undocumented)
+    setFocusByClassName(selector: string): boolean;
     }
 
 // @public

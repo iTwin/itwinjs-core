@@ -28,6 +28,10 @@
     background-color: $buic-row-selection;
   }
 
+  &.is-keyboard-editable {
+    background-color: $buic-background-editable;
+  }
+
   &:focus {
     outline: none;
   }

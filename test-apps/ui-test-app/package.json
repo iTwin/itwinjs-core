@@ -53,6 +53,7 @@
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",
     "@types/react": "16.9.43",
+    "@types/react-axe": "^3.1.0",
     "@types/react-dom": "^16.8.0",
     "@types/react-redux": "^7.0.1",
     "@types/react-select": "^3.0.4",

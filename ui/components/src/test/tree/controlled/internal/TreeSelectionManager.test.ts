@@ -31,7 +31,9 @@ describe("TreeSelectionManager", () => {
   let node2: MutableTreeModelNode;
 
   beforeEach(() => {
+    visibleNodesMock.reset();
     eventMock.reset();
+    treeModelMock.reset();
     keyEventMock.reset();
     multipleSelectionManager = new TreeSelectionManager(SelectionMode.Multiple, () => visibleNodesMock.object);
     selectionHandler = (multipleSelectionManager as any)._selectionHandler;
@@ -309,19 +311,16 @@ describe("TreeSelectionManager", () => {
       expect(spyCollapsed).to.not.be.called;
     });
 
-    it("Space should not do anything on a leaf node", () => {
+    it("Space should start editing on a leaf node", () => {
       extendedSelectionManager.onNodeClicked(node.id, eventMock.object);
       keyEventMock.setup((x) => x.key).returns(() => SpecialKey.Space);
       keyEventMock.setup((x) => x.shiftKey).returns(() => false);
       keyEventMock.setup((x) => x.ctrlKey).returns(() => false);
-      const spyExpanded = sinon.spy();
-      const spyCollapsed = sinon.spy();
-      treeActionsMock.setup((x) => x.onNodeExpanded).returns(() => spyExpanded);
-      treeActionsMock.setup((x) => x.onNodeCollapsed).returns(() => spyCollapsed);
+      const spyEditorActivated = sinon.spy();
+      treeActionsMock.setup((x) => x.onNodeEditorActivated).returns(() => spyEditorActivated);
       extendedSelectionManager.onTreeKeyDown(keyEventMock.object, treeActionsMock.object);
       extendedSelectionManager.onTreeKeyUp(keyEventMock.object, treeActionsMock.object);
-      expect(spyExpanded).to.not.be.called;
-      expect(spyCollapsed).to.not.be.called;
+      expect(spyEditorActivated).to.be.called;
     });
 
   });

@@ -422,4 +422,26 @@ describe("TreeEventDispatcher", () => {
 
   });
 
+  describe("onNodeEditorActivated", () => {
+
+    it("calls tree events onNodeEditorActivated if node is selected", () => {
+      testNodes[0].isSelected = true;
+      dispatcher.onNodeEditorActivated(testNodes[0].id);
+      treeEventsMock.verify((x) => x.onNodeEditorActivated!({ nodeId: testNodes[0].id }), moq.Times.exactly(2));
+    });
+
+    it("does not call tree events onNodeEditorActivated if node is not selected", () => {
+      testNodes[0].isSelected = false;
+      dispatcher.onNodeEditorActivated(testNodes[0].id);
+      treeEventsMock.verify((x) => x.onNodeEditorActivated!({ nodeId: testNodes[0].id }), moq.Times.never());
+    });
+
+    it("does not call tree events onNodeEditorActivated if node id is invalid", () => {
+      const nodeId = "invalid";
+      dispatcher.onNodeEditorActivated(nodeId);
+      treeEventsMock.verify((x) => x.onNodeEditorActivated!({ nodeId }), moq.Times.never());
+    });
+
+  });
+
 });

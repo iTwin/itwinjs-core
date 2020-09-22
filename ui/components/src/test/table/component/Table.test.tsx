@@ -70,7 +70,7 @@ describe("Table", () => {
   };
 
   const columns: ColumnDescription[] = [
-    { label: "label0", key: "key0", sortable: true },
+    { label: "label0", key: "key0", sortable: true, editable: true },
     { label: "label1", key: "key1", resizable: true },
     { label: "label2", key: "key2", editable: true },
   ];
@@ -391,14 +391,18 @@ describe("Table", () => {
     });
 
     describe("row", () => {
+      const onPropertyEditing = sinon.spy();
 
       beforeEach(async () => {
+        onPropertyEditing.resetHistory();
+
         table = enzyme.mount(<Table
           dataProvider={dataProviderMock.object}
           onRowsSelected={onRowsSelectedCallbackMock.object}
           onRowsDeselected={onRowsDeselectedCallbackMock.object}
           onCellsSelected={onCellsSelectedCallbackMock.object}
           onCellsDeselected={onCellsDeselectedCallbackMock.object}
+          onPropertyEditing={onPropertyEditing}
           tableSelectionTarget={TableSelectionTarget.Row}
           onRowsLoaded={onRowsLoaded}
         />);
@@ -409,7 +413,6 @@ describe("Table", () => {
       describe("Single", () => {
 
         it("selects a row", async () => {
-          table.update();
           const row = table.find(rowClassName).first();
           row.simulate("click");
 
@@ -419,18 +422,51 @@ describe("Table", () => {
         });
 
         it("selects a row with keys", async () => {
-          table.update();
+          const tableInstance = table.instance() as Table;
           const row = table.find(rowClassName).first();
           row.simulate("click");
           await verifyRowIterator(["0"], selectedRowsIterator);
+          expect(tableInstance.state.keyboardEditorCellKey).to.eq("key0");
 
           const t = table.find(tableWrapper);
           t.simulate("keyDown", { key: SpecialKey.ArrowDown });
           t.simulate("keyUp", { key: SpecialKey.ArrowDown });
           await verifyRowIterator(["1"], selectedRowsIterator);
+          expect(tableInstance.state.keyboardEditorCellKey).to.eq("key0");
+
+          t.simulate("keyDown", { key: SpecialKey.ArrowRight });
+          t.simulate("keyUp", { key: SpecialKey.ArrowRight });
+          expect(tableInstance.state.keyboardEditorCellKey).to.eq("key2");
+
+          t.simulate("keyDown", { key: SpecialKey.ArrowLeft });
+          t.simulate("keyUp", { key: SpecialKey.ArrowLeft });
+          expect(tableInstance.state.keyboardEditorCellKey).to.eq("key0");
+
+          t.simulate("keyDown", { key: SpecialKey.ArrowLeft });
+          t.simulate("keyUp", { key: SpecialKey.ArrowLeft });
+          expect(tableInstance.state.keyboardEditorCellKey).to.eq("key2");
+
+          t.simulate("keyDown", { key: SpecialKey.ArrowRight });
+          t.simulate("keyUp", { key: SpecialKey.ArrowRight });
+          expect(tableInstance.state.keyboardEditorCellKey).to.eq("key0");
 
           onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
           expect(table.find(selectedRowClassName).length).to.be.equal(1);
+        });
+
+        it("activates a cell editor with keys", async () => {
+          const row = table.find(rowClassName).first();
+          row.simulate("click");
+          await verifyRowIterator(["0"], selectedRowsIterator);
+
+          const tableInstance = table.instance() as Table;
+          expect(tableInstance.state.keyboardEditorCellKey).to.eq("key0");
+
+          const t = table.find(tableWrapper);
+          t.simulate("keyDown", { key: SpecialKey.Space });
+          t.simulate("keyUp", { key: SpecialKey.Space });
+
+          expect(onPropertyEditing.calledOnce).to.be.true;
         });
 
         it.skip("deselects other rows when selects a row", async () => {
