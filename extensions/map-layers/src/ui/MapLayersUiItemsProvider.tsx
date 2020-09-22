@@ -31,6 +31,14 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
     return widgets;
   }
 }
+export interface MapTypesOptions {
+  readonly supportTileUrl: boolean;
+}
+export interface MapLayerOptions {
+  hideExternalMapLayers?: boolean;
+  fetchPublicMapLayerSources?: boolean;
+  mapTypeOptions?: MapTypesOptions;
+}
 
 /** MapLayersWidgetControl provides a widget to attach and remove maps layers from the active view's display style.
  * ``` tsx
@@ -46,9 +54,9 @@ export class MapLayersWidgetControl extends WidgetControl {
     return IModelApp.i18n.translate("mapLayers:Widget.Label");
   }
 
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
+  constructor(info: ConfigurableCreateInfo, mapLayerOptions: MapLayerOptions | undefined) {
+    super(info, mapLayerOptions);
 
-    this.reactNode = <MapLayersWidget />;
+    this.reactNode = <MapLayersWidget mapLayerOptions={mapLayerOptions} />;
   }
 }

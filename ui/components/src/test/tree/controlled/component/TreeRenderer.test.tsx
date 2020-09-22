@@ -7,7 +7,7 @@ import * as React from "react";
 import { VariableSizeList } from "react-window";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { TreeNodeRendererProps } from "../../../../ui-components/tree/controlled/component/TreeNodeRenderer";
 import { TreeRenderer } from "../../../../ui-components/tree/controlled/component/TreeRenderer";
 import { from } from "../../../../ui-components/tree/controlled/Observable";
@@ -19,6 +19,7 @@ import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeN
 import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("TreeRenderer", () => {
 
@@ -236,6 +237,82 @@ describe("TreeRenderer", () => {
 
     expect(verticalScrollSpy).to.be.calledWith(1);
     expect(horizontalScrollSpy).to.be.called;
+  });
+
+  it("calls treeActions.onTreeKeyDown & onTreeKeyUp", () => {
+    const label = "test node";
+    const node = createRandomMutableTreeModelNode(undefined, undefined, label);
+    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
+    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
+
+    const spyKeyDown = sinon.spy();
+    const spyKeyUp = sinon.spy();
+    treeActionsMock.setup((x) => x.onTreeKeyDown).returns(() => spyKeyDown);
+    treeActionsMock.setup((x) => x.onTreeKeyUp).returns(() => spyKeyUp);
+
+    const renderNode = render(
+      <TreeRenderer
+        nodeLoader={nodeLoaderMock.object}
+        treeActions={treeActionsMock.object}
+        visibleNodes={visibleNodesMock.object}
+        nodeHeight={() => 50}
+      />);
+
+    expect(renderNode).to.not.be.undefined;
+
+    const treeNode: HTMLElement = renderNode.container.querySelector(".core-tree-node")! as HTMLElement;
+    fireEvent.keyDown(treeNode, { key: SpecialKey.Space });
+    fireEvent.keyUp(treeNode, { key: SpecialKey.Space });
+    expect(spyKeyDown).to.be.called;
+    expect(spyKeyUp).to.be.called;
+  });
+
+  it("calls onNodeEditorClosed when node.editingInfo changes to undefined", () => {
+    const spy = sinon.spy();
+    const label = "test node";
+    const node = createRandomMutableTreeModelNode(undefined, undefined, label);
+    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
+    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
+
+    const { rerender } = render(
+      <TreeRenderer
+        nodeLoader={nodeLoaderMock.object}
+        treeActions={treeActionsMock.object}
+        visibleNodes={visibleNodesMock.object}
+        onNodeEditorClosed={spy}
+        nodeHeight={() => 50}
+      />);
+
+    expect(spy).to.not.be.called;
+    node.editingInfo = { onCommit: () => { }, onCancel: () => { } };
+
+    const nodeRenderer = (_props: TreeNodeRendererProps) => {
+      return <div className={HighlightingEngine.ACTIVE_CLASS_NAME} />;
+    };
+
+    rerender(
+      <TreeRenderer
+        nodeLoader={nodeLoaderMock.object}
+        treeActions={treeActionsMock.object}
+        visibleNodes={visibleNodesMock.object}
+        nodeHeight={() => 50}
+        onNodeEditorClosed={spy}
+        nodeRenderer={nodeRenderer}
+      />);
+
+    expect(spy).to.not.be.called;
+    node.editingInfo = undefined;
+
+    rerender(
+      <TreeRenderer
+        nodeLoader={nodeLoaderMock.object}
+        treeActions={treeActionsMock.object}
+        visibleNodes={visibleNodesMock.object}
+        nodeHeight={() => 50}
+        onNodeEditorClosed={spy}
+      />);
+
+    expect(spy).to.be.called;
   });
 
 });

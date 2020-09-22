@@ -129,7 +129,7 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
 
   private getVisibleNodeAtIndex(nodes: VisibleTreeNodes | undefined, index: number): TreeModelNode | undefined {
     const foundNode = nodes !== undefined ? nodes.getAtIndex(index) : /* istanbul ignore next */ undefined;
-    return isTreeModelNode(foundNode) ? foundNode : undefined;
+    return isTreeModelNode(foundNode) ? foundNode : /* istanbul ignore next */ undefined;
   }
 
   public setVisibleNodes(visibleNodes: () => VisibleTreeNodes) {
@@ -213,33 +213,53 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
   }
 
   private _onKeyboardEvent = (e: React.KeyboardEvent, actions: TreeActions, isKeyDown: boolean) => {
-    // istanbul ignore next
-    if (!this._getVisibleNodes)
-      return;
-
     if (isNavigationKey(e.key)) {
+      // istanbul ignore next
+      if (!this._getVisibleNodes)
+        return;
+
       const processedNodeId = this._selectionHandler.processedItem;
-      const handleKeyboardSelectItem = (index: number) => {
+
+      const isExpandable = (node: TreeModelNode): boolean => !node.isLoading && node.numChildren !== 0;
+      const isEditing = (node: TreeModelNode): boolean => node.editingInfo !== undefined;
+
+      // istanbul ignore else
+      if (this._getVisibleNodes && isIndividualSelection(processedNodeId)) {
+        const processedNode = this._getVisibleNodes().getModel().getNode(processedNodeId);
         // istanbul ignore next
-        if (!this._getVisibleNodes)
+        if (processedNode && isEditing(processedNode))
           return;
-        const node = this.getVisibleNodeAtIndex(this._getVisibleNodes(), index);
+      }
+
+      const handleKeyboardSelectItem = (index: number) => {
         // istanbul ignore else
-        if (node) {
-          const selectionFunc = this._selectionHandler.createSelectionFunction(...this.createSelectionHandlers(node.id));
-          selectionFunc(e.shiftKey, e.ctrlKey);
+        if (this._getVisibleNodes) {
+          const node = this.getVisibleNodeAtIndex(this._getVisibleNodes(), index);
+          // istanbul ignore else
+          if (node) {
+            // istanbul ignore next
+            if (isEditing(node))
+              return;
+
+            const selectionFunc = this._selectionHandler.createSelectionFunction(...this.createSelectionHandlers(node.id));
+            selectionFunc(e.shiftKey, e.ctrlKey);
+          }
         }
       };
-      const isExpandable = (node: TreeModelNode): boolean => !node.isLoading && node.numChildren !== 0;
       const handleKeyboardActivateItem = (_index: number) => {
         // istanbul ignore else
         if (this._getVisibleNodes && isIndividualSelection(processedNodeId)) {
           const node = this._getVisibleNodes().getModel().getNode(processedNodeId);
-          if (node && isExpandable(node)) {
-            if (!node.isExpanded)
-              actions.onNodeExpanded(node.id);
-            else
-              actions.onNodeCollapsed(node.id);
+          // istanbul ignore else
+          if (node) {
+            if (isExpandable(node)) {
+              if (!node.isExpanded)
+                actions.onNodeExpanded(node.id);
+              else
+                actions.onNodeCollapsed(node.id);
+            } else {
+              actions.onNodeEditorActivated(node.id);
+            }
           }
         }
       };
@@ -247,23 +267,26 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
         // istanbul ignore else
         if (this._getVisibleNodes && isIndividualSelection(processedNodeId)) {
           const node = this._getVisibleNodes().getModel().getNode(processedNodeId);
-          if (node && isExpandable(node)) {
-            if (forward && !node.isExpanded)
-              actions.onNodeExpanded(node.id);
-            else if (!forward && node.isExpanded)
-              actions.onNodeCollapsed(node.id);
+          // istanbul ignore else
+          if (node) {
+            if (isExpandable(node)) {
+              if (forward && !node.isExpanded)
+                actions.onNodeExpanded(node.id);
+              else if (!forward && node.isExpanded)
+                actions.onNodeCollapsed(node.id);
+            }
           }
         }
       };
 
-      const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
-      itemKeyboardNavigator.orientation = Orientation.Vertical;
-      itemKeyboardNavigator.crossAxisArrowKeyHandler = handleCrossAxisArrowKey;
-      itemKeyboardNavigator.allowWrap = false;
-      itemKeyboardNavigator.itemCount = this._getVisibleNodes().getNumNodes();
-
       // istanbul ignore else
       if (isIndividualSelection(processedNodeId)) {
+        const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
+        itemKeyboardNavigator.orientation = Orientation.Vertical;
+        itemKeyboardNavigator.crossAxisArrowKeyHandler = handleCrossAxisArrowKey;
+        itemKeyboardNavigator.allowWrap = false;
+        itemKeyboardNavigator.itemCount = this._getVisibleNodes().getNumNodes();
+
         const index = this._getVisibleNodes().getIndexOfNode(processedNodeId);
         isKeyDown ?
           itemKeyboardNavigator.handleKeyDownEvent(e, index) :

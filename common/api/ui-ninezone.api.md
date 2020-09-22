@@ -45,9 +45,6 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
 // @internal
 export const AppContent: React.NamedExoticComponent<object>;
 
-// @internal
-export function assert(condition: any): asserts condition;
-
 // @alpha
 export class BackArrow extends React.PureComponent<BackArrowProps> {
     // (undocumented)

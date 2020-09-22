@@ -17,6 +17,7 @@ import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManag
 /** @internal */
 interface BooleanEditorState {
   checkboxValue: boolean;
+  isDisabled?: boolean;
 }
 
 /** BooleanEditor React component that is a property editor with checkbox input
@@ -28,6 +29,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
   /** @internal */
   public readonly state: Readonly<BooleanEditorState> = {
     checkboxValue: false,
+    isDisabled: false,
   };
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -96,6 +98,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
   private async setStateFromProps() {
     const { propertyRecord } = this.props;
     let checkboxValue = false;
+    let isDisabled = false;
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
@@ -104,14 +107,19 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     }
 
     // istanbul ignore else
+    if (propertyRecord && propertyRecord.isDisabled)
+      isDisabled = propertyRecord.isDisabled;
+
+    // istanbul ignore else
     if (this._isMounted)
-      this.setState({ checkboxValue });
+      this.setState({ checkboxValue, isDisabled });
   }
 
   /** @internal */
   public render() {
     const className = classnames("components-cell-editor", "components-boolean-editor", this.props.className);
     const checked = this.state.checkboxValue;
+    const isDisabled = !!this.state.isDisabled;
 
     return (
       <Checkbox
@@ -121,6 +129,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
         checked={checked}
         onChange={this._updateCheckboxValue}
         setFocus={this.props.setFocus}
+        disabled={isDisabled}
         data-testid="components-checkbox-editor">
       </Checkbox>
     );

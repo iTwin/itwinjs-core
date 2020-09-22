@@ -12,7 +12,7 @@ import * as React from "react";
 import { StagePanelLocation, UiItemProviderRegisteredEventArgs, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, assert, createNineZoneState, createTabsState, createWidgetState, findTab, floatingWidgetBringToFront, FloatingWidgets,
+  addPanelWidget, addTab, createNineZoneState, createTabsState, createWidgetState, findTab, floatingWidgetBringToFront, FloatingWidgets,
   getUniqueId, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
@@ -29,7 +29,7 @@ import { WidgetPanelsStatusBar } from "./StatusBar";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { Logger } from "@bentley/bentleyjs-core";
+import { assert, Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
 import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
 import { WidgetPanelsTab } from "./Tab";
@@ -752,7 +752,7 @@ const createListener = <T extends (...args: any[]) => void>(frontstageDef: Front
 export function useFrontstageManager(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ panelDef, size }: PanelSizeChangedEventArgs) => {
-      assert(frontstageDef.nineZoneState);
+      assert(!!frontstageDef.nineZoneState);
       const panel = getPanelSide(panelDef.location);
       frontstageDef.nineZoneState = setPanelSize(frontstageDef.nineZoneState, panel, size);
     });
@@ -763,7 +763,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
   }, [frontstageDef]);
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef, widgetState }: WidgetStateChangedEventArgs) => {
-      assert(frontstageDef.nineZoneState);
+      assert(!!frontstageDef.nineZoneState);
       frontstageDef.nineZoneState = setWidgetState(frontstageDef.nineZoneState, widgetDef.id, widgetState);
     });
     FrontstageManager.onWidgetStateChangedEvent.addListener(listener);
@@ -773,7 +773,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
   }, [frontstageDef]);
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef }: WidgetEventArgs) => {
-      assert(frontstageDef.nineZoneState);
+      assert(!!frontstageDef.nineZoneState);
       frontstageDef.nineZoneState = showWidget(frontstageDef.nineZoneState, widgetDef.id);
     });
     FrontstageManager.onWidgetShowEvent.addListener(listener);
@@ -783,7 +783,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
   }, [frontstageDef]);
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef }: WidgetEventArgs) => {
-      assert(frontstageDef.nineZoneState);
+      assert(!!frontstageDef.nineZoneState);
       frontstageDef.nineZoneState = expandWidget(frontstageDef.nineZoneState, widgetDef.id);
     });
     FrontstageManager.onWidgetExpandEvent.addListener(listener);
@@ -809,7 +809,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
   }, [uiSettings, frontstageDef]);
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef }: WidgetEventArgs) => {
-      assert(frontstageDef.nineZoneState);
+      assert(!!frontstageDef.nineZoneState);
       const label = widgetDef.label;
       frontstageDef.nineZoneState = setWidgetLabel(frontstageDef.nineZoneState, widgetDef.id, label);
     });

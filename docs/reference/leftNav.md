@@ -2,7 +2,7 @@
 packageClassification:  [
    {
       "order":"1",
-      "header":"iModel.js Core Packages",
+      "header":"Core Packages",
       "packages":[
          "imodeljs-frontend",
          "imodeljs-common",
@@ -21,7 +21,7 @@ packageClassification:  [
    },
    {
      "order":"2",
-     "header": "iModel.js Client Packages",
+     "header": "Client Packages",
      "packages": [
        "context-registry-client",
        "extension-client",
@@ -38,7 +38,7 @@ packageClassification:  [
    },
    {
       "order":"3",
-      "header":"iModel.js UI Packages",
+      "header":"UI Packages",
       "packages":[
          "ui-abstract",
          "ui-core",
@@ -49,7 +49,7 @@ packageClassification:  [
    },
    {
       "order":"4",
-      "header":"iModel.js Presentation Packages",
+      "header":"Presentation Packages",
       "packages":[
          "presentation-common",
          "presentation-components",
@@ -59,7 +59,7 @@ packageClassification:  [
    },
    {
       "order":"5",
-      "header":"iModel.js Domain Packages",
+      "header":"Domain Packages",
       "packages":[
          "analytical-backend",
          "linear-referencing-backend",

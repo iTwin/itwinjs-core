@@ -110,8 +110,7 @@ describe("iModelHub EventHandler", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   afterEach(() => {

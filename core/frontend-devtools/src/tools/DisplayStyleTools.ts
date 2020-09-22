@@ -148,16 +148,18 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
  *  * `map`: include background map settings.
  *  * `drawingaids`: include drawing aid decoration settings.
  *  * `copy`: copy result to system clipboarad.
+ *  * `quote`: format the JSON so it can be parsed directly by [ApplyRenderingStyleTool].
  * @beta
  */
 export class SaveRenderingStyleTool extends DisplayStyleTool {
   private _options: DisplayStyleOverridesOptions = { };
   private _copyToClipboard = false;
+  private _quote = false;
 
   public static toolId = "SaveRenderingStyle";
 
   public static get minArgs() { return 0; }
-  public static get maxArgs() { return 6; }
+  public static get maxArgs() { return 7; }
 
   public parse(inputArgs: string[]) {
     const args = parseArgs(inputArgs);
@@ -171,12 +173,16 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
     this._options.includeBackgroundMap = getArg("m");
     this._options.includeDrawingAids = getArg("d");
     this._copyToClipboard = true === getArg("c");
+    this._quote = true === getArg("q");
 
     return true;
   }
 
   public execute(vp: Viewport): boolean {
-    const json = JSON.stringify(vp.displayStyle.settings.toOverrides(this._options));
+    let json = JSON.stringify(vp.displayStyle.settings.toOverrides(this._options));
+    if (this._quote)
+      json = `"${json.replace(/"/g, '""')}"`;
+
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Rendering style saved", json));
     if (this._copyToClipboard)
       copyStringToClipboard(json);

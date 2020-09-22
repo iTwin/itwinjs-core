@@ -34,7 +34,7 @@ describe.skip("iModelHub Performance tests", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
+    if (!TestConfig.enableMocks)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 

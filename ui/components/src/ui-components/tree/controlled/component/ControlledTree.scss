@@ -57,6 +57,12 @@
       // Prevent selected node's borders from being overdrawn by non-selected neighbors
       z-index: 1;
     }
+
+    .core-tree-node {
+      &.is-focused, &:focus {
+        outline: none;
+      }
+    }
   }
 
   @mixin enable-border($edge) {

@@ -67,16 +67,15 @@
         "description": "Walk around in the design",
         "flyover": "Walk Around",
         "Prompts": {
-          "FirstPoint": "Enter point to start walking",
-          "NextPoint": "Enter point to stop walking"
+          "FirstPoint": "Enter point to look around or start moving",
+          "NextPoint": "Enter point to accept current location"
         },
         "Inputs": {
-          "AcceptLookPoint": "Accept point to begin looking around",
+          "AcceptLookPoint": "Accept point to begin look or move",
           "WalkKeys": "Move forward, backward, left, right",
           "ElevateKeys": "Move up and down",
+          "VelocityChange": "Increase or decrease velocity",
           "CollideKeys": "Toggle collisions and floor detection",
-          "SpeedIncrease": "Hold to increase speed over time",
-          "SpeedDecrease": "Hold to decrease speed over time",
           "TouchZoneLL": "Lower left to move forward, backward, left, right",
           "TouchZoneLR": "Lower right to look around",
           "TouchTapLL": "Lower left to toggle up, down, left, right movement",

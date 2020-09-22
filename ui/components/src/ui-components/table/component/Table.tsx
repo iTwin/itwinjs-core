@@ -229,6 +229,7 @@ interface TableState {
   menuY: number;
   cellEditorState: TableCellEditorState;
   dialog?: PropertyDialogState;
+  keyboardEditorCellKey?: string;
   // TODO: Enable, when table gets refactored
   // popup?: PropertyPopupState;
 }
@@ -510,13 +511,16 @@ export class Table extends React.Component<TableProps, TableState> {
       }
     }
 
+    let keyboardEditorCellKey: string | undefined;
     const tableColumns = dataGridColumns.map((dataGridColumn: ReactDataGridColumn, index: number) => {
       const tableColumn = new TableColumn(this, columnDescriptions[index], dataGridColumn);
       tableColumn.dataProvider = this.props.dataProvider;
+      if (!keyboardEditorCellKey && tableColumn.columnDescription.editable)
+        keyboardEditorCellKey = tableColumn.key;
       return tableColumn;
     });
 
-    this.setState({ columns: tableColumns });
+    this.setState({ columns: tableColumns, keyboardEditorCellKey });
 
     if (this._pendingUpdate !== TableUpdate.None) {
       return this.handlePendingUpdate();
@@ -1042,6 +1046,9 @@ export class Table extends React.Component<TableProps, TableState> {
           this._cellSelectionHandler.createDragAction(this._cellComponentSelectionHandler, this.cellItemSelectionHandlers, cellKey);
         };
         className = classnames({ "is-selected": this.isCellSelected(cellKey) });
+      } else {
+        if (this._selectedRowIndices.has(rowProps.index))
+          className = classnames({ "is-keyboard-editable": this.state.keyboardEditorCellKey === column.key });
       }
 
       className = classnames(className, this.getCellBorderStyle(cellKey));
@@ -1201,6 +1208,9 @@ export class Table extends React.Component<TableProps, TableState> {
       if (record && record.value.valueFormat !== PropertyValueFormat.Primitive)
         return;
     }
+
+    if (this.state.keyboardEditorCellKey !== column.key)
+      this.setState({ keyboardEditorCellKey: column.key });
 
     let activate = false;
 
@@ -1425,13 +1435,64 @@ export class Table extends React.Component<TableProps, TableState> {
           const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(index));
           selectionFunction(e.shiftKey, e.ctrlKey);
         };
-        // istanbul ignore next
-        const handleKeyboardActivateItem = (_index: number) => { };
+
+        const handleKeyboardActivateItem = (index: number) => {
+          // istanbul ignore else
+          if (this.state.keyboardEditorCellKey) {
+            const columnIndex = this.getColumnIndexFromKey(this.state.keyboardEditorCellKey);
+            // istanbul ignore else
+            if (0 <= columnIndex && columnIndex < this.state.columns.length) {
+              const columnDescription = this.state.columns[columnIndex].columnDescription;
+              // istanbul ignore else
+              if (columnDescription && columnDescription.editable)
+                this.activateCellEditor(index, columnIndex, this.state.keyboardEditorCellKey);
+            }
+
+          }
+        };
+
+        const handleCrossAxisArrowKey = (forward: boolean) => {
+          // istanbul ignore else
+          if (this.state.keyboardEditorCellKey) {
+            let newEditorCellKey: string | undefined;
+            const columnIndex = this.getColumnIndexFromKey(this.state.keyboardEditorCellKey);
+
+            // istanbul ignore else
+            if (columnIndex >= 0) {
+              let newColIndex = columnIndex;
+
+              while (!newEditorCellKey) {
+                if (forward)
+                  newColIndex++;
+                else
+                  newColIndex--;
+
+                if (newColIndex < 0)
+                  newColIndex = this.state.columns.length - 1;
+                else if (newColIndex >= this.state.columns.length)
+                  newColIndex = 0;
+
+                // istanbul ignore next
+                if (newColIndex === columnIndex)
+                  break;
+
+                const isEditable = this.state.columns[newColIndex].columnDescription.editable;
+                if (isEditable)
+                  newEditorCellKey = this.state.columns[newColIndex].key;
+              }
+
+              // istanbul ignore else
+              if (newEditorCellKey)
+                this.setState({ keyboardEditorCellKey: newEditorCellKey });
+            }
+          }
+        };
 
         const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
         itemKeyboardNavigator.orientation = Orientation.Vertical;
         itemKeyboardNavigator.allowWrap = false;
         itemKeyboardNavigator.itemCount = this.state.rowsCount;
+        itemKeyboardNavigator.crossAxisArrowKeyHandler = handleCrossAxisArrowKey;
 
         const processedRow = this._rowSelectionHandler.processedItem ? this._rowSelectionHandler.processedItem /* istanbul ignore next */ : 0;
         keyDown ?
@@ -1490,7 +1551,7 @@ export class Table extends React.Component<TableProps, TableState> {
               selectionFunction(e.shiftKey, e.ctrlKey);
             }
           }
-        }
+        };
 
         const itemKeyboardNavigator = new ItemKeyboardNavigator(handleKeyboardSelectItem, handleKeyboardActivateItem);
         itemKeyboardNavigator.orientation = Orientation.Vertical;

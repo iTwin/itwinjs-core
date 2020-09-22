@@ -18,15 +18,14 @@ browserTabTitle: iModel.js Tutorials
 [!bwc tile heading="Web viewer" linkTo="develop-web-viewer" contents="Create a web based viewer" icon="network.svg" step="13" width="28%" ]
 [!bwc tile heading="Desktop viewer" linkTo="develop-desktop-viewer" contents="Create a desktop viewer" icon="computer.svg" step="13" width="28%"]
 [!bwc tile heading="Agent application" linkTo="develop-agent" contents="Create an agent application" icon="notification.svg" step="13" width="28%"]
+[!bwc tile heading="Extension" linkTo="gettingstarted subPath=/frontend/extensions" contents="Create an iModel.js Extension" icon="puzzle.svg" step="13" width="28%"]
 
 ### Registering Applications
 [!bwc tile heading="Register application" linkTo="registering-applications" contents="Register an application for deployment" icon="applications.svg" step="13" width="28%"]
 
-
 ### Support
 
 Please see the [Community Resources]($docs/learning/CommunityResources.md) page for the best places to get more help.
-
 
 <style>
 article#main h2 {

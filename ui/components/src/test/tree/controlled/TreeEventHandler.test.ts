@@ -156,4 +156,23 @@ describe("TreeEventHandler", () => {
 
   });
 
+  describe("onNodeEditorActivated", () => {
+
+    it("calls TreeMutator activateEditing", () => {
+      const onNodeUpdated = () => { };
+      const eventHandlerWithEditing = new TreeEventHandler({ ...params, editingParams: { onNodeUpdated } });
+      const modelMutatorWithEditing = (eventHandlerWithEditing as any)._modelMutator;
+      const spy = sinon.spy(modelMutatorWithEditing, "activateEditing");
+      eventHandlerWithEditing.onNodeEditorActivated({ nodeId: testNode.id });
+      expect(spy).to.be.calledWith(testNode.id, onNodeUpdated);
+    });
+
+    it("does not call TreeMutator activateEditing if editing params are not set", () => {
+      const spy = sinon.spy(modelMutator, "activateEditing");
+      eventHandler.onNodeEditorActivated({ nodeId: testNode.id });
+      expect(spy).to.not.be.called;
+    });
+
+  });
+
 });

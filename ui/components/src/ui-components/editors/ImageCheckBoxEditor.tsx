@@ -23,6 +23,7 @@ interface ImageCheckBoxEditorState {
   /** Image for the "unchecked" (default) state */
   imageOff: string;
   checkboxValue: boolean;
+  isDisabled?: boolean;
 }
 /** [[ImageCheckBoxEditor]]
  * Boolean editor that renders with an image instead of checkbox
@@ -37,6 +38,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
     imageOff: "",
     imageOn: "",
     checkboxValue: false,
+    isDisabled: false,
   };
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
@@ -77,12 +79,17 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
     let checkboxValue = false;
     let imageOn = "";
     let imageOff = "";
+    let isDisabled = false;
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
       const primitiveValue = propertyRecord.value.value;
       checkboxValue = primitiveValue as boolean;
     }
+
+    // istanbul ignore else
+    if (propertyRecord && propertyRecord.isDisabled)
+      isDisabled = propertyRecord.isDisabled;
 
     if (propertyRecord && propertyRecord.property && propertyRecord.property.editor && propertyRecord.property.editor.params) {
       const imageCheckBoxParams = propertyRecord.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.CheckBoxImages) as ImageCheckBoxParams;
@@ -94,7 +101,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
           imageOff = imageCheckBoxParams.imageOff;
       }
     }
-    this.setState({ imageOn, imageOff, checkboxValue });
+    this.setState({ imageOn, imageOff, checkboxValue, isDisabled });
   }
 
   private _handleClick = (checked: boolean) => {
@@ -115,6 +122,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
   public render() {
     const className = classnames("components-cell-editor", "components-imagecheckbox-editor", this.props.className);
     const checked = this.state.checkboxValue;
+    const isDisabled = !!this.state.isDisabled;
 
     return (
       <ImageCheckBox
@@ -124,6 +132,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
         border={true}
         style={this.props.style}
         checked={checked}
+        disabled={isDisabled}
         onClick={this._handleClick}
         data-testid="components-imagecheckbox-editor">
       </ImageCheckBox>

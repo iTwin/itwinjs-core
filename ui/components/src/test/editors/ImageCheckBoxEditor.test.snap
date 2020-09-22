@@ -6,6 +6,7 @@ exports[`<ImageCheckBoxEditor /> renders correctly 1`] = `
   checked={false}
   className="components-cell-editor components-imagecheckbox-editor"
   data-testid="components-imagecheckbox-editor"
+  disabled={false}
   imageOff=""
   imageOn=""
   onClick={[Function]}

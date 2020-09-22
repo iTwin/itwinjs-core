@@ -248,7 +248,7 @@ module.exports = function (srcFile, outDir) {
               test: cssRegex,
               exclude: cssModuleRegex,
               use: getStyleLoaders({
-                importLoaders: 2,
+                importLoaders: 1,
                 sourceMap: shouldUseSourceMap,
               }),
               // Don't consider CSS imports dead code even if the
@@ -262,7 +262,7 @@ module.exports = function (srcFile, outDir) {
             {
               test: cssModuleRegex,
               use: getStyleLoaders({
-                importLoaders: 2,
+                importLoaders: 1,
                 sourceMap: shouldUseSourceMap,
                 modules: {
                   getLocalIdent: getCSSModuleLocalIdent,
@@ -277,7 +277,7 @@ module.exports = function (srcFile, outDir) {
               exclude: sassModuleRegex,
               use: getStyleLoaders(
                 {
-                  importLoaders: 2,
+                  importLoaders: 3,
                   sourceMap: shouldUseSourceMap,
                 },
                 sassLoaderConfig
@@ -294,7 +294,7 @@ module.exports = function (srcFile, outDir) {
               test: sassModuleRegex,
               use: getStyleLoaders(
                 {
-                  importLoaders: 2,
+                  importLoaders: 3,
                   sourceMap: shouldUseSourceMap,
                   modules: {
                     getLocalIdent: getCSSModuleLocalIdent,

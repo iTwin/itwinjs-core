@@ -82,7 +82,8 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * `project`: include project-specific settings.
   * `map`: include background map settings.
   * `drawingaids`: include drawing aid decoration settings.
-  * `copy`: copy result to system clipboarad.
+  * `copy`: copy result to system clipboard.
+  * `quote`: format the result so it can be directly parsed by `fdt apply rendering style` as a single quoted string argument.
 * `fdt apply rendering style` - Given a rendering style as a JSON string (see `fdt save rendering style`), applies it to the active viewport's display style. See `DisplayStyleSettings.applyOverrides`. Takes a single required argument: the JSON string.
 * `fdt change viewflags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
   * Boolean flags: "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges", "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard"

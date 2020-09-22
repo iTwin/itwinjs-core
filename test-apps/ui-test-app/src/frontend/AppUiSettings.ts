@@ -20,7 +20,7 @@ export class AppUiSettings {
   constructor() {
     this._settings = [];
 
-    this.colorTheme = new UiSetting<string>(AppUiSettings._settingNamespace, "Theme", UiFramework.getColorTheme, UiFramework.setColorTheme);
+    this.colorTheme = new UiSetting<string>(AppUiSettings._settingNamespace, "ColorTheme", UiFramework.getColorTheme, UiFramework.setColorTheme);
     this._settings.push(this.colorTheme);
 
     this.autoHideUi = new UiSetting<boolean>(AppUiSettings._settingNamespace, "AutoHideUi",
@@ -31,7 +31,7 @@ export class AppUiSettings {
       () => UiShowHideManager.useProximityOpacity, (value: boolean) => UiShowHideManager.useProximityOpacity = value);
     this._settings.push(this.useProximityOpacity);
 
-    this.snapWidgetOpacity = new UiSetting<boolean>(AppUiSettings._settingNamespace, "snapWidgetOpacity",
+    this.snapWidgetOpacity = new UiSetting<boolean>(AppUiSettings._settingNamespace, "SnapWidgetOpacity",
       () => UiShowHideManager.snapWidgetOpacity, (value: boolean) => UiShowHideManager.snapWidgetOpacity = value);
     this._settings.push(this.snapWidgetOpacity);
 

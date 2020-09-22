@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- run with nodeIntegration=false for Electron
+- Moved ESLint configuration to a plugin
+- Add API to compute tile chord tolerance.
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

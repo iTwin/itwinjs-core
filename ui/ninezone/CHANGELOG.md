@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- BadgeType support for Backstage items
+- Moved ESLint configuration to a plugin
+- Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names.
+- Update minimized active tab styling.
+- Increase invisible clickable bounds of stage panel resize grip.
+- Add resizable flag to PanelState.
+- Required active tab id in WidgetState.
+- Add panel collapse transition and auto-collapse interaction for unpinned panels.
+- Ability to provide allowed panel targets for a tab.
+- Widget tab badge support.
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

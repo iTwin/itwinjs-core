@@ -7,7 +7,6 @@ export * from "./ui-ninezone/backstage/Item";
 export * from "./ui-ninezone/backstage/Separator";
 export * from "./ui-ninezone/backstage/UserProfile";
 
-export * from "./ui-ninezone/base/assert";
 export * from "./ui-ninezone/base/DragHandle";
 export * from "./ui-ninezone/base/DragManager";
 export * from "./ui-ninezone/base/Ellipsis";

@@ -66,3 +66,4 @@ export * from "./map/ArcGisUtilities";
 export * from "./map/WmsUtilities";
 export * from "./map/WmsCapabilities";
 export * from "./map/MapLayerSources";
+export * from "./map/MapLayerSettingsService";

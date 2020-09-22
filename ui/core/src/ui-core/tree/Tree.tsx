@@ -98,6 +98,19 @@ export class Tree extends React.PureComponent<TreeProps> {
     return elems;
   }
 
+  public setFocusByClassName(selector: string): boolean {
+    let status = false;
+    if (this._treeElement.current) {
+      const element = this._treeElement.current.querySelector(selector) as HTMLElement;
+      // istanbul ignore else
+      if (element && element.focus) {
+        element.focus();
+        status = true;
+      }
+    }
+    return status;
+  }
+
   public render() {
     const className = classnames(
       "core-tree",

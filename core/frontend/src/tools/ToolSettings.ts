@@ -39,6 +39,8 @@ export class ToolSettings {
   public static walkEnforceZUp = false;
   /** Speed, in meters per second, for the walk tool. */
   public static walkVelocity = 3.5;
+  /** @beta Integer increment used to compute a walkVelocity multiplier for the look and move tool, capped at 10x */
+  public static walkVelocityChange = 0;
   /** Whether the walk tool requests pointer lock to hide the cursor for mouse look */
   public static walkRequestPointerLock = true;
   /** @beta Whether the look and move tool detects collisions while moving forward */

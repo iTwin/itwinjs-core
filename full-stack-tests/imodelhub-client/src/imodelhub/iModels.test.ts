@@ -277,7 +277,7 @@ describe("iModelHub iModelsHandler", () => {
 
   after(async () => {
     RequestGlobalOptions.timeout = backupTimeout;
-    if (TestConfig.enableIModelBank)
+    if (!TestConfig.enableMocks)
       await utils.deleteIModelByName(requestContext, assetId, createIModelName);
   });
 

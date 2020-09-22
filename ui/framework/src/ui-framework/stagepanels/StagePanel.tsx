@@ -42,7 +42,7 @@ import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 
 /** Properties of a Stage Panel Zone
  * @beta
- */
+ */
 export interface StagePanelZoneProps {
   /** Properties for the Widgets in this Zone.
    * @note Stable `WidgetProps["id"]` is generated if id is not provided to correctly save and restore App layout.
@@ -73,7 +73,7 @@ export type StagePanelMaxSizeSpec = number | { percentage: number };
 
 /** Properties of a [[StagePanel]] component
  * @beta
- */
+ */
 export interface StagePanelProps {
   /** Describes which zones are allowed in this stage panel. */
   allowedZones?: ZoneLocation[];
@@ -113,7 +113,7 @@ export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
 /** Runtime Properties for the [[StagePanel]] component.
  * @internal
- */
+ */
 export interface StagePanelRuntimeProps {
   draggedWidgetId: WidgetZoneId | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
@@ -158,6 +158,14 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
   public componentDidMount() {
     FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+  }
+
+  public componentDidUpdate(prevProps: StagePanelProps) {
+    if (prevProps.runtimeProps?.panelDef !== this.props.runtimeProps?.panelDef) {
+      this.setState({
+        stagePanelWidgets: this._getVisibileStagePanelWidgets(),
+      });
+    }
   }
 
   public componentWillUnmount() {

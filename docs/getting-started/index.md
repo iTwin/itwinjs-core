@@ -11,16 +11,19 @@ Writing an iModel.js application requires the following software:
   - This is the source code control system for the iModel.js repositories.
 
 ### Suggested IDE
+
 - [Visual Studio Code](https://code.visualstudio.com/)
   - This is the recommended editor and debugger for iModel.js applications.
   - VS Code also supplies a GUI for working with Git.
 
 ## 2. Get the code
+
 The starter application is located in the [desktop-starter](https://github.com/imodeljs/desktop-starter) repo on GitHub. It is an example of an Electron based application and comes with a sample snapshot iModel.
 
 > `git clone https://github.com/imodeljs/desktop-starter.git`
 
 ## 3. Build and run a sample app
+
 > `npm install`
 
 > `npm start`
@@ -28,16 +31,16 @@ The starter application is located in the [desktop-starter](https://github.com/i
 &nbsp;
 &nbsp;
 ---
+
 ## Next Steps
+
 ### [Create a snapshot iModel from your local data.]($docs/learning/tutorials/create-test-imodel-offline.md)
+
 > Open your snapshot iModel in the desktop-starter app by clicking the home button in the upper left and clicking "Select snapshot".
 
 ### [Follow tutorials to dive deeper into iModel.js]($docs/learning/tutorials/index.md)
 
 ### [iModel.js Blog](https://medium.com/imodeljs)
-
-
-
 
 <style>
   article#main h3:after {

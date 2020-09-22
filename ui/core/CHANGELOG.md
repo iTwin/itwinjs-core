@@ -1,6 +1,23 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Wed, 02 Sep 2020 17:42:23 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Sep 2020 13:16:12 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 17 Sep 2020 13:16:12 GMT
+
+### Updates
+
+- Added PopupContextMenu component. Added 'iconRight' support to menu items.
+- Moved ESLint configuration to a plugin
+- Added ability to collapse all ExpandableList blocks when using singleExpandOnly
+- Hide the icon container if no icon is passed to fix alignment issues
+- Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names.
+- Added Indeterminate Progress Indicator
+- Add component to highlight matching filter text.
+- Sanitizing HTMLElement before using React rendering
+- SplitButton popupPosition & buttonType props support
+- Add prefers-color-scheme media query for SYSTEM_PREFERRED theme.
+- Add ThemedEnumEditor for DialogItems and ToolSettings, using the ThemedSelect component.
 
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT

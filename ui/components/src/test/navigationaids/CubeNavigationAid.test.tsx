@@ -312,10 +312,11 @@ describe("CubeNavigationAid", () => {
       expect(face).to.exist;
     });
     describe("methods and callbacks", () => {
+      beforeEach(() => {
+        NavCubeFace.faceCellToPos = sinon.spy(NavCubeFace.faceCellToPos);
+        render(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={sinon.fake()} onFaceCellHoverChange={sinon.fake()} />);
+      });
 
-      NavCubeFace.faceCellToPos = sinon.spy(NavCubeFace.faceCellToPos);
-
-      render(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={sinon.fake()} onFaceCellHoverChange={sinon.fake()} />);
       describe("faceCellToPos", () => {
         it("should be called when component is rendered", () => {
           NavCubeFace.faceCellToPos.should.have.been.calledWith(Face.Top, 0, 0);

@@ -145,7 +145,7 @@ export abstract class ViewingToolHandle {
   public abstract get handleType(): ViewHandleType;
   public focusIn(): void { IModelApp.toolAdmin.setCursor(this.getHandleCursor()); }
   public drawHandle(_context: DecorateContext, _hasFocus: boolean): void { }
-  public onWheel(_ev: BeWheelEvent): void { }
+  public onWheel(_ev: BeWheelEvent): boolean { return false; }
   public onTouchStart(_ev: BeTouchEvent): boolean { return false; }
   public onTouchEnd(_ev: BeTouchEvent): boolean { return false; }
   public onTouchComplete(_ev: BeTouchEvent): boolean { return false; }
@@ -284,10 +284,10 @@ export class ViewHandleArray {
       vp.invalidateDecorations();
   }
 
-  public onReinitialize() { this.handles.forEach((handle) => handle.onReinitialize()); }
-  public onCleanup() { this.handles.forEach((handle) => handle.onCleanup()); }
-  public motion(ev: BeButtonEvent) { this.handles.forEach((handle) => handle.motion(ev)); }
-  public onWheel(ev: BeWheelEvent) { this.handles.forEach((handle) => handle.onWheel(ev)); }
+  public onReinitialize(): void { this.handles.forEach((handle) => handle.onReinitialize()); }
+  public onCleanup(): void { this.handles.forEach((handle) => handle.onCleanup()); }
+  public motion(ev: BeButtonEvent): void { this.handles.forEach((handle) => handle.motion(ev)); }
+  public onWheel(ev: BeWheelEvent): boolean { let preventDefault = false; this.handles.forEach((handle) => { if (handle.onWheel(ev)) preventDefault = true; }); return preventDefault; }
 
   /** determine whether a handle of a specific type exists */
   public hasHandle(handleType: ViewHandleType): boolean { return this.handles.some((handle) => handle.handleType === handleType); }
@@ -465,7 +465,8 @@ export abstract class ViewManip extends ViewTool {
 
   public async onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled> {
     const ev = inputEv.clone();
-    this.viewHandles.onWheel(ev); // notify handles that wheel has rolled.
+    if (this.viewHandles.onWheel(ev)) // notify handles that wheel has rolled.
+      return EventHandled.Yes;
 
     IModelApp.toolAdmin.processWheelEvent(ev, false); // eslint-disable-line @typescript-eslint/no-floating-promises
     return EventHandled.Yes;
@@ -1219,13 +1220,14 @@ class ViewRotate extends HandleWithInertia {
     return true;
   }
 
-  public onWheel(ev: BeWheelEvent): void {
+  public onWheel(ev: BeWheelEvent): boolean {
     // When rotate is active, the mouse wheel should zoom about the target center when it's displayed...
     const tool = this.viewTool;
     if (tool.targetCenterLocked || tool.inHandleModify) {
       ev.point = tool.targetCenterWorld;
       ev.coordsFrom = CoordSource.Precision; // WheelEventProcessor.doZoom checks this to decide whether to use raw or adjusted point...
     }
+    return false;
   }
 
   /** @internal */
@@ -1279,14 +1281,15 @@ class ViewLook extends ViewingToolHandle {
     return true;
   }
 
-  public onWheel() {
+  public onWheel(_ev: BeWheelEvent): boolean {
     const tool = this.viewTool;
     if (!tool.inHandleModify)
-      return;
+      return false;
     tool.nPts = 0; // start over
     tool.inHandleModify = false;
     tool.inDynamicUpdate = false;
     tool.viewHandles.setFocus(-1);
+    return false;
   }
 
   public doManipulation(ev: BeButtonEvent, _inDynamics: boolean): boolean {
@@ -1407,10 +1410,11 @@ abstract class AnimatedHandle extends ViewingToolHandle {
   }
 
   // called when wheel rolls, reset tool
-  public onWheel() {
+  public onWheel(_ev: BeWheelEvent): boolean {
     const tool = this.viewTool;
     tool.nPts = 0; // start over
     tool.inDynamicUpdate = false; // not active
+    return false;
   }
 }
 
@@ -1584,14 +1588,15 @@ class ViewZoom extends ViewingToolHandle {
     return true;
   }
 
-  public onWheel() {
+  public onWheel(_ev: BeWheelEvent): boolean {
     const tool = this.viewTool;
     if (!tool.inHandleModify)
-      return;
+      return false;
     tool.nPts = 0; // start over
     tool.inHandleModify = false;
     tool.inDynamicUpdate = false;
     tool.viewHandles.setFocus(-1);
+    return false;
   }
 
   protected getDirection(): Vector3d | undefined {
@@ -1892,16 +1897,16 @@ class ViewLookAndMove extends ViewNavigate {
   protected readonly _positionInput = new Vector3d();
   protected readonly _accumulator = new Vector3d();
   protected _lastMovement?: XAndY;
-  protected _speedChangeStartTime: number = 0;
-  protected _speedChange?: boolean;
   protected _touchStartL?: BeTouchEvent;
   protected _touchStartR?: BeTouchEvent;
   protected _touchLast?: BeTouchEvent;
   protected _touchElevate = false;
   protected _touchLook = false;
+  protected _touchSpeedUp = false;
   protected _havePointerLock = false;
   protected _pointerLockChangeListener?: EventListener;
-  protected _clickListener?: EventListener;
+  protected _pointerLockClickEngagementListener?: EventListener;
+  protected _pointerLockKeyEngagementListener?: EventListener;
 
   constructor(viewManip: ViewManip) {
     super(viewManip);
@@ -1919,12 +1924,12 @@ class ViewLookAndMove extends ViewNavigate {
 
   public onReinitialize(): void {
     super.onReinitialize();
-    this._speedChange = undefined;
     this._touchStartL = this._touchStartR = this._touchLast = undefined;
-    this._touchElevate = this._touchLook = false;
+    this._touchElevate = this._touchSpeedUp = this._touchLook = false;
     if (this.viewTool.viewHandles.testHit(Point3d.createZero(), ViewHandleType.LookAndMove))
       this.viewTool.viewHandles.focusHitHandle(); // Ensure key events go to this handle by default w/o requiring motion...
     this.onCleanup();
+    this.requestPointerLock(true);
   }
 
   public onCleanup(): void {
@@ -1944,28 +1949,53 @@ class ViewLookAndMove extends ViewNavigate {
     }
   }
 
-  private requestPointerLock(): void {
+  private requestPointerLock(enable: boolean): void {
+    if (!enable) {
+      if (undefined !== this._pointerLockClickEngagementListener) {
+        document.removeEventListener("click", this._pointerLockClickEngagementListener, false);
+        this._pointerLockClickEngagementListener = undefined;
+      }
+      if (undefined !== this._pointerLockKeyEngagementListener) {
+        document.removeEventListener("keydown", this._pointerLockKeyEngagementListener, false);
+        this._pointerLockKeyEngagementListener = undefined;
+      }
+      return;
+    }
+
     if (!ToolSettings.walkRequestPointerLock)
       return;
-    // NOTE: Chrome appears to be the only browser that doesn't require pointer lock to be requested from an engagement event like click.
-    //       Since this is called from a mouse button down event, we can still get click notification after the corresponding up event.
-    //       Currently pointer lock is not requested *by design* if the user starts a mouse drag instead of mouse click.
-    this._pointerLockChangeListener = () => this.pointerLockChangeEvent();
-    this._clickListener = () => { if (1 === this.viewTool.nPts) this.viewTool.viewport!.canvas.requestPointerLock(); };
-    document.addEventListener("pointerlockchange", this._pointerLockChangeListener, false);
-    document.addEventListener("click", this._clickListener, false);
-  }
 
-  private removeClickListener(): void {
-    if (undefined === this._clickListener)
+    const vp = this.viewTool.viewport;
+    if (undefined === vp)
       return;
-    document.removeEventListener("click", this._clickListener, false);
-    this._clickListener = undefined;
+
+    // NOTE: Chrome appears to be the only browser that doesn't require pointer lock to be requested from an engagement event like click.
+    //       Currently pointer lock is requested for "click" and not "mousedown" since we don't want pointer lock for drag operation.
+    if (undefined === this._pointerLockChangeListener) {
+      this._pointerLockChangeListener = () => this.pointerLockChangeEvent();
+      document.addEventListener("pointerlockchange", this._pointerLockChangeListener, false);
+    }
+
+    if (undefined === this._pointerLockClickEngagementListener) {
+      this._pointerLockClickEngagementListener = () => {
+        if (1 === this.viewTool.nPts && undefined !== IModelApp.toolAdmin.cursorView)
+          vp.canvas.requestPointerLock();
+      };
+      document.addEventListener("click", this._pointerLockClickEngagementListener, false);
+    }
+
+    if (undefined === this._pointerLockKeyEngagementListener) {
+      this._pointerLockKeyEngagementListener = (ev: Event) => {
+        if (0 === this.viewTool.nPts && undefined !== IModelApp.toolAdmin.cursorView && this.isNavigationKey(ev as KeyboardEvent))
+          vp.canvas.requestPointerLock();
+      };
+      document.addEventListener("keydown", this._pointerLockKeyEngagementListener, false);
+    }
   }
 
   private releasePointerLock(): void {
     this._havePointerLock = false;
-    this.removeClickListener();
+    this.requestPointerLock(false);
     if (undefined !== this._pointerLockChangeListener) {
       document.removeEventListener("pointerlockchange", this._pointerLockChangeListener, false);
       this._pointerLockChangeListener = undefined;
@@ -1984,7 +2014,6 @@ class ViewLookAndMove extends ViewNavigate {
       return true;
 
     if (InputSource.Mouse === ev.inputSource) {
-      this.requestPointerLock();
       this._deadZone = Math.pow(vp.pixelsFromInches(0.5), 2); // Only used if pointer lock isn't supported...
     } else {
       this._touchLook = true;
@@ -2004,15 +2033,14 @@ class ViewLookAndMove extends ViewNavigate {
   }
 
   public getMaxLinearVelocity() {
-    let maxLinearVelocity = super.getMaxLinearVelocity();
-    if (undefined === this._speedChange)
-      return maxLinearVelocity;
+    const maxLinearVelocity = super.getMaxLinearVelocity();
+    if (0 === ToolSettings.walkVelocityChange)
+      return (this._touchSpeedUp ? maxLinearVelocity * 2.0 : maxLinearVelocity);
 
-    const speedElapsedTime = (Date.now() - this._speedChangeStartTime) / 1000.0;
-    const speedMultiplier = Geometry.clamp(Math.ceil(speedElapsedTime / (this._speedChange ? 2 : 1)) + 2, 2, 10);
+    const speedFactor = Geometry.clamp(ToolSettings.walkVelocityChange + (ToolSettings.walkVelocityChange > 0 ? 1 : -1), -10, 10);
+    const speedMultiplier = (speedFactor >= 0 ? speedFactor : 1 / Math.abs(speedFactor));
 
-    maxLinearVelocity *= (this._speedChange ? speedMultiplier : 1.0 / speedMultiplier);
-    return maxLinearVelocity;
+    return maxLinearVelocity * speedMultiplier;
   }
 
   protected getMaxAngularVelocityX() { return 2 * this.getMaxAngularVelocity(); } // Allow turning to be faster than looking up/down...
@@ -2346,7 +2374,7 @@ class ViewLookAndMove extends ViewNavigate {
     if (0.0 === angularInput.magnitude() && 0.0 === positionInput.magnitude() && undefined === this._lastMovement)
       return;
 
-    this.removeClickListener(); // Ignore click after modification starts (either from mouse or keys)...
+    this.requestPointerLock(false); // Ignore engagement events after modification starts (either from mouse or keys)...
     const current = IModelApp.toolAdmin.currentInputState;
     if (!this._havePointerLock && InputSource.Mouse === current.inputSource && !current.isDragging(BeButton.Data))
       current.onStartDrag(BeButton.Data); // Treat data down -> navigate key -> data up the same as a drag...
@@ -2380,16 +2408,6 @@ class ViewLookAndMove extends ViewNavigate {
     this._lastPtView.setFrom(this._anchorPtView); // Display indicator in the middle of the view...
   }
 
-  public onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): boolean {
-    this._speedChange = undefined;
-    if (!this.viewTool.inDynamicUpdate || !wentDown || 0.0 === this._positionInput.magnitude())
-      return false;
-    if (undefined === (this._speedChange = (modifier === BeModifierKeys.Shift ? true : (modifier === BeModifierKeys.Control ? false : undefined))))
-      return false;
-    this._speedChangeStartTime = Date.now();
-    return true;
-  }
-
   private toggleCollisions(): void {
     ToolSettings.walkCollisions = !ToolSettings.walkCollisions;
     this._lastCollision = 0;
@@ -2407,11 +2425,74 @@ class ViewLookAndMove extends ViewNavigate {
       this.viewTool.viewport.invalidateDecorations();
   }
 
+  private changeWalkVelocity(increase?: boolean): void {
+    if (undefined === increase)
+      ToolSettings.walkVelocityChange = 0;
+    else
+      ToolSettings.walkVelocityChange = Geometry.clamp(ToolSettings.walkVelocityChange + (increase ? 1 : -1), -9, 9);
+    if (this.viewTool.viewport)
+      this.viewTool.viewport.invalidateDecorations();
+  }
+
+  public onWheel(ev: BeWheelEvent): boolean {
+    const tool = this.viewTool;
+    if (!tool.inHandleModify || undefined === tool.viewport)
+      return super.onWheel(ev);
+    const focusHandle = tool.viewHandles.focusHandle;
+    if (undefined === focusHandle || ViewHandleType.LookAndMove !== focusHandle.handleType)
+      return super.onWheel(ev);;
+    this.changeWalkVelocity(ev.wheelDelta > 0);
+    tool.viewport.setAnimator(this); // animator was cleared by wheel event...
+    return true;
+  }
+
+  private isNavigationKey(keyEvent: KeyboardEvent): boolean {
+    if (keyEvent.repeat || keyEvent.ctrlKey || keyEvent.altKey)
+      return false;
+
+    switch (keyEvent.key.toLowerCase()) {
+      case "arrowright":
+      case "d":
+      case "arrowleft":
+      case "a":
+      case "arrowup":
+      case "w":
+      case "arrowdown":
+      case "s":
+      case "pagedown":
+      case "q":
+      case "pageup":
+      case "e":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  private enableKeyStart(): boolean {
+    const vp = this.viewTool.viewport;
+    if (0 !== this.viewTool.nPts || undefined === vp)
+      return false;
+
+    const pt = vp.view.getTargetPoint();
+    const ev = new BeButtonEvent({ point: pt, rawPoint: pt, viewPoint: vp.worldToView(pt), viewport: vp, inputSource: InputSource.Mouse, isDown: true });
+    this.viewTool.changeViewport(ev.viewport);
+    if (!this.viewTool.processFirstPoint(ev))
+      return false;
+
+    this.viewTool.nPts = 1;
+    return true;
+  }
+
   public onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): boolean {
     if (!this.viewTool.inDynamicUpdate) {
       this._positionInput.setZero(); // clear input from a previous dynamic update...
-      return false;
+      if (!wentDown || !this.isNavigationKey(keyEvent) || !this.enableKeyStart())
+        return false;
     }
+
+    if (keyEvent.ctrlKey || keyEvent.altKey)
+      return false;
 
     switch (keyEvent.key.toLowerCase()) {
       case "arrowright":
@@ -2422,14 +2503,6 @@ class ViewLookAndMove extends ViewNavigate {
       case "a":
         this._positionInput.x = Geometry.clamp(this._positionInput.x + (wentDown ? -1.0 : 1.0), -1.0, 1.0);
         return true;
-      case "pagedown":
-      case "q":
-        this._positionInput.y = Geometry.clamp(this._positionInput.y + (wentDown ? 1.0 : -1.0), -1.0, 1.0);
-        return true;
-      case "pageup":
-      case "e":
-        this._positionInput.y = Geometry.clamp(this._positionInput.y + (wentDown ? -1.0 : 1.0), -1.0, 1.0);
-        return true;
       case "arrowup":
       case "w":
         this._positionInput.z = Geometry.clamp(this._positionInput.z + (wentDown ? 1.0 : -1.0), -1.0, 1.0);
@@ -2438,6 +2511,14 @@ class ViewLookAndMove extends ViewNavigate {
       case "s":
         this._positionInput.z = Geometry.clamp(this._positionInput.z + (wentDown ? -1.0 : 1.0), -1.0, 1.0);
         return true;
+      case "pagedown":
+      case "q":
+        this._positionInput.y = Geometry.clamp(this._positionInput.y + (wentDown ? 1.0 : -1.0), -1.0, 1.0);
+        return true;
+      case "pageup":
+      case "e":
+        this._positionInput.y = Geometry.clamp(this._positionInput.y + (wentDown ? -1.0 : 1.0), -1.0, 1.0);
+        return true;
       case "c":
         if (wentDown)
           this.toggleCollisions();
@@ -2445,6 +2526,18 @@ class ViewLookAndMove extends ViewNavigate {
       case "z":
         if (wentDown)
           this.toggleDetectFloor();
+        return true;
+      case "+":
+        if (wentDown)
+          this.changeWalkVelocity(true);
+        return true;
+      case "-":
+        if (wentDown)
+          this.changeWalkVelocity(false);
+        return true;
+      case "=":
+        if (wentDown)
+          this.changeWalkVelocity();
         return true;
       default:
         return false;
@@ -2606,7 +2699,7 @@ class ViewLookAndMove extends ViewNavigate {
 
     const rectLR = this.getTouchZoneLowerRight(ev.viewport);
     if (rectLR.containsPoint(ev.viewPoint))
-      this._speedChange = (undefined === this._speedChange ? true : undefined); // Toggle speed increase for left control until next touch complete...
+      this._touchSpeedUp = !this._touchSpeedUp; // Toggle speed increase for left control until next touch complete...
 
     return false;
   }
@@ -2682,6 +2775,43 @@ class ViewLookAndMove extends ViewNavigate {
         }
       };
       context.addCanvasDecoration({ position, drawDecoration: drawCollisionArrows });
+    }
+
+    if ((0 !== ToolSettings.walkVelocityChange || this._touchSpeedUp) && this.viewTool.inDynamicUpdate) {
+      const arrowSize = 12;
+      const speedUp = (ToolSettings.walkVelocityChange > 0 || this._touchSpeedUp ? true : false);
+      const position = this._anchorPtView.clone();
+      position.x = Math.floor(position.x) + 0.5;
+      position.y = Math.floor(position.y + (arrowSize / 3)) + 0.5;
+
+      const drawSpeedChange = (ctx: CanvasRenderingContext2D) => {
+        const addArrows = () => {
+          const end = arrowSize;
+          const start = end / 2;
+          const midY = (end + start) / 2;
+          const midX = (arrowSize / 4) * (speedUp ? 1 : -1);
+          ctx.beginPath();
+          ctx.moveTo(0, start);
+          ctx.lineTo(midX, midY);
+          ctx.lineTo(0, end);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-midX, start);
+          ctx.lineTo(0, midY);
+          ctx.lineTo(-midX, end);
+          ctx.stroke();
+        }
+
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        addArrows();
+
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 1;
+        addArrows();
+      };
+      context.addCanvasDecoration({ position, drawDecoration: drawSpeedChange });
     }
 
     const positionL = this.getTouchStartPosition(this._touchStartL);
@@ -2882,7 +3012,8 @@ export class LookAndMoveTool extends ViewManip {
   public static toolId = "View.LookAndMove";
   public static iconSpec = "icon-walk";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
-    super(vp, ViewHandleType.LookAndMove | ViewHandleType.Pan, oneShot, isDraggingRequired);
+    const viewport = (undefined === vp ? IModelApp.viewManager.selectedView : vp); // Need vp to enable camera/check lens in onReinitialize...
+    super(viewport, ViewHandleType.LookAndMove | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
   public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("LookAndMove.Prompts.FirstPoint"); }
 
@@ -2902,10 +3033,9 @@ export class LookAndMoveTool extends ViewManip {
     mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.arrowKeyboardInfo, ViewTool.translate("LookAndMove.Inputs.WalkKeys"), false));
     mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["Q", "E"]), ViewTool.translate("LookAndMove.Inputs.ElevateKeys"), false));
     mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["\u21de", "\u21df"]), ViewTool.translate("LookAndMove.Inputs.ElevateKeys"), false));
-    mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["C", "Z"]), ViewTool.translate("LookAndMove.Inputs.CollideKeys"), true)); // Show as new option...
-
-    mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.shiftKeyboardInfo, ViewTool.translate("LookAndMove.Inputs.SpeedIncrease"), false));
-    mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.ctrlKeyboardInfo, ViewTool.translate("LookAndMove.Inputs.SpeedDecrease"), false));
+    mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["C", "Z"]), ViewTool.translate("LookAndMove.Inputs.CollideKeys"), false));
+    mouseInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["+", "-"]), ViewTool.translate("LookAndMove.Inputs.VelocityChange"), false));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.MouseWheel, ViewTool.translate("LookAndMove.Inputs.VelocityChange"), false, ToolAssistanceInputMethod.Mouse));
 
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, ViewTool.translate("LookAndMove.Inputs.TouchZoneLL"), false, ToolAssistanceInputMethod.Touch));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, ViewTool.translate("LookAndMove.Inputs.TouchZoneLR"), false, ToolAssistanceInputMethod.Touch));
@@ -2930,7 +3060,8 @@ export class WalkViewTool extends ViewManip {
   public static toolId = "View.Walk";
   public static iconSpec = "icon-walk";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
-    super(vp, ViewHandleType.Walk | ViewHandleType.Pan, oneShot, isDraggingRequired);
+    const viewport = (undefined === vp ? IModelApp.viewManager.selectedView : vp); // Need vp to enable camera/check lens in onReinitialize...
+    super(viewport, ViewHandleType.Walk | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
   public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Walk.Prompts.FirstPoint"); }
 

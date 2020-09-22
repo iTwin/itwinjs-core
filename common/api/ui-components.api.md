@@ -4509,6 +4509,8 @@ export interface TreeActions {
     // (undocumented)
     onNodeCollapsed: (nodeId: string) => void;
     // (undocumented)
+    onNodeEditorActivated: (nodeId: string) => void;
+    // (undocumented)
     onNodeExpanded: (nodeId: string) => void;
     // (undocumented)
     onNodeMouseDown: (nodeId: string) => void;
@@ -4583,6 +4585,8 @@ export class TreeEventDispatcher implements TreeActions {
     // (undocumented)
     onNodeCollapsed(nodeId: string): void;
     // (undocumented)
+    onNodeEditorActivated(nodeId: string): void;
+    // (undocumented)
     onNodeExpanded(nodeId: string): void;
     // (undocumented)
     onNodeMouseDown(nodeId: string): void;
@@ -4605,6 +4609,7 @@ export class TreeEventHandler implements TreeEvents, IDisposable {
     onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs): Subscription | undefined;
     onDelayedNodeClick({ nodeId }: TreeNodeEventArgs): void;
     onNodeCollapsed({ nodeId }: TreeNodeEventArgs): void;
+    onNodeEditorActivated({ nodeId }: TreeNodeEventArgs): void;
     onNodeExpanded({ nodeId }: TreeNodeEventArgs): void;
     onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): Subscription | undefined;
     onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): Subscription | undefined;
@@ -4623,6 +4628,7 @@ export interface TreeEvents {
     onCheckboxStateChanged?(event: TreeCheckboxStateChangeEventArgs): Subscription | undefined;
     onDelayedNodeClick?(event: TreeNodeEventArgs): void;
     onNodeCollapsed?(event: TreeNodeEventArgs): void;
+    onNodeEditorActivated?(event: TreeNodeEventArgs): void;
     onNodeExpanded?(event: TreeNodeEventArgs): void;
     onSelectionModified?(event: TreeSelectionModificationEventArgs): Subscription | undefined;
     onSelectionReplaced?(event: TreeSelectionReplacementEventArgs): Subscription | undefined;
@@ -4918,6 +4924,8 @@ export interface TreeRendererContext {
     // @internal
     onLabelRendered?: (node: TreeModelNode) => void;
     // @internal
+    onNodeEditorClosed?: () => void;
+    // @internal
     onNodeWidthMeasured?: (width: number) => void;
     // (undocumented)
     treeActions: TreeActions;
@@ -4947,6 +4955,8 @@ export interface TreeRendererProps {
     // (undocumented)
     nodeLoader: ITreeNodeLoader;
     nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+    // @internal
+    onNodeEditorClosed?: () => void;
     // (undocumented)
     treeActions: TreeActions;
     visibleNodes: VisibleTreeNodes;
