@@ -125,6 +125,9 @@ export interface ActiveMatchInfo {
     nodeId: string;
 }
 
+// @alpha
+export function adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date;
+
 // @beta
 export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     // @internal
@@ -1190,6 +1193,53 @@ export interface DataRowItem extends RowItem {
     _node?: TreeNodeItem;
 }
 
+// @internal
+export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element;
+
+// @alpha
+export interface DateFieldProps extends CommonProps {
+    dateFormatter?: DateFormatter;
+    initialDate: Date;
+    onDateChange?: (day: Date) => void;
+    readOnly?: boolean;
+    timeDisplay?: TimeDisplay;
+}
+
+// @alpha
+export interface DateFormatter {
+    // (undocumented)
+    formateDate: (day: Date) => string;
+    // (undocumented)
+    parseDate?: (dateString: string) => Date | undefined;
+}
+
+// @alpha
+export function DatePicker(props: DatePickerProps): JSX.Element;
+
+// @alpha
+export function DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps): JSX.Element;
+
+// @alpha
+export interface DatePickerPopupButtonProps extends CommonProps {
+    buttonToolTip?: string;
+    // (undocumented)
+    dateFormatter?: DateFormatter;
+    displayEditField?: boolean;
+    fieldClassName?: string;
+    fieldStyle?: React.CSSProperties;
+    onDateChange?: (day: Date) => void;
+    selected: Date;
+    // (undocumented)
+    timeDisplay?: TimeDisplay;
+}
+
+// @alpha
+export interface DatePickerProps {
+    onDateChange?: (day: Date) => void;
+    selected: Date;
+    showFocusOutline?: boolean;
+}
+
 // @public
 export class DateTimeTypeConverter extends DateTimeTypeConverterBase {
     // (undocumented)
@@ -1220,37 +1270,6 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
     isNotEqualTo(valueA: Date, valueB: Date): boolean;
     // (undocumented)
     sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
-}
-
-// @internal
-export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
-    constructor(props: DayPickerProps);
-    // (undocumented)
-    get days(): (Date | null)[];
-    // (undocumented)
-    static isSameDay(a: Date, b: Date): boolean;
-    // (undocumented)
-    longDayName(dayOfWeek: number): string;
-    // (undocumented)
-    longMonthName(month: number): string;
-    // (undocumented)
-    nextMonth: () => void;
-    // (undocumented)
-    onDayChange: (day: Date) => () => void;
-    // (undocumented)
-    previousMonth: () => void;
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    renderDay: (day: Date, index: number) => JSX.Element;
-    // (undocumented)
-    renderDayHeader(dayOfWeek: number): JSX.Element;
-    // (undocumented)
-    renderWeek: (days: any, index: number) => JSX.Element;
-    // (undocumented)
-    shortDayName(dayOfWeek: number): string;
-    // (undocumented)
-    get weeks(): (Date | null)[][];
 }
 
 // @public
@@ -2217,6 +2236,15 @@ export interface InputSwitchProps {
     // (undocumented)
     width: number | string;
 }
+
+// @alpha
+export class IntlFormatter implements DateFormatter {
+    constructor(_intlFormatter?: Intl.DateTimeFormat | undefined);
+    // (undocumented)
+    formateDate(day: Date): string;
+    // (undocumented)
+    get formatter(): Intl.DateTimeFormat;
+    }
 
 // @public
 export class IntTypeConverter extends NumericTypeConverterBase {
@@ -4247,6 +4275,9 @@ export class ThemedEnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
+
+// @beta
+export type TimeDisplay = "hh:mm aa" | "hh:mm:ss aa" | "hh:mm" | "hh:mm:ss";
 
 // @internal
 export class Timeline extends React.Component<TimelineProps, TimelineState> {

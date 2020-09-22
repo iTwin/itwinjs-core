@@ -61,6 +61,16 @@
     "forward": "Forward",
     "step": "Step"
   },
+  "timepicker": {
+    "day-period-am": "AM",
+    "day-period-pm": "PM"
+  },
+  "datepicker": {
+    "selectDate": "Select Date",
+    "time": "Time",
+    "previousMonth": "Previous Month",
+    "nextMonth": "Next Month"
+  },
   "month": {
     "long": {
       "january": "January",
@@ -102,13 +112,13 @@
       "saturday": "Saturday"
     },
     "short": {
-      "sunday": "Sun",
-      "monday": "Mon",
-      "tuesday": "Tue",
-      "wednesday": "Wed",
-      "thursday": "Thu",
-      "friday": "Fri",
-      "saturday": "Sat"
+      "sunday": "Su",
+      "monday": "Mo",
+      "tuesday": "Tu",
+      "wednesday": "We",
+      "thursday": "Th",
+      "friday": "Fr",
+      "saturday": "Sa"
     }
   },
   "time": {

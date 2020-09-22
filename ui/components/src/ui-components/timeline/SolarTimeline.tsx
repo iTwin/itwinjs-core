@@ -16,15 +16,16 @@ import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-
 import ReactResizeDetector from "react-resize-detector";
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { CommonProps, Popup, Tooltip } from "@bentley/ui-core";
+import { BodyText, CommonProps, Popup, Tooltip } from "@bentley/ui-core";
 import { UiComponents } from "../../ui-components/UiComponents";
 import { HueSlider } from "../color/HueSlider";
 import { SaturationPicker } from "../color/SaturationPicker";
 import { ColorSwatch } from "../color/Swatch";
-import { DayPicker } from "./DayPicker";
 import { SolarDataProvider } from "./interfaces";
 import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
+import { DatePicker } from "../datepicker/DatePicker";
+import { TimeField, TimeSpec } from "../datepicker/TimeField";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline
 
@@ -380,6 +381,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     UiComponents.i18n.translate("UiComponents:month.short.december"),
   ];
 
+  private _timeLabel = UiComponents.translate("datepicker.time");
   private _amLabel = UiComponents.i18n.translate("UiComponents:time.am");
   private _pmLabel = UiComponents.i18n.translate("UiComponents:time.pm");
   private readonly _presetColors = [
@@ -543,13 +545,13 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     });
   }
 
-  private _onTimeChanged = (hours: number, minutes: number) => {
+  private _onTimeChanged = (time: TimeSpec) => {
     // compute the current date (with time)
     const dayStartMs = this.props.dataProvider.dayStartMs;
     const date = new Date(dayStartMs + this.state.currentTimeOffsetMs);
 
     // update the date (time)
-    date.setUTCHours(hours, minutes);
+    date.setUTCHours(time.hours, time.minutes);
 
     // notify the provider
     if (this.props.dataProvider.onTimeChanged) {
@@ -694,8 +696,13 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
             <span className="icon icon-calendar" />
           </button>
           <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={RelativePosition.Top}>
-            <DayPicker active={this.props.dataProvider.day} hours={currentDate.getUTCHours()} minutes={currentDate.getUTCMinutes()}
-              onTimeChange={this._onTimeChanged} onDayChange={this._onDayClick} />
+            <div className="components-date-picker-calendar-popup-panel" data-testid="components-date-picker-calendar-popup-panel">
+              <DatePicker selected={this.props.dataProvider.day} onDateChange={this._onDayClick} showFocusOutline={false} />
+              <div className="time-container">
+                <BodyText className="time-label">{this._timeLabel}</BodyText>
+                <TimeField time={{hours:currentDate.getUTCHours(), minutes:currentDate.getUTCMinutes(), seconds:0}} timeDisplay={"hh:mm aa"} onTimeChange={this._onTimeChanged} />
+              </div>
+            </div>
           </Popup>
           <Timeline className="solar-timeline"
             dayStartMs={dataProvider.dayStartMs}
