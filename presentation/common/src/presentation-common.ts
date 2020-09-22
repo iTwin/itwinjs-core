@@ -99,6 +99,7 @@ export * from "./presentation-common/rules/content/ContentRule";
 export * from "./presentation-common/rules/content/ContentSpecification";
 export * from "./presentation-common/rules/content/PropertySpecification";
 export * from "./presentation-common/rules/content/SelectedNodeInstancesSpecification";
+export * from "./presentation-common/rules/content/DefaultPropertyCategoryOverride";
 export * from "./presentation-common/rules/content/modifiers/CalculatedPropertiesSpecification";
 export * from "./presentation-common/rules/content/modifiers/ContentModifier";
 export * from "./presentation-common/rules/content/modifiers/PropertiesDisplaySpecification";

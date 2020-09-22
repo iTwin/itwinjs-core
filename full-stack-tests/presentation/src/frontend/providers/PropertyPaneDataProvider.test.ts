@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
+import { KeySet, RuleTypes } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
 import { initialize, terminate } from "../../IntegrationTests";
@@ -23,12 +23,19 @@ describe("PropertyDataProvider", async () => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);
     physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
-    provider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
   });
 
   after(async () => {
     await imodel.close();
     await terminate();
+  });
+
+  beforeEach(() => {
+    provider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+  });
+
+  afterEach(() => {
+    provider.dispose();
   });
 
   const runTests = (configName: string, setup: () => void) => {
@@ -62,6 +69,38 @@ describe("PropertyDataProvider", async () => {
       it("favorites properties", async () => {
         sinon.stub(provider as any, "isFieldFavorite").returns(true);
         provider.keys = new KeySet([physicalModelProps]);
+        const properties = await provider.getData();
+        expect(properties).to.matchSnapshot();
+      });
+
+      it("overrides default property category", async () => {
+        provider.dispose();
+        provider = new PresentationPropertyDataProvider({
+          imodel,
+          ruleset: {
+            ...DEFAULT_PROPERTY_GRID_RULESET,
+            rules: [
+              ...DEFAULT_PROPERTY_GRID_RULESET.rules,
+              {
+                ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+                specification: {
+                  id: "default",
+                  label: "Custom Category",
+                  description: "Custom description",
+                  autoExpand: true,
+                },
+              },
+              {
+                ruleType: RuleTypes.ContentModifier,
+                propertyOverrides: [{
+                  name: "UserLabel",
+                  isDisplayed: true,
+                }],
+              },
+            ],
+          },
+        });
+        provider.keys = new KeySet([{ className: "BisCore:Element", id: "0x1" }]);
         const properties = await provider.getData();
         expect(properties).to.matchSnapshot();
       });

@@ -43,6 +43,7 @@ public;CustomQueryInstanceNodesSpecification
 public;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
+public;DefaultPropertyCategoryOverride 
 public;DEPRECATED_AllInstanceNodesSpecification 
 public;DEPRECATED_AllRelatedInstanceNodesSpecification 
 public;DEPRECATED_ContentRelatedInstancesSpecification 
@@ -258,7 +259,7 @@ public;RequestPriority
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
-public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier
+public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride
 public;RuleBase
 public;Ruleset
 public;RulesetsFactory
