@@ -55,3 +55,12 @@ export class ChannelConstraintError extends IModelError {
     super(RepositoryStatus.ChannelConstraintViolation, message, log, category, getMetaData);
   }
 }
+
+/** Intended for API "no content" semantics where the error case should not trigger application failure monitoring systems.
+ * @public
+ */
+export class NoContentError extends IModelError {
+  public constructor() {
+    super(IModelStatus.NoContent, "No Content");
+  }
+}

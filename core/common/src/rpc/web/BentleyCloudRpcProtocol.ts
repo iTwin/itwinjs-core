@@ -50,6 +50,9 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     userId: "X-User-Id",
   };
 
+  /** The name of the RPC protocol version header. */
+  public protocolVersionHeaderName = "X-Protocol-Version";
+
   /** Returns the operation specified by an OpenAPI-compatible URI path. */
   public getOperationFromPath(path: string): SerializedRpcOperation {
     const url = new URL(path, "https://localhost/");

@@ -878,6 +878,8 @@ export enum IModelStatus {
     // (undocumented)
     MissingId = 65569,
     // (undocumented)
+    NoContent = 65604,
+    // (undocumented)
     NoGeoLocation = 65602,
     // (undocumented)
     NoGeometry = 65570,

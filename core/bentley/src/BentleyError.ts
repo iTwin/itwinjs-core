@@ -94,6 +94,7 @@ export enum IModelStatus {
   ConstraintNotUnique = IMODEL_ERROR_BASE + 65,
   NoGeoLocation = IMODEL_ERROR_BASE + 66,
   ServerTimeout = IMODEL_ERROR_BASE + 67,
+  NoContent = IMODEL_ERROR_BASE + 68,
 }
 
 /** Error status from various briefcase operations

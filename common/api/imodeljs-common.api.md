@@ -423,6 +423,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     checkToken: boolean;
     getOperationFromPath(path: string): SerializedRpcOperation;
     inflateToken(tokenFromBody: IModelRpcProps, request: SerializedRpcRequest): IModelRpcProps;
+    protocolVersionHeaderName: string;
     serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
     supplyPathForOperation(operation: RpcOperation, request: RpcRequest | undefined): string;
     // @internal
@@ -4244,6 +4245,11 @@ export function nextHighestPowerOfTwo(num: number): number;
 // @internal
 export function nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d;
 
+// @public
+export class NoContentError extends IModelError {
+    constructor();
+}
+
 // @internal (undocumented)
 export class NonUniformColor {
     constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
@@ -5690,6 +5696,8 @@ export abstract class RpcProtocol {
     // @internal (undocumented)
     onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
     preserveStreams: boolean;
+    static readonly protocolVersion = 1;
+    protocolVersionHeaderName: string;
     abstract readonly requestType: typeof RpcRequest;
     serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
     // (undocumented)
@@ -5704,6 +5712,8 @@ export enum RpcProtocolEvent {
     BackendErrorOccurred = 11,
     // (undocumented)
     BackendErrorReceived = 5,
+    // (undocumented)
+    BackendReportedNoContent = 12,
     // (undocumented)
     BackendReportedNotFound = 10,
     // (undocumented)
@@ -5791,6 +5801,7 @@ export abstract class RpcRequest<TResponse = any> {
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
     readonly id: string;
+    protected isHeaderAvailable(_name: string): boolean;
     get lastSubmitted(): number;
     get lastUpdated(): number;
     protected abstract load(): Promise<RpcSerializedValue>;
@@ -5870,6 +5881,8 @@ export enum RpcRequestStatus {
     Created = 1,
     // (undocumented)
     Disposed = 6,
+    // (undocumented)
+    NoContent = 9,
     // (undocumented)
     NotFound = 7,
     // (undocumented)
@@ -6008,6 +6021,8 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
     parameters: RpcSerializedValue;
     // (undocumented)
     path: string;
+    // (undocumented)
+    protocolVersion?: number;
 }
 
 // @public (undocumented)
@@ -7420,6 +7435,8 @@ export const WEB_RPC_CONSTANTS: {
 // @public
 export abstract class WebAppRpcProtocol extends RpcProtocol {
     constructor(configuration: RpcConfiguration);
+    // @internal (undocumented)
+    allowedHeaders: Set<string>;
     static computeContentType(httpType: string | null | undefined): RpcContentType;
     getCode(status: RpcRequestStatus): number;
     getStatus(code: number): RpcRequestStatus;
@@ -7427,6 +7444,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     abstract info: OpenAPIInfo;
+    // @internal (undocumented)
+    initialize(): Promise<void>;
     isTimeout(code: number): boolean;
     // @internal
     get openAPIDescription(): RpcOpenAPIDescription;
@@ -7445,6 +7464,8 @@ export class WebAppRpcRequest extends RpcRequest {
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
     // (undocumented)
+    protected isHeaderAvailable(name: string): boolean;
+    // (undocumented)
     protected load(): Promise<RpcSerializedValue>;
     static maxUrlComponentSize: number;
     metadata: {
@@ -7453,6 +7474,8 @@ export class WebAppRpcRequest extends RpcRequest {
     };
     method: HttpMethod_T;
     static parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest>;
+    // @internal (undocumented)
+    preflight(): Promise<Response | undefined>;
     readonly protocol: WebAppRpcProtocol;
     protected send(): Promise<number>;
     static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;

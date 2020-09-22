@@ -8,8 +8,8 @@ import * as semver from "semver";
 import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import {
-  IModelReadRpcInterface, IModelRpcProps, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,
-  RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue, WipRpcInterface,
+  IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,
+  RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
@@ -589,5 +589,26 @@ describe("RpcInterface", () => {
 
     const ping = await AttachedInterface.getClient().ping();
     assert.isTrue(ping);
+  });
+
+  it("should support no content (quiet) errors.", async () => {
+    const pv = RpcProtocol.protocolVersion;
+    (RpcProtocol as any).protocolVersion = 0;
+
+    try {
+      await TestRpcInterface.getClient().op17();
+      assert(false);
+    } catch (err) {
+      assert(!(err instanceof NoContentError));
+    }
+
+    (RpcProtocol as any).protocolVersion = pv;
+
+    try {
+      await TestRpcInterface.getClient().op17();
+      assert(false);
+    } catch (err) {
+      assert(err instanceof NoContentError);
+    }
   });
 });
