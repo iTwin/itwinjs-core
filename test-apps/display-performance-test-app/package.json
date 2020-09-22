@@ -55,7 +55,7 @@
     "@bentley/config-loader": "2.7.0-dev.12",
     "@bentley/build-tools": "2.7.0-dev.12",
     "@bentley/eslint-plugin": "2.7.0-dev.12",
-    "@bentley/react-scripts": "3.4.4",
+    "@bentley/react-scripts": "3.4.5",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
     "@types/node": "10.14.1",
