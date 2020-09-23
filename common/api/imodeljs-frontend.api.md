@@ -1990,6 +1990,8 @@ export class DisplayStyle2dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
     // @internal (undocumented)
     static get className(): string;
+    // @internal (undocumented)
+    overrideTerrainSkirtDisplay(): boolean | undefined;
     // (undocumented)
     get settings(): DisplayStyleSettings;
     }
@@ -2010,6 +2012,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @internal (undocumented)
     protected onOverridesApplied(overrides: DisplayStyle3dSettingsProps): void;
+    // @internal (undocumented)
+    overrideTerrainSkirtDisplay(): boolean | undefined;
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
@@ -2129,6 +2133,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @beta
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    // @internal (undocumented)
+    abstract overrideTerrainSkirtDisplay(): boolean | undefined;
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
     set scheduleScript(script: RenderScheduleState.Script | undefined);
@@ -4935,7 +4941,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean);
+    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideSkirtDisplay?: CheckSkirtDisplayOverride | undefined);
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     // (undocumented)

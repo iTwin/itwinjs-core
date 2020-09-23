@@ -12,13 +12,15 @@ import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsClassified, IsShadowable } from "../TechniqueFlags";
+import { FeatureMode, IsAnimated, IsClassified, IsShadowable, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addUInt32s } from "./Common";
 import { unquantize2d } from "./Decode";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addModelViewProjectionMatrix } from "./Vertex";
+import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
+import { addTexture } from "./Surface";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 
@@ -116,7 +118,7 @@ function addTextures(builder: ProgramBuilder) {
 }
 
 /** @internal */
-export default function createTerrainMeshBuilder(_classified: IsClassified, _featureMode: FeatureMode, shadowable: IsShadowable): ProgramBuilder {
+export default function createTerrainMeshBuilder(_classified: IsClassified, _featureMode: FeatureMode, shadowable: IsShadowable, thematic: IsThematic): ProgramBuilder {
   const builder = createBuilder(shadowable);
   const frag = builder.frag;
   const applyTextureStrings = [];
@@ -156,6 +158,12 @@ export default function createTerrainMeshBuilder(_classified: IsClassified, _fea
     });
   });
   addTextures(builder);
+
+  if (IsThematic.Yes === thematic) {
+    addThematicDisplay(builder, false, true);
+    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, true)); // For now do not support slope and hillshade
+    addTexture(builder, IsAnimated.No, IsThematic.Yes, true); // for now pretend to be a point cloud since slope & hillshade modes are not supported yet
+  }
 
   return builder;
 }

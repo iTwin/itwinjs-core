@@ -7,7 +7,7 @@
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Vector3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
+import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags } from "@bentley/imodeljs-common";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
@@ -39,6 +39,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The container for this display style's settings. */
   public abstract get settings(): DisplayStyleSettings;
 
+  /** @internal */
+  public abstract overrideTerrainSkirtDisplay(): boolean | undefined;
+
   /** Construct a new DisplayStyleState from its JSON representation.
    * @param props JSON representation of the display style.
    * @param iModel IModelConnection containing the display style.
@@ -48,16 +51,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
     const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
     const mapImagery = MapImagerySettings.fromJSON(styles?.mapImagery, mapSettings.toJSON());
-
-    if (styles) {
-      if (styles.contextRealityModels)
-        for (const contextRealityModel of styles.contextRealityModels)
-          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
-
-      if (styles.scheduleScript)
-        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, styles.scheduleScript);
-    }
-    this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, false);
+    this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, false, () => this.overrideTerrainSkirtDisplay());
     this._overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, iModel, true, false);
     this._backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, true);
   }
@@ -118,7 +112,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this._backgroundDrapeMap.setBaseLayerSettings(mapBase);
       this.settings.mapImagery.backgroundBase = mapBase;
     }
-    // THe settings change may cause a different tree to be used... make sure its imagery is in synch.
+    // The settings change may cause a different tree to be used... make sure its imagery is in synch.
     this._backgroundMap.clearLayers();
     this._backgroundDrapeMap.clearLayers();
   }
@@ -662,6 +656,9 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
   public get settings(): DisplayStyleSettings { return this._settings; }
 
+  /** @internal */
+  public overrideTerrainSkirtDisplay(): boolean | undefined { return undefined; }
+
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
@@ -1114,4 +1111,13 @@ export class DisplayStyle3dState extends DisplayStyleState {
       this.settings.thematic = ThematicDisplay.fromJSON(props);
     }
   }
+
+  /** @internal */
+  public overrideTerrainSkirtDisplay(): boolean | undefined {
+    if (undefined !== this.settings.thematic) {
+      return (this.viewFlags.thematicDisplay && ThematicGradientMode.IsoLines === this.settings.thematic.gradientSettings.mode) ? false : undefined;
+    }
+    return undefined;
+  }
+
 }

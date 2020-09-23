@@ -362,11 +362,9 @@ class MapTileTreeProps implements RealityTileTreeParams {
   }
 }
 
-function createViewFlagOverrides(wantLighting: boolean) {
-  return createDefaultViewFlagOverrides({ clipVolume: false, lighting: wantLighting, thematic: false });
+function createViewFlagOverrides(wantLighting: boolean, wantThematic: false | undefined) {
+  return createDefaultViewFlagOverrides({ clipVolume: false, lighting: wantLighting, thematic: wantThematic });
 }
-
-const defaultViewFlagOverrides = createViewFlagOverrides(false);
 
 class MapTreeSupplier implements TileTreeSupplier {
   public readonly isEcefDependent = true;
@@ -466,6 +464,9 @@ class MapTreeSupplier implements TileTreeSupplier {
 const mapTreeSupplier = new MapTreeSupplier();
 let mapTreeReferenceId = 0;
 
+/** @internal */
+type CheckSkirtDisplayOverride = () => boolean | undefined;
+
 /** Specialization of tile tree that represents background map.
  * @internal
  */
@@ -479,7 +480,7 @@ export class MapTileTreeReference extends TileTreeReference {
   private _baseTransparent = false;
   private _symbologyOverrides = new FeatureSymbology.Overrides(); /** Empty overrides so that maps ignore the view overrides (isolate etc.) */
 
-  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean) {
+  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean, private _overrideSkirtDisplay?: CheckSkirtDisplayOverride) {
     super();
     this._uniqueId = mapTreeReferenceId++;
     this._settings = settings;
@@ -591,6 +592,10 @@ export class MapTileTreeReference extends TileTreeReference {
       mapTransparent: this.settings.transparency > 0,
     };
 
+    if (undefined !== this._overrideSkirtDisplay) {
+      id.wantSkirts = this._overrideSkirtDisplay() ?? id.wantSkirts;
+    }
+
     return this._iModel.tiles.getTileTreeOwner(id, mapTreeSupplier);
   }
   public initializeImagery(): boolean {
@@ -648,7 +653,7 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   protected getViewFlagOverrides(_tree: TileTree) {
-    return defaultViewFlagOverrides;
+    return createViewFlagOverrides(false, this._settings.applyTerrain ? undefined : false);
   }
 
   protected getSymbologyOverrides(_tree: TileTree) {

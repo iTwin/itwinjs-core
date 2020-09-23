@@ -553,28 +553,30 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 class TerrainMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 16;
+  private static readonly _numVariants = 32;
 
   public constructor(gl: WebGLRenderingContext) {
     super(TerrainMeshTechnique._numVariants);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
-          const flags = scratchTechniqueFlags;
-          const terrainMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
-          for (const featureMode of terrainMeshFeatureModes) {
-            flags.reset(featureMode, IsInstanced.No, shadowable, IsThematic.No);
-            flags.isClassified = iClassified;
-            flags.isTranslucent = 1 === iTranslucent;
-            const builder = createTerrainMeshBuilder(flags.isClassified, featureMode, flags.isShadowable);
-            if (FeatureMode.Pick === featureMode)
-              addUniformFeatureSymbology(builder);
-            if (flags.isTranslucent) {
-              addShaderFlags(builder);
-              addTranslucency(builder);
-            } else
-              this.addFeatureId(builder, featureMode);
-            this.addShader(builder, flags, gl);
+          for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
+            const flags = scratchTechniqueFlags;
+            const terrainMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
+            for (const featureMode of terrainMeshFeatureModes) {
+              flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
+              flags.isClassified = iClassified;
+              flags.isTranslucent = 1 === iTranslucent;
+              const builder = createTerrainMeshBuilder(flags.isClassified, featureMode, flags.isShadowable, thematic);
+              if (FeatureMode.Pick === featureMode)
+                addUniformFeatureSymbology(builder);
+              if (flags.isTranslucent) {
+                addShaderFlags(builder);
+                addTranslucency(builder);
+              } else
+                this.addFeatureId(builder, featureMode);
+              this.addShader(builder, flags, gl);
+            }
           }
         }
       }
@@ -594,6 +596,8 @@ class TerrainMeshTechnique extends VariedTechnique {
       ndx += 4;
     if (flags.featureMode !== FeatureMode.None)
       ndx += 8;
+    if (flags.isThematic)
+      ndx += 16;
     return ndx;
   }
 }

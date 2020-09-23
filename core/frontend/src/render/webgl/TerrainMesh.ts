@@ -118,6 +118,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
   public get isDisposed(): boolean { return this._terrainMeshParams.isDisposed; }
   public get uvQParams() { return this._terrainMeshParams.uvParams.params; }
   public get hasFeatures(): boolean { return this._terrainMeshParams.featureID !== undefined; }
+  public get supportsThematicDisplay() { return true; }
 
   private constructor(private _terrainMeshParams: TerrainMeshParams, public textureParams: TerrainTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean) {
     super(_terrainMeshParams);
@@ -192,7 +193,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
     const branch = new GraphicBranch();
     for (const mesh of meshes) {
       const primitive = Primitive.create(() => mesh);
-      branch.add(system.createBatch(primitive!, featureTable, Range3d.createNull(), tileId));
+      branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), tileId));
     }
 
     return system.createBranch(branch, terrainMesh._transform ? terrainMesh._transform : Transform.createIdentity());
@@ -211,7 +212,8 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
     if (target.nonLocatableTerrain && !target.drawNonLocatable)
       return RenderPass.None;
 
-    if (target.terrainTransparency > 0.0 || this._baseIsTransparent)
+    if (target.terrainTransparency > 0.0 || this._baseIsTransparent ||
+      (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
       return RenderPass.Translucent;
 
     return RenderPass.OpaqueGeneral;
