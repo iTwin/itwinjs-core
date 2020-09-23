@@ -6,6 +6,7 @@
  * @module Tools
  */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -710,18 +711,8 @@ export abstract class InputCollector extends InteractiveTool {
   }
 }
 
-/** The result type of [[ToolRegistry.parseKeyin]].
- * @alpha
- */
-export interface ParsedKeyin {
-  /** If found, the tool that handles the keyin. */
-  tool?: ToolType;
-  /** Arguments to be passed to the tool's `parseAndRun` method. */
-  args: string[];
-}
-
 /** The result type of [[ToolRegistry.parseAndRun]].
- * @alpha
+ * @beta
  */
 export enum ParseAndRunResult {
   /** The tool's `parseAndRun` method was invoked and returned `true`. */
@@ -732,7 +723,46 @@ export enum ParseAndRunResult {
   BadArgumentCount,
   /** The tool's `parseAndRun` method returned `false`. */
   FailedToRun,
+  /** An opening double-quote character was not paired with a closing double-quote character. */
+  MismatchedQuotes,
 }
+
+/** Possible errors resulting from [[ToolRegistry.parseKeyin]].
+ * @beta
+ */
+export enum KeyinParseError {
+  /** No registered tool matching the keyin was found. */
+  ToolNotFound = ParseAndRunResult.ToolNotFound,
+  /** The opening double-quote of an argument was not terminated with a closing double-quote. */
+  MismatchedQuotes = ParseAndRunResult.MismatchedQuotes,
+}
+
+/** Possible errors form [[ToolRegistry.parseKeyin]].
+ * @beta
+ */
+export interface ParseKeyinError {
+  /** Union discriminator for [[ParseKeyinResult]]. */
+  ok: false;
+  /** The specific error that occurred during parsing. */
+  error: KeyinParseError;
+}
+
+/** Successful result from [[ToolRegistry.parseKeyin]].
+ * @beta
+ */
+export interface ParsedKeyin {
+  /** Union discriminator for [[ParseKeyinResult]]. */
+  ok: true;
+  /** The constructor for the Tool that handles the keyin. */
+  tool: ToolType;
+  /** The parsed arguments to be passed to [[Tool.parseAndRun]]. */
+  args: string[];
+}
+
+/** The result type of [[ToolRegistry.parseKeyin]].
+ * @beta
+ */
+export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 
 /** The ToolRegistry holds a mapping between toolIds and their corresponding [[Tool]] class. This provides the mechanism to
  * find Tools by their toolId, and also a way to iterate over the set of Tools available.
@@ -814,76 +844,110 @@ export class ToolRegistry {
    * @param keyin keyin string to process
    * #return an Array of string argument
    */
-  private splitIntoArgs(keyin: string): string[] {
-    const words: string[] = [];
-    let currentWord: string[] = [];
-    let quoteAtStart = false;
+  private tokenize(keyin: string): { tokens: string[], firstQuotedIndex?: number, mismatchedQuotes?: boolean } {
+    const isWhitespace = (char: string) => "" === char.trim();
+    const tokens: string[] = [];
+    let index = 0;
+    let firstQuotedIndex;
+    while (index < keyin.length) {
+      // Looking for beginning of next token.
+      const ch = keyin[index];
+      if (isWhitespace(ch)) {
+        ++index;
+        continue;
+      }
 
-    for (let i = 0; i < keyin.length; i++) {
-      if (34 === keyin.charCodeAt(i)) {
-        if (currentWord.length) {
-          if (quoteAtStart) {
-            words.push(currentWord.join("").trim());
-            quoteAtStart = false;
-          } else {
-            if (currentWord.length) {
-              quoteAtStart = true;
-              if (i === keyin.length - 1) { // if at last character add the quote to end of current word
-                quoteAtStart = false;
-                currentWord.push(`"`);
-              }
-              words.push(...currentWord.join("").split(" ").filter((x) => 0 < x.length));
-            }
+      if ('"' !== ch) {
+        // Unquoted token.
+        let endIndex = keyin.length;
+        for (let i = index + 1; i < keyin.length; i++) {
+          if (isWhitespace(keyin[i])) {
+            endIndex = i;
+            break;
           }
-          currentWord = [];
         }
+
+        tokens.push(keyin.substring(index, endIndex));
+        index = endIndex;
+        continue;
+      }
+
+      // Quoted argument.
+      if (undefined === firstQuotedIndex)
+        firstQuotedIndex = tokens.length;
+
+      let endQuoteIndex;
+      let searchIndex = index + 1;
+      let anyEmbeddedQuotes = false;
+      while (searchIndex < keyin.length) {
+        searchIndex = keyin.indexOf('"', searchIndex);
+        if (-1 === searchIndex)
+          break;
+
+        // A literal " is embedded as ""
+        if (searchIndex + 1 > keyin.length || keyin[searchIndex + 1] !== '"') {
+          endQuoteIndex = searchIndex;
+          break;
+        }
+
+        anyEmbeddedQuotes = true;
+        searchIndex = searchIndex + 2;
+      }
+
+      if (undefined === endQuoteIndex) {
+        return { tokens, mismatchedQuotes: true };
       } else {
-        currentWord.push(keyin.charAt(i))
+        let token = keyin.substring(index + 1, endQuoteIndex);
+        if (anyEmbeddedQuotes) {
+          const regex = /""/g;
+          token = token.replace(regex, '"');
+        }
+
+        tokens.push(token);
+        index = endQuoteIndex + 1;
       }
     }
-    if (currentWord.length) {
-      if (quoteAtStart) {
-        words.push(`"${currentWord.join("").trim()}`);
-      } else {
-        words.push(...currentWord.join("").split(" ").filter((x) => 0 < x.length));
-      }
-    } else {
-      if (quoteAtStart) {
-        const lastWord = words.pop();
-        if (lastWord)
-          words.push(`"${lastWord.trim()}`);
-        else
-          words.push(`"`);
-      }
-    }
-    return words;
+
+    return { tokens, firstQuotedIndex };
   }
 
   /** Given a string consisting of a toolId followed by any number of arguments, locate the corresponding Tool and parse the arguments.
-   * @note Only extremely rudimentary argument parsing is currently supported. e.g., arguments cannot contain whitespace.
+   * Tokens are delimited by whitespace.
+   * The Tool is determined by finding the longest string of unquoted tokens starting at the beginning of the key-in string that matches a registered Tool's
+   * `keyin` or `englishKeyin`.
+   * Tokens following the Tool's keyin are parsed as arguments.
+   * Arguments may be quoted using "double quotes". The opening quote must be preceded by whitespace. Examples, assuming the tool Id is `my keyin`:
+   *  - `my keyin "abc" "def"` => two arguments: `abc` and `def`
+   *  - `my keyin abc"def"` => one argument: `abc"def"`
+   * A literal double-quote character can be embedded in a quoted argument as follows:
+   *  - `my keyin "abc""def"` => one argument: `abc"def`.
    * @param keyin A string consisting of a toolId followed by any number of arguments. The arguments are separated by whitespace.
    * @returns The tool, if found, along with an array of parsed arguments.
-   * @alpha
+   * @beta
    */
-  public parseKeyin(keyin: string): ParsedKeyin {
+  public parseKeyin(keyin: string): ParseKeyinResult {
     const tools = this.getToolList();
-    let tool: ToolType | undefined;
+    let tool;
     const args: string[] = [];
     const findTool = (lowerKeyin: string) => tools.find((x) => x.keyin.toLowerCase() === lowerKeyin || x.englishKeyin.toLowerCase() === lowerKeyin);
 
     // try the trivial, common case first
     tool = findTool(keyin.toLowerCase());
     if (undefined !== tool)
-      return { tool, args };
+      return { ok: true, tool, args };
 
     // Tokenize to separate keyin from arguments
     // ###TODO there's actually nothing that prevents a Tool from including leading/trailing spaces in its keyin, or sequences of more than one space...we will fail to find such tools if they exist...
-    const tokens = this.splitIntoArgs(keyin);
-    if (tokens.length <= 1)
-      return { tool, args };
+    const split = this.tokenize(keyin);
+    const tokens = split.tokens;
+    if (split.mismatchedQuotes)
+      return { ok: false, error: KeyinParseError.MismatchedQuotes };
+    else if (tokens.length <= 1)
+      return { ok: false, error: KeyinParseError.ToolNotFound };
 
     // Find the longest starting substring that matches a tool's keyin.
-    for (let i = tokens.length - 2; i >= 0; i--) {
+    const maxIndex = undefined !== split.firstQuotedIndex ? split.firstQuotedIndex - 1 : tokens.length - 2;
+    for (let i = maxIndex; i >= 0; i--) {
       let substr = tokens[0];
       for (let j = 1; j <= i; j++) {
         substr += " ";
@@ -892,6 +956,7 @@ export class ToolRegistry {
 
       tool = findTool(substr.toLowerCase());
       if (undefined !== tool) {
+        // Any subsequent tokens are arguments.
         for (let k = i + 1; k < tokens.length; k++)
           args.push(tokens[k]);
 
@@ -899,7 +964,7 @@ export class ToolRegistry {
       }
     }
 
-    return { tool, args };
+    return tool ? { ok: true, tool, args } : { ok: false, error: KeyinParseError.ToolNotFound };
   }
 
   /** Get a list of Tools currently registered, excluding hidden tools */
@@ -914,15 +979,20 @@ export class ToolRegistry {
   /** Given a string consisting of a toolId followed by any number of arguments, parse the keyin string and invoke the corresponding tool's `parseAndRun` method.
    * @param keyin A string consisting of a toolId followed by any number of arguments.
    * @returns A status indicating whether the keyin was successfully parsed and executed.
-   * @see [[parseKeyin]].
+   * @see [[parseKeyin]] to parse the keyin string and for a detailed description of the syntax.
    * @throws any Error thrown by the tool's `parseAndRun` method.
-   * @alpha
+   * @beta
    */
   public parseAndRun(keyin: string): ParseAndRunResult {
     const parsed = this.parseKeyin(keyin);
-    if (undefined === parsed.tool)
-      return ParseAndRunResult.ToolNotFound;
+    if (!parsed.ok) {
+      switch (parsed.error) {
+        case KeyinParseError.MismatchedQuotes: return ParseAndRunResult.MismatchedQuotes;
+        case KeyinParseError.ToolNotFound: return ParseAndRunResult.ToolNotFound;
+      }
+    }
 
+    assert(parsed.ok); // exhaustive switch above...
     const maxArgs = parsed.tool.maxArgs;
     if (parsed.args.length < parsed.tool.minArgs || (undefined !== maxArgs && parsed.args.length > maxArgs))
       return ParseAndRunResult.BadArgumentCount;

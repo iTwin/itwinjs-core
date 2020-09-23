@@ -1032,10 +1032,11 @@ export abstract class ViewState extends ElementState {
   }
 
   public getUpVector(point: Point3d): Vector3d {
-    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.iModel.projectExtents.containsPoint(point))
       return Vector3d.unitZ();
 
-    const earthCenter = this.iModel.ecefLocation!.getTransform().inverse()!.origin;
+    // Note - use the calculated ECEF tranform rather than stored which may not be accurate.
+    const earthCenter = this.iModel.backgroundMapLocation.getMapEcefToDb(0).origin;
     const normal = Vector3d.createStartEnd(earthCenter, point);
     normal.normalizeInPlace();
 

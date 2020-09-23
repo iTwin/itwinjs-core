@@ -5005,6 +5005,8 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
+    componentDidUpdate(prevProps: StagePanelProps): void;
+    // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     static readonly defaultProps: StagePanelDefaultProps;

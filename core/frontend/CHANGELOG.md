@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 18 Sep 2020 13:15:09 GMT and should not be manually modified.
+This log was last generated on Tue, 22 Sep 2020 17:40:07 GMT and should not be manually modified.
+
+## 2.6.4
+Tue, 22 Sep 2020 17:40:07 GMT
+
+*Version update only*
+
+## 2.6.3
+Mon, 21 Sep 2020 14:47:09 GMT
+
+### Updates
+
+- Support literal double-quote characters in quoted key-in arguments.
+
+## 2.6.2
+Mon, 21 Sep 2020 13:07:44 GMT
+
+### Updates
+
+- Calculate correct up vector even when ECEF is bad.
 
 ## 2.6.1
 Fri, 18 Sep 2020 13:15:09 GMT

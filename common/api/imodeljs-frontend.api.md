@@ -4303,6 +4303,12 @@ export enum ItemField {
     Z_Item = 4
 }
 
+// @beta
+export enum KeyinParseError {
+    MismatchedQuotes = 4,
+    ToolNotFound = 1
+}
+
 // @internal (undocumented)
 export enum KeyinStatus {
     // (undocumented)
@@ -6027,19 +6033,30 @@ export class PanViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export enum ParseAndRunResult {
     BadArgumentCount = 2,
     FailedToRun = 3,
+    MismatchedQuotes = 4,
     Success = 0,
     ToolNotFound = 1
 }
 
-// @alpha
+// @beta
 export interface ParsedKeyin {
     args: string[];
-    tool?: ToolType;
+    ok: true;
+    tool: ToolType;
 }
+
+// @beta
+export interface ParseKeyinError {
+    error: KeyinParseError;
+    ok: false;
+}
+
+// @beta
+export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 
 // @beta
 export class PendingExtension {
@@ -9568,10 +9585,10 @@ export class ToolRegistry {
     // @internal
     findPartialMatches(keyin: string): FuzzySearchResults<ToolType>;
     getToolList(): ToolList;
-    // @alpha
+    // @beta
     parseAndRun(keyin: string): ParseAndRunResult;
-    // @alpha
-    parseKeyin(keyin: string): ParsedKeyin;
+    // @beta
+    parseKeyin(keyin: string): ParseKeyinResult;
     register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N): void;
     registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N): void;
     run(toolId: string, ...args: any[]): boolean;
