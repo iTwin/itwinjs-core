@@ -87,19 +87,6 @@
           "items": {
             "isSubject": "true"
           }
-        },
-        {
-          "ruleType": "Grouping",
-          "class": {
-            "schemaName": "BisCore",
-            "className": "Subject"
-          },
-          "groups": [
-            {
-              "specType": "SameLabelInstance",
-              "applicationStage": "PostProcess"
-            }
-          ]
         }
       ]
     },
@@ -322,6 +309,32 @@
             "modelId": "this.Model.Id",
             "categoryId": "this.Category.Id"
           }
+        }
+      ]
+    },
+    {
+      "ruleType": "Grouping",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Subject"
+      },
+      "groups": [
+        {
+          "specType": "SameLabelInstance",
+          "applicationStage": "PostProcess"
+        }
+      ]
+    },
+    {
+      "ruleType": "Grouping",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "SpatialCategory"
+      },
+      "groups": [
+        {
+          "specType": "SameLabelInstance",
+          "applicationStage": "PostProcess"
         }
       ]
     },
