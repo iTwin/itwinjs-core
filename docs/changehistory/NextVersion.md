@@ -31,6 +31,20 @@ rule - `DefaultPropertyCategoryOverride`. Example:
 }
 ```
 
+## ui-components
+
+Add components [DatePickerPopupButton]($ui-components) and [DatePicker]($ui-components) for showing and selecting a date and optionally a time.
+
+## ui-framework
+
+Add support for [KeyinPalettePopup] component that opens using the Ctrl+F2 key combination. opening a popup that provides a list of key-ins supported by registered tools and allows a user to select and run a key-in. iModel.js applications must enable the use by enabling the feature flag as shown below.
+
+```ts
+    IModelApp.uiAdmin.updateFeatureFlags({ allowKeyinPalette: true });
+```
+
+An application can also provide a tool button to popup the Key-in Popup using the newly provided item definition `CoreTools.keyinPaletteButtonItemDef`.
+
 ## Changes to frontend API to pull, merge and push change sets
 
 The method to pull, merge and push change sets at the *frontend* has been split and moved to a new location. These frontend API continue to be work in progress, and are marked with the appropriate @alpha release tag. The corresponding backend API remains unchanged.
