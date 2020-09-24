@@ -30,3 +30,30 @@ rule - `DefaultPropertyCategoryOverride`. Example:
   }],
 }
 ```
+
+## Changes to frontend API to pull, merge and push change sets
+
+The method to pull, merge and push change sets at the *frontend* has been split and moved to a new location. These frontend API continue to be work in progress, and are marked with the appropriate @alpha release tag. The corresponding backend API remains unchanged.
+
+Before:
+```ts
+  const changeSetId = await iModelConnection.editing.concurrencyControl.pullMergePush("Push message", true /*=doPush*/);
+```
+
+After:
+```ts
+  await iModelConnection.editing.concurrencyControl.pullMergePush("Push message", true /*=doPush*/);
+  const changeSetId = iModelConnection.changeSetId;
+```
+
+The method to get the parent change set id from the IModelConnection has been removed. It's available as a property that's kept up to date as change sets are pulled/pushed:
+
+Before:
+```ts
+  const changeSetId = await iModelConnection.editing.getParentChangeSetId();
+```
+
+After:
+```ts
+  const changeSetId =  iModelConnection.changeSetId;
+```

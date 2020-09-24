@@ -8,7 +8,7 @@ import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley
 import { LockLevel } from "@bentley/imodelhub-client";
 import { BisCodeSpec, Code, CodeProps } from "@bentley/imodeljs-common";
 import {
-  BeButtonEvent, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, RemoteBriefcaseConnection, Viewport,
+  BeButtonEvent, BriefcaseConnection, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, RemoteBriefcaseConnection,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { PlacementTestTool } from "./TestPrimitiveTools";
@@ -72,7 +72,7 @@ async function countElementsInModel(iModel: IModelConnection, modelId: Id64Strin
 }
 
 describe("Element editor tests (#integration)", async () => {
-  let iModel: IModelConnection;
+  let iModel: BriefcaseConnection;
   let contextId: string;
 
   before(async () => {
@@ -143,14 +143,14 @@ describe("Element editor tests (#integration)", async () => {
     const parentCode = await iModel.editing.codes.makeCode(BisCodeSpec.nullCodeSpec, iModel.elements.rootSubjectId, "assembly-parent");
     let parentId = await createAssembly(editor, model, category, parentCode);
     await checkAssembly(iModel, parentId, [1, 2]);
-    await iModel.editing.concurrencyControl.pullMergePush(""); // (release locks)
+    await iModel.pushChanges(""); // (release locks)
 
     // Now delete the assembly. Specify only the parent. The children should be deleted as a side-effect of that.
     // The editing API should take care of obtaining all needed locks.
     await iModel.editing.deleteElements([parentId]);
     await iModel.saveChanges(); // TODO: remove this when we fix the problem with querying uncommitted changes
     await checkAssembly(iModel, parentId, [0, 0]);
-    await iModel.editing.concurrencyControl.pullMergePush(""); // (release locks)
+    await iModel.pushChanges(""); // (release locks)
 
     // Create another assembly.
     // This time, delete the parent and both children explicitly. That should be tolerated and not throw an error, even
@@ -161,7 +161,7 @@ describe("Element editor tests (#integration)", async () => {
     await iModel.editing.deleteElements([parentId, ...childIds]);
     await iModel.saveChanges(); // TODO: remove this when we fix the problem with querying uncommitted changes
     await checkAssembly(iModel, parentId, [0, 0]);
-    await iModel.editing.concurrencyControl.pullMergePush(""); // (release locks)
+    await iModel.pushChanges(""); // (release locks)
 
     // Create another assembly.
     // This time, delete the one of the children explicitly and not the parent. That should
@@ -172,7 +172,7 @@ describe("Element editor tests (#integration)", async () => {
     await iModel.editing.deleteElements([childIds[0]]);
     await iModel.saveChanges(); // TODO: remove this when we fix the problem with querying uncommitted changes
     await checkAssembly(iModel, parentId, [1, 1]);
-    await iModel.editing.concurrencyControl.pullMergePush(""); // (release locks)
+    await iModel.pushChanges(""); // (release locks)
   });
 
   it("should run TestPrimitiveTool", async () => {
@@ -186,8 +186,7 @@ describe("Element editor tests (#integration)", async () => {
     await iModel.saveChanges("create element test - model and category");
 
     assert.isTrue(await iModel.editing.hasPendingTxns());
-
-    await iModel.editing.concurrencyControl.pullMergePush("create element test - model and category");
+    await iModel.pushChanges("create element test - model and category"); // (release locks)
 
     // ------------- Set up and run the tool, as if a user executed it from a tool palette  ------------------
 
@@ -205,8 +204,7 @@ describe("Element editor tests (#integration)", async () => {
     tool.targetModelId = newModelId;
 
     assert.isUndefined(tool.targetView);
-    tool.targetView = { view: { iModel } } as Viewport; // mock a viewport, just enough to make the Tool function
-
+    tool.targetView = { view: { iModel } } as any; // mock a viewport, just enough to make the Tool function
     IModelApp.toolAdmin.activeSettings.category = category;
 
     //  --- Simulate datapoints, reset, etc.
@@ -232,7 +230,7 @@ describe("Element editor tests (#integration)", async () => {
 
     assert.isTrue(await iModel.editing.hasPendingTxns());
 
-    await iModel.editing.concurrencyControl.pullMergePush(tool.toolId);
+    await iModel.pushChanges(tool.toolId); // (release locks)
 
     assert.isFalse(await iModel.editing.hasPendingTxns());
 

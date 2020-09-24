@@ -8,7 +8,7 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-client";
 import { IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, EventSourceManager, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority,
+  AuthorizedFrontendRequestContext, BriefcaseConnection, EventSourceManager, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority,
   OutputMessageType,
 } from "@bentley/imodeljs-frontend";
 import { Icon, Spinner, SpinnerSize } from "@bentley/ui-core";
@@ -34,8 +34,8 @@ class SyncManager {
   public static changesetListenerInitialized = false;
   public static localChangesListenerInitialized = false;
 
-  public static get iModelConnection(): IModelConnection {
-    return UiFramework.getIModelConnection()!;
+  public static get iModelConnection(): BriefcaseConnection {
+    return UiFramework.getIModelConnection()! as BriefcaseConnection;
   }
 
   public static async initializeChangesetListener() {
@@ -43,12 +43,12 @@ class SyncManager {
       return;
     this.changesetListenerInitialized = true;
 
-    const iModelId = this.iModelConnection.iModelId!;
+    const iModelId = this.iModelConnection.iModelId;
     try {
       const requestContext = await AuthorizedFrontendRequestContext.create();
 
       // Bootstrap the process by finding out if there are newer changesets on the server already.
-      this.state.parentChangesetId = await this.iModelConnection.editing.getParentChangeset();
+      this.state.parentChangesetId = this.iModelConnection.changeSetId!;
 
       if (!!this.state.parentChangesetId) {  // avoid error is imodel has no changesets.
         const allOnServer = await IModelApp.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
@@ -133,7 +133,8 @@ class SyncManager {
     this.onStateChange.raiseEvent();
 
     try {
-      const parentChangesetId = await this.iModelConnection.editing.concurrencyControl.pullMergePush("", doPush);
+      await this.iModelConnection.pushChanges("");
+      const parentChangesetId = this.iModelConnection.changeSetId!;
       this.updateParentChangesetId(parentChangesetId);
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, failmsg, err.message, OutputMessageType.Alert, OutputMessageAlert.Dialog));

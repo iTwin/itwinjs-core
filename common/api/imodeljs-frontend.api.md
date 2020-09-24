@@ -1445,6 +1445,10 @@ export abstract class BriefcaseConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
+    // @alpha
+    pullAndMergeChanges(): Promise<void>;
+    // @alpha
+    pushChanges(description: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -2192,7 +2196,6 @@ export class EditingFunctions {
     get codes(): EditingFunctions.Codes;
     get concurrencyControl(): EditingFunctions.ConcurrencyControl;
     deleteElements(ids: Id64Array): Promise<void>;
-    getParentChangeset(): Promise<string>;
     hasPendingTxns(): Promise<boolean>;
     hasUnsavedChanges(): Promise<boolean>;
     get models(): EditingFunctions.ModelEditor;
@@ -2214,7 +2217,6 @@ export namespace EditingFunctions {
     export class ConcurrencyControl {
         constructor(c: IModelConnection);
         lockModel(modelId: Id64String, level?: LockLevel): Promise<void>;
-        pullMergePush(comment: string, doPush?: boolean): Promise<GuidString>;
         request(): Promise<void>;
         }
     export class ModelEditor {

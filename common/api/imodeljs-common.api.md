@@ -3613,7 +3613,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface;
     // (undocumented)
     getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getParentChangeset(_iModelToken: IModelRpcProps): Promise<string>;
     // (undocumented)
     hasPendingTxns(_iModelToken: IModelRpcProps): Promise<boolean>;
@@ -3626,7 +3626,11 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     openForWrite(_iModelToken: IModelRpcProps): Promise<IModelConnectionProps>;
     // (undocumented)
+    pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps>;
+    // @deprecated (undocumented)
     pullMergePush(_tokenProps: IModelRpcProps, _comment: string, _doPush: boolean): Promise<GuidString>;
+    // (undocumented)
+    pushChanges(_tokenProps: IModelRpcProps, _description: string): Promise<IModelConnectionProps>;
     // (undocumented)
     requestResources(_tokenProps: IModelRpcProps, _elementIds: Id64Array, _modelIds: Id64Array, _opcode: DbOpcode): Promise<void>;
     // (undocumented)
