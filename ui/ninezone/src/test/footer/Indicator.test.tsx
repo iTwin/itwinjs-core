@@ -18,4 +18,16 @@ describe("<FooterIndicator />", () => {
   it("renders correctly in footer mode", () => {
     shallow(<FooterIndicator isInFooterMode />).should.matchSnapshot();
   });
+
+  it("renders correctly with additional class names", () => {
+    shallow(<FooterIndicator className="test-class-name" />).should.matchSnapshot();
+  });
+
+  it("renders correctly with title", () => {
+    shallow(<FooterIndicator title="Title test" />).should.matchSnapshot();
+  });
+
+  it("renders correctly with onClick function", () => {
+    shallow(<FooterIndicator onClick={() => { }} />).should.matchSnapshot();
+  });
 });

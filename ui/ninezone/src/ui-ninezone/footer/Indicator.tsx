@@ -21,25 +21,26 @@ export interface FooterIndicatorProps extends CommonProps {
   isInFooterMode?: boolean;
   /** Title for the indicator */
   title?: string;
+  /** Function called when the indicator is clicked */
+  onClick?: (event: React.MouseEvent) => void;
 }
 
 /** Indicator used in [[Footer]] component.
  * @beta
  */
-export class FooterIndicator extends React.PureComponent<FooterIndicatorProps> {
-  public render() {
-    const className = classnames(
-      "nz-footer-indicator",
-      this.props.isInFooterMode && "nz-footer-mode",
-      this.props.className);
+export function FooterIndicator(props: FooterIndicatorProps) {
 
-    return (
-      <div
-        className={className}
-        style={this.props.style}
-      >
-        {this.props.children}
-      </div>
-    );
-  }
-}
+  const { isInFooterMode, children, ...attributes } = props;
+
+  const className = classnames(
+    "nz-footer-indicator",
+    isInFooterMode && "nz-footer-mode",
+    props.className
+  );
+
+  return (
+    <div {...{ ...attributes, className }}>
+      {children}
+    </div>
+  );
+};

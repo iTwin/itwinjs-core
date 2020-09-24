@@ -629,15 +629,13 @@ export class Footer extends React.PureComponent<FooterProps> {
 }
 
 // @beta
-export class FooterIndicator extends React.PureComponent<FooterIndicatorProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export function FooterIndicator(props: FooterIndicatorProps): JSX.Element;
 
 // @beta
 export interface FooterIndicatorProps extends CommonProps {
     children?: React.ReactNode;
     isInFooterMode?: boolean;
+    onClick?: (event: React.MouseEvent) => void;
     title?: string;
 }
 
