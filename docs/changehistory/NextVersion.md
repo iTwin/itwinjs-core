@@ -71,12 +71,23 @@ The method to pull, merge and push change sets at the *frontend* has been split 
 
 Before:
 ```ts
+  const changeSetId = await iModelConnection.editing.concurrencyControl.pullMergePush("", false /*=doPush*/);
+```
+
+After:
+```ts
+  await iModelConnection.pullAndMergeChanges();
+  const changeSetId = iModelConnection.changeSetId;
+```
+
+Before:
+```ts
   const changeSetId = await iModelConnection.editing.concurrencyControl.pullMergePush("Push message", true /*=doPush*/);
 ```
 
 After:
 ```ts
-  await iModelConnection.editing.concurrencyControl.pullMergePush("Push message", true /*=doPush*/);
+  await iModelConnection.pushChanges("Push message");
   const changeSetId = iModelConnection.changeSetId;
 ```
 
