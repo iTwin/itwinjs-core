@@ -1,8 +1,9 @@
 sep=;
 Release Tag;API Item
-alpha;ProjectShareClient 
-alpha;ProjectShareFile 
-alpha;ProjectShareFileQuery 
-alpha;ProjectShareFolder 
-alpha;ProjectShareFolderQuery 
-alpha;ProjectShareQuery 
+internal;ProjectShareClient 
+internal;ProjectShareFile 
+internal;ProjectShareFileQuery 
+internal;ProjectShareFolder 
+internal;ProjectShareFolderQuery 
+internal;ProjectShareQuery 
+internal;RecycleOption

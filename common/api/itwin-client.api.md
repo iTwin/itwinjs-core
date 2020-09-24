@@ -70,7 +70,7 @@ export interface CancelRequest {
 }
 
 // @beta (undocumented)
-export type ChangeState = "new" | "modified" | "deleted";
+export type ChangeState = "new" | "modified" | "deleted" | "existing";
 
 // @beta
 export class ChunkedQueryContext {

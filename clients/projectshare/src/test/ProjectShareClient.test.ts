@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery } from "../ProjectShareClient";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery, RecycleOption } from "../ProjectShareClient";
 import { TestConfig } from "./TestConfig";
 
 chai.should();
@@ -26,6 +26,37 @@ describe("ProjectShareClient (#integration)", () => {
 
     const project = await TestConfig.queryProject(requestContext, "iModelJsIntegrationTest");
     projectId = project.wsgId;
+  });
+
+  it("should be able to Upload and Delete File", async () => {
+    const folder360Images = (await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId)))[0];
+    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folder360Images.wsgId));
+    chai.assert.strictEqual(2, folders.length);
+    const folder2A = folders[0];
+    const folder2B = folders[1];
+    chai.assert.strictEqual(folder2B.name, "2B");
+    chai.assert.strictEqual(folder2A.name, "2A");
+    const testFile = new ProjectShareFile();
+    testFile.name = "sap.txt";
+    testFile.size = 32;
+    testFile.description = "test";
+    const file: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, folder2A.wsgId, testFile); // create new file with file exist property as false
+    chai.assert.strictEqual(file.description, testFile.description);
+    chai.assert.equal(file.size, testFile.size);
+    const data = { name: "John", age: 30, city: "New York" };
+    const  chagedFile = await projectShareClient.uploadContentInFile(requestContext, projectId, file, JSON.stringify(data)); // upload content into file
+    chai.assert.equal(chagedFile.fileExists, true);
+    const res = await projectShareClient.deleteFile(requestContext, projectId, file.wsgId); // Permanent deleting File.
+    chai.assert.isUndefined(res);
+
+    const file1: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, folder2A.wsgId, testFile);
+    chai.assert.strictEqual(file1.description, testFile.description);
+    chai.assert.equal(file1.size, testFile.size);
+    const data1 = { name: "xyz", age: 31, city: "aus" };
+    const chagedFile1 = await projectShareClient.uploadContentInFile(requestContext, projectId, file1, JSON.stringify(data1));
+    chai.assert.equal(chagedFile1.fileExists, true);
+    const res1 = await projectShareClient.deleteFile(requestContext, projectId, file1.wsgId, RecycleOption.SendToRecycleBin); // file move to recycleBin.
+    chai.assert.isNotNull(res1);
   });
 
   it("should be able to query folders with different options", async () => {

@@ -12,8 +12,15 @@ import {
 
 const loggerCategory = ITwinClientLoggerCategory.Clients;
 
-/** Folder
- * @alpha
+/**
+ * @internal
+ */
+export enum RecycleOption {
+  DeletePermanently,
+  SendToRecycleBin,
+}
+/** Represents a folder in ProjectShare.
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "ProjectShare.Folder", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ProjectShareFolder extends WsgInstance {
@@ -45,8 +52,9 @@ export class ProjectShareFolder extends WsgInstance {
   public size?: number;
 }
 
-/** File
- * @alpha
+/** This class is used to upload file and store extracted information related to file in project share.
+ * File contains access Url is used to accessing that file like by using access url we can perform read write operation on file.
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "ProjectShare.File", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ProjectShareFile extends WsgInstance {
@@ -80,6 +88,12 @@ export class ProjectShareFile extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Size")
   public size?: number;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.FileExists")
+  public fileExists?: boolean;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
+  public description?: string;
+
   /**
    * @note The accessUrl is only valid for one hour after it has been initialized by the server.
    */
@@ -88,10 +102,14 @@ export class ProjectShareFile extends WsgInstance {
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CustomProperties")
   public customProperties?: any;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FolderHasContent](direction:backward).relatedInstance[Folder]")
+  public parentFolder?: ProjectShareFolder;
 }
 
 /** Base query object for getting ProjectShare files and folders
- * @alpha
+ * This class is used to perform basic query operations on folders and files.
+ * @internal
  */
 export class ProjectShareQuery extends WsgQuery {
   /**
@@ -159,7 +177,8 @@ export class ProjectShareQuery extends WsgQuery {
 }
 
 /** Query object for getting ProjectShareFiles. You can use this to modify the query.
- * @alpha
+ * This class is used to perform query on projectShare Files.
+ * @internal
  */
 export class ProjectShareFileQuery extends ProjectShareQuery {
   /**
@@ -178,7 +197,8 @@ export class ProjectShareFileQuery extends ProjectShareQuery {
 }
 
 /** Query object for getting ProjectShareFolders. You can use this to modify the query.
- * @alpha
+ * This class is used to perform query on projectShare Folders.
+ * @internal
  */
 export class ProjectShareFolderQuery extends ProjectShareQuery {
   /**
@@ -210,7 +230,7 @@ export class ProjectShareFolderQuery extends ProjectShareQuery {
  * i.e., from the main iTwin project portal, follow the link to "Project Team Management > Project Role Management > Service Access and Permissions > Share"
  * and ensure it includes the relevant Project Share permissions for Read, Write, Delete, etc.
  * </ul>
- * @alpha
+ * @internal
  */
 export class ProjectShareClient extends WsgClient {
   public static readonly searchKey: string = "ProjectShare.Url";
@@ -375,7 +395,7 @@ export class ProjectShareClient extends WsgClient {
     let offset = 0;
     while (offset < copyByteCount) {
       const { done, value: chunk } = await reader.read();
-      if (done)
+      if (done || !chunk)
         break;
 
       const byteLengthToCopy = Math.min(chunk.byteLength, copyByteCount - offset);
@@ -438,4 +458,107 @@ export class ProjectShareClient extends WsgClient {
     const relativeUrl = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/File/${file.wsgId}`;
     return this.postInstance<ProjectShareFile>(requestContext, ProjectShareFile, relativeUrl, updateInstance, projectShareRequestOptions);
   }
+
+  /**
+   * upload a file with file existing property set to false, and return the new state of the file.
+   * file existing property need to update after content uploaded in file.
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
+   * @param contextId Context Id (e.g., projectId or assetId)
+   * @param folderId Id of the folder where we need to upload that file.
+   * @param file ProjectShareFile
+   * @return The instance after the changes
+   * @note If File already exist with that name then it create a file with same name and append index in brackets.
+   */
+  public async createFile(requestContext: AuthorizedClientRequestContext, contextId: GuidString, folderId: GuidString, file: ProjectShareFile): Promise<ProjectShareFile> {
+    const folder = new ProjectShareFolder();
+    folder.wsgId = folderId;
+    folder.changeState = "existing";
+    const mappedFolder: any = ECJsonTypeMap.toJson<ProjectShareFolder>("wsg", folder);
+    const updateInstance = new ProjectShareFile();
+    updateInstance.fileExists = false;
+    updateInstance.size = file.size;
+    updateInstance.name = file.name;
+    updateInstance.description = file.description;
+    updateInstance.parentFolder = mappedFolder;
+    const relativeUrl = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/File/`;
+    return this.postInstance<ProjectShareFile>(requestContext, ProjectShareFile, relativeUrl, updateInstance);
+  }
+
+  /**
+   * upload the content in the file by using Files access url.
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
+   * @param file ProjectShareFile
+   * @param path
+   * @return The instance after the changes
+   */
+  public async uploadContentInFile(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, data: string): Promise<ProjectShareFile> {
+    try {
+      const accessurl = file.accessUrl !== undefined ? file.accessUrl : "";
+      await this.uploadBlob(requestContext, accessurl, data);
+      return this.updateFileExistsProperty(requestContext, contextId, file.wsgId);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Update file existing property to true so its available in folder,and return the new state of the file.
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
+   * @param contextId Context Id (e.g., projectId or assetId)
+   * @param fileId Id of the file
+   * @return The instance after the changes
+   */
+  private async updateFileExistsProperty(requestContext: AuthorizedClientRequestContext, contextId: GuidString, fileId: GuidString): Promise<ProjectShareFile> {
+    const updateInstance = new ProjectShareFile();
+    updateInstance.instanceId = fileId;
+    updateInstance.fileExists = true;
+    updateInstance.changeState = "modified";
+
+    const relativeUrl = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/File/${fileId}`;
+    return this.postInstance<ProjectShareFile>(requestContext, ProjectShareFile, relativeUrl, updateInstance);
+  }
+
+  /**
+   * Delete file permanently or send file to recyle bin.
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
+   * @param contextId Context Id (e.g., projectId or assetId)
+   * @param fileId Id of the file you want to delete.
+   * @param deleteOption By default delete file permanently.
+   */
+  public async deleteFile(requestContext: AuthorizedClientRequestContext, contextId: GuidString, fileId: GuidString, deleteOption: RecycleOption = RecycleOption.DeletePermanently): Promise<ProjectShareFile | void> {
+    const url = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/File/${fileId}`;
+    switch (deleteOption) {
+      case RecycleOption.DeletePermanently:
+        return this.deleteInstance<ProjectShareFile>(requestContext, url);
+      case RecycleOption.SendToRecycleBin:
+        const updateInstance = new ProjectShareFile();
+        updateInstance.instanceId = fileId;
+        updateInstance.changeState = "modified";
+        const projectShareRequestOptions = {
+          CustomOptions: { // eslint-disable-line @typescript-eslint/naming-convention
+            IsDeleted: true, // eslint-disable-line @typescript-eslint/naming-convention
+          },
+        };
+        return this.postInstance<ProjectShareFile>(requestContext, ProjectShareFile, url, updateInstance, projectShareRequestOptions);
+    }
+  }
+
+  /** Used by clients to Upload Content into file.
+   * @param uploadUrlString Saas Url of File.
+   * @param uploadData Content to Upload .
+   */
+  private async uploadBlob(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadData: string): Promise<void> {
+    requestContext.enter();
+    const options: RequestOptions = {
+      method: "PUT",
+      headers: {
+        "x-ms-blob-type": "BlockBlob",
+      },
+      body: uploadData,
+    };
+
+    const uploadUrl = `${uploadUrlString}`;
+    return request(requestContext, uploadUrl, options).then(async () => Promise.resolve());
+  }
+
 }
