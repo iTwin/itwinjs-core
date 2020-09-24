@@ -45,7 +45,7 @@ describe("GeometryPrimitives tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
 

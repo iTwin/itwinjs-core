@@ -83,7 +83,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     expect(accum.geometries.isEmpty).to.be.true;
     expect(accum.addLoop(loop, displayParams, Transform.createIdentity(), false)).to.be.true;
@@ -107,7 +107,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -167,7 +167,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -208,7 +208,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -249,7 +249,7 @@ describe("GeometryAccumulator tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);

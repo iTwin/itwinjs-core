@@ -58,8 +58,8 @@ export abstract class Geometry {
     if (this.displayParams.isTextured)
       facetOptions.needParams = true;
 
-    // if (!this.displayParams.ignoreLighting) // ###TODO And not 2D...
-    //   facetOptions.needNormals = true;
+    if (!this.displayParams.ignoreLighting) // ###TODO don't generate normals for 2d views.
+      facetOptions.needNormals = true;
 
     return this._getPolyfaces(facetOptions);
   }
@@ -218,14 +218,23 @@ export class PrimitivePolyfaceGeometry extends Geometry {
     this.polyface = polyface;
   }
 
-  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
+  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     if (!this.hasTexture) { // clear parameters
-      if (this.polyface.data.param) {
+      if (this.polyface.data.param)
         this.polyface.data.param.clear();
-      }
-      if (this.polyface.data.paramIndex) {
+
+      if (this.polyface.data.paramIndex)
         this.polyface.data.paramIndex = [];
-      }
+    }
+
+    if (!facetOptions.needNormals) {
+      if (this.polyface.data.normal)
+        this.polyface.data.normal.clear();
+
+      if (this.polyface.data.normalIndex)
+        this.polyface.data.normalIndex = [];
+    } else if (!this.polyface.data.normal || 0 === this.polyface.data.normal.length) {
+      // ###TODO: Currently no support for generating normals in TypeScript.
     }
 
     assert(this.transform.isIdentity);

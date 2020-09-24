@@ -3398,6 +3398,8 @@ export abstract class GraphicBuilder {
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
     readonly viewport: Viewport;
+    get wantNormals(): boolean;
+    set wantNormals(_wantNormals: boolean);
 }
 
 // @public

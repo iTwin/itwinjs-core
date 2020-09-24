@@ -13,29 +13,32 @@ import {
 } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
 
-describe("PrimitiveBuilder tests", () => {
+describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;
-  let spatialView: SpatialViewState;
-
-  const viewDiv = document.createElement("div");
-  assert(null !== viewDiv);
-  viewDiv.style.width = viewDiv.style.height = "1000px";
-  document.body.appendChild(viewDiv);
+  let viewport: ScreenViewport;
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
+
+    const viewDiv = document.createElement("div");
+    assert(null !== viewDiv);
+    viewDiv.style.width = viewDiv.style.height = "1000px";
+    document.body.appendChild(viewDiv);
+
+    const spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
+
+    viewport = ScreenViewport.create(viewDiv, spatialView);
   });
 
   after(async () => {
+    if (viewport) viewport.dispose();
     if (imodel) await imodel.close();
     await IModelApp.shutdown();
   });
 
-  it("PrimitiveBuilder should produce proper arc strokes for specific tolerances", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
+  it("should produce proper arc strokes for specific tolerances", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -90,8 +93,7 @@ describe("PrimitiveBuilder tests", () => {
     expect(numPointsA).to.be.lessThan(numPointsB);
   });
 
-  it("PrimitiveBuilder should not produce any strokes for Polyface", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
+  it("should not produce any strokes for Polyface", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     // const pointA = new Point3d(-100, 0, 0);
@@ -122,8 +124,7 @@ describe("PrimitiveBuilder tests", () => {
     assert(strokesPrimList === undefined);
   });
 
-  it("PrimitiveBuilder should not produce any strokes for Shape", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
+  it("should not produce any strokes for Shape", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -144,8 +145,7 @@ describe("PrimitiveBuilder tests", () => {
     assert(strokesPrimList === undefined || strokesPrimList.length === 0);
   });
 
-  it("PrimitiveBuilder should not produce any strokes for Shape2d", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
+  it("should not produce any strokes for Shape2d", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point2d(-100, 0);
@@ -166,8 +166,7 @@ describe("PrimitiveBuilder tests", () => {
     assert(strokesPrimList === undefined || strokesPrimList.length === 0);
   });
 
-  it("PrimitiveBuilder should produce proper LineString strokes; different tolerances should have no effect", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
+  it("should produce proper LineString strokes; different tolerances should have no effect", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -221,8 +220,7 @@ describe("PrimitiveBuilder tests", () => {
     expect(numPointsA).to.equal(numPointsB);
   });
 
-  it("PrimitiveBuilder should produce proper PointString strokes; different tolerances should have no effect", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
+  it("should produce proper PointString strokes; different tolerances should have no effect", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -276,8 +274,7 @@ describe("PrimitiveBuilder tests", () => {
     expect(numPointsA).to.equal(numPointsB);
   });
 
-  it("PrimitiveBuilder should produce proper PointString2d strokes; different tolerances should have no effect", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
+  it("should produce proper PointString2d strokes; different tolerances should have no effect", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point2d(-100, 0);
@@ -331,15 +328,14 @@ describe("PrimitiveBuilder tests", () => {
     expect(numPointsA).to.equal(numPointsB);
   });
 
-  it("PrimitiveBuilder should be able to finish graphics", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
+  it("should be able to finish graphics", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
     const accum = new GeometryAccumulator(imodel, IModelApp.renderSystem);
 
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));

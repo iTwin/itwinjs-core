@@ -3,7 +3,25 @@ ignore: true
 ---
 # NextVersion
 
-## Thematic Display of Point Clouds and Background Terrain
+## Lighting for decoration graphics
+
+Most types of decorations can receive lighting in 3d views (see [GraphicType]($frontend) for details about how lighting applies to each type). But lighting requires normals, and until now a [GraphicBuilder[($frontend) would never generate normals; therefore, decorations were always unlit.
+
+Now, [GraphicBuilder.wantNormals]($frontend) can be used to indicate that normals should be generated. This property defaults to `false` to preserve the previous behavior. Meshes produced for any geometry added while the property is set to `true` will result in graphics with normals. For example:
+```ts
+  // Create a GraphicBuilder for a "scene" graphic, which can be affected by the view's light settings.
+  const builder = decorateContext.createSceneGraphicBuilder();
+  // Add a shape (with normals) that will receive lighting as configured in the view.
+  builder.wantNormals = true;
+  builder.addShape(shapePoints);
+  // Add a planar region (without normals) that will not receive lighting.
+  builder.wantNormals = false;
+  builder.addLoop(loop);
+```
+
+Caveat: currently, no API exists for generating normals for a [Polyface]($geometry-core). So for now, if you want a lit polyface, you must both set `GraphicBuilder.wantNormals` **and** ensure the `Polyface` you supply to [GraphicBuilder.addPolyface]($frontend) has predefined normals. (If the `Polyface` has predefined normals but `GraphicBuilder.wantNormals` is `false`, the normals will be ignored). This behavior will change once an API for generating normals becomes available - then, the normals will be generated if the `Polyface` lacks them and `wantNormals` is `true`.
+
+## Thematic display of point clouds and background terrain
 
 Thematic display now supports point clouds and background terrain. If thematic display is enabled, point clouds and background terrain will be colorized using the corresponding thematic settings.
 
@@ -14,6 +32,8 @@ Note: Values of `ThematicDisplayMode.Slope` or `ThematicDisplayMode.HillShade` f
 
 ![thematic rendering applied to background terrain](./assets/thematicTerrain.png)
 <p align="center">Thematic rendering applied to background terrain</p>
+
+##Presentation
 
 ### A new rule to override default property category
 

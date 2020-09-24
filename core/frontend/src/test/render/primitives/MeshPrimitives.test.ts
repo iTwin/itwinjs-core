@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorDef, MeshPolyline, OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
-import { IModelConnection, MockRender, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import { DisplayParams, Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
+import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { Triangle } from "../../../render/primitives/Primitives";
+import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
+import { VertexKey } from "../../../render/primitives/VertexKey";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
@@ -17,26 +19,6 @@ export class FakeDisplayParams extends DisplayParams {
  * tests all paths for each public method
  */
 describe("MeshPrimitive Tests", () => {
-  let imodel: IModelConnection;
-  let spatialView: SpatialViewState;
-
-  const canvas = document.createElement("canvas");
-  assert(null !== canvas);
-  canvas.width = canvas.height = 1000;
-  document.body.appendChild(canvas);
-
-  before(async () => {   // Create a ViewState to load into a Viewport
-    await MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
-    spatialView.setStandardRotation(StandardViewId.RightIso);
-  });
-
-  after(async () => {
-    if (imodel) await imodel.close();
-    await MockRender.App.shutdown();
-  });
-
   it("constructor", () => {
     const displayParams = new FakeDisplayParams();
     let type = Mesh.PrimitiveType.Mesh;
@@ -142,5 +124,12 @@ describe("MeshPrimitive Tests", () => {
     expect(m.normals.length).to.equal(1);
     expect(m.uvParams.length).to.equal(1);
     expect(m.points.length).to.equal(1);
+
+    m = Mesh.create({ displayParams, type, range, is2d, isPlanar });
+    const key = new VertexKey(q, ColorDef.white.tbgr, oct, param);
+    m.addVertex(key);
+    expect(m.points.length).to.equal(1);
+    expect(m.normals.length).to.equal(1);
+    expect(m.uvParams.length).to.equal(1);
   });
 });
