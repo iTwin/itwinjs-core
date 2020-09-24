@@ -345,6 +345,11 @@ describe("MutableTreeModel", () => {
         expect(visibleNodes.getNumRootNodes()).to.eq(5);
       });
 
+      it("getIndexOfNode", () => {
+        const visibleNodes = treeModel.computeVisibleNodes();
+        expect(visibleNodes.getIndexOfNode(rootNode.id)).to.eq(0);
+      });
+
       it("iterator", () => {
         const visibleNodes = treeModel.computeVisibleNodes();
         for (const node of visibleNodes)

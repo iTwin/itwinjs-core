@@ -11,6 +11,7 @@ exports[`<TextareaEditor /> renders correctly 1`] = `
   >
     <PopupContent>
       <Textarea
+        aria-label="editor.textarea"
         className="components-textarea-editor-textarea"
         data-testid="components-textarea-editor"
         defaultValue=""
@@ -43,6 +44,7 @@ exports[`<TextareaEditor /> renders correctly with style 1`] = `
   >
     <PopupContent>
       <Textarea
+        aria-label="editor.textarea"
         className="components-textarea-editor-textarea"
         data-testid="components-textarea-editor"
         defaultValue=""

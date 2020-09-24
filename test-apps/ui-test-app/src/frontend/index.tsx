@@ -27,6 +27,7 @@ import { MapLayersUI } from "@bentley/map-layers";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
+import reactAxe from "react-axe";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
@@ -221,8 +222,7 @@ export class SampleAppIModelApp {
 
     if (SampleAppIModelApp.testAppConfiguration?.reactAxeConsole) {
       if (process.env.NODE_ENV !== "production") {
-        // const axe = require("react-axe"); // eslint-disable-line @typescript-eslint/no-var-requires
-        // axe(React, ReactDOM, 1000);
+        await reactAxe(React, ReactDOM, 1000);
       }
     }
   }

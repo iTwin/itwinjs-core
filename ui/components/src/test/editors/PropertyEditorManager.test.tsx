@@ -184,6 +184,7 @@ describe("PropertyEditorManager", () => {
     }
 
     public applyEditorParams(property: PropertyDescription, record: PropertyRecord): void {
+      super.applyEditorParams(property, record);
       if (property.editor && property.editor.params) {
         property.editor.params.forEach((params: PropertyEditorParams) => {
           if (params.type === PropertyEditorParamTypes.Icon) {

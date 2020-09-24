@@ -47,7 +47,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 
   /** Called to get playback duration  */
   public get duration(): number {
-    return (this.getSettings().duration) ? this.getSettings().duration! : 20000;
+    return (this.getSettings().duration) ? this.getSettings().duration! : /* istanbul ignore next */ 20000;
   }
 
   // istanbul ignore next - WIP
@@ -59,12 +59,13 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
       this.viewId = "";
   }
 
+  // istanbul ignore next - WIP
   public get viewport(): ScreenViewport | undefined {
     return this._viewport;
   }
 
   public get loop(): boolean {
-    return (undefined === this.getSettings().loop) ? false : this.getSettings().loop!;
+    return (undefined === this.getSettings().loop) ? /* istanbul ignore next */ false : this.getSettings().loop!;
   }
 
   public getMilestonesCount(parent?: Milestone): number {

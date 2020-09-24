@@ -27,6 +27,7 @@ export class TypeConverterManager {
   }
 
   public static unregisterConverter(typename: string): void {
+    // istanbul ignore else
     if (TypeConverterManager._converters.hasOwnProperty(typename)) {
       delete TypeConverterManager._converters[typename];
     }

@@ -282,16 +282,16 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
         <div style={{ marginTop: "3px", marginBottom: "4px" }}>
-          <select onChange={this._onChangeSelectionMode}>
-            <option value={SelectionMode.Single}> Single </option>
-            < option value={SelectionMode.SingleAllowDeselect} > SingleAllowDeselect </option>
-            < option value={SelectionMode.Multiple} > Multiple </option>
-            < option value={SelectionMode.Extended} > Extended </option>
+          <select onChange={this._onChangeSelectionMode} aria-label="Selection Mode">
+            <option value={SelectionMode.Single}>Single</option>
+            <option value={SelectionMode.SingleAllowDeselect}>SingleAllowDeselect</option>
+            <option value={SelectionMode.Multiple}>Multiple</option>
+            <option value={SelectionMode.Extended}>Extended</option>
           </select>
           <Gap />
-          <select onChange={this._onChangeTableSelectionTarget} >
-            <option value={TableSelectionTarget.Row}> Row </option>
-            < option value={TableSelectionTarget.Cell} > Cell </option>
+          <select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target">
+            <option value={TableSelectionTarget.Row}>Row</option>
+            <option value={TableSelectionTarget.Cell}>Cell</option>
           </select>
           <Gap />
           <label>
@@ -305,7 +305,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
           <label>
             <BodyText>Filtering:</BodyText>
             &nbsp;
-            <Toggle isOn={this.state.filtering} onChange={this._onFilteringChange} />
+            <Toggle isOn={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
           </label>
         </div>
         <div style={{ flex: "1", height: "calc(100% - 22px)" }}>

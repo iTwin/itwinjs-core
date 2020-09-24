@@ -15,6 +15,7 @@ import {
 import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { UiComponents } from "../UiComponents";
 
 /** @internal */
 interface TextEditorState {
@@ -31,6 +32,7 @@ interface TextEditorState {
  */
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _ariaLabel = UiComponents.translate("editor.text");
 
   /** @internal */
   public readonly state: Readonly<TextEditorState> = {
@@ -136,6 +138,8 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
       onChange: this._updateInputValue,
       setFocus: this.props.setFocus && !this.state.isDisabled,
     };
+
+    inputProps["aria-label"] = this._ariaLabel;
 
     let reactNode: React.ReactNode;
     if (this.state.iconSpec) {

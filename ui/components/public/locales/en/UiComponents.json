@@ -161,5 +161,10 @@
   },
   "toolbar": {
     "overflow": "More toolbar items"
+  },
+  "editor": {
+    "enum": "Enum Editor",
+    "text": "Text Editor",
+    "textarea": "Textarea Editor"
   }
 }

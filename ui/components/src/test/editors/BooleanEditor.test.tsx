@@ -32,6 +32,18 @@ describe("<BooleanEditor />", () => {
     wrapper.unmount();
   });
 
+  it("isDisabled is set by the property record", async () => {
+    const record = TestUtils.createBooleanProperty("Test", false);
+    record.isDisabled = true;
+    const wrapper = mount(<BooleanEditor propertyRecord={record} />);
+
+    await TestUtils.flushAsyncOperations();
+    const editor = wrapper.instance() as BooleanEditor;
+    expect(editor.state.isDisabled).to.equal(true);
+
+    wrapper.unmount();
+  });
+
   it("HTML input onChange updates boolean value", async () => {
     const record = TestUtils.createBooleanProperty("Test1", false);
     const spyOnCommit = sinon.spy();

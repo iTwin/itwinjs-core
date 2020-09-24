@@ -33,6 +33,13 @@ describe("UiComponents", () => {
     TestUtils.terminateUiComponents();
   });
 
+  it("translate should return blank and log error if UiComponents not initialized", () => {
+    const spyLogger = sinon.spy(Logger, "logError");
+    expect(UiComponents.translate("xyz")).to.eq("");
+    spyLogger.calledOnce.should.true;
+    (Logger.logError as any).restore();
+  });
+
   it("calling initialize twice should log", async () => {
     const spyLogger = sinon.spy(Logger, "logInfo");
     expect(UiComponents.initialized).to.be.false;

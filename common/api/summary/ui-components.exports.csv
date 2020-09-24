@@ -177,6 +177,7 @@ internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
+public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps

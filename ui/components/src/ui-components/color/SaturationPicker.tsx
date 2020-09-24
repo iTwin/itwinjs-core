@@ -22,7 +22,7 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
   if ("pageX" in e) {
     x = e.pageX;
   } else {
-    // istanbul ignore if
+    // istanbul ignore next
     if (undefined !== e.touches && e.touches.length)
       x = e.touches[0].pageX;
   }
@@ -34,7 +34,7 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
   if ("pageY" in e) {
     y = e.pageY;
   } else {
-    // istanbul ignore if
+    // istanbul ignore next
     if (undefined !== e.touches && e.touches.length)
       y = e.touches[0].pageY;
   }
@@ -60,13 +60,17 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
   let value = Math.round(-((top * 100) / containerHeight) + 100);
 
   // istanbul ignore if
-  if (saturation < 0) saturation = 0;
+  if (saturation < 0)
+    saturation = 0;
   // istanbul ignore if
-  if (saturation > 100) saturation = 100;
+  if (saturation > 100)
+    saturation = 100;
   // istanbul ignore if
-  if (value < 0) value = 0;
+  if (value < 0)
+    value = 0;
   // istanbul ignore if
-  if (value > 100) value = 100;
+  if (value > 100)
+    value = 100;
 
   return hsv.clone(hsv.h, saturation, value);
 }
@@ -177,15 +181,20 @@ export function SaturationPicker({ onSaturationChange, hsv, className, style }: 
     }
 
     // istanbul ignore if
-    if (s < 0) s = 0;
+    if (s < 0)
+      s = 0;
     // istanbul ignore if
-    if (s > 100) s = 100;
+    if (s > 100)
+      s = 100;
     // istanbul ignore if
-    if (v < 0) v = 0;
+    if (v < 0)
+      v = 0;
     // istanbul ignore if
-    if (v > 100) v = 100;
+    if (v > 100)
+      v = 100;
 
     const newColor = new HSVColor(h, s, v);
+    // istanbul ignore else
     if (onSaturationChange)
       onSaturationChange(newColor);
 

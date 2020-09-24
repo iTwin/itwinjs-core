@@ -630,7 +630,8 @@ describe("Table", () => {
           return item.key === "0" || item.key === "1";
         };
         onRowsLoaded.resetHistory();
-        table = enzyme.mount(<Table dataProvider={dataProviderMock.object} isRowSelected={isRowSelected} onRowsLoaded={onRowsLoaded} />);
+        table = enzyme.mount(<Table dataProvider={dataProviderMock.object} isRowSelected={isRowSelected} onRowsLoaded={onRowsLoaded}
+          selectionMode={SelectionMode.SingleAllowDeselect} />);
         await waitForSpy(onRowsLoaded);
         table.update();
 
@@ -1524,6 +1525,7 @@ describe("Table", () => {
         dataProvider={dataProviderMock.object}
         onRowsLoaded={onRowsLoaded}
         onCellContextMenu={onCellContextMenuSpy}
+        pageAmount={50}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();

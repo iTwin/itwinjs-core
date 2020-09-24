@@ -513,7 +513,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
         totalDuration={dataProvider.duration}
         milestones={dataProvider.getMilestones()}
         minimized={true}
-        showDuration={true}
+        showDuration={false}
         onChange={dataProvider.onAnimationFractionChanged}
         onSettingsChange={dataProvider.onPlaybackSettingChanged}
         onPlayPause={dataProvider.onPlayPause}
@@ -582,9 +582,9 @@ describe("<TimelineComponent showDuration={true} />", () => {
     UiAdmin.sendUiEvent(args);
     args.timelineAction = TimelinePausePlayAction.Toggle;
     UiAdmin.sendUiEvent(args);
-    expect (spyOnPlayPause.calledThrice).to.be.true;
-    UiAdmin.sendUiEvent({ uiComponentId: "TestTimeline"});
+    expect(spyOnPlayPause.calledThrice).to.be.true;
+    UiAdmin.sendUiEvent({ uiComponentId: "TestTimeline" });
     // onPlayPause should not be called again, since the args don't include an action
-    expect (spyOnPlayPause.calledThrice).to.be.true;
+    expect(spyOnPlayPause.calledThrice).to.be.true;
   });
 });

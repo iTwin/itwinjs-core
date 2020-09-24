@@ -1925,8 +1925,11 @@ export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHi
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
 
-// @public
+// @public @deprecated
 export const hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
+
+// @public
+export const hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
 
 // @public
 export class HexadecimalTypeConverter extends TypeConverter {

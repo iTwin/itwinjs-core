@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DateTimeTypeConverter, ShortDateTypeConverter } from "../../ui-components";
+import { DateTimeTypeConverter, DateTimeTypeConverterBase, ShortDateTypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
+import { TimeFormat } from "@bentley/ui-core";
 
 describe("ShortDateTypeConverter", () => {
 
@@ -120,3 +121,22 @@ describe("DateTimeTypeConverter", () => {
   });
 
 });
+
+class NoneDateTypeConverter extends DateTimeTypeConverterBase {
+  protected getTimeFormat(): TimeFormat { return TimeFormat.None; }
+}
+
+describe("NoneDateTypeConverter", () => {
+  let converter: NoneDateTypeConverter;
+
+  beforeEach(() => {
+    converter = new NoneDateTypeConverter();
+  });
+
+  it("convertToString", () => {
+    const testDate = new Date(2018, 0, 1, 1, 15, 30);
+    expect(converter.convertToString(testDate)).to.eq(testDate.toISOString());
+  });
+
+});
+

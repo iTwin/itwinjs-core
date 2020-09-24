@@ -95,10 +95,8 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
       const imageCheckBoxParams = propertyRecord.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.CheckBoxImages) as ImageCheckBoxParams;
       // istanbul ignore else
       if (imageCheckBoxParams) {
-        if (imageCheckBoxParams.imageOn)
-          imageOn = imageCheckBoxParams.imageOn;
-        if (imageCheckBoxParams.imageOff)
-          imageOff = imageCheckBoxParams.imageOff;
+        imageOn = imageCheckBoxParams.imageOn;
+        imageOff = imageCheckBoxParams.imageOff;
       }
     }
     this.setState({ imageOn, imageOff, checkboxValue, isDisabled });

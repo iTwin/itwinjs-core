@@ -8,6 +8,7 @@ import { mount, shallow } from "enzyme";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { PopupButton } from "../../ui-components/editors/PopupButton";
 import { TestUtils } from "../TestUtils";
 
@@ -63,7 +64,43 @@ describe("<PopupButton />", () => {
     const button = component.getByTestId("components-popup-button");
     expect(button).to.exist;
 
-    button.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "ArrowDown" }));
+    button.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: SpecialKey.ArrowDown }));
+    await TestUtils.flushAsyncOperations();
+
+    const popupDiv = component.getByTestId("popup-test-div");
+    expect(popupDiv).to.exist;
+
+    cleanup();
+  });
+
+  it("shows the popup on space bar", async () => {
+    const component = render(
+      <PopupButton label="Hello">
+        <div data-testid="popup-test-div">Hello World</div>
+      </PopupButton>);
+
+    const button = component.getByTestId("components-popup-button");
+    expect(button).to.exist;
+
+    button.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: SpecialKey.Space }));
+    await TestUtils.flushAsyncOperations();
+
+    const popupDiv = component.getByTestId("popup-test-div");
+    expect(popupDiv).to.exist;
+
+    cleanup();
+  });
+
+  it("shows the popup on Enter", async () => {
+    const component = render(
+      <PopupButton label="Hello">
+        <div data-testid="popup-test-div">Hello World</div>
+      </PopupButton>);
+
+    const button = component.getByTestId("components-popup-button");
+    expect(button).to.exist;
+
+    button.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: SpecialKey.Enter }));
     await TestUtils.flushAsyncOperations();
 
     const popupDiv = component.getByTestId("popup-test-div");

@@ -9,7 +9,7 @@ import * as React from "react";
 import sinon from "sinon";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
 
 describe("<EditorContainer />", () => {
   it("should render", () => {
@@ -51,6 +51,24 @@ describe("<EditorContainer />", () => {
     expect(inputNode.length).to.eq(1);
 
     inputNode.simulate("keyDown", { key: "Escape" });
+    expect(spyOnCancel.calledOnce).to.be.true;
+  });
+
+  it("calls onCancel for Cancel button in popup", async () => {
+    const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value", undefined, { name: StandardEditorNames.MultiLine });
+    const spyOnCancel = sinon.spy();
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyOnCancel} />);
+
+    const button = wrapper.find(".components-popup-button");
+    expect(button.length).to.eq(1);
+    button.first().simulate("click");
+    await TestUtils.flushAsyncOperations();
+
+    const okButton = wrapper.find("button.components-popup-cancel-button");
+    expect(okButton.length).to.eq(1);
+    okButton.first().simulate("click");
+    await TestUtils.flushAsyncOperations();
+
     expect(spyOnCancel.calledOnce).to.be.true;
   });
 

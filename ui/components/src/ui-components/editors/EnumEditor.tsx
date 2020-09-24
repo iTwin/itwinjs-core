@@ -13,6 +13,7 @@ import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardTypeName
 import { Select } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { UiComponents } from "../UiComponents";
 
 /** @internal */
 interface EnumEditorState {
@@ -26,6 +27,7 @@ interface EnumEditorState {
  */
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _ariaLabel = UiComponents.translate("editor.enum");
 
   /** @internal */
   public readonly state: Readonly<EnumEditorState> = {
@@ -150,7 +152,8 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
         onChange={this._updateSelectValue}
         data-testid="components-select-editor"
         options={this.state.options}
-        setFocus={this.props.setFocus} />
+        setFocus={this.props.setFocus}
+        aria-label={this._ariaLabel} />
     );
   }
 }

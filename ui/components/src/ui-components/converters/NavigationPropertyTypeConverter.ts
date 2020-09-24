@@ -14,6 +14,7 @@ import { TypeConverterManager } from "./TypeConverterManager";
  * Navigation property type converter
  * @public
  */
+// istanbul ignore next
 export class NavigationPropertyTypeConverter extends TypeConverter {
   public convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Hexadecimal) {
     if (value === undefined)

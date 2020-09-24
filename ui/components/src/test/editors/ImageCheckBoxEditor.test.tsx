@@ -33,6 +33,18 @@ describe("<ImageCheckBoxEditor />", () => {
     wrapper.unmount();
   });
 
+  it("isDisabled is set by the property record", async () => {
+    const record = TestUtils.createImageCheckBoxProperty("Test", false);
+    record.isDisabled = true;
+    const wrapper = mount(<ImageCheckBoxEditor propertyRecord={record} />);
+
+    await TestUtils.flushAsyncOperations();
+    const editor = wrapper.instance() as ImageCheckBoxEditor;
+    expect(editor.state.isDisabled).to.equal(true);
+
+    wrapper.unmount();
+  });
+
   it("HTML input onChange updates boolean value", async () => {
     const record = TestUtils.createImageCheckBoxProperty("Test1", false);
     const spyOnCommit = sinon.spy();

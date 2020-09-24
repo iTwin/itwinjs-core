@@ -6,7 +6,7 @@
  * @module Common
  */
 import { Range2d } from "@bentley/geometry-core";
-import { hasFlag, SelectionMode, SelectionModeFlags } from "./SelectionModes";
+import { hasSelectionModeFlag, SelectionMode, SelectionModeFlags } from "./SelectionModes";
 
 /** Prototype for a Selection Changed handler
  * @public
@@ -245,13 +245,13 @@ export class SelectionHandler<Item> {
       let shiftSelected = false;
       if (!this._currentOperation) {
         // will replace selection if it is limited to one or keys are enabled but ctrl is not down
-        const shouldReplace = (hasFlag(this.selectionMode, SelectionModeFlags.KeysEnabled) && !ctrlDown)
-          || hasFlag(this.selectionMode, SelectionModeFlags.SelectionLimitOne);
+        const shouldReplace = (hasSelectionModeFlag(this.selectionMode, SelectionModeFlags.KeysEnabled) && !ctrlDown)
+          || hasSelectionModeFlag(this.selectionMode, SelectionModeFlags.SelectionLimitOne);
         this._currentOperation = new BatchSelectionOperation<Item>(componentHandler, shouldReplace);
         operationCreated = true;
       }
 
-      if (hasFlag(this.selectionMode, SelectionModeFlags.KeysEnabled)) {
+      if (hasSelectionModeFlag(this.selectionMode, SelectionModeFlags.KeysEnabled)) {
         if (!ctrlDown)
           componentHandler.deselectAll();
         if (shiftDown && this._lastItem !== undefined) {
@@ -264,8 +264,8 @@ export class SelectionHandler<Item> {
       if (!shiftSelected) {
         itemHandler.preselect();
 
-        if (hasFlag(this.selectionMode, SelectionModeFlags.SelectionLimitOne)
-          && !(hasFlag(this.selectionMode, SelectionModeFlags.ToggleEnabled) && itemHandler.isSelected())) {
+        if (hasSelectionModeFlag(this.selectionMode, SelectionModeFlags.SelectionLimitOne)
+          && !(hasSelectionModeFlag(this.selectionMode, SelectionModeFlags.ToggleEnabled) && itemHandler.isSelected())) {
           componentHandler.deselectAll();
         }
 
@@ -312,7 +312,7 @@ export class SelectionHandler<Item> {
    * @param firstItem Item on which drag action was started.
    */
   public createDragAction(componentSelectionHandler: MultiSelectionHandler<Item>, items: Array<Array<SingleSelectionHandler<Item>>>, firstItem: Item): void {
-    if (!hasFlag(this.selectionMode, SelectionModeFlags.DragEnabled))
+    if (!hasSelectionModeFlag(this.selectionMode, SelectionModeFlags.DragEnabled))
       return;
 
     this._dragAction = new DragAction(componentSelectionHandler, items, firstItem);
@@ -324,7 +324,7 @@ export class SelectionHandler<Item> {
    * @param latestItem Latest item in drag action.
    */
   public updateDragAction(latestItem: Item): void {
-    if (!hasFlag(this.selectionMode, SelectionModeFlags.DragEnabled))
+    if (!hasSelectionModeFlag(this.selectionMode, SelectionModeFlags.DragEnabled))
       return;
 
     if (!this._dragAction || !this._componentSelectionHandler)

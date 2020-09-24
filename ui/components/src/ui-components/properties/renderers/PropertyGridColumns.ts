@@ -40,7 +40,7 @@ export class PropertyGridColumnStyleProvider {
   }
 
   public get minValueWidth() {
-    return this._minLabelWidth;
+    return this._minValueWidth;
   }
 
   public get actionButtonWidth() {
@@ -75,9 +75,9 @@ export class PropertyGridColumnStyleProvider {
     if (!this.isMinimumColumnSizeEnabled)
       return this.columnStyleBuilder([`${ratio * 100}%`, separatorColumn, "auto", needActionButtons ? "auto" : undefined]);
 
-    const labelColumn = `minmax(${this._minLabelWidth}px, ${ratio * 100}%)`;
-    const valueColumn = `minmax(${this._minValueWidth}px, 1fr)`;
-    const actionButtonColumn = needActionButtons ? `${this._actionButtonWidth}px` : undefined;
+    const labelColumn = `minmax(${this.minLabelWidth}px, ${ratio * 100}%)`;
+    const valueColumn = `minmax(${this.minValueWidth}px, 1fr)`;
+    const actionButtonColumn = needActionButtons ? `${this.actionButtonWidth}px` : undefined;
 
     return this.columnStyleBuilder([labelColumn, separatorColumn, valueColumn, actionButtonColumn]);
   }

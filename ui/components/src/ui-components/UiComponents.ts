@@ -55,7 +55,7 @@ export class UiComponents {
   /** The internationalization service created by the application. */
   public static get i18n(): I18N {
     if (!UiComponents._i18n)
-      throw new UiError(UiComponents.loggerCategory(this), "UiComponents not initialized");
+      throw new UiError(UiComponents.loggerCategory(this), "i18n: UiComponents.initialize has not been called. Unable to return I18N object.");
     return UiComponents._i18n;
   }
 
@@ -73,6 +73,10 @@ export class UiComponents {
    * @internal
    */
   public static translate(key: string | string[]): string {
+    if (!UiComponents.initialized) {
+      Logger.logError(UiComponents.loggerCategory(this), `translate: UiComponents.initialize has not been called. Returning blank string.`);
+      return "";
+    }
     return UiComponents.i18n.translateWithNamespace(UiComponents.i18nNamespace, key);
   }
 
