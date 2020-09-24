@@ -509,6 +509,7 @@ alpha;usePropertyData(props:
 alpha;usePropertyGridEventHandler(props:
 alpha;usePropertyGridModel(props:
 alpha;usePropertyGridModelSource(props:
+internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
 internal;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs

@@ -29,12 +29,6 @@ export class MutableCategorizedPrimitiveProperty extends MutableCategorizedPrope
     return FlatGridItemType.Primitive;
   }
 
-  public get isExpanded() {
-    return false;
-  }
-
-  public set isExpanded(_: boolean) { }
-
   public getChildren(): IMutableCategorizedPropertyItem[] {
     return [];
   }

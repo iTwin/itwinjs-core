@@ -1272,6 +1272,7 @@ export interface PropertyDescription {
     name: string;
     // @alpha
     quantityType?: string;
+    renderer?: PropertyRendererInfo;
     typename: string;
 }
 
@@ -1329,6 +1330,12 @@ export class PropertyRecord {
     links?: LinkElementsInfo;
     readonly property: PropertyDescription;
     readonly value: PropertyValue;
+}
+
+// @beta
+export interface PropertyRendererInfo {
+    // (undocumented)
+    name: string;
 }
 
 // @beta

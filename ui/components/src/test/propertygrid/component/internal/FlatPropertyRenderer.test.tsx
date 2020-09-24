@@ -7,13 +7,14 @@ import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import TestUtils from "../../../TestUtils";
 import { Orientation } from "@bentley/ui-core";
+import { render } from "@testing-library/react";
 import { LinksRenderer } from "../../../../ui-components/properties/LinkHandler";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
-import { FlatPropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";
 import { PrimitivePropertyRenderer } from "../../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
 import { FlatNonPrimitivePropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatNonPrimitivePropertyRenderer";
+import { FlatPropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";
+import TestUtils from "../../../TestUtils";
 
 describe("FlatPropertyRenderer", () => {
   let propertyRecord: PropertyRecord;
@@ -53,14 +54,14 @@ describe("FlatPropertyRenderer", () => {
     expect(propertyRenderer.find(LinksRenderer).prop("value")).to.be.equal(recordValue);
   });
 
-  it("renders value differently if provided with custom propertyValueRendererManager", async () => {
+  it("uses provided propertyValueRendererManager", async () => {
     class RendererManager extends PropertyValueRendererManager {
       public render({ }) {
         return ("Test");
       }
     }
 
-    const propertyRenderer = mount(
+    const { getByText } = render(
       <FlatPropertyRenderer
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
@@ -69,10 +70,7 @@ describe("FlatPropertyRenderer", () => {
         onExpansionToggled={() => { }}
       />);
 
-    await TestUtils.flushAsyncOperations();
-    propertyRenderer.update();
-
-    expect(propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")).to.be.eq("Test");
+    expect(getByText("Test")).to.be.not.null;
   });
 
   it("renders as primitive value if property is an empty array", () => {
@@ -150,6 +148,24 @@ describe("FlatPropertyRenderer", () => {
     expect(spyMethod.calledOnce).to.be.true;
   });
 
+  it("does not attempt to call onEditCommit callback when it is not present and throw", async () => {
+    const propertyRenderer = mount(
+      <FlatPropertyRenderer
+        category={{ name: "Cat1", label: "Category 1", expand: true }}
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        isEditing={true}
+        isExpanded={false}
+        onExpansionToggled={() => { }}
+      />);
+
+    const inputNode = propertyRenderer.find("input");
+    expect(inputNode.length).to.eq(1);
+
+    inputNode.simulate("keyDown", { key: "Enter" });
+    await TestUtils.flushAsyncOperations();
+  });
+
   it("calls onEditCancel on Escape key when editing", () => {
     const spyMethod = sinon.spy();
     const propertyRenderer = mount(
@@ -225,7 +241,43 @@ describe("FlatPropertyRenderer", () => {
     propertyRenderer.update();
 
     const originalRender = mount(<div>My value</div>).html();
-    const propsRender = mount(<>{propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")}</>).html();
+    const propsRender = mount(<>{propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElementRenderer")!()}</>).html();
     expect(originalRender).to.be.eq(propsRender);
+  });
+
+  describe("onHeightChanged", () => {
+    const record = TestUtils.createPrimitiveStringProperty("test", "test");
+
+    function renderFlatPropertyRenderer(isEditing: boolean, onHeightChanged?: (newHeight: number) => void) {
+      return (
+        <FlatPropertyRenderer
+          orientation={Orientation.Horizontal}
+          propertyRecord={record}
+          isExpanded={false}
+          isEditing={isEditing}
+          onExpansionToggled={() => { }}
+          onHeightChanged={onHeightChanged}
+        />
+      );
+    }
+
+    it("gets called when entering editing state", () => {
+      const onHeightChanged = sinon.fake();
+      const { rerender } = render(renderFlatPropertyRenderer(false, onHeightChanged));
+      expect(onHeightChanged).to.have.not.been.called;
+      rerender(renderFlatPropertyRenderer(true, onHeightChanged));
+      expect(onHeightChanged).to.have.been.calledOnceWith(27);
+    });
+
+    it("does not get called when component is mounted in editing state", () => {
+      const onHeightChanged = sinon.fake();
+      render(renderFlatPropertyRenderer(true, onHeightChanged));
+      expect(onHeightChanged).to.have.not.been.called;
+    });
+
+    it("does not attempt to call when it is not present and throw", () => {
+      const { rerender } = render(renderFlatPropertyRenderer(false));
+      rerender(renderFlatPropertyRenderer(true));
+    });
   });
 });

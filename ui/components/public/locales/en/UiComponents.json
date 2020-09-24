@@ -39,7 +39,9 @@
   },
   "property": {
     "varies": "*** Varies ***",
-    "arrayLength": "Number of Items"
+    "arrayLength": "Number of Items",
+    "expand": "See more",
+    "collapse": "See less"
   },
   "signIn": {
     "prompt": "Please sign in to access your Bentley services.",

@@ -87,6 +87,12 @@ export class TestUtils {
     return property;
   }
 
+  public static createMultilineTextPropertyRecord(name: string, value: string) {
+    const record = TestUtils.createPrimitiveStringProperty(name, value);
+    record.property.renderer = { name: "multiline" };
+    return record;
+  }
+
   public static createArrayProperty(name: string, items?: PropertyRecord[], autoExpand?: boolean) {
     if (!items)
       items = [];

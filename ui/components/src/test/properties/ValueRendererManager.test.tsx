@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
+import sinon from "sinon";
 import { IPropertyValueRenderer, PropertyValueRendererManager } from "../../ui-components/properties/ValueRendererManager";
 import { UiComponents } from "../../ui-components/UiComponents";
 import TestUtils from "../TestUtils";
@@ -14,18 +15,22 @@ describe("PropertyValueRendererManager", () => {
     await TestUtils.initializeUiComponents();
   });
 
-  const fakeRenderer: IPropertyValueRenderer = {
-    canRender: () => true,
-    render: async () => undefined,
-  };
-
-  const fakeRenderer2: IPropertyValueRenderer = {
-    canRender: () => true,
-    render: async () => undefined,
-  };
+  let fakeRenderer: IPropertyValueRenderer;
+  let fakeRenderer2: IPropertyValueRenderer;
 
   let manager: PropertyValueRendererManager;
+
   beforeEach(() => {
+    fakeRenderer = {
+      canRender: () => true,
+      render: sinon.fake(),
+    };
+
+    fakeRenderer2 = {
+      canRender: () => true,
+      render: sinon.fake(),
+    };
+
     manager = new PropertyValueRendererManager();
   });
 
@@ -63,20 +68,34 @@ describe("PropertyValueRendererManager", () => {
   });
 
   describe("render", () => {
-    it("renders using a custom renderer if it's registered", async () => {
+    it("looks for custom renderer specified in `property.renderer` before looking at `property.typename`", () => {
+      const record = TestUtils.createPrimitiveStringProperty("test_property", "Test");
+      record.property.renderer = { name: "stub1" };
+      record.property.typename = "stub2"
+
       const rendererManager = new PropertyValueRendererManager();
-      rendererManager.registerRenderer("string", fakeRenderer);
+      rendererManager.registerRenderer("stub1", fakeRenderer);
+      rendererManager.registerRenderer("stub2", fakeRenderer2);
 
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      const value = await rendererManager.render(TestUtils.createPrimitiveStringProperty("Label", "Test prop"));
+      rendererManager.render(record);
 
-      const valueMount = mount(<div>{value}</div>);
-
-      expect(valueMount.text()).to.be.empty;
-      expect(value).to.be.undefined;
+      expect(fakeRenderer.render).to.have.been.calledOnceWith(record);
+      expect(fakeRenderer2.render).to.have.not.been.called;
     });
 
-    it("renders a primitive type", async () => {
+    it("looks for custom renderer in property typename", () => {
+      const record = TestUtils.createPrimitiveStringProperty("test_property", "Test");
+      record.property.typename = "stub";
+
+      const rendererManager = new PropertyValueRendererManager();
+      rendererManager.registerRenderer("stub", fakeRenderer);
+
+      rendererManager.render(record);
+
+      expect(fakeRenderer.render).to.have.been.calledOnceWith(record);
+    });
+
+    it("renders a primitive type", () => {
       const value = manager.render(TestUtils.createPrimitiveStringProperty("Label", "Test prop"));
 
       const valueMount = mount(<div>{value}</div>);
@@ -84,7 +103,7 @@ describe("PropertyValueRendererManager", () => {
       expect(valueMount.text()).to.not.be.empty;
     });
 
-    it("renders an array type", async () => {
+    it("renders an array type", () => {
       const value = manager.render(TestUtils.createArrayProperty("LabelArray"));
 
       const valueMount = mount(<div>{value}</div>);
@@ -92,7 +111,7 @@ describe("PropertyValueRendererManager", () => {
       expect(valueMount.text()).to.not.be.empty;
     });
 
-    it("renders a struct type", async () => {
+    it("renders a struct type", () => {
       const value = manager.render(TestUtils.createStructProperty("TestStruct"));
 
       const valueMount = mount(<div>{value}</div>);
@@ -100,7 +119,7 @@ describe("PropertyValueRendererManager", () => {
       expect(valueMount.text()).to.not.be.empty;
     });
 
-    it("does not render unknown type", async () => {
+    it("does not render unknown type", () => {
       const property = TestUtils.createStructProperty("TestStruct");
       property.value.valueFormat = 10;
 
@@ -111,7 +130,7 @@ describe("PropertyValueRendererManager", () => {
       expect(valueMount.text()).to.be.empty;
     });
 
-    it("renders merged properties", async () => {
+    it("renders merged properties", () => {
       const property = TestUtils.createPrimitiveStringProperty("Label", "Test prop");
       property.isMerged = true;
 

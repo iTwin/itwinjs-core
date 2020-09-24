@@ -2518,9 +2518,6 @@ export class MutableCategorizedPrimitiveProperty extends MutableCategorizedPrope
     // (undocumented)
     getChildren(): IMutableCategorizedPropertyItem[];
     // (undocumented)
-    get isExpanded(): boolean;
-    set isExpanded(_: boolean);
-    // (undocumented)
     get type(): FlatGridItemType.Primitive;
 }
 
@@ -3044,6 +3041,7 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
 export interface PrimitiveRendererProps extends SharedRendererProps {
     indentation?: number;
     valueElement?: React.ReactNode;
+    valueElementRenderer?: () => React.ReactNode;
 }
 
 // @public
@@ -3332,7 +3330,10 @@ export interface PropertyValueRendererContext {
     containerType?: string;
     decoratedTextElement?: React.ReactNode;
     defaultValue?: React.ReactNode;
+    isExpanded?: boolean;
     onDialogOpen?: (dialogState: PropertyDialogState) => void;
+    onExpansionToggled?: () => void;
+    onHeightChanged?: (newHeight: number) => void;
     onPopupHide?: () => void;
     onPopupShow?: (popupState: PropertyPopupState) => void;
     orientation?: Orientation;
@@ -3370,6 +3371,7 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
 export interface PropertyViewProps extends SharedRendererProps {
     labelElement: React.ReactNode;
     valueElement?: React.ReactNode;
+    valueElementRenderer?: () => React.ReactNode;
 }
 
 // @public
@@ -5103,6 +5105,12 @@ export function usePropertyGridModelSource(props: {
 }): PropertyGridModelSource;
 
 // @internal (undocumented)
+export function useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise<string>, context?: PropertyValueRendererContext): {
+    stringValue?: string;
+    element: React.ReactNode;
+};
+
+// @internal (undocumented)
 export function useToolbarPopupContext(): ToolbarPopupContextProps;
 
 // @internal (undocumented)
@@ -5280,6 +5288,7 @@ export interface VirtualizedPropertyGridContext {
         editingPropertyKey?: string;
         onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
         onEditCancel?: () => void;
+        onNodeHeightChanged: (index: number, key: string, height: number) => void;
         columnRatio?: number;
         onColumnChanged?: (ratio: number) => void | RatioChangeResult;
         isResizeHandleHovered?: boolean;

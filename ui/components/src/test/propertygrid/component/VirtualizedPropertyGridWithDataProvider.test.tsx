@@ -3,19 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { act, fireEvent, render, waitForDomChange } from "@testing-library/react";
 import * as faker from "faker";
 import * as React from "react";
+// eslint-disable-next-line no-duplicate-imports
+import { useEffect } from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { act, fireEvent, render, waitForDomChange } from "@testing-library/react";
+import { VirtualizedPropertyGridWithDataProvider } from "../../../ui-components/propertygrid/component/VirtualizedPropertyGridWithDataProvider";
+import * as FlatPropertyRendererExports from "../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { VirtualizedPropertyGridWithDataProvider } from "../../../ui-components/propertygrid/component/VirtualizedPropertyGridWithDataProvider";
 
 describe("VirtualizedPropertyGridWithDataProvider", () => {
 
@@ -31,18 +34,18 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
   before(async () => {
     await TestUtils.initializeUiComponents();
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 1200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 500);
   });
 
   after(() => {
     TestUtils.terminateUiComponents();
-    sinon.restore();
   });
 
   beforeEach(() => {
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 1200);
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 500);
+
     const evt = new PropertyDataChangeEvent();
     dataProvider = {
       onDataChanged: evt,
@@ -58,8 +61,8 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     };
   });
 
-  before(async () => {
-    await TestUtils.initializeUiComponents();
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe("rendering", () => {
@@ -552,6 +555,55 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       />);
 
       expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
+    });
+  });
+
+  describe("dynamic node heights", () => {
+    const StubComponent: React.FC<FlatPropertyRendererExports.FlatPropertyRendererProps> = (props) => {
+      useEffect(() => props.onHeightChanged!(15));
+      return <>Stub Component</>;
+    };
+
+    beforeEach(() => {
+      const rootCategory: PropertyCategory = {
+        name: "root",
+        label: "Root Category",
+        expand: true,
+      };
+
+      dataProvider = {
+        onDataChanged: new PropertyDataChangeEvent(),
+        getData: async () => ({
+          label: PropertyRecord.fromString("Test Label"),
+          description: faker.random.words(),
+          categories: [rootCategory],
+          records: {
+            [rootCategory.name]: [TestUtils.createMultilineTextPropertyRecord("testProperty", "Test")],
+          },
+        }),
+      };
+
+      sinon.stub(FlatPropertyRendererExports, "FlatPropertyRenderer").callsFake(StubComponent);
+    });
+
+    it("reacts to node height change", async () => {
+      const { findByText, baseElement } = render(<VirtualizedPropertyGridWithDataProvider dataProvider={dataProvider} />);
+      await findByText("Stub Component");
+
+      const node = baseElement.querySelectorAll(".virtualized-grid-node")[1] as HTMLElement;
+      expect(node.style.height).to.be.equal("26px");
+    });
+
+    it("adds more height to dynamic nodes when orientation is vertical", async () => {
+      const { findByText, baseElement } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          dataProvider={dataProvider}
+          orientation={Orientation.Vertical}
+        />);
+      await findByText("Stub Component");
+
+      const node = baseElement.querySelectorAll(".virtualized-grid-node")[1] as HTMLElement;
+      expect(node.style.height).to.be.equal("41px");
     });
   });
 

@@ -12,6 +12,7 @@ import { Orientation } from "@bentley/ui-core";
 import { ArrayPropertyValueRenderer } from "./renderers/value/ArrayPropertyValueRenderer";
 import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer";
 import { MergedPropertyValueRenderer } from "./renderers/value/MergedPropertyValueRenderer";
+import { MultilineTextPropertyValueRenderer } from "./renderers/value/MultilineTextPropertyValueRenderer";
 import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
 import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer";
 import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
@@ -63,7 +64,12 @@ export interface PropertyValueRendererContext {
   textHighlighter?: (text: string) => React.ReactNode;
   /** Default value to show if value rendering is asynchronous */
   defaultValue?: React.ReactNode;
-}
+  /** Whether property value is expanded. */
+  isExpanded?: boolean;
+  /** Called when property value expansion or collapse is requested. */
+  onExpansionToggled?: () => void;
+  /** Called when property value element height changes. */
+  onHeightChanged?: (newHeight: number) => void;}
 
 /** Custom property value renderer interface
  * @public
@@ -88,6 +94,9 @@ export class PropertyValueRendererManager {
   protected _defaultMergedValueRenderer: IPropertyValueRenderer = new MergedPropertyValueRenderer();
 
   private selectRenderer(record: PropertyRecord) {
+    if (record.property.renderer && this._propertyRenderers.has(record.property.renderer.name))
+      return this._propertyRenderers.get(record.property.renderer.name);
+
     if (this._propertyRenderers.has(record.property.typename))
       return this._propertyRenderers.get(record.property.typename)!;
 
@@ -147,3 +156,4 @@ export class PropertyValueRendererManager {
 
 PropertyValueRendererManager.defaultManager.registerRenderer("navigation", new NavigationPropertyValueRenderer());
 PropertyValueRendererManager.defaultManager.registerRenderer("double", new DoublePropertyValueRenderer());
+PropertyValueRendererManager.defaultManager.registerRenderer("multiline", new MultilineTextPropertyValueRenderer());

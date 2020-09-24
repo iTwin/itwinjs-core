@@ -108,6 +108,7 @@ beta;PropertyEditorInfo
 beta;PropertyEditorParams = BasePropertyEditorParams
 beta;PropertyEditorParamTypes
 beta;PropertyRecord
+beta;PropertyRendererInfo
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
 beta;PropertyValueFormat
 beta;ProvidedItem
