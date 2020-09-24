@@ -17,8 +17,11 @@ describe("ExtensionClient (#integration)", () => {
   let teamId: string;
   let extensionClient: ExtensionClient;
   let requestContext: AuthorizedClientRequestContext;
+  let testRunId: string;
 
   before(async () => {
+    testRunId = Guid.createValue();
+
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
 
@@ -48,12 +51,16 @@ describe("ExtensionClient (#integration)", () => {
 
   after(async () => {
     const availableExtensions = await extensionClient.getExtensions(requestContext, teamId);
+    const timeThreshold = new Date().getTime() - 1000 * 60 * 30; // don't delete extensions that were created during last 30 minutes from another test run. It might still be running.
 
     for (const extension of availableExtensions) {
-      if (extension.extensionName.length === 48 && extension.extensionName.startsWith("tempTestExt-"))
+      if (extension.extensionName.length === 51 && extension.extensionName.startsWith("tempTestExt-") &&
+        (extension.extensionName.startsWith(`${testRunId}-`, 12) || extension.timestamp.getTime() < timeThreshold)) {
+
         try {
           await extensionClient.deleteExtension(requestContext, teamId, extension.extensionName, extension.version);
         } catch (e) { }
+      }
     }
   });
 
@@ -225,7 +232,7 @@ describe("ExtensionClient (#integration)", () => {
   });
 
   it("uploads and deletes extension with specific version", async () => {
-    const extensionName = `tempTestExt-${Guid.createValue()}`;
+    const extensionName = `tempTestExt-${testRunId}-01`;
     const currentTime = new Date().getTime();
     await extensionClient.createExtension(requestContext, teamId, extensionName, "1.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
     await extensionClient.createExtension(requestContext, teamId, extensionName, "2.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
@@ -252,7 +259,7 @@ describe("ExtensionClient (#integration)", () => {
   });
 
   it("uploads and deletes all versions of extension", async () => {
-    const extensionName = `tempTestExt-${Guid.createValue()}`;
+    const extensionName = `tempTestExt-${testRunId}-02`;
     await extensionClient.createExtension(requestContext, teamId, extensionName, "1.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
     await extensionClient.createExtension(requestContext, teamId, extensionName, "2.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
 
