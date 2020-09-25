@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webgl-compatibility",
+      "comment": "Fix WebGL context loss when resizing a window on Safari 14.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webgl-compatibility",
+  "email": "47000437+markschlosseratbentley@users.noreply.github.com"
+}
