@@ -534,7 +534,6 @@ exports[`<ThemedSelect /> renders with no options correctly 2`] = `
   className="uicore-reactSelectTop uicore-reactSelect.width100"
 >
   <StateManager
-    className="uicore-reactSelect.width100"
     classNamePrefix="react-select"
     components={
       Object {
