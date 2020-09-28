@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DebugShaderFile, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
-import SVTRpcInterface from "../common/SVTRpcInterface";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 
 // cspell:disable
 
@@ -295,7 +295,7 @@ function skipThisShader(entry: DebugShaderFile, usedFlag: string, typeFlag: stri
 async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag: string, langFlag: string, dir: string) {
   // output shader make file
   let fname = `${dir}_makeShade.bat`;
-  await SVTRpcInterface.getClient().writeExternalFile(fname, makeShadeBat);
+  await DtaRpcInterface.getClient().writeExternalFile(fname, makeShadeBat);
 
   // output output list
   fname = `${dir}_OutputList.txt`;
@@ -304,7 +304,7 @@ async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag:
     if (!skipThisShader(entry, usedFlag, typeFlag, langFlag))
       src = `${src + entry.filename}  isUsed: ${entry.isUsed}\n`;
   }
-  await SVTRpcInterface.getClient().writeExternalFile(fname, src);
+  await DtaRpcInterface.getClient().writeExternalFile(fname, src);
 
   // output shader files
   for (const entry of dsf) {
@@ -313,7 +313,7 @@ async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag:
 
     fname = dir + entry.filename;
     src = (entry.isGL ? "" : `// ${entry.filename}  isUsed: ${entry.isUsed}\n`) + entry.src;
-    await SVTRpcInterface.getClient().writeExternalFile(fname, src);
+    await DtaRpcInterface.getClient().writeExternalFile(fname, src);
   }
 
   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Shaders output to directory ${dir}`));

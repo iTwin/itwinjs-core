@@ -6,9 +6,9 @@
 import { Id64Arg } from "@bentley/bentleyjs-core";
 import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@bentley/frontend-devtools";
 import { IModelConnection, Viewport, ViewState } from "@bentley/imodeljs-frontend";
-import SVTRpcInterface from "../common/SVTRpcInterface";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Provider } from "./FeatureOverrides";
-import { NamedViewStatePropsString, NamedVSPSList } from "./NamedVSPSList";
+import { NamedViewStatePropsString, NamedVSPSList } from "./NamedViews";
 import { ToolBarDropDown } from "./ToolBar";
 
 export interface ApplySavedView {
@@ -68,7 +68,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       return;
 
     const filename = this._imodel.getRpcProps().key;
-    const esvString = await SVTRpcInterface.getClient().readExternalSavedViews(filename);
+    const esvString = await DtaRpcInterface.getClient().readExternalSavedViews(filename);
     this._views.loadFromString(esvString);
     this.populateFromViewList();
   }
@@ -237,7 +237,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       return;
 
     const namedViews = this._views.getPrintString();
-    await SVTRpcInterface.getClient().writeExternalSavedViews(filename, namedViews);
+    await DtaRpcInterface.getClient().writeExternalSavedViews(filename, namedViews);
   }
 
   private findView(name: string): NamedViewStatePropsString | undefined {

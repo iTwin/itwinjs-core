@@ -20,7 +20,7 @@
     "docs": "",
     "lint": "eslint --max-warnings 0 --config package.json --no-eslintrc ./src/**/*.ts 1>&2",
     "start": "run-p start:webserver start:electron",
-    "start:electron": "electron ./lib/backend/ElectronMain.js",
+    "start:electron": "electron ./lib/backend/DtaElectronMain.js",
     "start:webserver": "cross-env BROWSER=none USE_FULL_SOURCEMAP=true react-scripts start",
     "start:backend": "node --max-http-header-size=16000 lib/backend/WebMain.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",

@@ -263,6 +263,7 @@ export type ComputePriorityFunction<T> = (value: T) => number;
 
 // @public
 export class Config {
+    addEnvVarsStartingWith(prefix: string): void;
     static get App(): Config;
     get(varName: string, defaultVal?: boolean | string | number): any;
     getBoolean(name: string, defaultVal?: boolean): boolean;

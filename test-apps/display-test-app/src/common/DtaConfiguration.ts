@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** Parameters for starting display-test-app with a specified initial configuration */
-export interface SVTConfiguration {
+export interface DtaConfiguration {
   customOrchestratorUri?: string;
   viewName?: string;
   // standalone-specific config:

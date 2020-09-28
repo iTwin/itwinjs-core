@@ -189,6 +189,7 @@ public;GeometryStreamProps = GeometryStreamEntryProps[]
 beta;GeometrySummaryOptions
 beta;GeometrySummaryRequestProps
 beta;GeometrySummaryVerbosity
+internal;getIModelElectronApi: () => IModelElectronApi | undefined
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
 public;GlobeMode
 internal;GltfBufferData
@@ -231,6 +232,7 @@ public;class IModel
 internal;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
+internal;IModelElectronApi 
 internal;IModelElectronIpc
 public;IModelEncryptionProps
 public;IModelError 

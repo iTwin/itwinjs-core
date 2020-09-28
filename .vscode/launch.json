@@ -1113,7 +1113,7 @@
       "request": "launch",
       "url": "http://localhost:3000",
       "outFiles": [
-        "${workspaceRoot}/test-apps/display-test-app/lib/backend/**/*.js",
+        "${workspaceRoot}/test-apps/display-test-app/lib/**/*.js",
         "${workspaceRoot}/{core,clients}/*/lib/**/*.js",
         "${workspaceRoot}/ui/abstract/lib/**/*.js",
       ],
@@ -1131,12 +1131,13 @@
       "request": "launch",
       "runtimeExecutable": "${workspaceFolder}/test-apps/display-test-app/node_modules/.bin/electron",
       "runtimeArgs": [
-        "${workspaceFolder}/test-apps/display-test-app/lib/backend/ElectronMain.js",
+        "${workspaceFolder}/test-apps/display-test-app/lib/backend/DtaElectronMain.js",
         "--remote-debugging-port=9223"
       ],
       "env": {
         "SVT_LOG_LEVEL": "TRACE",
-        "SVT_NO_DEV_TOOLS": "1"
+        "SVT_NO_DEV_TOOLS": "1",
+        "NODE_ENV": "development"
       },
       "outFiles": [
         "${workspaceRoot}/test-apps/display-test-app/lib/backend/**/*.js",
@@ -1156,7 +1157,7 @@
       "request": "attach",
       "port": 9223,
       "outFiles": [
-        "${workspaceRoot}/test-apps/display-test-app/lib/backend/**/*.js",
+        "${workspaceRoot}/test-apps/display-test-app/lib/**/*.js",
         "${workspaceRoot}/{core,clients}/*/lib/**/*.js",
         "${workspaceRoot}/ui/abstract/lib/**/*.js",
       ],

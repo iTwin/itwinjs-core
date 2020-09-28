@@ -2789,6 +2789,9 @@ export enum GeometrySummaryVerbosity {
     Full = 30
 }
 
+// @internal
+export const getIModelElectronApi: () => IModelElectronApi | undefined;
+
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
@@ -3464,13 +3467,23 @@ export interface IModelCoordinatesResponseProps {
 }
 
 // @internal (undocumented)
+export interface IModelElectronApi extends IModelElectronIpc {
+    // (undocumented)
+    invoke(channel: string, ...args: any[]): Promise<any>;
+    // (undocumented)
+    sendSync(channel: string, ...args: any[]): any;
+}
+
+// @internal (undocumented)
 export interface IModelElectronIpc {
     // (undocumented)
     on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
     // (undocumented)
-    send: (channel: string, ...data: any[]) => void;
+    once: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
     // (undocumented)
-    showOpenDialogSync: (options: any) => any;
+    removeListener: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+    // (undocumented)
+    send: (channel: string, ...data: any[]) => void;
 }
 
 // @public

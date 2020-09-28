@@ -16,17 +16,15 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
-import { SVTConfiguration } from "../common/SVTConfiguration";
-import SVTRpcInterface from "../common/SVTRpcInterface";
+import { DtaConfiguration } from "../common/DtaConfiguration";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
-RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
-
-const configuration = {} as SVTConfiguration;
+const configuration: DtaConfiguration = {};
 
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
 async function retrieveConfiguration(): Promise<void> {
@@ -149,7 +147,9 @@ class FakeTileCache extends CloudStorageTileCache {
 }
 
 // main entry point.
-async function main() {
+const dtaFrontendMain = async () => {
+  RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
+
   // retrieve, set, and output the global configuration variable
   await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
@@ -203,7 +203,7 @@ async function main() {
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
+  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
   if (ElectronRpcConfiguration.isElectron) {
     rpcInterfaces.push(NativeAppRpcInterface);
     ElectronRpcManager.initializeClient({}, rpcInterfaces);
@@ -217,6 +217,7 @@ async function main() {
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set SVT_STANDALONE_FILENAME in environment");
+
     return;
   }
 
@@ -312,4 +313,4 @@ function hideSpinner() {
 }
 
 // Entry point - run the main function
-main(); // eslint-disable-line @typescript-eslint/no-floating-promises
+dtaFrontendMain(); // eslint-disable-line @typescript-eslint/no-floating-promises

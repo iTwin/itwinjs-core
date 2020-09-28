@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { MobileRpcManager } from "@bentley/imodeljs-common";
-import { getRpcInterfaces, initializeBackend } from "./backend";
+import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+const dtaMobileMain = (async () => {
   // Initialize the backend
-  await initializeBackend();
+  await initializeDtaBackend();
   MobileRpcManager.initializeImpl(getRpcInterfaces("native"));
-})();
+})
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+dtaMobileMain();

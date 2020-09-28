@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
@@ -11,25 +10,93 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
+  IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, RpcManager,
+  SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { SVTConfiguration } from "../common/SVTConfiguration";
-import SVTRpcInterface from "../common/SVTRpcInterface";
+import { DtaConfiguration } from "../common/DtaConfiguration";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 
-IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+class DisplayTestAppRpc extends DtaRpcInterface {
 
-export function getRpcInterfaces(appType: "native" | "browser"): RpcInterfaceDefinition[] {
-  const intfcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
-  if ("native" === appType)
-    intfcs.push(NativeAppRpcInterface);
+  public async readExternalSavedViews(bimFileName: string): Promise<string> {
+    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      bimFileName = path.join(docPath, bimFileName);
+    }
 
-  return intfcs;
+    const esvFileName = this.createEsvFilename(bimFileName);
+    if (!fs.existsSync(esvFileName))
+      return "";
+
+    const jsonStr = fs.readFileSync(esvFileName).toString();
+    return jsonStr ?? "";
+  }
+
+  public async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
+    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      bimFileName = path.join(docPath, bimFileName);
+    }
+
+    const esvFileName = this.createEsvFilename(bimFileName);
+    return this.writeExternalFile(esvFileName, namedViews);
+  }
+
+  public async writeExternalFile(fileName: string, content: string): Promise<void> {
+    const filePath = this.getFilePath(fileName);
+    if (!fs.existsSync(filePath))
+      this.createFilePath(filePath);
+
+    if (fs.existsSync(fileName))
+      fs.unlinkSync(fileName);
+
+    fs.writeFileSync(fileName, content);
+  }
+
+  private createFilePath(filePath: string) {
+    const files = filePath.split(/\/|\\/); // /\.[^/.]+$/ // /\/[^\/]+$/
+    let curFile = "";
+    for (const file of files) {
+      if (file === "")
+        break;
+
+      curFile += `${file}\\`;
+      if (!fs.existsSync(curFile))
+        fs.mkdirSync(curFile);
+    }
+  }
+
+  private getFilePath(fileName: string): string {
+    const slashIndex = fileName.lastIndexOf("/");
+    const backSlashIndex = fileName.lastIndexOf("\\");
+    if (slashIndex > backSlashIndex)
+      return fileName.substring(0, slashIndex);
+    else
+      return fileName.substring(0, backSlashIndex);
+  }
+
+  private createEsvFilename(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    if (-1 !== dotIndex)
+      return `${fileName.substring(0, dotIndex)}_ESV.json`;
+    return `${fileName}.sv`;
+  }
 }
 
-function setupStandaloneConfiguration(): SVTConfiguration {
-  const configuration: SVTConfiguration = {};
+export const getRpcInterfaces = (appType: "native" | "browser"): RpcInterfaceDefinition[] => {
+  const rpcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
+  if ("native" === appType)
+    rpcs.push(NativeAppRpcInterface);
+
+  return rpcs;
+}
+
+const setupStandaloneConfiguration = () => {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+  IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
+
+  const configuration: DtaConfiguration = {};
   if (MobileRpcConfiguration.isMobileBackend)
     return configuration;
 
@@ -147,8 +214,8 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   return configuration;
 }
 
-export async function initializeBackend(): Promise<void> {
-  const svtConfig = setupStandaloneConfiguration();
+export const initializeDtaBackend = async () => {
+  const dtaConfig = setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
   hostConfig.logTileLoadTimeThreshold = 3;
@@ -156,18 +223,21 @@ export async function initializeBackend(): Promise<void> {
 
   let logLevel = LogLevel.None;
   if (MobileRpcConfiguration.isMobileBackend) {
-    // Does not seem SVTConfiguration is used anymore.
+    // Does not seem DtaConfiguration is used anymore.
   } else {
-    if (svtConfig.customOrchestratorUri)
-      hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
+    if (dtaConfig.customOrchestratorUri)
+      hostConfig.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
 
-    if (svtConfig.useFakeCloudStorageTileCache)
+    if (dtaConfig.useFakeCloudStorageTileCache)
       hostConfig.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
 
     const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
     if (undefined !== logLevelEnv)
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
+
+  /** register the implementation of our RPCs. */
+  RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
 
   await IModelHost.startup(hostConfig);
 
@@ -176,6 +246,6 @@ export async function initializeBackend(): Promise<void> {
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
 
-  if (svtConfig.useFakeCloudStorageTileCache)
+  if (dtaConfig.useFakeCloudStorageTileCache)
     IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
 }

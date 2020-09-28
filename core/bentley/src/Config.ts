@@ -22,18 +22,17 @@
  * @public
  */
 export class Config {
-  private static _appConfig: Config;
+  private static _appConfig?: Config;
   private _container: any = {};
   private _expanded: any = {};
-  private constructor() { }
 
-  /** Sets up the Config object by appending environment variables that are prefixed with "imjs".
-   */
-  private appendSystemVars() {
-    // Merge system environment variables that start with "imjs"
-    const imjsPrefix = /^imjs/i;
+  /** Sets up the Config object by appending environment variables that are prefixed with a string.
+   * @param prefix the (case insensitive) prefix. Any environment variable that starts with this prefix will be added.
+    */
+  public addEnvVarsStartingWith(prefix: string) {
+    const regex = new RegExp(`^${prefix}`, "i");
     const systemEnv = Object.keys(process.env)
-      .filter((key) => imjsPrefix.test(key))
+      .filter((key) => regex.test(key))
       .reduce<any>((env: any, key: string) => { env[key] = process.env[key]; return env; }, {});
     this.merge(systemEnv);
   }
@@ -54,9 +53,6 @@ export class Config {
    * This is strict function that will fail if recursion is detected or var name is not found.
    */
   private expand(name: string, value: string): any {
-    if (typeof value !== "string")
-      return value;
-
     // If the variable already exists, return existing value.
     const descriptor = Object.getOwnPropertyDescriptor(this._expanded, name);
     if (descriptor !== undefined)
@@ -130,7 +126,7 @@ export class Config {
   /** Attempt to get a number type variable value.
    * @param name the variable name to retrieve.
    * @param defaultVal the value to return if the variable does not exist.
-   * @throws if the variable does not exist and a default value is not provided.
+   * @throws if the variable does not exist and no default value is provided.
    */
   public getNumber(name: string, defaultVal?: number): number {
     return Number(this.get(name, defaultVal));
@@ -139,7 +135,7 @@ export class Config {
   /** Attempt to get a boolean type variable value.
    * @param name the variable name to retrieve.
    * @param defaultVal the value to return if the variable does not exist.
-   * @throws if the variable does not exist and a default value is not provided.
+   * @throws if the variable does not exist and no default value is provided.
    */
   public getBoolean(name: string, defaultVal?: boolean): boolean {
     return Boolean(this.get(name, defaultVal));
@@ -148,7 +144,7 @@ export class Config {
   /** Attempt to get a string type variable value.
    * @param name the variable name to retrieve.
    * @param defaultVal the value to return if the variable does not exist.
-   * @throws if the variable does not exist and a default value is not provided.
+   * @throws if the variable does not exist and no default value is provided.
    */
   public getString(name: string, defaultVal?: string): string {
     return String(this.get(name, defaultVal));
@@ -165,8 +161,7 @@ export class Config {
     delete this._container[name];
   }
 
-  /** Set a new property if it does not exist or updates a property to new value.
-   */
+  /** Set a new property if it does not exist or updates a property to new value.  */
   public set(varName: string, value: boolean | string | number) {
     const name = this.checkExists(varName);
     this._container[name] = value;
@@ -211,18 +206,16 @@ export class Config {
     });
   }
 
-  /** Return clone of the internal property container object.
-   */
+  /** Return clone of the internal property container object. */
   public getContainer(): any {
     return JSON.parse(JSON.stringify(this._container));
   }
 
-  /** Provide singleton object for application
-   */
+  /** Provide singleton object for global application configuration. */
   public static get App(): Config { // eslint-disable-line @typescript-eslint/naming-convention
-    if (!Config._appConfig) {
+    if (undefined === Config._appConfig) {
       Config._appConfig = new Config();
-      Config._appConfig.appendSystemVars();
+      Config._appConfig.addEnvVarsStartingWith("imjs");
     }
     return Config._appConfig;
   }

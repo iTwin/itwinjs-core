@@ -3,22 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { IModelElectronIpc } from "@bentley/imodeljs-common";
+import { OpenDialogReturnValue } from "electron";
+import { assert, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { getIModelElectronApi } from "@bentley/imodeljs-common";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
   directory: string;
 }
 
-function selectForElectron(): string | undefined {
+const selectForElectron = async () => {
   const options = {
     properties: ["openFile"],
     filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
   };
 
-  const filenames = ((window as any).imodeljs_api as IModelElectronIpc).showOpenDialogSync(options);
-  return undefined !== filenames ? filenames[0] : undefined;
+  const api = getIModelElectronApi();
+  assert(api !== undefined);
+  const val = (await api.invoke("imodeljs.dta.openFile", options)) as OpenDialogReturnValue; // eslint-disable-line @typescript-eslint/await-thenable
+  return val.canceled ? undefined : val.filePaths[0];
 }
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
