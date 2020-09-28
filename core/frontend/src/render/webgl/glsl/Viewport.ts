@@ -52,11 +52,12 @@ vec4 modelToWindowCoordinates(vec4 position, vec4 next) {
     q.y += t * (n.y - q.y);
     q.z = s_maxZ;                       // q.z + (s_maxZ - q.z) * (s_maxZ - q.z) / n.z - q.z
   }
+
   q = u_proj * q;
   q.xyz /= q.w;                           // normalized device coords
   q.xyz = (u_viewportTransformation * vec4(q.xyz, 1.0)).xyz; // window coords
   return q;
-  }
+}
 `;
 
 /** @internal */

@@ -25,27 +25,27 @@ import { addTexture } from "./Surface";
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 
 const applyTexture = `
-  bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params) {
-    vec4 texTransform = params[0].xyzw;
-    vec4 texClip = params[1].xyzw;
-    float layerAlpha = params[2].x;
-    vec2 uv = vec2(texTransform[0] + texTransform[2] * v_texCoord.x, texTransform[1] + texTransform[3] * v_texCoord.y);
-    if (uv.x >= texClip[0] && uv.x <= texClip[2] && uv.y >= texClip[1] && uv.y <= texClip[3]) {
-      uv.y = 1.0 - uv.y;
-      vec4 texCol = TEXTURE(sampler, uv);
-      float alpha = layerAlpha * texCol.a;
-      if (alpha > 0.05) {
-        col.rgb = (1.0 - alpha) * col.rgb + alpha * texCol.rgb;
-        if (texCol.a > 0.1)
-          featureIncrement = params[2].y;
-        if (alpha > col.a)
-          col.a = alpha;
-      }
-      return true;
+bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params) {
+  vec4 texTransform = params[0].xyzw;
+  vec4 texClip = params[1].xyzw;
+  float layerAlpha = params[2].x;
+  vec2 uv = vec2(texTransform[0] + texTransform[2] * v_texCoord.x, texTransform[1] + texTransform[3] * v_texCoord.y);
+  if (uv.x >= texClip[0] && uv.x <= texClip[2] && uv.y >= texClip[1] && uv.y <= texClip[3]) {
+    uv.y = 1.0 - uv.y;
+    vec4 texCol = TEXTURE(sampler, uv);
+    float alpha = layerAlpha * texCol.a;
+    if (alpha > 0.05) {
+      col.rgb = (1.0 - alpha) * col.rgb + alpha * texCol.rgb;
+      if (texCol.a > 0.1)
+        featureIncrement = params[2].y;
+      if (alpha > col.a)
+        col.a = alpha;
     }
+    return true;
+  }
 
   return false;
-  }
+}
 `;
 
 const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
@@ -128,18 +128,18 @@ export default function createTerrainMeshBuilder(_classified: IsClassified, _fea
     applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texTransform${i})) doDiscard = false; `);
 
   const computeBaseColor = `
-      if (!u_texturesPresent)
-        return u_terrainColor;
+  if (!u_texturesPresent)
+    return u_terrainColor;
 
-      bool doDiscard = true;
-      vec4 col = u_terrainColor;
-      ${applyTextureStrings.join("\n      ")}
-      if (doDiscard)
-          discard;
+  bool doDiscard = true;
+  vec4 col = u_terrainColor;
+  ${applyTextureStrings.join("\n  ")}
+  if (doDiscard)
+      discard;
 
-      col.a *= u_terrainTransparency;
-      return col;
-      `;
+  col.a *= u_terrainTransparency;
+  return col;
+`;
 
   frag.addFunction(applyTexture);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

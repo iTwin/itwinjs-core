@@ -14,48 +14,48 @@ import { addEyeSpace } from "./Common";
 import { addModelViewMatrix } from "./Vertex";
 
 const getClipPlaneFloat = `
-  vec4 getClipPlane(int index) {
-    float x = 0.5;
-    float y = (float(index) + 0.5) / float(u_numClips);
-    return TEXTURE(s_clipSampler, vec2(x, y));
-  }
+vec4 getClipPlane(int index) {
+  float x = 0.5;
+  float y = (float(index) + 0.5) / float(u_numClips);
+  return TEXTURE(s_clipSampler, vec2(x, y));
+}
 `;
 
 export const unpackFloat = `
-  float unpackFloat(vec4 v) {
-    const float bias = 38.0;
-    v *= 255.0;
-    float temp = v.w / 2.0;
-    float exponent = floor(temp);
-    float sign = (temp - exponent) * 2.0;
-    exponent = exponent - bias;
-    sign = -(sign * 2.0 - 1.0);
-    float unpacked = dot(sign * v.xyz, vec3(1.0 / 256.0, 1.0 / 65536.0, 1.0 / 16777216.0)); // shift x right 8, y right 16 and z right 24
-    return unpacked * pow(10.0, exponent);
-  }
+float unpackFloat(vec4 v) {
+  const float bias = 38.0;
+  v *= 255.0;
+  float temp = v.w / 2.0;
+  float exponent = floor(temp);
+  float sign = (temp - exponent) * 2.0;
+  exponent = exponent - bias;
+  sign = -(sign * 2.0 - 1.0);
+  float unpacked = dot(sign * v.xyz, vec3(1.0 / 256.0, 1.0 / 65536.0, 1.0 / 16777216.0)); // shift x right 8, y right 16 and z right 24
+  return unpacked * pow(10.0, exponent);
+}
 `;
 
 // ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
 const unpackClipPlane = `
-  vec4 getClipPlane(int index) {
-    float y = (float(index) + 0.5) / float(u_numClips);
-    float sx = 0.25;
-    vec2 tc = vec2(0.125, y);
-    float nx = unpackFloat(TEXTURE(s_clipSampler, tc));
-    tc.x += sx;
-    float ny = unpackFloat(TEXTURE(s_clipSampler, tc));
-    tc.x += sx;
-    float nz = unpackFloat(TEXTURE(s_clipSampler, tc));
-    tc.x += sx;
-    float dist = unpackFloat(TEXTURE(s_clipSampler, tc));
-    return vec4(nx, ny, nz, dist);
-  }
+vec4 getClipPlane(int index) {
+  float y = (float(index) + 0.5) / float(u_numClips);
+  float sx = 0.25;
+  vec2 tc = vec2(0.125, y);
+  float nx = unpackFloat(TEXTURE(s_clipSampler, tc));
+  tc.x += sx;
+  float ny = unpackFloat(TEXTURE(s_clipSampler, tc));
+  tc.x += sx;
+  float nz = unpackFloat(TEXTURE(s_clipSampler, tc));
+  tc.x += sx;
+  float dist = unpackFloat(TEXTURE(s_clipSampler, tc));
+  return vec4(nx, ny, nz, dist);
+}
 `;
 
 const calcClipPlaneDist = `
-  float calcClipPlaneDist(vec3 camPos, vec4 plane) {
-    return dot(vec4(camPos, 1.0), plane);
-  }
+float calcClipPlaneDist(vec3 camPos, vec4 plane) {
+  return dot(vec4(camPos, 1.0), plane);
+}
 `;
 
 const applyClipPlanesPrelude = `

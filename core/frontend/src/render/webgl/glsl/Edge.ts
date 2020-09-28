@@ -29,8 +29,7 @@ const decodeEndPointAndQuadIndices = `
   g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
   g_quadIndex = a_endPointAndQuadIndices.w;
 `;
-const animateEndPoint = `g_otherPos.xyz += computeAnimationDisplacement(g_otherIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);
-`;
+const animateEndPoint = `g_otherPos.xyz += computeAnimationDisplacement(g_otherIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);`;
 
 const checkForSilhouetteDiscard = `
   vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);

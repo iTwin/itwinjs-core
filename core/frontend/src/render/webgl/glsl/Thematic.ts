@@ -16,27 +16,27 @@ import { TextureUnit } from "../RenderFlags";
 import { addEyeSpace } from "./Common";
 
 const getSensorFloat = `
-  vec4 getSensor(int index) {
-    float x = 0.5;
-    float y = (float(index) + 0.5) / float(u_numSensors);
-    return TEXTURE(s_sensorSampler, vec2(x, y));
-  }
+vec4 getSensor(int index) {
+  float x = 0.5;
+  float y = (float(index) + 0.5) / float(u_numSensors);
+  return TEXTURE(s_sensorSampler, vec2(x, y));
+}
 `;
 
 const unpackSensor = `
-  vec4 getSensor(int index) {
-    float y = (float(index) + 0.5) / float(u_numSensors);
-    float sx = 0.25;
-    vec2 tc = vec2(0.125, y);
-    float posX = unpackFloat(TEXTURE(s_sensorSampler, tc));
-    tc.x += sx;
-    float posY = unpackFloat(TEXTURE(s_sensorSampler, tc));
-    tc.x += sx;
-    float posZ = unpackFloat(TEXTURE(s_sensorSampler, tc));
-    tc.x += sx;
-    float value = unpackFloat(TEXTURE(s_sensorSampler, tc));
-    return vec4(posX, posY, posZ, value);
-  }
+vec4 getSensor(int index) {
+  float y = (float(index) + 0.5) / float(u_numSensors);
+  float sx = 0.25;
+  vec2 tc = vec2(0.125, y);
+  float posX = unpackFloat(TEXTURE(s_sensorSampler, tc));
+  tc.x += sx;
+  float posY = unpackFloat(TEXTURE(s_sensorSampler, tc));
+  tc.x += sx;
+  float posZ = unpackFloat(TEXTURE(s_sensorSampler, tc));
+  tc.x += sx;
+  float value = unpackFloat(TEXTURE(s_sensorSampler, tc));
+  return vec4(posX, posY, posZ, value);
+}
 `;
 
 // Access a gradient texture at the specified index.
@@ -65,116 +65,117 @@ vec3 getIsoLineColor(float ndx, float stepCount) {
 }
 `;
 
-const fwidthWhenAvailable = `float _universal_fwidth(float coord) { return fwidth(coord); }`;
-const fwidthWhenNotAvailable = `float _universal_fwidth(float coord) { return coord; }`; // ###TODO: can we do something reasonable in this case?
+const fwidthWhenAvailable = `\nfloat _universal_fwidth(float coord) { return fwidth(coord); }\n`;
+const fwidthWhenNotAvailable = `\nfloat _universal_fwidth(float coord) { return coord; }\n`; // ###TODO: can we do something reasonable in this case?
 
-const slopeAndHillShadeShader = `else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
-  float d = dot(v_n, u_thematicAxis);
-  if (d < 0.0)
-    d = -d;
+const slopeAndHillShadeShader = ` else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
+    float d = dot(v_n, u_thematicAxis);
+    if (d < 0.0)
+      d = -d;
 
-  // The range of d is now 0 to 1 (90 degrees to 0 degrees).
-  // However, the range from 0 to 1 is not linear. Therefore, we use acos() to find the actual angle in radians.
-  d = acos(d);
+    // The range of d is now 0 to 1 (90 degrees to 0 degrees).
+    // However, the range from 0 to 1 is not linear. Therefore, we use acos() to find the actual angle in radians.
+    d = acos(d);
 
-  // range of d is currently 1.5708 to 0 radians.
-  if (d < u_thematicRange.x || d > u_thematicRange.y)
-    d = -1.0; // use marginColor if outside the requested range
-  else { // convert d from radians to 0 to 1 using requested range
-    d -= u_thematicRange.x;
-    d /= (u_thematicRange.y - u_thematicRange.x);
-  }
+    // range of d is currently 1.5708 to 0 radians.
+    if (d < u_thematicRange.x || d > u_thematicRange.y)
+      d = -1.0; // use marginColor if outside the requested range
+    else { // convert d from radians to 0 to 1 using requested range
+      d -= u_thematicRange.x;
+      d /= (u_thematicRange.y - u_thematicRange.x);
+    }
 
-  ndx = d;
-} else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
-  float d = dot(v_n, u_thematicSunDirection);
+    ndx = d;
+  } else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
+    float d = dot(v_n, u_thematicSunDirection);
 
-  // In the case of HillShade, v_thematicIndex contains the normal's z in world space.
-  if (!gl_FrontFacing && v_thematicIndex < 0.0)
-    d = -d;
+    // In the case of HillShade, v_thematicIndex contains the normal's z in world space.
+    if (!gl_FrontFacing && v_thematicIndex < 0.0)
+      d = -d;
 
-  ndx = max(0.0, d);
-}`;
+    ndx = max(0.0, d);
+  }`;
 
 // Access the appropriate gradient texel for a particular index based on display mode and gradient mode.
 const applyThematicColorPrelude = `
-float ndx = v_thematicIndex;
+  float ndx = v_thematicIndex;
 
-if (kThematicDisplayMode_InverseDistanceWeightedSensors == u_thematicDisplayMode) {
-  float sensorSum = 0.0;
-  float contributionSum = 0.0;
+  if (kThematicDisplayMode_InverseDistanceWeightedSensors == u_thematicDisplayMode) {
+    float sensorSum = 0.0;
+    float contributionSum = 0.0;
 
-  vec3 sensorPos;
-  float sensorValue;
-  float sensorWeight;
+    vec3 sensorPos;
+    float sensorValue;
+    float sensorWeight;
 
-  ndx = -1.0; // default index = marginColor
+    ndx = -1.0; // default index = marginColor
 
-  float distanceCutoff = u_thematicSettings.y;
+    float distanceCutoff = u_thematicSettings.y;
 
-  for (int i = 0; i < 8192; i++) { // ###TODO: set maximum number of sensors during an incremental form of shader construction
-    if (i >= u_numSensors)
-      break;
+    for (int i = 0; i < 8192; i++) { // ###TODO: set maximum number of sensors during an incremental form of shader construction
+      if (i >= u_numSensors)
+        break;
 
-    vec4 sensor = getSensor(i);
+      vec4 sensor = getSensor(i);
 
-    float dist = distance(v_eyeSpace, sensor.xyz);
+      float dist = distance(v_eyeSpace, sensor.xyz);
 
-    bool skipThisSensor = (distanceCutoff > 0.0 && dist > distanceCutoff);
-    if (!skipThisSensor) {
-      float contribution = 1.0 / pow(dist, 2.0);
-      sensorSum += sensor.w * contribution;
-      contributionSum += contribution;
+      bool skipThisSensor = (distanceCutoff > 0.0 && dist > distanceCutoff);
+      if (!skipThisSensor) {
+        float contribution = 1.0 / pow(dist, 2.0);
+        sensorSum += sensor.w * contribution;
+        contributionSum += contribution;
+      }
     }
-  }
 
-  if (contributionSum > 0.0) // avoid division by zero
-    ndx = sensorSum / contributionSum;
-}`;
+    if (contributionSum > 0.0) // avoid division by zero
+      ndx = sensorSum / contributionSum;
+  }`;
 
 const applyThematicColorPostlude = `
-float gradientMode = u_thematicSettings.x;
-float stepCount = u_thematicSettings.z;
 
-vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+  float gradientMode = u_thematicSettings.x;
+  float stepCount = u_thematicSettings.z;
 
-if (kThematicGradientMode_IsoLines == gradientMode) {
-  float coord = v_thematicIndex * stepCount;
-  float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
-  rgba.a = 1.0 - min(line, 1.0);
-} else if (kThematicGradientMode_SteppedWithDelimiter == gradientMode) {
-  float coord = v_thematicIndex * stepCount;
-  float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
-  float value = min(line, 1.0);
-  rgba.rgb *= value;
-}
+  vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
 
-return rgba;
+  if (kThematicGradientMode_IsoLines == gradientMode) {
+    float coord = v_thematicIndex * stepCount;
+    float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
+    rgba.a = 1.0 - min(line, 1.0);
+  } else if (kThematicGradientMode_SteppedWithDelimiter == gradientMode) {
+    float coord = v_thematicIndex * stepCount;
+    float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
+    float value = min(line, 1.0);
+    rgba.rgb *= value;
+  }
+
+  return rgba;
 `;
 
 // fwidth does not function for point clouds, so we work around the limitation with a less-than-ideal rendering of isolines and delimiters
 // using a tolerance not based on neighboring fragments.
 const delimiterToleranceForPointClouds = `0.025`; // / (stepCount * 40.0)`;
 const applyThematicColorPostludeForPointClouds = `
-float gradientMode = u_thematicSettings.x;
-float stepCount = u_thematicSettings.z;
+  float gradientMode = u_thematicSettings.x;
+  float stepCount = u_thematicSettings.z;
 
-vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+  vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
 
-if (kThematicGradientMode_IsoLines == gradientMode) {
-  float coord = v_thematicIndex * stepCount;
-  float line = abs(fract(coord - 0.5) - 0.5);
-  if (line > ${delimiterToleranceForPointClouds})
-    discard;
-} else if (kThematicGradientMode_SteppedWithDelimiter == gradientMode) {
-  float coord = v_thematicIndex * stepCount;
-  float line = abs(fract(coord - 0.5) - 0.5);
-  float value = min(line, 1.0);
-  if (line < ${delimiterToleranceForPointClouds} && value < 1.0)
-    rgba.rgb *= 0.0;
-}
+  if (kThematicGradientMode_IsoLines == gradientMode) {
+    float coord = v_thematicIndex * stepCount;
+    float line = abs(fract(coord - 0.5) - 0.5);
+    if (line > ${delimiterToleranceForPointClouds})
+      discard;
+  } else if (kThematicGradientMode_SteppedWithDelimiter == gradientMode) {
+    float coord = v_thematicIndex * stepCount;
+    float line = abs(fract(coord - 0.5) - 0.5);
+    float value = min(line, 1.0);
+    if (line < ${delimiterToleranceForPointClouds} && value < 1.0)
+      rgba.rgb *= 0.0;
+  }
 
-return rgba;
+  return rgba;
 `;
 
 function _getShader(isPointCloud: boolean, isTerrainMesh: boolean) {
@@ -190,24 +191,23 @@ function _getShader(isPointCloud: boolean, isTerrainMesh: boolean) {
 export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShade: boolean = false): string {
   const modelPos = instanced ? "(g_instancedRtcMatrix * rawPosition)" : "rawPosition";
   const heightMode = `
-if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
-  vec3 u = (u_modelToWorld * ${modelPos}).xyz;
-  vec3 v = u_thematicAxis;
-  vec3 proju = (dot(v, u) / dot(v, v)) * v;
-  vec3 a = v * u_thematicRange.s;
-  vec3 b = v * u_thematicRange.t;
-  vec3 c = proju;
-  v_thematicIndex = findFractionalPositionOnLine(a, b, c);
-}
-`;
-  const hillShadeMode = `else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
+  if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
+    vec3 u = (u_modelToWorld * ${modelPos}).xyz;
+    vec3 v = u_thematicAxis;
+    vec3 proju = (dot(v, u) / dot(v, v)) * v;
+    vec3 a = v * u_thematicRange.s;
+    vec3 b = v * u_thematicRange.t;
+    vec3 c = proju;
+    v_thematicIndex = findFractionalPositionOnLine(a, b, c);
+  }`;
+  const hillShadeMode = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
     vec2 tc = g_vertexBaseCoords;
     tc.x += 3.0 * g_vert_stepX;
     vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
     vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
     vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
     v_thematicIndex = norm.z;
-  } `;
+  }`;
   return skipSlopeAndHillShade ? heightMode : heightMode + hillShadeMode;
 }
 
@@ -215,7 +215,7 @@ if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
 const findFractionalPositionOnLine = `
   float abDist = distance(a, b);
   return dot(b - a, c - a) / (abDist * abDist);
-  `;
+`;
 
 function addThematicDisplayModeConstants(builder: ShaderBuilder) {
   builder.addDefine("kThematicDisplayMode_Height", ThematicDisplayMode.Height.toFixed(1));

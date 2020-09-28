@@ -61,10 +61,11 @@ function computeFeatureIndex(instanced: boolean): string {
 }
 function getFeatureIndex(instanced: boolean): string {
   return `
-  float getFeatureIndex() {
-    g_featureIndex = ${computeFeatureIndex(instanced)};
-    return decodeUInt24(g_featureIndex);
-  }`;
+float getFeatureIndex() {
+  ${computeFeatureIndex(instanced)};
+  return decodeUInt24(g_featureIndex);
+}
+`;
 }
 
 // Returns true if the specified flag is not globally overridden and is set in flags
@@ -663,12 +664,12 @@ vec4 doApplyFlash(float flags, vec4 baseColor) {
 `;
 
 const doClassifierFlash = `
-  vec4 applyClassifierFlash(vec4 baseColor) {
-    const float maxBrighten = 0.2;
-    float brighten = u_flash_intensity * maxBrighten;
-    vec3 brightRgb = baseColor.rgb + brighten;
-    return vec4(brightRgb, baseColor.a);
-  }
+vec4 applyClassifierFlash(vec4 baseColor) {
+  const float maxBrighten = 0.2;
+  float brighten = u_flash_intensity * maxBrighten;
+  vec3 brightRgb = baseColor.rgb + brighten;
+  return vec4(brightRgb, baseColor.a);
+}
 `;
 
 /** @internal */

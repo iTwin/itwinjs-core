@@ -48,14 +48,14 @@ describe("Variable declaration tests", () => {
 
     const parts = [
       "uniform highp float x;",
-      "varying int z;",
-      "const int w = 123;\n",
+      "const int w = 123;",
+      "varying int z;\n",
     ];
 
     const partsWebGL2 = [
       "uniform highp float x;",
-      "out int z;",
-      "const int w = 123;\n",
+      "const int w = 123;",
+      "out int z;\n",
     ];
 
     const expectedDecls = (System.instance.capabilities.isWebGL2 ? partsWebGL2.join("\n") : parts.join("\n"));

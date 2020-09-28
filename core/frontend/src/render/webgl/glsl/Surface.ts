@@ -37,9 +37,9 @@ import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addPr
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
-  vec4 sampleSurfaceTexture() {
-    return TEXTURE(s_texture, v_texCoord);
-  }
+vec4 sampleSurfaceTexture() {
+  return TEXTURE(s_texture, v_texCoord);
+}
 `;
 
 const applyMaterialColor = `
@@ -72,13 +72,15 @@ void decodeMaterialParams(vec4 params) {
 
   vec2 specGB = unpackAndNormalize2Bytes(params.z);
   mat_specular = vec4(texAndSpecR.y, specGB, params.w);
-}`;
+}
+`;
 
 const decodeMaterialColor = `
 void decodeMaterialColor(vec4 rgba) {
   mat_rgb = vec4(rgba.rgb, float(rgba.r >= 0.0));
   mat_alpha = vec2(rgba.a, float(rgba.a >= 0.0));
-}`;
+}
+`;
 
 // defaults: (0x6699, 0xffff, 0xffff, 13.5)
 const computeMaterialParams = `
@@ -113,7 +115,8 @@ void readMaterialAtlas() {
   g_materialParams.y = 255.0 + specularRgb.r * 256.0;
   g_materialParams.z = specularRgb.g + specularRgb.b * 256.0;
   g_materialParams.w = specularExponent;
-}`;
+}
+`;
 
 const computeMaterial = `
   if (u_surfaceFlags[kSurfaceBitIndex_HasMaterialAtlas]) {
@@ -307,21 +310,14 @@ const initSurfaceFlags = `
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial] ? kSurfaceMask_IgnoreMaterial : 0.0;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideAlpha] ? kSurfaceMask_OverrideAlpha : 0.0;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideRgb] ? kSurfaceMask_OverrideRgb : 0.0;
- `;
+`;
 const initSurfaceFlags2 = `
   surfaceFlags = u_surfaceFlags[kSurfaceBitIndex_HasTexture] ? kSurfaceMask_HasTexture : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_MultiplyAlpha] ? kSurfaceMask_MultiplyAlpha : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial] ? kSurfaceMask_IgnoreMaterial : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideAlpha] ? kSurfaceMask_OverrideAlpha : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideRgb] ? kSurfaceMask_OverrideRgb : 0u;
- `;
-
-const getSurfaceFlags = `
-  return surfaceFlags;
 `;
-const getSurfaceFlags2 = `
-  return float(surfaceFlags);
- `;
 
 const computeBaseSurfaceFlags = `
   bool hasTexture = u_surfaceFlags[kSurfaceBitIndex_HasTexture];
@@ -353,12 +349,8 @@ const computeColorSurfaceFlags = `
   }
 `;
 
-const returnSurfaceFlags = `
-  return surfaceFlags;
-`;
-const returnSurfaceFlags2 = `
-  return float(surfaceFlags);
-`;
+const returnSurfaceFlags = "  return surfaceFlags;\n";
+const returnSurfaceFlags2 = "  return float(surfaceFlags);\n";
 
 const computeSurfaceFlags = computeBaseSurfaceFlags;
 const computeSurfaceFlagsWithColor = computeBaseSurfaceFlags + computeColorSurfaceFlags;
@@ -442,12 +434,10 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
   addSurfaceFlagsLookup(builder.vert);
   addSurfaceFlagsLookup(builder.frag);
 
-  let compute: string;
-  if (System.instance.capabilities.isWebGL2) {
-    compute = initSurfaceFlags2 + (withFeatureOverrides ? (withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags) + returnSurfaceFlags2 : getSurfaceFlags2);
-  } else {
-    compute = initSurfaceFlags + (withFeatureOverrides ? (withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags) + returnSurfaceFlags : getSurfaceFlags);
-  }
+  let compute = (System.instance.capabilities.isWebGL2 ? initSurfaceFlags2 : initSurfaceFlags);
+  if (withFeatureOverrides)
+    compute += `${withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags}\n`;
+  compute += (System.instance.capabilities.isWebGL2 ? returnSurfaceFlags2 : returnSurfaceFlags);
   builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", compute);
 
   if (System.instance.capabilities.isWebGL2)

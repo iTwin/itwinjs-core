@@ -251,7 +251,8 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
   const computeFeatureAndMaterialIndex = `
   vec2 tc = g_vertexBaseCoords;
   tc.x += g_vert_stepX * 2.0;
-  g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);`;
+  g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+`;
 
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
   if (!vert.usesInstancedGeometry) {
@@ -262,11 +263,10 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
 
 // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
 // Also place it outside NDC range (for GL_POINTS)
-const discardVertex = `
-{
-  gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-  return;
-}
+const discardVertex = ` {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    return;
+  }
 `;
 
 /** @internal */

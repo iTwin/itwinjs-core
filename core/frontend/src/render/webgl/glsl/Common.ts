@@ -158,14 +158,13 @@ export function addEyeSpace(builder: ProgramBuilder) {
 
 /** @internal */
 export const addUInt32s = `
-  vec4 addUInt32s(vec4 a, vec4 b)
-      {
-      vec4 c = a + b;
-      if (c.x > 255.0) { c.x -= 256.0; c.y += 1.0; }
-      if (c.y > 255.0) { c.y -= 256.0; c.z += 1.0; }
-      if (c.z > 255.0) { c.z -= 256.0; c.w += 1.0; }
-      return c;
-      }
+vec4 addUInt32s(vec4 a, vec4 b) {
+  vec4 c = a + b;
+  if (c.x > 255.0) { c.x -= 256.0; c.y += 1.0; }
+  if (c.y > 255.0) { c.y -= 256.0; c.z += 1.0; }
+  if (c.z > 255.0) { c.z -= 256.0; c.w += 1.0; }
+  return c;
+}
 `;
 
 /** Expects flags in range [0...256] with no fraction; and bit is [0..31] with no fraction.
@@ -179,32 +178,24 @@ export const addUInt32s = `
  * @internal
  */
 const nthBitSet = `
-bool nthBitSet(float flags, float n) {
-  return fract(flags*n) >= 0.5;
-}
+bool nthBitSet(float flags, float n) { return fract(flags*n) >= 0.5; }
 `;
 /** Version for WebGL2 can just convert flags to a uint and bitwise-test a 0-31 uint bit.
  * @internal
  */
 const nthBitSet2 = `
-bool nthBitSet(float flags, uint n) {
-  return 0u != (uint(flags) & n);
-}
+bool nthBitSet(float flags, uint n) { return 0u != (uint(flags) & n); }
 `;
 
 /** For when we want a 1.0 or 0.0 answer the choose operator should be a single instruction.
  * @internal
  */
 const extractNthBit = `
-float extractNthBit(float flags, float n) {
-  return nthBitSet(flags, n) ? 1.0 : 0.0;
-}
+float extractNthBit(float flags, float n) { return nthBitSet(flags, n) ? 1.0 : 0.0; }
 `;
 /** @internal */
 const extractNthBit2 = `
-float extractNthBit(float flags, uint n) {
-  return 0u != (uint(flags) & n) ? 1.0 : 0.0;
-}
+float extractNthBit(float flags, uint n) { return 0u != (uint(flags) & n) ? 1.0 : 0.0; }
 `;
 
 /** @internal */
