@@ -4949,7 +4949,17 @@ export interface TreeProps extends CommonProps {
 }
 
 // @beta
-export function TreeRenderer(props: TreeRendererProps): JSX.Element;
+export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    scrollToNode(nodeId: string, alignment?: Alignment): void;
+    }
+
+// @beta
+export interface TreeRendererAttributes {
+    scrollToNode(nodeId: string, alignment?: Alignment): void;
+}
 
 // @beta
 export interface TreeRendererContext {

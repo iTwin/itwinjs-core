@@ -492,7 +492,8 @@ public;TreeNodeProps
 beta;TreeNodeRenderer: React.MemoExoticComponent
 beta;TreeNodeRendererProps 
 public;TreeProps 
-beta;TreeRenderer(props: TreeRendererProps): JSX.Element
+beta;TreeRenderer 
+beta;TreeRendererAttributes
 beta;TreeRendererContext
 beta;TreeRendererProps
 beta;TreeSelectionChange
