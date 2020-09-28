@@ -28,6 +28,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
         border: none;
         margin: 0 2px;
         color: $buic-foreground-body;
+        background-color: transparent;
 
         &:hover {
           color: $hovered-icon-color;

@@ -87,11 +87,14 @@ describe("<FocusTrap />", () => {
     clock.tick(1000);
     await Promise.resolve();
 
+    let activeElement = document.activeElement as HTMLElement;
+    expect(activeElement.id).to.eq("test1");
+
     const firstDiv = component.getByTestId("focus-trap-div");
     expect(firstDiv).to.exist;
     firstDiv.focus();
 
-    const activeElement = document.activeElement as HTMLElement;
+    activeElement = document.activeElement as HTMLElement;
     expect(activeElement.id).to.eq("test3");
   });
 

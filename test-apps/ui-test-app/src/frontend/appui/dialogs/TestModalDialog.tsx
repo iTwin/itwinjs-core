@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { LoremIpsum } from "lorem-ipsum";
-import { Checkbox, Dialog, DialogButtonType } from "@bentley/ui-core";
+import { Checkbox, Dialog, DialogButtonType, Input } from "@bentley/ui-core";
 
 export interface TestModalDialogProps {
   opened: boolean;
@@ -16,6 +16,7 @@ export interface TestModalDialogState {
   movable: boolean;
   resizable: boolean;
   overlay: boolean;
+  testInput: string;
 }
 
 export class TestModalDialog extends React.Component<TestModalDialogProps, TestModalDialogState> {
@@ -29,12 +30,18 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
       movable: false,
       resizable: false,
       overlay: true,
+      testInput: "",
     };
 
     const lorem = new LoremIpsum();
     for (let i = 0; i < 4; i++)
       this._paragraphs.push(lorem.generateWords(40));
   }
+
+  private handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    this.setState({ testInput: e.target.value });
+  }
+
   public render(): JSX.Element {
     // cspell:disable
     return (
@@ -55,11 +62,14 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
         maxHeight={"600px"}
         maxWidth={"1000px"}
         onOutsideClick={this._handleCancel}
+        trapFocus={true}
       >
         <p>{this._paragraphs[0]}</p>
         <p>{this._paragraphs[1]}</p>
         <p>{this._paragraphs[2]}</p>
         <p>{this._paragraphs[3]}</p>
+        {/* Input box below is used to test focus trap processing */}
+        <Input onChange={this.handleChange} />
         <p>
           <Checkbox checked={this.state.movable} label="Movable" onChange={(_) => { this.setState((prevState) => ({ movable: !prevState.movable })); }} />
           <br />

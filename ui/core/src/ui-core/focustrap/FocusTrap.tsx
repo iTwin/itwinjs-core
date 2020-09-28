@@ -14,10 +14,9 @@ import { UiCore } from "../UiCore";
 
 function isFocusable(element: HTMLElement): boolean {
   // istanbul ignore next
-  if (!element)
+  if (!element || element.tabIndex < 0)
     return false;
 
-  // istanbul ignore next
   if (element.tabIndex > 0 || (element.tabIndex === 0 && element.getAttribute("tabIndex") !== null)) {
     return true;
   }
@@ -37,6 +36,7 @@ function isFocusable(element: HTMLElement): boolean {
     case "SELECT":
     case "TEXTAREA":
       return true;
+    // istanbul ignore next
     default:
       return false;
   }
@@ -145,6 +145,7 @@ export function FocusTrap(props: FocusTrapProps) {
   const focusContainer = React.useRef<HTMLDivElement | null>(null);
   const isInitialMount = React.useRef(true);
 
+  // Run on initial mount and when dependencies change. which could happen often.
   React.useEffect(() => {
     // istanbul ignore else
     if (isInitialMount.current) {
@@ -163,11 +164,15 @@ export function FocusTrap(props: FocusTrapProps) {
         }
       }
     }
+  }, [props.children, props.initialFocusElement, props.active, props.returnFocusOnDeactivate]);
+
+  // Return function to run only when FocusTrap is unmounted to restore focus
+  React.useEffect(() => {
     return () => {
-      if (restoreFocusElement.current && props.active)
+      if (restoreFocusElement.current)
         (restoreFocusElement.current as HTMLElement).focus({ preventScroll: true });
     };
-  }, [props.children, props.initialFocusElement, props.active, props.returnFocusOnDeactivate]);
+  }, []);
 
   // this is hit if Shift tab is used.
   const cycleFocusToEnd = React.useCallback((event: React.FocusEvent<HTMLDivElement>) => {

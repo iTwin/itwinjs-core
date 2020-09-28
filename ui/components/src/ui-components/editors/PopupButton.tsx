@@ -123,8 +123,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
         <Popup className="components-popup-button-popup" isOpen={this.state.showPopup} position={RelativePosition.Bottom}
           onClose={this._closePopup} onEnter={this.props.onEnter} closeOnEnter={this.props.closeOnEnter} target={this._buttonRef.current}
           showArrow={showArrow} showShadow={showShadow}
-        /** Get an onBlur when using a key in Textarea or mouse movement in  Slider */
-        /* focusTarget={this.props.focusTarget} moveFocus={true} */
+          focusTarget={this.props.focusTarget} moveFocus={true}
         >
           {this.props.children}
         </Popup>
