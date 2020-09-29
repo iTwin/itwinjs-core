@@ -459,6 +459,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "eslint-plugin-jam3",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "eslint-plugin-jsx-a11y",
       "allowedCategories": [ "tools" ]
     },
