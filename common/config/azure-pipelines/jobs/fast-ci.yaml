@@ -7,7 +7,8 @@ jobs:
   - template: ci-core.yaml
     parameters:
       name: Node_12
-      nodeVersion: 12.x
+      nodeVersion: 12.17.0
       pool:
-        demands: Agent.OS -equals $(platform)
+        demands:
+        - Agent.OS -equals $(platform)
 

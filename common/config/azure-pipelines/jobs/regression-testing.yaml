@@ -8,14 +8,14 @@
 
 jobs:
 - template: ci-core.yaml
-    parameters:
+  parameters:
     name: Node_10_16
     nodeVersion: 10.16.0
     pool:
-        demands: Agent.OS -equals $(platform)
+      demands: Agent.OS -equals $(platform)
 - template: ci-core.yaml
-    parameters:
+  parameters:
     name: Node_10
     nodeVersion: 10.x
     pool:
-        demands: Agent.OS -equals $(platform)
+      demands: Agent.OS -equals $(platform)
