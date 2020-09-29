@@ -476,7 +476,7 @@ export class FormDataManagementClient extends WsgClient {
     requestContext.enter();
     const baseUrl = await this.getUrl(requestContext);
     let url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/DynamicSchema/${className}?$select=*,Forms_EC_Mapping.Form.*&$skip=${skip}&$top=${top}`;
-
+    url += "&api.filtersettings=CaseInsensitive";
     if (filter !== undefined) {
       const filterString =
         typeof filter === "string"
@@ -620,7 +620,6 @@ export class FormDataManagementClient extends WsgClient {
   ) {
     requestContext.enter();
     let url = `/Repositories/Bentley.Forms--${projectId}/DynamicSchema/${className}/$count`;
-
     if (filter !== undefined) {
       const filterString =
         typeof filter === "string"
@@ -628,6 +627,7 @@ export class FormDataManagementClient extends WsgClient {
           : FormDataManagementClient.buildFormDataFilter(filter);
       url += `?$filter=${filterString}`;
     }
+    url += "&api.filtersettings=CaseInsensitive";
 
     return this.getInstances<InstanceCount>(requestContext, InstanceCount, url);
   }

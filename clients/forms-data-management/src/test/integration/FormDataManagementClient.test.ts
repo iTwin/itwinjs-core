@@ -15,7 +15,7 @@ import { TestConfig } from "../TestConfig";
 
 chai.should();
 
-describe.skip("FormDataManagementClient", () => {
+describe("FormDataManagementClient", () => {
   let requestContext: AuthorizedClientRequestContext;
   const formDataManagementClient: FormDataManagementClient = new FormDataManagementClient();
   const projectId: string = "0f4cf9a5-5b69-4189-b7a9-60f6a5a369a7";
