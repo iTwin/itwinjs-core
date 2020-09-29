@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Cartographic, IModelError } from "@bentley/imodeljs-common";
-import { AccessToken, getArrayBuffer, getJson } from "@bentley/itwin-client";
+import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
@@ -21,7 +21,7 @@ import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, RealityTile, RealityTileLoader, RealityTileParams,
+  BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
   TileTreeReference, TileTreeSet, TileTreeSupplier,
 } from "./internal";
@@ -355,6 +355,7 @@ export namespace RealityModelTileTree {
     tilesetToDbTransform?: TransformProps;
     name?: string;
     classifiers?: SpatialClassifiers;
+    requestAuthorization?: string;
   }
 
   export abstract class Reference extends TileTreeReference {
@@ -534,6 +535,7 @@ export class RealityModelTileClient {
   private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
   private readonly _token?: AccessToken;     // Only used for accessing PW Context Share.
   private static _client = new RealityDataClient();  // WSG Client for accessing Reality Data on PW Context Share
+  private _requestAuthorization?: string;      // Request authorization for non PW ContextShare requests.
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
@@ -584,7 +586,7 @@ export class RealityModelTileClient {
     return props;
   }
 
-  // This is to set the root url from the provided root document path.
+  // This is to set the root url fromt the provided root document path.
   // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
   // otherwise the full path to root document is given.
   // The base URL contains the base URL from which tile relative path are constructed.
@@ -596,6 +598,16 @@ export class RealityModelTileClient {
       this._baseUrl = "";
     else
       this._baseUrl = `${urlParts.join("/")}/`;
+  }
+
+  private async _doRequest(url: string, responseType: string, requestContext: FrontendRequestContext): Promise<any> {
+    const options: RequestOptions = {
+      method: "GET",
+      responseType,
+      headers: this._requestAuthorization ? { authorization: this._requestAuthorization } : undefined,
+    };
+    const data = await request(requestContext, url, options);
+    return data.body;
   }
 
   // ### TODO. Technically the url should not be required. If the reality data encapsulated is stored on PW Context Share then
@@ -613,35 +625,48 @@ export class RealityModelTileClient {
     }
 
     // The following is only if the reality data is not stored on PW Context Share.
+    const cesiumSuffix = "$CesiumIonAsset=";
+    const cesiumIndex = url.indexOf(cesiumSuffix);
+    if (cesiumIndex >= 0) {
+      const cesiumIonString = url.slice(cesiumIndex + cesiumSuffix.length);
+      const cesiumParts = cesiumIonString.split(":");
+      const assetId = parseInt(cesiumParts[0], 10);
+      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(assetId, cesiumParts[1]);
+      if (tokenAndUrl.url && tokenAndUrl.token) {
+        url = tokenAndUrl.url;
+        this._requestAuthorization = `Bearer ${tokenAndUrl.token}`;
+      }
+    }
+
+    // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
-    const requestContext = new FrontendRequestContext();
-    return getJson(requestContext, url);
+    return this._doRequest(url, "json", new FrontendRequestContext(""));
   }
 
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(url: string): Promise<any> {
-    const requestContext = this._token ? new AuthorizedFrontendRequestContext(this._token) : new FrontendRequestContext();
-    requestContext.enter();
-
-    if (this.rdsProps && this._token) {
+    const useRds = this.rdsProps !== undefined && this._token !== undefined;
+    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!) : new FrontendRequestContext("");
+    if (useRds) {
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
       requestContext.enter();
     }
 
     const tileUrl = this._baseUrl + url;
-    if (undefined !== this.rdsProps && undefined !== this._token)
+    if (useRds)
       return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
-    return getArrayBuffer(requestContext, tileUrl);
+    return this._doRequest(tileUrl, "arraybuffer", requestContext);
   }
 
   /**
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(url: string): Promise<any> {
-    const requestContext = this._token ? new AuthorizedFrontendRequestContext(this._token) : new FrontendRequestContext();
+    const useRds = this.rdsProps !== undefined && this._token !== undefined;
+    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!) : new FrontendRequestContext();
     requestContext.enter();
 
     if (this.rdsProps && this._token) {
@@ -654,6 +679,6 @@ export class RealityModelTileClient {
     if (undefined !== this.rdsProps && undefined !== this._token)
       return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
-    return getJson(requestContext, tileUrl);
+    return this._doRequest(tileUrl, "json", requestContext);
   }
 }

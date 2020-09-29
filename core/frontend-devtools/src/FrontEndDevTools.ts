@@ -21,7 +21,7 @@ import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 import { ClearModelAppearanceOverrides, SetModelColorTool, SetModelEmphasizedTool, SetModelIgnoresMaterialsTool, SetModelLineCodeTool, SetModelLineWeightTool, SetModelLocateTool, SetModelTransparencyTool } from "./tools/ModelAppearanceTools";
 import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools";
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
-import { AttachRealityModelTool, ClearRealityModelAppearanceOverrides, SaveRealityModelTool, SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool } from "./tools/RealityModelTools";
+import { AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, SaveRealityModelTool, SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
 import { SetAASamplesTool, ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect } from "./tools/RenderTargetTools";
@@ -143,6 +143,7 @@ export class FrontendDevTools {
       SetModelIgnoresMaterialsTool,
       ClearRealityModelAppearanceOverrides,
       ClearModelAppearanceOverrides,
+      AttachCesiumAssetTool,
     ];
 
     for (const tool of tools)
