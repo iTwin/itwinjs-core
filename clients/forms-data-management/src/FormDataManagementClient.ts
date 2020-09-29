@@ -16,9 +16,7 @@ import {
   RequestOptions,
 } from "@bentley/itwin-client";
 
-/** FormDefinition
- * @internal
- */
+/** @internal */
 export type FormFilterArray = Array<{
   name: string;
   value: any;
@@ -29,9 +27,7 @@ export type FormFilterArray = Array<{
   classPropertyName: "className",
 })
 
-/**
- * @internal
- */
+/** @internal */
 export class FormDefinition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Status")
   public status?: string;
@@ -87,9 +83,7 @@ export class FormDefinition extends WsgInstance {
   classPropertyName: "className",
 })
 
-/**
- * @internal
- */
+/** @internal */
 export class ProjectMember extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public Name?: string;
@@ -112,9 +106,7 @@ export class ProjectMember extends WsgInstance {
   classPropertyName: "className",
 })
 
-/**
- * @internal
- */
+/** @internal */
 export class ProjectStats extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Count")
   public Count?: number;
@@ -159,9 +151,7 @@ class InstanceCount extends WsgInstance {
   classPropertyName: "className",
 })
 
-/**
- * @internal
- */
+/** @internal */
 export class FormInstanceData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties")
   public properties?: any;
@@ -187,9 +177,7 @@ export class FormInstanceData extends WsgInstance {
   classPropertyName: "className",
 })
 
-/**
- * @internal
- */
+/** @public */
 export class WorkflowDefinition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Discipline")
   public Discipline?: string;
@@ -205,9 +193,7 @@ export class WorkflowDefinition extends WsgInstance {
   public UninitializedState?: WorkflowStatus;
 }
 
-/**
- * @internal
- */
+/** @public */
 export class WorkflowStatus extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Id")
   public Id?: string;
@@ -223,9 +209,7 @@ export class WorkflowStatus extends WsgInstance {
   public Closed?: boolean;
 }
 
-/**
- * @internal
- */
+/** @public */
 export class WorkflowTransition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Start")
   public Start?: string;
@@ -247,9 +231,7 @@ export class WorkflowTransition extends WsgInstance {
   public ButtonColor?: number;
 }
 
-/**
- * @internal
- */
+/** @internal */
 export class PropertyAssignment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Property")
   public Property?: string;
@@ -341,6 +323,7 @@ class AuditValue extends WsgInstance {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
+/** @internal */
 export class FormProperties extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
