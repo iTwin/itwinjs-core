@@ -33,7 +33,7 @@ Note: Values of `ThematicDisplayMode.Slope` or `ThematicDisplayMode.HillShade` f
 ![thematic rendering applied to background terrain](./assets/thematicTerrain.png)
 <p align="center">Thematic rendering applied to background terrain</p>
 
-##Presentation
+## Presentation
 
 ### A new rule to override default property category
 
