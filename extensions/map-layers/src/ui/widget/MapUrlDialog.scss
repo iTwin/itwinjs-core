@@ -8,9 +8,6 @@ $divider-color: $buic-background-toolbutton-stroke;
 $hovered-icon-color: $buic-foreground-primary-tone;
 
 .map-layer-source-url {
-  * {
-    box-sizing: border-box;
-  }
 
   height: 100%;
   width: 100%;
@@ -30,5 +27,11 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   .map-layer-source-editor{
     width: 100%;
     height: 100%;
+  }
+  label{
+    grid-column-start: 2;
+  }
+  .map-layer-warning-icon{
+    margin-left: 3%;
   }
 }

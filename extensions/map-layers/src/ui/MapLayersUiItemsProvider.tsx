@@ -33,6 +33,7 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
 }
 export interface MapTypesOptions {
   readonly supportTileUrl: boolean;
+  readonly supportWmsAuthentication: boolean;
 }
 export interface MapLayerOptions {
   hideExternalMapLayers?: boolean;

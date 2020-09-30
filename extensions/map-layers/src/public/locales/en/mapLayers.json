@@ -32,7 +32,16 @@
     "StoreOnProjectSettings": "Store on Project Settings",
     "Type": "Type",
     "URL": "URL",
-    "ValidationError": "Map layer validation failed for URL:"
+    "ValidationError": "Map layer validation failed for URL:",
+    "WarningAuthenticationSettings": "Connection that require an authentication can't be save for right now"
+  },
+  "WmsAuthenticationInputs": {
+    "Authentication": "Authentication",
+    "Basic": "Basic",
+    "NoAuth": "No authentication",
+    "Password": "Password",
+    "Username": "Username",
+    "WarningProtocolLabel": "The source's protocol needs to be https in order to use the authentication system"
   },
   "Messages": {
     "NotSupported": "No active viewport or geo-located Imodel available.",
