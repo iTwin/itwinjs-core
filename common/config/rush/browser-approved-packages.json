@@ -463,6 +463,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "eslint-plugin-jsdoc",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "eslint-plugin-jsx-a11y",
       "allowedCategories": [ "tools" ]
     },
