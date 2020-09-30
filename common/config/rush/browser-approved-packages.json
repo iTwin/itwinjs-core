@@ -95,10 +95,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodel-select-react",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/imodelhub-client",
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -419,14 +415,6 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
-      "name": "electron-builder",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "electron-devtools-installer",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "enzyme",
       "allowedCategories": [ "frontend" ]
     },
@@ -635,10 +623,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "minimist",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "mobx",
       "allowedCategories": [ "internal" ]
     },
@@ -792,7 +776,7 @@
     },
     {
       "name": "react-resize-detector",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-router-dom",
