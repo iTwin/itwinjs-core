@@ -10,10 +10,10 @@ import { Config } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext,
   ECJsonTypeMap,
-  WsgClient,
-  WsgInstance,
   request,
   RequestOptions,
+  WsgClient,
+  WsgInstance,
 } from "@bentley/itwin-client";
 
 /** @internal */
@@ -86,19 +86,19 @@ export class FormDefinition extends WsgInstance {
 /** @internal */
 export class ProjectMember extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
-  public Name?: string;
+  public name?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UserId")
-  public UserId?: string;
+  public userId?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Email")
-  public Email?: string;
+  public email?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ProjectId")
-  public ProjectId?: string;
+  public projectId?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.OrganizationGUID")
-  public OrganizationGUID?: string;
+  public organizationGUID?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.OrganizationName")
-  public OrganizationName?: string;
+  public organizationName?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.IsRole")
-  public IsRole?: boolean;
+  public isRole?: boolean;
 }
 
 @ECJsonTypeMap.classToJson("wsg", "Connect.Stats", {
@@ -109,29 +109,29 @@ export class ProjectMember extends WsgInstance {
 /** @internal */
 export class ProjectStats extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Count")
-  public Count?: number;
+  public count?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Open")
-  public Open?: number;
+  public open?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Closed")
-  public Closed?: number;
+  public closed?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Assigned")
-  public Assigned?: number;
+  public assigned?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.New")
-  public New?: number;
+  public new?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Overdue")
-  public Overdue?: number;
+  public overdue?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.NearDeadline")
-  public NearDeadline?: number;
+  public nearDeadline?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Upcoming")
-  public Upcoming?: number;
+  public upcoming?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssignedNew")
-  public AssignedNew?: number;
+  public assignedNew?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssignedOverdue")
-  public AssignedOverdue?: number;
+  public assignedOverdue?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssignedNearDeadline")
-  public AssignedNearDeadline?: number;
+  public assignedNearDeadline?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssignedUpcoming")
-  public AssignedUpcoming?: number;
+  public assignedUpcoming?: number;
 }
 
 @ECJsonTypeMap.classToJson("wsg", "Bentley_Standard_Classes.InstanceCount", {
@@ -177,114 +177,115 @@ export class FormInstanceData extends WsgInstance {
   classPropertyName: "className",
 })
 
-/** @public */
+/** @internal */
 export class WorkflowDefinition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Discipline")
-  public Discipline?: string;
+  public discipline?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Classification")
-  public Classification?: string;
+  public classification?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.States")
-  public States?: WorkflowStatus[];
+  public states?: WorkflowStatus[];
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Transitions")
-  public Transitions?: WorkflowTransition[];
+  public transitions?: WorkflowTransition[];
   @ECJsonTypeMap.propertyToJson("wsg", "properties.StartingTransitions")
-  public StartingTransitions?: WorkflowTransition[];
+  public startingTransitions?: WorkflowTransition[];
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UninitializedState")
-  public UninitializedState?: WorkflowStatus;
+  public uninitializedState?: WorkflowStatus;
 }
 
-/** @public */
-export class WorkflowStatus extends WsgInstance {
+class WorkflowStatus extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Id")
-  public Id?: string;
+  public id?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
-  public Name?: string;
+  public name?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Color")
-  public Color?: string;
+  public color?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.EditableProperties")
-  public EditableProperties?: string[];
+  public editableProperties?: string[];
   @ECJsonTypeMap.propertyToJson("wsg", "properties.VisibileTo")
-  public VisibileTo?: string[];
+  public visibileTo?: string[];
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Closed")
-  public Closed?: boolean;
+  public closed?: boolean;
 }
 
-/** @public */
-export class WorkflowTransition extends WsgInstance {
+class WorkflowTransition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Start")
-  public Start?: string;
+  public start?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.End")
-  public End?: string[];
+  public end?: string[];
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Permissions")
-  public Permissions?: string[];
+  public permissions?: string[];
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Conditions")
-  public Conditions?: string;
+  public conditions?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssignedUser")
-  public AssignedUser?: boolean;
+  public assignedUser?: boolean;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.PropertyAssignments")
-  public PropertyAssignments?: PropertyAssignment[];
+  public propertyAssignments?: PropertyAssignment[];
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SubmitDisplay")
-  public SubmitDisplay?: string;
+  public submitDisplay?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Notes")
-  public Notes?: number;
+  public notes?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ButtonColor")
-  public ButtonColor?: number;
+  public buttonColor?: number;
 }
 
-/** @internal */
-export class PropertyAssignment extends WsgInstance {
+class PropertyAssignment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Property")
-  public Property?: string;
+  public property?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Value")
-  public Value?: string;
+  public value?: string;
 }
 
 @ECJsonTypeMap.classToJson("wsg", "DynamicSchema.Attachment", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-class Attachment extends WsgInstance {
+
+/** @internal */
+export class Attachment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
-  public Name?: string;
+  public name?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Size")
-  public Size?: number;
+  public size?: number;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedDate")
-  public CreatedDate?: string;
+  public createdDate?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ModifiedDate")
-  public ModifiedDate?: string;
+  public modifiedDate?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Binding")
-  public Binding?: string;
+  public binding?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Type")
-  public Type?: string;
+  public type?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SasUrl")
-  public SasUrl?: string;
+  public sasUrl?: string;
 }
 
 @ECJsonTypeMap.classToJson("wsg", "DynamicSchema._Comment", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-class Comment extends WsgInstance {
+
+/** @internal */
+export class Comment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Author")
-  public Author?: string;
+  public author?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AuthorId")
-  public AuthorId?: string;
+  public authorId?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedDate")
-  public CreatedDate?: string;
+  public createdDate?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ModifiedDate")
-  public ModifiedDate?: string;
+  public modifiedDate?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Text")
-  public Text?: string;
+  public text?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.IsWorkflowNote")
-  public IsWorkflowNote?: boolean;
+  public isWorkflowNote?: boolean;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FromStateName")
-  public FromStateName?: string;
+  public fromStateName?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ToStateName")
-  public ToStateName?: string;
+  public toStateName?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FromStateId")
-  public FromStateId?: string;
+  public fromStateId?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ToStateId")
-  public ToStateId?: string;
+  public toStateId?: string;
 }
 
 @ECJsonTypeMap.classToJson("wsg", "DynamicSchema.AuditRecord", {
@@ -295,34 +296,37 @@ class Comment extends WsgInstance {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-class AuditRecord extends WsgInstance {
+
+/** @internal */
+export class AuditRecord extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.RecordBy")
-  public RecordBy?: string;
+  public recordBy?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.RecordById")
-  public RecordById?: string;
+  public recordById?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.RecordDate")
-  public RecordDate?: string;
+  public recordDate?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Action")
-  public Action?: string;
+  public action?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Text")
-  public Text?: string;
+  public text?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.IsWorkflowNote")
-  public Values?: AuditValue[];
+  public values?: AuditValue[];
 }
 
 class AuditValue extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.RecordBy")
-  public Property?: string;
+  public property?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.OldValue")
-  public OldValue?: string;
+  public oldValue?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.NewValue")
-  public NewValue?: string;
+  public newValue?: string;
 }
 
 @ECJsonTypeMap.classToJson("wsg", "MetaSchema.ECPropertyDef", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
+
 /** @internal */
 export class FormProperties extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
@@ -359,37 +363,37 @@ export class FormProperties extends WsgInstance {
     "wsg",
     "relationshipInstances[CustomAttributeContainerHasCustomAttribute].relatedInstance[DisplayOptions].properties.Hidden"
   )
-  public Hidden?: boolean;
+  public hidden?: boolean;
 
   @ECJsonTypeMap.propertyToJson(
     "wsg",
     "relationshipInstances[CustomAttributeContainerHasCustomAttribute].relatedInstance[DateTimeInfo].properties.DateTimeComponent"
   )
-  public DateTimeComponent?: string;
+  public dateTimeComponent?: string;
 
   @ECJsonTypeMap.propertyToJson(
     "wsg",
     "relationshipInstances[CustomAttributeContainerHasCustomAttribute].relatedInstance[DateTimeInfo].properties.DateTimeKind"
   )
-  public DateTimeKind?: string;
+  public dateTimeKind?: string;
 
   @ECJsonTypeMap.propertyToJson(
     "wsg",
     "relationshipInstances[CustomAttributeContainerHasCustomAttribute].relatedInstance[PropertyLink].properties.ObjectName"
   )
-  public ObjectName?: string;
+  public objectName?: string;
 
   @ECJsonTypeMap.propertyToJson(
     "wsg",
     "relationshipInstances[CustomAttributeContainerHasCustomAttribute].relatedInstance[PropertyLink].properties.ObjectId"
   )
-  public ObjectId?: string;
+  public objectId?: string;
 
   @ECJsonTypeMap.propertyToJson(
     "wsg",
     "relationshipInstances[CustomAttributeContainerHasCustomAttribute].relatedInstance[PropertyLink].properties.ObjectDate"
   )
-  public ObjectDate?: string;
+  public objectDate?: string;
 }
 
 const PREVIEW_IMAGE_NAME = "DesignReview_Preview.png";
@@ -529,7 +533,7 @@ export class FormDataManagementClient extends WsgClient {
     };
     requestContext.enter();
     const baseUrl = await this.getUrl(requestContext);
-    let url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/DynamicSchema/${className}/${instanceId}?$select=*,Forms_EC_Mapping.Form.*`;
+    const url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/DynamicSchema/${className}/${instanceId}?$select=*,Forms_EC_Mapping.Form.*`;
     const response = await request(requestContext, url, options);
     return response.body.instances ? response.body.instances : response.body;
   }
@@ -652,7 +656,7 @@ export class FormDataManagementClient extends WsgClient {
     projectId: string
   ) {
     requestContext.enter();
-    let url = `/Repositories/Bentley.Forms--${projectId}/CONNECT/ProjectMember`;
+    const url = `/Repositories/Bentley.Forms--${projectId}/CONNECT/ProjectMember`;
     return this.getInstances<ProjectMember>(requestContext, ProjectMember, url);
   }
 
@@ -819,7 +823,7 @@ export class FormDataManagementClient extends WsgClient {
     };
     requestContext.enter();
     const baseUrl = await this.getUrl(requestContext);
-    let url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/DynamicSchema/_Comment`;
+    const url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/DynamicSchema/_Comment`;
     const response = await request(requestContext, url, options);
     return response.body.instances ? response.body.instances : response.body;
   }
@@ -882,7 +886,7 @@ export class FormDataManagementClient extends WsgClient {
     };
     requestContext.enter();
     const baseUrl = await this.getUrl(requestContext);
-    let url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/DynamicSchema/Attachment`;
+    const url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/DynamicSchema/Attachment`;
     const response = await request(requestContext, url, options);
     return response.body.instances ? response.body.instances : response.body;
   }
@@ -955,7 +959,7 @@ export class FormDataManagementClient extends WsgClient {
 
     requestContext.enter();
     const baseUrl = await this.getUrl(requestContext);
-    let url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/$changeset`;
+    const url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/$changeset`;
     const response = await request(requestContext, url, options);
     return response.body.instances ? response.body.instances : response.body;
   }
@@ -991,7 +995,7 @@ export class FormDataManagementClient extends WsgClient {
 
     requestContext.enter();
     const baseUrl = await this.getUrl(requestContext);
-    let url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/CONNECT/Template/${templateName}`;
+    const url = `${baseUrl}/Repositories/Bentley.Forms--${projectId}/CONNECT/Template/${templateName}`;
     const response = await request(requestContext, url, options);
     return response.body.instances ? response.body.instances : response.body;
   }
