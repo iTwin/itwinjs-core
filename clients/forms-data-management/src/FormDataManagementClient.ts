@@ -16,6 +16,8 @@ import {
   WsgInstance,
 } from "@bentley/itwin-client";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /** @internal */
 export type FormFilterArray = Array<{
   name: string;
