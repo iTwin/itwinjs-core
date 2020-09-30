@@ -402,7 +402,7 @@ const PREVIEW_IMAGE_NAME = "DesignReview_Preview.png";
 export class FormDataManagementClient extends WsgClient {
   public static readonly searchKey: string = "Forms.WSGService";
   public static readonly configRelyingPartyUri =
-    "imjs_form_data_management_relying_party_uri";
+  "imjs_form_data_management_relying_party_uri";
   public constructor() {
     super("sv1.2");
   }
@@ -450,7 +450,7 @@ export class FormDataManagementClient extends WsgClient {
   public async getFormDefinitions(
     requestContext: AuthorizedClientRequestContext,
     projectId: string,
-    filter?: string | Array<{ name: string; value: string }>,
+    filter?: string | Array<{ name: string, value: string }>,
     format: "json" | "xml" = "json"
   ): Promise<FormDefinition[]> {
     requestContext.enter();
@@ -490,7 +490,7 @@ export class FormDataManagementClient extends WsgClient {
     className: string,
     skip: number = 0,
     top: number = 50,
-    filter?: string | Array<{ name: string; value: string }>
+    filter?: string | Array<{ name: string, value: string }>
   ): Promise<WsgInstance[]> {
     requestContext.enter();
     const baseUrl = await this.getUrl(requestContext);
@@ -505,8 +505,8 @@ export class FormDataManagementClient extends WsgClient {
     }
 
     const accessTokenString:
-      | string
-      | undefined = requestContext.accessToken.toTokenString();
+    | string
+    | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
       method: "GET",
@@ -524,8 +524,8 @@ export class FormDataManagementClient extends WsgClient {
     instanceId: string
   ): Promise<WsgInstance[]> {
     const accessTokenString:
-      | string
-      | undefined = requestContext.accessToken.toTokenString();
+    | string
+    | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
       method: "GET",
@@ -543,10 +543,10 @@ export class FormDataManagementClient extends WsgClient {
    * @param filters an array of property names and the values to filter them against
    */
   public static buildFormDataFilter(
-    filters: Array<{ name: string; value: string }>
+    filters: Array<{ name: string, value: string }>
   ): string {
     let filter = "";
-    filters.forEach((entry: { name: string; value: string }) => {
+    filters.forEach((entry: { name: string, value: string }) => {
       if (filter.length > 0) filter += "+and+";
       filter += `${entry.name}+eq+%27${entry.value}%27`;
     });
@@ -603,8 +603,8 @@ export class FormDataManagementClient extends WsgClient {
     }
 
     const accessTokenString:
-      | string
-      | undefined = requestContext.accessToken.toTokenString();
+    | string
+    | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
       method: "POST",
@@ -791,8 +791,8 @@ export class FormDataManagementClient extends WsgClient {
     comment: string
   ): Promise<WsgInstance[]> {
     const accessTokenString:
-      | string
-      | undefined = requestContext.accessToken.toTokenString();
+    | string
+    | undefined = requestContext.accessToken.toTokenString();
 
     const postBody = {
       className: "_Comment",
@@ -874,8 +874,8 @@ export class FormDataManagementClient extends WsgClient {
     attachmentInstance: object
   ) {
     const accessTokenString:
-      | string
-      | undefined = requestContext.accessToken.toTokenString();
+    | string
+    | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
       method: "POST",
@@ -920,8 +920,8 @@ export class FormDataManagementClient extends WsgClient {
     attachmentId: string
   ) {
     const accessTokenString:
-      | string
-      | undefined = requestContext.accessToken.toTokenString();
+    | string
+    | undefined = requestContext.accessToken.toTokenString();
 
     const postBody = {
       instances: [
@@ -970,8 +970,8 @@ export class FormDataManagementClient extends WsgClient {
     templateName: string = "Design Review Punchlist"
   ) {
     const accessTokenString:
-      | string
-      | undefined = requestContext.accessToken.toTokenString();
+    | string
+    | undefined = requestContext.accessToken.toTokenString();
 
     const postBody = {
       instance: {
