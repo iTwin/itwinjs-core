@@ -218,6 +218,7 @@ dependencies:
   eslint-plugin-deprecation: 1.1.0_eslint@6.8.0+typescript@3.7.5
   eslint-plugin-import: 2.20.1_eslint@6.8.0
   eslint-plugin-jam3: 0.2.3
+  eslint-plugin-jsdoc: 30.6.2_eslint@6.8.0
   eslint-plugin-jsx-a11y: 6.3.1_eslint@6.8.0
   eslint-plugin-prefer-arrow: 1.1.7_eslint@6.8.0
   eslint-plugin-react: 7.19.0_eslint@6.8.0
@@ -5443,6 +5444,12 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==
+  /comment-parser/0.7.6:
+    dev: false
+    engines:
+      node: '>= 6.0.0'
+    resolution:
+      integrity: sha512-GKNxVA7/iuTnAqGADlTWX4tkhzxZKXp5fLJqKTlQLHkE65XDUKutZ3BHaJC5IGcper2tT3QRD1xr4o3jNpgXXg==
   /common-tags/1.8.0:
     dev: false
     engines:
@@ -7114,6 +7121,23 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-aW1L8C96fsRji0c8ZAgqtJVIu5p2IaNbeT2kuHNS6p5tontAVK1yP1W4ECjq3BHOv/GgAWvBVIx7kQI0kG2Rew==
+  /eslint-plugin-jsdoc/30.6.2_eslint@6.8.0:
+    dependencies:
+      comment-parser: 0.7.6
+      debug: 4.2.0
+      eslint: 6.8.0
+      jsdoctypeparser: 9.0.0
+      lodash: 4.17.20
+      regextras: 0.7.1
+      semver: 7.3.2
+      spdx-expression-parse: 3.0.1
+    dev: false
+    engines:
+      node: '>=10'
+    peerDependencies:
+      eslint: ^6.0.0 || ^7.0.0
+    resolution:
+      integrity: sha512-LlRdsSQBSPsI3MvhWoGc+Ev3PfFRBk41wwkmbOgC7KP7WQlbeWPpASF5Vdv17XEZ7J+xvPB3KCMyR//6Dbjnnw==
   /eslint-plugin-jsx-a11y/6.2.3_eslint@6.8.0:
     dependencies:
       '@babel/runtime': 7.11.2
@@ -10392,6 +10416,13 @@ packages:
     dev: false
     resolution:
       integrity: sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
+  /jsdoctypeparser/9.0.0:
+    dev: false
+    engines:
+      node: '>=10'
+    hasBin: true
+    resolution:
+      integrity: sha512-jrTA2jJIL6/DAEILBEh2/w9QxCuwmvNXIry39Ay/HVfhE3o2yVV0U44blYkqdHA/OKloJEqvJy0xU+GSdE2SIw==
   /jsdom-global/3.0.2_jsdom@11.12.0:
     dependencies:
       jsdom: 11.12.0
@@ -14858,6 +14889,12 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-ywH2VUraA44DZQuRKzARmw6S66mr48pQVva4LBeRhcOltJ6hExvWly5ZjFLYo67xbIxb6W1q4bAGtgfEl20zfQ==
+  /regextras/0.7.1:
+    dev: false
+    engines:
+      node: '>=0.1.14'
+    resolution:
+      integrity: sha512-9YXf6xtW+qzQ+hcMQXx95MOvfqXFgsKDZodX3qZB0x2n5Z94ioetIITsBtvJbiOyxa/6s9AtyweBLCdPmPko/w==
   /registry-auth-token/4.2.0:
     dependencies:
       rc: 1.2.8
@@ -18825,6 +18862,7 @@ packages:
       eslint-plugin-deprecation: 1.1.0_eslint@6.8.0+typescript@3.7.5
       eslint-plugin-import: 2.20.1_eslint@6.8.0
       eslint-plugin-jam3: 0.2.3
+      eslint-plugin-jsdoc: 30.6.2_eslint@6.8.0
       eslint-plugin-jsx-a11y: 6.3.1_eslint@6.8.0
       eslint-plugin-prefer-arrow: 1.1.7_eslint@6.8.0
       eslint-plugin-react: 7.19.0_eslint@6.8.0
@@ -18834,7 +18872,7 @@ packages:
     dev: false
     name: '@rush-temp/eslint-plugin'
     resolution:
-      integrity: sha512-cuHbM2qzfXBkATZe2gjOq84AWr8ijzX3d6DXURmFPSdTIl2vYiVtlL7sQmpH392Z8uX9Kw/fRTpZtIg4R+EM5A==
+      integrity: sha512-wSvb6WhQoqokhUjBuDP8IcumnG4aaL/nVrQLpS+QNYO/XuglK7WvTjLKSp/nmI6rXN5+UfzI+feLqqeScverQw==
       tarball: 'file:projects/eslint-plugin.tgz'
     version: 0.0.0
   'file:projects/example-code-app.tgz':
@@ -20877,6 +20915,7 @@ specifiers:
   eslint-plugin-deprecation: 1.1.0
   eslint-plugin-import: 2.20.1
   eslint-plugin-jam3: ^0.2.3
+  eslint-plugin-jsdoc: ^30.6.2
   eslint-plugin-jsx-a11y: ^6.3.1
   eslint-plugin-prefer-arrow: 1.1.7
   eslint-plugin-react: 7.19.0
