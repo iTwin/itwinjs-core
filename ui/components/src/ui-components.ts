@@ -40,6 +40,11 @@ export * from "./ui-components/converters/CompositeTypeConverter";
 
 export * from "./ui-components/converters/valuetypes/ConvertedTypes";
 
+export * from "./ui-components/datepicker/DateField";
+export * from "./ui-components/datepicker/DatePicker";
+export * from "./ui-components/datepicker/DatePickerPopupButton";
+export * from "./ui-components/datepicker/IntlFormatter";
+
 export * from "./ui-components/dragdrop/DragDropDef";
 export * from "./ui-components/dragdrop/withDragSource";
 export * from "./ui-components/dragdrop/withDropTarget";
@@ -89,7 +94,6 @@ export * from "./ui-components/timeline/PlayerButton";
 export * from "./ui-components/timeline/Scrubber";
 export * from "./ui-components/timeline/Timeline";
 export * from "./ui-components/timeline/TimelineComponent";
-export * from "./ui-components/timeline/DayPicker";
 export * from "./ui-components/timeline/SolarTimeline";
 export * from "./ui-components/timeline/BaseSolarDataProvider";
 
@@ -204,6 +208,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description Color
  * Classes and components for working with and picking a Color.
+ */
+/**
+ * @docs-group-description Date
+ * Classes, interfaces, and components for showing and setting date and time.
  */
 /**
  * @docs-group-description DragDrop

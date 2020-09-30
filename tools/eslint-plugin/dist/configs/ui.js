@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 module.exports = {
   "plugins": [
+    "jam3",
     "jsx-a11y"
   ],
   "extends": [
@@ -11,6 +12,7 @@ module.exports = {
     "plugin:jsx-a11y/recommended"
   ],
   "rules": {
+    "jam3/no-sanitizer-with-danger": 2,
     "@typescript-eslint/naming-convention": [
       "warn",
       {

@@ -75,4 +75,38 @@ $text-font-color: $buic-text-color;
     // which in turn makes it not in line with the rest of text
     margin-top: 2px;
   }
+
+  .multiline {
+    display: flex;
+    align-items: baseline;
+  }
+
+  .expanded {
+    white-space: pre-wrap;
+    margin-top: 4px;
+    margin-bottom: 4px;
+
+    .expand-toggle {
+      float: right;
+      margin-top: 2px;
+    }
+  }
+
+  .expand-toggle {
+    padding: 0;
+    white-space: nowrap;
+    border: none;
+    background: none;
+    color: var(--buic-foreground-primary);
+    font-size: 12px;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:active {
+      outline: none;
+    }
+  }
 }

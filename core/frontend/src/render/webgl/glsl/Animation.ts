@@ -37,7 +37,8 @@ vec3 computeAnimLUTCoords(float vertIndex, float frameIndex) {
 
   vec2 texCoord = g_anim_center + vec2(xId / u_animLUTParams.x, yId / u_animLUTParams.y);
   return vec3(texCoord, 2.0 * (halfIndex - index));
-}`;
+}
+`;
 
 // Sample 2 bytes at the specified index.
 const sampleAnimVec2 = `
@@ -45,7 +46,8 @@ vec2 sampleAnimVec2(float vertIndex, float frameIndex) {
   vec3 tc = computeAnimLUTCoords(vertIndex, frameIndex);
   vec4 texel = floor(TEXTURE(u_animLUT, tc.xy) * 255.0 + 0.5);
   return texel.xy * (1.0 - tc.z) + texel.zw * tc.z;
-}`;
+}
+`;
 
 // Position is quantized to 6 bytes (2 bytes per component). So we always must sample two adjacent texels. We discard two bytes based on whether the index is even or odd.
 const computeAnimationFrameDisplacement = `
@@ -61,7 +63,8 @@ vec3 computeAnimationFrameDisplacement(float vertIndex, float frameIndex, vec3 o
 
   vec3 qpos = vec3(decodeUInt16(ex), decodeUInt16(ey), decodeUInt16(ez));
   return unquantizePosition(qpos, origin, scale).xyz;
-}`;
+}
+`;
 
 const computeAnimationDisplacement = `
 vec3 computeAnimationDisplacement(float vertIndex, float frameIndex0, float frameIndex1, float fraction, vec3 origin, vec3 scale) {
@@ -75,7 +78,8 @@ vec3 computeAnimationDisplacement(float vertIndex, float frameIndex0, float fram
     }
 
   return displacement;
-}`;
+}
+`;
 
 const adjustRawPosition = `
   rawPos.xyz += computeAnimationDisplacement(g_vertexLUTIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);
@@ -86,35 +90,39 @@ const computeAnimationFrameNormal = `
 vec3 computeAnimationFrameNormal(float frameIndex) {
   vec2 enc = sampleAnimVec2(g_vertexLUTIndex, frameIndex);
   return octDecodeNormal(enc);
-}`;
+}
+`;
 
 const computeAnimationNormal = `
 vec3 computeAnimationNormal(float frameIndex0, float frameIndex1, float fraction) {
-vec3 normal = computeAnimationFrameNormal(frameIndex0);
-if (fraction > 0.0) {
-  vec3 normal1 = computeAnimationFrameNormal(frameIndex1);
-  normal += fraction * (normal1 - normal);
-  }
+  vec3 normal = computeAnimationFrameNormal(frameIndex0);
+  if (fraction > 0.0) {
+    vec3 normal1 = computeAnimationFrameNormal(frameIndex1);
+    normal += fraction * (normal1 - normal);
+    }
 
-return normal;
-}`;
+  return normal;
+}
+`;
 
 const computeAnimationFrameParam = `
 float computeAnimationFrameParam(float frameIndex, float origin, float scale) {
   vec2 enc = sampleAnimVec2(g_vertexLUTIndex, frameIndex);
   return clamp((origin + scale * decodeUInt16(enc)), 0.0, 1.0);
-}`;
+}
+`;
 
 const computeAnimationParam = `
 vec2 computeAnimationParam(float frameIndex0, float frameIndex1, float fraction, float origin, float scale) {
-float param = computeAnimationFrameParam(frameIndex0, origin, scale);
-if (fraction > 0.0) {
-  float param1 = computeAnimationFrameParam(frameIndex1, origin, scale);
-  param += fraction * (param1 - param);
+  float param = computeAnimationFrameParam(frameIndex0, origin, scale);
+  if (fraction > 0.0) {
+    float param1 = computeAnimationFrameParam(frameIndex1, origin, scale);
+    param += fraction * (param1 - param);
   }
 
   return vec2(.5, param);
-}`;
+}
+`;
 
 const scratchAnimParams = [
   undefined,

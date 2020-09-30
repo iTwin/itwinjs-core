@@ -94,6 +94,11 @@ export interface ModelsTreeProps {
    */
   enableElementsClassGrouping?: ClassGroupingOption;
   /**
+   * Auto-update the hierarchy when data in the iModel changes.
+   * @alpha
+   */
+  enableHierarchyAutoUpdate?: boolean;
+  /**
    * Custom data provider to use for testing
    * @internal
    */
@@ -118,6 +123,7 @@ export function ModelsTree(props: ModelsTreeProps) {
     ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : /* istanbul ignore next */ RULESET_MODELS_GROUPED_BY_CLASS,
     appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
     pagingSize: PAGING_SIZE,
+    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
   });
   const searchNodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
@@ -125,6 +131,7 @@ export function ModelsTree(props: ModelsTreeProps) {
     ruleset: RULESET_MODELS_SEARCH,
     pagingSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
+    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
   });
 
   const nodeLoaderInUse = props.filterInfo?.filter ? searchNodeLoader : nodeLoader;

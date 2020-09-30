@@ -180,10 +180,10 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     // istanbul ignore else
     if (this._propertyEditor && this.props.propertyRecord) {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
-      // istanbul ignore else
+
+      // istanbul ignore next
       if (validateResult.encounteredError) {
         const errorMessage = validateResult.errorMessage;
-        // istanbul ignore next
         if (errorMessage && this._editorRef) {
           const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage);
           details.setInputFieldTypeDetails(this._editorRef);

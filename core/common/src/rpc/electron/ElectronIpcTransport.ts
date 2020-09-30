@@ -17,7 +17,6 @@ import { IModelElectronIpc } from "./ElectronRpcManager";
 const OBJECTS_CHANNEL = "imodeljs.rpc.objects";
 const DATA_CHANNEL = "imodeljs.rpc.data";
 
-
 interface PartialPayload { id: string, index: number, data: Uint8Array }
 
 /** @internal */
@@ -169,19 +168,20 @@ export function initializeIpc(protocol: ElectronRpcProtocol) {
   if (transport)
     throw new IModelError(BentleyStatus.ERROR, `Electron IPC already initialized.`);
 
-  if (isElectronRenderer) {
+  try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
+    if (isElectronRenderer) {
 
-    // If we're running with nodeIntegration=false, ElectronPreload.ts defines `window.imodeljs_api` and require() won't work.
-    // If we're running with nodeIntegration=true (e.g. from tests), ElectronPreload won't have run, just use ipcRenderer.
+      // If we're running with nodeIntegration=false, ElectronPreload.ts defines `window.imodeljs_api` and require() won't work.
+      // If we're running with nodeIntegration=true (e.g. from tests), ElectronPreload won't have run, just use ipcRenderer.
 
-    try { // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
       const electronIpc = (window as any).imodeljs_api ?? require("electron").ipcRenderer;
       transport = new FrontendIpcTransport(electronIpc, protocol);
-    } catch (_err) { }
-  } else {
-    try {// Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
+    } else {
       transport = new BackendIpcTransport(require("electron").ipcMain, protocol);
-    } catch (_err) { }
+    }
+  } catch (_err) {
+    throw new IModelError(BentleyStatus.ERROR, `cannot load electron`);
   }
+
   return transport;
 }

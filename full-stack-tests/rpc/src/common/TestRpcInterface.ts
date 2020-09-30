@@ -116,6 +116,10 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
+  public async op17() {
+    return this.forward(arguments);
+  }
+
   public async startCSRFTest(): Promise<void> {
     return this.forward(arguments);
   }
@@ -129,6 +133,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public async csrfTestDisabled(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async noContent() {
     return this.forward(arguments);
   }
 }

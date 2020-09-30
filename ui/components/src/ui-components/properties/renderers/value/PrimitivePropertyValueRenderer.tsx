@@ -56,14 +56,23 @@ interface PrimitivePropertyValueRendererImplProps {
 
 /** @internal */
 export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps) {
-  const { record, context, stringValueCalculator } = props;
+  const { stringValue, element } = useRenderedStringValue(props.record, props.stringValueCalculator, props.context);
+  return <span style={props.context?.style} title={stringValue}>{element}</span>;
+}
+
+/** @internal */
+export function useRenderedStringValue(
+  record: PropertyRecord,
+  stringValueCalculator: (record: PropertyRecord) => string | Promise<string>,
+  context?: PropertyValueRendererContext,
+): { stringValue?: string, element: React.ReactNode } {
   const stringValue = useAsyncValue(stringValueCalculator(record));
   const el = (stringValue === undefined)
     ? context?.defaultValue
     : <LinksRenderer
       value={stringValue}
-      record={props.record}
+      record={record}
       highlighter={context?.textHighlighter}
     />;
-  return <span style={context?.style} title={stringValue}>{el}</span>;
+  return { stringValue, element: el };
 }

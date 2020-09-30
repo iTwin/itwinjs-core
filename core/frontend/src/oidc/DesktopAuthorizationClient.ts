@@ -9,12 +9,22 @@
 
 import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages } from "@bentley/imodeljs-common";
+import {
+  defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages, getIModelElectronApi,
+} from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 
-const ipc = (typeof window !== "undefined") ? (window as any).imodeljs_api : undefined;
+// NOTE: getIModelElectronApi returns undefined if the app has nodeIntegration=true. That should not be allowed.
+let ipc = getIModelElectronApi();
+if (ipc === undefined) {
+  try {
+    ipc = require("electron").ipcRenderer;
+  } catch (_e) {
+    // to tell webpack this is optional
+  }
+}
 
 const loggerCategory: string = FrontendLoggerCategory.Authorization;
 
@@ -36,7 +46,7 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   /** Creates a new DesktopAuthorizationClient to be used in the electron render process */
   public constructor(clientConfiguration: DesktopAuthorizationClientConfiguration) {
     this._clientConfiguration = clientConfiguration;
-    if (!ipc)
+    if (ipc === undefined)
       throw new Error("This code should only be run in the electron renderer process");
   }
 
@@ -50,13 +60,13 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   /** Wrapper around ipc.send to add log traces */
   private ipcSend(message: string, ...args: any[]) {
     Logger.logTrace(loggerCategory, "DesktopAuthorizationClient sends message", () => ({ message }));
-    ipc.send(message, ...args);
+    ipc!.send(message, ...args);
   }
 
   /** Wrapper around ipc.on to add log traces */
   private ipcOn(message: string, fn: any) {
     Logger.logTrace(loggerCategory, "DesktopAuthorizationClient receives message", () => ({ message }));
-    ipc.on(message, fn);
+    ipc!.on(message, fn);
   }
 
   /** Used to initialize the client - must be awaited before any other methods are called */

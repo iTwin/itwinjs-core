@@ -104,7 +104,7 @@ internal;FloatingWidgetsState
 internal;FloatingWidgetsStateContext: React.Context
 internal;FloatingWidgetState
 beta;Footer 
-beta;FooterIndicator 
+beta;FooterIndicator(props: FooterIndicatorProps): JSX.Element
 beta;FooterIndicatorProps 
 beta;FooterPopup 
 beta;FooterPopupContentType

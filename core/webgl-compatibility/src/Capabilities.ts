@@ -13,7 +13,7 @@ export type WebGLExtensionName =
   "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
   "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
   "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" |
-  "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2" | "OES_standard_derivatives";
+  "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2" | "OES_standard_derivatives" | "EXT_float_blend";
 
 const knownExtensions: WebGLExtensionName[] = [
   "WEBGL_draw_buffers",
@@ -33,6 +33,7 @@ const knownExtensions: WebGLExtensionName[] = [
   "EXT_disjoint_timer_query",
   "EXT_disjoint_timer_query_webgl2",
   "OES_standard_derivatives",
+  "EXT_float_blend",
 ];
 
 /** Describes the type of a render target. Used by Capabilities to represent maximum precision render target available on host system.
@@ -247,7 +248,7 @@ export class Capabilities {
 
     // Determine the maximum color-renderable attachment type.
     const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float");
-    if (allowFloatRender && this.isTextureRenderable(gl, gl.FLOAT)) {
+    if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;
     } else if (this.isWebGL2) {
       this._maxRenderType = (this.isTextureRenderable(gl, (gl as WebGL2RenderingContext).HALF_FLOAT)) ? RenderType.TextureHalfFloat : RenderType.TextureUnsignedByte;

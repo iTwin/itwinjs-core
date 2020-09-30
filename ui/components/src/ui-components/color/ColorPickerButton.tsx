@@ -93,6 +93,7 @@ export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPicker
     const handleColorPicked = React.useCallback((color: ColorDef) => {
       closePopup();
 
+      // istanbul ignore else
       if (!color.equals(colorDef)) {
         setColorDef(color);
 

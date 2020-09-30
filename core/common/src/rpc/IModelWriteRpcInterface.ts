@@ -32,7 +32,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelWriteRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.5.0";
+  public static interfaceVersion = "0.5.1";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -49,9 +49,21 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public async doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void> { return this.forward(arguments); }
   public async lockModel(_tokenProps: IModelRpcProps, _modelId: Id64String, _level: LockLevel): Promise<void> { return this.forward(arguments); }
   public async synchConcurrencyControlResourcesCache(_tokenProps: IModelRpcProps): Promise<void> { return this.forward(arguments); }
+
+  /**
+   * @deprecated Use [[IModelWriteRpcInterface.pullAndMergeChanges]] and [[IModelWriteRpcInterface.pushChanges]] instead
+   */
   public async pullMergePush(_tokenProps: IModelRpcProps, _comment: string, _doPush: boolean): Promise<GuidString> { return this.forward(arguments); }
-  public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> { return this.forward(arguments); }
+
+  /**
+   * @deprecated The parent change set id is always maintained in the IModelConnection
+   */
   public async getParentChangeset(_iModelToken: IModelRpcProps): Promise<string> { return this.forward(arguments); }
+
+  public async pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async pushChanges(_tokenProps: IModelRpcProps, _description: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
+
+  public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> { return this.forward(arguments); }
 
   public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void> { return this.forward(arguments); }
   public async createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String> { return this.forward(arguments); }

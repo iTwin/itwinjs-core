@@ -4,45 +4,37 @@
 *--------------------------------------------------------------------------------------------*/
 import * as electron from "electron";
 import * as path from "path";
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelJsElectronManager } from "@bentley/electron-manager";
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { getRpcInterfaces, initializeBackend } from "./backend";
 
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-  // --------------------------------------------------------------------------------------
-  // ------- Initialization and setup of host and tools before starting app ---------------
+const dptaElectronMain = async () => {
 
   // Start the backend
   await initializeBackend();
 
+  // Initialize rpcs for the backend
+  ElectronRpcManager.initializeImpl({}, getRpcInterfaces());
+
   if (process.argv.length > 2 && process.argv[2].split(".").pop() === "json")
     DisplayPerfRpcInterface.jsonFilePath = process.argv[2];
 
-  // --------------------------------------------------------------------------------------
-  // ---------------- This part copied from protogist ElectronMain.ts ---------------------
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Make max window the default
 
-  const manager: IModelJsElectronManager = new IModelJsElectronManager(path.join(__dirname, "..", "..", "build"));
+  const manager = new IModelJsElectronManager({ webResourcesPath: path.join(__dirname, "..", "..", "build") });
 
-  await manager.initialize({
-    width: 1280,
-    height: 800,
-    show: !maximizeWindow,
-  });
+  await manager.initialize({ width: 1280, height: 800, show: !maximizeWindow });
+  assert(manager.mainWindow !== undefined);
 
-  // Initialize application gateway configuration for the backend
-  ElectronRpcManager.initializeImpl({}, getRpcInterfaces());
-
-  if (manager.mainWindow) {
-    if (maximizeWindow) {
-      manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
-      manager.mainWindow.show();
-    }
-    if (autoOpenDevTools)
-      manager.mainWindow.webContents.toggleDevTools();
+  if (maximizeWindow) {
+    manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
+    manager.mainWindow.show();
   }
+  if (autoOpenDevTools)
+    manager.mainWindow.webContents.toggleDevTools();
 
   // Handle custom keyboard shortcuts
   electron.app.on("web-contents-created", (_e, wc) => {
@@ -56,4 +48,7 @@ import { getRpcInterfaces, initializeBackend } from "./backend";
       }
     });
   });
-})();
+}
+
+// execute this immediately when we load
+dptaElectronMain(); // eslint-disable-line @typescript-eslint/no-floating-promises

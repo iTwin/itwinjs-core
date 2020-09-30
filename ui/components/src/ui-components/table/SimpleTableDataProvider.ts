@@ -278,9 +278,10 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
       this._items.splice(rowIndex, 1);
 
       this.resetRowIndices();
+
+      if (raiseRowsChangedEvent)
+        this.onRowsChanged.raiseEvent();
     }
-    if (raiseRowsChangedEvent)
-      this.onRowsChanged.raiseEvent();
   }
 
   /** Moves a row to a new row index */
@@ -291,9 +292,11 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
 
       if (newIndex > oldIndex)
         newIndex--;     // removing the row will shrink the count by 1
+
+      return this.insertRow(rowItem, newIndex);
     }
 
-    return this.insertRow(rowItem, newIndex);
+    return -1;
   }
 
   private findRowIndex(item: RowItem): number {

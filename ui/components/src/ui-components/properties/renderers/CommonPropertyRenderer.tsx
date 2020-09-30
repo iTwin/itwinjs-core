@@ -6,7 +6,6 @@
  * @module Properties
  */
 
-import _ from "lodash";
 import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
@@ -37,10 +36,21 @@ export class CommonPropertyRenderer {
     return currentSize - minColumnLabelWidth;
   }
 
-  public static createNewDisplayValue(orientation: Orientation, propertyRecord: PropertyRecord, indentation?: number, propertyValueRendererManager?: PropertyValueRendererManager) {
+  public static createNewDisplayValue(
+    orientation: Orientation,
+    propertyRecord: PropertyRecord,
+    indentation?: number,
+    propertyValueRendererManager?: PropertyValueRendererManager,
+    isExpanded?: boolean,
+    onExpansionToggled?: () => void,
+    onHeightChanged?: (newHeight: number) => void,
+  ) {
     const rendererContext: PropertyValueRendererContext = {
       orientation,
       containerType: PropertyContainerType.PropertyPane,
+      isExpanded,
+      onExpansionToggled,
+      onHeightChanged,
     };
 
     let displayValue: React.ReactNode | undefined;

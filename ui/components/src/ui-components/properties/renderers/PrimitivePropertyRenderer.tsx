@@ -19,6 +19,8 @@ import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 export interface PrimitiveRendererProps extends SharedRendererProps {
   /** Property value as a React element */
   valueElement?: React.ReactNode;
+  /** Render callback for property value. If specified, `valueElement` is ignored. */
+  valueElementRenderer?: () => React.ReactNode;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
 }

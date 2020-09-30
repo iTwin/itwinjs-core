@@ -374,6 +374,15 @@ describe("SimpleTableDataProvider", () => {
       expect(spyMethod.calledOnce).to.be.true;
     });
 
+    it("deleteRow cannot delete a row that is not in the table", async () => {
+      dataProvider = new SimpleTableDataProvider(columns);
+      const spyMethod = sinon.spy();
+      dataProvider.onRowsChanged.addListener(spyMethod);
+      const testRow = smallTestRows[0];
+      dataProvider.deleteRow(testRow);
+      expect(spyMethod.called).to.be.false;
+    });
+
     it("moveRow should move a row to the end", async () => {
       dataProvider = new SimpleTableDataProvider(columns);
       dataProvider.setItems(smallTestRows);
@@ -439,6 +448,16 @@ describe("SimpleTableDataProvider", () => {
         const primitiveValue = propertyValue as PrimitiveValue;
         expect(primitiveValue.value).to.equal(1);
       }
+    });
+
+    it("moveRow cannot move a row that is not in the table", async () => {
+      dataProvider = new SimpleTableDataProvider(columns);
+      const spyMethod = sinon.spy();
+      dataProvider.onRowsChanged.addListener(spyMethod);
+      const testRow = smallTestRows[0];
+      const newIndex = dataProvider.moveRow(testRow, 0);
+      expect(spyMethod.called).to.be.false;
+      expect(newIndex).to.eq(-1);
     });
 
   });

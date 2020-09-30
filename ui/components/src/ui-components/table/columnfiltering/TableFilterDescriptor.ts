@@ -158,10 +158,12 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
   }
 
   private getJulianDaysFromValue(isUpperBound: boolean): number {
+    // istanbul ignore next
     if (this._value.constructor.name !== "Date") {
       this._value = new Date(this._value);
       this._value.setMilliseconds(0);
     }
+
     // Credits : https://stackoverflow.com/a/11760121/7797060
     const dayLengthInMilliseconds = 86400000;
     const daysCountFromJulianDayToUnixEpoch = 2440587.5;

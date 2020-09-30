@@ -154,6 +154,16 @@ describe("SelectionHandler", () => {
       selectionFunction = handler.createSelectionFunction(componentSelectionHandler.object, itemSelectionHandler1.object);
     });
 
+    describe("None", () => {
+
+      it("does nothing", () => {
+        handler.selectionMode = SelectionMode.None;
+        selectionFunction();
+        itemsSelectedCallback.verify((x) => x([itemSelectionHandler1.object.item()], true), moq.Times.never());
+      });
+
+    });
+
     describe("Single", () => {
 
       it("replaces selection", () => {

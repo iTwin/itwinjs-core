@@ -19,6 +19,7 @@ import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
+import { UiComponents } from "../UiComponents";
 
 /** @internal */
 interface TextareaEditorState {
@@ -37,6 +38,7 @@ const DEFAULT_ROWS = 3;
  */
 export class TextareaEditor extends React.PureComponent<PropertyEditorProps, TextareaEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _ariaLabel = UiComponents.translate("editor.textarea");
 
   /** @internal */
   public readonly state: Readonly<TextareaEditorState> = {
@@ -166,6 +168,8 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
       onChange: this._updateTextareaValue,
       setFocus: this.props.setFocus && !this.state.isDisabled,
     };
+
+    textareaProps["aria-label"] = this._ariaLabel;
 
     return (
       <div className={className}>

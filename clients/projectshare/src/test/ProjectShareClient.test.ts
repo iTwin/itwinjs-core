@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery } from "../ProjectShareClient";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery, RecycleOption } from "../ProjectShareClient";
 import { TestConfig } from "./TestConfig";
 
 chai.should();
@@ -26,6 +26,37 @@ describe("ProjectShareClient (#integration)", () => {
 
     const project = await TestConfig.queryProject(requestContext, "iModelJsIntegrationTest");
     projectId = project.wsgId;
+  });
+
+  it("should be able to Upload and Delete File", async () => {
+    const folder360Images = (await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId)))[0];
+    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folder360Images.wsgId));
+    chai.assert.strictEqual(2, folders.length);
+    const folder2A = folders[0];
+    const folder2B = folders[1];
+    chai.assert.strictEqual(folder2B.name, "2B");
+    chai.assert.strictEqual(folder2A.name, "2A");
+    const testFile = new ProjectShareFile();
+    testFile.name = "sap.txt";
+    testFile.size = 32;
+    testFile.description = "test";
+    const file: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, folder2B.wsgId, testFile); // create new file with file exist property as false
+    chai.assert.strictEqual(file.description, testFile.description);
+    chai.assert.equal(file.size, testFile.size);
+    const data = { name: "John", age: 30, city: "New York" };
+    const changedFile = await projectShareClient.uploadContentInFile(requestContext, projectId, file, JSON.stringify(data)); // upload content into file
+    chai.assert.equal(changedFile.fileExists, true);
+    const res = await projectShareClient.deleteFile(requestContext, projectId, file.wsgId); // Permanent deleting File.
+    chai.assert.isUndefined(res);
+
+    const file1: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, folder2B.wsgId, testFile);
+    chai.assert.strictEqual(file1.description, testFile.description);
+    chai.assert.equal(file1.size, testFile.size);
+    const data1 = { name: "xyz", age: 31, city: "aus" };
+    const changedFile1 = await projectShareClient.uploadContentInFile(requestContext, projectId, file1, JSON.stringify(data1));
+    chai.assert.equal(changedFile1.fileExists, true);
+    const res1 = await projectShareClient.deleteFile(requestContext, projectId, file1.wsgId, RecycleOption.SendToRecycleBin); // file move to recycleBin.
+    chai.assert.isNotNull(res1);
   });
 
   it("should be able to query folders with different options", async () => {
@@ -78,7 +109,6 @@ describe("ProjectShareClient (#integration)", () => {
     const folder360Images = (await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId)))[0];
     const subFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folder360Images.wsgId));
     const folder2A = subFolders[0];
-    const folder2B = subFolders[1];
 
     // inRootFolder
     let files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inRootFolder(projectId));
@@ -89,9 +119,6 @@ describe("ProjectShareClient (#integration)", () => {
     files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolder(folder2A.wsgId));
     chai.assert(files);
     chai.assert.strictEqual(files.length, 18);
-    files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolder(folder2B.wsgId));
-    chai.assert(files);
-    chai.assert.strictEqual(files.length, 0);
 
     // startsWithPath
     files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPath(projectId, "360-Images/2A"));

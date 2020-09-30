@@ -65,6 +65,8 @@ export interface OrbitGtBlobProps {
 }
 
 /** JSON representation of a context reality model
+ * A context reality model is one that is not directly attached to the iModel but is instead included in the display style to
+ * provide context only when that display style is applied.
  * @public
  */
 export interface ContextRealityModelProps {

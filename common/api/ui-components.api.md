@@ -125,6 +125,9 @@ export interface ActiveMatchInfo {
     nodeId: string;
 }
 
+// @alpha
+export function adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date;
+
 // @beta
 export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     // @internal
@@ -1190,6 +1193,53 @@ export interface DataRowItem extends RowItem {
     _node?: TreeNodeItem;
 }
 
+// @internal
+export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element;
+
+// @alpha
+export interface DateFieldProps extends CommonProps {
+    dateFormatter?: DateFormatter;
+    initialDate: Date;
+    onDateChange?: (day: Date) => void;
+    readOnly?: boolean;
+    timeDisplay?: TimeDisplay;
+}
+
+// @alpha
+export interface DateFormatter {
+    // (undocumented)
+    formateDate: (day: Date) => string;
+    // (undocumented)
+    parseDate?: (dateString: string) => Date | undefined;
+}
+
+// @alpha
+export function DatePicker(props: DatePickerProps): JSX.Element;
+
+// @alpha
+export function DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps): JSX.Element;
+
+// @alpha
+export interface DatePickerPopupButtonProps extends CommonProps {
+    buttonToolTip?: string;
+    // (undocumented)
+    dateFormatter?: DateFormatter;
+    displayEditField?: boolean;
+    fieldClassName?: string;
+    fieldStyle?: React.CSSProperties;
+    onDateChange?: (day: Date) => void;
+    selected: Date;
+    // (undocumented)
+    timeDisplay?: TimeDisplay;
+}
+
+// @alpha
+export interface DatePickerProps {
+    onDateChange?: (day: Date) => void;
+    selected: Date;
+    showFocusOutline?: boolean;
+}
+
 // @public
 export class DateTimeTypeConverter extends DateTimeTypeConverterBase {
     // (undocumented)
@@ -1220,37 +1270,6 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
     isNotEqualTo(valueA: Date, valueB: Date): boolean;
     // (undocumented)
     sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
-}
-
-// @internal
-export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
-    constructor(props: DayPickerProps);
-    // (undocumented)
-    get days(): (Date | null)[];
-    // (undocumented)
-    static isSameDay(a: Date, b: Date): boolean;
-    // (undocumented)
-    longDayName(dayOfWeek: number): string;
-    // (undocumented)
-    longMonthName(month: number): string;
-    // (undocumented)
-    nextMonth: () => void;
-    // (undocumented)
-    onDayChange: (day: Date) => () => void;
-    // (undocumented)
-    previousMonth: () => void;
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    renderDay: (day: Date, index: number) => JSX.Element;
-    // (undocumented)
-    renderDayHeader(dayOfWeek: number): JSX.Element;
-    // (undocumented)
-    renderWeek: (days: any, index: number) => JSX.Element;
-    // (undocumented)
-    shortDayName(dayOfWeek: number): string;
-    // (undocumented)
-    get weeks(): (Date | null)[][];
 }
 
 // @public
@@ -1906,8 +1925,11 @@ export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHi
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
 
-// @public
+// @public @deprecated
 export const hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
+
+// @public
+export const hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
 
 // @public
 export class HexadecimalTypeConverter extends TypeConverter {
@@ -2218,6 +2240,15 @@ export interface InputSwitchProps {
     width: number | string;
 }
 
+// @alpha
+export class IntlFormatter implements DateFormatter {
+    constructor(_intlFormatter?: Intl.DateTimeFormat | undefined);
+    // (undocumented)
+    formateDate(day: Date): string;
+    // (undocumented)
+    get formatter(): Intl.DateTimeFormat;
+    }
+
 // @public
 export class IntTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
@@ -2489,9 +2520,6 @@ export class MutableCategorizedPrimitiveProperty extends MutableCategorizedPrope
     constructor(record: PropertyRecord, parentSelectionKey: string, parentCategorySelectionKey: string, depth: number, overrideName?: string, overrideDisplayLabel?: string);
     // (undocumented)
     getChildren(): IMutableCategorizedPropertyItem[];
-    // (undocumented)
-    get isExpanded(): boolean;
-    set isExpanded(_: boolean);
     // (undocumented)
     get type(): FlatGridItemType.Primitive;
 }
@@ -3016,6 +3044,7 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
 export interface PrimitiveRendererProps extends SharedRendererProps {
     indentation?: number;
     valueElement?: React.ReactNode;
+    valueElementRenderer?: () => React.ReactNode;
 }
 
 // @public
@@ -3304,7 +3333,10 @@ export interface PropertyValueRendererContext {
     containerType?: string;
     decoratedTextElement?: React.ReactNode;
     defaultValue?: React.ReactNode;
+    isExpanded?: boolean;
     onDialogOpen?: (dialogState: PropertyDialogState) => void;
+    onExpansionToggled?: () => void;
+    onHeightChanged?: (newHeight: number) => void;
     onPopupHide?: () => void;
     onPopupShow?: (popupState: PropertyPopupState) => void;
     orientation?: Orientation;
@@ -3342,6 +3374,7 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
 export interface PropertyViewProps extends SharedRendererProps {
     labelElement: React.ReactNode;
     valueElement?: React.ReactNode;
+    valueElementRenderer?: () => React.ReactNode;
 }
 
 // @public
@@ -4248,6 +4281,9 @@ export class ThemedEnumPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
+// @beta
+export type TimeDisplay = "hh:mm aa" | "hh:mm:ss aa" | "hh:mm" | "hh:mm:ss";
+
 // @internal
 export class Timeline extends React.Component<TimelineProps, TimelineState> {
     constructor(props: TimelineProps);
@@ -4913,7 +4949,17 @@ export interface TreeProps extends CommonProps {
 }
 
 // @beta
-export function TreeRenderer(props: TreeRendererProps): JSX.Element;
+export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    scrollToNode(nodeId: string, alignment?: Alignment): void;
+    }
+
+// @beta
+export interface TreeRendererAttributes {
+    scrollToNode(nodeId: string, alignment?: Alignment): void;
+}
 
 // @beta
 export interface TreeRendererContext {
@@ -5070,6 +5116,12 @@ export function usePropertyGridModelSource(props: {
     dataProvider: IPropertyDataProvider;
     onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
 }): PropertyGridModelSource;
+
+// @internal (undocumented)
+export function useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise<string>, context?: PropertyValueRendererContext): {
+    stringValue?: string;
+    element: React.ReactNode;
+};
 
 // @internal (undocumented)
 export function useToolbarPopupContext(): ToolbarPopupContextProps;
@@ -5249,6 +5301,7 @@ export interface VirtualizedPropertyGridContext {
         editingPropertyKey?: string;
         onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
         onEditCancel?: () => void;
+        onNodeHeightChanged: (index: number, key: string, height: number) => void;
         columnRatio?: number;
         onColumnChanged?: (ratio: number) => void | RatioChangeResult;
         isResizeHandleHovered?: boolean;

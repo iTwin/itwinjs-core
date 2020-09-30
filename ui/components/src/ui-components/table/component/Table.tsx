@@ -494,7 +494,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     let dataGridColumns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
-      const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
+      const uiSettings: UiSettings = this.props.uiSettings || /* istanbul ignore next */ new LocalUiSettings();
       const reorderResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
       if (reorderResult.status === UiSettingsStatus.Success) {
         const setting = reorderResult.setting as string[];
@@ -612,6 +612,7 @@ export class Table extends React.Component<TableProps, TableState> {
           if (this.props.isCellSelected(rowIndex, cellItem))
             set.add(rowIndex);
         }
+        // istanbul ignore else
         if (set.size !== 0)
           selectedCellKeys.set(column.key, set);
       }
@@ -688,6 +689,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private deselectCells(cellKeys: CellKey[]) {
     for (const key of cellKeys) {
+      // istanbul ignore else
       const set = this._selectedCellKeys.get(key.columnKey);
       if (set)
         set.delete(key.rowIndex);
@@ -700,6 +702,7 @@ export class Table extends React.Component<TableProps, TableState> {
         this._pressedItemSelected = this._selectedRowIndices.has(rowIndex);
       },
       select: () => {
+        // istanbul ignore else
         if (!this._selectedRowIndices.has(rowIndex)) {
           this._selectedRowIndices.add(rowIndex);
           if (!this._pressedItemSelected)
@@ -707,6 +710,7 @@ export class Table extends React.Component<TableProps, TableState> {
         }
       },
       deselect: () => {
+        // istanbul ignore else
         if (this._selectedRowIndices.has(rowIndex)) {
           this._selectedRowIndices.delete(rowIndex);
           this.forceUpdate();
@@ -1146,6 +1150,7 @@ export class Table extends React.Component<TableProps, TableState> {
           this._rowSelectionHandler.createDragAction(this._rowComponentSelectionHandler, [this.rowItemSelectionHandlers], props.row.index);
         };
         const onMouseMove = (e: React.MouseEvent) => {
+          // istanbul ignore else
           if (e.buttons === 1)
             this._rowSelectionHandler.updateDragAction(props.row.index);
         };
@@ -1190,6 +1195,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const columnTargetIndex = this.state.columns.findIndex((i) => i.key === target);
 
     cols.splice(columnTargetIndex, 0, cols.splice(columnSourceIndex, 1)[0]);
+    // istanbul ignore else
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || /* istanbul ignore next */ new LocalUiSettings();
       const keys = cols.map((col) => col.key);
@@ -1205,6 +1211,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // istanbul ignore else
     if (this.state.rows[args.rowIdx]) {
       const record = this._getCellItem(this.state.rows[0].item, column.key).record;
+      // istanbul ignore next
       if (record && record.value.valueFormat !== PropertyValueFormat.Primitive)
         return;
     }
@@ -1276,6 +1283,7 @@ export class Table extends React.Component<TableProps, TableState> {
         cellKey: this.state.cellEditorState.cellKey!,
       };
       const allowed = await this.props.onPropertyUpdated(args, cellUpdatedArgs);
+      // istanbul ignore else
       if (allowed && this.state.cellEditorState.rowIndex !== undefined && this.state.cellEditorState.rowIndex >= 0) {
         this._deactivateCellEditor();
         await this.updateRows();

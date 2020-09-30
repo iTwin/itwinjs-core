@@ -24,9 +24,11 @@ $hovered-icon-color: $buic-foreground-primary-tone;
       margin-top: 2px;
 
       button.map-manager-item-visibility {
+        background-color: transparent;
         border: none;
         margin: 0 2px;
         color: $buic-foreground-body;
+        background-color: transparent;
 
         &:hover {
           color: $hovered-icon-color;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import {
-  IModelRpcProps, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
+  IModelRpcProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
 } from "@bentley/imodeljs-common";
 import {
   AttachedInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
@@ -139,6 +139,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       token.openMode === values.openMode;
   }
 
+  public async op17() {
+    throw new NoContentError();
+  }
+
   public async startCSRFTest(): Promise<void> {
   }
 
@@ -149,6 +153,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async csrfTestDisabled(): Promise<void> {
+  }
+
+  public async noContent() {
+    throw new NoContentError();
   }
 }
 

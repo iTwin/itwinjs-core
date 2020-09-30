@@ -61,6 +61,12 @@ export interface FavoritePropertiesManagerProps {
  * @beta
  */
 export class FavoritePropertiesManager implements IDisposable {
+  /**
+   * Used in tests to avoid collisions between multiple runs using the same storage
+   * @internal
+   */
+  public static FAVORITES_IDENTIFIER_PREFIX = "";
+
   /** Event raised after favorite properties have changed. */
   public onFavoritesChanged = new BeEvent<() => void>();
 
@@ -661,12 +667,12 @@ const getiModelInfo = (projectId: string, imodelId: string) => `${projectId}/${i
 
 const getPropertiesFieldPropertyNames = (field: PropertiesField) => {
   const nestingPrefix = getNestingPrefix(field.parent);
-  return field.properties.map((property) => `${nestingPrefix}${property.property.classInfo.name}:${property.property.name}`);
+  return field.properties.map((property) => `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${nestingPrefix}${property.property.classInfo.name}:${property.property.name}`);
 };
 
 const getNestedContentFieldPropertyName = (field: NestedContentField) => {
   const nestingPrefix = getNestingPrefix(field);
-  return `${nestingPrefix}${field.contentClassInfo.name}`;
+  return `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${nestingPrefix}${field.contentClassInfo.name}`;
 };
 
 const getNestingPrefix = (field: NestedContentField | undefined) => {
@@ -706,7 +712,7 @@ export const getFieldInfos = (field: Field): Set<PropertyFullName> => {
   else if (field.isNestedContentField())
     fieldInfos.add(getNestedContentFieldPropertyName(field));
   else
-    fieldInfos.add(field.name);
+    fieldInfos.add(`${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${field.name}`);
   return fieldInfos;
 };
 

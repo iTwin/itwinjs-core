@@ -204,6 +204,9 @@
     "AttachRealityModelTool": {
       "keyin": "fdt attach reality properties"
     },
+    "AttachCesiumAssetTool": {
+      "keyin": "fdt attach cesium asset"
+    },
     "ExtensionService": {
       "keyin": "fdt add extensionService"
     },

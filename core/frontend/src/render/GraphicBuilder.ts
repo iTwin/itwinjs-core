@@ -125,6 +125,23 @@ export abstract class GraphicBuilder {
   /** @internal */
   public get iModel(): IModelConnection { return this.viewport.iModel; }
 
+  /** Controls whether normals are generated for surfaces. Normals allow 3d geometry to receive lighting; without them the geometry will be unaffected by lighting.
+   * By default, normals are not generated. Changing this value only affects subsequently-added geometry. For example:
+   * ```ts
+   *  builder.wantNormals = true;
+   *  builder.addShape(shapePoints); // this shape will have normals
+   *  builder.wantNormals = false;
+   *  builder.addLoop(loop); // this loop will have no normals
+   *  const graphic = builder.finish(); // the result contains a shape with normals and a loop with no normals.
+   * ```
+   * @note Currently, no API exists to generate normals for a [Polyface]($geometry-core) that lacks them. Until such an API becomes available, if you want a lit Polyface, you
+   * must both set `wantNormals` to `true` **and** supply a Polyface with precomputed normals to `addPolyface`.
+   * @see [[GraphicType]] for a description of whether and how different types of graphics are affected by lighting.
+   * @public
+   */
+  public get wantNormals(): boolean { return false; }
+  public set wantNormals(_wantNormals: boolean) { }
+
   /** @internal */
   protected constructor(placement: Transform = Transform.identity, type: GraphicType, viewport: Viewport, pickId?: Id64String) {
     this._placement = placement;

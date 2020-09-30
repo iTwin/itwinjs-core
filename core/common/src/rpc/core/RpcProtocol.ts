@@ -36,6 +36,7 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
   parameters: RpcSerializedValue;
   caching: RpcResponseCacheControl;
   ip?: string;
+  protocolVersion?: number;
 }
 
 /** An RPC operation request fulfillment.
@@ -84,6 +85,12 @@ export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcReques
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */
   public static readonly events: BeEvent<RpcProtocolEventHandler> = new BeEvent();
+
+  /** A version code that identifies the RPC protocol capabilties of this endpoint. */
+  public static readonly protocolVersion = 1;
+
+  /** The name of the RPC protocol version header. */
+  public protocolVersionHeaderName = "";
 
   /** Events raised by the protocol. See [[RpcProtocolEvent]] */
   public readonly events: BeEvent<RpcProtocolEventHandler> = new BeEvent();
@@ -168,6 +175,7 @@ export abstract class RpcProtocol {
       path: request.path,
       parameters: await RpcMarshaling.serialize(request.protocol, request.parameters),
       caching: RpcResponseCacheControl.None,
+      protocolVersion: RpcProtocol.protocolVersion,
     };
   }
 

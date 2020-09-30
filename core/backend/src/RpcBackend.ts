@@ -92,8 +92,18 @@ class MobileRpcServer {
   private _connection: ws | undefined;
   private _port: number;
   private _connectionId: number;
-
+  private _pingTimer: NodeJS.Timeout;
   public constructor() {
+    /* _pingTime is a fix for ios/mobile case where when app move into foreground from
+     * background backend restart ws.Server and then notify frontend to reconnect. But ws.Server
+     * listening event is not fired as node yield to kevent and wait for some io event to happen.
+     * This causes a delay in reconnection which may be as long a 40 secs. To solve the issue we
+     * create _pingTimer which causes kevent to yield back to uv poll so timer event can be fired.
+     * This allow listening event to go through quickly (max 5ms). Once the listening event occur we
+     * clear the timer. Here we use setInterval() just to make sure otherwise setTimeout() could equally
+     * be effective
+     */
+    this._pingTimer = setInterval(() => { }, 5);
     this._port = 0;
     this._server = new ws.Server({ port: this._port });
     this._connectionId = ++MobileRpcServer._nextId;
@@ -105,6 +115,7 @@ class MobileRpcServer {
     this._server.on("listening", () => {
       const address = this._server.address() as ws.AddressInfo;
       this._port = address.port;
+      clearInterval(this._pingTimer);
       this._notifyConnected();
     });
   }
@@ -161,6 +172,7 @@ class MobileRpcServer {
   }
 
   public dispose() {
+    clearInterval(this._pingTimer);
     if (this._connection) {
       MobileRpcServer.interop.sendString = () => { };
       MobileRpcServer.interop.sendBinary = () => { };

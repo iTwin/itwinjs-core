@@ -14,10 +14,24 @@ import { isElectronMain, isElectronRenderer } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export interface IModelElectronIpc {
-  send: (channel: string, ...data: any[]) => void;
   on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
-  showOpenDialogSync: (options: any) => any;
+  once: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+  removeListener: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+  send: (channel: string, ...data: any[]) => void; // only valid for render -> main
 }
+
+/** @internal */
+export interface IModelElectronApi extends IModelElectronIpc {
+  invoke(channel: string, ...args: any[]): Promise<any>;
+  sendSync(channel: string, ...args: any[]): any;
+}
+
+/** Get the iModel.js api object published by the Preload script. Allows frontend applications
+ * to use selected electron apis with NodeIntegration off.
+ * @note Frontend use only.
+ * @see @bentley/electron-manager/ElectronPreload.ts
+ * @internal */
+export const getIModelElectronApi = () => (window as any).imodeljs_api as IModelElectronApi | undefined;
 
 /** Initialization parameters for ElectronRpcConfiguration.
  * @beta

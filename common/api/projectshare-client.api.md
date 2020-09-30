@@ -10,7 +10,7 @@ import { WsgClient } from '@bentley/itwin-client';
 import { WsgInstance } from '@bentley/itwin-client';
 import { WsgQuery } from '@bentley/itwin-client';
 
-// @alpha
+// @internal
 export class ProjectShareClient extends WsgClient {
     constructor();
     // (undocumented)
@@ -19,6 +19,8 @@ export class ProjectShareClient extends WsgClient {
     static readonly configRelyingPartyUri = "imjs_project_share_client_relying_party_uri";
     // (undocumented)
     static readonly configURL = "imjs_project_share_client_url";
+    createFile(requestContext: AuthorizedClientRequestContext, contextId: GuidString, folderId: GuidString, file: ProjectShareFile): Promise<ProjectShareFile>;
+    deleteFile(requestContext: AuthorizedClientRequestContext, contextId: GuidString, fileId: GuidString, deleteOption?: RecycleOption): Promise<ProjectShareFile | void>;
     protected getDefaultUrl(): string;
     getFiles(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFile[]>;
     getFolders(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFolder[]>;
@@ -36,9 +38,10 @@ export class ProjectShareClient extends WsgClient {
         Name: string;
         Value: string;
     }>, deleteProperties?: string[]): Promise<ProjectShareFile>;
+    uploadContentInFile(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, data: string): Promise<ProjectShareFile>;
 }
 
-// @alpha
+// @internal
 export class ProjectShareFile extends WsgInstance {
     accessUrl?: string;
     // (undocumented)
@@ -50,6 +53,10 @@ export class ProjectShareFile extends WsgInstance {
     // (undocumented)
     customProperties?: any;
     // (undocumented)
+    description?: string;
+    // (undocumented)
+    fileExists?: boolean;
+    // (undocumented)
     instanceId?: string;
     // (undocumented)
     modifiedBy?: string;
@@ -58,6 +65,8 @@ export class ProjectShareFile extends WsgInstance {
     // (undocumented)
     name?: string;
     // (undocumented)
+    parentFolder?: ProjectShareFolder;
+    // (undocumented)
     parentFolderWsgId?: string;
     // (undocumented)
     path?: string;
@@ -65,12 +74,12 @@ export class ProjectShareFile extends WsgInstance {
     size?: number;
 }
 
-// @alpha
+// @internal
 export class ProjectShareFileQuery extends ProjectShareQuery {
     startsWithPath(contextId: GuidString, path: string): this;
 }
 
-// @alpha
+// @internal
 export class ProjectShareFolder extends WsgInstance {
     // (undocumented)
     contentType?: string;
@@ -92,18 +101,26 @@ export class ProjectShareFolder extends WsgInstance {
     size?: number;
 }
 
-// @alpha
+// @internal
 export class ProjectShareFolderQuery extends ProjectShareQuery {
     inPath(contextId: GuidString, path: string): this;
 }
 
-// @alpha
+// @internal
 export class ProjectShareQuery extends WsgQuery {
     byWsgIds(...ids: GuidString[]): this;
     inFolder(folderId: GuidString): this;
     inFolderWithNameLike(folderId: GuidString, searchName: string): this;
     inRootFolder(contextId: GuidString): this;
     startsWithPathAndNameLike(contextId: GuidString, path: string, nameLike?: string): this;
+}
+
+// @internal (undocumented)
+export enum RecycleOption {
+    // (undocumented)
+    DeletePermanently = 0,
+    // (undocumented)
+    SendToRecycleBin = 1
 }
 
 

@@ -88,7 +88,7 @@ describe("MeshBuilderMap Tests", () => {
     const gfParams2: GraphicParams = new GraphicParams();
     gfParams2.lineColor = ColorDef.white;
     gfParams2.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams2);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams2, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -139,7 +139,7 @@ describe("MeshBuilderMap Tests", () => {
     const gfParams2: GraphicParams = new GraphicParams();
     gfParams2.lineColor = ColorDef.white;
     gfParams2.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams2);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams2, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -220,7 +220,7 @@ describe("MeshBuilderMap Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
@@ -266,7 +266,7 @@ describe("MeshBuilderMap Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);

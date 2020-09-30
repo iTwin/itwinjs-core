@@ -135,6 +135,20 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     return parentChangeSetId;
   }
 
+  public async pullAndMergeChanges(tokenProps: IModelRpcProps): Promise<IModelConnectionProps> {
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    await iModelDb.pullAndMergeChanges(requestContext);
+    return iModelDb.getConnectionProps();
+  }
+
+  public async pushChanges(tokenProps: IModelRpcProps, description: string): Promise<IModelConnectionProps> {
+    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    await iModelDb.pushChanges(requestContext, description);
+    return iModelDb.getConnectionProps();
+  }
+
   public async doConcurrencyControlRequest(tokenProps: IModelRpcProps): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelDb = BriefcaseDb.findByKey(tokenProps.key);

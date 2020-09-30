@@ -643,7 +643,7 @@ export abstract class ECInstance {
 }
 
 /** @beta */
-export type ChangeState = "new" | "modified" | "deleted";
+export type ChangeState = "new" | "modified" | "deleted" | "existing";
 
 /** Base class for all typed instances mapped to ECInstance-s in both an ECDb, and the WSG repository
  * @beta

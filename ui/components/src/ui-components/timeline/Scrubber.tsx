@@ -25,6 +25,7 @@ const formatDate = (startDate: Date, endDate: Date, fraction: number) => {
   return date.toLocaleDateString();
 };
 
+// istanbul ignore next - WIP
 const formatTime = (startDate: Date, endDate: Date, fraction: number) => {
   const delta = (endDate.getTime() - startDate.getTime()) * fraction;
   const date = new Date(startDate.getTime() + delta);

@@ -8,7 +8,7 @@ The goal of this document is to provide a high-level overview of how you can get
 ## Asking Questions
 
 Have a question?
-Rather than opening an issue, please ask away on [Stack Overflow](https://stackoverflow.com/tags/imodeljs) using the tag `imodeljs`.
+Rather than opening an issue, please ask away on [the Github discussions page](https://github.com/imodeljs/imodeljs/discussions).
 
 The community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
 

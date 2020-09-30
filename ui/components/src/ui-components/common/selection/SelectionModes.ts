@@ -36,6 +36,15 @@ export enum SelectionMode {
 /** Determines if a SelectionMode is active
  * @public
  */
+export const hasSelectionModeFlag = (selectionMode: SelectionMode, flag: SelectionModeFlags): boolean => {
+  return (selectionMode & flag) !== 0;
+}
+
+/** Determines if a SelectionMode is active
+ * @public
+ * @deprecated Use [[hasSelectionModeFlag]] instead
+ */
+// istanbul ignore next
 export const hasFlag = (selectionMode: SelectionMode, flag: SelectionModeFlags): boolean => {
   return (selectionMode & flag) !== 0;
 };

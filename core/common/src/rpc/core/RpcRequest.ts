@@ -9,7 +9,7 @@
 import { BeEvent, BentleyStatus, Guid, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
-import { BackendError, IModelError } from "../../IModelError";
+import { BackendError, IModelError, NoContentError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
@@ -261,6 +261,11 @@ export abstract class RpcRequest<TResponse = any> {
     this._lastUpdated = new Date().getTime();
   }
 
+  /** Override to describe available headers based on a protocol-specific criteria (such as a CORS whitelist). */
+  protected isHeaderAvailable(_name: string): boolean {
+    return true;
+  }
+
   /* @internal */
   public cancel() {
     if (typeof (this._sending) === "undefined") {
@@ -353,6 +358,10 @@ export abstract class RpcRequest<TResponse = any> {
       case RpcRequestStatus.NotFound: {
         return this.handleNotFound(status, value);
       }
+
+      case RpcRequestStatus.NoContent: {
+        return this.handleNoContent();
+      }
     }
   }
 
@@ -384,6 +393,10 @@ export abstract class RpcRequest<TResponse = any> {
     } catch (err) {
       return this.reject(err);
     }
+  }
+
+  private handleNoContent() {
+    return this.reject(new NoContentError());
   }
 
   private handleNotFound(status: RpcRequestStatus, value: RpcSerializedValue) {
@@ -472,6 +485,11 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   private async setHeaders(): Promise<void> {
+    const versionHeader = this.protocol.protocolVersionHeaderName;
+    if (versionHeader && RpcProtocol.protocolVersion && this.isHeaderAvailable(versionHeader)) {
+      this.setHeader(versionHeader, RpcProtocol.protocolVersion.toString());
+    }
+
     const headerNames: SerializedClientRequestContext = this.protocol.serializedClientRequestContextHeaderNames;
     const headerValues: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(this);
 

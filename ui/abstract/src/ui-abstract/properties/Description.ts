@@ -28,6 +28,14 @@ export interface EnumerationChoicesInfo {
 }
 
 /**
+ * Property renderer identification and customization attributes
+ * @beta
+ */
+export interface PropertyRendererInfo {
+  name: string;
+}
+
+/**
  * Information about a Property Editor
  * @beta
  */
@@ -51,6 +59,8 @@ export interface PropertyDescription {
   typename: string;
   /** Additional information for enumerations */
   enum?: EnumerationChoicesInfo;
+  /** Information for property renderer customization */
+  renderer?: PropertyRendererInfo;
   /** Information for a property editor */
   editor?: PropertyEditorInfo;
   /** Quantity type key used to look up formatting and parsing specs. This is typically either the name of a quantity type used by a tool

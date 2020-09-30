@@ -79,6 +79,15 @@ export class WebAppRpcRequest extends RpcRequest {
 
     request.ip = req.ip;
 
+    request.protocolVersion = 0;
+
+    if (protocol.protocolVersionHeaderName) {
+      const version = req.header(protocol.protocolVersionHeaderName);
+      if (version) {
+        request.protocolVersion = parseInt(version, 10);
+      }
+    }
+
     if (!request.id) {
       throw new IModelError(BentleyStatus.ERROR, `Invalid request.`);
     }
@@ -121,6 +130,19 @@ export class WebAppRpcRequest extends RpcRequest {
     this._request.headers = {};
   }
 
+  /** @internal */
+  public async preflight(): Promise<Response | undefined> {
+    this.method = "options";
+    this._request.method = "options";
+    await this.send();
+    return this._response;
+  }
+
+  protected isHeaderAvailable(name: string): boolean {
+    const allowed = this.protocol.allowedHeaders;
+    return allowed.has("*") || allowed.has(name);
+  }
+
   /** Sets request header values. */
   protected setHeader(name: string, value: string): void {
     this._headers[name] = value;
@@ -128,6 +150,10 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** Sends the request. */
   protected async send(): Promise<number> {
+    if (this.method !== "options") {
+      await this.protocol.initialize();
+    }
+
     this._loading = true;
     await this.setupTransport();
 
@@ -203,7 +229,7 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private static sendText(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
-    const response = fulfillment.result.objects;
+    const response = (fulfillment.status === 204) ? "" : fulfillment.result.objects;
     res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
     WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
     res.status(fulfillment.status).send(response);
@@ -294,6 +320,10 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private async setupTransport(): Promise<void> {
+    if (this.method === "options") {
+      return;
+    }
+
     const parameters = (await this.protocol.serialize(this)).parameters;
     const transportType = WebAppRpcRequest.computeTransportType(parameters, this.parameters);
 

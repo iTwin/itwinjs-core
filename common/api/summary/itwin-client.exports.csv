@@ -6,7 +6,7 @@ beta;AuthorizationClient
 public;AuthorizedClientRequestContext 
 public;AuthorizedClientRequestContextProps 
 beta;CancelRequest
-beta;ChangeState = "new" | "modified" | "deleted"
+beta;ChangeState = "new" | "modified" | "deleted" | "existing"
 beta;ChunkedQueryContext
 internal;ClassKeyMapInfo
 beta;class Client

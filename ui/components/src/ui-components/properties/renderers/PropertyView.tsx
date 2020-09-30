@@ -22,6 +22,8 @@ export interface PropertyViewProps extends SharedRendererProps {
   labelElement: React.ReactNode;
   /** Property value as a React element */
   valueElement?: React.ReactNode;
+  /** Render callback for property value. If specified, `valueElement` is ignored. */
+  valueElementRenderer?: () => React.ReactNode;
 }
 
 /** @internal */
@@ -44,17 +46,17 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
   private _onClick = () => {
     if (this.props.onClick)
       this.props.onClick(this.props.propertyRecord, this.props.uniqueKey);
-  }
+  };
 
   private _onMouseEnter = () => {
     if (this.props.isHoverable)
       this.setState({ isHovered: true });
-  }
+  };
 
   private _onMouseLeave = () => {
     if (this.props.isHoverable)
       this.setState({ isHovered: false });
-  }
+  };
 
   private _onContextMenu = (e: React.MouseEvent) => {
     if (this.props.onContextMenu)
@@ -63,7 +65,7 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
       this.props.onRightClick(this.props.propertyRecord, this.props.uniqueKey);
     e.preventDefault();
     return false;
-  }
+  };
 
   private getClassName(props: PropertyViewProps) {
     let propertyRecordClassName = props.orientation === Orientation.Horizontal
@@ -111,7 +113,9 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
           />
           : undefined}
         {this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive
-          ? <div className="components-property-record-value"><span>{this.props.valueElement}</span></div>
+          ? <div className="components-property-record-value">
+            <span>{this.props.valueElementRenderer ? this.props.valueElementRenderer() : this.props.valueElement}</span>
+          </div>
           : undefined
         }
         {this.props.actionButtonRenderers

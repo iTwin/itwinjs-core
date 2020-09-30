@@ -3624,6 +3624,8 @@ export interface ModelsTreeProps {
     dataProvider?: IPresentationTreeDataProvider;
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
+    // @alpha
+    enableHierarchyAutoUpdate?: boolean;
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
@@ -6385,6 +6387,7 @@ export interface VisibilityComponentConfig {
         selectionMode?: SelectionMode;
         selectionPredicate?: ModelsTreeSelectionPredicate;
         enableElementsClassGrouping?: ClassGroupingOption;
+        enableHierarchyAutoUpdate?: boolean;
     };
     // (undocumented)
     spatialContainmentTree?: {

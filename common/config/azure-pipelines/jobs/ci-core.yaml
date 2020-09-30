@@ -21,6 +21,9 @@ jobs:
 
   pool: ${{ parameters.pool }}
 
+  workspace:
+    clean: all
+
   steps:
     - checkout: self
       clean: true

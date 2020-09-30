@@ -115,7 +115,7 @@ vec4 computeColor() {
 `;
 
 const computeTranslucentBaseColor = "return computeColor();";
-const computeAmbientOcclusionBaseColor = `\nreturn computeOpaqueColor();\n`;
+const computeAmbientOcclusionBaseColor = "return computeOpaqueColor();";
 
 /** @internal */
 export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {

@@ -62,12 +62,12 @@ describe("CategorizedPrimitiveProperty", () => {
       TestUtils.createPrimitiveStringProperty("Prop", "Prop Value", undefined, undefined, true),
     ];
     for (const propertyRecord of records) {
-      it(`isExpand should return false when autoExpand: ${propertyRecord.autoExpand} `, () => {
+      it(`isExpanded should return ${!!propertyRecord.autoExpand} when autoExpand: ${propertyRecord.autoExpand} `, () => {
         const property = new MutableCategorizedPrimitiveProperty(propertyRecord, "Cat1", "Cat1", 0);
 
         const isExpanded = property.isExpanded;
 
-        expect(isExpanded).to.be.equal(false);
+        expect(isExpanded).to.be.equal(!!propertyRecord.autoExpand);
       });
     }
   });

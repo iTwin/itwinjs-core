@@ -11,7 +11,7 @@ import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
   ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps,
   ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesResponseProps, IModelReadRpcInterface,
-  IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface,
+  IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface,
   RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -184,7 +184,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
     const thumbnail = IModelDb.findByKey(tokenProps.key).views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
-      throw new Error("no thumbnail");
+      throw new NoContentError();
 
     const val = new Uint8Array(thumbnail.image.length + 16); // allocate a new buffer 16 bytes larger than the image size
     new Uint32Array(val.buffer, 0, 4).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 16 bytes.

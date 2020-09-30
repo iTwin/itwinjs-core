@@ -73,7 +73,7 @@ const applySolarShadowMap = `
   normal = (dot(normal, toEye) > 0.0) ? -normal : normal;
   float visible = (u_surfaceFlags[kSurfaceBitIndex_HasNormals] && (dot(normal, u_sunDir) < 0.0)) ? 0.0 : shadowMapEVSM(v_shadowPos);
   return vec4(baseColor.rgb * mix(u_shadowParams.rgb, vec3(1.0), visible), baseColor.a);
-  `;
+`;
 
 const applySolarShadowMapTerrain = `
   if (v_shadowPos.x < 0.0 || v_shadowPos.x > 1.0 || v_shadowPos.y < 0.0 || v_shadowPos.y > 1.0 || v_shadowPos.z < 0.0 || v_shadowPos.z > 1.0)
@@ -81,7 +81,7 @@ const applySolarShadowMapTerrain = `
 
   float visible = shadowMapEVSM(v_shadowPos);
   return vec4(baseColor.rgb * mix(u_shadowParams.rgb, vec3(1.0), visible), baseColor.a);
-  `;
+`;
 
 /** @internal */
 export function addEvsmExponent(frag: FragmentShaderBuilder): void {

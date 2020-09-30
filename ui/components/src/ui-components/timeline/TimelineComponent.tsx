@@ -70,8 +70,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this.state = {
       isSettingsOpen: false,
       isPlaying: false,
-      minimized: this.props.alwaysMinimized ? true : this.props.minimized,
-      currentDuration: props.initialDuration ? props.initialDuration : 0,
+      minimized: this.props.alwaysMinimized ? /* istanbul ignore next */ true : this.props.minimized,
+      currentDuration: props.initialDuration ? props.initialDuration : /* istanbul ignore next */ 0,
       totalDuration: this.props.totalDuration,
       repeat: this.props.repeat ? true : false,
     };
@@ -94,7 +94,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   public componentDidUpdate(prevProps: TimelineComponentProps) {
     if (this.props.initialDuration !== prevProps.initialDuration) {
-      this._setDuration(this.props.initialDuration ? this.props.initialDuration : 0);
+      this._setDuration(this.props.initialDuration ? this.props.initialDuration : /* istanbul ignore next */ 0);
     }
   }
 

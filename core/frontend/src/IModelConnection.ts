@@ -643,6 +643,27 @@ export abstract class BriefcaseConnection extends IModelConnection {
    * @internal
    */
   public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.getRpcProps()); }
+
+  /** Pull and merge new server changes
+   * @alpha
+   */
+  public async pullAndMergeChanges(): Promise<void> {
+    const rpc = IModelWriteRpcInterface.getClientForRouting(this.routingContext.token);
+    const newProps: IModelConnectionProps = await rpc.pullAndMergeChanges(this.getRpcProps());
+    this._changeSetId = newProps.changeSetId;
+    this.initialize(newProps.name!, newProps);
+  }
+
+  /** Push local changes to the server
+   * @param description description of new changeset
+   * @alpha
+   */
+  public async pushChanges(description: string): Promise<void> {
+    const rpc = IModelWriteRpcInterface.getClientForRouting(this.routingContext.token);
+    const newProps: IModelConnectionProps = await rpc.pushChanges(this.getRpcProps(), description);
+    this._changeSetId = newProps.changeSetId;
+    this.initialize(newProps.name!, newProps);
+  }
 }
 
 /** A connection to a [BriefcaseDb]($backend) hosted on a remote backend, and is typically used in web applications.

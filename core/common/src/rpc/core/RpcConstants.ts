@@ -30,6 +30,7 @@ export enum RpcProtocolEvent {
   BackendReportedPending,
   BackendReportedNotFound,
   BackendErrorOccurred,
+  BackendReportedNoContent,
 }
 
 /** The status of an RPC operation request.
@@ -45,6 +46,7 @@ export enum RpcRequestStatus {
   Disposed,
   NotFound,
   Cancelled,
+  NoContent,
 }
 
 /** RPC request event types.

@@ -1445,6 +1445,10 @@ export abstract class BriefcaseConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
+    // @alpha
+    pullAndMergeChanges(): Promise<void>;
+    // @alpha
+    pushChanges(description: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -1990,6 +1994,8 @@ export class DisplayStyle2dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
     // @internal (undocumented)
     static get className(): string;
+    // @internal (undocumented)
+    overrideTerrainSkirtDisplay(): boolean | undefined;
     // (undocumented)
     get settings(): DisplayStyleSettings;
     }
@@ -2010,6 +2016,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @internal (undocumented)
     protected onOverridesApplied(overrides: DisplayStyle3dSettingsProps): void;
+    // @internal (undocumented)
+    overrideTerrainSkirtDisplay(): boolean | undefined;
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
@@ -2025,7 +2033,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     anyMapLayersVisible(overlay: boolean): boolean;
     // @internal (undocumented)
     attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
-    // @internal (undocumented)
+    // @beta
     attachRealityModel(props: ContextRealityModelProps): void;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
@@ -2056,9 +2064,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
     detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void;
-    // @internal (undocumented)
+    // @beta
     detachRealityModelByIndex(index: number): void;
-    // @internal (undocumented)
+    // @beta
     detachRealityModelByNameAndUrl(name: string, url: string): void;
     // @internal (undocumented)
     get displayTerrain(): boolean;
@@ -2095,7 +2103,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get globeMode(): GlobeMode;
     // @internal (undocumented)
     hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
-    // @internal (undocumented)
+    // @beta
     hasAttachedRealityModel(name: string, url: string): boolean;
     // @beta
     get hasModelAppearanceOverride(): boolean;
@@ -2129,6 +2137,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @beta
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    // @internal (undocumented)
+    abstract overrideTerrainSkirtDisplay(): boolean | undefined;
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
     set scheduleScript(script: RenderScheduleState.Script | undefined);
@@ -2186,7 +2196,6 @@ export class EditingFunctions {
     get codes(): EditingFunctions.Codes;
     get concurrencyControl(): EditingFunctions.ConcurrencyControl;
     deleteElements(ids: Id64Array): Promise<void>;
-    getParentChangeset(): Promise<string>;
     hasPendingTxns(): Promise<boolean>;
     hasUnsavedChanges(): Promise<boolean>;
     get models(): EditingFunctions.ModelEditor;
@@ -2208,7 +2217,6 @@ export namespace EditingFunctions {
     export class ConcurrencyControl {
         constructor(c: IModelConnection);
         lockModel(modelId: Id64String, level?: LockLevel): Promise<void>;
-        pullMergePush(comment: string, doPush?: boolean): Promise<GuidString>;
         request(): Promise<void>;
         }
     export class ModelEditor {
@@ -3115,7 +3123,7 @@ export class GeoServices {
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
 
 // @internal (undocumented)
-export function getCesiumAccessTokenAndEndpointUrl(): Promise<{
+export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?: string): Promise<{
     token?: string;
     url?: string;
 }>;
@@ -3390,6 +3398,8 @@ export abstract class GraphicBuilder {
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
     readonly viewport: Viewport;
+    get wantNormals(): boolean;
+    set wantNormals(_wantNormals: boolean);
 }
 
 // @public
@@ -4935,7 +4945,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean);
+    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideSkirtDisplay?: CheckSkirtDisplayOverride | undefined);
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
@@ -6420,6 +6430,8 @@ export namespace RealityModelTileTree {
         modelId?: Id64String;
         // (undocumented)
         name?: string;
+        // (undocumented)
+        requestAuthorization?: string;
         // (undocumented)
         source: RealityModelSource;
         // (undocumented)

@@ -233,13 +233,31 @@ export class ShaderVariables {
       this.addGlobal(name, VariableType.Float, (1.0 / (2 ** (value + 1))).toExponential(7), true);
   }
 
+  /** Constructs the lines of glsl code declaring the variables of a certain scope. */
+  public buildScopeDeclarations(isVertexShader: boolean, scope: VariableScope, constants?: boolean): string {
+    let decls = "";
+    for (const v of this._list) {
+      if (scope === v.scope && (undefined === constants ? true : v.isConst === constants))
+        decls += `${v.buildDeclaration(isVertexShader)}\n`;
+    }
+
+    return decls;
+  }
+
   /** Constructs the lines of glsl code declaring all of the variables. */
   public buildDeclarations(isVertexShader: boolean): string {
     let decls = "";
-    for (const v of this._list) {
-      decls += `${v.buildDeclaration(isVertexShader)}\n`;
+    if (isVertexShader) {
+      decls += this.buildScopeDeclarations(isVertexShader, VariableScope.Uniform);
+      decls += this.buildScopeDeclarations(isVertexShader, VariableScope.Global, true);
+      decls += this.buildScopeDeclarations(isVertexShader, VariableScope.Global, false);
+      decls += this.buildScopeDeclarations(isVertexShader, VariableScope.Varying);
+    } else {
+      decls += this.buildScopeDeclarations(isVertexShader, VariableScope.Varying);
+      decls += this.buildScopeDeclarations(isVertexShader, VariableScope.Uniform);
+      decls += this.buildScopeDeclarations(isVertexShader, VariableScope.Global, true);
+      decls += this.buildScopeDeclarations(isVertexShader, VariableScope.Global, false);
     }
-
     return decls;
   }
 
@@ -592,9 +610,6 @@ export class ShaderBuilder extends ShaderVariables {
     src.addline("precision highp int;");
     src.newline();
 
-    // Variable declarations
-    src.add(this.buildDeclarations(isVertexShader));
-
     // Attribute declarations
     if (attrMap !== undefined) {
       const webGL2 = System.instance.capabilities.isWebGL2;
@@ -606,6 +621,9 @@ export class ShaderBuilder extends ShaderVariables {
       });
     }
 
+    // Variable declarations
+    src.add(this.buildDeclarations(isVertexShader));
+
     // Layouts (WebGL2 only)
     for (const layout of this._fragOutputs)
       src.addline(layout);
@@ -614,7 +632,8 @@ export class ShaderBuilder extends ShaderVariables {
     for (const func of this._functions) {
       src.add(func);
     }
-    if (0 !== this._functions.length)
+
+    if (!src.source.endsWith("\n\n"))
       src.newline();
 
     return src;
@@ -723,7 +742,10 @@ export class VertexShaderBuilder extends ShaderBuilder {
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
-      main.addline(`  {${init}  }\n`);
+      if ("\n" === init.charAt(0))
+        main.addline(`  {${init}  }\n`);
+      else
+        main.addline(`  { ${init} }\n`);
     }
 
     main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
@@ -755,21 +777,21 @@ export class VertexShaderBuilder extends ShaderBuilder {
     if (undefined !== computeBaseColor) {
       assert(undefined !== this.find("v_color"));
       prelude.addFunction("vec4 computeBaseColor()", computeBaseColor);
-      main.addline("vec4 baseColor = computeBaseColor();");
+      main.addline("  vec4 baseColor = computeBaseColor();");
 
       const applyMaterialColor = this.get(VertexShaderComponent.ApplyMaterialColor);
       if (undefined !== applyMaterialColor) {
         prelude.addFunction("vec4 applyMaterialColor(vec4 baseColor)", applyMaterialColor);
-        main.addline("baseColor = applyMaterialColor(baseColor);");
+        main.addline("  baseColor = applyMaterialColor(baseColor);");
       }
 
       const applyFeatureColor = this.get(VertexShaderComponent.ApplyFeatureColor);
       if (undefined !== applyFeatureColor) {
         prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
-        main.addline("baseColor = applyFeatureColor(baseColor);");
+        main.addline("  baseColor = applyFeatureColor(baseColor);");
       }
 
-      main.addline("v_color = baseColor;");
+      main.addline("  v_color = baseColor;");
     }
 
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
@@ -916,7 +938,10 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
-      main.addline(`  {${init}  }\n`);
+      if ("\n" === init.charAt(0))
+        main.addline(`  {${init}  }\n`);
+      else
+        main.addline(`  { ${init} }\n`);
     }
 
     const checkForEarlyDiscard = this.get(FragmentShaderComponent.CheckForEarlyDiscard);
@@ -940,7 +965,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     let clipIndent = "";
     const applyClipping = this.get(FragmentShaderComponent.ApplyClipping);
     if (undefined !== applyClipping) {
-      prelude.addline("vec3 g_clipColor;");
+      prelude.addline("vec3 g_clipColor;\n");
       prelude.addFunction("bool applyClipping(vec4 baseColor)", applyClipping);
       main.addline("  bool hasClipColor = applyClipping(baseColor);");
       main.addline("  if (hasClipColor) { baseColor.rgb = g_clipColor; } else {");

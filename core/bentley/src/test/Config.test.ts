@@ -9,6 +9,10 @@ import { Config } from "../Config";
 
 describe("Config", () => {
 
+  before(() => {
+    process.env.imjs_hello = "hello";
+  });
+
   it("should set primitive values", () => {
     Config.App.set("A", 1);
     Config.App.set("B", "strValue");
@@ -80,6 +84,22 @@ describe("Config", () => {
     assert.equal(2, Config.App.get("primitive"));
     assert.equal(2, Config.App.get("env"));
     assert.equal(2, Config.App.get("multiple"));
+  });
+
+  it("environment variables", () => {
+    assert.equal(Config.App.get("imjs_hello"), "hello", "env vars with imjs prefix are automatically added");
+
+    process.env.cfg_test_1 = "1";
+    process.env.cfg_test_2 = "2";
+    process.env.cfg_test_3 = "3";
+    process.env.CFG_test_4 = "4";
+    process.env.xxx_cfg_test_1 = "nothing";
+    Config.App.addEnvVarsStartingWith("cfg_test");
+    assert.equal(Config.App.get("cfg_test_1"), "1");
+    assert.equal(Config.App.get("cfg_test_2"), "2");
+    assert.equal(Config.App.get("CFG_TEST_3"), "3");
+    assert.equal(Config.App.get("cfg_test_4"), "4");
+    assert.isFalse(Config.App.has("xxx_cfg_test_1"));
   });
 
   it("variable expansion should throw for missing variable", () => {

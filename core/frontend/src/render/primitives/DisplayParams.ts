@@ -49,7 +49,7 @@ export class DisplayParams {
   }
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
-  public static createForType(type: DisplayParams.Type, gf: GraphicParams, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined): DisplayParams {
+  public static createForType(type: DisplayParams.Type, gf: GraphicParams, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined, ignoreLighting = false): DisplayParams {
     const lineColor = DisplayParams.adjustTransparency(gf.lineColor);
     switch (type) {
       case DisplayParams.Type.Mesh: {
@@ -59,7 +59,7 @@ export class DisplayParams {
           if (undefined !== gradientTexture)
             gradientMapping = new TextureMapping(gradientTexture, new TextureMapping.Params());
         }
-        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparency(gf.fillColor), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, false, gradientMapping);
+        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparency(gf.fillColor), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, ignoreLighting, gradientMapping);
       }
       case DisplayParams.Type.Linear:
         return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
@@ -69,8 +69,8 @@ export class DisplayParams {
   }
 
   /** Creates a DisplayParams object that describes mesh geometry based on the specified GraphicParams. */
-  public static createForMesh(gf: GraphicParams, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined): DisplayParams {
-    return DisplayParams.createForType(DisplayParams.Type.Mesh, gf, resolveGradient);
+  public static createForMesh(gf: GraphicParams, ignoreLighting: boolean, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined): DisplayParams {
+    return DisplayParams.createForType(DisplayParams.Type.Mesh, gf, resolveGradient, ignoreLighting);
   }
 
   /** Creates a DisplayParams object that describes linear geometry based on the specified GraphicParams. */

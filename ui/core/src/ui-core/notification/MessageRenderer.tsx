@@ -33,9 +33,9 @@ export function MessageRenderer(props: MessageRendererProps) {
   if (typeof props.message === "string") {
     messageNode = <OutElement className={props.className}>{props.message}</OutElement>;
   } else if (isHTMLElement(props.message)) {
-    const cleanHTML = DOMPurify.sanitize(props.message.outerHTML);
+    const sanitizer = DOMPurify.sanitize; // `sanitizer` is default function name for "jam3/no-sanitizer-with-danger" ESLint rule
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    messageNode = <OutElement className={props.className} dangerouslySetInnerHTML={{ __html: cleanHTML }} />;
+    messageNode = <OutElement className={props.className} dangerouslySetInnerHTML={{ __html: sanitizer(props.message.outerHTML) }} />;
   } else {
     /* istanbul ignore else */
     if (isReactMessage(props.message))

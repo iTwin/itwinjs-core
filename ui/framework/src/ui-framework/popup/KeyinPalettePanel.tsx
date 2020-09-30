@@ -111,7 +111,7 @@ export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allow
       IModelApp.notifications.outputMessage(errorDetails);
     } else {
       // istanbul ignore next
-      if (value !== ClearKeyinPaletteHistoryTool.keyin && value !==ClearKeyinPaletteHistoryTool.englishKeyin) {
+      if (value.length < 400 && value !== ClearKeyinPaletteHistoryTool.keyin && value !==ClearKeyinPaletteHistoryTool.englishKeyin) {
         const newHistoryEntries: string[] = [value];
         for (const entry of historyKeyins) {
           if (entry !== value) {

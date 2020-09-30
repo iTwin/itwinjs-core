@@ -278,17 +278,17 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       >
         {opened &&
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
-            <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
-              <div
-                className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
-                style={{ ...containerStyle, ...minMaxStyle }}
-                data-testid="core-dialog-container"
-                onPointerDown={this._handleContainerPointerDown}
-              >
-                <div className={"core-dialog-area"} ref={this._containerRef} style={minMaxStyle}>
-                  {!hideHeader &&
-                    headerElement
-                  }
+            <div
+              className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
+              style={{ ...containerStyle, ...minMaxStyle }}
+              data-testid="core-dialog-container"
+              onPointerDown={this._handleContainerPointerDown}
+            >
+              <div className={"core-dialog-area"} ref={this._containerRef} style={minMaxStyle}>
+                {!hideHeader &&
+                  headerElement
+                }
+                <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
                   <div
                     className={classnames(
                       "core-dialog-content",
@@ -302,24 +302,25 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
                       {footerElement}
                     </div>
                   }
-                  <div
-                    className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
-                    data-testid="core-dialog-drag-right"
-                    onPointerDown={this._handleStartResizeRight}
-                  />
-                  <div
-                    className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
-                    data-testid="core-dialog-drag-bottom"
-                    onPointerDown={this._handleStartResizeDown}
-                  />
-                  <div
-                    className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
-                    data-testid="core-dialog-drag-bottom-right"
-                    onPointerDown={this._handleStartResizeDownRight}
-                  />
-                </div>
+                </FocusTrap>
+
+                <div
+                  className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
+                  data-testid="core-dialog-drag-right"
+                  onPointerDown={this._handleStartResizeRight}
+                />
+                <div
+                  className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
+                  data-testid="core-dialog-drag-bottom"
+                  onPointerDown={this._handleStartResizeDown}
+                />
+                <div
+                  className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
+                  data-testid="core-dialog-drag-bottom-right"
+                  onPointerDown={this._handleStartResizeDownRight}
+                />
               </div>
-            </FocusTrap>
+            </div>
           </DivWithOutsideClick>
         }
       </div>

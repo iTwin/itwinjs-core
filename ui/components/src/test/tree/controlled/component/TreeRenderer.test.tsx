@@ -29,21 +29,26 @@ describe("TreeRenderer", () => {
 
   before(async () => {
     await TestUtils.initializeUiComponents();
+    Element.prototype.scrollIntoView = () => { };
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+    delete (Element.prototype as any).scrollIntoView;
+  });
+
+  beforeEach(() => {
     // note: this is needed for AutoSizer used by the Tree to
     // have non-zero size and render the virtualized list
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
     sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
-  after(() => {
-    TestUtils.terminateUiComponents();
-    sinon.restore();
-  });
-
-  beforeEach(() => {
+  afterEach(() => {
     visibleNodesMock.reset();
     treeActionsMock.reset();
     nodeLoaderMock.reset();
+    sinon.restore();
   });
 
   it("renders without nodes", () => {
@@ -209,9 +214,9 @@ describe("TreeRenderer", () => {
     };
 
     const verticalScrollSpy = sinon.spy();
-    VariableSizeList.prototype.scrollToItem = verticalScrollSpy;
+    sinon.replace(VariableSizeList.prototype, "scrollToItem", verticalScrollSpy);
     const horizontalScrollSpy = sinon.spy();
-    Element.prototype.scrollIntoView = horizontalScrollSpy;
+    sinon.replace(Element.prototype, "scrollIntoView", horizontalScrollSpy);
 
     const { rerender } = render(
       <TreeRenderer
@@ -315,4 +320,31 @@ describe("TreeRenderer", () => {
     expect(spy).to.be.called;
   });
 
+  describe("scrollToNode", () => {
+    it("scrolls to the specified node", () => {
+      visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 20);
+      visibleNodesMock.setup((x) => x.getAtIndex(moq.It.isAnyNumber()))
+        .returns((index) => createRandomMutableTreeModelNode(undefined, false, `Node ${index}`));
+      visibleNodesMock.setup((x) => x.getIndexOfNode("test_id")).returns(() => 15);
+
+      const scrollToItemFake = sinon.fake();
+      sinon.replace(VariableSizeList.prototype, "scrollToItem", scrollToItemFake);
+
+      const treeRendererRef: React.RefObject<TreeRenderer> = { current: null };
+      render(React.createElement(() => {
+        return (
+          <TreeRenderer
+            ref={treeRendererRef}
+            nodeLoader={nodeLoaderMock.object}
+            treeActions={treeActionsMock.object}
+            visibleNodes={visibleNodesMock.object}
+            nodeHeight={() => 50}
+          />
+        );
+      }));
+
+      treeRendererRef.current!.scrollToNode("test_id", "smart");
+      expect(scrollToItemFake).to.have.been.calledOnceWithExactly(15, "smart");
+    });
+  });
 });

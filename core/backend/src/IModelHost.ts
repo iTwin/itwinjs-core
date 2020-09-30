@@ -455,7 +455,7 @@ export class IModelHost {
 
     IModelHost.setupRpcRequestContext();
 
-    const rpcs = [
+    [
       IModelReadRpcImpl,
       IModelTileRpcImpl,
       IModelWriteRpcImpl,
@@ -465,15 +465,13 @@ export class IModelHost {
       DevToolsRpcImpl,
       Editor3dRpcImpl,
       NativeAppRpcImpl,
-    ];
-    const schemas = [
+    ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
+
+    [
       BisCoreSchema,
       GenericSchema,
       FunctionalSchema,
-    ];
-
-    rpcs.forEach((rpc) => rpc.register()); // register all of the RPC implementations
-    schemas.forEach((schema) => schema.registerSchema()); // register all of the schemas
+    ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();

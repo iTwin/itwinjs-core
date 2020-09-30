@@ -48,6 +48,12 @@ describe("StringTypeConverter", () => {
       expect(converter.sortCompare("abcdefg", "ABCDEFG", true)).to.equal(0);
       expect(converter.sortCompare("ABCDEFG", "abcdefg", true)).to.equal(0);
     });
+
+    it("returns 0 if args are invalid", () => {
+      expect(converter.sortCompare(1 as unknown as string, "ABCDEFG")).to.equal(0);
+      expect(converter.sortCompare("ABCDEFG", 1 as unknown as string)).to.equal(0);
+    });
+
   });
 
   it("isStringType", () => {
@@ -91,6 +97,7 @@ describe("StringTypeConverter", () => {
 
   it("isEmpty", () => {
     expect(converter.isEmpty("")).to.be.true;
+    expect(converter.isEmpty(1 as unknown as string)).to.be.true;
   });
 
   it("isNotEmpty", () => {

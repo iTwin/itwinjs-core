@@ -10,14 +10,24 @@ import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 
 // cSpell:ignore signin devserver webcontents
 
+/** @beta */
+export interface ElectronManagerOptions {
+  webResourcesPath: string;
+  iconName?: string;
+  frontendURL?: string;
+}
+
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
  * that follow platform-standard window behavior on all platforms.
  * @beta
  */
-export abstract class StandardElectronManager {
+class ElectronManager {
   private _mainWindow?: BrowserWindow;
-  protected get _defaultWindowOptions(): BrowserWindowConstructorOptions { return {}; }
+  protected readonly _electronFrontend = "electron://frontend/";
+  public readonly webResourcesPath: string;
+  public readonly appIconPath: string;
+  public readonly frontendURL: string;
 
   private openMainWindow(options: BrowserWindowConstructorOptions = {}) {
     const opts: BrowserWindowConstructorOptions = {
@@ -26,27 +36,33 @@ export abstract class StandardElectronManager {
         preload: path.join(__dirname, "./ElectronPreload.js"),
         nodeIntegration: false,
         experimentalFeatures: false,
-        enableRemoteModule: true,
+        enableRemoteModule: false,
         contextIsolation: true,
         sandbox: true,
       },
-      ...this._defaultWindowOptions, // override defaults
+      icon: this.appIconPath,
       ...options, // overrides everything above
     };
 
     this._mainWindow = new BrowserWindow(opts);
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
 
-  /** The URL the main BrowserWindow should load on application initialization. */
-  public abstract get frontendURL(): string;
+    // Setup handlers for IPC calls to support Authorization
+    DesktopAuthorizationClientIpc.initializeIpc(this.mainWindow!);
+  }
 
   /** The "main" BrowserWindow for this application. */
   public get mainWindow() { return this._mainWindow; }
 
+  constructor(opts: ElectronManagerOptions) {
+    this.webResourcesPath = opts.webResourcesPath;
+    this.frontendURL = opts.frontendURL ?? `${this._electronFrontend}index.html`;
+    this.appIconPath = path.join(this.webResourcesPath, opts.iconName ?? "appicon.ico");
+  }
+
   /**
-   * Once electron is "ready", initializes the application by:
+   * wait for the app to be "ready", and then initialize the application by:
    *   - Creating the main BrowserWindow.
    *   - Opening the frontend in the main BrowserWindow.
    *   - Defining some platform-standard window behavior.
@@ -70,9 +86,6 @@ export abstract class StandardElectronManager {
       await new Promise((resolve) => app.on("ready", resolve));
 
     this.openMainWindow(windowOptions);
-
-    // Setup handlers for IPC calls to support Authorization
-    DesktopAuthorizationClientIpc.initializeIpc(this.mainWindow!);
   }
 }
 
@@ -80,21 +93,7 @@ export abstract class StandardElectronManager {
  * A StandardElectronManager that adds some reasonable defaults for iModel.js applications.
  * @beta
  */
-export class IModelJsElectronManager extends StandardElectronManager {
-  private readonly _webResourcesPath: string;
-  private readonly _electronFrontend = "electron://frontend/";
-  public frontendURL: string;
-  public appIconPath: string;
-
-  constructor(webResourcesPath: string = `${__dirname}/`) {
-    super();
-    this._webResourcesPath = webResourcesPath;
-
-    // In production builds, load the built frontend assets directly from the filesystem.
-    this.frontendURL = `${this._electronFrontend}index.html`;
-    this.appIconPath = this.parseElectronUrl(`${this._electronFrontend}appicon.ico`);
-  }
-
+export class IModelJsElectronManager extends ElectronManager {
   /**
    * Converts an "electron://frontend/" URL to an absolute file path.
    *
@@ -111,7 +110,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
 
     // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
     assetPath = assetPath.replace("signin-callback", "index.html");
-    assetPath = path.normalize(`${this._webResourcesPath}/${assetPath}`);
+    assetPath = path.normalize(`${this.webResourcesPath}/${assetPath}`);
 
     // File protocols don't follow symlinks, so we need to resolve this to a real path.
     // However, if the file doesn't exist, it's fine to return an invalid path here - the request will just fail with net::ERR_FILE_NOT_FOUND
@@ -119,28 +118,16 @@ export class IModelJsElectronManager extends StandardElectronManager {
       assetPath = fs.realpathSync(assetPath);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
+      // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
     return assetPath;
   }
 
-  protected get _defaultWindowOptions() {
-    return {
-      icon: this.appIconPath,
-    };
-  }
-
   public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
-    protocol.registerSchemesAsPrivileged([
-      { scheme: "electron", privileges: { standard: true, secure: true } },
-    ]);
-
-    await new Promise((resolve) => app.on("ready", resolve));
-
     // Also handle any "electron://" requests and redirect them to "file://" URLs
     protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
 
-    await super.initialize(windowOptions);
+    await super.initialize(windowOptions); // must be after registering protocol
   }
 }
 
@@ -148,29 +135,13 @@ export class IModelJsElectronManager extends StandardElectronManager {
  * A StandardElectronManager that adds some reasonable defaults for applications built with @bentley/react-scripts running in "development" mode.
  * @beta
  */
-export class WebpackDevServerElectronManager extends StandardElectronManager {
-  public frontendURL: string;
-  public appIconPath: string;
-
-  constructor(frontendPort = 3000) {
-    super();
-
-    // In development builds, the frontend assets are served by the webpack devserver.
-    this.frontendURL = `http://localhost:${frontendPort}`;
-    this.appIconPath = `${this.frontendURL}/appicon.ico`;
-  }
-
-  protected get _defaultWindowOptions() {
-    return {
-      icon: this.appIconPath,
-    };
+export class WebpackDevServerElectronManager extends ElectronManager {
+  constructor(opts: ElectronManagerOptions, frontendPort = 3000) {
+    opts.frontendURL = opts.frontendURL ?? `http://localhost:${frontendPort}`;
+    super(opts);
   }
 
   public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
-    protocol.registerSchemesAsPrivileged([
-      { scheme: "electron", privileges: { standard: true, secure: true } },
-    ]);
-
     // Occasionally, the electron backend may start before the webpack devserver has even started.
     // If this happens, we'll just retry and keep reloading the page.
     app.on("web-contents-created", (_e, webcontents) => {
@@ -183,6 +154,14 @@ export class WebpackDevServerElectronManager extends StandardElectronManager {
       });
     });
 
-    return super.initialize(windowOptions);
+    await super.initialize(windowOptions);
   }
 }
+
+// this initialization should always happen before the app starts.
+function staticElectronInitialize() {
+  app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
+  protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+}
+
+staticElectronInitialize(); // executed when this file is loaded.

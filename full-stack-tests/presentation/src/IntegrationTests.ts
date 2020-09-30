@@ -9,7 +9,7 @@ import * as cpx from "cpx";
 import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -96,6 +96,9 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
   };
+
+  if (props.useClientServices)
+    await frontendAppOptions.authorizationClient!.signIn(new ClientRequestContext());
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,

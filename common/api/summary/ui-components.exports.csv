@@ -8,6 +8,7 @@ beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNod
 beta;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 beta;ActiveMatchInfo
+alpha;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 beta;AlphaSlider 
 beta;AlphaSliderProps 
 alpha;AnimationFractionChangeHandler = (animationFraction: number) => void
@@ -104,9 +105,15 @@ beta;CustomToolbarItem
 beta;DataController
 beta;class DataControllerBase 
 internal;DataRowItem 
+internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
+alpha;DateFieldProps 
+alpha;DateFormatter
+alpha;DatePicker(props: DatePickerProps): JSX.Element
+alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps): JSX.Element
+alpha;DatePickerPopupButtonProps 
+alpha;DatePickerProps
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
-internal;DayPicker 
 public;DelayLoadedTreeNodeItem 
 public;DEPRECATED_Tree 
 beta;DEPRECATED_withTreeDragDrop
@@ -170,6 +177,7 @@ internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
+public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
@@ -200,6 +208,7 @@ internal;InlineEdit
 internal;InputContext
 internal;InputSwitchComponent 
 internal;InputSwitchProps
+alpha;IntlFormatter 
 public;IntTypeConverter 
 alpha;IPropertyDataFilterer
 public;IPropertyDataProvider
@@ -414,6 +423,7 @@ beta;TextEditor
 beta;ThemedEnumEditor 
 beta;ThemedEnumEditorProps 
 beta;ThemedEnumPropertyEditor 
+beta;TimeDisplay = "hh:mm aa" | "hh:mm:ss aa" | "hh:mm" | "hh:mm:ss"
 internal;Timeline 
 alpha;TimelineComponent 
 alpha;TimelineDataProvider
@@ -482,7 +492,8 @@ public;TreeNodeProps
 beta;TreeNodeRenderer: React.MemoExoticComponent
 beta;TreeNodeRendererProps 
 public;TreeProps 
-beta;TreeRenderer(props: TreeRendererProps): JSX.Element
+beta;TreeRenderer 
+beta;TreeRendererAttributes
 beta;TreeRendererContext
 beta;TreeRendererProps
 beta;TreeSelectionChange
@@ -500,6 +511,7 @@ alpha;usePropertyData(props:
 alpha;usePropertyGridEventHandler(props:
 alpha;usePropertyGridModel(props:
 alpha;usePropertyGridModelSource(props:
+internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
 internal;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs

@@ -7,7 +7,6 @@
     "**/node_modules": true,
     "**/bower_components": true,
     "**/.nyc_output": true,
-    "**/common/temp": true,
     "**/.rush": true
   },
   "files.exclude": {
@@ -18,12 +17,10 @@
     "**/generated-docs": true,
     "**/package-deps.json": true,
     "**/node_modules": true,
+    "**/test-apps/**/build": true,
     "**/out": true,
     "**/lib": true,
-    "**/test-apps/**/build": true,
-    "common/temp": true,
-    "tools/build/mocha-reporter": true,
-    "tools/build/tslint-rules": true
+    "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
   "typescript.tsdk": "node_modules\\typescript\\lib",

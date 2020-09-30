@@ -17,9 +17,9 @@ const computeBaseColor = "return vec4(1.0);";
 
 const assignFragData = `
   if (v_texCoord.y < .5)
-   FragColor = TEXTURE(u_texture0, vec2(v_texCoord.x, v_texCoord.y * 2.0));
+    FragColor = TEXTURE(u_texture0, vec2(v_texCoord.x, v_texCoord.y * 2.0));
   else
-   FragColor = TEXTURE(u_texture1, vec2(v_texCoord.x, v_texCoord.y * 2.0 - 1.0));
+    FragColor = TEXTURE(u_texture1, vec2(v_texCoord.x, v_texCoord.y * 2.0 - 1.0));
 `;
 
 /** @internal */

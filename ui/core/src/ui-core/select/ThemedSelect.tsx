@@ -210,11 +210,11 @@ export function ThemedSelect(props: ThemedSelectProps) {
     return noOptionLabel.current;
   }, [noOptionLabel]);
   const noOptionFunction = props.noOptionsMessage ?? defaultOptionMessage;
-  const className = classnames("uicore-reactSelectTop", props.className);
+  const selectClassName = classnames("uicore-reactSelectTop", props.className);
   const portalTarget = !!props.isMenuFixed ? undefined : getParentSelector();
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    classNamePrefix, noOptionsMessage, menuPortalTarget, isMenuFixed, styles, components,
+    classNamePrefix, className, noOptionsMessage, menuPortalTarget, isMenuFixed, styles, components,
     // eslint-disable-next-line comma-dangle
     ...otherProps // pass-through props
   } = props as any;
@@ -225,7 +225,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
 
   const zIndex = getCssVariableAsNumber("--uicore-z-index-dialog-popup");
   return (
-    <div className={className}>
+    <div className={selectClassName}>
       <Component
         classNamePrefix="react-select"
         noOptionsMessage={noOptionFunction}

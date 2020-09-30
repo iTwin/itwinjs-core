@@ -1,4 +1,4 @@
-# Getting started
+# Getting started (online quick start)
 
 ## 1. Get the tools
 

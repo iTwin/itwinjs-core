@@ -8,13 +8,14 @@ import * as https from "https";
 import * as path from "path";
 import { Logger } from "@bentley/bentleyjs-core";
 import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-import { getRpcInterfaces, initializeBackend } from "./backend";
+import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
 /* eslint-disable no-console */
 
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-  // Initialize the backend
-  await initializeBackend();
+// function called when we start the backend webserver
+const dtaWebMain = (async () => {
+  // Initialize our backend
+  await initializeDtaBackend();
 
   let serverConfig: any;
   let serverOptions: any;
@@ -74,4 +75,7 @@ import { getRpcInterfaces, initializeBackend } from "./backend";
   } else {
     https.createServer(serverOptions, app).listen(app.get("port"), announce);
   }
-})();
+});
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+dtaWebMain();

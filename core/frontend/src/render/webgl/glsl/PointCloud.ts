@@ -17,7 +17,7 @@ import { addViewportTransformation } from "./Viewport";
 import { addThematicDisplay } from "./Thematic";
 import { addTexture } from "./Surface";
 
-const computeColor = "return (u_pointCloudParams.x == 1.0)?  vec4(a_color.z, a_color.y, a_color.x, 1.0) : vec4(a_color, 1.0);";
+const computeColor = "return (u_pointCloudParams.x == 1.0) ? vec4(a_color.z, a_color.y, a_color.x, 1.0) : vec4(a_color, 1.0);";
 const computeBaseColor = "return v_color;";
 
 const roundPointDiscard = `
@@ -28,13 +28,13 @@ const roundPointDiscard = `
 const checkForClassifiedDiscard = "return baseColor.a == 0.0;";
 
 const computePosition = `
-gl_PointSize = 1.0;
-vec4 pos = MAT_MVP * rawPos;
+  gl_PointSize = 1.0;
+  vec4 pos = MAT_MVP * rawPos;
 
-if (u_lineWeight < 0.0 && pos.w > 0.0) {
-  mat4 toView = u_viewportTransformation * MAT_MVP;
-  float scale = length(toView[0].xyz);
-  gl_PointSize = clamp (- u_lineWeight * scale / pos.w, 2.0, 20.0);
+  if (u_lineWeight < 0.0 && pos.w > 0.0) {
+    mat4 toView = u_viewportTransformation * MAT_MVP;
+    float scale = length(toView[0].xyz);
+    gl_PointSize = clamp (- u_lineWeight * scale / pos.w, 2.0, 20.0);
   }
   return pos;
 `;

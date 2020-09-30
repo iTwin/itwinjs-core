@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -33,6 +33,7 @@ export class RpcInvocation {
   private _threw: boolean = false;
   private _pending: boolean = false;
   private _notFound: boolean = false;
+  private _noContent: boolean = false;
   private _timeIn: number = 0;
   private _timeOut: number = 0;
 
@@ -60,6 +61,8 @@ export class RpcInvocation {
         return RpcRequestStatus.Pending;
       else if (this._notFound)
         return RpcRequestStatus.NotFound;
+      else if (this._noContent)
+        return RpcRequestStatus.NoContent;
       else
         return RpcRequestStatus.Resolved;
     }
@@ -183,11 +186,18 @@ export class RpcInvocation {
 
     const result = await RpcMarshaling.serialize(this.protocol, reason);
 
+    let isNoContentError = false;
+    try { isNoContentError = reason.errorNumber === IModelStatus.NoContent; } catch { }
+
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
       this._threw = false;
       result.objects = reason.message;
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedPending, this);
+    } else if (this.supportsNoContent() && isNoContentError) {
+      this._noContent = true;
+      this._threw = false;
+      this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedNoContent, this);
     } else if (reason instanceof RpcNotFoundResponse) {
       this._notFound = true;
       this._threw = false;
@@ -198,6 +208,14 @@ export class RpcInvocation {
     }
 
     return this.fulfill(result, reason);
+  }
+
+  private supportsNoContent() {
+    if (!this.request.protocolVersion) {
+      return false;
+    }
+
+    return RpcProtocol.protocolVersion >= 1 && this.request.protocolVersion >= 1;
   }
 
   private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {

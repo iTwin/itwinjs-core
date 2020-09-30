@@ -420,7 +420,8 @@ export abstract class GltfReader {
     }
 
     id = extractId(materialJson.diffuseTexture?.index);
-    return id ?? extractId(materialJson.emissiveTexture?.index);
+    id = id ?? extractId(materialJson.emissiveTexture?.index);
+    return id ?? extractId(materialJson.pbrMetallicRoughness?.baseColorTexture?.index);
   }
 
   protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {

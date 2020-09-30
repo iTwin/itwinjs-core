@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { DbOpcode, GuidString, Id64Array, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { DbOpcode, Id64Array, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import { AxisAlignedBox3d, BisCodeSpec, CodeProps, IModelError, IModelWriteRpcInterface, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -127,14 +127,6 @@ export class EditingFunctions {
   public async hasUnsavedChanges(): Promise<boolean> {
     return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasUnsavedChanges(this._connection.getRpcProps());
   }
-
-  /**
-   * Query the parent Changeset of the briefcase
-   * @alpha
-   */
-  public async getParentChangeset(): Promise<string> {
-    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).getParentChangeset(this._connection.getRpcProps());
-  }
 }
 
 /**
@@ -244,15 +236,6 @@ export namespace EditingFunctions { // eslint-disable-line no-redeclare
      */
     public async lockModel(modelId: Id64String, level: LockLevel = LockLevel.Shared): Promise<void> {
       return this._rpc.lockModel(this._connection.getRpcProps(), modelId, level);
-    }
-
-    /** Pull and merge new server changes and then (optionally) push local changes.
-     * @param comment description of new changeset
-     * @param doPush Pass false if you only want to pull and merge. Pass true to pull, merge, and push. The default is true (do the push).
-     * @alpha
-     */
-    public async pullMergePush(comment: string, doPush: boolean = true): Promise<GuidString> {
-      return this._rpc.pullMergePush(this._connection.getRpcProps(), comment, doPush);
     }
   }
 }

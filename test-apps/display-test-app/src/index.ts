@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// react-scripts requires an index.ts file in this location. Using it to import the code
-// from the frontend.
+// react-scripts requires an index.ts file in this location. Launch the app frontend
 
-import "./frontend/SimpleViewTest";
+import "./frontend/DisplayTestApp";

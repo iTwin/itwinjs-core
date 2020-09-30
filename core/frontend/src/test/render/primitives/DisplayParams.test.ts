@@ -14,7 +14,7 @@ export class FakeDisplayParams extends DisplayParams {
 describe("DisplayParams creation tests", () => {
   it("should create mesh DisplayParams and be of type mesh", () => {
     const gf: GraphicParams = new GraphicParams();
-    const dp: DisplayParams = DisplayParams.createForMesh(gf);
+    const dp: DisplayParams = DisplayParams.createForMesh(gf, false);
     expect(dp.type).to.equal(DisplayParams.Type.Mesh);
   });
 
@@ -35,8 +35,8 @@ describe("DisplayParams equality tests", () => {
   it("two DisplayParams created from two default GraphicParams should be equal", () => {
     const gf0: GraphicParams = new GraphicParams();
     const gf1: GraphicParams = new GraphicParams();
-    const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0);
-    const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1);
+    const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0, false);
+    const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dpMesh0.equals(dpMesh1)).to.be.true;
     const dpText0: DisplayParams = DisplayParams.createForText(gf0);
     const dpText1: DisplayParams = DisplayParams.createForText(gf1);
@@ -49,8 +49,8 @@ describe("DisplayParams equality tests", () => {
   it("two DisplayParams created with different colors should be non-equal", () => {
     const gf0: GraphicParams = new GraphicParams(); gf0.lineColor = ColorDef.white;
     const gf1: GraphicParams = new GraphicParams(); gf1.lineColor = ColorDef.black;
-    const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0);
-    const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1);
+    const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0, false);
+    const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dpMesh0.equals(dpMesh1)).to.be.false;
     const dpText0: DisplayParams = DisplayParams.createForText(gf0);
     const dpText1: DisplayParams = DisplayParams.createForText(gf1);
@@ -65,29 +65,29 @@ describe("DisplayParams equality tests", () => {
     const cd1: ColorDef = ColorDef.create(ColorByName.black).withAlpha(64);
     const gf0: GraphicParams = new GraphicParams(); gf0.lineColor = cd0;
     const gf1: GraphicParams = new GraphicParams(); gf1.lineColor = cd1;
-    const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0);
-    const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1);
+    const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0, false);
+    const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dpMesh0.equals(dpMesh1, DisplayParams.ComparePurpose.Merge)).to.be.true;
-    const dpLinear0: DisplayParams = DisplayParams.createForMesh(gf0);
-    const dpLinear1: DisplayParams = DisplayParams.createForMesh(gf1);
+    const dpLinear0: DisplayParams = DisplayParams.createForMesh(gf0, false);
+    const dpLinear1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dpLinear0.equals(dpLinear1, DisplayParams.ComparePurpose.Merge)).to.be.true;
-    const dpText0: DisplayParams = DisplayParams.createForMesh(gf0);
-    const dpText1: DisplayParams = DisplayParams.createForMesh(gf1);
+    const dpText0: DisplayParams = DisplayParams.createForMesh(gf0, false);
+    const dpText1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dpText0.equals(dpText1, DisplayParams.ComparePurpose.Merge)).to.be.true;
   });
 
   it("two DisplayParams created with different types should be non-equal", () => {
     const gf: GraphicParams = new GraphicParams();
     const dp0: DisplayParams = DisplayParams.createForLinear(gf);
-    const dp1: DisplayParams = DisplayParams.createForMesh(gf);
+    const dp1: DisplayParams = DisplayParams.createForMesh(gf, false);
     expect(dp0.equals(dp1)).to.be.false;
   });
 
   it("two DisplayParams created with different symbology should be non-equal", () => {
     const gf0: GraphicParams = GraphicParams.fromSymbology(ColorDef.white, ColorDef.black, 8, LinePixels.Solid);
     const gf1: GraphicParams = GraphicParams.fromSymbology(ColorDef.white, ColorDef.black, 3, LinePixels.HiddenLine);
-    const dp0: DisplayParams = DisplayParams.createForMesh(gf0);
-    const dp1: DisplayParams = DisplayParams.createForMesh(gf1);
+    const dp0: DisplayParams = DisplayParams.createForMesh(gf0, false);
+    const dp1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dp0.equals(dp1)).to.be.false;
   });
 });

@@ -7,41 +7,25 @@
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
 
+// @beta (undocumented)
+export interface ElectronManagerOptions {
+    // (undocumented)
+    frontendURL?: string;
+    // (undocumented)
+    iconName?: string;
+    // (undocumented)
+    webResourcesPath: string;
+}
+
 // @beta
-export class IModelJsElectronManager extends StandardElectronManager {
-    constructor(webResourcesPath?: string);
-    // (undocumented)
-    appIconPath: string;
-    // (undocumented)
-    protected get _defaultWindowOptions(): {
-        icon: string;
-    };
-    // (undocumented)
-    frontendURL: string;
+export class IModelJsElectronManager extends ElectronManager {
     // (undocumented)
     initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
     }
 
 // @beta
-export abstract class StandardElectronManager {
-    // (undocumented)
-    protected get _defaultWindowOptions(): BrowserWindowConstructorOptions;
-    abstract get frontendURL(): string;
-    initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
-    get mainWindow(): BrowserWindow | undefined;
-    }
-
-// @beta
-export class WebpackDevServerElectronManager extends StandardElectronManager {
-    constructor(frontendPort?: number);
-    // (undocumented)
-    appIconPath: string;
-    // (undocumented)
-    protected get _defaultWindowOptions(): {
-        icon: string;
-    };
-    // (undocumented)
-    frontendURL: string;
+export class WebpackDevServerElectronManager extends ElectronManager {
+    constructor(opts: ElectronManagerOptions, frontendPort?: number);
     // (undocumented)
     initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
 }

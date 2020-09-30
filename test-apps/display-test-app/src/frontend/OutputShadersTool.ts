@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DebugShaderFile, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
-import SVTRpcInterface from "../common/SVTRpcInterface";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 
 // cspell:disable
 
@@ -295,7 +295,7 @@ function skipThisShader(entry: DebugShaderFile, usedFlag: string, typeFlag: stri
 async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag: string, langFlag: string, dir: string) {
   // output shader make file
   let fname = `${dir}_makeShade.bat`;
-  await SVTRpcInterface.getClient().writeExternalFile(fname, makeShadeBat);
+  await DtaRpcInterface.getClient().writeExternalFile(fname, makeShadeBat);
 
   // output output list
   fname = `${dir}_OutputList.txt`;
@@ -304,7 +304,7 @@ async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag:
     if (!skipThisShader(entry, usedFlag, typeFlag, langFlag))
       src = `${src + entry.filename}  isUsed: ${entry.isUsed}\n`;
   }
-  await SVTRpcInterface.getClient().writeExternalFile(fname, src);
+  await DtaRpcInterface.getClient().writeExternalFile(fname, src);
 
   // output shader files
   for (const entry of dsf) {
@@ -313,7 +313,7 @@ async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag:
 
     fname = dir + entry.filename;
     src = (entry.isGL ? "" : `// ${entry.filename}  isUsed: ${entry.isUsed}\n`) + entry.src;
-    await SVTRpcInterface.getClient().writeExternalFile(fname, src);
+    await DtaRpcInterface.getClient().writeExternalFile(fname, src);
   }
 
   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Shaders output to directory ${dir}`));
@@ -324,7 +324,11 @@ export class OutputShadersTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 2; }
 
-  public run(usedFlag: string, typeFlag: string, langFlag: string, outputDir: string): boolean {
+  public run(compile: boolean, usedFlag: string, typeFlag: string, langFlag: string, outputDir: string): boolean {
+    if (compile) {
+      const compiled = IModelApp.renderSystem.debugControl?.compileAllShaders();
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, `${compiled ? "No" : "Some"} compilation errors occurred.`));
+    }
     const dsf = IModelApp.renderSystem.debugControl?.debugShaderFiles;
     if (undefined !== dsf && dsf.length > 0)
       outputShaders(dsf, usedFlag, typeFlag, langFlag, outputDir); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -335,6 +339,7 @@ export class OutputShadersTool extends Tool {
   }
 
   public parseAndRun(...args: string[]): boolean {
+    let compile = false;
     let usedFlag;
     let typeFlag;
     let langFlag;
@@ -344,6 +349,7 @@ export class OutputShadersTool extends Tool {
       const parts = arg.split("=");
       if (1 === parts.length) {
         const lowerArgs = parts[0].toLowerCase();
+        compile = lowerArgs.includes("c");
         usedFlag = lowerArgs.includes("u") ? "u" : (lowerArgs.includes("n") ? "n" : "");
         typeFlag = lowerArgs.includes("v") ? "v" : (lowerArgs.includes("f") ? "f" : "");
         langFlag = lowerArgs.includes("g") ? "g" : (lowerArgs.includes("h") ? "h" : "");
@@ -356,6 +362,6 @@ export class OutputShadersTool extends Tool {
       }
     }
 
-    return this.run(usedFlag ?? "", typeFlag ?? "", langFlag ?? "", outputDir ?? "d:\\temp\\shaders\\");
+    return this.run(compile, usedFlag ?? "", typeFlag ?? "", langFlag ?? "", outputDir ?? "d:\\temp\\shaders\\");
   }
 }

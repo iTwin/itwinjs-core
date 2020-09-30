@@ -44,6 +44,7 @@ export interface VisibilityComponentConfig {
     selectionMode?: SelectionMode;
     selectionPredicate?: ModelsTreeSelectionPredicate;
     enableElementsClassGrouping?: ClassGroupingOption;
+    enableHierarchyAutoUpdate?: boolean;
   };
   spatialContainmentTree?: {
     enableElementsClassGrouping?: ClassGroupingOption;

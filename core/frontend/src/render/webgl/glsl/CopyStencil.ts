@@ -34,9 +34,7 @@ const checkDiscardBackgroundByZ = `
   return false;
 `;
 
-const depthFromTexture = `
-  return TEXTURE(u_depthTexture, v_texCoord).r;
-`;
+const depthFromTexture = "return TEXTURE(u_depthTexture, v_texCoord).r;";
 
 const computePosition = `
   gl_PointSize = 1.0; // Need to set the point size since we are drawing points with this.

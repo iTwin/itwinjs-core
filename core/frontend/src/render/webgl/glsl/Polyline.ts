@@ -82,6 +82,7 @@ void adjustWidth(inout float width, vec2 d2, vec2 org) {
       width += (5.0 - width) * 0.125;
     return;
   }
+
   // calculate slope based width adjustment for non-AA lines, widths 1 to 4
   vec2 d2A = abs(d2);
   const float s_myFltEpsilon = 0.0001;  // limit test resolution to 4 digits in case 24 bit (s16e7) is used in hardware
@@ -210,7 +211,8 @@ vec4 decodePosition(vec3 baseIndex) {
   vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
   return unquantizePosition(qpos, u_qOrigin, u_qScale);
-}`;
+}
+`;
 
 const decodeAdjacentPositions = `
   g_prevPos = decodePosition(a_prevIndex);
