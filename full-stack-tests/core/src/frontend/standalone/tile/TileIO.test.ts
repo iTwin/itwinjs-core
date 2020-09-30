@@ -903,32 +903,6 @@ describe("TileAdmin", () => {
         expect(treeNoEdges3).not.to.equal(tree);
       }
 
-      /* ###TODO rework this so it compiles again
-      private static async testClassifierTree(imodel: IModelConnection, expectedTreeIdStr: string, treeId: IModelTile.ClassifierTreeId) {
-        const actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
-        expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
-
-        const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
-        expect(treeProps).not.to.be.undefined;
-        expect(treeProps.id).to.equal(actualTreeIdStr);
-
-        await imodel.models.load("0x1c");
-        const model = imodel.models.getLoaded("0x1c") as GeometricModelState;
-        expect(model).not.to.be.undefined;
-
-        await waitUntil(() => {
-          return TileTree.LoadStatus.Loaded === model.loadClassifierTileTree(treeId.type, treeId.expansion);
-        });
-
-        const tree = model.classifierTileTree;
-        expect(tree).not.to.be.undefined;
-
-        expect(tree!.id).to.equal(actualTreeIdStr);
-
-        expect(await this.rootTileHasEdges(tree!, imodel)).to.be.false;
-      }
-      */
-
       private static async rootTileHasEdges(tree: TileTree, imodel: IModelConnection): Promise<boolean> {
         const response = await tree.rootTile.requestContent(() => false) as Uint8Array;
         expect(response).not.to.be.undefined;
@@ -951,14 +925,8 @@ describe("TileAdmin", () => {
       }
 
       public static async test(imodel: IModelConnection) {
-        await this.testPrimaryTree(imodel, "e_1-0x1c");
-
-        // ###TODO: The tree Id is validated on back-end and rejected if the animation source Id does not identify an existing DisplayStyle with an attached schedule script.
-        // Our test iModel lacks any such styles so test will fail.
-        // await this.testPrimaryTree(imodel, "A:0x123_0x1c", "0x123");
-
-        // ###TODO await this.testClassifierTree(imodel, "4_1-C:0.000000_0x1c", { type: BatchType.VolumeClassifier, expansion: 0.0 });
-        // ###TODO await this.testClassifierTree(imodel, "4_0-CP:12.123457_0x1c", { type: BatchType.PlanarClassifier, expansion: 12.1234567 });
+        const version = CurrentImdlVersion.Major.toString(16);
+        await this.testPrimaryTree(imodel, `${version}_1-0x1c`);
       }
     }
 

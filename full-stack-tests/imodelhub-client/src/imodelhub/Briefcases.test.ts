@@ -254,9 +254,9 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should get and extend briefcase expiration date", async () => {
-    const currentDate = new Date().getDate();
-    const dateAfter30Days = new Date().setDate(currentDate + 30);
-    const dateAfter31Days = new Date().setDate(currentDate + 31);
+    const currentDate = new Date().getUTCDate();
+    const dateAfter30Days = new Date().setUTCDate(currentDate + 30);
+    const dateAfter31Days = new Date().setUTCDate(currentDate + 31);
 
     let briefcase: Briefcase = utils.generateBriefcase(briefcaseId);
     briefcase.acquiredDate = new Date().toISOString();
@@ -267,8 +267,8 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(Date.parse(briefcase.expirationDate!)).to.be.within(Date.parse(briefcase.acquiredDate!), dateAfter30Days);
 
     mockUpdateBriefcase(imodelId, briefcase);
-    briefcase = await iModelClient.briefcases.update(requestContext, imodelId, briefcase);
-    chai.expect(Date.parse(briefcase.expirationDate!)).to.be.within(dateAfter30Days, dateAfter31Days);
+    const extendedBriefcase: Briefcase = await iModelClient.briefcases.update(requestContext, imodelId, briefcase);
+    chai.expect(Date.parse(extendedBriefcase.expirationDate!)).to.be.within(Date.parse(briefcase.expirationDate!), dateAfter31Days);
   });
 
   it("should get and set briefcase DeviceName and ChangeSetIdOnDevice", async () => {

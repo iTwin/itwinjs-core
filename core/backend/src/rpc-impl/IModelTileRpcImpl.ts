@@ -9,7 +9,7 @@
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
   CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, IModelRpcProps, IModelTileRpcInterface, RpcInterface,
-  RpcInvocation, RpcManager, RpcPendingResponse, TileTreeContentIds, TileTreeProps,
+  RpcInvocation, RpcManager, RpcPendingResponse, TileTreeContentIds, TileTreeProps, TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
@@ -199,6 +199,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
+  }
+
+  public async queryVersionInfo(): Promise<TileVersionInfo> {
+    return IModelHost.platform.getTileVersionInfo();
   }
 }
 

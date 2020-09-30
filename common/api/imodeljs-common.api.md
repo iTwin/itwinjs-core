@@ -3587,6 +3587,8 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
+    queryVersionInfo(): Promise<TileVersionInfo>;
+    // @internal (undocumented)
     requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<TileTreeProps>;
@@ -6913,6 +6915,11 @@ export interface TileTreeProps {
     maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
+}
+
+// @alpha
+export interface TileVersionInfo {
+    formatVersion: number;
 }
 
 // @beta
