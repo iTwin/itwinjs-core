@@ -177,7 +177,7 @@ export class FormInstanceData extends WsgInstance {
   classPropertyName: "className",
 })
 
-/** @public */
+/** @internal */
 export class WorkflowDefinition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Discipline")
   public Discipline?: string;
@@ -193,8 +193,7 @@ export class WorkflowDefinition extends WsgInstance {
   public UninitializedState?: WorkflowStatus;
 }
 
-/** @public */
-export class WorkflowStatus extends WsgInstance {
+class WorkflowStatus extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Id")
   public Id?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
@@ -209,8 +208,7 @@ export class WorkflowStatus extends WsgInstance {
   public Closed?: boolean;
 }
 
-/** @public */
-export class WorkflowTransition extends WsgInstance {
+class WorkflowTransition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Start")
   public Start?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.End")
@@ -231,8 +229,7 @@ export class WorkflowTransition extends WsgInstance {
   public ButtonColor?: number;
 }
 
-/** @internal */
-export class PropertyAssignment extends WsgInstance {
+class PropertyAssignment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Property")
   public Property?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Value")
@@ -243,7 +240,9 @@ export class PropertyAssignment extends WsgInstance {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-class Attachment extends WsgInstance {
+
+/** @internal */
+export class Attachment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public Name?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Size")
@@ -264,7 +263,9 @@ class Attachment extends WsgInstance {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-class Comment extends WsgInstance {
+
+/** @internal */
+export class Comment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Author")
   public Author?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AuthorId")
@@ -295,7 +296,9 @@ class Comment extends WsgInstance {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-class AuditRecord extends WsgInstance {
+
+/** @internal */
+export class AuditRecord extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.RecordBy")
   public RecordBy?: string;
   @ECJsonTypeMap.propertyToJson("wsg", "properties.RecordById")
@@ -323,6 +326,7 @@ class AuditValue extends WsgInstance {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
+
 /** @internal */
 export class FormProperties extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
