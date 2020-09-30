@@ -1,15 +1,12 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
-const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(
-  true /*suppress error*/,
-  true
-);
+const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true);
 
 const clientsLib = path.resolve(__dirname, "../../../lib");
 
@@ -20,7 +17,7 @@ function createConfig(shouldInstrument) {
     output: {
       path: path.resolve(clientsLib, "test/webpack/"),
       filename: "bundled-tests.js",
-      devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
+      devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
     },
     devtool: "nosources-source-map",
     module: {
@@ -29,23 +26,23 @@ function createConfig(shouldInstrument) {
         // requires for fs that cause it to fail even though the fs dependency
         // is not used.
         /draco_decoder_nodejs.js$/,
-        /draco_encoder_nodejs.js$/,
+        /draco_encoder_nodejs.js$/
       ],
       rules: [
         {
           test: /\.js$/,
           use: "source-map-loader",
-          enforce: "pre",
+          enforce: "pre"
         },
         {
           test: /azure-storage|AzureFileHandler|UrlFileHandler/,
-          use: "null-loader",
+          use: "null-loader"
         },
-      ],
+      ]
     },
     stats: "errors-only",
     optimization: {
-      nodeEnv: "production",
+      nodeEnv: "production"
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
@@ -55,19 +52,14 @@ function createConfig(shouldInstrument) {
           .filter((key) => {
             return key.match(/^imjs_/i);
           })
-          .reduce(
-            (env, key) => {
-              env[key] = JSON.stringify(raw[key]);
-              return env;
-            },
-            {
-              IMODELJS_CORE_DIRNAME: JSON.stringify(
-                path.join(__dirname, "../..")
-              ),
-            }
-          ),
-      }),
-    ],
+          .reduce((env, key) => {
+            env[key] = JSON.stringify(raw[key]);
+            return env;
+          }, {
+            IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
+          }),
+      })
+    ]
   };
 
   if (shouldInstrument) {
@@ -78,7 +70,7 @@ function createConfig(shouldInstrument) {
       exclude: path.join(clientsLib, "test"),
       loader: require.resolve("istanbul-instrumenter-loader"),
       options: {
-        debug: true,
+        debug: true
       },
       enforce: "post",
     });
@@ -88,4 +80,7 @@ function createConfig(shouldInstrument) {
 }
 
 // Exporting two configs in a array like this actually tells webpack to run twice - once for each config.
-module.exports = [createConfig(true), createConfig(false)];
+module.exports = [
+  createConfig(true),
+  createConfig(false)
+]
