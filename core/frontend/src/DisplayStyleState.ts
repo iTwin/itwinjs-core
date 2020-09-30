@@ -54,6 +54,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, false, () => this.overrideTerrainSkirtDisplay());
     this._overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, iModel, true, false);
     this._backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, true);
+
+    if (styles) {
+      if (styles.contextRealityModels)
+        for (const contextRealityModel of styles.contextRealityModels)
+          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
+
+      if (styles.scheduleScript)
+        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, styles.scheduleScript);
+    }
   }
 
   /** @internal */
