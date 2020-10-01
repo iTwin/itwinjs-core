@@ -710,6 +710,8 @@ export interface ChangedElements {
     // (undocumented)
     opcodes: number[];
     // (undocumented)
+    properties?: Id64String[][];
+    // (undocumented)
     type: number[];
 }
 

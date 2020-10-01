@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 22 Sep 2020 17:40:07 GMT and should not be manually modified.
+This log was last generated on Sat, 26 Sep 2020 16:06:34 GMT and should not be manually modified.
+
+## 2.6.5
+Sat, 26 Sep 2020 16:06:34 GMT
+
+### Updates
+
+- changed elements properties for version compare
 
 ## 2.6.4
 Tue, 22 Sep 2020 17:40:07 GMT
