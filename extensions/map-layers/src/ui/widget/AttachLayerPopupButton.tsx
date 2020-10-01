@@ -57,7 +57,15 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
               setLoading(true);
               const { status, subLayers } = await mapLayerSettings.validateSource();
               if (status === MapLayerSourceStatus.Valid) {
-                activeViewport.displayStyle.attachMapLayer({ formatId: mapLayerSettings.formatId, name: mapLayerSettings.name, url: mapLayerSettings.url, maxZoom: mapLayerSettings.maxZoom, subLayers }, isOverlay);
+                activeViewport.displayStyle.attachMapLayer({
+                  formatId: mapLayerSettings.formatId,
+                  name: mapLayerSettings.name,
+                  url: mapLayerSettings.url,
+                  userName: mapLayerSettings.userName,
+                  password: mapLayerSettings.password,
+                  maxZoom: mapLayerSettings.maxZoom,
+                  subLayers,
+                }, isOverlay);
                 activeViewport.invalidateRenderPlan();
                 setLoading(false);
                 if (onLayerAttached)
