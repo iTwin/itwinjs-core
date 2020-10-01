@@ -7,7 +7,7 @@
  */
 
 import { AxisOrder, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Ray3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Npc } from "@bentley/imodeljs-common";
+import { ColorDef, Npc } from "@bentley/imodeljs-common";
 import { AccuDraw } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
@@ -264,7 +264,7 @@ export namespace EditManipulator {
     /** Get a transform to orient arrow shape to view direction. If arrow direction is close to perpendicular to view direction will return undefined. */
     public static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined {
       const boresite = EditManipulator.HandleUtils.getBoresite(base, vp);
-      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.9)
+      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.99)
         return undefined;
 
       const pixelSize = vp.pixelsFromInches(sizeInches);
@@ -289,6 +289,13 @@ export namespace EditManipulator {
       shapePts[6] = Point3d.create(flangeStart, -tipWidth);
       shapePts[7] = shapePts[0].clone();
       return shapePts;
+    }
+
+    /** @internal Adjust for contrast against view background color when it's relevant */
+    public static adjustForBackgroundColor(color: ColorDef, vp: Viewport): ColorDef {
+      if (vp.view.is3d() && vp.view.getDisplayStyle3d().environment.sky.display)
+        return color;
+      return color.adjustedForContrast(vp.view.backgroundColor);
     }
   }
 }
