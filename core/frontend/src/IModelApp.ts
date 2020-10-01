@@ -8,7 +8,9 @@
 
 const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { BeDuration, ClientRequestContext, dispose, Guid, GuidString, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import {
+  BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
+} from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelError, IModelStatus, NativeAppRpcInterface, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
@@ -17,6 +19,7 @@ import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
+import { FrontendFeatureUsageTelemetryClient } from "@bentley/usage-logging-client";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -38,6 +41,7 @@ import { System } from "./render/webgl/System";
 import * as sheetState from "./Sheet";
 import { TentativePoint } from "./TentativePoint";
 import { TileAdmin } from "./tile/internal";
+import { MapLayerFormatRegistry } from "./tile/map/MapLayerFormatRegistry";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as extensionTool from "./tools/ExtensionTool";
@@ -49,8 +53,6 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-import { FrontendFeatureUsageTelemetryClient } from "@bentley/usage-logging-client";
-import { MapLayerFormatRegistry } from "./tile/map/MapLayerFormatRegistry";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("./IModeljs-css");
@@ -733,4 +735,13 @@ export class IModelApp {
     return div;
   }
 
+  /** Localize the error message for an error number from iModel.js
+   * @param errorNum one of the status values from [[BentleyStatus]], [[IModelStatus]] or [[DbResult]]
+   * @returns a localized error message
+   * @beta
+   */
+  public static translateErrorNumber(errorNum: number) {
+    const errorKey = BentleyStatus[errorNum] ?? IModelStatus[errorNum] ?? DbResult[errorNum] ?? "ErrorNum";
+    return this.i18n.translate(`Errors.${errorKey}`, { error: `0x${errorNum.toString(16)}` })
+  }
 }

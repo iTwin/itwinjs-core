@@ -3889,6 +3889,8 @@ export class IModelApp {
     static get tileAdmin(): TileAdmin;
     static get toolAdmin(): ToolAdmin;
     static readonly tools: ToolRegistry;
+    // @beta
+    static translateErrorNumber(errorNum: number): string;
     static get uiAdmin(): UiAdmin;
     static get viewManager(): ViewManager;
     }
