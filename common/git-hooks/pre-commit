@@ -1,0 +1,17 @@
+#!/bin/sh
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+
+command="common/temp/node_modules/.bin/lint-staged --quiet --config 'common/scripts/.lintstagedrc.json'"
+
+eval $command
+
+exitCode=$?
+
+if [ $exitCode != 0 ]
+then
+  echo Failed Git hook: pre-commit
+fi
+
+exit $exitCode
