@@ -101,6 +101,20 @@ export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export class AttachCesiumAssetTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(assetId: number, requestKey: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class AttachMapLayerTool extends AttachMapLayerBaseTool {
     // (undocumented)

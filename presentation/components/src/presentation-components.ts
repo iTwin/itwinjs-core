@@ -34,7 +34,7 @@ export * from "./presentation-components/ComponentsLoggerCategory";
  * @docs-group-description PropertyGrid
  * Types related to `PropertyGrid` component in `@bentley/ui-components` package.
  */
-export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider, PresentationPropertyDataProviderProps } from "./presentation-components/propertygrid/DataProvider";
+export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider, PresentationPropertyDataProviderProps, DEFAULT_PROPERTY_GRID_RULESET } from "./presentation-components/propertygrid/DataProvider";
 export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./presentation-components/propertygrid/WithUnifiedSelection";
 export { FavoritePropertiesDataFilterer, FavoritePropertiesDataFiltererProps } from "./presentation-components/propertygrid/FavoritePropertiesDataFilterer";
 export * from "./presentation-components/propertygrid/UseUnifiedSelection";

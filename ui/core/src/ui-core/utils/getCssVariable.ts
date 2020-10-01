@@ -6,10 +6,10 @@
  * @module Utilities
  */
 
+/* istanbul ignore next */
 /** Get CSS variable
  * @internal
  */
-/* istanbul ignore next */
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string {
   const element = htmlElement ?? document.documentElement;
   const cssStyles = getComputedStyle(element, null);
@@ -17,10 +17,10 @@ export function getCssVariable(variableName: string, htmlElement?: HTMLElement):
   return cssVal;
 }
 
+/* istanbul ignore next */
 /** Get CSS variable as number
  * @internal
  */
-/* istanbul ignore next */
 export function getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number {
   let cssValNum: number = NaN;
   const cssValStr = getCssVariable(variableName, htmlElement);

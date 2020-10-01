@@ -197,3 +197,27 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
     return this.run(args[0] === undefined ? -1 : parseInt(args[0], 10));
   }
 }
+
+
+/** @alpha */
+export class AttachCesiumAssetTool extends Tool {
+  public static toolId = "AttachCesiumAssetTool";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 2; }
+
+  public run(assetId: number, requestKey: string): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp === undefined)
+      return false;
+    const props = { tilesetUrl: `$CesiumIonAsset=${assetId}:${requestKey}` };
+    vp.displayStyle.attachRealityModel(props);
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
+    vp.invalidateRenderPlan();
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const assetId = parseInt(args[0], 10);
+    return Number.isNaN(assetId) ? false : this.run(assetId, args[1]);
+  }
+}

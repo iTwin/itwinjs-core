@@ -6,6 +6,7 @@ beta;ApplyRenderingStyleTool
 beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
 alpha;AttachArcGISMapLayerByUrlTool 
+alpha;AttachCesiumAssetTool 
 alpha;AttachMapLayerTool 
 alpha;AttachMapOverlayTool 
 alpha;AttachRealityModelTool 

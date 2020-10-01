@@ -6,6 +6,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { UiCore } from "../ui-core/UiCore";
 
 
+/** @internal */
 export class TestUtils {
   private static _i18n?: I18N;
   private static _uiCoreInitialized = false;
@@ -62,6 +63,7 @@ export class TestUtils {
   }
 }
 
+/** @internal */
 export const storageMock = () => {
   const storage: { [key: string]: any } = {};
   return {

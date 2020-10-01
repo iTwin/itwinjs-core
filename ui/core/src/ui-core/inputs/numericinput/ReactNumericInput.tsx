@@ -62,7 +62,7 @@ function removeClass(element: HTMLElement, className: string) {
  * exist on the object, or if it equals undefined, or if it is a function that
  * returns undefined the defaultValue will be returned instead.
  * @param  {Object} object       The object to look into
- * @param  {String} prop         The property name
+ * @param  {string} prop         The property name
  * @param  {*}      defaultValue The default value
  * @param  {*[]}    args         Any additional arguments to pass to the
  *                               function (if the prop is a function).
@@ -338,14 +338,14 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
 
   /**
    * The step timer
-   * @type {Number}
+   * @type {number}
    */
   private _timer: number = 0;
 
   /**
    * This holds the last known validation error. We need to compare that with
    * new errors and detect validation changes...
-   * @type {[type]}
+   * @type {string}
    */
   private _valid: string = "";
 
@@ -717,7 +717,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
    * Increments the value with one step and the enters a recursive calls
    * after DELAY. This is bound to the mousedown event on the "up" button
    * and will be stopped on mouseout/mouseup.
-   * @param {Boolean} _recursive The method is passing this to itself while
+   * @param {boolean} _recursive The method is passing this to itself while
    *  it is in recursive mode.
    * @return void
    */
@@ -736,7 +736,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
    * Decrements the value with one step and the enters a recursive calls
    * after DELAY. This is bound to the mousedown event on the "down" button
    * and will be stopped on mouseout/mouseup.
-   * @param {Boolean} _recursive The method is passing this to itself while
+   * @param {boolean} _recursive The method is passing this to itself while
    *  it is in recursive mode.
    * @return void
    */
@@ -787,7 +787,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   /**
    * Helper method to invoke event callback functions if they are provided
    * in the props.
-   * @param {String} callbackName The name of the function prop
+   * @param {string} callbackName The name of the function prop
    * @param {*[]} args Any additional argument are passed thru
    */
   private _invokeEventCallback(callbackName: string, ...args: any[]): void {
@@ -801,9 +801,9 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
 
   /**
    * Renders an input wrapped in relative span and up/down buttons
-   * @return {Component}
+   * @return {Element}
    */
-  public render() {
+  public render(): JSX.Element {
     const state = this.state;
     const css: { [key: string]: any } = {};
 

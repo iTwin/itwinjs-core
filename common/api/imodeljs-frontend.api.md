@@ -2033,7 +2033,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     anyMapLayersVisible(overlay: boolean): boolean;
     // @internal (undocumented)
     attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
-    // @internal (undocumented)
+    // @beta
     attachRealityModel(props: ContextRealityModelProps): void;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
@@ -2064,9 +2064,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
     detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void;
-    // @internal (undocumented)
+    // @beta
     detachRealityModelByIndex(index: number): void;
-    // @internal (undocumented)
+    // @beta
     detachRealityModelByNameAndUrl(name: string, url: string): void;
     // @internal (undocumented)
     get displayTerrain(): boolean;
@@ -2103,7 +2103,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get globeMode(): GlobeMode;
     // @internal (undocumented)
     hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
-    // @internal (undocumented)
+    // @beta
     hasAttachedRealityModel(name: string, url: string): boolean;
     // @beta
     get hasModelAppearanceOverride(): boolean;
@@ -3123,7 +3123,7 @@ export class GeoServices {
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
 
 // @internal (undocumented)
-export function getCesiumAccessTokenAndEndpointUrl(): Promise<{
+export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?: string): Promise<{
     token?: string;
     url?: string;
 }>;
@@ -6430,6 +6430,8 @@ export namespace RealityModelTileTree {
         modelId?: Id64String;
         // (undocumented)
         name?: string;
+        // (undocumented)
+        requestAuthorization?: string;
         // (undocumented)
         source: RealityModelSource;
         // (undocumented)

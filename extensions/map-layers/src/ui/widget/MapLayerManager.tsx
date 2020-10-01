@@ -206,8 +206,8 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoOverlayLayers"));
   const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
   const { activeViewport, mapLayerOptions } = props;
-  const [hideExternalMapLayersSection] = React.useState(mapLayerOptions?.hideExternalMapLayers ? mapLayerOptions.hideExternalMapLayers : false);
-  const [fetchPublicMapLayerSources] = React.useState(mapLayerOptions?.fetchPublicMapLayerSources ? mapLayerOptions.fetchPublicMapLayerSources : false);
+  const hideExternalMapLayersSection = mapLayerOptions?.hideExternalMapLayers ? mapLayerOptions.hideExternalMapLayers : false;
+  const fetchPublicMapLayerSources = mapLayerOptions?.fetchPublicMapLayerSources ? mapLayerOptions.fetchPublicMapLayerSources : false;
   // map layer settings from display style
   const [backgroundMapLayers, setBackgroundMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, true));
   const [overlayMapLayers, setOverlayMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, false));
@@ -217,25 +217,38 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     setOverlayMapLayers(getMapLayerSettingsFromStyle(displayStyle, false));
   }, [setBackgroundMapLayers, setOverlayMapLayers]);
 
+  const isMounted = React.useRef(false);
+
   React.useEffect(() => {
+    isMounted.current = true;
     async function fetchWmsMapData() {
       const sources: MapLayerSource[] = [];
       const bases: MapLayerSource[] = [];
-      const sourceLayers = await MapLayerSources.create(undefined, (fetchPublicMapLayerSources && !hideExternalMapLayersSection));
-      sourceLayers?.layers.forEach((source: MapLayerSource) => {
-        sources.push(source);
-      });
-      setMapSources(sources); // This is where the list of layers first gets populated.. I need to update it
-      // MapUrlDialog gets around knowing MapLayerManager exists and vice versa by affecting the viewports displayStyle which MapLayerManager is listening for
-      // We know when displayStyle changes we've added a layer, this layer may not be a custom layer
-      //
-      sourceLayers?.bases.forEach((source: MapLayerSource) => {
-        bases.push(source);
-      });
-      setBaseSources(bases);
+      const sourceLayers = await MapLayerSources.create(undefined, (fetchPublicMapLayerSources && !hideExternalMapLayersSection))
+      if (isMounted.current) {
+        sourceLayers?.layers.forEach((source: MapLayerSource) => {
+          sources.push(source);
+        });
+        setMapSources(sources); // This is where the list of layers first gets populated.. I need to update it
+        // MapUrlDialog gets around knowing MapLayerManager exists and vice versa by affecting the viewports displayStyle which MapLayerManager is listening for
+        // We know when displayStyle changes we've added a layer, this layer may not be a custom layer
+        //
+        sourceLayers?.bases.forEach((source: MapLayerSource) => {
+          bases.push(source);
+        });
+        setBaseSources(bases);
+      }
     }
     fetchWmsMapData(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [setMapSources, fetchPublicMapLayerSources, hideExternalMapLayersSection]);
+
+  // runs returned function only when component is unmounted.
+  React.useEffect(() => {
+    return (() => {
+      isMounted.current = false;
+    });
+  }, []);
+
   React.useEffect(() => {
     const handleNewCustomLayer = async (source: MapLayerSource) => {
       const sources = await MapLayerSources.addSourceToMapLayerSources(source);
@@ -249,6 +262,9 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       setMapSources(newSources);
     };
     MapLayerSettingsService.onNewCustomLayerSource.addListener(handleNewCustomLayer);
+    return (() => {
+      MapLayerSettingsService.onNewCustomLayerSource.removeListener(handleNewCustomLayer);
+    });
   }, [setMapSources]);
 
   // update when a different display style is loaded.

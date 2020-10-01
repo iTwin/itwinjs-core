@@ -114,7 +114,13 @@ export abstract class MapLayerImageryProvider {
     }
   }
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
-    const requestOptions: RequestOptions = { method: "GET", responseType: "text" }; // spell-checker: disable-line
+
+    const requestOptions: RequestOptions = {
+      method: "GET",
+      responseType: "text",
+      auth: this.getRequestAuthorization(),
+    }; // spell-checker: disable-line
+
     try {
       const response: Response = await request(this._requestContext, url, requestOptions);
       if (undefined !== response.text) {

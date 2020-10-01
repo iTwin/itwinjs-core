@@ -76,7 +76,8 @@ module.exports = {
       },
       {
         "selector": "variable",
-        "format": ["camelCase", "UPPER_CASE"]
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
       },
       {
         "selector": "memberLike",

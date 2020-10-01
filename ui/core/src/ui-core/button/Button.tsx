@@ -45,7 +45,6 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 /** Generic button component
  * @public
  */
-
 export class Button extends React.PureComponent<ButtonProps> {
   public render() {
     const { buttonType, size, className, style, onClick, ...props } = this.props;

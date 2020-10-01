@@ -63,6 +63,8 @@ export class FavoritePropertiesManager implements IDisposable {
     clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
     // (undocumented)
     dispose(): void;
+    // @internal
+    static FAVORITES_IDENTIFIER_PREFIX: string;
     // @deprecated
     has(field: Field, projectId?: string, imodelId?: string): boolean;
     has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;

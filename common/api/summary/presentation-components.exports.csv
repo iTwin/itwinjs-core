@@ -10,6 +10,7 @@ beta;ControlledTreeWithFilteringSupportProps
 beta;ControlledTreeWithVisibleNodesProps 
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
+beta;DEFAULT_PROPERTY_GRID_RULESET: Ruleset
 beta;DEPRECATED_controlledTreeWithFilteringSupport
 beta;DEPRECATED_controlledTreeWithVisibleNodes
 public;DEPRECATED_treeWithFilteringSupport

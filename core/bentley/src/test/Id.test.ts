@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Guid, GuidString, Id64, Id64Arg, Id64Array } from "../bentleyjs-core";
+import {
+  CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, MutableCompressedId64Set, OrderedId64Iterable,
+} from "../bentleyjs-core";
 
 class Uint64Id {
   public constructor(public readonly high: number,
@@ -15,7 +17,6 @@ class Uint64Id {
 }
 
 describe("Ids", () => {
-
   it("Id64 should construct properly", () => {
     const id1 = Id64.fromJSON("0x123");
     assert.isTrue(Id64.isValidId64(id1), "good");
@@ -368,22 +369,163 @@ describe("Ids", () => {
     assert.equal(Guid.normalize("BADguid"), "BADguid");
     assert.equal(Guid.normalize("12345678-1234-1234-1234-123456789ABCDEFG"), "12345678-1234-1234-1234-123456789ABCDEFG");
   });
+});
 
+describe("OrderedId64Iterable", () => {
+  it("should produce the union of two sets", () => {
+    const test = (a: string[], b: string[], expected: string[]) => {
+      const actual: string[] = [];
+      for (const id of OrderedId64Iterable.union(a, b))
+        actual.push(id);
+
+      expect(actual).to.deep.equal(expected);
+    };
+
+    const testCases = [
+      [[], [], []],
+      [["1", "2", "e", "f"], [], ["1", "2", "e", "f"]],
+      [[], ["1", "2", "e", "f"], ["1", "2", "e", "f"]],
+      [["1", "2", "e", "f"], ["1", "2", "e", "f"], ["1", "2", "e", "f"]],
+      [["1", "1", "2", "2", "2", "e", "f"], ["1", "2", "e", "e", "e", "f", "f"], ["1", "2", "e", "f"]],
+      [["1", "3", "5"], ["2", "4"], ["1", "2", "3", "4", "5"]],
+      [["e", "f", "f", "2c", "2c"], ["1", "1", "2", "1a", "1b"], ["1", "2", "e", "f", "1a", "1b", "2c"]],
+    ];
+
+    for (const testCase of testCases) {
+      test(testCase[0], testCase[1], testCase[2]);
+      test(testCase[1], testCase[0], testCase[2]);
+    }
+
+    /* ###TODO: If we decide to check that inputs to union() are ordered as required.
+    const tryIterate = () => {
+      for (const _id of OrderedId64Iterable.union(["2", "1"], ["2", "1"])) {
+        //
+      }
+    };
+    expect(tryIterate()).to.throw(Error);
+    */
+  });
+
+  it("should produce the intersection of two sets", () => {
+    const test = (a: string[], b: string[], expected: string[]) => {
+      const actual: string[] = [];
+      for (const id of OrderedId64Iterable.intersection(a, b))
+        actual.push(id);
+
+      expect(actual).to.deep.equal(expected);
+    };
+
+    const testcases = [
+      [[], [], []],
+      [["1", "2", "3", "4"], [], []],
+      [[], ["1", "2", "3", "4"], []],
+      [["1", "2"], ["e", "f"], []],
+      [["1", "f"], ["2", "e"], []],
+      [["1", "1", "3", "3", "3", "5"], ["2", "2", "4", "4", "4"], []],
+      [["1", "2", "3", "e", "f"], ["2", "4", "5", "6", "7", "7", "c", "f"], ["2", "f"]],
+      [["2", "4", "f"], ["1", "4", "4", "e", "f"], ["4", "f"]],
+      [["a"], ["9", "a", "b", "c"], ["a"]],
+    ];
+
+    for (const testcase of testcases) {
+      test(testcase[0], testcase[1], testcase[2]);
+      test(testcase[1], testcase[0], testcase[2]);
+    }
+  });
+
+  it("should produce the difference of two sets", () => {
+    const  test = (a: string[], b: string[], expected: string[]) => {
+      const actual: string[] = [];
+      for (const id of OrderedId64Iterable.difference(a, b))
+        actual.push(id);
+
+      expect(actual).to.deep.equal(expected);
+    };
+
+    const testcases = [
+      [[], [], [], []],
+      [["2", "3", "4"], ["1", "2", "3", "4", "5", "6"], [], ["1", "5", "6"]],
+      [["2", "4", "e", "f"], [], ["2", "4", "e", "f"], []],
+      [["2", "4", "e", "f"], ["4", "5", "f"], ["2", "e"], ["5"]],
+      [["9", "a", "a", "a", "c", "d", "d"], ["2", "2", "8", "a", "a", "d"], ["9", "c"], ["2", "8"]],
+    ];
+
+    for (const testcase of testcases) {
+      test(testcase[0], testcase[1], testcase[2]);
+      test(testcase[1], testcase[0], testcase[3]);
+    }
+  });
+
+  it("should detect empty sets", () => {
+    expect(OrderedId64Iterable.isEmptySet([])).to.be.true;
+    expect(OrderedId64Iterable.isEmptySet(["1"])).to.be.false;
+    expect(OrderedId64Iterable.isEmptySet(["1", "e", "fa"])).to.be.false;
+
+    // invalid OrderedId64Iterables.
+    expect(OrderedId64Iterable.isEmptySet([""])).to.be.false;
+    expect(OrderedId64Iterable.isEmptySet(["0"])).to.be.false;
+    expect(OrderedId64Iterable.isEmptySet(["0", "0"])).to.be.false;
+    expect(OrderedId64Iterable.isEmptySet(["0", "1"])).to.be.false;
+
+    expect(OrderedId64Iterable.isEmptySet("")).to.be.true;
+    expect(OrderedId64Iterable.isEmptySet("+1")).to.be.false;
+    expect(OrderedId64Iterable.isEmptySet("not a valid CompressedId64Set")).to.be.false;
+  });
+
+  it("should determine set equality", () => {
+    type Test = [string[], string[], boolean];
+    const tests: Test[] = [
+      [[""], [""], true],
+      [["1"], ["1"], true],
+      [["1"], ["2"], false],
+      [["1", "1", "1"], ["1"], true],
+      [["1", "2", "2", "3", "3", "3", "4"], ["1", "1", "1", "2", "2", "3", "4"], true],
+      [["1", "2", "2", "3", "3", "3", "4"], ["1", "1", "1", "2", "2", "4"], false],
+    ];
+
+    for (const test of tests) {
+      expect(OrderedId64Iterable.areEqualSets(test[0], test[1])).to.equal(test[2]);
+      expect(OrderedId64Iterable.areEqualSets(test[1], test[0])).to.equal(test[2]);
+    }
+  });
+
+  it("should iterate unique Ids", () => {
+    const test = (input: string[], expected: string[]) => {
+      const actual: string[] = [];
+      for (const id of OrderedId64Iterable.unique(input))
+        actual.push(id);
+
+      expect(actual).to.deep.equal(expected);
+    };
+
+    const testcases = [
+      [["1", "2", "2", "3", "3", "3", "4"], ["1", "2", "3", "4"]],
+      [["1", "1", "1", "2", "2", "3", "4", "4"], ["1", "2", "3", "4"]],
+    ];
+
+    for (const testcase of testcases) {
+      test(testcase[1], testcase[1]);
+      test(testcase[0], testcase[1]);
+    }
+  });
+});
+
+describe("CompressedId64Set", () => {
   it("should compress and decompress sets of Ids", () => {
     const roundTrip = (ids: Id64Array, expected: string) => {
       // Round-trip the (sorted) array.
-      const compressedArray = Id64.compressArray(ids);
+      const compressedArray = CompressedId64Set.compressArray(ids);
       expect(compressedArray).to.equal(expected);
 
-      const decompressedArray = Id64.decompressArray(compressedArray);
+      const decompressedArray = CompressedId64Set.decompressArray(compressedArray);
       expect(decompressedArray).to.deep.equal(ids);
 
       // Round-trip the Ids as a Set.
       const set = new Set<string>(ids);
-      const compressedSet = Id64.compressSet(set);
+      const compressedSet = CompressedId64Set.compressSet(set);
       expect(compressedSet).to.equal(expected);
 
-      const decompressedSet = Id64.decompressSet(compressedSet);
+      const decompressedSet = CompressedId64Set.decompressSet(compressedSet);
       expect(decompressedSet.size).to.equal(set.size);
       for (const id of decompressedSet)
         expect(set.has(id)).to.be.true;
@@ -391,18 +533,19 @@ describe("Ids", () => {
       // The array is required to be sorted numerically.
       if (ids.length > 1) {
         const reversed = Array.from(ids).reverse();
-        assert.throws(() => Id64.compressArray(reversed));
+        assert.throws(() => CompressedId64Set.compressArray(reversed));
       }
 
       // Round-tripping removes duplicate Ids.
       const duplicates: string[] = [];
       ids.forEach((x) => { duplicates.push(x); duplicates.push(x); });
-      const decompressedDuplicates = Id64.compressArray(duplicates);
+      const decompressedDuplicates = CompressedId64Set.compressArray(duplicates);
       expect(decompressedDuplicates).to.equal(compressedArray);
     };
 
     const makeIds = (ids: number[]) => ids.map((x) => `0x${x.toString(16)}`);
 
+    roundTrip([], "");
     roundTrip(makeIds([2]), "+2");
     roundTrip(makeIds([1,5]), "+1+4");
     roundTrip(makeIds([3,7,8,10]), "+3+4+1+2");
@@ -423,7 +566,38 @@ describe("Ids", () => {
     roundTrip(["0x1", "0xffffffffffffffff"], "+1+FFFFFFFFFFFFFFFE");
     roundTrip(["0x1000000000000001", "0x4000000000000004", "0x7000000000000007", "0xa000007777777777"], "+1000000000000001+3000000000000003*2+3000007777777770");
 
-    expect(Id64.compressArray(["0"])).to.equal("");
-    expect(Id64.compressArray(["garbage", "0", "0x1", "0x4", "0", "0x5abc", "0x5xyz", "zzzzzzzz"])).to.equal("+1+3+5AB8");
+    expect(CompressedId64Set.compressArray([])).to.equal("");
+    expect(CompressedId64Set.compressArray(["0"])).to.equal("");
+    expect(CompressedId64Set.compressArray(["garbage", "0", "0x1", "0x4", "0", "0x5abc", "0x5xyz", "zzzzzzzz"])).to.equal("+1+3+5AB8");
+  });
+});
+
+describe("MutableCompressedId64Set", () => {
+  it("should buffer insertions and removals", () => {
+    type Test = [OrderedId64Iterable, (set: MutableCompressedId64Set) => void, OrderedId64Iterable];
+    const tests: Test[] = [
+      [[], (set) => { set.add("0x1"); set.add("0x2"); set.add("0x3"); }, ["0x1", "0x2", "0x3"]],
+      [["0x1", "0x2", "0x3"], (set) => { set.delete("0x3"); set.delete("0x1"); set.delete("0x4"); }, ["0x2"]],
+      [["0x1", "0x3", "0xe"], (set) => { set.delete("0x1"); set.add("0x4"); set.add("0x1"); set.add("0x1"); set.add("0x4"); set.delete("0x4"); set.delete("0x5"); set.add("0x5"); }, ["0x1", "0x3", "0x5", "0xe"]],
+    ];
+
+    for (const test of tests) {
+      const initial = CompressedId64Set.compressIds(test[0]);
+      const expected = CompressedId64Set.compressIds(test[2]);
+      const mutate = test[1];
+
+      let set = new MutableCompressedId64Set(initial);
+      expect(set.ids).to.equal(initial);
+      mutate(set);
+      expect((set as any)._ids).to.equal(initial);
+      expect(set.ids).to.equal(expected);
+
+      set = new MutableCompressedId64Set(initial);
+      expect(set.equals(test[0])).to.be.true;
+      expect(set.equals(initial)).to.be.true;
+      mutate(set);
+      expect(set.equals(test[2])).to.be.true;
+      expect(set.equals(expected)).to.be.true;
+    };
   });
 });

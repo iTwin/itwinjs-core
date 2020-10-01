@@ -21,7 +21,12 @@ import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } fro
 import { createLabelRecord, priorityAndNameSortFunction } from "../common/Utils";
 import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
 
-/** @internal */
+/**
+ * Default presentation ruleset used by [[PresentationPropertyDataProvider]]. The ruleset just gets properties
+ * of the selected elements.
+ *
+ * @beta
+ */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset = require("./DefaultPropertyGridRules.json");
 

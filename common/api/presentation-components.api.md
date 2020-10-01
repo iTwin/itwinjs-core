@@ -161,6 +161,9 @@ export interface DataProvidersFactoryProps {
     rulesetsFactory?: RulesetsFactory;
 }
 
+// @beta
+export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset;
+
 // @beta @deprecated
 export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
 

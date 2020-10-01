@@ -54,6 +54,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, false, () => this.overrideTerrainSkirtDisplay());
     this._overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, iModel, true, false);
     this._backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, true);
+
+    if (styles) {
+      if (styles.contextRealityModels)
+        for (const contextRealityModel of styles.contextRealityModels)
+          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
+
+      if (styles.scheduleScript)
+        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, styles.scheduleScript);
+    }
   }
 
   /** @internal */
@@ -168,7 +177,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
 
-  /** @internal */
+  /**
+   * Attach a context reality model
+   * @see [[ContextRealityModelProps]].
+   * @beta
+   * */
   public attachRealityModel(props: ContextRealityModelProps): void {
     // ###TODO check if url+name already present...or do we allow same to be attached multiple times?
     if (undefined === this.jsonProperties.styles)
@@ -181,14 +194,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._contextRealityModels.push(new ContextRealityModelState(props, this.iModel, this));
   }
 
-  /** @internal */
+  /**
+   * Detach a context reality model from its name and url.
+   * @see [[ContextRealityModelProps]].
+   * @beta
+   */
   public detachRealityModelByNameAndUrl(name: string, url: string): void {
     const index = this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
     if (- 1 !== index)
       this.detachRealityModelByIndex(index);
   }
 
-  /** @internal */
+  /**
+   * Detach a context reality model from its index.
+   * @see [[ContextRealityModelProps]].
+   * @beta
+   * */
   public detachRealityModelByIndex(index: number): void {
     const styles = this.jsonProperties.styles;
     const props = undefined !== styles ? styles.contextRealityModels : undefined;
@@ -200,7 +221,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._contextRealityModels.splice(index, 1);
   }
 
-  /** @internal */
+  /**
+   * Return if a context reality model is attached.
+   * @see [[ContextRealityModelProps]].
+   * @beta
+   * */
   public hasAttachedRealityModel(name: string, url: string): boolean {
     return -1 !== this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
   }
@@ -243,7 +268,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined { return this.settings.getModelAppearanceOverride(id); }
 
-  /** Change the appearance overrides for a "contextual" reality model displayed by this style.
+  /** Change the appearance overrides for a context reality model displayed by this style.
    * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
    * @param index The reality model index or -1 to apply to all models.
    * @returns true if overrides are successfully applied.
@@ -280,7 +305,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return changed;
   }
 
-  /** Drop the appearance overrides for a "contextual" reality model displayed by this style.
+  /** Drop the appearance overrides for a context reality model displayed by this style.
    * @param index The reality model index or -1 to drop overrides from all reality models.
    * @returns true if overrides are successfully dropped.
    * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropRealityModelAppearanceOverride]] to ensure
@@ -309,7 +334,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  /** Obtain the override applied to a "contextual" reality model displayed by this style.
+  /** Obtain the override applied to a context reality model displayed by this style.
    * @param index The reality model index
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideRealityModelAppearance]]

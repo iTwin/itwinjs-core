@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client-tests",
+      "comment": "Fix randomly failing test",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client-tests",
+  "email": "Andrius.Zonys@bentley.com"
+}

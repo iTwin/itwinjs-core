@@ -258,6 +258,19 @@ export function compareWithTolerance(a: number, b: number, tolerance?: number): 
 // @beta
 export type CompressedId64Set = string;
 
+// @beta
+export namespace CompressedId64Set {
+    export function compressArray(ids: Id64Array): CompressedId64Set;
+    export function compressIds(ids: OrderedId64Iterable): CompressedId64Set;
+    export function compressSet(ids: Id64Set): CompressedId64Set;
+    export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
+    export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
+    // @alpha
+    export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
+    // @alpha
+    export function iterator(ids: CompressedId64Set): Iterator<Id64String>;
+}
+
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
 
@@ -593,18 +606,6 @@ export enum HttpStatus {
 
 // @public
 export namespace Id64 {
-    // @beta
-    export function compare(lhs: Id64String, rhs: Id64String): number;
-    // @beta
-    export function compressArray(ids: Id64Array): CompressedId64Set;
-    // @beta
-    export function compressSet(ids: Id64Set): CompressedId64Set;
-    // @beta
-    export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
-    // @beta
-    export function decompressIds(ids: CompressedId64Set, func: (id: Id64String) => boolean): boolean;
-    // @beta
-    export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
     export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void;
     export function fromJSON(prop?: string): Id64String;
     export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String;
@@ -616,19 +617,17 @@ export namespace Id64 {
     export function getLowerUint32(id: Id64String): number;
     export function getUint32Pair(id: Id64String, out?: Uint32Pair): Uint32Pair;
     export function getUpperUint32(id: Id64String): number;
-    const invalid = "0";
     export function has(arg: Id64Arg, id: Id64String): boolean;
     export function isId64(id: string): boolean;
     export function isInvalid(id: Id64String): boolean;
     export function isTransient(id: Id64String): boolean;
     export function isTransientId64(id: string): boolean;
     export function isValid(id: Id64String): boolean;
+    const invalid = "0";
     export function isValidId64(id: string): boolean;
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
     export function sizeOf(arg: Id64Arg): number;
-    // @beta
-    export function sortArray(ids: Id64Array): Id64Array;
     export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
     export class Uint32Map<T> {
         clear(): void;
@@ -1116,6 +1115,21 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
     constructor(limit: number);
 }
 
+// @alpha
+export class MutableCompressedId64Set implements OrderedId64Iterable {
+    [Symbol.iterator](): Iterator<string, any, undefined>;
+    constructor(ids?: CompressedId64Set);
+    add(id: Id64String): void;
+    clear(): void;
+    computeDifference(ids: OrderedId64Iterable | CompressedId64Set | MutableCompressedId64Set): CompressedId64Set;
+    computeIntersection(ids: OrderedId64Iterable | CompressedId64Set | MutableCompressedId64Set): CompressedId64Set;
+    computeUnion(ids: OrderedId64Iterable | CompressedId64Set | MutableCompressedId64Set): CompressedId64Set;
+    delete(id: Id64String): void;
+    equals(other: CompressedId64Set | MutableCompressedId64Set | OrderedId64Iterable): boolean;
+    get ids(): CompressedId64Set;
+    get isEmpty(): boolean;
+    }
+
 // @beta
 export class ObservableSet<T> extends Set<T> {
     // @internal (undocumented)
@@ -1147,6 +1161,25 @@ export enum OpenMode {
 
 // @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
+
+// @beta
+export type OrderedId64Iterable = Iterable<Id64String>;
+
+// @beta
+export namespace OrderedId64Iterable {
+    export function areEqualSets(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): boolean;
+    export function compare(lhs: Id64String, rhs: Id64String): number;
+    export function difference(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable;
+    export function differenceIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): Generator<string, void, unknown>;
+    export function intersection(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable;
+    export function intersectionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): Generator<string, void, unknown>;
+    export function isEmptySet(ids: OrderedId64Iterable | CompressedId64Set): boolean;
+    export function sortArray(ids: Id64Array): Id64Array;
+    export function union(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable;
+    export function unionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): Generator<string, void, unknown>;
+    export function unique(ids: OrderedId64Iterable): OrderedId64Iterable;
+    export function uniqueIterator(ids: OrderedId64Iterable): Generator<string, void, unknown>;
+}
 
 // @public
 export class PerfLogger implements IDisposable {
