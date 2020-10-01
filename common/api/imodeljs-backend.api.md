@@ -810,6 +810,7 @@ export interface ComputeProjectExtentsOptions {
 export class ConcurrencyControl {
     constructor(_iModel: BriefcaseDb);
     abandonRequest(): void;
+    abandonResources(requestContext: AuthorizedClientRequestContext): Promise<void>;
     areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
     areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
     areCodesAvailable2(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<boolean>;
@@ -855,7 +856,7 @@ export class ConcurrencyControl {
     get modelsAffectedByWrites(): Id64String[];
     // @internal (undocumented)
     get needLocks(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onClose(): void;
     // (undocumented)
     onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void;
@@ -869,13 +870,13 @@ export class ConcurrencyControl {
     onModelWrite(modelClass: typeof Model, model: ModelProps, opcode: DbOpcode): void;
     // (undocumented)
     onModelWritten(_modelClass: typeof Model, id: Id64String, opcode: DbOpcode): void;
-    // (undocumented)
+    // @internal (undocumented)
     onOpened(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onPushChanges(_requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     onSaveChanges(): void;
@@ -912,31 +913,23 @@ export namespace ConcurrencyControl {
     // @alpha
     export class Channel {
         constructor(_iModel: BriefcaseDb);
-        // (undocumented)
         get channelRoot(): Id64String | undefined;
         set channelRoot(id: Id64String | undefined);
-        // (undocumented)
+        // @internal (undocumented)
         checkCanWriteElementToCurrentChannel(props: ElementProps, req: Request, opcode: DbOpcode): void;
-        // (undocumented)
+        // @internal (undocumented)
         checkLockRequest(locks: Lock[]): void;
-        // (undocumented)
+        // @internal (undocumented)
         checkModelAccess(modelId: Id64String, req: Request, opcode: DbOpcode): void;
-        // (undocumented)
         getChannelOfElement(props: ElementProps): ChannelInfo;
-        // (undocumented)
         getChannelOfModel(modelId: Id64String): ChannelInfo;
         getChannelRootInfo(props: ElementProps): any | undefined;
-        // (undocumented)
+        // @internal (undocumented)
         getChannelRootInfo0(props: ElementProps): any;
-        // (undocumented)
         isChannelRoot(props: ElementProps): any | undefined;
-        // (undocumented)
         get isChannelRootLocked(): boolean;
-        // (undocumented)
         get isRepositoryChannel(): boolean;
-        // (undocumented)
         lockChannelRoot(req: AuthorizedClientRequestContext): Promise<void>;
-        // (undocumented)
         static get repositoryChannelRoot(): Id64String;
         }
     // @alpha

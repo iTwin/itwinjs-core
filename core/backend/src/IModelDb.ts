@@ -691,7 +691,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Abandon pending changes in this iModel */
+  /** Abandon pending changes in this iModel - also be sure to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase. */
   public abandonChanges(): void {
     if (this.isBriefcaseDb() && this.isPushEnabled) {
       this.concurrencyControl.abandonRequest();
