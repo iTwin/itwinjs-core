@@ -406,7 +406,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     if (this.props.scrollToRow !== previousProps.scrollToRow) {
       // istanbul ignore else
-      if (this.props.scrollToRow)
+      if (this.props.scrollToRow !== undefined)
         this.scrollToRow(this.props.scrollToRow);
     }
 
@@ -578,6 +578,9 @@ export class Table extends React.Component<TableProps, TableState> {
 
     if (status !== UpdateStatus.Abort)
       status = await this.updateRows();
+
+    if (this.props.scrollToRow !== undefined)
+      this.scrollToRow(this.props.scrollToRow);
 
     /* istanbul ignore next */
     if (this.props.onRender)

@@ -691,7 +691,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Abandon pending changes in this iModel */
+  /** Abandon pending changes in this iModel - also be sure to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase. */
   public abandonChanges(): void {
     if (this.isBriefcaseDb() && this.isPushEnabled) {
       this.concurrencyControl.abandonRequest();
@@ -2567,7 +2567,7 @@ export class SnapshotDb extends IModelDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     const result = nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, optionsString);
     if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, `Could not open snapshot iModel ${snapshotFile}`, Logger.logError, loggerCategory);
+      throw new IModelError(result, `Could not open iModel ${snapshotFile}`, Logger.logError, loggerCategory);
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
@@ -2592,13 +2592,13 @@ export class SnapshotDb extends IModelDb {
    */
   public static openFile(filePath: string, props?: SnapshotOpenOptions): SnapshotDb {
     if (SnapshotDb.tryFindByKey(filePath)) {
-      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
+      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `'${filePath}' has already been opened once`, Logger.logError, loggerCategory);
     }
     const propsString = props ? JSON.stringify(props) : undefined;
     const nativeDb = new IModelHost.platform.DgnDb();
     const status = nativeDb.openIModel(filePath, OpenMode.Readonly, undefined, propsString);
     if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not open snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
+      throw new IModelError(status, `Could not open iModel '${filePath}'`, Logger.logError, loggerCategory);
 
     return new SnapshotDb(nativeDb, OpenMode.Readonly);
   }
