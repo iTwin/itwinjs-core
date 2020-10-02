@@ -22,6 +22,7 @@ import { Mesh, MeshGraphicArgs, MeshList } from "../render/primitives/mesh/MeshP
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { DracoDecoder } from "./DracoDecoder";
 import { TileContent } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -424,6 +425,7 @@ export abstract class GltfReader {
     return id ?? extractId(materialJson.pbrMetallicRoughness?.baseColorTexture?.index);
   }
 
+
   protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
     const textureId = this.extractTextureId(materialJson);
     const textureMapping = undefined !== textureId ? this.findTextureMapping(textureId) : undefined;
@@ -494,14 +496,14 @@ export abstract class GltfReader {
     if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
       return undefined;
     if (primitive.extensions && primitive.extensions.KHR_draco_mesh_compression) {
-      return undefined;     // Defer Draco support until moved to web worker.
-      /*
+      // return undefined;     // Defer Draco support until moved to web worker.
+
       const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
       const bufferView = this._bufferViews[dracoExtension.bufferView];
       if (undefined === bufferView) return undefined;
       const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
 
-      return  DracoDecoder.readDracoMesh(mesh, primitive, bufferData); */
+      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData);
     }
     if (!this.readVertices(mesh.points, primitive, pseudoRtcBias))
       return undefined;

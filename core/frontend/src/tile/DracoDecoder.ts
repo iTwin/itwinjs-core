@@ -7,7 +7,7 @@
  */
 import { createDecoderModule } from "draco3d";
 import { Point2d, Point3d } from "@bentley/geometry-core";
-import { QPoint3dList } from "@bentley/imodeljs-common";
+import { OctEncodedNormal, QPoint3dList } from "@bentley/imodeljs-common";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 
@@ -39,6 +39,7 @@ export class DracoDecoder {
       !DracoDecoder.decodeVertices(mesh.points, dracoGeometry, dracoDecoder))
       return undefined;
     DracoDecoder.decodeUVParams(mesh.uvParams, dracoGeometry, dracoDecoder);
+    DracoDecoder.decodeNormals(mesh.normals, dracoGeometry, dracoDecoder);
     dracoModule.destroy(dracoGeometry);
     dracoModule.destroy(dracoDecoder);
 
@@ -105,6 +106,37 @@ export class DracoDecoder {
     dracoDecoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, unquantizedValues);
     for (let i = 0, j = 0; i < numPoints; i++)
       points.push(new Point2d(unquantizedValues.GetValue(j++), unquantizedValues.GetValue(j++)));
+    // }
+    return true;
+  }
+
+  private static decodeNormals(normals: OctEncodedNormal[], dracoGeometry: any, dracoDecoder: any): boolean {
+    const dracoAttribute = dracoDecoder.GetAttributeByUniqueId(dracoGeometry, dracoDecoder.GetAttributeId(dracoGeometry, DracoDecoder._dracoDecoderModule.NORMAL));
+    if (undefined === dracoAttribute) return false;
+
+    const numPoints = dracoGeometry.num_points();
+
+    /* Quantization WIP.
+    const vertexArrayLength = 2 * numPoints;
+    const transform = new DracoDecoder._dracoDecoderModule.AttributeQuantizationTransform();
+    const isQuantized = transform.InitFromAttribute(dracoAttribute);
+    if (isQuantized && 4 === dracoAttribute.data_type()) {   // If the data is already unsigned 16 bit (what our shaders support) then use it directly -- else get floats and we'll have to requantize.
+      dracoDecoder.SkipAttributeTransform(DracoDecoder._dracoDecoderModule.TEX_COORD);
+      const quantizedValues = new DracoDecoder._dracoDecoderModule.DracoUInt16Array();
+      dracoDecoder.GetAttributeUInt16ForAllPoints(dracoGeometry, dracoAttribute, quantizedValues);
+      const typedArray = new Uint16Array(vertexArrayLength);
+      const transformRange = transform.range();
+      const transformMin = new Point2d(transform.min_value(0), transform.min_value(1));
+      for (let i = 0; i < vertexArrayLength; i++)
+        typedArray[i] = quantizedValues.GetValue(i);
+
+      const range = new Range2d(transformMin.x, transformMin.y, transformMin.x + transformRange, transformMin.y + transformRange);
+      return QPoint2dList.fromTypedArray(typedArray, range);
+    } else { */
+    const unquantizedValues = new DracoDecoder._dracoDecoderModule.DracoFloat32Array();
+    dracoDecoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, unquantizedValues);
+    for (let i = 0, j = 0; i < numPoints; i++)
+      normals.push(OctEncodedNormal.fromVector({ x: unquantizedValues.GetValue(j++), y: unquantizedValues.GetValue(j++), z: unquantizedValues.GetValue(j++) }));
     // }
     return true;
   }
