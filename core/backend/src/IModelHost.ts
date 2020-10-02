@@ -424,8 +424,6 @@ export class IModelHost {
     }
     this.initializeUsageLogging(IModelHost.platform, region, configuration.applicationType, configuration.imodelClient);
 
-    this._platform!.setNopBriefcaseManager(); // Tell native code that requests for locks and codes are managed in JS.
-
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
