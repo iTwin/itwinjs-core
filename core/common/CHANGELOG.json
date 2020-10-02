@@ -2,6 +2,42 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.7.0",
+      "tag": "@bentley/imodeljs-common_v2.7.0",
+      "date": "Fri, 02 Oct 2020 18:03:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add documentation for ContextRealityModelProps."
+          },
+          {
+            "comment": "Fix calculation of cartographic range."
+          },
+          {
+            "comment": "Fixes to front end methods to pull, merge and push. "
+          },
+          {
+            "comment": "Fixed desktop authorization after recent changes. "
+          },
+          {
+            "comment": "Update Tile version due to changes to indexes for tesselated polylines"
+          },
+          {
+            "comment": "On iOS download in background"
+          },
+          {
+            "comment": "Introduce NoContentError (transmitted via 204)"
+          },
+          {
+            "comment": "Support thematic display of point clouds."
+          },
+          {
+            "comment": "fixed display of isolines mode"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.6.4",
       "tag": "@bentley/imodeljs-common_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",

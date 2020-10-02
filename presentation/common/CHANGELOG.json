@@ -2,6 +2,30 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "2.7.0",
+      "tag": "@bentley/presentation-common_v2.7.0",
+      "date": "Fri, 02 Oct 2020 18:03:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added a new `DefaultPropertyCategoryOverride` rule"
+          },
+          {
+            "comment": "Separate polymorphism of relationship and target class"
+          },
+          {
+            "comment": "Allow requesting distinct content values with `DescriptorOverrides` rather than descriptor itself"
+          },
+          {
+            "comment": "Changes to `DescriptorOverrides`: deprecated `sortingFieldName` and `sortDirection` in favor of `sorting` attribute, deprecated `hiddenFieldNames` in favor of `fieldsSelector`. The latter now also allows exclusively including fields."
+          },
+          {
+            "comment": "Made some fields of `Descriptor` and `DescriptorSource` readonly. They were never intended to be changed, so now we make that clear."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.6.4",
       "tag": "@bentley/presentation-common_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",

@@ -1,26 +1,33 @@
 # Change Log - @bentley/certa
 
-This log was last generated on Tue, 22 Sep 2020 17:40:07 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Oct 2020 18:03:32 GMT and should not be manually modified.
+
+## 2.7.0
+Fri, 02 Oct 2020 18:03:32 GMT
+
+### Updates
+
+- Fixed lint warnings.
 
 ## 2.6.4
 Tue, 22 Sep 2020 17:40:07 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.6.3
 Mon, 21 Sep 2020 14:47:09 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.6.2
 Mon, 21 Sep 2020 13:07:43 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.6.1
 Fri, 18 Sep 2020 13:15:08 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.6.0
 Thu, 17 Sep 2020 13:16:12 GMT
@@ -32,27 +39,27 @@ Thu, 17 Sep 2020 13:16:12 GMT
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.4
 Fri, 28 Aug 2020 15:34:15 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.3
 Wed, 26 Aug 2020 11:46:00 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.2
 Tue, 25 Aug 2020 22:09:08 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.1
 Mon, 24 Aug 2020 18:13:04 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.0
 Thu, 20 Aug 2020 20:57:09 GMT
@@ -64,52 +71,52 @@ Thu, 20 Aug 2020 20:57:09 GMT
 ## 2.4.2
 Fri, 14 Aug 2020 16:34:09 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.4.1
 Fri, 07 Aug 2020 19:57:43 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.4.0
 Tue, 28 Jul 2020 16:26:23 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.2
 Tue, 14 Jul 2020 23:50:36 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.1
 Mon, 13 Jul 2020 18:50:13 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.0
 Fri, 10 Jul 2020 17:23:14 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.2.0
 Fri, 19 Jun 2020 14:10:03 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.1.0
 Thu, 28 May 2020 22:48:59 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT
@@ -132,17 +139,17 @@ Wed, 22 Apr 2020 19:04:00 GMT
 ## 1.14.0
 Tue, 31 Mar 2020 15:44:19 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.12.0
 Wed, 12 Feb 2020 17:45:49 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:11 GMT
@@ -154,7 +161,7 @@ Wed, 22 Jan 2020 19:24:11 GMT
 ## 1.10.0
 Tue, 07 Jan 2020 19:44:01 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.9.0
 Tue, 10 Dec 2019 18:08:56 GMT
@@ -166,7 +173,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 ## 1.8.0
 Fri, 22 Nov 2019 14:03:34 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.7.0
 Fri, 01 Nov 2019 13:28:37 GMT
@@ -178,7 +185,7 @@ Fri, 01 Nov 2019 13:28:37 GMT
 ## 1.6.0
 Wed, 09 Oct 2019 20:28:42 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.5.0
 Mon, 30 Sep 2019 22:28:48 GMT
@@ -190,17 +197,17 @@ Mon, 30 Sep 2019 22:28:48 GMT
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.1.0
 Mon, 01 Jul 2019 19:04:29 GMT
