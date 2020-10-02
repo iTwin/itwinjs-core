@@ -14,12 +14,12 @@ import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, EventSink, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import {
   ArrayTypeDescription, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorJSON, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyRequestOptions, InstanceKey,
-  ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
-  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError, PresentationUnitSystem,
-  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RequestPriority, SelectClassInfoJSON, SelectionInfo, SelectionScope,
-  StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory,
+  HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON,
+  NodeKey, Paged, PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError,
+  PresentationUnitSystem, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset,
+  SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
 import {
   createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
@@ -228,7 +228,7 @@ describe("PresentationManager", () => {
             const request = JSON.parse(serializedRequest);
             return request.params.locale === locale;
           })))
-          .returns(async () => "{}")
+          .returns(async () => ({ result: "{}" }))
           .verifiable(moq.Times.once());
         await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId });
         addonMock.verifyAll();
@@ -246,7 +246,7 @@ describe("PresentationManager", () => {
             const request = JSON.parse(serializedRequest);
             return request.params.locale === locale;
           })))
-          .returns(async () => "{}")
+          .returns(async () => ({ result: "{}" }))
           .verifiable(moq.Times.once());
         await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId, locale });
         addonMock.verifyAll();
@@ -272,7 +272,7 @@ describe("PresentationManager", () => {
             const request = JSON.parse(serializedRequest);
             return request.params.unitSystem === unitSystem;
           })))
-          .returns(async () => "null")
+          .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
         await manager.getContentDescriptor({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet() });
         addonMock.verifyAll();
@@ -290,7 +290,7 @@ describe("PresentationManager", () => {
             const request = JSON.parse(serializedRequest);
             return request.params.unitSystem === unitSystem;
           })))
-          .returns(async () => "null")
+          .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
         await manager.getContentDescriptor({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem, displayType: "", keys: new KeySet() });
         addonMock.verifyAll();
@@ -397,11 +397,11 @@ describe("PresentationManager", () => {
       const ruleset = await createRandomRuleset();
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
-        .returns(async () => "{}")
+        .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
-        .returns(() => "hash")
+        .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: ruleset });
       addonMock.verifyAll();
@@ -411,14 +411,34 @@ describe("PresentationManager", () => {
       const rulesetId = faker.random.word();
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
-        .returns(async () => "{}")
+        .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
-        .returns(() => "hash")
+        .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.never());
       await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId });
       addonMock.verifyAll();
+    });
+
+    it("sends diagnostic options to native platform and invokes listener with diagnostic results", async () => {
+      const diagnosticOptions: DiagnosticsOptions = {
+        perf: true,
+        editor: "info",
+        dev: "warning",
+      };
+      const diagnosticsResult: DiagnosticsScopeLogs = {
+        scope: "test",
+        duration: 123,
+      };
+      const diagnosticsListener = sinon.spy();
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
+        .verifiable(moq.Times.once());
+      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, listener: diagnosticsListener } });
+      addonMock.verifyAll();
+      expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
     });
 
   });
@@ -457,6 +477,9 @@ describe("PresentationManager", () => {
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       manager = new PresentationManager({ addon: nativePlatformMock.object });
+      sinon.stub(manager, "rulesets").returns(sinon.createStubInstance(RulesetManagerImpl, {
+        add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+      }));
     });
     afterEach(() => {
       manager.dispose();
@@ -466,7 +489,7 @@ describe("PresentationManager", () => {
     const setup = (addonResponse: any) => {
       const serialized = JSON.stringify(addonResponse);
       nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
-        .returns(async () => JSON.stringify(addonResponse));
+        .returns(async () => ({ result: JSON.stringify(addonResponse) }));
       return JSON.parse(serialized);
     };
     const verifyMockRequest = (expectedParams: any) => {

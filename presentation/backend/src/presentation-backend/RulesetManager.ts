@@ -56,7 +56,7 @@ export class RulesetManagerImpl implements RulesetManager {
     if (foundRuleset)
       return foundRuleset;
 
-    const serializedRulesetsArray = this._getNativePlatform().getRulesets(id);
+    const serializedRulesetsArray = this._getNativePlatform().getRulesets(id).result;
     const rulesetsArray: RulesetResponseJson[] = JSON.parse(serializedRulesetsArray);
     if (0 === rulesetsArray.length)
       return undefined;
@@ -71,7 +71,7 @@ export class RulesetManagerImpl implements RulesetManager {
     if (foundRuleset)
       return foundRuleset;
 
-    const hash = this._getNativePlatform().addRuleset(JSON.stringify(ruleset));
+    const hash = this._getNativePlatform().addRuleset(JSON.stringify(ruleset)).result;
     return this.saveRuleset(ruleset, hash, (r: RegisteredRuleset) => this.remove(r));
   }
 
@@ -89,7 +89,7 @@ export class RulesetManagerImpl implements RulesetManager {
     }
 
     this._registeredRulesets.delete(rulesetId);
-    return this._getNativePlatform().removeRuleset(rulesetId, rulesetIdentifier);
+    return this._getNativePlatform().removeRuleset(rulesetId, rulesetIdentifier).result;
   }
 
   /**

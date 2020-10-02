@@ -69,7 +69,7 @@ describe("RulesetVariablesManager", () => {
     it("calls addon's getRulesetVariableValue with boolean", async () => {
       const value = faker.random.boolean();
       addonMock.setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.Bool))
-        .returns(() => value).verifiable(moq.Times.once());
+        .returns(() => ({ result: value })).verifiable(moq.Times.once());
       const result = manager.getValue(variableId, VariableValueTypes.Bool);
       addonMock.verifyAll();
       expect(result).to.eq(value);
@@ -78,7 +78,7 @@ describe("RulesetVariablesManager", () => {
     it("calls addon's getRulesetVariableValue with Id64", async () => {
       const value = createRandomId();
       addonMock.setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.Id64))
-        .returns(() => value).verifiable(moq.Times.once());
+        .returns(() => ({ result: value })).verifiable(moq.Times.once());
       const result = manager.getValue(variableId, VariableValueTypes.Id64);
       addonMock.verifyAll();
       expect(typeof result).to.eq("string");
@@ -88,7 +88,7 @@ describe("RulesetVariablesManager", () => {
     it("calls addon's getRulesetVariableValue with Id64[]", async () => {
       const value = [createRandomId()];
       addonMock.setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.Id64Array))
-        .returns(() => value.map((v) => v)).verifiable(moq.Times.once());
+        .returns(() => ({ result: value.map((v) => v) })).verifiable(moq.Times.once());
       const result = manager.getValue(variableId, VariableValueTypes.Id64Array);
       addonMock.verifyAll();
       expect(Array.isArray(result)).to.be.true;
@@ -101,7 +101,7 @@ describe("RulesetVariablesManager", () => {
     it("calls addon's getRulesetVariableValue with number", async () => {
       const value = faker.random.number();
       addonMock.setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.Int))
-        .returns(() => value).verifiable(moq.Times.once());
+        .returns(() => ({ result: value })).verifiable(moq.Times.once());
       const result = manager.getValue(variableId, VariableValueTypes.Int);
       addonMock.verifyAll();
       expect(result).to.eq(value);
@@ -110,7 +110,7 @@ describe("RulesetVariablesManager", () => {
     it("calls addon's getRulesetVariableValue with number[]", async () => {
       const value = [faker.random.number()];
       addonMock.setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.IntArray))
-        .returns(() => value).verifiable(moq.Times.once());
+        .returns(() => ({ result: value })).verifiable(moq.Times.once());
       const result = manager.getValue(variableId, VariableValueTypes.IntArray);
       addonMock.verifyAll();
       expect(result).to.eq(value);
@@ -119,7 +119,7 @@ describe("RulesetVariablesManager", () => {
     it("calls addon's getRulesetVariableValue with string", async () => {
       const value = faker.random.words();
       addonMock.setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String))
-        .returns(() => value).verifiable(moq.Times.once());
+        .returns(() => ({ result: value })).verifiable(moq.Times.once());
       const result = manager.getValue(variableId, VariableValueTypes.String);
       addonMock.verifyAll();
       expect(result).to.eq(value);
@@ -133,7 +133,7 @@ describe("RulesetVariablesManager", () => {
       const value = faker.random.words();
       addonMock
         .setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String))
-        .returns(() => value)
+        .returns(() => ({ result: value }))
         .verifiable();
       const result = manager.getString(variableId);
       addonMock.verifyAll();
@@ -161,7 +161,7 @@ describe("RulesetVariablesManager", () => {
       const value = faker.random.boolean();
       addonMock
         .setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.Bool))
-        .returns(() => value)
+        .returns(() => ({ result: value }))
         .verifiable();
       const result = manager.getBool(variableId);
       addonMock.verifyAll();
@@ -189,7 +189,7 @@ describe("RulesetVariablesManager", () => {
       const value = faker.random.number();
       addonMock
         .setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.Int))
-        .returns(() => (value))
+        .returns(() => ({ result: value }))
         .verifiable();
       const result = manager.getInt(variableId);
       addonMock.verifyAll();
@@ -217,7 +217,7 @@ describe("RulesetVariablesManager", () => {
       const valueArray = [faker.random.number(), faker.random.number(), faker.random.number()];
       addonMock
         .setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.IntArray))
-        .returns(() => valueArray)
+        .returns(() => ({ result: valueArray }))
         .verifiable();
       const result = manager.getInts(variableId);
       addonMock.verifyAll();
@@ -245,7 +245,7 @@ describe("RulesetVariablesManager", () => {
       const value = createRandomId();
       addonMock
         .setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.Id64))
-        .returns(() => value)
+        .returns(() => ({ result: value }))
         .verifiable();
       const result = manager.getId64(variableId);
       addonMock.verifyAll();
@@ -274,7 +274,7 @@ describe("RulesetVariablesManager", () => {
       const valueArray = [createRandomId(), createRandomId(), createRandomId()];
       addonMock
         .setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.Id64Array))
-        .returns(() => valueArray.map((v) => v))
+        .returns(() => ({ result: valueArray.map((v) => v) }))
         .verifiable();
       const result = manager.getId64s(variableId);
       expect(result).to.deep.equal(valueArray);
