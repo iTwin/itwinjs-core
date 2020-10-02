@@ -24,12 +24,11 @@ export type FormFilterArray = Array<{
   value: any;
 }>;
 
+/** @internal */
 @ECJsonTypeMap.classToJson("wsg", "Forms_EC_Mapping.FormDefinition", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-
-/** @internal */
 export class FormDefinition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Status")
   public status?: string;
@@ -80,12 +79,13 @@ export class FormDefinition extends WsgInstance {
   public errorStatus?: string;
 }
 
+/** ProjectMember
+ * @internal
+ */
 @ECJsonTypeMap.classToJson("wsg", "Connect.ProjectMember", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-
-/** @internal */
 export class ProjectMember extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
@@ -103,12 +103,11 @@ export class ProjectMember extends WsgInstance {
   public isRole?: boolean;
 }
 
+/** @internal */
 @ECJsonTypeMap.classToJson("wsg", "Connect.Stats", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-
-/** @internal */
 export class ProjectStats extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Count")
   public count?: number;
@@ -145,15 +144,11 @@ class InstanceCount extends WsgInstance {
   public count!: number;
 }
 
-/** FormData
- * @internal
- */
+/** @internal */
 @ECJsonTypeMap.classToJson("wsg", "DynamicSchema.BaseClass", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-
-/** @internal */
 export class FormInstanceData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties")
   public properties?: any;
@@ -162,6 +157,7 @@ export class FormInstanceData extends WsgInstance {
   public formData?: any;
 }
 
+/** @internal */
 @ECJsonTypeMap.classToJson("wsg", "Workflow.WorkflowDefinition", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
@@ -179,7 +175,6 @@ export class FormInstanceData extends WsgInstance {
   classPropertyName: "className",
 })
 
-/** @internal */
 export class WorkflowDefinition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Discipline")
   public discipline?: string;
@@ -238,12 +233,11 @@ class PropertyAssignment extends WsgInstance {
   public value?: string;
 }
 
+/** @internal */
 @ECJsonTypeMap.classToJson("wsg", "DynamicSchema.Attachment", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-
-/** @internal */
 export class Attachment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
@@ -261,12 +255,11 @@ export class Attachment extends WsgInstance {
   public sasUrl?: string;
 }
 
+/** @internal */
 @ECJsonTypeMap.classToJson("wsg", "DynamicSchema._Comment", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-
-/** @internal */
 export class Comment extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Author")
   public author?: string;
@@ -290,6 +283,7 @@ export class Comment extends WsgInstance {
   public toStateId?: string;
 }
 
+/** @internal */
 @ECJsonTypeMap.classToJson("wsg", "DynamicSchema.AuditRecord", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
@@ -299,7 +293,6 @@ export class Comment extends WsgInstance {
   classPropertyName: "className",
 })
 
-/** @internal */
 export class AuditRecord extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.RecordBy")
   public recordBy?: string;
@@ -324,12 +317,11 @@ class AuditValue extends WsgInstance {
   public newValue?: string;
 }
 
+/** @internal */
 @ECJsonTypeMap.classToJson("wsg", "MetaSchema.ECPropertyDef", {
   schemaPropertyName: "schemaName",
   classPropertyName: "className",
 })
-
-/** @internal */
 export class FormProperties extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
