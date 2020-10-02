@@ -9,6 +9,7 @@
 import "./ContentLayout.scss";
 import classnames from "classnames";
 import * as React from "react";
+import SplitPane from "react-split-pane";
 import { CommonProps, Orientation, UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
@@ -17,11 +18,6 @@ import {
   ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps,
 } from "./ContentLayoutProps";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentViewManager";
-
-// There is a problem with this import and a different tsconfig being used. Using the require statement instead.
-// Locking into react-split-pane release 0.1.87 and using the require statement works for browser, electron and mocha test environment.
-// import SplitPane from "react-split-pane";
-const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // eslint-disable-line
 
 /** Properties for [[ContentWrapper]] */
 interface ContentWrapperProps extends CommonProps {
