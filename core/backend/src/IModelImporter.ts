@@ -209,6 +209,10 @@ export class IModelImporter {
 
   /** Delete the specified Element from the target iModel. */
   public deleteElement(elementId: Id64String): void {
+    if (this.doNotUpdateElementIds.has(elementId)) {
+      Logger.logInfo(loggerCategory, `Do not delete target element ${elementId}`);
+      return;
+    }
     this.onDeleteElement(elementId);
   }
 

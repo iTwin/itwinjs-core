@@ -1127,6 +1127,25 @@ export class IModelTransformer3d extends IModelTransformer {
   }
 }
 
+/** Test IModelTransformer that consolidates all PhysicalModels into one. */
+export class PhysicalModelConsolidator extends IModelTransformer {
+  /** Remap all source PhysicalModels to this one. */
+  private readonly _targetModelId: Id64String;
+  /** Construct a new PhysicalModelConsolidator */
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetModelId: Id64String) {
+    super(sourceDb, targetDb);
+    this._targetModelId = targetModelId;
+    this.importer.doNotUpdateElementIds.add(targetModelId);
+  }
+  /** Override shouldExportElement to remap PhysicalPartition instances. */
+  protected shouldExportElement(sourceElement: Element): boolean {
+    if (sourceElement instanceof PhysicalPartition) {
+      this.context.remapElement(sourceElement.id, this._targetModelId);
+    }
+    return super.shouldExportElement(sourceElement);
+  }
+}
+
 /** Specialization of IModelTransformer for testing */
 export class TestIModelTransformer extends IModelTransformer {
   public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter) {
