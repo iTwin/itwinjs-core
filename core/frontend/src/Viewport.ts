@@ -2625,9 +2625,12 @@ export abstract class Viewport implements IDisposable {
       this._timePointValid = true;
       const scheduleScript = view.displayStyle.scheduleScript;
       if (scheduleScript) {
-        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.computeDuration().low);
+        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.getCachedDuration().low);
         if (scheduleScript.containsFeatureOverrides)
           overridesNeeded = true;
+
+        if (scheduleScript.containsTransform && !this._freezeScene)
+          this.invalidateScene();
       }
     }
 

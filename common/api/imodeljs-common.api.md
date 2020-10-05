@@ -19,6 +19,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
+import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
@@ -763,6 +764,8 @@ export interface ClassifierTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
+    animationTransformNodeId?: number;
+    // (undocumented)
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
@@ -1430,8 +1433,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 917504,
-    Major = 14,
+    Combined = 983040,
+    Major = 15,
     Minor = 0
 }
 
@@ -4784,6 +4787,8 @@ export interface PrimaryTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
+    animationTransformNodeId?: number;
+    // (undocumented)
     edgesRequired: boolean;
     // (undocumented)
     enforceDisplayPriority?: boolean;
@@ -5244,7 +5249,7 @@ export namespace RenderSchedule {
         // (undocumented)
         batchId: number;
         // (undocumented)
-        elementIds: Id64String[];
+        elementIds: Id64String[] | CompressedId64Set;
     }
     export interface ModelTimelineProps extends TimelineProps {
         // (undocumented)

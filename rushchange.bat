@@ -1,4 +1,4 @@
-call rush change
+call rush change %*
 git status
 @echo off
 setlocal

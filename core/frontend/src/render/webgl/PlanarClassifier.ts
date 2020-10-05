@@ -394,7 +394,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     }
 
     if (undefined !== this._debugFrustumGraphic)
-      target.scene.push(this._debugFrustumGraphic);
+      target.graphics.foreground.push(this._debugFrustumGraphic);
 
     // Temporarily override the Target's state.
     const system = System.instance;
