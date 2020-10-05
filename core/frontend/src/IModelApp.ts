@@ -735,13 +735,25 @@ export class IModelApp {
     return div;
   }
 
-  /** Localize the error message for an error number from iModel.js
-   * @param errorNum one of the status values from [[BentleyStatus]], [[IModelStatus]] or [[DbResult]]
+  /** Localize an error status from iModel.js
+   * @param status one of the status values from [[BentleyStatus]], [[IModelStatus]] or [[DbResult]]
    * @returns a localized error message
    * @beta
    */
-  public static translateErrorNumber(errorNum: number) {
-    const errorKey = BentleyStatus[errorNum] ?? IModelStatus[errorNum] ?? DbResult[errorNum] ?? "ErrorNum";
-    return this.i18n.translate(`Errors.${errorKey}`, { error: `0x${errorNum.toString(16)}` })
+  public static translateStatus(status: number) {
+    let key: { scope: string, val: string, status?: string }
+    if (typeof status !== "number") {
+      key = { scope: "Errors", val: "IllegalValue" }
+    } else {
+      key = { scope: "BentleyStatus", val: BentleyStatus[status] };
+      if (!key.val)
+        key = { scope: "IModelStatus", val: IModelStatus[status] }
+      if (!key.val)
+        key = { scope: "DbResult", val: DbResult[status] }
+      if (!key.val)
+        key = { scope: "Errors", val: "Status", status: status.toString() }
+    }
+
+    return this.i18n.translate(`${key.scope}.${key.val}`, key);
   }
 }

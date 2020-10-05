@@ -44,21 +44,25 @@
     "CantFind": "Cannot find Extension '{{extensionName}}'",
     "UnableToLoad": "Unable to load Extension '{{extensionName}}'"
   },
-  "Errors": {
+  "DbResult": {
+    "BE_SQLITE_ERROR_AlreadyOpen": "Database already open",
+    "BE_SQLITE_ERROR_FileExists": "Database already exists",
+    "BE_SQLITE_ERROR_FileNotFound": "File not found"
+  },
+  "BentleyStatus": {
+    "SUCCESS": "Success",
+    "ERROR": "Error"
+  },
+  "IModelStatus": {
     "AlreadyOpen": "Already open",
     "BadElement": "Bad element",
     "BadExtension": "Bad file extension",
     "BadModel": "Bad model",
     "BadRequest": "Bad request",
     "BadSchema": "Bad schema",
-    "BE_SQLITE_ERROR_AlreadyOpen": "Database already open",
-    "BE_SQLITE_ERROR_FileExists": "Database already exists",
-    "BE_SQLITE_ERROR_FileNotFound": "File not found",
     "CannotUndo": "Can not Undo",
-    "Details": "In case you're interested in the details:",
     "DuplicateCode": "Duplicate code",
     "DuplicateName": "Duplicate name",
-    "ErrorNum": "Error number {{error}}",
     "FileAlreadyExists": "File already exists",
     "FileNotFound": "File not found",
     "IdExists": "Id exists",
@@ -73,7 +77,6 @@
     "NothingToUndo": "Nothing to undo",
     "ParentBlockedChange": "Parent blocked change",
     "ReadError": "Read error",
-    "ReloadPage": "😞 Oops, something went wrong - please reload the page.",
     "TransactionActive": "Transaction active",
     "UnitsMissing": "Units missing",
     "UnknownError": "Unknown error from backend",
@@ -83,13 +86,19 @@
     "VersionTooNew": "Version too new",
     "VersionTooOld": "Version too old",
     "ViewNotFound": "View not found",
-    "WebGLContextLost": "The WebGL rendering context was lost. Closing other browser tabs before reloading the page may help.",
     "WriteError": "Write error",
     "WrongClass": "Wrong class",
     "WrongElement": "Wrong element",
     "WrongHandler": "Wrong handler",
     "WrongIModel": "Wrong iModel",
     "WrongModel": "Wrong model"
+  },
+  "Errors": {
+    "Status": "Status: {{status}}",
+    "IllegalValue": "Illegal value",
+    "Details": "In case you're interested in the details:",
+    "ReloadPage": "😞 Oops, something went wrong - please reload the page.",
+    "WebGLContextLost": "The WebGL rendering context was lost. Closing other browser tabs before reloading the page may help."
   },
   "Properties": {
     "Angle": "Angle",
