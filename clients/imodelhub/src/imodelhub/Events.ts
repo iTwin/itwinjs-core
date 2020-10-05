@@ -218,9 +218,15 @@ export class VersionEvent extends IModelHubEvent {
   }
 }
 
+/** Get EventConstructor which can be used to construct IModelHubEvent
+ * @internal
+ */
 type EventConstructor = (new () => IModelHubEvent);
-/** Get constructor from EventType name. */
-function constructorFromEventType(type: IModelHubEventType): EventConstructor {
+
+/** Get constructor from EventType name.
+ * @internal
+ */
+export function constructorFromEventType(type: IModelHubEventType): EventConstructor {
   switch (type) {
     case IModelHubEventType.LockEvent:
       return LockEvent;

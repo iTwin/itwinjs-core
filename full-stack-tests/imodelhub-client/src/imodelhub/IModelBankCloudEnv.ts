@@ -14,7 +14,8 @@ import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnviron
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { UserInfo } from "@bentley/itwin-client";
-import { createIModelBankFileHandler, workDir } from "./TestUtils";
+import { workDir } from "./TestConstants"
+import { createIModelBankFileHandler } from "./FileHandler";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
@@ -23,6 +24,12 @@ import { createIModelBankFileHandler, workDir } from "./TestUtils";
 // or set the following so the tests would deploy a local orchestrator themselves:
 // set imjs_test_imodel_bank_run_orchestrator=%SrcRoot%\imodel-bank\local-orchestrator\lib\server.js
 // set imjs_test_imodel_bank_logging_config=<somewhere>logging.config.json
+
+let imodelBankClient: IModelBankClient;
+
+export function setIModelBankClient(_client: IModelBankClient) {
+  imodelBankClient = _client
+}
 
 export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   if (Config.App.has("imjs_test_imodel_bank_run_orchestrator"))
@@ -37,7 +44,12 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
       : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
   };
 
-  const bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
+  let bankClient: IModelBankClient;
+  if (imodelBankClient)
+    bankClient = imodelBankClient;
+  else
+    bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
+
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {

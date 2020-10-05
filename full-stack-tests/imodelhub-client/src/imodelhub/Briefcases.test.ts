@@ -12,6 +12,8 @@ import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
+import { workDir } from "./TestConstants";
+import { createFileHandler } from "./FileHandler";
 
 function mockGetBriefcaseById(imodelId: GuidString, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
@@ -115,8 +117,8 @@ describe("iModelHub BriefcaseHandler", () => {
       briefcaseId = 2;
     }
 
-    if (!fs.existsSync(utils.workDir)) {
-      fs.mkdirSync(utils.workDir);
+    if (!fs.existsSync(workDir)) {
+      fs.mkdirSync(workDir);
     }
   });
 
@@ -304,7 +306,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
-    const downloadToPathname: string = path.join(utils.workDir, fileName);
+    const downloadToPathname: string = path.join(workDir, fileName);
 
     utils.mockFileResponse();
 
@@ -315,13 +317,13 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should download a Briefcase with Buffering (#iModelBank)", async () => {
-    iModelClient.setFileHandler(utils.createFileHandler(true));
+    iModelClient.setFileHandler(createFileHandler(true));
     mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, false);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
-    const downloadToPathname: string = path.join(utils.workDir, fileName);
+    const downloadToPathname: string = path.join(workDir, fileName);
 
     utils.mockFileResponse();
 
@@ -330,7 +332,7 @@ describe("iModelHub BriefcaseHandler", () => {
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
 
-    iModelClient.setFileHandler(utils.createFileHandler());
+    iModelClient.setFileHandler(createFileHandler());
   });
 
   it("should get error 409 and fail to get briefcase (#unit)", async () => {
@@ -364,7 +366,7 @@ describe("iModelHub BriefcaseHandler", () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
-      await invalidClient.briefcases.download(requestContext, new Briefcase(), utils.workDir);
+      await invalidClient.briefcases.download(requestContext, new Briefcase(), workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -376,7 +378,7 @@ describe("iModelHub BriefcaseHandler", () => {
   it("should fail downloading briefcase with no file url (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.briefcases.download(requestContext, new Briefcase(), utils.workDir);
+      await iModelClient.briefcases.download(requestContext, new Briefcase(), workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

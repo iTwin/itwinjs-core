@@ -12,6 +12,7 @@ import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
+import { workDir } from "./TestConstants";
 
 chai.should();
 
@@ -70,8 +71,8 @@ describe("iModelHub CheckpointHandler", () => {
       return;
     }
 
-    if (!fs.existsSync(utils.workDir)) {
-      fs.mkdirSync(utils.workDir);
+    if (!fs.existsSync(workDir)) {
+      fs.mkdirSync(workDir);
     }
   });
 
@@ -93,7 +94,7 @@ describe("iModelHub CheckpointHandler", () => {
 
     utils.mockFileResponse(2);
     const progressTracker = new utils.ProgressTracker();
-    await iModelClient.checkpoints.download(requestContext, checkpoints[0], path.join(utils.workDir, checkpoints[0].fileName!), progressTracker.track());
+    await iModelClient.checkpoints.download(requestContext, checkpoints[0], path.join(workDir, checkpoints[0].fileName!), progressTracker.track());
     progressTracker.check();
   });
 
