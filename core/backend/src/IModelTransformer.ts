@@ -125,11 +125,12 @@ export class IModelTransformer extends IModelExportHandler {
       kind: ExternalSourceAspect.Kind.Element,
       version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
     };
-    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind LIMIT 1`;
+    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} a WHERE a.Element.Id=:elementId AND a.Scope.Id=:scopeId AND a.Kind=:kind AND a.Identifier=:identifier LIMIT 1`;
     aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
       statement.bindId("elementId", targetElementId);
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      statement.bindString("identifier", sourceElement.id); // ExternalSourceAspect.Identifier is of type string
       return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
     });
     return aspectProps;

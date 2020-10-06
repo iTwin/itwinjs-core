@@ -688,6 +688,12 @@ describe("Schema comparison tests", () => {
   describe("Property delta tests", () => {
     it("Property B not found, PrimitiveArray property, all diagnostics reported", async () => {
       const aItems = {
+        CategoryA: {
+          schemaItemType: "PropertyCategory",
+          type: "string",
+          typeName: "test",
+          priority: 1,
+        },
         TestClassA: {
           schemaItemType: "EntityClass",
           properties: [
@@ -696,13 +702,23 @@ describe("Schema comparison tests", () => {
               type: "PrimitiveArrayProperty",
               typeName: "string",
               label: "labelA",
+              description: "test description",
               minOccurs: 1,
               maxOccurs: 2,
+              isReadOnly: false,
+              priority: 1,
+              category: "SchemaA.CategoryA",
             },
           ],
         },
       };
       const bItems = {
+        CategoryA: {
+          schemaItemType: "PropertyCategory",
+          type: "string",
+          typeName: "test",
+          priority: 1,
+        },
         TestClassA: {
           schemaItemType: "EntityClass",
         },
@@ -715,6 +731,10 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
+      await schemaA.getItem("TestClassA") as ECClass;
+      const itemA = await schemaA.getItem("TestClassA") as ECClass;
+      const itemAProp = await itemA.getProperty("PropertyA") as AnyProperty;
+
       expect(reporter.diagnostics.length).to.equal(10, "Expected 10 differences.");
       expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.PropertyMissing ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "label" ? true : false)).to.not.be.undefined;
@@ -726,6 +746,19 @@ describe("Schema comparison tests", () => {
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "minOccurs" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "maxOccurs" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "primitiveType" ? true : false)).to.not.be.undefined;
+
+      const propChanges = reporter.changes[0].classChanges.get("TestClassA")!.propertyChanges.get("PropertyA");
+
+      let propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "label" ? true : false);
+      expect(propChange?.toString()).to.equal("Label: labelA -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "description" ? true : false);
+      expect(propChange?.toString()).to.equal("Description: test description -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "isReadOnly" ? true : false);
+      expect(propChange?.toString()).to.equal("IsReadOnly: false -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "priority" ? true : false);
+      expect(propChange?.toString()).to.equal("Priority: 1 -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "category" ? true : false);
+      expect(propChange?.toString()).to.equal("Category: SchemaA.CategoryA -> undefined");
     });
 
     it("Property B not found , Enumeration property, all diagnostics reported", async () => {

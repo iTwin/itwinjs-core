@@ -2,6 +2,72 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.7.0",
+      "tag": "@bentley/imodeljs-frontend_v2.7.0",
+      "date": "Fri, 02 Oct 2020 18:03:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added MapLayerSettingsService to persist custom map sources between sessions for same project/model"
+          },
+          {
+            "comment": "Support authorization via URL suffix for Cesium ion.  Handle PBR texture."
+          },
+          {
+            "comment": "Fixes to front end methods to pull, merge and push. "
+          },
+          {
+            "comment": "Fixed desktop authorization after recent changes. "
+          },
+          {
+            "comment": "Support literal double-quote characters in quoted key-in arguments."
+          },
+          {
+            "comment": "Restore reality model and schedule script init - inadvertently removed."
+          },
+          {
+            "comment": "Generate normals for 3d view decorations."
+          },
+          {
+            "comment": "Fix locate for plan projection models with non-depth-buffered background map."
+          },
+          {
+            "comment": "Calculate correct up vector even when ECEF is bad."
+          },
+          {
+            "comment": "On iOS download in background"
+          },
+          {
+            "comment": "Look and move can now start from key. Don't use ctrl key due to browser conflicts."
+          },
+          {
+            "comment": "Added switches to turn on and off the WMS feature of the map layer widget"
+          },
+          {
+            "comment": "Added optional wms authentication"
+          },
+          {
+            "comment": "Added a person to the \"set up walk camera\" tool decorations."
+          },
+          {
+            "comment": "Cleaned up formatting of glsl shader code produced for better human readability when debugging shaders."
+          },
+          {
+            "comment": "Support thematic display of point clouds."
+          },
+          {
+            "comment": "Added thematic display to background terrain"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.6.5",
+      "tag": "@bentley/imodeljs-frontend_v2.6.5",
+      "date": "Sat, 26 Sep 2020 16:06:34 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.6.4",
       "tag": "@bentley/imodeljs-frontend_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",

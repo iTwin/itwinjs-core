@@ -14,6 +14,8 @@ import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
+import { assetsPath, workDir } from "./TestConstants";
+import { createFileHandler } from "./FileHandler";
 
 function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true, iModelType = IModelType.Undefined, returnsInstances = true) {
   mockGetIModelWithFilter(`?$filter=Name+eq+%27${encodeURIComponent(name)}%27`, contextId, name, description, imodelId, initialized, "Empty", iModelType, returnsInstances);
@@ -257,8 +259,8 @@ describe("iModelHub iModelsHandler", () => {
     projectId = await utils.getProjectId(requestContext, "iModelJsTest");
     assetId = await utils.getAssetId(requestContext, undefined);
 
-    if (!fs.existsSync(utils.workDir)) {
-      fs.mkdirSync(utils.workDir);
+    if (!fs.existsSync(workDir)) {
+      fs.mkdirSync(workDir);
     }
   });
 
@@ -378,7 +380,7 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should create iModel and upload SeedFile", async function () {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    const filePath = `${utils.assetsPath}LargerSeedFile.bim`;
+    const filePath = `${assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), testIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
@@ -427,7 +429,7 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should download a Seed File (#iModelBank)", async () => {
     mockGetSeedFile(imodelId, true);
-    const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
+    const downloadToPathname: string = path.join(workDir, imodelId.toString());
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
@@ -437,9 +439,9 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should download a Seed File with Buffering (#iModelBank)", async () => {
-    imodelClient.setFileHandler(utils.createFileHandler(true));
+    imodelClient.setFileHandler(createFileHandler(true));
     mockGetSeedFile(imodelId, true);
-    const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
+    const downloadToPathname: string = path.join(workDir, imodelId.toString());
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
@@ -447,14 +449,14 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
 
-    imodelClient.setFileHandler(utils.createFileHandler());
+    imodelClient.setFileHandler(createFileHandler());
   });
 
   it("should fail downloading the Seed File with no file handler", async () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
-      await invalidClient.iModels.download(requestContext, imodelId, utils.workDir);
+      await invalidClient.iModels.download(requestContext, imodelId, workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -467,7 +469,7 @@ describe("iModelHub iModelsHandler", () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
-      await invalidClient.iModels.create(requestContext, projectId, utils.getUniqueIModelName(createIModelName), { path: utils.workDir });
+      await invalidClient.iModels.create(requestContext, projectId, utils.getUniqueIModelName(createIModelName), { path: workDir });
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -479,7 +481,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should fail creating an iModel with no file (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.iModels.create(requestContext, projectId, utils.getUniqueIModelName(createIModelName), { path: `${utils.workDir}InvalidiModel.bim` });
+      await iModelClient.iModels.create(requestContext, projectId, utils.getUniqueIModelName(createIModelName), { path: `${workDir}InvalidiModel.bim` });
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -491,7 +493,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should fail creating an iModel with directory path (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.iModels.create(requestContext, projectId, utils.getUniqueIModelName(createIModelName), { path: utils.workDir });
+      await iModelClient.iModels.create(requestContext, projectId, utils.getUniqueIModelName(createIModelName), { path: workDir });
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -663,7 +665,7 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should create iModel if iModel does not exist (#unit)", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    const filePath = `${utils.assetsPath}LargerSeedFile.bim`;
+    const filePath = `${assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, testIModelName, imodelId, 0);
@@ -678,7 +680,7 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should throw iModelAlreadyExists if iModel already exist (#iModelBank)", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    const filePath = `${utils.assetsPath}LargerSeedFile.bim`;
+    const filePath = `${assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
     mockGetIModel(projectId, testIModelName, Guid.createValue(), 1);
     mockCreateiModel(projectId, Guid.createValue(), testIModelName, description, filePath, 2);
@@ -766,7 +768,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should download a Seed File if iModel exist (#iModelBank #unit)", async () => {
     mockGetSeedFile(imodelId, true);
     mockGetIModel(projectId, imodelName, imodelId, 1);
-    const downloadToPathname: string = path.join(utils.workDir, imodelId.toString());
+    const downloadToPathname: string = path.join(workDir, imodelId.toString());
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();

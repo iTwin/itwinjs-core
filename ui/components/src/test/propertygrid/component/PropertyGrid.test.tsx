@@ -11,13 +11,13 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
 import { PropertyGrid } from "../../../ui-components/propertygrid/component/PropertyGrid";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -427,6 +427,28 @@ describe("PropertyGrid", () => {
 
       const categoryBlocks = wrapper.find(PropertyCategoryBlock);
       expect(categoryBlocks.children().length).to.be.eq(3);
+    });
+
+    it("rerenders when provider changes", async () => {
+      const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+      await TestUtils.flushAsyncOperations();
+      wrapper.update();
+      expect(wrapper.find(PropertyCategoryBlock).children().length).to.eq(2);
+
+      const provider2 = {
+        onDataChanged: new PropertyDataChangeEvent(),
+        getData: async (): Promise<PropertyData> => ({
+          label: PropertyRecord.fromString("two"),
+          categories: [categories[0]],
+          records: {
+            Group_1: [PropertyRecord.fromString("test", "test")],
+          },
+        }),
+      };
+      wrapper.setProps({ dataProvider: provider2 });
+      await TestUtils.flushAsyncOperations();
+      wrapper.update();
+      expect(wrapper.find(PropertyCategoryBlock).children().length).to.eq(1);
     });
 
     it("doesn't rerender on intermediate data changes", async () => {

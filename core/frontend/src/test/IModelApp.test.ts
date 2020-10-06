@@ -11,6 +11,7 @@ import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
 import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
+import { BentleyStatus, DbResult, IModelStatus } from "@bentley/bentleyjs-core";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -71,7 +72,10 @@ class TestApp extends MockRender.App {
 }
 
 describe("IModelApp", () => {
-  before(async () => TestApp.startup());
+  before(async () => {
+    await TestApp.startup();
+    await TestApp.testNamespace!.readFinished;  // we must wait for the localization read to finish.
+  });
   after(async () => TestApp.shutdown());
 
   it("TestApp should override correctly", () => {
@@ -89,7 +93,6 @@ describe("IModelApp", () => {
   });
 
   it("Should get localized keyin, flyover, and description for tools", async () => {
-    await TestApp.testNamespace!.readFinished;  // we must wait for the localization read to finish.
     assert.equal(TestImmediate.keyin, "Localized TestImmediate Keyin");
     assert.equal(TestImmediate.flyover, "Localized TestImmediate Flyover");
     assert.equal(TestImmediate.description, "Test of an Immediate Command");
@@ -112,21 +115,28 @@ describe("IModelApp", () => {
     assert.equal(selTool.keyin, "select elements", "keyin comes from superclass");
   });
 
-  it("Should do trivial localizations", () => {
+  it("Should do localizations", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
     assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
     assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
     assert.equal(IModelApp.i18n.translate("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
-  });
 
-  it("Should return the key for localization keys that are missing", () => {
     // there is no key for TrivialTest.Test3
     assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
-  });
 
-  it("Should properly substitute the values in localized strings with interpolations", () => {
+    // Should properly substitute the values in localized strings with interpolations
     assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
     assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+
+    assert.equal(IModelApp.translateStatus(IModelStatus.AlreadyOpen), "Already open");
+    assert.equal(IModelApp.translateStatus(IModelStatus.DuplicateCode), "Duplicate code");
+    assert.equal(IModelApp.translateStatus(DbResult.BE_SQLITE_ERROR_AlreadyOpen), "Database already open");
+    assert.equal(IModelApp.translateStatus(BentleyStatus.ERROR), "Error");
+    assert.equal(IModelApp.translateStatus(BentleyStatus.SUCCESS), "Success");
+    assert.equal(IModelApp.translateStatus(101), "DbResult.BE_SQLITE_DONE");
+    assert.equal(IModelApp.translateStatus(11111), "Status: 11111");
+    assert.equal(IModelApp.translateStatus(undefined as any), "Illegal value");
+
   });
 
   it("Should support WebGL", () => {

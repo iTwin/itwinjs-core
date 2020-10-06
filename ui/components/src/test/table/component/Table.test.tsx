@@ -1374,12 +1374,16 @@ describe("Table", () => {
         dataProvider={dataProviderMock.object}
         onRowsLoaded={onRowsLoaded}
         onScrollToRow={onScrollToRow}
+        scrollToRow={0}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
     });
 
     it("should scroll to a specific row", async () => {
+      expect(onScrollToRow.calledOnceWith(0)).to.be.true;
+      onScrollToRow.resetHistory();
+
       table.setProps({ scrollToRow: 50 });
       table.update();
       await TestUtils.flushAsyncOperations();

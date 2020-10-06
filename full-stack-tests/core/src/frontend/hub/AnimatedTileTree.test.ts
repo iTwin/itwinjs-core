@@ -12,7 +12,7 @@ import {
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
-describe.only("Animated tile trees", () => {
+describe("Animated tile trees (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
   const viewId = "0x100000004d9";
   const styleId = "0x100000004d8";

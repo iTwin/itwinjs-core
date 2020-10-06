@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/ui-framework",
-      "comment": "ModelsTree: Group similar category nodes to avoid duplication",
+      "comment": "Upgraded react-split-pane to 0.1.92",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-framework",
-  "email": "grigas.petraitis@bentley.com"
+  "email": "dan.east@bentley.com"
 }

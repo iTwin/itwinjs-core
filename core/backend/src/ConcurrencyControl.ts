@@ -412,7 +412,13 @@ export class ConcurrencyControl {
       req.removeCodes(this._cache.isCodeReserved, this._cache); // eslint-disable-line @typescript-eslint/unbound-method
   }
 
-  public async onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void> {
+  /**
+   * Abandons any locks that are held, any Codes that are reserved, and any pending requests.
+   * You should call this when you call IModelDb.abandonChanges.
+   * This is called automatically by BriefcaseDb.cancelChanges and by BriefcaseDb.pushChanges in the event that there are
+   * no changes to push.
+   */
+  public async abandonResources(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
     this.abandonRequest();
     this._cache.deleteFile();
@@ -424,6 +430,12 @@ export class ConcurrencyControl {
     return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.
   }
 
+  /** @internal */
+  public async onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void> {
+    return this.abandonResources(requestContext);
+  }
+
+  /** @internal */
   public async onPushChanges(_requestContext: AuthorizedClientRequestContext): Promise<void> {
     // Must do this to guarantee that the cache does not become stale if the client crashes after pushing but
     // before performing the various post-push clean-up tasks, such as marking reserved codes as used and releasing
@@ -434,6 +446,7 @@ export class ConcurrencyControl {
     this._cache.deleteFile();
   }
 
+  /** @internal */
   public async onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
 
@@ -443,11 +456,13 @@ export class ConcurrencyControl {
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
   }
 
+  /** @internal */
   private emitOnSavedChangesEvent() {
     const data = { hasPendingTxns: this.iModel.txns.hasPendingTxns, time: Date.now() }; // Note that not all calls to saveChanges create a txn. For example, an update to be_local does not.
     this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onSavedChanges", data);
   }
 
+  /** @internal */
   public async onOpened(requestContext: AuthorizedClientRequestContext): Promise<void> {
     if (!this._iModel.isPushEnabled)
       return;
@@ -459,6 +474,7 @@ export class ConcurrencyControl {
     return this.openOrCreateCache(requestContext);
   }
 
+  /** @internal */
   public onClose() {
     this._iModel.txns.onCommitted.removeListener(this.emitOnSavedChangesEvent, this); // eslint-disable-line @typescript-eslint/unbound-method
     this._cache.close(true);
@@ -566,6 +582,7 @@ export class ConcurrencyControl {
       }
     }
   }
+
   private async acquireLocks(requestContext: AuthorizedClientRequestContext, locks: ConcurrencyControl.LockProps[]): Promise<Lock[]> {
     requestContext.enter();
 
@@ -844,8 +861,10 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     constructor(private _iModel: BriefcaseDb) { }
 
+    /** The ID of the repository channel root element */
     public static get repositoryChannelRoot(): Id64String { return BriefcaseDb.rootSubjectId; }
 
+    /** Request an exclusive lock on the root element of the current channel. */
     public async lockChannelRoot(req: AuthorizedClientRequestContext): Promise<void> {
       req.enter();
       if (this.channelRoot === undefined)
@@ -860,12 +879,14 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       return this._iModel.concurrencyControl.requestResourcesForUpdate(req, [channelRoot]);
     }
 
+    /** Check if the current channel root element is locked. */
     public get isChannelRootLocked(): boolean {
       if (this.channelRoot === undefined)
         return false;
       return this._iModel.concurrencyControl.holdsLock(ConcurrencyControl.Request.getElementLock(this.channelRoot, LockLevel.Exclusive));
     }
 
+    /** @internal */
     public getChannelRootInfo0(props: ElementProps): any {
       // special case of legacy *bridges*
       if (props.classFullName === Subject.classFullName) {
@@ -888,7 +909,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       return info;
     }
 
-    /** If props identifies a channel root element, return information about it. Otherwise, return undefined. */
+    /** If `props` identifies a channel root element, return information about it. Otherwise, return undefined. */
     public getChannelRootInfo(props: ElementProps): any | undefined {
       if (props.id === undefined || Id64.isInvalid(props.id))
         return undefined;
@@ -905,10 +926,12 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       return cpi;
     }
 
+    /** Check if `props` is a channel root element. */
     public isChannelRoot(props: ElementProps): any | undefined {
       return this.getChannelRootInfo(props) !== undefined;
     }
 
+    /** Get the channel to which the specified model belongs */
     public getChannelOfModel(modelId: Id64String): ChannelInfo {
       let info = this._channelsOfModels.get(modelId);
       if (info !== undefined)
@@ -919,6 +942,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       return info;
     }
 
+    /** Get the channel to which the specified element belongs */
     public getChannelOfElement(props: ElementProps): ChannelInfo {
 
       // For now, we don't support nested channels, and we require that all channel root elements be in the repository model.
@@ -951,6 +975,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       return { channelRoot: Channel.repositoryChannelRoot };
     }
 
+    /** The current channel root element */
     public get channelRoot(): Id64String | undefined { return this._channelRoot; }
     public set channelRoot(id: Id64String | undefined) {
       if (this._iModel.txns.hasLocalChanges)
@@ -959,10 +984,12 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       this._channelRoot = id;
     }
 
+    /** Check if the current channel is the repository channel */
     public get isRepositoryChannel(): boolean {
       return this.channelRoot === BriefcaseDb.rootSubjectId;
     }
 
+    /** @internal */
     public checkLockRequest(locks: Lock[]) {
       // No channel and repository channel are effectively the same for locking purposes.
       // onElementWrite will check for repository channel restrictions
@@ -977,6 +1004,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       }
     }
 
+    /** @internal */
     public checkModelAccess(modelId: Id64String, req: Request, opcode: DbOpcode) {
       const modeledElement = this._iModel.elements.getElement(modelId);
       this.checkCanWriteElementToCurrentChannel(modeledElement, req, opcode);
@@ -1033,6 +1061,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         this.throwChannelConstraintError(props, codeScopeChannelInfo, "cannot scope Code to an element in");
     }
 
+    /** @internal */
     public checkCanWriteElementToCurrentChannel(props: ElementProps, req: Request, opcode: DbOpcode) {
       this.checkCodeScopeInCurrentChannel(props);
 

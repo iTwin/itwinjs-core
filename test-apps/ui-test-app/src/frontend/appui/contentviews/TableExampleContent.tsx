@@ -255,10 +255,10 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
   }
 
   private _onRequestedTopRowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value !== null) {
-      const value = parseInt(e.target.value, 10);
-      this.setState({ requestedTopRow: value });
-    }
+    let requestedTopRow = 0;
+    if (e.target.value)
+      requestedTopRow = parseInt(e.target.value, 10);
+    this.setState({ requestedTopRow });
   }
 
   private _onScrollToRow = (topRowIndex: number) => {

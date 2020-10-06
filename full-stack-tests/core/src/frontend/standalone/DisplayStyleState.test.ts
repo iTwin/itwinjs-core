@@ -114,26 +114,42 @@ describe("DisplayStyle", () => {
         if (undefined === expected[key])
           expect(output[key]).to.deep.equal(originalSettings[key]);
 
-      if (undefined === expected.contextRealityModels)
-        return;
+      if (undefined !== expected.contextRealityModels)
+        compareRealityModels(style, expected);
 
-      const models: ContextRealityModelState[] = [];
-      style.forEachRealityModel((model) => models.push(model));
-      expect(models.length).to.equal(expected.contextRealityModels.length);
-      for (let i = 0; i < models.length; i++) {
-        const a = models[i];
-        const e = expected.contextRealityModels[i];
-        expect(a.name).to.equal(e.name);
-        expect(a.url).to.equal(e.tilesetUrl);
-        expect(a.orbitGtBlob).to.equal(e.orbitGtBlob);
-        expect(a.description).to.equal(e.description);
-        expect(a.treeRef).not.to.be.undefined;
-
-        expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
-        if (undefined !== a.classifiers && undefined !== e.classifiers)
-          expect(a.classifiers.length).to.equal(e.classifiers.length);
-      }
+      if (undefined !== expected.scheduleScript)
+        compareScheduleScripts(style, expected);
     };
+
+    function compareRealityModels(style3d: DisplayStyle3dState, expected: any): void {
+      const models: ContextRealityModelState[] = [];
+      style3d.forEachRealityModel((model) => models.push(model));
+      if (undefined !== expected.contextRealityModels) {
+        expect(models.length).to.equal(expected.contextRealityModels.length);
+        for (let i = 0; i < models.length; i++) {
+          const a = models[i];
+          const e = expected.contextRealityModels[i];
+          expect(a.name).to.equal(e.name);
+          expect(a.url).to.equal(e.tilesetUrl);
+          expect(a.orbitGtBlob).to.equal(e.orbitGtBlob);
+          expect(a.description).to.equal(e.description);
+          expect(a.treeRef).not.to.be.undefined;
+
+          expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
+          if (undefined !== a.classifiers && undefined !== e.classifiers)
+            expect(a.classifiers.length).to.equal(e.classifiers.length);
+        }
+      } else {
+        expect(models.length).to.equal(0);
+      }
+    }
+
+    function compareScheduleScripts(style3d: DisplayStyle3dState, expected: any): void {
+      if (undefined !== style3d.scheduleScript)
+        expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(JSON.stringify(expected.scheduleScript));
+      else
+        expect(expected.scheduleScript).to.be.undefined;
+    }
 
     // Note that each test adds some new settings to our display style. This allows us to test that settings not specified in overrides retain their previous values.
     test({
@@ -236,5 +252,11 @@ describe("DisplayStyle", () => {
         }],
       }],
     });
+
+    // Also, while we have one constructed, test creation with reality model and script.
+    const newStyle = new DisplayStyle3dState(style.toJSON(), imodel);
+    expect(newStyle.equals(style)).to.be.true;
+    compareRealityModels(newStyle, style.settings.toJSON());
+    compareScheduleScripts(newStyle, style.settings.toJSON());
   });
 });

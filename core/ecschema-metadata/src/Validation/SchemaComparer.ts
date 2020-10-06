@@ -226,7 +226,11 @@ export class SchemaComparer {
       promises.push(this._reporter.reportPropertyDelta(propertyA, "description", propertyA.description, undefined, this._compareDirection));
       promises.push(this._reporter.reportPropertyDelta(propertyA, "isReadOnly", propertyA.isReadOnly, undefined, this._compareDirection));
       promises.push(this._reporter.reportPropertyDelta(propertyA, "priority", propertyA.priority, undefined, this._compareDirection));
-      promises.push(this._reporter.reportPropertyDelta(propertyA, "category", propertyA.category, undefined, this._compareDirection));
+
+      const catKeyA = propertyA.category ? (await propertyA.category).key : undefined;
+      const catKeyAText = catKeyA ? catKeyA.fullName : undefined;
+
+      promises.push(this._reporter.reportPropertyDelta(propertyA, "category", catKeyAText, undefined, this._compareDirection));
       await this.comparePropertyType(propertyA, undefined);
       await Promise.all(promises);
       return;
