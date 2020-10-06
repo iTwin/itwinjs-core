@@ -1740,7 +1740,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       const viewDefinitionProps = viewDefinitionElement.toJSON();
       const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
-      const displayStyleProps = elements.getElementProps<DisplayStyleProps>(viewDefinitionProps.displayStyleId);
+
+      // Schedule scripts include huge lists of element Ids that are entirely unneeded for frontend display. Omit them.
+      const displayStyleOptions: ElementLoadProps = {
+        id: viewDefinitionProps.displayStyleId,
+        displayStyle: { omitScheduleScriptElementIds: true },
+      };
+      const displayStyleProps = elements.getElementProps<DisplayStyleProps>(displayStyleOptions);
+
       const viewStateData: ViewStateProps = { viewDefinitionProps, displayStyleProps, categorySelectorProps };
 
       const modelSelectorId = (viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;

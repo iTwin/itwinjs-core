@@ -24,7 +24,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { getElementKey, WithClientRequestContext } from "./Utils";
+import { BackendDiagnosticsOptions, getElementKey, WithClientRequestContext } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -739,10 +739,10 @@ export class PresentationManager {
     return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId);
   }
 
-  private async request<TParams extends { requestContext: ClientRequestContext, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
-    const { requestContext, requestId, imodel, locale, unitSystem, ...strippedParams } = params;
+  private async request<TParams extends { requestContext: ClientRequestContext, diagnostics?: BackendDiagnosticsOptions, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
+    const { requestContext, requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const nativeRequestParams = {
+    const nativeRequestParams: any = {
       requestId,
       params: {
         locale: normalizeLocale(locale ?? this.activeLocale),
@@ -750,11 +750,18 @@ export class PresentationManager {
         ...strippedParams,
       },
     };
-    const serializedResponse = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
+
+    let diagnosticsListener;
+    if (diagnostics) {
+      const { listener: tempDiagnosticsListener, ...tempDiagnosticsOptions } = diagnostics;
+      diagnosticsListener = tempDiagnosticsListener;
+      nativeRequestParams.params.diagnostics = tempDiagnosticsOptions;
+    }
+
+    const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
     requestContext.enter();
-    if (!serializedResponse)
-      throw new PresentationError(PresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
-    return JSON.parse(serializedResponse, reviver);
+    diagnosticsListener && response.diagnostics && diagnosticsListener(response.diagnostics);
+    return JSON.parse(response.result, reviver);
   }
 
   /** @deprecated Use an overload with one argument */

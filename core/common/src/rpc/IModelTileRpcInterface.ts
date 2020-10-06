@@ -12,7 +12,7 @@ import { CloudStorageTileCache } from "../CloudStorageTileCache";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { TileTreeProps } from "../TileProps";
+import { TileTreeProps, TileVersionInfo } from "../TileProps";
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface {
@@ -22,7 +22,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelTileRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.0.0";
+  public static interfaceVersion = "2.1.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -43,6 +43,11 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
       throw new AbandonedError();
 
     return cached || this.forward(arguments);
+  }
+
+  /** @internal */
+  public async queryVersionInfo(): Promise<TileVersionInfo> {
+    return this.forward(arguments);
   }
 
   /** This is a temporary workaround for folks developing authoring applications, to be removed when proper support for such applications is introduced.

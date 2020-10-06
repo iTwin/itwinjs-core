@@ -99,7 +99,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
   }
 
   public getValueJSON(variableId: string, type: VariableValueTypes): VariableValueJSON {
-    return this._getNativePlatform().getRulesetVariableValue(this._rulesetId, variableId, type);
+    return this._getNativePlatform().getRulesetVariableValue(this._rulesetId, variableId, type).result;
   }
 
   public setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void {

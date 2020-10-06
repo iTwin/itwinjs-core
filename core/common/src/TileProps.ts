@@ -47,3 +47,15 @@ export interface TileTreeProps {
   /** Optional namespace applied to tile content Ids for tiles belonging to this tree. */
   contentIdQualifier?: string;
 }
+
+/** Metadata describing the version/format of the tiles supplied by the backend.
+ * @see [[IModelTileRpcInterface.queryVersionInfo]].
+ * @alpha
+ */
+export interface TileVersionInfo {
+  /** The maximum exact version of the "iMdl" tile format supported by the backend. The backend can supply tiles of any earlier version of the format, but not newer than this maximum.
+   * @note The version is represented as a 32-bit integer combining the 16-bit major and minor version numbers.
+   * @see [[CurrentImdlVersion]].
+   */
+  formatVersion: number;
+}

@@ -409,12 +409,11 @@ export class IModelHost {
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 
+    const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!this._isNativePlatformLoaded) {
-      const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
       try {
         if (configuration.nativePlatform !== undefined) {
           this.registerPlatform(configuration.nativePlatform);
-          this.initializeUsageLogging(configuration.nativePlatform, region, configuration.applicationType, configuration.imodelClient);
         } else {
           this.loadNative(region, configuration.applicationType, configuration.imodelClient);
         }
@@ -423,8 +422,7 @@ export class IModelHost {
         throw error;
       }
     }
-
-    this._platform!.setNopBriefcaseManager(); // Tell native code that requests for locks and codes are managed in JS.
+    this.initializeUsageLogging(IModelHost.platform, region, configuration.applicationType, configuration.imodelClient);
 
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
@@ -537,6 +535,7 @@ export class IModelHost {
     if (!IModelHost.configuration)
       return;
     IModelHost.onBeforeShutdown.raiseEvent();
+    IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
     IModelHost._nativeAppBackend = false;
   }
