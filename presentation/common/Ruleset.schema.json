@@ -1337,6 +1337,7 @@
             },
             {
               "enum": [
+                "*",
                 "_none_"
               ],
               "type": "string"
@@ -1354,6 +1355,7 @@
             },
             {
               "enum": [
+                "*",
                 "_none_"
               ],
               "type": "string"
@@ -2576,6 +2578,7 @@
             },
             {
               "enum": [
+                "*",
                 "_none_"
               ],
               "type": "string"
