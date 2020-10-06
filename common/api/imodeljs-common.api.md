@@ -2010,6 +2010,10 @@ export interface ElementGeometryChange {
 export interface ElementLoadProps {
     // (undocumented)
     code?: CodeProps;
+    // @internal
+    displayStyle?: {
+        omitScheduleScriptElementIds?: boolean;
+    };
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)
@@ -5248,7 +5252,6 @@ export namespace RenderSchedule {
     export interface ElementTimelineProps extends TimelineProps {
         // (undocumented)
         batchId: number;
-        // (undocumented)
         elementIds: Id64String[] | CompressedId64Set;
     }
     export interface ModelTimelineProps extends TimelineProps {
