@@ -519,6 +519,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
   public reset(): void {
+    this.graphics.dispose();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
 
