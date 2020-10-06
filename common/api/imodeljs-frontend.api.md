@@ -2316,6 +2316,8 @@ export namespace EditManipulator {
     }
     // (undocumented)
     export class HandleUtils {
+        // @internal
+        static adjustForBackgroundColor(color: ColorDef, vp: Viewport): ColorDef;
         static getArrowShape(baseStart?: number, baseWidth?: number, tipStart?: number, tipEnd?: number, tipWidth?: number, flangeStart?: number, flangeWidth?: number): Point3d[];
         static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined;
         // (undocumented)
@@ -3898,6 +3900,8 @@ export class IModelApp {
     static get tileAdmin(): TileAdmin;
     static get toolAdmin(): ToolAdmin;
     static readonly tools: ToolRegistry;
+    // @beta
+    static translateStatus(status: number): string;
     static get uiAdmin(): UiAdmin;
     static get viewManager(): ViewManager;
     }

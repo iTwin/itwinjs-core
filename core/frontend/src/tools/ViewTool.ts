@@ -82,10 +82,6 @@ const inertialDampen = (pt: Vector3d) => {
   pt.scaleInPlace(Geometry.clamp(ToolSettings.viewingInertia.damping, .75, .999));
 };
 
-function adjustForBackgroundColor(vp: Viewport): boolean {
-  return (vp.view.is3d() ? !vp.view.getDisplayStyle3d().environment.sky.display : true);
-}
-
 /** An InteractiveTool that manipulates a view.
  * @public
  */
@@ -346,7 +342,7 @@ export abstract class ViewManip extends ViewTool {
     const rMatrix = Matrix3d.createRigidHeadsUp(normal);
     const ellipse = Arc3d.createScaledXYColumns(origin, rMatrix, radius, radius, AngleSweep.create360());
     const colorBase = (this._depthPreview.isDefaultDepth ? ColorDef.red : (DepthPointSource.Geometry === this._depthPreview.source ? ColorDef.green : context.viewport.hilite.color));
-    const colorLine = colorBase.adjustedForContrast(cursorVp.view.backgroundColor).withTransparency(50);
+    const colorLine = EditManipulator.HandleUtils.adjustForBackgroundColor(colorBase, cursorVp).withTransparency(50);
     const colorFill = colorLine.withTransparency(200);
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
@@ -4078,7 +4074,7 @@ export class SetupCameraTool extends PrimitiveTool {
     const pt3 = targetPtWorld.plusScaled(xVec, extentX); pt3.plusScaled(yVec, -extentY, pt3);
     const pt4 = targetPtWorld.plusScaled(xVec, -extentX); pt4.plusScaled(yVec, -extentY, pt4);
 
-    const color = adjustForBackgroundColor(vp) ? ColorDef.black.adjustedForContrast(vp.view.backgroundColor) : ColorDef.black;
+    const color = EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.black, vp);
     const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
 
     builderHid.setSymbology(color, color, ViewHandleWeight.Bold);
@@ -4416,7 +4412,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
       return;
 
     const figurePts = this.getFigurePoints();
-    const color = adjustForBackgroundColor(vp) ? ColorDef.black.adjustedForContrast(vp.view.backgroundColor) : ColorDef.black;
+    const color = EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.black, vp);
     const fill = ColorDef.from(255, 245, 225, 100);
 
     const builderShadow = context.createGraphicBuilder(GraphicType.WorldOverlay);

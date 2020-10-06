@@ -14,13 +14,13 @@ import ReactResizeDetector from "react-resize-detector";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, SpinnerSize } from "@bentley/ui-core";
+import { DelayedSpinner } from "../../common/DelayedSpinner";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { ColumnResizeRelatedPropertyListProps, ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
 import { PropertyCategoryBlock } from "./PropertyCategoryBlock";
-import { PropertyList, PropertyListProps } from "./PropertyList";
-import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier";
-import { DelayedSpinner } from "../../common/DelayedSpinner";
 import { CommonPropertyGridProps, PropertyGridCommons } from "./PropertyGridCommons";
+import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier";
+import { PropertyList, PropertyListProps } from "./PropertyList";
 
 /** Properties for [[PropertyGrid]] React component
  * @public
@@ -105,6 +105,9 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       if (this._dataChangesListenerDisposeFunc)
         this._dataChangesListenerDisposeFunc();
       this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.gatherData();
     }
 
     if (this.props.orientation !== prevProps.orientation

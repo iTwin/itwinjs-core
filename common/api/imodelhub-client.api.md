@@ -383,6 +383,9 @@ export class ConflictingLocksError extends IModelHubError {
 }
 
 // @internal
+export function constructorFromEventType(type: IModelHubEventType): EventConstructor;
+
+// @internal
 export interface ContextManagerClient {
     // (undocumented)
     queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset>;

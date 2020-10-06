@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
-import "./IModelHostSetup";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";

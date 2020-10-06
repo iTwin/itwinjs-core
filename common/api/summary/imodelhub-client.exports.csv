@@ -38,6 +38,7 @@ alpha;CodeState
 alpha;CodeUpdateOptions
 alpha;ConflictingCodesError 
 alpha;ConflictingLocksError 
+internal;constructorFromEventType(type: IModelHubEventType): EventConstructor
 internal;ContextManagerClient
 internal;DefaultCodeUpdateOptionsProvider
 internal;DefaultIModelCreateOptionsProvider

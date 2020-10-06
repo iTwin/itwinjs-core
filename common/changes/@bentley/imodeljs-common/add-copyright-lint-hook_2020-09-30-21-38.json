@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-common",
-      "comment": "Update Tile version due to changes to indexes for tesselated polylines",
+      "comment": "",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-common",
-  "email": "Colin.Kerr@bentley.com"
+  "email": "31107829+calebmshafer@users.noreply.github.com"
 }

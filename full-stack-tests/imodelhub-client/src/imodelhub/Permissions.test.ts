@@ -11,6 +11,7 @@ import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
+import { workDir } from "./TestConstants";
 
 @ECJsonTypeMap.classToJson("wsg", "RBAC.PermissionContainer", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class RbacPermissionContainer extends WsgInstance {
@@ -93,8 +94,8 @@ describe("iModelHub PermissionsManager", () => {
     await utils.createIModel(requestContext, imodelName, projectId);
     imodelId = await utils.getIModelId(requestContext, imodelName, projectId);
 
-    if (!fs.existsSync(utils.workDir)) {
-      fs.mkdirSync(utils.workDir);
+    if (!fs.existsSync(workDir)) {
+      fs.mkdirSync(workDir);
     }
   });
 

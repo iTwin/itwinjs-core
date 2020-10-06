@@ -16,13 +16,16 @@ export class QueryablePromise<T> {
   public result?: T;
   public error?: any;
 
+  private _fulfilled: boolean = false;
+  private _rejected: boolean = false;
+
   public get isPending(): boolean { return !this.isFulfilled && !this.isRejected; }
-  public get isFulfilled(): boolean { return !!this.result; }
-  public get isRejected(): boolean { return !!this.error; }
+  public get isFulfilled(): boolean { return this._fulfilled; }
+  public get isRejected(): boolean { return this._rejected; }
   public constructor(public readonly promise: Promise<T>) {
     this.promise
-      .then((res: T) => this.result = res)
-      .catch((err: any) => this.error = err);
+      .then((res: T) => { this.result = res; this._fulfilled = true; })
+      .catch((err: any) => { this.error = err; this._rejected = true; });
   }
 }
 
@@ -38,6 +41,7 @@ export class PromiseMemoizer<T> {
   private readonly _memoizeFn: MemoizeFnType<T>;
   private readonly _generateKeyFn: GenerateKeyFnType;
   private readonly _maxCacheSize: number;
+  private readonly _cacheTimeout: number;
 
   /**
    * Constructor
@@ -48,10 +52,11 @@ export class PromiseMemoizer<T> {
    * may have been unclaimed/orphaned promises. If the cache size is still above the maxCacheSize
    * threshold, the entire cache is then cleared.
    */
-  public constructor(memoizeFn: MemoizeFnType<T>, generateKeyFn: GenerateKeyFnType, maxCacheSize: number = 500) {
+  public constructor(memoizeFn: MemoizeFnType<T>, generateKeyFn: GenerateKeyFnType, maxCacheSize: number = 500, cacheTimeout: number = 30000) {
     this._memoizeFn = memoizeFn;
     this._generateKeyFn = generateKeyFn;
     this._maxCacheSize = maxCacheSize;
+    this._cacheTimeout = cacheTimeout;
   }
 
   /** Call the memoized function */
@@ -62,14 +67,17 @@ export class PromiseMemoizer<T> {
       return qp;
 
     if (this._cachedPromises.size >= this._maxCacheSize) {
-      this._purgeResolvedEntries();
-      if (this._cachedPromises.size >= this._maxCacheSize) {
+      if (this._maxCacheSize > 1)
         Logger.logError(BackendLoggerCategory.PromiseMemoizer, "Cleared too many unresolved entries in memoizer cache");
-        this.clearCache();
-      }
+      this.clearCache();
     }
 
-    const p = this._memoizeFn(...args);
+    const removeCachedPromise = (v: T) => {
+      setTimeout(() => this._cachedPromises.delete(key), this._cacheTimeout);
+      return v;
+    };
+
+    const p = this._memoizeFn(...args).then(removeCachedPromise, (e) => { throw removeCachedPromise(e); });
     qp = new QueryablePromise<T>(p);
     this._cachedPromises.set(key, qp);
     return qp;
@@ -79,17 +87,6 @@ export class PromiseMemoizer<T> {
   public deleteMemoized = (...args: any[]) => {
     const key: string = this._generateKeyFn(...args);
     this._cachedPromises.delete(key);
-  };
-
-  /** Purge any entries that have been resolved - this is especially useful when there are orphaned
-   * responses that were never retrieved by the frontend, and therefore never deleted.
-   */
-  private _purgeResolvedEntries = () => {
-    for (const key of Array.from(this._cachedPromises.keys())) {
-      const qp = this._cachedPromises.get(key)!;
-      if (qp.isFulfilled || qp.isRejected)
-        this._cachedPromises.delete(key);
-    }
   };
 
   /** Clear all entries in the memoizer cache */

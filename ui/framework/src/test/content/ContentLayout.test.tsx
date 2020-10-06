@@ -6,14 +6,13 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import SplitPane from "react-split-pane";
+import { MockRender } from "@bentley/imodeljs-frontend";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager, ContentLayoutProps, ContentViewManager,
-  FrontstageManager,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
+  ContentLayoutProps, ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-
-// import SplitPane from "react-split-pane";
-const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // eslint-disable-line
 
 describe("ContentLayout", () => {
 
@@ -25,14 +24,6 @@ describe("ContentLayout", () => {
     }
   }
 
-  before(async () => {
-    await TestUtils.initializeUiFramework();
-  });
-
-  after(() => {
-    TestUtils.terminateUiFramework();
-  });
-
   const myContentGroup: ContentGroup = new ContentGroup({
     contents: [{ id: "myContent", classId: TestContentControl, applicationData: { name: "Test" } }],
   });
@@ -41,15 +32,6 @@ describe("ContentLayout", () => {
     id: "SingleContent",
     descriptionKey: "UiFramework:tests.singleContent",
     priority: 100,
-  });
-
-  it("SingleContent should render", () => {
-    const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
-    wrapper.unmount();
-  });
-
-  it("SingleContent renders correctly", () => {
-    shallow(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />).should.matchSnapshot();
   });
 
   const contentGroup2: ContentGroup = new ContentGroup({
@@ -67,6 +49,38 @@ describe("ContentLayout", () => {
     descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesVertical",
     priority: 60,
     verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
+  });
+
+  class TestFrontstage2 extends FrontstageProvider {
+    public get frontstage(): React.ReactElement<FrontstageProps> {
+      return (
+        <Frontstage id="TestFrontstage2" defaultTool={CoreTools.selectElementCommand} defaultLayout={contentLayout2} contentGroup={contentGroup2} />
+      );
+    }
+  }
+
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+    await MockRender.App.startup();
+    FrontstageManager.clearFrontstageDefs();
+
+    const frontstageProvider = new TestFrontstage2();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+  });
+
+  after(async () => {
+    await MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
+  });
+
+  it("SingleContent should render", () => {
+    const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+    wrapper.unmount();
+  });
+
+  it("SingleContent renders correctly", () => {
+    shallow(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />).should.matchSnapshot();
   });
 
   it("TwoHalvesVertical should render", () => {
@@ -154,9 +168,9 @@ describe("ContentLayout", () => {
 
     const layoutWrappers = wrapper.find("div.uifw-contentlayout-wrapper");
     expect(layoutWrappers.length).to.eq(2);
-    expect(wrapper.find("div.uifw-contentlayout-overlay-active").length).to.eq(0);
+    expect(wrapper.find("div.uifw-contentlayout-overlay-active").length).to.eq(1);
 
-    layoutWrappers.at(0).simulate("mouseDown");
+    layoutWrappers.at(1).simulate("mouseDown");
     wrapper.update();
     expect(wrapper.find("div.uifw-contentlayout-overlay-active").length).to.eq(1);
 

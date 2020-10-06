@@ -7,7 +7,8 @@ import * as stream from "stream";
 import { URL } from "url";
 import { AuthorizedClientRequestContext, SasUrlExpired } from "@bentley/itwin-client";
 import { AzureFileHandler, BufferedStream } from "@bentley/backend-itwin-client";
-import { MockAccessToken, workDir } from "./TestUtils";
+import { MockAccessToken } from "./TestUtils";
+import { workDir } from "./TestConstants";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
