@@ -17,6 +17,10 @@ function isFocusable(element: HTMLElement): boolean {
   if (!element || element.tabIndex < 0)
     return false;
 
+  // istanbul ignore next
+  if (element.classList && element.classList.contains ("core-focus-trap-ignore-initial"))
+    return false;
+
   if (element.tabIndex > 0 || (element.tabIndex === 0 && element.getAttribute("tabIndex") !== null)) {
     return true;
   }
