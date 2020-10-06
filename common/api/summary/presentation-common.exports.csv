@@ -56,6 +56,10 @@ public;Descriptor
 public;DescriptorJSON
 public;DescriptorOverrides
 public;DescriptorSource
+alpha;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
+alpha;DiagnosticsLogMessage
+alpha;DiagnosticsOptions
+alpha;DiagnosticsScopeLogs
 public;DisabledSortingRule 
 beta;DisplayLabelRequestOptions
 beta;DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions

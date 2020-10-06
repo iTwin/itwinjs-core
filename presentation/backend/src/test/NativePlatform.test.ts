@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
-import "./IModelHostSetup";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
-import { PresentationError, UpdateInfo, VariableValueTypes } from "@bentley/presentation-common";
+import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@bentley/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 
@@ -86,7 +85,7 @@ describe("default NativePlatform", () => {
         .setup((x) => x.pollResponse(guid))
         .returns(() => ({ result: "0" }))
         .verifiable();
-      expect(await nativePlatform.handleRequest(undefined, "")).to.equal("0");
+      expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
     });
 
@@ -104,7 +103,7 @@ describe("default NativePlatform", () => {
       addonMock
         .setup((x) => x.pollResponse(guid))
         .returns(() => ({ result: "999" }));
-      expect(await nativePlatform.handleRequest(undefined, "")).to.equal("999");
+      expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "999" });
       addonMock.verify((x) => x.pollResponse(guid), moq.Times.exactly(3));
     });
 
@@ -146,6 +145,22 @@ describe("default NativePlatform", () => {
 
   });
 
+
+  it("puts diagnostics into result", async () => {
+    const diagnostics: DiagnosticsScopeLogs = {
+      scope: "test",
+    };
+    addonMock
+      .setup((x) => x.queueRequest(moq.It.isAny(), ""))
+      .returns(() => ({ result: "" }));
+    addonMock
+      .setup((x) => x.pollResponse(moq.It.isAny()))
+      .returns(() => ({ result: "0", diagnostics }))
+      .verifiable();
+    expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
+    addonMock.verifyAll();
+  });
+
   it("calls addon's setupRulesetDirectories", async () => {
     addonMock
       .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
@@ -184,7 +199,7 @@ describe("default NativePlatform", () => {
     const serializedResult = JSON.stringify([{ ruleset, hash }]);
     addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => ({ result: serializedResult })).verifiable();
     const result = nativePlatform.getRulesets(ruleset.id);
-    expect(result).to.eq(serializedResult);
+    expect(result).to.deep.eq({ result: serializedResult });
     addonMock.verifyAll();
   });
 
@@ -195,14 +210,14 @@ describe("default NativePlatform", () => {
     addonMock.setup((x) => x.addRuleset(serializedRuleset)).returns(() => ({ result: hash })).verifiable();
     const result = nativePlatform.addRuleset(serializedRuleset);
     addonMock.verifyAll();
-    expect(result).to.eq(hash);
+    expect(result).to.deep.eq({ result: hash });
   });
 
   it("calls addon's removeRuleset", async () => {
     addonMock.setup((x) => x.removeRuleset("test id", "test hash")).returns(() => ({ result: true })).verifiable();
     const result = nativePlatform.removeRuleset("test id", "test hash");
     addonMock.verifyAll();
-    expect(result).to.be.true;
+    expect(result).to.deep.eq({ result: true });
   });
 
   it("calls addon's clearRulesets", async () => {
@@ -231,7 +246,7 @@ describe("default NativePlatform", () => {
       .verifiable();
     const result = nativePlatform.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String);
     addonMock.verifyAll();
-    expect(result).to.equal(value);
+    expect(result).to.deep.equal({ result: value });
   });
 
   it("calls addon's getUpdateInfo", async () => {
@@ -241,7 +256,7 @@ describe("default NativePlatform", () => {
       .verifiable();
     const result = nativePlatform.getUpdateInfo();
     addonMock.verifyAll();
-    expect(result).to.equal(updates);
+    expect(result).to.deep.equal({ result: updates });
   });
 
   it("returns imodel addon from IModelDb", () => {

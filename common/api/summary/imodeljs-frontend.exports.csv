@@ -26,8 +26,10 @@ public;ACSDisplayOptions
 public;ACSType
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
+internal;addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
 beta;AngleDescription 
+internal;AnimatedTreeReference 
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator

@@ -509,6 +509,7 @@ internal;TileReadStatus
 internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
+alpha;TileVersionInfo
 beta;Tween
 beta;TweenCallback = (obj: any) => void
 beta;Tweens

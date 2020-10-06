@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./IModelHostSetup";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -11,12 +10,12 @@ import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
   ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, Descriptor, DescriptorJSON,
-  DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions,
-  ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyRequestOptions, HierarchyRpcRequestOptions, HierarchyUpdateInfo,
-  InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions, PartialHierarchyModification,
-  PresentationDataCompareOptions, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
-  SelectionScopeRequestOptions, VariableValueTypes,
+  DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions,
+  ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyRequestOptions,
+  HierarchyRpcRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions,
+  PartialHierarchyModification, PresentationDataCompareOptions, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcRequestOptions,
+  PresentationStatus, SelectionScopeRequestOptions, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -160,6 +159,38 @@ describe("PresentationRpcImpl", () => {
 
         const actualResult = await actualResultPromise;
         expect(actualResult.result).to.eq(999);
+      });
+
+      it("should forward diagnostics options to manager and return diagnostics with results", async () => {
+        const rpcOptions: HierarchyRpcRequestOptions = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+          diagnostics: {
+            perf: true,
+          },
+        };
+
+        const managerOptions: WithClientRequestContext<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>> = {
+          requestContext: ClientRequestContext.current,
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: undefined,
+          diagnostics: {
+            perf: true,
+          } as any,
+        };
+        const diagnosticsResult: DiagnosticsScopeLogs = { scope: "test" };
+        presentationManagerMock.setup((x) => x.getNodesCount(moq.It.is((actualManagerOptions) => sinon.match(managerOptions).test(actualManagerOptions))))
+          .callback((options) => { options.diagnostics.listener(diagnosticsResult); })
+          .returns(async () => 999)
+          .verifiable();
+        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult).to.deep.eq({
+          statusCode: PresentationStatus.Success,
+          result: 999,
+          diagnostics: [diagnosticsResult],
+        });
       });
 
       it("should return error result if manager throws", async () => {
