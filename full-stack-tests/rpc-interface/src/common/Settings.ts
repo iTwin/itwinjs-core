@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
@@ -60,7 +60,6 @@ export class Settings {
   public oidcScopes!: string;
   public oidcRedirect!: string;
   public imsUrl!: string;
-  public discovery!: string;
   public gprid?: string;
   public logLevel?: number;
   public users: TestUserCredentials[] = [];
