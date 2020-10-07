@@ -285,5 +285,14 @@ describe("GeometryA", () => {
       }
     });
   */
+  it("isFinite", () => {
+    const ck = new Checker();
+    ck.testTrue(Number.isFinite(1));
+    ck.testFalse(Number.isFinite("abc" as any));
+    ck.testFalse(Number.isFinite(undefined as any));
+    ck.testFalse(Number.isFinite(null as any));
+    ck.testTrue(Number.isFinite(Number.MAX_VALUE));
+    ck.testFalse(Number.isFinite(Number.NaN));
+  });
 
 });
