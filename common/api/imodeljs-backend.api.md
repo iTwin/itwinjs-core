@@ -5,7 +5,6 @@
 ```ts
 
 import { AccessToken } from '@bentley/itwin-client';
-import { AnalysisStyleProps } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
@@ -13,7 +12,6 @@ import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
-import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseKey } from '@bentley/imodeljs-common';
@@ -43,7 +41,6 @@ import { CodeScopeSpec } from '@bentley/imodeljs-common';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { ConflictingCodesError } from '@bentley/imodelhub-client';
-import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ContextRegistryClient } from '@bentley/context-registry-client';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateEmptyStandaloneIModelProps } from '@bentley/imodeljs-common';
@@ -55,6 +52,7 @@ import { DefinitionElementProps } from '@bentley/imodeljs-common';
 import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
+import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
@@ -115,6 +113,7 @@ import { LockLevel } from '@bentley/imodelhub-client';
 import { LockType } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
+import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
@@ -149,6 +148,7 @@ import { Rank } from '@bentley/imodeljs-common';
 import { Readable } from 'stream';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
+import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
@@ -1283,18 +1283,12 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     }
 
 // @public
-export interface DisplayStyleCreationOptions {
+export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
     // (undocumented)
-    analysisStyle?: AnalysisStyleProps;
+    backgroundColor?: ColorDef | number;
     // (undocumented)
-    backgroundColor?: ColorDef;
-    // (undocumented)
-    backgroundMap?: BackgroundMapProps;
-    // (undocumented)
-    contextRealityModels?: ContextRealityModelProps[];
-    // (undocumented)
-    scheduleScript?: object;
-    // (undocumented)
+    mapImagery?: MapImageryProps;
+    scheduleScript?: object | RenderSchedule.ModelTimelineProps[];
     viewFlags?: ViewFlags;
 }
 
