@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Revert changes made to limit focus trap to contents only. Use class now to ignore unwanted focus target.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Bill.Steinbock@bentley.com"
+}
