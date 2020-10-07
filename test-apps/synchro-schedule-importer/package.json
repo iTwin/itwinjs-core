@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run build-code && npm run extract-assets",
-    "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "build-code": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
     "extract-assets": "cpx assets/**/*  lib/assets/",
