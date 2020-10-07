@@ -21,12 +21,13 @@ import {
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomBaseNodeKey, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey,
-  createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
+  createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, createRandomTransientId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation } from "../presentation-frontend/Presentation";
 import { buildPagedResponse, PresentationManager } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
 
 describe("PresentationManager", () => {
 
@@ -612,6 +613,24 @@ describe("PresentationManager", () => {
       const actualResult = await manager.getContentDescriptor(options);
       expect(actualResult).to.be.instanceOf(Descriptor);
       expect(actualResult!.toJSON()).to.deep.eq(result.toJSON());
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("skips transient element keys", async () => {
+      const persistentKey = createRandomECInstanceKey();
+      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
+      const keyset = new KeySet([persistentKey, transientKey]);
+      const options: ContentDescriptorRequestOptions<IModelConnection, KeySet> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        displayType: "test",
+        keys: keyset,
+      };
+      rpcRequestsHandlerMock
+        .setup((x) => x.getContentDescriptor(prepareOptions({ ...options, keys: new KeySet([persistentKey]).toJSON() })))
+        .returns(async () => createRandomDescriptor().toJSON())
+        .verifiable();
+      await manager.getContentDescriptor(options);
       rpcRequestsHandlerMock.verifyAll();
     });
 

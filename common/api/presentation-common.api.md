@@ -1048,6 +1048,7 @@ export class KeySet {
     get nodeKeys(): Set<NodeKey>;
     get nodeKeysCount(): number;
     get size(): number;
+    some(callback: (key: Key) => boolean): boolean;
     toJSON(): KeySetJSON;
 }
 

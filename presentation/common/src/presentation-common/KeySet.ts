@@ -193,17 +193,19 @@ export class KeySet {
     if (this.isKeySet(value)) {
       this.addKeySet(value, pred);
     } else if (this.isKeysArray(value)) {
-      value.forEach((key) => (!pred || pred(key)) ? this.add(key) : undefined);
-    } else if (Key.isEntityProps(value)) {
-      this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
-    } else if (Key.isInstanceKey(value)) {
-      if (!this._instanceKeys.has(value.className))
-        this._instanceKeys.set(value.className, new Set());
-      this._instanceKeys.get(value.className)!.add(value.id);
-    } else if (Key.isNodeKey(value)) {
-      this._nodeKeys.add(JSON.stringify(value));
-    } else {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+      value.forEach((key) => this.add(key, pred));
+    } else if (!pred || pred(value)) {
+      if (Key.isEntityProps(value)) {
+        this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
+      } else if (Key.isInstanceKey(value)) {
+        if (!this._instanceKeys.has(value.className))
+          this._instanceKeys.set(value.className, new Set());
+        this._instanceKeys.get(value.className)!.add(value.id);
+      } else if (Key.isNodeKey(value)) {
+        this._nodeKeys.add(JSON.stringify(value));
+      } else {
+        throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+      }
     }
     if (this.size !== sizeBefore)
       this.recalculateGuid();
@@ -367,6 +369,15 @@ export class KeySet {
   }
 
   /** Iterate over all keys in this keyset. */
+  public some(callback: (key: Key) => boolean) {
+    for (const entry of this._instanceKeys) {
+      if (some(entry[1], (id: Id64String) => callback({ className: entry[0], id })))
+        return true;
+    }
+    return some(this._nodeKeys, (serializedKey: string) => callback(NodeKey.fromJSON(JSON.parse(serializedKey))));
+  }
+
+  /** Iterate over all keys in this keyset. */
   public forEach(callback: (key: Key, index: number) => void) {
     let index = 0;
     this._instanceKeys.forEach((ids: Set<Id64String>, className: string) => {
@@ -428,3 +439,11 @@ export class KeySet {
     return keyset;
   }
 }
+
+const some = <TItem>(set: Set<TItem>, cb: (item: TItem) => boolean) => {
+  for (const item of set) {
+    if (cb(item))
+      return true;
+  }
+  return false;
+};
