@@ -15,7 +15,7 @@ import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("Presentation", () => {
 
-  afterEach(() => {
+  afterEach(async () => {
     Presentation.terminate();
   });
 
@@ -34,6 +34,7 @@ describe("Presentation", () => {
     });
 
     it("can be safely shutdown via IModelHost shutdown listener", async () => {
+      await IModelHost.startup();
       Presentation.initialize();
       await IModelHost.shutdown();
       expect(() => Presentation.getManager()).to.throw(PresentationError);

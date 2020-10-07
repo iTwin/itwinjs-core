@@ -40,8 +40,7 @@ import { WithClientRequestContext } from "../presentation-backend/Utils";
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 describe("PresentationManager", () => {
 
-  beforeEach(async () => {
-    await IModelHost.shutdown();
+  before(async () => {
     try {
       await IModelHost.startup();
     } catch (e) {
@@ -53,6 +52,10 @@ describe("PresentationManager", () => {
       if (!isLoaded)
         throw e; // re-throw if startup() failed to set up NativePlatform
     }
+  });
+
+  after(async () => {
+    await IModelHost.shutdown();
   });
 
   const setupIModelForElementKey = (imodelMock: moq.IMock<IModelDb>, key: InstanceKey) => {
