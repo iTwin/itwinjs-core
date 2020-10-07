@@ -218,12 +218,24 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logInfo(loggerCategory, `Deferred ${this.formatElementForLogger(sourceElement)}`);
   }
 
+  private logMemoryUsage(): void {
+    const used: any = process.memoryUsage();
+    const values: string[] = [];
+    // eslint-disable-next-line guard-for-in
+    for (const key in used) {
+      values.push(`${key}=${Math.round(used[key] / 1024 / 1024 * 100) / 100}MB `);
+    }
+    Logger.logTrace(BackendLoggerCategory.IModelTransformer, `Memory: ${values.join()}`);
+  }
+
   /** Transform the specified sourceElement into ElementProps for the target iModel.
    * @param sourceElement The Element from the source iModel to transform.
    * @returns ElementProps for the target iModel.
    * @note A subclass can override this method to provide custom transform behavior.
    */
   protected onTransformElement(sourceElement: Element): ElementProps {
+    Logger.logTrace(loggerCategory, `onTransformElement(${sourceElement.id}) "${sourceElement.getDisplayLabel()}"`);
+    this.logMemoryUsage();
     const targetElementProps: ElementProps = this.context.cloneElement(sourceElement);
     if (sourceElement instanceof Subject) {
       if (targetElementProps.jsonProperties?.Subject?.Job) {
