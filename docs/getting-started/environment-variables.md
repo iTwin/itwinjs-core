@@ -1,16 +1,17 @@
- ### cmd
- ``` cmd
- set variable_name=<variable value>
- ```
+### cmd
 
- ### PowerShell
+``` cmd
+set variable_name=<variable value>
+```
 
-  ``` cmd
-  $env:variable_name = '<variable value>'
-  ```
+### PowerShell
 
-  ### bash
+``` cmd
+$env:variable_name = '<variable value>'
+```
 
-  ``` cmd
-  export variable_name=<variable value>
-  ```
+### bash
+
+``` cmd
+export variable_name=<variable value>
+```
