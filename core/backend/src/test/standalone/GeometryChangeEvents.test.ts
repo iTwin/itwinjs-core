@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChanges, NativeAppRpcInterface, RpcManager, SubCategoryAppearance,
+  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, NativeAppRpcInterface, RpcManager, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
   EventSink, EventSinkManager, IModelHost, IModelJsFs, NativeAppBackend, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
@@ -65,19 +65,20 @@ describe("Model geometry changes", () => {
 
     expect(Array.isArray(event.data)).to.be.true;
     expect(event.data.length).to.equal(1);
-    const actual = event.data[0] as ModelGeometryChanges;
-    expect(actual.modelId).to.equal(modelId);
+    const actual = event.data[0] as ModelGeometryChangesProps;
+    expect(actual.id).to.equal(modelId);
 
-    const expectElements = (act?: string[], exp?: string[]) => {
-      expect(undefined === act).to.equal(undefined === exp);
-      if (act && exp) {
+    const expectElements = (ids?: CompressedId64Set, exp?: string[]) => {
+      expect(undefined === ids).to.equal(undefined === exp);
+      if (ids && exp) {
+        const act = CompressedId64Set.decompressArray(ids);
         expect(act.length).to.equal(exp.length);
         expect(act.sort()).to.deep.equal(exp.sort());
       }
     };
 
-    expectElements(actual.inserted?.map((x) => x.id), expected.inserted);
-    expectElements(actual.updated?.map((x) => x.id), expected.updated);
+    expectElements(actual.inserted?.ids, expected.inserted);
+    expectElements(actual.updated?.ids, expected.updated);
     expectElements(actual.deleted, expected.deleted);
   }
 

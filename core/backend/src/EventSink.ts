@@ -107,9 +107,7 @@ export class EventSinkManager {
     if (!this._global) {
       this._global = new EventSink(this.GLOBAL);
       this._sinks.set(this.GLOBAL, this._global);
-      // ###TODO - currently no global native events.
-      // TypeError: Cannot read property 'setGlobalEventSink' of undefined
-      // IModelJsNative.setGlobalEventSink(this._global);
+      IModelHost.platform.setGlobalEventSink(this._global);
     }
 
     return this._global;
