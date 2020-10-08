@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.7.1",
+      "tag": "@bentley/imodeljs-frontend_v2.7.1",
+      "date": "Thu, 08 Oct 2020 13:04:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ensure transform animations in schedule scripts are applied correctly to tile graphics."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.0",
       "tag": "@bentley/imodeljs-frontend_v2.7.0",
       "date": "Fri, 02 Oct 2020 18:03:32 GMT",
