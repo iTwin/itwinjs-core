@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64String } from "@bentley/bentleyjs-core";
 
 /**
  * A schedule (or script)  for controlling the visibility, position and symbology of a series of elements over a period of time.
@@ -91,8 +91,13 @@ export namespace RenderSchedule {
   /** Animation timeline entries that apply to one or more elements. */
   export interface ElementTimelineProps extends TimelineProps {
     batchId: number;
-    elementIds: Id64String[];
+    /** The Ids of the elements to which this timeline applies.
+     * @note For a [[DisplayStyleSettingsProps]] associated with a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend),
+     * this property will be an empty `CompressedId64Set`. They are omitted to conserve bandwidth and memory - they are not needed for display on the frontend.
+     */
+    elementIds: Id64String[] | CompressedId64Set;
   }
+
   /** Animation timeline for a single model.  */
   export interface ModelTimelineProps extends TimelineProps {
     modelId: Id64String;

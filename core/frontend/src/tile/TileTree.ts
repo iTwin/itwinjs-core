@@ -32,7 +32,7 @@ export enum TileTreeLoadStatus {
 /** A hierarchical level-of-detail tree of [3d Tiles](https://github.com/CesiumGS/3d-tiles) to be rendered in a [[Viewport]].
  * Tile trees originate from a variety of sources:
  *  - Each [[GeometricModelState]] can supply its graphics as a tile tree;
- *  - A [[DisplayStyleState]]'s map and terrain settings;
+ *  - A [[DisplayStyleState]]'s map settings or reality models;
  *  - [ViewAttachment]($backend)s in a [[SheetModelState]];
  *  - [[TiledGraphicsProvider]]s associated with a viewport.
  * The same TileTree can be displayed in any number of viewports using multiple [[TileTreeReference]]s.

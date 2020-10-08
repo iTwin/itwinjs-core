@@ -123,6 +123,8 @@ export interface DisplayStyleSettingsProps {
    */
   analysisFraction?: number;
   /** Schedule script
+   * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
+   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory - they are not needed for display on the frontend.
    * @beta
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];

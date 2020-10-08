@@ -15,6 +15,7 @@ import { GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SceneContext } from "../ViewContext";
 import { ViewState, ViewState3d } from "../ViewState";
+import { RenderScheduleState } from "../RenderScheduleState";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
@@ -99,7 +100,7 @@ class PrimaryTreeReference extends TileTreeReference {
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
 
-  public constructor(view: ViewState, model: GeometricModelState, isPlanProjection: boolean) {
+  public constructor(view: ViewState, model: GeometricModelState, isPlanProjection: boolean, transformNodeId?: number) {
     super();
     this._view = view;
     this._model = model;
@@ -107,7 +108,7 @@ class PrimaryTreeReference extends TileTreeReference {
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
-      treeId: this.createTreeId(view, model.id),
+      treeId: this.createTreeId(view, model.id, transformNodeId),
       guid: model.geometryGuid,
       isPlanProjection,
     };
@@ -129,7 +130,7 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   public get treeOwner(): TileTreeOwner {
-    const newId = this.createTreeId(this._view, this._id.modelId);
+    const newId = this.createTreeId(this._view, this._id.modelId, this._id.treeId.animationTransformNodeId);
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
       this._id = {
         modelId: this._id.modelId,
@@ -145,11 +146,11 @@ class PrimaryTreeReference extends TileTreeReference {
     return this._owner;
   }
 
-  protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
+  protected createTreeId(view: ViewState, modelId: Id64String, animationTransformNodeId: number | undefined): PrimaryTileTreeId {
     const script = view.scheduleScript;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
     const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
-    return { type: BatchType.Primary, edgesRequired, animationId };
+    return { type: BatchType.Primary, edgesRequired, animationId, animationTransformNodeId };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -159,6 +160,24 @@ class PrimaryTreeReference extends TileTreeReference {
   protected computeTransform(tree: TileTree): Transform {
     const tf = this.computeBaseTransform(tree);
     return this._view.getModelDisplayTransform(this._model.id, tf);
+  }
+}
+
+/** @internal */
+export class AnimatedTreeReference extends PrimaryTreeReference {
+  protected computeBaseTransform(tree: TileTree): Transform {
+    const tf = super.computeBaseTransform(tree);
+    const style = this._view.displayStyle;
+    const script = style.scheduleScript;
+    if (undefined === script || undefined === this._id.treeId.animationTransformNodeId)
+      return tf;
+
+    const timePoint = style.settings.timePoint ?? script.getCachedDuration().low;
+    const animTf = script.getTransform(this._id.modelId, this._id.treeId.animationTransformNodeId, timePoint);
+    if (animTf)
+      animTf.multiplyTransformTransform(tf, tf);
+
+    return tf;
   }
 }
 
@@ -228,7 +247,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   }
 
   protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
-    const id = super.createTreeId(view, modelId);
+    const id = super.createTreeId(view, modelId, undefined);
     const settings = this.getSettings();
     if (undefined !== settings && settings.enforceDisplayPriority)
       id.enforceDisplayPriority = true;
@@ -246,4 +265,14 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
   }
 
   return new PrimaryTreeReference(view, model, false);
+}
+
+/** Append to the input list [[TileTreeReference]]s for any animation transforms applied to the model by the schedule script.
+ * @internal
+ */
+export function addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void {
+  const nodeIds = script.getTransformNodeIds(model.id);
+  if (nodeIds)
+    for (const nodeId of nodeIds)
+      refs.push(new AnimatedTreeReference(view, model, false, nodeId));
 }

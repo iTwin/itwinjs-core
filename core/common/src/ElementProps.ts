@@ -319,6 +319,16 @@ export interface ElementLoadProps {
   wantGeometry?: boolean;
   /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
   wantBRepData?: boolean;
+  /** Properties to omit when loading a [[DisplayStyle]].
+   * @internal
+   */
+  displayStyle?: {
+    /** If true, the element Ids in the display style's schedule script will be empty. The element Ids are not required on the frontend for display.
+     * @note [IModelDb.Views.getViewStateData]($backend) sets this to true, affecting the result of [IModelConnection.Views.load]($frontend).
+     * @internal
+     */
+    omitScheduleScriptElementIds?: boolean;
+  };
 }
 
 /** Properties of an [ElementAspect]($backend)
