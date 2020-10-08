@@ -88,6 +88,7 @@ describe("Model geometry changes", () => {
   }
 
   it("emits events", async () => {
+    expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true)).to.be.true;
     const sink = EventSinkManager.get("events test");
     imodel.nativeDb.setEventSink(sink);
@@ -139,6 +140,7 @@ describe("Model geometry changes", () => {
 
     // Stop tracking geometry changes
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false)).to.be.false;
+    expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
 
     // Modify element's geometry.
     props.id = elemId1;
