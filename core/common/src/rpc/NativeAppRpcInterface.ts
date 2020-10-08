@@ -6,8 +6,7 @@
  * @module RpcInterface
  */
 
-import { Id64String, LogLevel } from "@bentley/bentleyjs-core";
-import { Range3dProps } from "@bentley/geometry-core";
+import { LogLevel } from "@bentley/bentleyjs-core";
 import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOptions, RequestBriefcaseProps } from "../BriefcaseTypes";
 import { IModelProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";

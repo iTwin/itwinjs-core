@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { CompressedId64Set, DbOpcode, Id64String, OrderedId64Iterable, TransientIdSequence } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
-import { ElementGeometryChange, ModelGeometryChangesProps } from "../rpc/ModelGeometryChanges";
+import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../rpc/ModelGeometryChanges";
 
 // Each test is list of inserted, updated, and/or deleted element Ids; along with modelId.
 // We choose an arbitrary range for each insert or update.
@@ -96,10 +96,10 @@ function elementChangesToJSON(changes: ElementChangeSets): ModelGeometryChangesP
   };
 }
 
-function extractElementChanges(changes: ModelGeometryChangesProps): ElementChangeSets {
+function extractElementChanges(changes: Iterable<ElementGeometryChange>): ElementChangeSets {
   const sets = new ElementChangeSets();
   const allIds = new Set<string>();
-  for (const change of ElementGeometryChange.iterable(changes)) {
+  for (const change of changes) {
     expect(allIds.has(change.id)).to.be.false;
     allIds.add(change.id);
 
@@ -114,8 +114,9 @@ describe("ModelGeometryChanges", () => {
   it("should iterate ElementGeometryChanges", () => {
     const test = (numInserts: number, numUpdates: number, numDeletes: number) => {
       const expected = generateElementChanges(numInserts, numUpdates, numDeletes);
-      const actual = extractElementChanges(elementChangesToJSON(expected));
+      const actual = extractElementChanges(ElementGeometryChange.iterable(elementChangesToJSON(expected)));
       expect(expected).to.deep.equal(actual);
+      expect(actual.inserts.size + actual.updates.size + actual.deletes.size).to.equal(numInserts + numUpdates + numDeletes);
     };
 
     test(0, 0, 0);
@@ -124,5 +125,26 @@ describe("ModelGeometryChanges", () => {
     test(0, 0, 5);
     test(2, 3, 1);
     test(3, 4, 2);
+  });
+
+  it("should iterate ModelGeometryChanges", () => {
+    const test = (expected: ElementChangeSets[]) => {
+      const props = expected.map((x) => elementChangesToJSON(x));
+      let index = 0;
+      for (const modelChanges of ModelGeometryChanges.iterable(props)) {
+        expect(modelChanges.id).to.equal(props[index].id);
+        expect(modelChanges.range).to.deep.equal(Range3d.fromJSON(props[index].range));
+        const actualElems = extractElementChanges(modelChanges.elements);
+        expect(actualElems).to.deep.equal(expected[index]);
+        index++;
+      }
+
+      expect(index).to.equal(expected.length);
+    };
+
+    test([]);
+    test([ generateElementChanges(0, 0, 0) ]);
+    test([ generateElementChanges(2, 0, 4) ]);
+    test([ generateElementChanges(0, 4, 3), generateElementChanges(1, 0, 0), generateElementChanges(0, 0, 0), generateElementChanges(3, 1, 2) ]);
   });
 });
