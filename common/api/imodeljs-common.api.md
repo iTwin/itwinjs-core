@@ -6720,6 +6720,7 @@ export enum ThematicGradientMode {
 // @beta
 export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
+    readonly colorMix: number;
     readonly colorScheme: ThematicGradientColorScheme;
     // (undocumented)
     static get contentMax(): number;
@@ -6743,6 +6744,7 @@ export class ThematicGradientSettings {
 
 // @beta (undocumented)
 export interface ThematicGradientSettingsProps {
+    colorMix?: number;
     colorScheme?: ThematicGradientColorScheme;
     customKeys?: Gradient.KeyColorProps[];
     marginColor?: ColorDefProps;
