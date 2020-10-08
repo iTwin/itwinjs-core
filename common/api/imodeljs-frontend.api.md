@@ -8171,25 +8171,6 @@ export class SpatialModelState extends GeometricModel3dState {
     static get className(): string;
 }
 
-// @internal @deprecated
-export class SpatialModelTileTrees {
-    constructor(view: SpatialViewState);
-    // (undocumented)
-    protected _allLoaded: boolean;
-    // (undocumented)
-    protected createTileTreeReference(model: GeometricModel3dState): TileTreeReference | undefined;
-    // (undocumented)
-    forEach(func: (treeRef: TileTreeReference) => void): void;
-    // (undocumented)
-    protected get _iModel(): IModelConnection;
-    // (undocumented)
-    markDirty(): void;
-    // (undocumented)
-    protected _treeRefs: Map<string, TileTreeReference>;
-    // (undocumented)
-    protected readonly _view: SpatialViewState;
-}
-
 // @public
 export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
