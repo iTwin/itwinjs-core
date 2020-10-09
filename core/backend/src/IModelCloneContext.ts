@@ -107,8 +107,8 @@ export class IModelCloneContext {
   /** Clone the specified source Element into ElementProps for the target iModel.
    * @internal
    */
-  public cloneElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id);
+  public cloneElement(sourceElement: Element, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps {
+    const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id, cloneOptions);
     // Ensure that all NavigationProperties in targetElementProps have a defined value so "clearing" changes will be part of the JSON used for update
     sourceElement.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
       if ((meta.isNavigation) && (undefined === (sourceElement as any)[propertyName])) {
