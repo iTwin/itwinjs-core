@@ -35,7 +35,7 @@ export class InteractiveEditingSession {
 
   public static async begin(imodel: IModelConnection): Promise<InteractiveEditingSession> {
     if (InteractiveEditingSession.get(imodel))
-      throw new Error("Cannot create an editing session for an iModel that already has one.");
+      throw new Error("Cannot create an editing session for an iModel that already has one");
 
     // Register the session synchronously, in case begin() is called again for same iModel while awaiting asynchronous initialization.
     const session = new InteractiveEditingSession(imodel);
@@ -63,7 +63,7 @@ export class InteractiveEditingSession {
 
   public async end(): Promise<void> {
     if (this._disposed || sessions.find((x) => x.iModel === this.iModel) !== this)
-      throw new Error("Cannot end editing session after it is disconnected from the iModel.");
+      throw new Error("Cannot end editing session after it is disconnected from the iModel");
 
     this._disposed = true;
     try {

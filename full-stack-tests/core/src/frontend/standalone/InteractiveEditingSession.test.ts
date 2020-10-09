@@ -68,9 +68,30 @@ if (ElectronRpcConfiguration.isElectron) {
       await session.end();
     });
 
-    async function openWritable(): Promise<void> {
+    async function openWritable(): Promise<StandaloneConnection> {
       expect(imodel).to.be.undefined;
-      imodel = await StandaloneConnection.openFile(newFilePath, OpenMode.ReadWrite);
+      return await StandaloneConnection.openFile(newFilePath, OpenMode.ReadWrite);
     }
+
+    it("throws if begin is called repeatedly", async () => {
+      imodel = await openWritable();
+      const session = await InteractiveEditingSession.begin(imodel);
+      await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith("Cannot create an editing session for an iModel that already has one");
+      await session.end();
+    });
+
+    it("throws if end is called repeatedly", async () => {
+      imodel = await openWritable();
+      const session = await InteractiveEditingSession.begin(imodel);
+      await session.end();
+      await expect(session.end()).to.be.rejectedWith("Cannot end editing session after it is disconnected from the iModel");
+    });
+
+    it("throws if the iModel is closed before ending the session", async () => {
+      imodel = await openWritable();
+      const session = await InteractiveEditingSession.begin(imodel);
+      await expect(imodel.close()).to.be.rejectedWith("InteractiveEditingSession must be ended before closing the associated iModel");
+      await session.end();
+    });
   });
 }
