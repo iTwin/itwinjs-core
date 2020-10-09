@@ -32,7 +32,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelWriteRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.5.1";
+  public static interfaceVersion = "0.5.2";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.

@@ -7,24 +7,17 @@
  */
 
 import { assert, BeEvent, compareStrings, Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { ElementGeometryChange, IModelWriteRpcInterface, ModelGeometryChanges, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
+import { ElementGeometryChange, Events, IModelWriteRpcInterface, ModelGeometryChanges, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];
 
-function dropSession(session: InteractiveEditingSession): boolean {
-  const index = sessions.indexOf(session);
-  if (-1 !== index)
-    sessions.splice(index);
-
-  return -1 !== index;
-}
-
 export class InteractiveEditingSession {
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
   private readonly _geometryChanges = new Map<Id64String, SortedArray<ElementGeometryChange>>();
   private _disposed = false;
+  private _cleanup?: { off: () => void; }; // ###TODO EventSource.on() should just return a function...
   public readonly iModel: IModelConnection;
 
   public static readonly onBegin = new BeEvent<(session: InteractiveEditingSession) => void>();
@@ -50,10 +43,8 @@ export class InteractiveEditingSession {
     try {
       const sessionStarted = await IModelWriteRpcInterface.getClient().toggleInteractiveEditingSession(imodel.getRpcProps(), true);
       assert(sessionStarted); // If it didn't, the rpc interface threw an error.
-      // ###TODO register for backend events
     } catch (e) {
-      session._disposed = true;
-      dropSession(session);
+      session.dispose();
       throw e;
     }
 
@@ -76,25 +67,40 @@ export class InteractiveEditingSession {
     try {
       this.onEnding.raiseEvent(this);
     } finally {
-      this.onEnding.clear();
-      this.onGeometryChanges.clear();
-      this._geometryChanges.clear();
-
       const sessionEnded = await IModelWriteRpcInterface.getClient().toggleInteractiveEditingSession(this.iModel.getRpcProps(), false);
       assert(!sessionEnded);
-      // ###TODO unregister from backend events
-
       try {
         this.onEnded.raiseEvent(this);
       } finally {
-        dropSession(this);
-        this.onEnded.clear();
+        this.dispose();
       }
     }
   }
 
   private constructor(iModel: IModelConnection) {
     this.iModel = iModel;
+    if (iModel.eventSource) // ###TODO make this always defined
+      this._cleanup = iModel.eventSource.on(Events.NativeApp.namespace, Events.NativeApp.modelGeometryChanges, (changes: any) => this.handleGeometryChanges(changes));
+  }
+
+  private dispose(): void {
+    this._disposed = true;
+
+
+    this.onEnding.clear();
+    this.onGeometryChanges.clear();
+    this.onEnded.clear();
+
+    this._geometryChanges.clear();
+
+    if (this._cleanup) {
+      this._cleanup.off();
+      this._cleanup = undefined;
+    }
+
+    const index = sessions.indexOf(this);
+    if (-1 !== index)
+      sessions.splice(index);
   }
 
   private handleGeometryChanges(props: ModelGeometryChangesProps[]): void {
