@@ -588,7 +588,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "imageId": {
@@ -681,7 +681,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "nestedRules": {
@@ -774,7 +774,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "nestedRules": {
@@ -857,7 +857,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "nestedRules": {
@@ -1154,7 +1154,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "instanceFilter": {
@@ -1921,7 +1921,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "instanceFilter": {
@@ -2448,7 +2448,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "instanceFilter": {
