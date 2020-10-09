@@ -56,6 +56,8 @@ export class InteractiveEditingSession {
       });
     }
 
+    this.onBegin.raiseEvent(session);
+
     return session;
   }
 
