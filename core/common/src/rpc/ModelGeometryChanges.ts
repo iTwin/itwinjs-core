@@ -132,17 +132,30 @@ export interface ModelGeometryChanges {
 export namespace ModelGeometryChanges {
   /** Obtain an iterator over the geometry changes for a set of models. A given model will appear at most once. */
   export function * iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges> {
-    for (const props of modelChanges) {
-      yield {
-        id: props.id,
-        range: Range3d.fromJSON(props.range),
-        elements: ElementGeometryChange.iterable(props),
-      };
-    }
+    for (const props of modelChanges)
+      yield fromJSON(props);
   }
 
   /** Obtain an iterable over the geometry changes for a set of models. A given model will appear at most once. */
   export function iterable(modelChanges: ModelGeometryChangesProps[]): Iterable<ModelGeometryChanges> {
     return { [Symbol.iterator]: () => iterator(modelChanges) };
+  }
+
+  /** Instantiate from wire format. */
+  export function fromJSON(props: ModelGeometryChangesProps): ModelGeometryChanges {
+    return {
+      id: props.id,
+      range: Range3d.fromJSON(props.range),
+      elements: ElementGeometryChange.iterable(props),
+    };
+  }
+
+  /** Obtain the ModelGeometryChanges for the specified model Id. */
+  export function findByModelId(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): ModelGeometryChanges | undefined {
+    for (const change of changes)
+      if (change.id === modelId)
+        return change;
+
+    return undefined;
   }
 }
