@@ -5,6 +5,7 @@
 ```ts
 
 import { ActionButton } from '@bentley/ui-abstract';
+import { AlternateDateFormats } from '@bentley/ui-abstract';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { Cartographic } from '@bentley/imodeljs-common';
@@ -20,6 +21,7 @@ import { ContextComponent } from 'react-dnd';
 import * as CSS from 'csstype';
 import { CSSProperties } from 'react';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
+import { DateFormatter } from '@bentley/ui-abstract';
 import { DndComponentClass } from 'react-dnd';
 import { EnumerationChoice } from '@bentley/ui-abstract';
 import { Face } from '@bentley/ui-core';
@@ -63,6 +65,7 @@ import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { TentativePoint } from '@bentley/imodeljs-frontend';
+import { TimeDisplay } from '@bentley/ui-abstract';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
@@ -1196,21 +1199,13 @@ export interface DataRowItem extends RowItem {
 // @internal
 export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element;
 
-// @alpha
+// @internal
 export interface DateFieldProps extends CommonProps {
     dateFormatter?: DateFormatter;
     initialDate: Date;
     onDateChange?: (day: Date) => void;
     readOnly?: boolean;
     timeDisplay?: TimeDisplay;
-}
-
-// @alpha
-export interface DateFormatter {
-    // (undocumented)
-    formateDate: (day: Date) => string;
-    // (undocumented)
-    parseDate?: (dateString: string) => Date | undefined;
 }
 
 // @alpha
@@ -1240,6 +1235,32 @@ export interface DatePickerProps {
     showFocusOutline?: boolean;
 }
 
+// @internal
+export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, DateTimeEditorState> implements TypeEditor {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    processDateChange(typeConverter: TypeConverter, newValue: Date): Promise<void>;
+    // (undocumented)
+    render(): React.ReactNode;
+    // (undocumented)
+    readonly state: Readonly<DateTimeEditorState>;
+}
+
+// @internal
+export class DateTimePropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesTab(): boolean;
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+}
+
 // @public
 export class DateTimeTypeConverter extends DateTimeTypeConverterBase {
     // (undocumented)
@@ -1250,10 +1271,19 @@ export class DateTimeTypeConverter extends DateTimeTypeConverterBase {
 export abstract class DateTimeTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
     // (undocumented)
     convertFromString(value: string): Date | undefined;
+    convertFromStringWithOptions(value: string, options?: {
+        [key: string]: any;
+    }): ConvertedPrimitives.Value | undefined | Promise<ConvertedPrimitives.Value | undefined>;
     // (undocumented)
-    convertToString(value?: Primitives.ShortDate): string;
+    convertToString(value?: Primitives.Value): string;
+    // (undocumented)
+    convertToStringWithOptions(value?: Primitives.Value, options?: {
+        [key: string]: any;
+    }): string | Promise<string>;
     // (undocumented)
     protected abstract getTimeFormat(): TimeFormat;
+    // (undocumented)
+    static isAlternateDateFormats(type: AlternateDateFormats): boolean;
     // (undocumented)
     isEqualTo(valueA: Date, valueB: Date): boolean;
     // (undocumented)
@@ -1268,6 +1298,8 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
     isLessThanOrEqualTo(a: Date, b: Date): boolean;
     // (undocumented)
     isNotEqualTo(valueA: Date, valueB: Date): boolean;
+    // (undocumented)
+    static isValidTimeDisplay(type: TimeDisplay): boolean;
     // (undocumented)
     sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
 }
@@ -1889,6 +1921,9 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
     convertToString(value?: Primitives.Float): string;
 }
+
+// @internal
+export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined;
 
 // @public
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
@@ -3559,6 +3594,14 @@ export interface SharedTableNonPrimitiveValueRendererProps {
     onDialogOpen?: (dialogState: PropertyDialogState) => void;
 }
 
+// @internal
+export class ShortDateTimePropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesTab(): boolean;
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+}
+
 // @public
 export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
     // (undocumented)
@@ -4280,9 +4323,6 @@ export class ThemedEnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
-
-// @beta
-export type TimeDisplay = "hh:mm aa" | "hh:mm:ss aa" | "hh:mm" | "hh:mm:ss";
 
 // @internal
 export class Timeline extends React.Component<TimelineProps, TimelineState> {
@@ -5029,9 +5069,15 @@ export interface TreeSelectionReplacementEventArgs {
 // @public
 export abstract class TypeConverter implements SortComparer, OperatorProcessor, NullableOperatorProcessor {
     convertFromString(_value: string): ConvertedPrimitives.Value | undefined | Promise<ConvertedPrimitives.Value | undefined>;
-    convertFromStringToPropertyValue(value: string, _propertyRecord?: PropertyRecord): Promise<PropertyValue>;
-    convertPropertyToString(_propertyDescription: PropertyDescription, value?: Primitives.Value): string | Promise<string>;
+    convertFromStringToPropertyValue(value: string, propertyRecord?: PropertyRecord): Promise<PropertyValue>;
+    convertFromStringWithOptions(value: string, _options?: {
+        [key: string]: any;
+    }): ConvertedPrimitives.Value | undefined | Promise<ConvertedPrimitives.Value | undefined>;
+    convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Value): string | Promise<string>;
     convertToString(value?: Primitives.Value): string | Promise<string>;
+    convertToStringWithOptions(value?: Primitives.Value, _options?: {
+        [key: string]: any;
+    }): string | Promise<string>;
     get isBooleanType(): boolean;
     isEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean;
     get isLessGreaterType(): boolean;
@@ -5046,11 +5092,11 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor, 
 // @public
 export class TypeConverterManager {
     // (undocumented)
-    static getConverter(typename: string): TypeConverter;
+    static getConverter(typename: string, converterName?: string): TypeConverter;
     // (undocumented)
-    static registerConverter(typename: string, converter: new () => TypeConverter): void;
+    static registerConverter(typename: string, converter: new () => TypeConverter, converterName?: string): void;
     // (undocumented)
-    static unregisterConverter(typename: string): void;
+    static unregisterConverter(typename: string, converterName?: string): void;
 }
 
 // @beta

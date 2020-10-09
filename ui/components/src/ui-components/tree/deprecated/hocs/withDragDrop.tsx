@@ -58,6 +58,7 @@ export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject 
       const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps! as DropTargetProps;
       const dropProps: DropTargetProps<DragDropObject> = {
         onDropTargetOver: (args: DropTargetArguments<DragDropObject>) => {
+          // istanbul ignore else
           if (onDropTargetOver) {
             args.dropLocation = this.props.dataProvider as DragDropObject;
             onDropTargetOver(args);
@@ -89,12 +90,14 @@ export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject 
           return onDragSourceBegin ? onDragSourceBegin(args) : args;
         },
         onDragSourceEnd: (args: DragSourceArguments<DragDropObject>) => {
+          // istanbul ignore else
           if (onDragSourceEnd) {
             args.parentObject = ((parent && parent.payload) || this.props.dataProvider) as DragDropObject;
             onDragSourceEnd(args);
           }
         },
         objectType: () => {
+          // istanbul ignore else
           if (objectType) {
             if (typeof objectType === "function")
               return objectType(item.payload!.extendedData as DragDropObject);
@@ -117,6 +120,7 @@ export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject 
       const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps as DropTargetProps;
       const dropProps: DropTargetProps<DragDropObject> = {
         onDropTargetOver: (args: DropTargetArguments<DragDropObject>) => {
+          // istanbul ignore else
           if (onDropTargetOver) {
             // populate tree information while it's accessible
             args.dropLocation = item.payload as DragDropObject;
@@ -161,6 +165,7 @@ export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject 
     }
 
     public renderNode = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
+      // istanbul ignore next
       const baseNode = this.props.renderOverrides && this.props.renderOverrides.renderNode ? this.props.renderOverrides.renderNode(item, props) : <TreeNode {...props} />;
       const DDTreeNode = DragDropTreeNode<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
       return (

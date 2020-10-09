@@ -6,7 +6,7 @@
  * @module Date
  */
 
-import { DateFormatter } from "./DatePickerPopupButton";
+import { DateFormatter } from "@bentley/ui-abstract";
 
 /**
  * A basic class that allows user to provide an Intl.DateTimeFormat

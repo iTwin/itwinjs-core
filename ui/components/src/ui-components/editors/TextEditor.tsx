@@ -46,7 +46,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      propertyValue = await TypeConverterManager.getConverter(record.property.typename).convertFromStringToPropertyValue(this.state.inputValue, record);
+      propertyValue = await TypeConverterManager.getConverter(record.property.typename, record.property.converter?.name).convertFromStringToPropertyValue(this.state.inputValue, record);
       (propertyValue as PrimitiveValue).displayValue = this.state.inputValue;
     }
 
@@ -86,7 +86,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
       const value = record.value.value;
-      initialValue = await TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
+      initialValue = await TypeConverterManager.getConverter(record.property.typename, record.property.converter?.name).convertPropertyToString(record.property, value);
     }
 
     const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;

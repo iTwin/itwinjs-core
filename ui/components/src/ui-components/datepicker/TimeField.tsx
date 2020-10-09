@@ -8,10 +8,9 @@
 
 import * as React from "react";
 import { Input } from "@bentley/ui-core";
-import "./TimeField.scss";
-import { TimeDisplay } from "./DateField";
+import { SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
-import { SpecialKey } from "@bentley/ui-abstract";
+import "./TimeField.scss";
 
 /** Interface used to hold 24 hour time in
  * hours, minutes, and seconds.

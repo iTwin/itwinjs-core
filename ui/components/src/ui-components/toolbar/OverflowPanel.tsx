@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module ToolSettings
@@ -42,6 +42,7 @@ export function ToolbarOverflowPanel(props: ToolbarOverflowPanelProps) {
   let filterBlur = useTransparentBackground ? 0 : TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
   let showSeparators = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent ? false : true;
 
+  // istanbul ignore next
   if (toolbarOpacitySetting === ToolbarOpacitySetting.Proximity && openPopupCount < 1 && !overflowDisplayActive) {
     toolbarOpacity = calculateToolbarOpacity(proximityScale);
     boxShadowOpacity = calculateBoxShadowOpacity(proximityScale);

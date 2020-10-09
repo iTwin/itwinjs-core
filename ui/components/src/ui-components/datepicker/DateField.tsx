@@ -8,17 +8,13 @@
 
 import * as React from "react";
 import classnames from "classnames";
+import { AlternateDateFormats, DateFormatter, TimeDisplay } from "@bentley/ui-abstract";
 import { CommonProps, Input } from "@bentley/ui-core";
-import { DateFormatter } from "./DatePickerPopupButton";
 import "./DateField.scss";
-
-/** Type definition that defines acceptable time formats.
- * @beta
- */
-export type TimeDisplay = "hh:mm aa"|"hh:mm:ss aa"|"hh:mm"|"hh:mm:ss";
+import { Logger } from "@bentley/bentleyjs-core";
 
 /** Props for [[DateField]] Component.
- * @alpha
+ * @internal
  */
 export interface DateFieldProps extends CommonProps {
   /** Defines initial date and time for component. */
@@ -28,68 +24,88 @@ export interface DateFieldProps extends CommonProps {
   /** Optional value to define if edit field allows editing. If a DateFormatter is provided
    * it must provide a parseData function or the field will be read only no matter the setting of this value. */
   readOnly?: boolean;
-  /** Optional date formatter that produces and explicit date display */
+  /** Optional date formatter that produces an explicit date display */
   dateFormatter?: DateFormatter;
   /** This property has two purposes, the first is specify that the display of time is desired and the second is to define the format of the time display. */
   timeDisplay?: TimeDisplay;
 }
 
-/** private function to format a Date object. */
-function formatInputDate( inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter): string | undefined {
+/** Function to format a Date object that is used in control, type editor, and type converter
+ * to produce a consistent formatted Date string.
+ * @internal
+ */
+export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined {
   if (customFormatter) {
     return customFormatter.formateDate(inputDate)
   }
 
-  const dateString = inputDate.toLocaleDateString(undefined, {day: "2-digit", month: "2-digit", year: "numeric"});
-  let timeString: string = "";
-
-  if (timeDisplay) {
-    switch (timeDisplay) {
-      case "hh:mm aa":
-        timeString = inputDate.toLocaleTimeString(undefined, { hour12: true, hour: "2-digit", minute: "2-digit" });
-        break;
-      case "hh:mm:ss aa":
-        timeString = (inputDate.toLocaleTimeString(undefined, { hour12: true, hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-        break;
-      case "hh:mm":
-        timeString = (inputDate.toLocaleTimeString(undefined, { hour12: false, hour: "2-digit", minute: "2-digit" }));
-        break;
-      case "hh:mm:ss":
-        timeString = (inputDate.toLocaleTimeString(undefined, { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-        break;
+  if (alternateDateFormat) {
+    switch (alternateDateFormat) {
+      case AlternateDateFormats.IsoDateTime:
+        return inputDate.toISOString();
+      case AlternateDateFormats.IsoShort:
+        return inputDate.toISOString().slice(0, 10);
+      case AlternateDateFormats.UtcDateTime:
+        return inputDate.toUTCString().slice(5);
+      case AlternateDateFormats.UtcShort:
+        return inputDate.toUTCString().slice(5, 16);
+      case AlternateDateFormats.UtcDateTimeWithDay:
+        return inputDate.toUTCString();
+      case AlternateDateFormats.UtcShortWithDay:
+        return inputDate.toUTCString().slice(0, 16);
     }
+  } else {
+    const dateString = inputDate.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" });
+    let timeString: string = "";
+
+    if (timeDisplay) {
+      switch (timeDisplay) {
+        case TimeDisplay.H12MC:
+          timeString = inputDate.toLocaleTimeString(undefined, { hour12: true, hour: "2-digit", minute: "2-digit" });
+          break;
+        case TimeDisplay.H12MSC:
+          timeString = (inputDate.toLocaleTimeString(undefined, { hour12: true, hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+          break;
+        case TimeDisplay.H24M:
+          timeString = (inputDate.toLocaleTimeString(undefined, { hour12: false, hour: "2-digit", minute: "2-digit" }));
+          // istanbul ignore next
+          if (timeString === "24:00")
+            timeString = "00:00";
+          break;
+        case TimeDisplay.H24MS:
+          timeString = (inputDate.toLocaleTimeString(undefined, { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+          // istanbul ignore next
+          if (timeString === "24:00:00")
+            timeString = "00:00:00";
+          break;
+      }
+    }
+    return timeString.length ? `${dateString}, ${timeString}` : dateString;
   }
-  return `${dateString} ${timeString}`
 }
 
 /** Date input component. This component is typically used by the [[DatePickerPopupButton]] to display and edit date and time.
  * @internal
  */
-export function DateField({initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className}: DateFieldProps) {
-  const initialDateRef = React.useRef (initialDate);
-  const [date, setDate] = React.useState(initialDate);
+export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps) {
+  const initialDateRef = React.useRef(initialDate);
   const [hasBadInput, setHasBadInput] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState(formatInputDate(initialDate, timeDisplay, dateFormatter));
 
   // See if new initialDate props have changed since component mounted
   React.useEffect(() => {
     // istanbul ignore else
     if (initialDate.getTime() !== initialDateRef.current.getTime()) {
-      // istanbul ignore else
-      if (date.getTime() !== initialDate.getTime()) {
-        setDate (initialDate);
-        setInputValue (formatInputDate (initialDate, timeDisplay, dateFormatter));
-      }
       initialDateRef.current = initialDate;
     }
-  }, [initialDate, date, dateFormatter, timeDisplay]);
+    setInputValue(formatInputDate(initialDate, timeDisplay, dateFormatter));
+  }, [initialDate, dateFormatter, timeDisplay]);
 
-  const [inputValue, setInputValue] = React.useState(formatInputDate (date, timeDisplay, dateFormatter));
-
-  const handleInputChange = React.useCallback ((event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue (event.currentTarget.value)
+  const handleInputChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.currentTarget.value)
   }, [])
 
-  const parseDate = React.useCallback ((dateString: string) => {
+  const parseDate = React.useCallback((dateString: string) => {
     try {
       if (dateFormatter && dateFormatter.parseDate)
         return dateFormatter.parseDate(dateString);
@@ -98,42 +114,42 @@ export function DateField({initialDate, onDateChange, readOnly, dateFormatter, t
       // istanbul ignore else
       if (newDateValue)
         return new Date(newDateValue);
-    } catch (_error) {
-      // istanbul ignore next
+    } catch (_error) /* istanbul ignore next */ {
+      Logger.logInfo("DateField", `Encountered error parsing input value '${dateString}' as a date.`);
       return undefined;
     }
     // istanbul ignore next
     return undefined;
   }, [dateFormatter])
 
-  const updateInputDate  = React.useCallback((dateString: string) => {
+  const updateInputDate = React.useCallback((dateString: string) => {
     try {
-      const newDateValue =parseDate(dateString);
+      const newDateValue = parseDate(dateString);
       if (newDateValue) {
         const newDate = new Date(newDateValue);
-        onDateChange && onDateChange (newDate);
-        setHasBadInput (false);
+        onDateChange && onDateChange(newDate);
+        setHasBadInput(false);
       } else {
-        setHasBadInput (true);
+        setHasBadInput(true);
       }
     } catch (_error) {
       // istanbul ignore next
-      setHasBadInput (true);
+      setHasBadInput(true);
     }
   }, [onDateChange, parseDate]);
 
   const handleOnBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
-    updateInputDate (event.target.value)
+    updateInputDate(event.target.value)
   }, [updateInputDate]);
 
   function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
     // istanbul ignore else
     if (event.key === "Enter") {
-      updateInputDate (event.currentTarget.value);
+      updateInputDate(event.currentTarget.value);
       event.preventDefault();
     }
   }
-  const classNames = classnames(className&&className, "components-date-input", hasBadInput&&"has-error");
+  const classNames = classnames(className, "components-date-input", hasBadInput && "components-date-has-error");
   return <Input data-testid="components-date-input" style={style} className={classNames} onKeyDown={onInputKeyDown} onBlur={handleOnBlur}
-    onChange={handleInputChange} value={inputValue} disabled={readOnly||(dateFormatter && !(dateFormatter.parseDate))} />
+    onChange={handleInputChange} value={inputValue} disabled={readOnly || (dateFormatter && !(dateFormatter.parseDate))} />
 }

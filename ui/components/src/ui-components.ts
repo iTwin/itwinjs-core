@@ -53,6 +53,7 @@ export * from "./ui-components/dragdrop/BeDragDropContext";
 export * from "./ui-components/editors/BooleanEditor";
 export * from "./ui-components/editors/ColorEditor";
 export * from "./ui-components/editors/CustomNumberEditor";
+export * from "./ui-components/editors/DateTimeEditor";
 export * from "./ui-components/editors/EditorContainer";
 export * from "./ui-components/editors/EnumButtonGroupEditor";
 export * from "./ui-components/editors/EnumEditor";
@@ -212,6 +213,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description Date
  * Classes, interfaces, and components for showing and setting date and time.
+ */
+/**
+ * @docs-group-description DateTimeTypeConverter
+ * Convert Date to string and string to Date.
  */
 /**
  * @docs-group-description DragDrop
