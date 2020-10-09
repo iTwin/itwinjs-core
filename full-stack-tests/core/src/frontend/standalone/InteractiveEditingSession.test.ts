@@ -93,5 +93,31 @@ if (ElectronRpcConfiguration.isElectron) {
       await expect(imodel.close()).to.be.rejectedWith("InteractiveEditingSession must be ended before closing the associated iModel");
       await session.end();
     });
+
+    it("dispatches events when sessions begin or end", async () => {
+      imodel = await openWritable();
+
+      let beginCount = 0;
+      const removeBeginListener = InteractiveEditingSession.onBegin.addListener((_: InteractiveEditingSession) => ++beginCount);
+
+      const session = await InteractiveEditingSession.begin(imodel);
+      expect(beginCount).to.equal(1);
+
+      let endingCount = 0;
+      let endCount = 0;
+      const removeEndingListener = session.onEnding.addListener((_: InteractiveEditingSession) => ++endingCount);
+      const removeEndListener = session.onEnded.addListener((_: InteractiveEditingSession) => ++endCount);
+
+      const endPromise = session.end();
+      expect(endingCount).to.equal(1);
+      expect(endCount).to.equal(0);
+
+      await endPromise;
+      expect(endCount).to.equal(1);
+
+      removeBeginListener();
+      removeEndListener();
+      removeEndingListener();
+    });
   });
 }
