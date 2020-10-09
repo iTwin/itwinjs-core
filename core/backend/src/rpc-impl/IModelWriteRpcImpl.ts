@@ -9,9 +9,10 @@ import { assert, ClientRequestContext, DbOpcode, GuidString, Id64, Id64Array, Id
 import { Range3d } from "@bentley/geometry-core";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3dProps, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface,
+  AxisAlignedBox3dProps, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelRpcProps, IModelWriteRpcInterface,
   RelatedElement, RpcInterface, RpcManager, SubCategoryAppearance, SyncMode, ThumbnailProps,
 } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb, IModelDb } from "../IModelDb";
 import {
@@ -187,7 +188,11 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
   public async toggleInteractiveEditingSession(tokenProps: IModelRpcProps, startSession: boolean): Promise<boolean> {
     const imodel = IModelDb.findByKey(tokenProps.key);
-    return imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
+    if (val.error)
+      throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
+
+    return val.result!;
   }
 
   public async isInteractiveEditingSupported(tokenProps: IModelRpcProps): Promise<boolean> {
