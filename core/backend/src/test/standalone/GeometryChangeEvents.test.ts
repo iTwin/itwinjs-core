@@ -90,8 +90,8 @@ describe("Model geometry changes", () => {
   it("emits events", async () => {
     expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true)).to.be.true;
-    const sink = EventSinkManager.get("events test");
-    imodel.nativeDb.setEventSink(sink);
+    const sink = imodel.eventSink!;
+    expect(sink).not.to.be.undefined;
 
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));

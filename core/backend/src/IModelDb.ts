@@ -147,12 +147,23 @@ export abstract class IModelDb extends IModel {
   public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb; }
   private _nativeDb: IModelJsNative.DgnDb;
 
+  /** Return event sink for associated [[BriefcaseDb]].
+   * @internal
+   */
+  public get eventSink(): EventSink | undefined { return this._eventSink; }
+  private _eventSink?: EventSink;
+
   /** @internal */
   protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openMode: OpenMode) {
     super(iModelToken, openMode);
     this._nativeDb = nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
+
+    if ("" !== this._fileKey) {
+      this._eventSink = EventSinkManager.get(this._fileKey);
+      this.nativeDb.setEventSink(this._eventSink);
+    }
   }
   /**
    * Called by derived classes before closing the connection
@@ -162,6 +173,11 @@ export abstract class IModelDb extends IModel {
     this.clearSqliteStatementCache();
     this.clearStatementCache();
     this._concurrentQueryStats.dispose();
+
+    if (this._eventSink) {
+      EventSinkManager.delete(this._eventSink.id);
+      this._eventSink = undefined;
+    }
   }
 
   /** @internal */
@@ -2120,32 +2136,11 @@ export class BriefcaseDb extends IModelDb {
    */
   public get isPushEnabled(): boolean { return this.syncMode === SyncMode.PullAndPush && this.openMode === OpenMode.ReadWrite; }
 
-  /** Return event sink for associated [[BriefcaseDb]].
-   * @internal
-   */
-  public get eventSink(): EventSink | undefined { return this._eventSink; }
-  private _eventSink?: EventSink;
-
-  private clearEventSink() {
-    if (this._eventSink) {
-      EventSinkManager.delete(this._eventSink.id);
-      this._eventSink = undefined;
-    }
-  }
-
-  private initializeEventSink() {
-    if (this._fileKey !== "") {
-      this._eventSink = EventSinkManager.get(this._fileKey);
-      this.nativeDb.setEventSink(this._eventSink);
-    }
-  }
-
   private constructor(briefcaseEntry: BriefcaseEntry) {
     super(briefcaseEntry.nativeDb, briefcaseEntry.getIModelRpcProps(), briefcaseEntry.openMode);
     this.syncMode = briefcaseEntry.syncMode;
     this.setupBriefcaseEntry(briefcaseEntry);
     this.setDefaultConcurrentControlAndPolicy();
-    this.initializeEventSink();
   }
 
   private setDefaultConcurrentControlAndPolicy() {
@@ -2328,7 +2323,6 @@ export class BriefcaseDb extends IModelDb {
     } catch (error) {
       throw error;
     } finally {
-      this.clearEventSink();
       this.clearBriefcaseEntry();
     }
   }
