@@ -68,4 +68,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void> { return this.forward(arguments); }
   public async createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String> { return this.forward(arguments); }
   public async createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String> { return this.forward(arguments); }
+
+  public async toggleInteractiveEditingSession(_tokenProps: IModelRpcProps, _startSession: boolean): Promise<boolean> { return this.forward(arguments); }
+  public async isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 }

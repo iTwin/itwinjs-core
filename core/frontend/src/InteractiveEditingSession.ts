@@ -6,8 +6,8 @@
  * @module IModelConnection
  */
 
-import { BeEvent, compareStrings, Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
+import { assert, BeEvent, compareStrings, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { ElementGeometryChange, IModelWriteRpcInterface, ModelGeometryChanges, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
 let initialized = false;
@@ -32,6 +32,10 @@ export class InteractiveEditingSession {
   public readonly onEnded = new BeEvent<(session: InteractiveEditingSession) => void>();
   public readonly onGeometryChanges = new BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>();
 
+  public static async isSupported(imodel: IModelConnection): Promise<boolean> {
+    return IModelWriteRpcInterface.getClient().isInteractiveEditingSupported(imodel.getRpcProps());
+  }
+
   public static get(imodel: IModelConnection): InteractiveEditingSession | undefined {
     return sessions.find((x) => x.iModel === imodel);
   }
@@ -44,7 +48,8 @@ export class InteractiveEditingSession {
     const session = new InteractiveEditingSession(imodel);
     sessions.push(session);
     try {
-      // ###TODO RPC
+      const sessionStarted = await IModelWriteRpcInterface.getClient().toggleInteractiveEditingSession(imodel.getRpcProps(), true);
+      assert(sessionStarted); // If it didn't, the rpc interface threw an error.
       // ###TODO register for backend events
     } catch (e) {
       session._disposed = true;
@@ -75,7 +80,8 @@ export class InteractiveEditingSession {
       this.onGeometryChanges.clear();
       this._geometryChanges.clear();
 
-      // ###TODO RPC
+      const sessionEnded = await IModelWriteRpcInterface.getClient().toggleInteractiveEditingSession(this.iModel.getRpcProps(), false);
+      assert(!sessionEnded);
       // ###TODO unregister from backend events
 
       try {
