@@ -1133,7 +1133,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   private readonly _targetModelId: Id64String;
   /** Construct a new PhysicalModelConsolidator */
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetModelId: Id64String) {
-    super(sourceDb, targetDb);
+    super(sourceDb, targetDb, { cloneUsingBinaryGeometry: true });
     this._targetModelId = targetModelId;
     this.importer.doNotUpdateElementIds.add(targetModelId);
   }

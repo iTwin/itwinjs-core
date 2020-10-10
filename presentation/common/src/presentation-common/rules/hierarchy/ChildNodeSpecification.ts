@@ -55,7 +55,7 @@ export interface ChildNodeSpecificationBase {
   hasChildren?: "Always" | "Never" | "Unknown";
 
   /**
-   * Hide nodes provided by this specification and directly show nodes of its children.
+   * Hide instance nodes provided by this specification and directly show nodes of its children.
    * This helps if you need to define related instance nodes of particular parent node that is not available in the
    * hierarchy.
    */
