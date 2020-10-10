@@ -7,8 +7,8 @@ const expect = chai.expect;
 import * as path from "path";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { ElectronRpcConfiguration, IModelError } from "@bentley/imodeljs-common";
+import { BeDuration, DbOpcode, OpenMode } from "@bentley/bentleyjs-core";
+import { ElectronRpcConfiguration, ElementGeometryChange, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import { IModelApp, InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
 
 if (ElectronRpcConfiguration.isElectron) {
@@ -118,6 +118,36 @@ if (ElectronRpcConfiguration.isElectron) {
       removeBeginListener();
       removeEndListener();
       removeEndingListener();
+    });
+
+    it.only("accumulates geometry changes", async () => {
+      imodel = await openWritable();
+
+      // The iModel contains one spatial element - a white rectangle.
+      const modelId = "0x17";
+      const elemId = "0x27";
+      await expect(imodel.models.getProps([ modelId ])).not.to.be.undefined;
+      await expect(imodel.elements.getProps([ elemId ])).not.to.be.undefined;
+
+      const session = await InteractiveEditingSession.begin(imodel);
+      await IModelWriteRpcInterface.getClient().deleteElements(imodel.getRpcProps(), [ elemId ]);
+      expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
+      await IModelWriteRpcInterface.getClient().saveChanges(imodel.getRpcProps(), "delete rectangle");
+
+      // ###TODO: After we switch from polling for native events, we should not need to wait for changed event here...
+      await BeDuration.wait(5000);
+      const changes = session.getGeometryChangesForModel(modelId)!;
+      expect(changes).not.to.be.undefined;
+
+      let change: ElementGeometryChange | undefined;
+      for (const entry of changes) {
+        expect(change).to.be.undefined;
+        change = entry;
+      }
+
+      expect(change).not.to.be.undefined;
+      expect(change!.id).to.equal(elemId);
+      expect(change!.type).to.equal(DbOpcode.Delete);
     });
   });
 }

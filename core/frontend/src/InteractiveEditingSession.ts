@@ -79,6 +79,10 @@ export class InteractiveEditingSession {
     }
   }
 
+  public getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined {
+    return this._geometryChanges.get(modelId);
+  }
+
   private constructor(iModel: IModelConnection) {
     this.iModel = iModel;
     if (iModel.eventSource) // ###TODO make this always defined
