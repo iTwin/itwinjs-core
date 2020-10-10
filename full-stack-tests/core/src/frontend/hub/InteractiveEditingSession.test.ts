@@ -13,7 +13,7 @@ import { IModelApp, IModelConnection, InteractiveEditingSession, RemoteBriefcase
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
-describe.only("InteractiveEditingSession (#integration)", () => {
+describe("InteractiveEditingSession (#integration)", () => {
   let imodel: IModelConnection | undefined;
   let projectId: string;
   let oldIModelId: string; // BisCore < 1.0.11
