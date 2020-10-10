@@ -9,11 +9,11 @@ import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 import { BeDuration, DbOpcode, OpenMode } from "@bentley/bentleyjs-core";
 import { ElectronRpcConfiguration, ElementGeometryChange, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { IModelApp, InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, InteractiveEditingSession, RemoteBriefcaseConnection, StandaloneConnection } from "@bentley/imodeljs-frontend";
 
 if (ElectronRpcConfiguration.isElectron) {
   describe.only("InteractiveEditingSession", () => {
-    let imodel: StandaloneConnection | undefined;
+    let imodel: StandaloneConnection | RemoteBriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
     const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
     // Editable; BisCore version == 1.0.11
