@@ -114,7 +114,7 @@ export class InteractiveEditingSession {
     for (const modelChanges of changes) {
       // ###TODO do we care about the model range?
       let list = this._geometryChanges.get(modelChanges.id);
-      for (const elementChange of ElementGeometryChange.iterable(modelChanges)) {
+      for (const elementChange of modelChanges.elements) {
         if (!list)
           this._geometryChanges.set(modelChanges.id, list = new SortedArray<ElementGeometryChange>((lhs, rhs) => compareStrings(lhs.id, rhs.id)));
 

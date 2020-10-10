@@ -7,32 +7,16 @@ const expect = chai.expect;
 import * as path from "path";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-import { BeDuration, DbOpcode, OpenMode } from "@bentley/bentleyjs-core";
-import { ElementGeometryChange, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, InteractiveEditingSession, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { BeDuration, DbOpcode, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
+import { ElementEditor3d, IModelApp, IModelConnection, InteractiveEditingSession, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
-describe("InteractiveEditingSession (#integration)", () => {
-  let imodel: IModelConnection | undefined;
+describe.only("InteractiveEditingSession (#integration)", () => {
+  let imodel: RemoteBriefcaseConnection;
   let projectId: string;
-  let oldIModelId: string; // BisCore < 1.0.11
-  let newIModelId: string; // BisCore = 1.0.11
-
-  async function openOldIModel(writable = false): Promise<IModelConnection> {
-    return RemoteBriefcaseConnection.open(projectId, oldIModelId, writable ? OpenMode.ReadWrite : OpenMode.Readonly);
-  }
-
-  async function openNewIModel(writable = false): Promise<IModelConnection> {
-    return RemoteBriefcaseConnection.open(projectId, newIModelId, writable ? OpenMode.ReadWrite : OpenMode.Readonly);
-  }
-
-  async function closeIModel(): Promise<void> {
-    if (imodel) {
-      await imodel.close();
-      imodel = undefined;
-    }
-  }
 
   before(async () => {
     const projectName = "iModelJsIntegrationTest";
@@ -43,116 +27,57 @@ describe("InteractiveEditingSession (#integration)", () => {
     });
 
     projectId = await TestUtility.getTestProjectId(projectName);
-    oldIModelId = await TestUtility.getTestIModelId(projectId, "test");
-    newIModelId = await TestUtility.getTestIModelId(projectId, "planprojection");
+    const imodelId = await TestUtility.createIModel("interactiveEditingSessionTest", projectId, true);
+    imodel = await RemoteBriefcaseConnection.open(projectId, imodelId, OpenMode.ReadWrite);
   });
 
   after(async () => {
-    await closeIModel();
+    if (imodel)
+      await imodel.close();
+
     await IModelApp.shutdown();
   });
 
-  afterEach(async () => {
-    await closeIModel();
-  });
-
-  it("should not be supported for read-only connections", async () => {
-    imodel = await openOldIModel();
-    expect(imodel.openMode).to.equal(OpenMode.Readonly);
-    expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
-    await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
-  });
-
-  it("should not be supported for iModels with BisCore < 1.0.11", async () => {
-    imodel = await openOldIModel(true);
-    expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
-    expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
-    await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
-  });
-
-  it("should not be supported for read-only iModels with BisCore >= 1.0.11", async () => {
-    imodel = await openNewIModel();
-    expect(imodel.openMode).to.equal(OpenMode.Readonly);
-    expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
-    await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
-  });
-
-  it("should be supported for writable iModels with BisCore >= 1.0.11", async () => {
-    imodel = await openNewIModel(true);
-    expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
-    expect(await InteractiveEditingSession.isSupported(imodel)).to.be.true;
-    const session = await InteractiveEditingSession.begin(imodel);
-    await session.end();
-  });
-
-  async function openWritable(): Promise<IModelConnection> {
-    expect(imodel).to.be.undefined;
-    return await openNewIModel(true);
+  function makeLine(p1?: Point3d, p2?: Point3d): LineSegment3d {
+    return LineSegment3d.create(p1 || new Point3d(0, 0, 0), p2 || new Point3d(0, 0, 0));
   }
 
-  it("throws if begin is called repeatedly", async () => {
-    imodel = await openWritable();
-    const session = await InteractiveEditingSession.begin(imodel);
-    await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith("Cannot create an editing session for an iModel that already has one");
-    await session.end();
-  });
+  async function createLineElement(editor: ElementEditor3d, model: Id64String, category: Id64String, line: LineSegment3d): Promise<Id64String> {
+    const geomprops = IModelJson.Writer.toIModelJson(line);
+    const origin = line.point0Ref;
+    const angles = new YawPitchRollAngles();
+    const code = Code.createEmpty();
 
-  it("throws if end is called repeatedly", async () => {
-    imodel = await openWritable();
-    const session = await InteractiveEditingSession.begin(imodel);
-    await session.end();
-    await expect(session.end()).to.be.rejectedWith("Cannot end editing session after it is disconnected from the iModel");
-  });
+    const props3d = { classFullName: "Generic:PhysicalObject", model, category, code };
+    await editor.createElement(props3d, origin, angles, geomprops);
 
-  it("throws if the iModel is closed before ending the session", async () => {
-    imodel = await openWritable();
-    const session = await InteractiveEditingSession.begin(imodel);
-    await expect(imodel.close()).to.be.rejectedWith("InteractiveEditingSession must be ended before closing the associated iModel");
-    await session.end();
-  });
+    const props = await editor.writeReturningProps();
+    expect(Array.isArray(props)).to.be.true;
+    expect(props.length).to.equal(1);
+    expect(props[0].id).not.to.be.undefined;
 
-  it("dispatches events when sessions begin or end", async () => {
-    imodel = await openWritable();
-
-    let beginCount = 0;
-    const removeBeginListener = InteractiveEditingSession.onBegin.addListener((_: InteractiveEditingSession) => ++beginCount);
-
-    const session = await InteractiveEditingSession.begin(imodel);
-    expect(beginCount).to.equal(1);
-
-    let endingCount = 0;
-    let endCount = 0;
-    const removeEndingListener = session.onEnding.addListener((_: InteractiveEditingSession) => ++endingCount);
-    const removeEndListener = session.onEnded.addListener((_: InteractiveEditingSession) => ++endCount);
-
-    const endPromise = session.end();
-    expect(endingCount).to.equal(1);
-    expect(endCount).to.equal(0);
-
-    await endPromise;
-    expect(endCount).to.equal(1);
-
-    removeBeginListener();
-    removeEndListener();
-    removeEndingListener();
-  });
+    return props[0].id!;
+  }
 
   it("accumulates geometry changes", async () => {
-    imodel = await openWritable();
+    // Create an empty physical model.
+    const editor = await ElementEditor3d.start(imodel);
+    const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "Geom"));
+    const dictModelId = await imodel.models.getDictionaryModel();
+    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "Geom",  { color: 0 });
+    await imodel.saveChanges();
+    await imodel.pushChanges("line 1"); // release locks
 
-    // The iModel contains one spatial element - a white rectangle.
-    const modelId = "0x17";
-    const elemId = "0x27";
-    await expect(imodel.models.getProps([ modelId ])).not.to.be.undefined;
-    await expect(imodel.elements.getProps([ elemId ])).not.to.be.undefined;
-
+    // Begin an editing session.
     const session = await InteractiveEditingSession.begin(imodel);
-    await IModelWriteRpcInterface.getClient().deleteElements(imodel.getRpcProps(), [ elemId ]);
+
+    // Insert a line element.
     expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
-    await IModelWriteRpcInterface.getClient().saveChanges(imodel.getRpcProps(), "delete rectangle");
+    const elem1 = await createLineElement(editor, modelId, category, makeLine());
+    await imodel.saveChanges();
 
     // ###TODO: After we switch from polling for native events, we should not need to wait for changed event here...
-    await BeDuration.wait(5000);
+    await BeDuration.wait(IModelApp.eventSourceOptions.pollInterval * 2);
     const changes = session.getGeometryChangesForModel(modelId)!;
     expect(changes).not.to.be.undefined;
 
@@ -163,7 +88,10 @@ describe("InteractiveEditingSession (#integration)", () => {
     }
 
     expect(change).not.to.be.undefined;
-    expect(change!.id).to.equal(elemId);
-    expect(change!.type).to.equal(DbOpcode.Delete);
+    expect(change!.id).to.equal(elem1);
+    expect(change!.type).to.equal(DbOpcode.Insert);
+
+    await session.end();
+    await editor.end();
   });
 });
