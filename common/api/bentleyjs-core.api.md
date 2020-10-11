@@ -503,6 +503,13 @@ export function disposeArray(list?: IDisposable[]): undefined;
 export type DisposeFunc = () => void;
 
 // @public
+export enum DuplicatePolicy {
+    Allow = 0,
+    Replace = 2,
+    Retain = 1
+}
+
+// @public
 export class Entry<K, V> {
     constructor(key: K, value: V);
     // (undocumented)
@@ -1220,9 +1227,7 @@ export class PriorityQueue<T> implements Iterable<T> {
 // @public
 export class ReadonlySortedArray<T> implements Iterable<T> {
     [Symbol.iterator](): Iterator<T>;
-    protected constructor(compare: OrderedComparator<T>, allowDuplicates?: boolean, clone?: CloneFunction<T>);
-    // (undocumented)
-    protected readonly _allowDuplicates: boolean;
+    protected constructor(compare: OrderedComparator<T>, duplicatePolicy?: DuplicatePolicy | boolean, clone?: CloneFunction<T>);
     // (undocumented)
     protected _array: T[];
     protected _clear(): void;
@@ -1231,6 +1236,8 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     // (undocumented)
     protected readonly _compare: OrderedComparator<T>;
     contains(value: T): boolean;
+    // (undocumented)
+    protected readonly _duplicatePolicy: DuplicatePolicy;
     protected _extractArray(): T[];
     findEqual(value: T): T | undefined;
     forEach(func: (value: T) => void): void;
@@ -1302,7 +1309,7 @@ export function shallowClone<T>(value: T): T;
 
 // @public
 export class SortedArray<T> extends ReadonlySortedArray<T> {
-    constructor(compare: OrderedComparator<T>, allowDuplicates?: boolean, clone?: CloneFunction<T>);
+    constructor(compare: OrderedComparator<T>, duplicatePolicy?: DuplicatePolicy | boolean, clone?: CloneFunction<T>);
     clear(): void;
     extractArray(): T[];
     insert(value: T, onInsert?: (value: T) => any): number;

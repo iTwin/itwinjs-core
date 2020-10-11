@@ -49,6 +49,23 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedCompar
   return { index: low, equal: false };
 }
 
+/** Describes how duplicate values are handled when inserting into a [[SortedArray].
+ * A "duplicate" value is one that compares equal to a value already present in the array, per the array's comparison function.
+ * @public
+ */
+export enum DuplicatePolicy {
+  /** The array allows duplicate values to be inserted. All duplicate values will be adjacent in the array, but the ordering between duplicate values is unspecified.
+   * @note In the presence of duplicate values, functions like [[SortedArray.indexOf]] and [[SortedArray.findEqual]] will return one of the values - exactly which one is unspecified.
+   */
+  Allow,
+  /** Duplicate values are forbidden - when attempting to insert a value equivalent to one already present, the already-present value is retained. */
+  Retain,
+  /** Duplicate values are forbidden - when attempting to insert a value equivalent to one already present, the already-present value is replaced by the new value.
+   * This can be useful when the value type carries additional data that is not evaluated by the comparison function.
+   */
+  Replace,
+}
+
 /**
  * A read-only view of an array of some type T sorted according to some user-supplied criterion.
  * Duplicate elements may be present, though sub-types may enforce uniqueness of elements.
@@ -74,18 +91,21 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
   protected _array: T[] = [];
   protected readonly _compare: OrderedComparator<T>;
   protected readonly _clone: CloneFunction<T>;
-  protected readonly _allowDuplicates: boolean;
+  protected readonly _duplicatePolicy: DuplicatePolicy;
 
   /**
    * Construct a new ReadonlySortedArray<T>.
    * @param compare The function used to compare elements within the array.
-   * @param allowDuplicates If true, multiple values comparing equal may exist in the array.
+   * @param duplicatePolicy Policy for handling attempts to insert a value when an equivalent value already exists. If the input is a boolean, then `true` indicates [[DuplicatePolicy.Allow]], and `false` indicates [[DuplicatePolicy.Retain]].
    * @param clone The function invoked to clone a new element for insertion into the array. The default implementation simply returns its input.
    */
-  protected constructor(compare: OrderedComparator<T>, allowDuplicates: boolean = false, clone: CloneFunction<T> = shallowClone) {
+  protected constructor(compare: OrderedComparator<T>, duplicatePolicy: DuplicatePolicy | boolean = false, clone: CloneFunction<T> = shallowClone) {
     this._compare = compare;
     this._clone = clone;
-    this._allowDuplicates = allowDuplicates;
+    if (typeof duplicatePolicy === "boolean")
+      duplicatePolicy = duplicatePolicy ? DuplicatePolicy.Allow : DuplicatePolicy.Retain;
+
+    this._duplicatePolicy = duplicatePolicy;
   }
 
   /** The number of elements in the array */
@@ -100,7 +120,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
   /**
    * Looks up the index of an element comparing equal to the specified value using binary search.
    * @param value The value to search for
-   * @returns the index of the first equivalent element in the array, or -1 if no such element exists.
+   * @returns the index of the first equivalent element found in the array, or -1 if no such element exists.
    */
   public indexOf(value: T): number {
     const bound = this.lowerBound(value);
@@ -119,7 +139,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
   /**
    * Looks up an element comparing equal to the specified value using binary search.
    * @param value The value to search for
-   * @returns the first equivalent element in the array, or undefined if no such element exists.
+   * @returns the first equivalent element found in the array, or undefined if no such element exists.
    */
   public findEqual(value: T): T | undefined {
     const index = this.indexOf(value);
@@ -162,9 +182,11 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
 
   /**
    * Attempts to insert a new value into the array at a position determined by the ordering.
-   * The behavior differs based on whether or not duplicate elements are permitted.
+   * The behavior differs based on the array's [[DuplicatePolicy]]:
    * If duplicates are **not** permitted, then:
-   *  - If an equivalent element already exists in the array, nothing will be inserted and the index of the existing element will be returned.
+   *  - If an equivalent element already exists in the array:
+   *    - [[DuplicatePolicy.Retain]]: nothing will be inserted and the index of the existing element will be returned.
+   *    - [[DuplicatePolicy.Replace]]: the input value will overwrite the existing element at the same index and that index will be returned.
    *  - Otherwise, the element is inserted and its index is returned.
    * If duplicates **are** permitted, then:
    *  - The element will be inserted in a correct position based on the sorting criterion;
@@ -178,9 +200,20 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
   protected _insert(value: T, onInsert?: (value: T) => any): number {
     const bound = this.lowerBound(value);
 
-    if (!bound.equal || this._allowDuplicates)
-      this._array.splice(bound.index, 0, this._clone(value));
+    if (bound.equal) {
+      switch (this._duplicatePolicy) {
+        case DuplicatePolicy.Retain:
+          return bound.index;
+        case DuplicatePolicy.Replace:
+          this._array[bound.index] = this._clone(value);
+          if (onInsert)
+            onInsert(value);
 
+          return bound.index;
+      }
+    }
+
+    this._array.splice(bound.index, 0, this._clone(value));
     if (undefined !== onInsert)
       onInsert(value);
 
@@ -232,11 +265,11 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
   /**
    * Construct a new SortedArray<T>.
    * @param compare The function used to compare elements within the array.
-   * @param allowDuplicates If true, multiple values comparing equal may exist in the array.
+   * @param duplicatePolicy Policy for handling attempts to insert a value when an equivalent value already exists. If the input is a boolean, then `true` indicates [[DuplicatePolicy.Allow]], and `false` indicates [[DuplicatePolicy.Retain]].
    * @param clone The function invoked to clone a new element for insertion into the array. The default implementation simply returns its input.
    */
-  public constructor(compare: OrderedComparator<T>, allowDuplicates: boolean = false, clone: CloneFunction<T> = shallowClone) {
-    super(compare, allowDuplicates, clone);
+  public constructor(compare: OrderedComparator<T>, duplicatePolicy: DuplicatePolicy | boolean = false, clone: CloneFunction<T> = shallowClone) {
+    super(compare, duplicatePolicy, clone);
   }
 
   /** Clears the contents of the sorted array. */

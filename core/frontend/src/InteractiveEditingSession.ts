@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, compareStrings, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, compareStrings, DuplicatePolicy, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { ElementGeometryChange, Events, IModelWriteRpcInterface, ModelGeometryChanges, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
@@ -17,7 +17,7 @@ export class InteractiveEditingSession {
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
   private readonly _geometryChanges = new Map<Id64String, SortedArray<ElementGeometryChange>>();
   private _disposed = false;
-  private _cleanup?: { off: () => void; }; // ###TODO EventSource.on() should just return a function...
+  private _cleanup?: { off: () => void }; // ###TODO EventSource.on() should just return a function...
   public readonly iModel: IModelConnection;
 
   public static readonly onBegin = new BeEvent<(session: InteractiveEditingSession) => void>();
@@ -50,8 +50,8 @@ export class InteractiveEditingSession {
 
     if (!initialized) {
       initialized = true;
-      IModelConnection.onClose.addListener((imodel) => {
-        if (undefined !== this.get(imodel))
+      IModelConnection.onClose.addListener((iModel) => {
+        if (undefined !== this.get(iModel))
           throw new Error("InteractiveEditingSession must be ended before closing the associated iModel");
       });
     }
@@ -92,7 +92,6 @@ export class InteractiveEditingSession {
   private dispose(): void {
     this._disposed = true;
 
-
     this.onEnding.clear();
     this.onGeometryChanges.clear();
     this.onEnded.clear();
@@ -116,7 +115,7 @@ export class InteractiveEditingSession {
       let list = this._geometryChanges.get(modelChanges.id);
       for (const elementChange of modelChanges.elements) {
         if (!list)
-          this._geometryChanges.set(modelChanges.id, list = new SortedArray<ElementGeometryChange>((lhs, rhs) => compareStrings(lhs.id, rhs.id)));
+          this._geometryChanges.set(modelChanges.id, list = new SortedArray<ElementGeometryChange>((lhs, rhs) => compareStrings(lhs.id, rhs.id), DuplicatePolicy.Replace));
 
         list.insert(elementChange);
       }

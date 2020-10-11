@@ -26,7 +26,7 @@ describe.only("InteractiveEditingSession (#integration)", () => {
       applicationVersion: "1.2.1.1",
     });
 
-    IModelApp.eventSourceOptions.pollInterval = 1;
+    IModelApp.eventSourceOptions.pollInterval = 10;
 
     projectId = await TestUtility.getTestProjectId(projectName);
     const imodelId = await TestUtility.createIModel("interactiveEditingSessionTest", projectId, true);
@@ -80,7 +80,8 @@ describe.only("InteractiveEditingSession (#integration)", () => {
 
     async function expectChanges(expected: ElementGeometryChange[], compareRange = false): Promise<void> {
       // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
-      BeDuration.wait(100);
+      const waitTime = 150;
+      await BeDuration.wait(waitTime);
 
       const changes = session.getGeometryChangesForModel(modelId);
       expect(undefined === changes).to.equal(expected.length === 0);
@@ -102,17 +103,19 @@ describe.only("InteractiveEditingSession (#integration)", () => {
     expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
     const elem1 = await createLineElement(editor, modelId, category, makeLine());
     // Events not dispatched until changes saved.
-    expectChanges([]);
+    await expectChanges([]);
     await imodel.saveChanges();
-    expectChanges([ makeInsert(elem1) ]);
+    const insertElem1 = makeInsert(elem1);
+    await expectChanges([ insertElem1 ]);
 
     // Modify the line element.
     await editor.startModifyingElements([ elem1 ]);
     await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0));
     await editor.write();
-    expectChanges([]);
+    const updateElem1 = makeUpdate(elem1);
+    await expectChanges([ insertElem1 ]);
     await imodel.saveChanges();
-    expectChanges([ makeUpdate(elem1) ]);
+    await expectChanges([ updateElem1 ]);
 
     // Modify the line element twice.
     await editor.startModifyingElements([ elem1 ]);
@@ -121,9 +124,9 @@ describe.only("InteractiveEditingSession (#integration)", () => {
     await editor.startModifyingElements([ elem1 ]);
     await editor.applyTransform(Transform.createTranslationXYZ(-1, 0, 0));
     await editor.write();
-    expectChanges([]);
+    await expectChanges([ updateElem1 ]);
     await imodel.saveChanges();
-    expectChanges([ makeUpdate(elem1) ]);
+    await expectChanges([ updateElem1 ]);
 
     // Insert a new line element, modify both elements, then delete the old line element.
     const elem2 = await createLineElement(editor, modelId, category, makeLine());
@@ -131,9 +134,13 @@ describe.only("InteractiveEditingSession (#integration)", () => {
     await editor.applyTransform(Transform.createTranslationXYZ(0, 0, 1));
     await editor.write();
     await imodel.editing.deleteElements([ elem1 ]);
-    expectChanges([]);
+    const deleteElem1 = makeDelete(elem1);
+    const insertElem2 = makeInsert(elem2);
+    await expectChanges([ updateElem1 ]);
     await imodel.saveChanges();
-    expectChanges([ makeUpdate(elem2), makeDelete(elem1) ]);
+    await expectChanges([ deleteElem1, insertElem2 ]);
+
+    // ###TODO: No frontend API for testing undo/redo...
 
     await imodel.pushChanges(""); // release locks
     await session.end();

@@ -46,6 +46,7 @@ public;DisposableList
 public;dispose(disposable?: IDisposable): undefined
 public;disposeArray(list?: IDisposable[]): undefined
 public;DisposeFunc = () => void
+public;DuplicatePolicy
 public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
