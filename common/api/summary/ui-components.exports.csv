@@ -106,12 +106,13 @@ beta;DataController
 beta;class DataControllerBase 
 internal;DataRowItem 
 internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
-alpha;DateFieldProps 
-alpha;DateFormatter
+internal;DateFieldProps 
 alpha;DatePicker(props: DatePickerProps): JSX.Element
 alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps): JSX.Element
 alpha;DatePickerPopupButtonProps 
 alpha;DatePickerProps
+internal;DateTimeEditor 
+internal;DateTimePropertyEditor 
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
 public;DelayLoadedTreeNodeItem 
@@ -169,6 +170,7 @@ alpha;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
 alpha;FlatGridItemBase
 alpha;FlatGridItemType
 public;FloatTypeConverter 
+internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
 public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
@@ -363,6 +365,7 @@ public;SelectionModeFlags
 beta;SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode
 public;SharedRendererProps
 public;SharedTableNonPrimitiveValueRendererProps
+internal;ShortDateTimePropertyEditor 
 public;ShortDateTypeConverter 
 public;ShowHideDialog
 public;ShowHideDialogProps
@@ -423,7 +426,6 @@ beta;TextEditor
 beta;ThemedEnumEditor 
 beta;ThemedEnumEditorProps 
 beta;ThemedEnumPropertyEditor 
-beta;TimeDisplay = "hh:mm aa" | "hh:mm:ss aa" | "hh:mm" | "hh:mm:ss"
 internal;Timeline 
 alpha;TimelineComponent 
 alpha;TimelineDataProvider

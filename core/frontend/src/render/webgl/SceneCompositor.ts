@@ -663,6 +663,7 @@ abstract class Compositor extends SceneCompositor {
   protected _opaqueRenderState = new RenderState();
   protected _layerRenderState = new RenderState();
   protected _translucentRenderState = new RenderState();
+  protected _hiliteRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
   protected _vcBranchState?: BranchState;
@@ -746,6 +747,11 @@ abstract class Compositor extends SceneCompositor {
     this._translucentRenderState.flags.depthMask = false;
     this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;
     this._translucentRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
+
+    this._hiliteRenderState.flags.depthMask = false;
+    this._hiliteRenderState.flags.blend = true;
+    this._hiliteRenderState.blend.functionDestRgb = GL.BlendFactor.One;
+    this._hiliteRenderState.blend.functionDestAlpha = GL.BlendFactor.One;
 
     this._noDepthMaskRenderState.flags.depthMask = false;
 
@@ -1703,6 +1709,8 @@ abstract class Compositor extends SceneCompositor {
         return this._opaqueRenderState;
       case RenderPass.Translucent:
         return this._translucentRenderState;
+      case RenderPass.Hilite:
+        return this._hiliteRenderState;
       default:
         return this._noDepthMaskRenderState;
     }

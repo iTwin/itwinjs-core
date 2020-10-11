@@ -117,9 +117,9 @@ const isPrimitivePropertyValue = (value: Value): value is string | number | bool
   if (Value.isPrimitive(value))
     return true;
   if (Value.isMap(value)
-    && value.x && typeof value.x === "number"
-    && value.y && typeof value.y === "number"
-    && (!value.z || typeof value.z === "number")) {
+    && value.x !== undefined && typeof value.x === "number"
+    && value.y !== undefined && typeof value.y === "number"
+    && (value.z === undefined || typeof value.z === "number")) {
     return true;
   }
   return false;

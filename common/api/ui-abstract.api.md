@@ -103,6 +103,24 @@ export interface ActionButton extends ToolbarItem {
 }
 
 // @beta
+export enum AlternateDateFormats {
+    // (undocumented)
+    IsoDateTime = 2,
+    // (undocumented)
+    IsoShort = 1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    UtcDateTime = 4,
+    // (undocumented)
+    UtcDateTimeWithDay = 6,
+    // (undocumented)
+    UtcShort = 3,
+    // (undocumented)
+    UtcShortWithDay = 5
+}
+
+// @beta
 export interface ArrayValue extends BasePropertyValue {
     // (undocumented)
     items: PropertyRecord[];
@@ -859,6 +877,14 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
 }
 
 // @beta
+export interface DateFormatter {
+    // (undocumented)
+    formateDate: (day: Date) => string;
+    // (undocumented)
+    parseDate?: (dateString: string) => Date | undefined;
+}
+
+// @beta
 export interface DialogItem extends BaseDialogItem {
     // (undocumented)
     readonly editorPosition: EditorPosition;
@@ -1217,6 +1243,7 @@ export namespace Primitives {
         // (undocumented)
         typeName: string;
     }
+    export type DateTime = string | Date;
     export type Enum = number | string;
     export type Float = number | string;
     export type Hexadecimal = Id64String;
@@ -1264,7 +1291,16 @@ export enum PropertyChangeStatus {
 }
 
 // @beta
+export interface PropertyConverterInfo {
+    name?: string;
+    options?: {
+        [key: string]: any;
+    };
+}
+
+// @beta
 export interface PropertyDescription {
+    converter?: PropertyConverterInfo;
     dataController?: string;
     displayLabel: string;
     editor?: PropertyEditorInfo;
@@ -1514,11 +1550,15 @@ export enum StandardEditorNames {
     // (undocumented)
     ImageCheckBox = "image-check-box",
     // (undocumented)
+    LongDate = "long-date-picker",
+    // (undocumented)
     MultiLine = "multi-line",
     // (undocumented)
     NumberCustom = "number-custom",
     // (undocumented)
     NumericInput = "numeric-input",
+    // (undocumented)
+    ShortDate = "short-date-picker",
     // (undocumented)
     Slider = "slider",
     // (undocumented)
@@ -1648,6 +1688,18 @@ export class SyncPropertiesChangeEvent extends BeUiEvent<SyncPropertiesChangeEve
 export interface SyncPropertiesChangeEventArgs {
     // (undocumented)
     properties: DialogPropertySyncItem[];
+}
+
+// @beta
+export enum TimeDisplay {
+    // (undocumented)
+    H12MC = "hh:mm aa",
+    // (undocumented)
+    H12MSC = "hh:mm:ss aa",
+    // (undocumented)
+    H24M = "hh:mm",
+    // (undocumented)
+    H24MS = "hh:mm:ss"
 }
 
 // @beta

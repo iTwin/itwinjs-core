@@ -15,8 +15,8 @@
 export enum StandardTypeNames {
   Text = "text",
   String = "string",
-  ShortDate = "shortdate",
-  DateTime = "dateTime",
+  DateTime = "dateTime",  // locale specific
+  ShortDate = "shortdate", // locale specific
   Boolean = "boolean",
   Bool = "bool",
   Float = "float",

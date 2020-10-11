@@ -15,15 +15,15 @@ import {
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
-  GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, ModelProps,
+  GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import {
   AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
   ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
-  DisplayStyle3d, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements,
+  DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements,
   Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs,
   InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement,
   SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
@@ -577,6 +577,71 @@ describe("iModel", () => {
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
     expect(style.settings.backgroundColor.equals(ColorDef.red)).to.be.true;
     expect(style.settings.monochromeColor.equals(ColorDef.green)).to.be.true;
+  });
+
+  it("should create display styles", () => {
+    const defaultViewFlags = new ViewFlags().toJSON();
+
+    const viewFlags = new ViewFlags();
+    viewFlags.patterns = false;
+    viewFlags.visibleEdges = true;
+
+    const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
+
+    const mapImagery: MapImageryProps = {
+      backgroundBase: ColorDef.red.tbgr,
+      backgroundLayers: [ { transparency: 0.5, userName: "blah" } ],
+    };
+
+    const props: DisplayStyleSettingsProps = {
+      mapImagery,
+      excludedElements: [ "0x123", "0xfed" ],
+      timePoint: 42,
+      backgroundColor: ColorDef.green.tbgr,
+    };
+
+    type TestCase = [ DisplayStyleCreationOptions | undefined, ViewFlagProps, boolean ];
+    const testCases: TestCase[] = [
+      [ undefined, defaultViewFlags, false ],
+      [ { viewFlags }, viewFlags.toJSON(), false ],
+      [ { viewflags }, viewflags, false ],
+      [ { viewflags, viewFlags }, viewFlags.toJSON(), false ],
+      [ props, defaultViewFlags, false ],
+      [ { ...props, viewflags }, viewflags, false ],
+      [ { backgroundColor: ColorDef.blue }, defaultViewFlags, false ],
+      [ { backgroundColor: ColorDef.from(1, 2, 3, 4) }, defaultViewFlags, false ],
+      [ { backgroundColor: ColorDef.blue.tbgr }, defaultViewFlags, false ],
+      [ { backgroundColor: ColorDef.from(1, 2, 3, 4).tbgr }, defaultViewFlags, false ],
+      [ { scheduleScript: { someRandomProperty: "Not a valid schedule script" } }, defaultViewFlags, false ],
+      [ { scheduleScript: [ { modelId: "0xabc", elementTimelines: [] } ] }, defaultViewFlags, true ],
+      [ { scheduleScript: [ { someRandomProperty: "but still an array" } ] }, defaultViewFlags, true ],
+    ];
+
+    let suffix = 123;
+    for (const test of testCases) {
+      const expected = test[0] ?? { };
+      const styleId = DisplayStyle3d.insert(imodel2, IModel.dictionaryId, `TestStyle${suffix++}`, expected);
+      const style = imodel2.elements.getElement<DisplayStyle3d>(styleId).toJSON();
+      expect(style.jsonProperties.styles!).not.to.be.undefined;
+
+      expect(style.jsonProperties).not.to.be.undefined;
+      expect(style.jsonProperties.styles).not.to.be.undefined;
+      const actual = style.jsonProperties.styles!;
+
+      expect(actual.viewflags).not.to.be.undefined;
+      const expectedVf = ViewFlags.fromJSON(test[1]);
+      const actualVf = ViewFlags.fromJSON(actual.viewflags);
+      expect(actualVf.toJSON()).to.deep.equal(expectedVf.toJSON());
+
+      expect(undefined !== actual.scheduleScript).to.equal(test[2]);
+
+      const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
+      expect(actual.backgroundColor).to.equal(expectedBGColor);
+
+      expect(actual.mapImagery).to.deep.equal(expected.mapImagery);
+      expect(actual.excludedElements).to.deep.equal(expected.excludedElements);
+      expect(actual.timePoint).to.deep.equal(expected.timePoint);
+    }
   });
 
   it("should have a valid root subject element", () => {

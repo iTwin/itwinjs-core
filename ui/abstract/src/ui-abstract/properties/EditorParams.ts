@@ -6,7 +6,50 @@
  * @module Properties
  */
 
-// cspell:ignore BBGGRR pushable
+// cspell:ignore BBGGRR pushable DDTHH
+
+/** Interface used to provide a custom Date Time formatter and optional parser
+ * for use by `DatePickerPopup`. If a parseData function is not implemented
+ * then string to date parsing will not be possible when a `DateFormatter` is used.
+ * @beta
+ */
+export interface DateFormatter {
+  formateDate: (day: Date) => string;
+  parseDate?: (dateString: string) => Date | undefined;
+}
+
+/** Alternate Data Formats that can be provide by javascript. Can be used by Date TypeConverter and TypeEditor.
+ * @beta
+ */
+export enum AlternateDateFormats {
+  None = 0,
+  // YYYY-MM-DD
+  IsoShort = 1,
+  // YYYY-MM-DDTHH:mm:ss.sssZ
+  IsoDateTime,
+  // dd Mmm yyyy
+  UtcShort,
+  // dd Mmm yyyy hh:mm:ss GMT
+  UtcDateTime,
+  // Www, dd Mmm yyyy
+  UtcShortWithDay,
+  // Www, dd Mmm yyyy hh:mm:ss GMT
+  UtcDateTimeWithDay,
+};
+
+/** Enum that defines supported time formats.
+ * @beta
+ */
+export enum TimeDisplay {
+  // 12 hour with minutes and cycle(AM/PM)
+  H12MC = "hh:mm aa",
+  // 12 hour with minutes, seconds and cycle(AM/PM)
+  H12MSC = "hh:mm:ss aa",
+  // 24 hour with minutes
+  H24M = "hh:mm",
+  // 24 hour with minutes and seconds
+  H24MS = "hh:mm:ss",
+};
 
 /**
  * Enum for Property Editor Param Types

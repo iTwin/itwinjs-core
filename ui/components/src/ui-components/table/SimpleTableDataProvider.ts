@@ -169,7 +169,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     const valueB = this.getPrimitiveValue(bCell.record as PropertyRecord);
     // istanbul ignore else
     if (valueA !== undefined && valueB !== undefined && propertyDescription)
-      result = TypeConverterManager.getConverter(propertyDescription.typename).sortCompare(valueA, valueB, column.sortIgnoreCase);
+      result = TypeConverterManager.getConverter(propertyDescription.typename, propertyDescription.converter?.name).sortCompare(valueA, valueB, column.sortIgnoreCase);
 
     if (sortDirection === SortDirection.Descending)
       result *= -1;
@@ -204,7 +204,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
         continue;
 
       const value = this.getPrimitiveValue(record);
-      const displayValue = await TypeConverterManager.getConverter(propertyDescription.typename).convertPropertyToString(propertyDescription, value);
+      const displayValue = await TypeConverterManager.getConverter(propertyDescription.typename, propertyDescription.converter?.name).convertPropertyToString(propertyDescription, value);
 
       // istanbul ignore next
       if (value === undefined || typeof displayValue !== "string")
@@ -223,7 +223,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
 
     distinctValues.values.sort((a: PrimitiveValue, b: PrimitiveValue) => {
       if (a.value && b.value)
-        return TypeConverterManager.getConverter(propertyDescription.typename).sortCompare(a.value, b.value);
+        return TypeConverterManager.getConverter(propertyDescription.typename, propertyDescription.converter?.name).sortCompare(a.value, b.value);
       return 0;
     });
 

@@ -37,5 +37,5 @@ function convertRecordToString(record: PropertyRecord) {
   const primitive = record.value as PrimitiveValue;
   if (primitive.displayValue)
     return primitive.displayValue;
-  return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value);
+  return TypeConverterManager.getConverter(record.property.typename, record.property.converter?.name).convertPropertyToString(record.property, primitive.value);
 }

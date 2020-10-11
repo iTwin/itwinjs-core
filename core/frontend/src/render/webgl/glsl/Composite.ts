@@ -36,14 +36,13 @@ vec2 readEdgePixel(float xOffset, float yOffset) {
 }
 `;
 
-// alpha channel is 1 if hilited or emphasized.
-const computeEdgeColor = `
-vec4 computeEdgeColor() {
+const computeNearbyHilites = `
+vec2 computeNearbyHilites() {
   float hiliteWidth = u_hilite_width.x;
   float emphWidth = u_hilite_width.y;
   float maxWidth = max(hiliteWidth, emphWidth);
   if (0.0 == maxWidth)
-    return vec4(0.0);
+    return vec2(0.0);
 
   vec2 nearest = vec2(0.0, 0.0);
   for (int x = -1; x <= 1; x++)
@@ -52,24 +51,16 @@ vec4 computeEdgeColor() {
         nearest = nearest + readEdgePixel(float(x), float(y));
 
   nearest = nearest * vec2(float(hiliteWidth > 0.0), float(emphWidth > 0.0));
-  float maxNearest = max(nearest.x, nearest.y);
-  if (0.0 == maxNearest && maxWidth > 1.0) {
+  if (0.0 == nearest.x + nearest.y && maxWidth > 1.0) {
     for (int i = -2; i <= 2; i++) {
       float f = float(i);
       nearest = nearest + readEdgePixel(f, -2.0) + readEdgePixel(-2.0, f) + readEdgePixel(f, 2.0) + readEdgePixel(2.0, f);
     }
 
     nearest = nearest * vec2(float(hiliteWidth > 1.0), float(emphWidth > 1.0));
-    maxNearest = max(nearest.x, nearest.y);
   }
 
-  if (0.0 != maxNearest) {
-    float emphasized = float(nearest.y > nearest.x);
-    vec3 rgb = mix(u_hilite_settings[0], u_hilite_settings[1], emphasized);
-    return vec4(rgb, 1);
-  }
-
-  return vec4(0.0);
+  return nearest;
 }
 `;
 
@@ -88,18 +79,18 @@ const computeHiliteColor = "\nvec4 computeColor() { return computeOpaqueColor();
 
 const computeHiliteBaseColor = `
   vec4 baseColor = computeColor();
+  vec2 flags = TEXTURE(u_hilite, v_texCoord).rg;
+  if (flags.x > 0.0)
+    return vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
+  vec2 outline = computeNearbyHilites();
+  if (outline.x > 0.0)
+    return vec4(u_hilite_settings[0], 1.0);
+  if (flags.y > 0.0)
+    return vec4(mix(baseColor.rgb, u_hilite_settings[1], u_hilite_settings[2][1]), 1.0);
+  if (outline.y > 0.0)
+    return vec4(u_hilite_settings[1], 1.0);
 
-  vec2 flags = floor(TEXTURE(u_hilite, v_texCoord).rg + vec2(0.5, 0.5));
-  float isHilite = max(flags.x, flags.y);
-  if (1.0 == isHilite) {
-    float isEmphasize = flags.y * (1.0 - flags.x);
-    vec3 rgb = mix(u_hilite_settings[0], u_hilite_settings[1], isEmphasize);
-    float ratio = mix(u_hilite_settings[2][0], u_hilite_settings[2][1], isEmphasize) * isHilite;
-    return vec4(mix(baseColor.rgb, rgb, ratio), 1.0);
-  }
-
-  vec4 outline = computeEdgeColor();
-  return mix(baseColor, vec4(outline.rgb, 1.0), outline.a);
+  return baseColor;
 `;
 
 const computeTranslucentColor = `
@@ -142,7 +133,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
     addHiliteSettings(frag);
     addWindowToTexCoords(frag);
     frag.addFunction(readEdgePixel);
-    frag.addFunction(computeEdgeColor);
+    frag.addFunction(computeNearbyHilites);
 
     frag.addUniform("u_hilite", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_hilite", (uniform, params) => {

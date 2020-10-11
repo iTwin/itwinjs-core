@@ -12,6 +12,8 @@
  */
 export enum StandardEditorNames {
   ColorPicker = "color-picker",
+  LongDate = "long-date-picker",
+  ShortDate = "short-date-picker",
   EnumButtonGroup = "enum-buttongroup",
   IconPicker = "icon-picker",
   MultiLine = "multi-line",

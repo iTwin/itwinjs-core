@@ -108,7 +108,7 @@
       color: $buic-text-color;
       padding: 0;
 
-      & .core-dialog-head {
+      > .core-dialog-head {
         flex-shrink: 0;
         align-items: center;
         background-color: $buic-background-titlebar; /* $buic-background-titlebar-outoffocus; */
@@ -150,7 +150,7 @@
         }
       }
 
-      & .core-dialog-content {
+      > .core-dialog-content {
         overflow: auto;
         flex: 1 1;
 
@@ -167,7 +167,7 @@
         }
       }
 
-      & .core-dialog-footer {
+      > .core-dialog-footer {
         flex-shrink: 0;
         padding: 0 $uicore-unbordered-padding $uicore-unbordered-padding $uicore-unbordered-padding;
 

@@ -5163,7 +5163,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     protected getMarkerToolTip(): Promise<HTMLElement>;
     // (undocumented)
-    protected getShapePoints(ev: BeButtonEvent): Point3d[];
+    protected getShapePoints(cursorPt: Point3d): Point3d[];
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -5172,6 +5172,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     protected _isComplete: boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _lastMotionPt?: Point3d;
     // (undocumented)
     protected _marker?: MeasureLabel;
     // (undocumented)
@@ -5187,7 +5189,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
-    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -5271,6 +5273,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _lastMotionPt?: Point3d;
     // (undocumented)
     protected readonly _locationData: {
         point: Point3d;
@@ -8169,25 +8173,6 @@ export class SpatialModelState extends GeometricModel3dState {
     readonly classifiers?: SpatialClassifiers;
     // @internal (undocumented)
     static get className(): string;
-}
-
-// @internal @deprecated
-export class SpatialModelTileTrees {
-    constructor(view: SpatialViewState);
-    // (undocumented)
-    protected _allLoaded: boolean;
-    // (undocumented)
-    protected createTileTreeReference(model: GeometricModel3dState): TileTreeReference | undefined;
-    // (undocumented)
-    forEach(func: (treeRef: TileTreeReference) => void): void;
-    // (undocumented)
-    protected get _iModel(): IModelConnection;
-    // (undocumented)
-    markDirty(): void;
-    // (undocumented)
-    protected _treeRefs: Map<string, TileTreeReference>;
-    // (undocumented)
-    protected readonly _view: SpatialViewState;
 }
 
 // @public

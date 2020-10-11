@@ -6,13 +6,21 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb } from "@bentley/imodeljs-backend";
+import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@bentley/imodeljs-common";
 import { InstanceKey } from "@bentley/presentation-common";
 import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 
 describe("SelectionScopesHelper", () => {
+
+  before(async () => {
+    await IModelHost.startup();
+  });
+
+  after(async () => {
+    await IModelHost.shutdown();
+  });
 
   describe("getSelectionScopes", () => {
 
@@ -107,7 +115,7 @@ describe("SelectionScopesHelper", () => {
     const setupIModelForElementProps = (props?: { key?: InstanceKey, parentKey?: InstanceKey }) => {
       const key = props?.key ?? createRandomECInstanceKey();
       const elementProps = props?.parentKey ? createRandomElementProps(props.parentKey.id) : createRandomTopmostElementProps();
-      elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+      elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
       if (props?.parentKey)
         setupIModelForElementKey(props.parentKey);
       return { key, props: elementProps };
@@ -186,7 +194,7 @@ describe("SelectionScopesHelper", () => {
         parentKeys.forEach((key) => setupIModelForElementKey(key));
         const elementProps = parentKeys.map((pk) => createRandomElementProps(pk.id));
         elementProps.forEach((p) => {
-          elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
+          elementsMock.setup((x) => x.tryGetElementProps(p.id!)).returns(() => p);
         });
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
         expect(result.size).to.eq(2);
@@ -198,7 +206,7 @@ describe("SelectionScopesHelper", () => {
         setupIModelForElementKey(parentKey);
         const elementProps = [createRandomElementProps(parentKey.id), createRandomElementProps(parentKey.id)];
         elementProps.forEach((p) => {
-          elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
+          elementsMock.setup((x) => x.tryGetElementProps(p.id!)).returns(() => p);
         });
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
         expect(result.size).to.eq(1);
@@ -209,17 +217,33 @@ describe("SelectionScopesHelper", () => {
         const key = createRandomECInstanceKey();
         setupIModelForElementKey(key);
         const elementProps = createRandomTopmostElementProps();
-        elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [key.id], "assembly");
         expect(result.size).to.eq(1);
         expect(result.has(key)).to.be.true;
+      });
+
+      it("skips removed elements", async () => {
+        // set up one existing element with parent
+        const parentKey = createRandomECInstanceKey();
+        setupIModelForElementKey(parentKey);
+        const existingElementProps = createRandomElementProps(parentKey.id);
+        elementsMock.setup((x) => x.tryGetElementProps(existingElementProps.id!)).returns(() => existingElementProps);
+        // set up removed element props
+        const removedElementProps = createRandomElementProps();
+        elementsMock.setup((x) => x.tryGetElementProps(removedElementProps.id!)).returns(() => undefined);
+        setupIModelForNoResultStatement();
+        // request
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [existingElementProps.id!, removedElementProps.id!], "assembly");
+        expect(result.size).to.eq(1);
+        expect(result.has(parentKey)).to.be.true;
       });
 
       it("skips non-existing element ids", async () => {
         const key = createRandomECInstanceKey();
         setupIModelForNoResultStatement();
         const elementProps = createRandomTopmostElementProps();
-        elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [key.id], "assembly");
         expect(result.size).to.eq(0);
       });
@@ -228,7 +252,7 @@ describe("SelectionScopesHelper", () => {
         const parentKeys = [createRandomECInstanceKey()];
         setupIModelForElementKey(parentKeys[0]);
         const elementProps = [createRandomElementProps(parentKeys[0].id)];
-        elementsMock.setup((x) => x.getElementProps(elementProps[0].id!)).returns(() => elementProps[0]);
+        elementsMock.setup((x) => x.tryGetElementProps(elementProps[0].id!)).returns(() => elementProps[0]);
         const ids = [elementProps[0].id!, createTransientElementId()];
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "assembly");
         expect(result.size).to.eq(1);
@@ -243,12 +267,12 @@ describe("SelectionScopesHelper", () => {
         const grandparent = createRandomTopmostElementProps();
         const grandparentKey = createRandomECInstanceKey();
         setupIModelForElementKey(grandparentKey);
-        elementsMock.setup((x) => x.getElementProps(grandparentKey.id)).returns(() => grandparent);
+        elementsMock.setup((x) => x.tryGetElementProps(grandparentKey.id)).returns(() => grandparent);
         const parent = createRandomElementProps(grandparentKey.id);
         const parentKey = createRandomECInstanceKey();
-        elementsMock.setup((x) => x.getElementProps(parentKey.id)).returns(() => parent);
+        elementsMock.setup((x) => x.tryGetElementProps(parentKey.id)).returns(() => parent);
         const element = createRandomElementProps(parentKey.id);
-        elementsMock.setup((x) => x.getElementProps(element.id!)).returns(() => element);
+        elementsMock.setup((x) => x.tryGetElementProps(element.id!)).returns(() => element);
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [element.id!], "top-assembly");
         expect(result.size).to.eq(1);
@@ -259,7 +283,7 @@ describe("SelectionScopesHelper", () => {
         const key = createRandomECInstanceKey();
         setupIModelForElementKey(key);
         const elementProps = createRandomTopmostElementProps();
-        elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [key.id], "top-assembly");
         expect(result.size).to.eq(1);
         expect(result.has(key)).to.be.true;
@@ -269,7 +293,7 @@ describe("SelectionScopesHelper", () => {
         const key = createRandomECInstanceKey();
         setupIModelForNoResultStatement();
         const elementProps = createRandomTopmostElementProps();
-        elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [key.id], "top-assembly");
         expect(result.size).to.eq(0);
       });
@@ -278,9 +302,9 @@ describe("SelectionScopesHelper", () => {
         const parent = createRandomTopmostElementProps();
         const parentKey = createRandomECInstanceKey();
         setupIModelForElementKey(parentKey);
-        elementsMock.setup((x) => x.getElementProps(parentKey.id)).returns(() => parent);
+        elementsMock.setup((x) => x.tryGetElementProps(parentKey.id)).returns(() => parent);
         const elementProps = createRandomElementProps(parentKey.id);
-        elementsMock.setup((x) => x.getElementProps(elementProps.id!)).returns(() => elementProps);
+        elementsMock.setup((x) => x.tryGetElementProps(elementProps.id!)).returns(() => elementProps);
         const ids = [elementProps.id!, createTransientElementId()];
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "top-assembly");
         expect(result.size).to.eq(1);
@@ -301,18 +325,42 @@ describe("SelectionScopesHelper", () => {
           category: category.id!,
           code: { scope: faker.random.word(), spec: faker.random.word() },
         }, imodelMock.object);
-        elementsMock.setup((x) => x.getElement(elementId)).returns(() => element);
-        elementsMock.setup((x) => x.getElementProps(category.id!)).returns(() => category);
+        elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element);
+        elementsMock.setup((x) => x.tryGetElementProps(category.id!)).returns(() => category);
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
         expect(result.size).to.eq(1);
         expect(result.has({ className: category.classFullName, id: element.category })).to.be.true;
       });
 
+      it("skips categories of removed elements", async () => {
+        const elementId = createRandomId();
+        elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => undefined);
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
+        expect(result.isEmpty).to.be.true;
+      });
+
+      it("skips removed categories", async () => {
+        const categoryId = createRandomId();
+        const elementId = createRandomId();
+        const element = new DrawingGraphic({
+          id: elementId,
+          classFullName: faker.random.word(),
+          model: createRandomId(),
+          category: categoryId,
+          code: { scope: faker.random.word(), spec: faker.random.word() },
+        }, imodelMock.object);
+        elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element);
+        elementsMock.setup((x) => x.tryGetElementProps(categoryId)).returns(() => undefined);
+
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
+        expect(result.isEmpty).to.be.true;
+      });
+
       it("skips non-geometric elementProps", async () => {
         const elementId = createRandomId();
         const element = moq.Mock.ofType<Element>();
-        elementsMock.setup((x) => x.getElement(elementId)).returns(() => element.object);
+        elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element.object);
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
         expect(result.isEmpty).to.be.true;
@@ -328,8 +376,8 @@ describe("SelectionScopesHelper", () => {
           category: category.id!,
           code: { scope: faker.random.word(), spec: faker.random.word() },
         }, imodelMock.object);
-        elementsMock.setup((x) => x.getElement(elementId)).returns(() => element);
-        elementsMock.setup((x) => x.getElementProps(category.id!)).returns(() => category);
+        elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element);
+        elementsMock.setup((x) => x.tryGetElementProps(category.id!)).returns(() => category);
 
         const ids = [elementId, createTransientElementId()];
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "category");
@@ -351,12 +399,36 @@ describe("SelectionScopesHelper", () => {
           category: createRandomId(),
           code: { scope: faker.random.word(), spec: faker.random.word() },
         }, imodelMock.object);
-        elementsMock.setup((x) => x.getElementProps(elementId)).returns(() => element);
-        modelsMock.setup((x) => x.getModelProps(model.id!)).returns(() => model);
+        elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
+        modelsMock.setup((x) => x.tryGetModelProps(model.id!)).returns(() => model);
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "model");
         expect(result.size).to.eq(1);
         expect(result.has({ className: model.classFullName, id: model.id! })).to.be.true;
+      });
+
+      it("skips models of removed elements", async () => {
+        const elementId = createRandomId();
+        elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => undefined);
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "model");
+        expect(result.isEmpty).to.be.true;
+      });
+
+      it("skips removed models", async () => {
+        const modelId = createRandomId();
+        const elementId = createRandomId();
+        const element = new DrawingGraphic({
+          id: elementId,
+          classFullName: faker.random.word(),
+          model: modelId,
+          category: createRandomId(),
+          code: { scope: faker.random.word(), spec: faker.random.word() },
+        }, imodelMock.object);
+        elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
+        modelsMock.setup((x) => x.tryGetModelProps(modelId)).returns(() => undefined);
+
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "model");
+        expect(result.isEmpty).to.be.true;
       });
 
       it("skips transient element ids", async () => {
@@ -369,8 +441,8 @@ describe("SelectionScopesHelper", () => {
           category: createRandomId(),
           code: { scope: faker.random.word(), spec: faker.random.word() },
         }, imodelMock.object);
-        elementsMock.setup((x) => x.getElementProps(elementId)).returns(() => element);
-        modelsMock.setup((x) => x.getModelProps(model.id!)).returns(() => model);
+        elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
+        modelsMock.setup((x) => x.tryGetModelProps(model.id!)).returns(() => model);
 
         const ids = [elementId, createTransientElementId()];
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "model");
