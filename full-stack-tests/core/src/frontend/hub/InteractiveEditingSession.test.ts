@@ -7,8 +7,8 @@ const expect = chai.expect;
 import * as path from "path";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-import { BeDuration, DbOpcode, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { BeDuration, compareStrings, DbOpcode, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
 import { ElementEditor3d, IModelApp, IModelConnection, InteractiveEditingSession, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -25,6 +25,8 @@ describe.only("InteractiveEditingSession (#integration)", () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
+
+    IModelApp.eventSourceOptions.pollInterval = 1;
 
     projectId = await TestUtility.getTestProjectId(projectName);
     const imodelId = await TestUtility.createIModel("interactiveEditingSessionTest", projectId, true);
@@ -59,6 +61,11 @@ describe.only("InteractiveEditingSession (#integration)", () => {
     return props[0].id!;
   }
 
+  const dummyRange = new Range3d();
+  function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Insert, range: (range ?? dummyRange) }; }
+  function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Update, range: (range ?? dummyRange) }; }
+  function makeDelete(id: Id64String): ElementGeometryChange { return { id, type: DbOpcode.Delete }; }
+
   it("accumulates geometry changes", async () => {
     // Create an empty physical model.
     const editor = await ElementEditor3d.start(imodel);
@@ -71,26 +78,64 @@ describe.only("InteractiveEditingSession (#integration)", () => {
     // Begin an editing session.
     const session = await InteractiveEditingSession.begin(imodel);
 
+    async function expectChanges(expected: ElementGeometryChange[], compareRange = false): Promise<void> {
+      // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
+      BeDuration.wait(100);
+
+      const changes = session.getGeometryChangesForModel(modelId);
+      expect(undefined === changes).to.equal(expected.length === 0);
+      if (changes) {
+        const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
+        if (compareRange) {
+          expect(actual).to.deep.equal(expected);
+        } else {
+          expect(actual.length).to.equal(expected.length);
+          for (let i = 0; i < actual.length; i++) {
+            expect(actual[i].id).to.equal(expected[i].id);
+            expect(actual[i].type).to.equal(expected[i].type);
+          }
+        }
+      }
+    }
+
     // Insert a line element.
     expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
     const elem1 = await createLineElement(editor, modelId, category, makeLine());
+    // Events not dispatched until changes saved.
+    expectChanges([]);
     await imodel.saveChanges();
+    expectChanges([ makeInsert(elem1) ]);
 
-    // ###TODO: After we switch from polling for native events, we should not need to wait for changed event here...
-    await BeDuration.wait(IModelApp.eventSourceOptions.pollInterval * 2);
-    const changes = session.getGeometryChangesForModel(modelId)!;
-    expect(changes).not.to.be.undefined;
+    // Modify the line element.
+    await editor.startModifyingElements([ elem1 ]);
+    await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0));
+    await editor.write();
+    expectChanges([]);
+    await imodel.saveChanges();
+    expectChanges([ makeUpdate(elem1) ]);
 
-    let change: ElementGeometryChange | undefined;
-    for (const entry of changes) {
-      expect(change).to.be.undefined;
-      change = entry;
-    }
+    // Modify the line element twice.
+    await editor.startModifyingElements([ elem1 ]);
+    await editor.applyTransform(Transform.createTranslationXYZ(0, 1, 0));
+    await editor.write();
+    await editor.startModifyingElements([ elem1 ]);
+    await editor.applyTransform(Transform.createTranslationXYZ(-1, 0, 0));
+    await editor.write();
+    expectChanges([]);
+    await imodel.saveChanges();
+    expectChanges([ makeUpdate(elem1) ]);
 
-    expect(change).not.to.be.undefined;
-    expect(change!.id).to.equal(elem1);
-    expect(change!.type).to.equal(DbOpcode.Insert);
+    // Insert a new line element, modify both elements, then delete the old line element.
+    const elem2 = await createLineElement(editor, modelId, category, makeLine());
+    await editor.startModifyingElements([ elem1, elem2 ]);
+    await editor.applyTransform(Transform.createTranslationXYZ(0, 0, 1));
+    await editor.write();
+    await imodel.editing.deleteElements([ elem1 ]);
+    expectChanges([]);
+    await imodel.saveChanges();
+    expectChanges([ makeUpdate(elem2), makeDelete(elem1) ]);
 
+    await imodel.pushChanges(""); // release locks
     await session.end();
     await editor.end();
   });
