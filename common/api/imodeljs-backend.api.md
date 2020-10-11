@@ -2365,7 +2365,7 @@ export class GroupModel extends GroupInformationModel {
 export class IModelCloneContext {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
-    cloneElement(sourceElement: Element): ElementProps;
+    cloneElement(sourceElement: Element, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
     dispose(): void;
     // @internal
     dump(outputFileName: string): void;
@@ -2863,6 +2863,8 @@ export class IModelTransformer extends IModelExportHandler {
 
 // @beta
 export interface IModelTransformOptions {
+    // @alpha
+    cloneUsingBinaryGeometry?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
