@@ -14,7 +14,7 @@ import { ElementEditor3d, IModelApp, IModelConnection, InteractiveEditingSession
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
-describe.only("InteractiveEditingSession (#integration)", () => {
+describe("InteractiveEditingSession (#integration)", () => {
   let imodel: RemoteBriefcaseConnection;
   let projectId: string;
 
