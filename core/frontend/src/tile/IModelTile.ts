@@ -203,7 +203,7 @@ export class IModelTile extends Tile {
         child.pruneChildren(olderThan);
   }
 
-  public selectTiles(selected: IModelTile[], args: TileDrawArgs, numSkipped: number): SelectParent {
+  public selectTiles(selected: Tile[], args: TileDrawArgs, numSkipped: number): SelectParent {
     let vis = this.computeVisibility(args);
     if (TileVisibility.OutsideFrustum === vis)
       return SelectParent.No;

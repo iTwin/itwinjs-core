@@ -6,12 +6,13 @@
  * @module Tiles
  */
 
-import { BeTimePoint, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeTimePoint, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import { BatchType, ContentIdProvider, ElementAlignedBox3d, TileProps, TileTreeProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { IModelTile, iModelTileParamsFromJSON, Tile, TileDrawArgs, TileLoadPriority, TileTree, TileTreeParams } from "./internal";
+import { RenderSystem } from "../render/RenderSystem";
+import { IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeParams } from "./internal";
 
 /** @internal */
 export interface IModelTileTreeOptions {
@@ -49,11 +50,64 @@ export function iModelTileTreeParamsFromJSON(props: TileTreeProps, iModel: IMode
   return { formatVersion, id, rootTile, iModel, location, modelId, contentRange, geometryGuid, contentIdQualifier, maxInitialTilesToSkip, priority, options };
 }
 
+/** Represents the root [[Tile]] of an [[IModelTileTree]]. The root tile has one or two direct child tiles which represent different branches of the tree:
+ *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[InteractiveEditingSession]].
+ *  - The dynamic branch, containing tiles representing the geometry of elements that have been modified during the current [[InteractiveEditingSession]].
+ * If no editing session is currently active, the dynamic branch does not exist, and the static branch represents the current state of all elements in the model.
+ * @internal
+ */
+class RootTile extends Tile {
+  private readonly _staticRoot: IModelTile;
+  private _dynamicRoot?: Tile;
+
+  public constructor(params: IModelTileParams, tree: IModelTileTree) {
+    const rootParams: TileParams = {
+      ...params,
+      isLeaf: false,
+      contentId: "",
+    };
+
+    super(rootParams, tree);
+    this._staticRoot = new IModelTile(params, tree);
+    this.setIsReady();
+  }
+
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+    const children: Tile[] = [ this._staticRoot ];
+    if (this._dynamicRoot)
+      children.push(this._dynamicRoot);
+
+    resolve(children);
+  }
+
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+    assert(false, "Root iModel tile has no content");
+    return undefined;
+  }
+
+  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
+    throw new Error("Root iModel tile has no content");
+  }
+
+  public selectTiles(args: TileDrawArgs): Tile[] {
+    const tiles: Tile[] = [];
+    this._staticRoot.selectTiles(tiles, args, 0);
+    // ###TODO this._dynamicRoot.selectTiles(tiles, args);
+    return tiles;
+  }
+
+  public prune(expirationTime: BeDuration): void {
+    const olderThan = BeTimePoint.now().minus(expirationTime);
+    this._staticRoot.pruneChildren(olderThan);
+    // ###TODO prune dynamic tiles
+  }
+}
+
 /** A TileTree whose contents are derived from geometry stored in a Model in an IModelDb.
  * @internal
  */
 export class IModelTileTree extends TileTree {
-  private readonly _rootTile: IModelTile;
+  private readonly _rootTile: RootTile;
   private readonly _options: IModelTileTreeOptions;
   public readonly contentIdQualifier?: string;
   public readonly geometryGuid?: string;
@@ -76,11 +130,11 @@ export class IModelTileTree extends TileTree {
     this.contentIdProvider = ContentIdProvider.create(params.options.allowInstancing, IModelApp.tileAdmin, params.formatVersion);
 
     params.rootTile.contentId = this.contentIdProvider.rootContentId;
-    this._rootTile = new IModelTile(iModelTileParamsFromJSON(params.rootTile, undefined), this);
+    this._rootTile = new RootTile(iModelTileParamsFromJSON(params.rootTile, undefined), this);
   }
 
   public get maxDepth() { return 32; }
-  public get rootTile(): IModelTile { return this._rootTile; }
+  public get rootTile(): Tile { return this._rootTile; }
   public get is3d() { return this._options.is3d; }
   public get isContentUnbounded() { return false; }
   public get viewFlagOverrides() { return viewFlagOverrides; }
@@ -89,9 +143,7 @@ export class IModelTileTree extends TileTree {
   public get hasEdges(): boolean { return this._options.edgesRequired; }
 
   protected _selectTiles(args: TileDrawArgs): Tile[] {
-    const tiles: IModelTile[] = [];
-    this.rootTile.selectTiles(tiles, args, 0);
-    return tiles;
+    return this._rootTile.selectTiles(args);
   }
 
   public draw(args: TileDrawArgs): void {
@@ -103,7 +155,6 @@ export class IModelTileTree extends TileTree {
   }
 
   public prune(): void {
-    const olderThan = BeTimePoint.now().minus(this.expirationTime);
-    this.rootTile.pruneChildren(olderThan);
+    this._rootTile.prune(this.expirationTime);
   }
 }
