@@ -256,9 +256,19 @@ describe("iModelHub EventHandler", () => {
     chai.expect(subscription.eventTypes).to.be.deep.equal(eventTypes);
   });
 
-  it("should receive LockEvent (#unit)", async () => {
-    const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2,"LockType":"1","LockLevel":"1","ObjectIds":["0x1"],"ReleasedWithChangeSet":"1"}`;
-    mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "LockEvent");
+  it("should receive LockEvent", async () => {
+    const lock = utils.generateLock(briefcaseId, "0x115", LockType.Element, LockLevel.Shared);
+
+    if (TestConfig.enableMocks) {
+      const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2,"LockType":"Element","LockLevel":"Shared","ObjectIds":["0x115"],"ReleasedWithChangeSet":"1"}`;
+      mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "LockEvent");
+    } else {
+      const eventTypes: EventType[] = ["LockEvent"];
+      subscription.eventTypes = eventTypes as IModelHubEventType[];
+      subscription = await imodelHubClient.events.subscriptions.update(requestContext, imodelId, subscription);
+
+      await imodelHubClient.locks.update(requestContext, imodelId, [lock]);
+    }
 
     const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(LockEvent);
@@ -267,9 +277,9 @@ describe("iModelHub EventHandler", () => {
     chai.assert(!!typedEvent);
     chai.assert(!!typedEvent.objectIds[0]);
     chai.assert(Id64.isValidId64(typedEvent.objectIds[0]));
-    chai.expect(typedEvent.objectIds[0].toString()).to.be.equal(Id64.fromString("0x1"));
+    chai.expect(typedEvent.objectIds[0].toString()).to.be.equal(Id64.fromString("0x115"));
     chai.expect(typedEvent.lockLevel).to.be.equal(LockLevel.Shared);
-    chai.expect(typedEvent.lockType).to.be.equal(LockType.Model);
+    chai.expect(typedEvent.lockType).to.be.equal(LockType.Element);
   });
 
   it("should receive AllLocksDeletedEvent (#unit)", async () => {

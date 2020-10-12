@@ -112,8 +112,8 @@ export class LockEvent extends BriefcaseEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.lockType = parseInt(obj.LockType, 10) as LockType;
-    this.lockLevel = parseInt(obj.LockLevel, 10) as LockLevel;
+    this.lockType = LockType[obj.LockType as keyof typeof LockType];
+    this.lockLevel = LockLevel[obj.LockLevel as keyof typeof LockLevel];
     this.objectIds = (obj.ObjectIds as string[]).map((value: string) => Id64.fromJSON(value));
     this.releasedWithChangeSet = obj.ReleasedWithChangeSet;
   }
