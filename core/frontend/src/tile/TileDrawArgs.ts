@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { ClipVector, Map4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { FeatureAppearanceProvider, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -67,6 +67,8 @@ export class TileDrawArgs {
   public readonly viewClip?: ClipVector;
   /** @internal */
   public parentsAndChildrenExclusive: boolean;
+  /** @internal */
+  public appearanceProvider?: FeatureAppearanceProvider;
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
@@ -126,12 +128,6 @@ export class TileDrawArgs {
   /** @internal */
   public get worldToViewMap(): Map4d {
     return this.viewingSpace.worldToViewMap;
-  }
-
-  /** @internal */
-  public static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlagOverrides, clipVolume?: RenderClipVolume, parentsAndChildrenExclusive = false, symbologyOverrides?: FeatureSymbology.Overrides) {
-    const now = BeTimePoint.now();
-    return new TileDrawArgs({ context, location, tree, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive, symbologyOverrides });
   }
 
   /** Constructor */
@@ -201,7 +197,8 @@ export class TileDrawArgs {
       return undefined;
 
     const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
-    const opts = { iModel: this.tree.iModel, clipVolume: this.clipVolume, classifierOrDrape };
+    const appearanceProvider = this.appearanceProvider;
+    const opts = { iModel: this.tree.iModel, clipVolume: this.clipVolume, classifierOrDrape, appearanceProvider };
     return this.context.createGraphicBranch(graphics, this.location, opts);
   }
 

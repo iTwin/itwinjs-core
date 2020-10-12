@@ -6,9 +6,11 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeTimePoint, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeTimePoint, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
-import { BatchType, ContentIdProvider, ElementAlignedBox3d, TileProps, TileTreeProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import {
+  BatchType, ContentIdProvider, ElementAlignedBox3d, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass, TileProps, TileTreeProps, ViewFlagOverrides,
+} from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderSystem } from "../render/RenderSystem";
@@ -50,15 +52,26 @@ export function iModelTileTreeParamsFromJSON(props: TileTreeProps, iModel: IMode
   return { formatVersion, id, rootTile, iModel, location, modelId, contentRange, geometryGuid, contentIdQualifier, maxInitialTilesToSkip, priority, options };
 }
 
+/** Hides elements within static tiles if they have been modified during the current editing session.
+ * Those elements are instead drawn as individual "tiles" in the dynamic branch of the [[RootTile]].
+ */
+class StaticAppearanceProvider implements FeatureAppearanceProvider {
+  public readonly hiddenElements = new Id64.Uint32Set();
+
+  getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
+    return this.hiddenElements.has(elemLo, elemHi) ? undefined : overrides.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+  }
+}
+
 /** Represents the root [[Tile]] of an [[IModelTileTree]]. The root tile has one or two direct child tiles which represent different branches of the tree:
  *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[InteractiveEditingSession]].
  *  - The dynamic branch, containing tiles representing the geometry of elements that have been modified during the current [[InteractiveEditingSession]].
  * If no editing session is currently active, the dynamic branch does not exist, and the static branch represents the current state of all elements in the model.
- * @internal
  */
 class RootTile extends Tile {
   private readonly _staticRoot: IModelTile;
   private _dynamicRoot?: Tile;
+  private _staticAppearanceProvider?: StaticAppearanceProvider;
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     const rootParams: TileParams = {
@@ -70,6 +83,7 @@ class RootTile extends Tile {
     super(rootParams, tree);
     this._staticRoot = new IModelTile(params, tree);
     this.setIsReady();
+    this.loadChildren();
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -94,6 +108,29 @@ class RootTile extends Tile {
     this._staticRoot.selectTiles(tiles, args, 0);
     // ###TODO this._dynamicRoot.selectTiles(tiles, args);
     return tiles;
+  }
+
+  public draw(args: TileDrawArgs): void {
+    // Draw the static tiles, hiding any elements present in the dynamic tiles.
+    args.appearanceProvider = this._staticAppearanceProvider;
+    const tiles: Tile[] = [];
+    this._staticRoot.selectTiles(tiles, args, 0);
+    for (const tile of tiles)
+      tile.drawGraphics(args);
+
+    args.drawGraphics();
+    args.appearanceProvider = undefined;
+    if (undefined === this._dynamicRoot)
+      return;
+
+    // Draw the dynamic tiles.
+    args.graphics.clear();
+    tiles.length = 0;
+    // ###TODO: this._dynamicRoot.selectTiles(tiles, args);
+    // for (const tile of tiles)
+    //   tile.drawGraphics(args);
+
+    // args.drawGraphics();
   }
 
   public prune(expirationTime: BeDuration): void {
