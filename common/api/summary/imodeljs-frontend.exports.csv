@@ -416,7 +416,6 @@ internal;SpatialClassifiersContainer
 internal;class SpatialClassifierTileTreeReference 
 public;SpatialLocationModelState 
 public;SpatialModelState 
-internal;SpatialModelTileTrees
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 

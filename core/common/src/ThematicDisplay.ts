@@ -47,6 +47,9 @@ export interface ThematicGradientSettingsProps {
    * When using a custom thematic color scheme, there must be at least two entries in here. If there are not, it will revert to the default settings.
    */
   customKeys?: Gradient.KeyColorProps[];
+  /** The percentage to mix in the original color with the thematic display gradient color (0-1).
+   * Applies to background map terrain and point clouds only.  Defaults to 0. */
+  colorMix?: number;
 }
 
 /** Thematic settings specific to creating a color gradient used by [[ThematicDisplay]].
@@ -66,6 +69,9 @@ export class ThematicGradientSettings {
    * When using a custom thematic color scheme, there must be at least two entries in here. If there are not, it will revert to the default settings.
    */
   public readonly customKeys: Gradient.KeyColor[];
+  /** The percentage to mix in the original color with the thematic display gradient color (0-1).
+   * Applies to background map terrain and point clouds only.  Defaults to 0. */
+  public readonly colorMix: number;
 
   public static get margin(): number { return .001; }    // A fixed portion of the gradient for out of range values.
   public static get contentRange(): number { return 1.0 - 2.0 * ThematicGradientSettings.margin; }
@@ -86,6 +92,8 @@ export class ThematicGradientSettings {
       return false;
     if (this.customKeys.length !== other.customKeys.length)
       return false;
+    if (this.colorMix !== other.colorMix)
+      return false;
 
     for (let i = 0; i < this.customKeys.length; i++) {
       if (!Gradient.keyColorEquals(this.customKeys[i], other.customKeys[i]))
@@ -102,6 +110,7 @@ export class ThematicGradientSettings {
       this.stepCount = 10;
       this.marginColor = ColorDef.fromJSON();
       this.colorScheme = ThematicGradientColorScheme.BlueRed;
+      this.colorMix = 0.0;
     } else {
       this.mode = (json.mode !== undefined && json.mode !== null) ? json.mode : ThematicGradientMode.Smooth;
       if (this.mode < ThematicGradientMode.Smooth || this.mode > ThematicGradientMode.IsoLines)
@@ -126,6 +135,8 @@ export class ThematicGradientSettings {
         for (const keyValue of ThematicGradientSettings._defaultCustomKeys)
           this.customKeys.push(new Gradient.KeyColor({ value: keyValue[0], color: ColorDef.computeTbgrFromComponents(keyValue[1], keyValue[3], keyValue[2]) }));
       }
+
+      this.colorMix = json.colorMix ?? 0.0;
     }
   }
 
@@ -139,6 +150,7 @@ export class ThematicGradientSettings {
       stepCount: this.stepCount,
       marginColor: this.marginColor.toJSON(),
       colorScheme: this.colorScheme,
+      colorMix: this.colorMix,
     };
 
     json.customKeys = [];
@@ -160,6 +172,7 @@ export class ThematicGradientSettings {
       marginColor: undefined !== changedProps.marginColor ? changedProps.marginColor : this.marginColor.tbgr,
       colorScheme: undefined !== changedProps.colorScheme ? changedProps.colorScheme : this.colorScheme,
       customKeys: undefined !== changedProps.customKeys ? changedProps.customKeys : this.customKeys.map((key) => ({ value: key.value, color: key.color.tbgr })),
+      colorMix: undefined !== changedProps.colorMix ? changedProps.colorMix : this.colorMix,
     };
 
     return ThematicGradientSettings.fromJSON(props);

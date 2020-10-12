@@ -16,7 +16,9 @@ export namespace Primitives {
   export type Text = string;
   /** String type */
   export type String = string;
-  /** Short format date */
+  /** DateTime will be formatted as date and time */
+  export type DateTime = string | Date;
+  /** ShortDate will be formatted as date only and will not include time */
   export type ShortDate = string | Date;
   /** Boolean type */
   export type Boolean = boolean | string | {} | [];
@@ -39,7 +41,7 @@ export namespace Primitives {
 
   export type Point = Point2d | Point3d;
 
-  /** CompositePart (ties a raw value of a sepcific type to a display string) */
+  /** CompositePart (ties a raw value of a specific type to a display string) */
   export interface CompositePart {
     displayValue: string;
     rawValue: Value;

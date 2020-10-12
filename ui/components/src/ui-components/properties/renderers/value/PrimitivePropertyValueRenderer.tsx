@@ -44,7 +44,7 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
 
 function convertRecordToString(record: PropertyRecord) {
   const primitive = record.value as PrimitiveValue;
-  return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value);
+  return TypeConverterManager.getConverter(record.property.typename, record.property.converter?.name).convertPropertyToString(record.property, primitive.value);
 }
 
 /** @internal */

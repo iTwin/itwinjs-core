@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, LabeledNumericInput } from "@bentley/frontend-devtools";
+import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@bentley/frontend-devtools";
 import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,
@@ -100,6 +100,7 @@ export class ThematicDisplayEditor {
   private readonly _thematicColorScheme: ComboBox;
   private readonly _thematicRangeLow: LabeledNumericInput;
   private readonly _thematicRangeHigh: LabeledNumericInput;
+  private readonly _thematicColorMix: Slider;
   private readonly _thematicAxisX: LabeledNumericInput;
   private readonly _thematicAxisY: LabeledNumericInput;
   private readonly _thematicAxisZ: LabeledNumericInput;
@@ -250,9 +251,12 @@ export class ThematicDisplayEditor {
       }),
     });
 
+    const spanStepAndColor = document.createElement("span");
+    spanStepAndColor.style.display = "flex";
+    thematicControlsDiv.appendChild(spanStepAndColor);
     this._thematicStepCount = createLabeledNumericInput({
       id: "thematic_stepCount",
-      parent: thematicControlsDiv,
+      parent: spanStepAndColor,
       value: 1,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -264,6 +268,7 @@ export class ThematicDisplayEditor {
       step: 1,
       name: "Step Count: ",
     });
+    this._thematicStepCount.div.style.marginRight = "1.5em";
 
     const colorSchemeEntries = [
       { name: "BlueRed", value: ThematicGradientColorScheme.BlueRed },
@@ -275,7 +280,7 @@ export class ThematicDisplayEditor {
     ];
 
     this._thematicColorScheme = createComboBox({
-      parent: thematicControlsDiv,
+      parent: spanStepAndColor,
       name: "Color Scheme: ",
       entries: colorSchemeEntries,
       id: "thematic_colorScheme",
@@ -294,9 +299,12 @@ export class ThematicDisplayEditor {
       }),
     });
 
+    const spanRange = document.createElement("span");
+    spanRange.style.display = "flex";
+    thematicControlsDiv.appendChild(spanRange);
     this._thematicRangeHigh = createLabeledNumericInput({
       id: "thematic_rangeHigh",
-      parent: thematicControlsDiv,
+      parent: spanRange,
       value: -1.0,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -310,10 +318,11 @@ export class ThematicDisplayEditor {
       parseAsFloat: true,
       name: "High range: ",
     });
+    this._thematicRangeHigh.div.style.marginRight = "0.5em";
 
     this._thematicRangeLow = createLabeledNumericInput({
       id: "thematic_rangeLow",
-      parent: thematicControlsDiv,
+      parent: spanRange,
       value: 1.0,
       handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
@@ -388,6 +397,22 @@ export class ThematicDisplayEditor {
       parseAsFloat: true,
       name: "Z: ",
     });
+
+    this._thematicColorMix = createSlider({
+      id: "thematic_colorMix",
+      name: "Terrain/PointCloud Mix",
+      parent: thematicControlsDiv,
+      min: "0.0",
+      max: "1.0",
+      step: "0.05",
+      value: "0.0",
+      handler: (_) => this.updateThematicDisplay((view): ThematicDisplayProps => {
+        const props = this.getThematicSettingsProps(view);
+        props.gradientSettings!.colorMix = parseFloat(this._thematicColorMix.slider.value);
+        return props;
+      }),
+    });
+    this._thematicColorMix.div.style.textAlign = "left";
 
     const spanSunDir = document.createElement("span");
     spanSunDir.style.display = "flex";
@@ -672,6 +697,7 @@ export class ThematicDisplayEditor {
     this._thematicGradientMode.select.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.mode!.toString() : props.gradientSettings.mode!.toString();
     this._thematicStepCount.input.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.stepCount!.toString() : props.gradientSettings.stepCount!.toString();
     this._thematicColorScheme.select.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.colorScheme!.toString() : props.gradientSettings.colorScheme!.toString();
+    this._thematicColorMix.slider.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.colorMix!.toString() : props.gradientSettings.colorMix!.toString();
 
     const axis = (props.axis === undefined || props.axis === null) ? Point3d.fromJSON(ThematicDisplayEditor._defaultSettings.axis) : Point3d.fromJSON(props.axis);
     this._thematicAxisX.input.value = axis.x.toString();

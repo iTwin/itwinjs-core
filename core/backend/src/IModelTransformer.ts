@@ -48,6 +48,13 @@ export interface IModelTransformOptions {
    * @see [IModelExporter.wantGeometry]($backend)
    */
   loadSourceGeometry?: boolean;
+
+  /** Flag that indicates whether or not the transformation process should clone using binary geometry.
+   * Transformations that do not need to manipulate geometry should set this flag to optimize performance.
+   * @note The default is `false`.
+   * @alpha
+   */
+  cloneUsingBinaryGeometry?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -72,6 +79,8 @@ export class IModelTransformer extends IModelExportHandler {
   protected _deferredElementIds = new Set<Id64String>();
   /** If true, IModelTransformer is being used in a clone-only mode and should not record provenance. */
   private readonly _noProvenance: boolean;
+  /** If true, clone elements using binary geometry as a performance optimization. */
+  private readonly _cloneUsingBinaryGeometry: boolean;
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -83,6 +92,7 @@ export class IModelTransformer extends IModelExportHandler {
     // initialize IModelTransformOptions
     this.targetScopeElementId = options?.targetScopeElementId ?? IModel.rootSubjectId;
     this._noProvenance = options?.noProvenance ?? false;
+    this._cloneUsingBinaryGeometry = options?.cloneUsingBinaryGeometry ?? false;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);
@@ -236,7 +246,7 @@ export class IModelTransformer extends IModelExportHandler {
   protected onTransformElement(sourceElement: Element): ElementProps {
     Logger.logTrace(loggerCategory, `onTransformElement(${sourceElement.id}) "${sourceElement.getDisplayLabel()}"`);
     this.logMemoryUsage();
-    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement);
+    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement, { binaryGeometry: this._cloneUsingBinaryGeometry });
     if (sourceElement instanceof Subject) {
       if (targetElementProps.jsonProperties?.Subject?.Job) {
         // don't propagate source channels into target (legacy bridge case)

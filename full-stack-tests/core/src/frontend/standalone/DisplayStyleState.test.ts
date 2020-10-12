@@ -207,6 +207,7 @@ describe("DisplayStyle", () => {
           customKeys: [],
           stepCount: 3,
           marginColor: ColorByName.pink,
+          colorMix: 0.333,
         },
       },
     });

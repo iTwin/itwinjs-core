@@ -6,7 +6,7 @@
 import * as React from "react";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { IconSpecUtilities, RelativePosition } from "@bentley/ui-abstract";
+import { DateFormatter, IconSpecUtilities, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
@@ -15,7 +15,7 @@ import {
   Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DateFormatter, DatePickerPopupButton, DatePickerPopupButtonProps, IntlFormatter } from "@bentley/ui-components";
+import { adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps, IntlFormatter } from "@bentley/ui-components";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
@@ -219,13 +219,13 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Date Picker Popup", undefined, <DatePickerHost selected={new Date()} />),
         createComponentExample("Date Picker Popup w/input", undefined, <DatePickerHost selected={new Date()} displayEditField={true} />),
-        createComponentExample("Date Picker Popup w/input & 12h time", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay="hh:mm aa" />),
-        createComponentExample("Date Picker Popup w/input & 24h time", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay="hh:mm:ss" />),
-        createComponentExample("Date Picker Popup w/London date & time", undefined, <DatePickerHost selected={londonDate} displayEditField={true} timeDisplay="hh:mm:ss aa" />),
-        createComponentExample("Date Picker Popup w/LA date & time", undefined, <DatePickerHost selected={laDate} displayEditField={true} timeDisplay="hh:mm:ss aa" />),
+        createComponentExample("Date Picker Popup w/input & 12h time", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MC} />),
+        createComponentExample("Date Picker Popup w/input & 24h time", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H24MS} />),
+        createComponentExample("Date Picker Popup w/London date & time", undefined, <DatePickerHost selected={londonDate} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} />),
+        createComponentExample("Date Picker Popup w/LA date & time", undefined, <DatePickerHost selected={laDate} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} />),
         createComponentExample("Date Picker Popup w/custom formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} dateFormatter={new IntlFormatter(customDayFormatter)} />),
-        createComponentExample("Date Picker Popup w/IntlFormatter", undefined, <DatePickerHost fieldStyle={{width: "16em"}} selected={new Date()} displayEditField={true} timeDisplay="hh:mm:ss aa" dateFormatter={new IntlFormatter()} />),
-        createComponentExample("Date Picker Popup w/MDY Formatter", undefined, <DatePickerHost  selected={new Date()} displayEditField={true} timeDisplay="hh:mm:ss aa" dateFormatter={new MdyFormatter()} />),
+        createComponentExample("Date Picker Popup w/IntlFormatter", undefined, <DatePickerHost fieldStyle={{width: "16em"}} selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new IntlFormatter()} />),
+        createComponentExample("Date Picker Popup w/MDY Formatter", undefined, <DatePickerHost  selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new MdyFormatter()} />),
       ],
     };
   }

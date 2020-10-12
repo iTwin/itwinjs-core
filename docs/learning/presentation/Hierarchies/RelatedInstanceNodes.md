@@ -16,7 +16,7 @@ Name | Required? | Type | Default | Meaning | Performance Notes
 *Filtering* |
 `relationshipPaths` | Yes | `RelationshipPathSpecification[]` | | List of [relationship path specifications](../RelationshipPathSpecification.md) to follow when looking for related class instances.
 `instanceFilter` | No | [ECExpression](./ECExpressions.md#instance-filter) | `""` | Condition for filtering instances
-`hideNodesInHierarchy` | No | `boolean` | `false` | Hide nodes provided by this specification and directly show their children. | Expensive
+`hideNodesInHierarchy` | No | `boolean` | `false` | Hide instance nodes provided by this specification and directly show their children. | Expensive
 `hideIfNoChildren` | No | `boolean` | `false` | Hide nodes if they don't have children. | Expensive
 `hideExpression` | No | [ECExpression](./ECExpressions.md#specification) | `""` | An ECExpression that indicates whether a node should be hidden or not. | Expensive
 `suppressSimilarAncestorsCheck` | No | `boolean` | `false` | Suppress similar ancestor nodes' checking when creating nodes based on this specification. [See more](./InfiniteHierarchiesPrevention.md)

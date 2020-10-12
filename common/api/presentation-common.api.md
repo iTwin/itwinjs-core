@@ -1955,6 +1955,7 @@ export interface RelatedInstanceSpecificationNew {
 
 // @public
 export enum RelatedPropertiesSpecialValues {
+    All = "*",
     None = "_none_"
 }
 

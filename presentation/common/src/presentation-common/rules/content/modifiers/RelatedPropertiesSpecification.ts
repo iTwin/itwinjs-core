@@ -41,6 +41,11 @@ export enum RelatedPropertiesSpecialValues {
    * used together with [[RelatedPropertiesSpecification.nestedRelatedProperties]]
    */
   None = "_none_",
+
+  /**
+   * Used to specify that all properties should be included.
+   */
+  All = "*",
 }
 
 /**

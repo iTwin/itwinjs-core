@@ -7,11 +7,10 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { cleanup, fireEvent, render } from "@testing-library/react";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { DateFormatter, SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 
 import { DateField } from "../../ui-components/datepicker/DateField";
 import TestUtils from "../TestUtils";
-import { DateFormatter } from "../../ui-components/datepicker/DatePickerPopupButton";
 import { IntlFormatter } from "../../ui-components/datepicker/IntlFormatter";
 
 // Note many test do not test exact time because it may yield different results depending on time zone of machine running test.
@@ -33,26 +32,26 @@ class MdyFormatter implements DateFormatter {
     });
 
   public formateDate(date: Date) {
-    const formatParts = this._formatter.formatToParts (date);
-    const month = formatParts.find((part)=>part.type==="month")!.value;
-    const day = formatParts.find((part)=>part.type==="day")!.value;
-    const year = formatParts.find((part)=>part.type==="year")!.value;
+    const formatParts = this._formatter.formatToParts(date);
+    const month = formatParts.find((part) => part.type === "month")!.value;
+    const day = formatParts.find((part) => part.type === "day")!.value;
+    const year = formatParts.find((part) => part.type === "year")!.value;
     return `${month}-${day}-${year}`;
   }
 
-  public parseDate(dateString: string){
-    const mdy=dateString.split("-").filter((value) => !!value);
+  public parseDate(dateString: string) {
+    const mdy = dateString.split("-").filter((value) => !!value);
     if (mdy.length !== 3) return undefined;
     const month = parseInt(mdy[0], 10);
     const day = parseInt(mdy[1], 10);
     const year = parseInt(mdy[2], 10);
 
     // validate
-    if (isNaN(month) || month<0 || month>12)return undefined;
-    if (isNaN(day) || day<0 || day>31)return undefined;
-    if (isNaN(year) || year<1800 || year>2300)return undefined;
+    if (isNaN(month) || month < 0 || month > 12) return undefined;
+    if (isNaN(day) || day < 0 || day > 31) return undefined;
+    if (isNaN(year) || year < 1800 || year > 2300) return undefined;
 
-    return new Date(year,month-1,day);
+    return new Date(year, month - 1, day);
   }
 }
 
@@ -78,25 +77,25 @@ describe("<DateField />", () => {
   });
 
   it("should render ", () => {
-    const renderedComponent = render(<DateField  initialDate={testDate} />);
+    const renderedComponent = render(<DateField initialDate={testDate} />);
     expect(renderedComponent).not.to.be.null;
   });
 
   it("should render with custom class ", () => {
     const renderedComponent = render(<DateField className="TEST_CLASS_NAME" initialDate={testDate} />);
     expect(renderedComponent).not.to.be.null;
-    expect (renderedComponent.container.querySelector(".TEST_CLASS_NAME")).not.to.be.null;
+    expect(renderedComponent.container.querySelector(".TEST_CLASS_NAME")).not.to.be.null;
   });
 
   it("should render read only", () => {
-    const renderedComponent = render(<DateField  initialDate={testDate} readOnly={true} />);
+    const renderedComponent = render(<DateField initialDate={testDate} readOnly={true} />);
     const input = renderedComponent.container.querySelector("input");
     expect(input).not.to.be.null;
     expect(input!.disabled).to.be.true;
   });
 
   it("should render with time", () => {
-    const renderedComponent = render(<DateField  initialDate={testDate} timeDisplay="hh:mm"/>);
+    const renderedComponent = render(<DateField initialDate={testDate} timeDisplay={TimeDisplay.H24M} />);
     const input = renderedComponent.container.querySelector("input");
     expect(input).not.to.be.null;
     const localValue = input!.value;
@@ -109,9 +108,9 @@ describe("<DateField />", () => {
     input!.blur()
 
     // touch all the time options
-    renderedComponent.rerender(<DateField  initialDate={testDate} timeDisplay="hh:mm aa"/>);
-    renderedComponent.rerender(<DateField  initialDate={testDate2} timeDisplay="hh:mm:ss aa"/>);
-    renderedComponent.rerender(<DateField  initialDate={testDate} timeDisplay="hh:mm:ss"/>);
+    renderedComponent.rerender(<DateField initialDate={testDate} timeDisplay={TimeDisplay.H12MC} />);
+    renderedComponent.rerender(<DateField initialDate={testDate2} timeDisplay={TimeDisplay.H12MSC} />);
+    renderedComponent.rerender(<DateField initialDate={testDate} timeDisplay={TimeDisplay.H24MS} />);
   });
 
   it("should support default Intl.Format based formatter", () => {
@@ -131,14 +130,14 @@ describe("<DateField />", () => {
   });
 
   it("should support custom dateFormatter", () => {
-    const renderedComponent = render(<DateField initialDate={testDate} dateFormatter={new MdyFormatter()}/>);
+    const renderedComponent = render(<DateField initialDate={testDate} dateFormatter={new MdyFormatter()} />);
     const input = renderedComponent.container.querySelector("input");
     expect(input).not.to.be.null;
     expect(input!.value).to.eq("07-22-2018");
   });
 
   it("should trigger onDateChange", () => {
-    const renderedComponent = render(<DateField  initialDate={testDate} dateFormatter={new MdyFormatter()} onDateChange={renderSpy} />);
+    const renderedComponent = render(<DateField initialDate={testDate} dateFormatter={new MdyFormatter()} onDateChange={renderSpy} />);
     const input = renderedComponent.container.querySelector("input");
     expect(input).not.to.be.null;
     expect(input!.value).to.eq("07-22-2018");
@@ -147,15 +146,15 @@ describe("<DateField />", () => {
     expect(renderSpy).to.be.called;
     expect(input!.value).to.eq("07-04-2004");
     renderSpy.resetHistory();
-    expect(renderedComponent.container.querySelector("input.has-error")).to.be.null;
+    expect(renderedComponent.container.querySelector("input.components-date-has-error")).to.be.null;
     fireEvent.change(input!, { target: { value: "07-04-zzzz" } });
     fireEvent.keyDown(input!, { key: SpecialKey.Enter });
     expect(renderSpy).not.to.be.called;
     // renderedComponent.debug();
-    expect(renderedComponent.container.querySelector("input.has-error")).not.to.be.null;
+    expect(renderedComponent.container.querySelector("input.components-date-has-error")).not.to.be.null;
     fireEvent.change(input!, { target: { value: "07-04-2004" } });
     fireEvent.keyDown(input!, { key: SpecialKey.Enter });
-    expect(renderedComponent.container.querySelector("input.has-error")).to.be.null;
+    expect(renderedComponent.container.querySelector("input.components-date-has-error")).to.be.null;
     expect(renderSpy).to.be.called;
   });
 

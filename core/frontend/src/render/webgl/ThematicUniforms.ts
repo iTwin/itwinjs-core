@@ -26,6 +26,7 @@ export class ThematicUniforms implements WebGLDisposable {
   private _sensors?: ThematicSensors; // NB: This is only used if no distance cutoff is applied (this is shared among all batches)
   private _texture?: TextureHandle;
   private readonly _range = new Float32Array(2);
+  private _colorMix = 0.0;
   private readonly _axis = new Float32Array(3);
   private readonly _sunDirection = new Float32Array(3);
   private readonly _marginColor = new Float32Array(3);
@@ -116,6 +117,8 @@ export class ThematicUniforms implements WebGLDisposable {
       this._range[0] = this.thematicDisplay.range.low;
       this._range[1] = this.thematicDisplay.range.high;
     }
+
+    this._colorMix = this.thematicDisplay.gradientSettings.colorMix;
 
     this._updateAxis(this.thematicDisplay.axis, (ThematicDisplayMode.Slope === this.thematicDisplay.displayMode) ? target.uniforms.frustum.viewMatrix : undefined);
 
