@@ -72,7 +72,7 @@ import { CloneIModel } from "./Clone";
   process.stdout.write(`Transform2${EOL}`);
   let sourceFileName: string;
   let targetFileName: string;
-  if (false) {
+  if (true) {
     sourceFileName = "D:/data/bim/snapshots/467d20b7-cf9b-4407-9052-237790253db7.bim";
     targetFileName = path.join(__dirname, "fmg-clone.bim");
   } else {
