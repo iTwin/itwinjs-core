@@ -6,13 +6,15 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeTimePoint, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeTimePoint, DbOpcode, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ContentIdProvider, ElementAlignedBox3d, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass, TileProps, TileTreeProps, ViewFlagOverrides,
+  BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass,
+  ModelGeometryChanges, TileProps, TileTreeProps, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { RenderSystem } from "../render/RenderSystem";
 import { IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeParams } from "./internal";
 
@@ -52,16 +54,113 @@ export function iModelTileTreeParamsFromJSON(props: TileTreeProps, iModel: IMode
   return { formatVersion, id, rootTile, iModel, location, modelId, contentRange, geometryGuid, contentIdQualifier, maxInitialTilesToSkip, priority, options };
 }
 
+function findElementChangesForModel(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): Iterable<ElementGeometryChange>| undefined {
+  for (const change of changes)
+    if (change.id === modelId)
+      return change.elements;
+
+  return undefined;
+}
+
 /** Hides elements within static tiles if they have been modified during the current editing session.
  * Those elements are instead drawn as individual "tiles" in the dynamic branch of the [[RootTile]].
  */
 class StaticAppearanceProvider implements FeatureAppearanceProvider {
   public readonly hiddenElements = new Id64.Uint32Set();
 
-  getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
+  public getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
     return this.hiddenElements.has(elemLo, elemHi) ? undefined : overrides.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
   }
 }
+
+/** No interactive editing session is currently active. */
+class StaticState {
+  public readonly type = "static";
+  public readonly dispose: () => void;
+
+  public constructor(root: RootTile) {
+    this.dispose = InteractiveEditingSession.onBegin.addOnce((session: InteractiveEditingSession) => {
+      root.transition(new InteractiveState(session, root));
+    });
+  }
+}
+
+/** An interactive editing session is currently active, but no elements in the tile tree's model have been modified. */
+class InteractiveState {
+  public readonly type = "interactive";
+  public readonly dispose: () => void;
+
+  public constructor(session: InteractiveEditingSession, root: RootTile) {
+    const removeEndingListener = session.onEnding.addOnce((_) => {
+      root.transition(new StaticState(root));
+    });
+
+    const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _session: InteractiveEditingSession) => {
+      assert(session === _session);
+      const elemChanges = findElementChangesForModel(changes, root.tree.modelId);
+      if (elemChanges)
+        root.transition(new DynamicState(root, elemChanges, session));
+    });
+
+    this.dispose = () => {
+      removeEndingListener();
+      removeGeomListener();
+    };
+  }
+}
+
+/** Elements in the tile tree's model have been modified during the current interactive editing session. */
+class DynamicState {
+  public readonly type = "dynamic";
+  public readonly appearanceProvider = new StaticAppearanceProvider();
+  private readonly _dispose: () => void;
+
+  public dispose(): void {
+    this._dispose();
+    // ###TODO tiles etc
+  }
+
+  public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>, session: InteractiveEditingSession) {
+    this.addChanges(elemChanges);
+
+    // ###TODO tiles etc
+
+    const removeEndingListener = session.onEnding.addOnce((_) => {
+      root.transition(new StaticState(root));
+    });
+
+    const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _session: InteractiveEditingSession) => {
+      assert(session === _session);
+      const elems = findElementChangesForModel(changes, root.tree.modelId);
+      if (elems)
+        this.addChanges(elems);
+    });
+
+    this._dispose = () => {
+      removeEndingListener();
+      removeGeomListener();
+    };
+  }
+
+  private addChanges(changes: Iterable<ElementGeometryChange>): void {
+    for (const change of changes)
+      if (change.type !== DbOpcode.Insert)
+        this.appearanceProvider.hiddenElements.addId(change.id);
+
+    // ###TODO update tiles, ranges, etc.
+  }
+}
+
+/** The tile tree has been disposed. */
+class DisposedState {
+  public readonly type = "disposed";
+  public dispose(): void { }
+}
+
+const disposedState = new DisposedState();
+
+/** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to InteractiveEditingSession events. */
+type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState;
 
 /** Represents the root [[Tile]] of an [[IModelTileTree]]. The root tile has one or two direct child tiles which represent different branches of the tree:
  *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[InteractiveEditingSession]].
@@ -70,8 +169,7 @@ class StaticAppearanceProvider implements FeatureAppearanceProvider {
  */
 class RootTile extends Tile {
   private readonly _staticRoot: IModelTile;
-  private _dynamicRoot?: Tile;
-  private _staticAppearanceProvider?: StaticAppearanceProvider;
+  private _tileState: RootTileState;
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     const rootParams: TileParams = {
@@ -83,13 +181,30 @@ class RootTile extends Tile {
     super(rootParams, tree);
     this._staticRoot = new IModelTile(params, tree);
     this.setIsReady();
+
+    // Determine initial state.
+    const session = InteractiveEditingSession.get(tree.iModel);
+    if (!session) {
+      this._tileState = new StaticState(this);
+    } else {
+      const changes = session.getGeometryChangesForModel(tree.modelId);
+      this._tileState = changes ? new DynamicState(this, changes, session) : new InteractiveState(session, this);
+    }
+
+    // Load the children immediately.
     this.loadChildren();
+  }
+
+  public dispose(): void {
+    super.dispose();
+    this._tileState.dispose();
+    this._tileState = disposedState;
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     const children: Tile[] = [ this._staticRoot ];
-    if (this._dynamicRoot)
-      children.push(this._dynamicRoot);
+    // ###TODO if (this._dynamicRoot)
+    //   children.push(this._dynamicRoot); Will need to add dynamic root tile to children when session starts.
 
     resolve(children);
   }
@@ -112,7 +227,9 @@ class RootTile extends Tile {
 
   public draw(args: TileDrawArgs): void {
     // Draw the static tiles, hiding any elements present in the dynamic tiles.
-    args.appearanceProvider = this._staticAppearanceProvider;
+    if ("dynamic" === this._tileState.type)
+      args.appearanceProvider = this._tileState.appearanceProvider;
+
     const tiles: Tile[] = [];
     this._staticRoot.selectTiles(tiles, args, 0);
     for (const tile of tiles)
@@ -120,7 +237,7 @@ class RootTile extends Tile {
 
     args.drawGraphics();
     args.appearanceProvider = undefined;
-    if (undefined === this._dynamicRoot)
+    if ("dynamic" !== this._tileState.type)
       return;
 
     // Draw the dynamic tiles.
@@ -137,6 +254,11 @@ class RootTile extends Tile {
     const olderThan = BeTimePoint.now().minus(expirationTime);
     this._staticRoot.pruneChildren(olderThan);
     // ###TODO prune dynamic tiles
+  }
+
+  public transition(newState: RootTileState): void {
+    this._tileState.dispose();
+    this._tileState = newState;
   }
 }
 
