@@ -14,7 +14,6 @@ exports[`<TextareaEditor /> renders correctly 1`] = `
         aria-label="editor.textarea"
         className="components-textarea-editor-textarea"
         data-testid="components-textarea-editor"
-        defaultValue=""
         onChange={[Function]}
         readOnly={false}
         rows={3}
@@ -23,6 +22,7 @@ exports[`<TextareaEditor /> renders correctly 1`] = `
             "minWidth": "6em",
           }
         }
+        value=""
       />
       <PopupOkCancelButtons
         onCancel={[Function]}
@@ -47,7 +47,6 @@ exports[`<TextareaEditor /> renders correctly with style 1`] = `
         aria-label="editor.textarea"
         className="components-textarea-editor-textarea"
         data-testid="components-textarea-editor"
-        defaultValue=""
         onChange={[Function]}
         readOnly={false}
         rows={3}
@@ -57,6 +56,7 @@ exports[`<TextareaEditor /> renders correctly with style 1`] = `
             "minWidth": "6em",
           }
         }
+        value=""
       />
       <PopupOkCancelButtons
         onCancel={[Function]}

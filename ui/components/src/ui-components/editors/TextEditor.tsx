@@ -133,7 +133,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
       disabled: this.state.isDisabled,
       size: this.state.size,
       maxLength: this.state.maxLength,
-      defaultValue: this.state.inputValue,
+      value: this.state.inputValue,
       onBlur: this.props.onBlur,
       onChange: this._updateInputValue,
       setFocus: this.props.setFocus && !this.state.isDisabled,
