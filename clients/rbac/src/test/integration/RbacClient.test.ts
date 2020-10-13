@@ -16,7 +16,7 @@ import { TestConfig } from "../TestConfig";
 //    - rbac-user:external-client
 
 // Temporarily skipped to avoid Linux failures
-describe.skip("RbacClient (#integration)", () => {
+describe("RbacClient (#integration)", () => {
   const contextRegistry = new ContextRegistryClient();
   const rbacClient = new RbacClient();
   let requestContext: AuthorizedClientRequestContext;

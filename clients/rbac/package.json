@@ -18,7 +18,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/rbac-client/file.json --tsIndexFile=rbac-client.ts --onlyJson",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "",
-    "test:integration": "",
+    "test:integration": "npm run webpackTests && npm run test:integration:chrome",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
