@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeTimePoint, DbOpcode, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeTimePoint, DbOpcode, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass,
@@ -171,6 +171,10 @@ class RootTile extends Tile {
   private readonly _staticRoot: IModelTile;
   private _tileState: RootTileState;
 
+  public get tileState(): RootTileState {
+    return this._tileState;
+  }
+
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     const rootParams: TileParams = {
       ...params,
@@ -315,5 +319,16 @@ export class IModelTileTree extends TileTree {
 
   public prune(): void {
     this._rootTile.prune(this.expirationTime);
+  }
+
+  /** Exposed strictly for tests. */
+  public get tileState(): "static" | "dynamic" | "interactive" | "disposed" {
+    return this._rootTile.tileState.type;
+  }
+
+  /** Exposed strictly for tests. */
+  public get hiddenElements(): Id64Array {
+    const state = this._rootTile.tileState;
+    return "dynamic" === state.type ? state.appearanceProvider.hiddenElements.toId64Array() : [];
   }
 }

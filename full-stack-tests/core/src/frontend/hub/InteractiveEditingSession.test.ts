@@ -9,14 +9,24 @@ import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 import { BeDuration, compareStrings, DbOpcode, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
-import { ElementEditor3d, IModelApp, IModelConnection, InteractiveEditingSession, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { BatchType, Code, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
+import {
+  ElementEditor3d, GeometricModel3dState, IModelApp, IModelConnection, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection, TileLoadPriority,
+} from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
 describe("InteractiveEditingSession (#integration)", () => {
-  let imodel: RemoteBriefcaseConnection;
+  let briefcase: RemoteBriefcaseConnection | undefined;
+  let imodelId: string;
   let projectId: string;
+
+  async function closeIModel(): Promise<void> {
+    if (briefcase) {
+      await briefcase.close();
+      briefcase = undefined;
+    }
+  }
 
   before(async () => {
     const projectName = "iModelJsIntegrationTest";
@@ -29,14 +39,19 @@ describe("InteractiveEditingSession (#integration)", () => {
     IModelApp.eventSourceOptions.pollInterval = 10;
 
     projectId = await TestUtility.getTestProjectId(projectName);
-    const imodelId = await TestUtility.createIModel("interactiveEditingSessionTest", projectId, true);
-    imodel = await RemoteBriefcaseConnection.open(projectId, imodelId, OpenMode.ReadWrite);
+    imodelId = await TestUtility.createIModel("interactiveEditingSessionTest", projectId, true);
+  });
+
+  beforeEach(async () => {
+    briefcase = await RemoteBriefcaseConnection.open(projectId, imodelId, OpenMode.ReadWrite);
+  });
+
+  afterEach(async () => {
+    await closeIModel();
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
-
+    await closeIModel();
     await IModelApp.shutdown();
   });
 
@@ -44,11 +59,13 @@ describe("InteractiveEditingSession (#integration)", () => {
     return LineSegment3d.create(p1 || new Point3d(0, 0, 0), p2 || new Point3d(0, 0, 0));
   }
 
+  let codeSuffix = 1;
   async function createLineElement(editor: ElementEditor3d, model: Id64String, category: Id64String, line: LineSegment3d): Promise<Id64String> {
     const geomprops = IModelJson.Writer.toIModelJson(line);
     const origin = line.point0Ref;
     const angles = new YawPitchRollAngles();
     const code = Code.createEmpty();
+    code.value = (codeSuffix++).toString();
 
     const props3d = { classFullName: "Generic:PhysicalObject", model, category, code };
     await editor.createElement(props3d, origin, angles, geomprops);
@@ -68,6 +85,9 @@ describe("InteractiveEditingSession (#integration)", () => {
 
   it("accumulates geometry changes", async () => {
     // Create an empty physical model.
+    expect(briefcase).not.to.be.undefined;
+    const imodel = briefcase!;
+
     const editor = await ElementEditor3d.start(imodel);
     const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "Geom"));
     const dictModelId = await imodel.models.getDictionaryModel();
@@ -144,6 +164,137 @@ describe("InteractiveEditingSession (#integration)", () => {
 
     await imodel.pushChanges(""); // release locks
     await session.end();
+    await editor.end();
+  });
+
+  it("updates state of tile trees", async () => {
+    expect(briefcase).not.to.be.undefined;
+    const imodel = briefcase!;
+
+    // Initial geometric model contains one line element.
+    const editor = await ElementEditor3d.start(imodel);
+    const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "Geom"));
+    const dictModelId = await imodel.models.getDictionaryModel();
+    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "Geom",  { color: 0 });
+    const elem1 = await createLineElement(editor, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
+    await imodel.saveChanges();
+
+    await imodel.models.load([modelId]);
+    const model = imodel.models.getLoaded(modelId) as GeometricModel3dState;
+    expect(model).not.to.be.undefined;
+    const modelRange = await model.queryModelRange();
+
+    function createTileTree(): IModelTileTree {
+      const params: IModelTileTreeParams = {
+        id: "",
+        modelId,
+        iModel: imodel,
+        location: Transform.createIdentity(),
+        priority: TileLoadPriority.Primary,
+        formatVersion: 14,
+        options: {
+          allowInstancing: true,
+          edgesRequired: false,
+          batchType: BatchType.Primary,
+          is3d: true,
+        },
+        rootTile: {
+          contentId: "",
+          range: modelRange,
+          contentRange: modelRange,
+          maximumSize: 512,
+          isLeaf: true,
+        },
+      };
+
+      return new IModelTileTree(params);
+    }
+
+    const expectTreeState = async (tree: IModelTileTree | IModelTileTree[], expectedState: "static" | "interactive" | "dynamic" | "disposed", expectedHiddenElementCount: number) => {
+      // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
+      const waitTime = 150;
+      await BeDuration.wait(waitTime);
+
+      const trees = tree instanceof IModelTileTree ? [ tree ] : tree;
+      for (const t of trees) {
+        expect(t.tileState).to.equal(expectedState);
+        expect(t.hiddenElements.length).to.equal(expectedHiddenElementCount);
+      }
+    };
+
+    // No editing session currently active.
+    const tree1 = createTileTree();
+    expect(tree1.range.isAlmostEqual(modelRange)).to.be.true;
+    await expectTreeState(tree1, "static", 0);
+
+    const tree0 = createTileTree();
+    tree0.dispose();
+    await expectTreeState(tree0, "disposed", 0);
+
+    // Begin an editing session.
+    let session = await InteractiveEditingSession.begin(imodel);
+    const trees = [ tree1, createTileTree() ];
+    await expectTreeState(trees, "interactive", 0);
+    await expectTreeState(tree0, "disposed", 0);
+
+    // Insert a new element.
+    const elem2 = await createLineElement(editor, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(-10, 0, 0)));
+    await imodel.saveChanges();
+
+    // Newly-inserted elements don't exist in tiles, therefore don't need to be hidden.
+    // ###TODO: Test changes to range and content range...
+    trees.push(createTileTree());
+    await expectTreeState(tree0, "disposed", 0);
+    await expectTreeState(trees, "dynamic", 0);
+
+    // Modify an element.
+    await editor.startModifyingElements([ elem1 ]);
+    await editor.applyTransform(Transform.createTranslationXYZ(0, 5, 0));
+    await editor.write();
+    await imodel.saveChanges();
+
+    trees.push(createTileTree());
+    await expectTreeState(tree0, "disposed", 0);
+    await expectTreeState(trees, "dynamic", 1);
+
+    // Delete the same element.
+    await imodel.editing.deleteElements([ elem1 ]);
+    await imodel.saveChanges();
+    trees.push(createTileTree());
+    await expectTreeState(tree0, "disposed", 0);
+    await expectTreeState(trees, "dynamic", 1);
+
+    // Delete the other element.
+    await imodel.editing.deleteElements([ elem2 ]);
+    await imodel.saveChanges();
+    trees.push(createTileTree());
+    await expectTreeState(tree0, "disposed", 0);
+    await expectTreeState(trees, "dynamic", 2);
+
+    // ###TODO: test undo/redo (no frontend API for that currently...)
+
+    // Terminate the session.
+    await session.end();
+    trees.push(createTileTree());
+    await expectTreeState(tree0, "disposed", 0);
+    await expectTreeState(trees, "static", 0);
+
+    // Restart session then terminate with no changes.
+    session = await InteractiveEditingSession.begin(imodel);
+    const tree2 = trees.pop()!;
+    await expectTreeState(tree0, "disposed", 0);
+    await expectTreeState(trees, "interactive", 0);
+    tree2.dispose();
+    await expectTreeState(tree2, "disposed", 0);
+    await session.end();
+    await expectTreeState(trees, "static", 0);
+
+    for (const tree of trees) {
+      tree.dispose();
+      await expectTreeState(tree, "disposed", 0);
+    }
+
+    await imodel.pushChanges(""); // release locks
     await editor.end();
   });
 });
