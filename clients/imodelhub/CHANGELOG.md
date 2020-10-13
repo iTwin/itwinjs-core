@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodelhub-client
 
-This log was last generated on Thu, 08 Oct 2020 13:04:35 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Oct 2020 18:20:38 GMT and should not be manually modified.
+
+## 2.7.2
+Tue, 13 Oct 2020 18:20:38 GMT
+
+### Updates
+
+- LockEvent parsing fix
 
 ## 2.7.1
 Thu, 08 Oct 2020 13:04:35 GMT

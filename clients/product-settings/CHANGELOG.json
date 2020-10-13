@@ -2,6 +2,12 @@
   "name": "@bentley/product-settings-client",
   "entries": [
     {
+      "version": "2.7.2",
+      "tag": "@bentley/product-settings-client_v2.7.2",
+      "date": "Tue, 13 Oct 2020 18:20:39 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.7.1",
       "tag": "@bentley/product-settings-client_v2.7.1",
       "date": "Thu, 08 Oct 2020 13:04:35 GMT",

@@ -2,6 +2,12 @@
   "name": "@bentley/imodel-bridge",
   "entries": [
     {
+      "version": "2.7.2",
+      "tag": "@bentley/imodel-bridge_v2.7.2",
+      "date": "Tue, 13 Oct 2020 18:20:38 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.7.1",
       "tag": "@bentley/imodel-bridge_v2.7.1",
       "date": "Thu, 08 Oct 2020 13:04:35 GMT",
