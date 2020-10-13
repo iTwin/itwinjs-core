@@ -3,6 +3,10 @@ ignore: true
 ---
 # NextVersion
 
+## Updated version of Electron
+
+Updated version of electron used from 8.2.1 to 10.1.2. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
+
 ## Color mix property added to thematic gradient settings
 
 Thematic display gradient properties now supports a colorMix value for mixing the color of background map terrain or point clouds in with the thematic gradient color.  The `colorMix` property of [ThematicGradientSettings]($common) is a value between 0.0 and 1.0, defaulting to 0.0, which determines the percentage of the original color to blend in with the thematic gradient color (so 0.0 will be only the thematic gradient color, and 1.0 will be only the original terrain map or point cloud color).

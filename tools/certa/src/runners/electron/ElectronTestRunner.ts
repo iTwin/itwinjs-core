@@ -31,18 +31,31 @@ export class ElectronTestRunner {
       show: config.debug,
       webPreferences: {
         nodeIntegration: true,
+        enableRemoteModule: true,
       },
     });
 
+    const exitElectronApp = (exitCode: number) => {
+      // Passing exit code to parent process doesn't seem to work anymore with electron 10 - sending message with status instead
+      // See note in SpawnUtils.onExitElectronApp
+      if (process.send)
+        process.send({ exitCode });
+      app.exit(exitCode);
+    };
+
     ipcMain.on("certa-done", (_e: any, count: number) => {
-      rendererWindow.webContents.once("destroyed", () => app.exit(count));
+      rendererWindow.webContents.once("destroyed", () => {
+        exitElectronApp(count);
+      });
       setImmediate(() => rendererWindow.close());
     });
 
     ipcMain.on("certa-error", (_e: any, { message, stack }: any) => {
       console.error("Uncaught Error in Tests: ", message);
       console.error(stack);
-      rendererWindow.webContents.once("destroyed", () => app.exit(1));
+      rendererWindow.webContents.once("destroyed", () => {
+        exitElectronApp(1);
+      });
       rendererWindow.close();
     });
 
