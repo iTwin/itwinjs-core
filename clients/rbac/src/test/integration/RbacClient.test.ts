@@ -15,7 +15,6 @@ import { TestConfig } from "../TestConfig";
 //    - context-registry-service:read-only
 //    - rbac-user:external-client
 
-// Temporarily skipped to avoid Linux failures
 describe("RbacClient (#integration)", () => {
   const contextRegistry = new ContextRegistryClient();
   const rbacClient = new RbacClient();
