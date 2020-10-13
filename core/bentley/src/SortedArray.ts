@@ -33,11 +33,15 @@ export function shallowClone<T>(value: T) { return value; }
  * @public
  */
 export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedComparator<T, U>): { index: number, equal: boolean } {
+  return lowerBoundOfEquivalent(list, (element: U) => compare(value, element));
+}
+
+function lowerBoundOfEquivalent<T>(list: T[], criterion: (element: T) => number): { index: number, equal: boolean } {
   let low = 0;
   let high = list.length;
   while (low < high) {
     const mid = Math.floor((low + high) / 2);
-    const comp = compare(value, list[mid]);
+    const comp = criterion(list[mid]);
     if (0 === comp)
       return { index: mid, equal: true };
     else if (comp < 0)
@@ -144,6 +148,31 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
   public findEqual(value: T): T | undefined {
     const index = this.indexOf(value);
     return -1 !== index ? this._array[index] : undefined;
+  }
+
+  /** Find an element that compares as equivalent based on some criterion. If multiple elements are equivalent, the specific one returned is unspecified.
+   * As an example, consider a `SortedArray<ModelState>` which uses `ModelState.id` as its ordering criterion. To find a model by its Id,
+   * use `sortedArray.findEquivalent((element) => compareStrings(element.id, modelId))` where `modelId` is an [[Id64String]].
+   * @param criterion A function accepting an element and returning 0 if it compares as equivalent, a negative number if it compares as "less-than", or a positive value if it compares as "greater-than".
+   * @returns The first element found that meets the criterion, or `undefined` if no elements meet the criterion.
+   * @see [[indexOfEquivalent]].
+   * @beta
+   */
+  public findEquivalent(criterion: (element: T) => number): T | undefined {
+    const index = this.indexOfEquivalent((element: T) => 0 - criterion(element));
+    return -1 !== index ? this._array[index] : undefined;
+  }
+
+  /** Find the index of an element that compares as equivalent based on some criterion. If multiple elements are equivalent, the specific one returned is unspecified.
+   * As an example, consider a `SortedArray<ModelState>` which uses `ModelState.id` as its ordering criterion. To find the index of a model by its Id,
+   * use `sortedArray.indexOfEquivalent((element) => compareStrings(element.id, modelId))` where `modelId` is an [[Id64String]].
+   * @param criterion A function accepting an element and returning 0 if it compares as equivalent, a negative number if the element compares as "less-than", or a positive value if the element compares as "greater-than".
+   * @returns The index of the first element found that meets the criterion, or -1 if no elements meet the criterion.
+   * @beta
+   */
+  public indexOfEquivalent(criterion: (element: T) => number): number {
+    const bound = lowerBoundOfEquivalent(this._array, criterion);
+    return bound.equal ? bound.index : -1;
   }
 
   /**

@@ -6,12 +6,13 @@
  * @module Tiles
  */
 
-import { assert, DbOpcode, Id64, Id64Array } from "@bentley/bentleyjs-core";
+import {
+  assert, compareStrings, DbOpcode, Id64, Id64Array, Id64String, SortedArray,
+} from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass,
 } from "@bentley/imodeljs-common";
-import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { RenderSystem } from "../render/RenderSystem";
 import {
   RootIModelTile, Tile, TileContent, TileParams, TileRequest, TileTree,
@@ -45,6 +46,7 @@ export abstract class DynamicIModelTile extends Tile {
 class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   private readonly _hiddenElements: Id64.Uint32Set;
   public readonly transformToTree: Transform;
+  private readonly _elements: SortedArray<ElementTile>;
 
   private get _imodelRoot() { return this.parent as RootIModelTile; }
 
@@ -61,6 +63,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     super(params, parent.tree);
 
     this._hiddenElements = new Id64.Uint32Set();
+    this._elements = new SortedArray<ElementTile>((lhs, rhs) => compareStrings(lhs.contentId, rhs.contentId));
 
     const inverseTransform = parent.tree.iModelTransform.inverse();
     assert(undefined !== inverseTransform);
@@ -87,19 +90,37 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   }
 
   public handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void {
-    let updateRange = false;
-    let haveNewTiles = false;
+    assert(undefined !== this.children);
 
     for (const change of changes) {
-      updateRange = true;
       if (change.type !== DbOpcode.Insert)
         this._hiddenElements.addId(change.id);
 
-      // ###TODO create/update/delete child tiles...
+      let tile = this._elements.findEquivalent((tile: ElementTile) => compareStrings(tile.contentId, change.id));
+      if (change.type === DbOpcode.Delete) {
+        if (tile) {
+          this._elements.remove(tile);
+          const childIndex = this.children.indexOf(tile);
+          assert(-1 !== childIndex);
+          this.children.splice(childIndex, 1);
+        }
+      } else {
+        const range = change.range.isNull ? change.range.clone() : this.transformToTree.multiplyRange(change.range);
+        if (tile) {
+          range.clone(tile.range);
+        } else {
+          this._elements.insert(tile = new ElementTile(this, change.id, range));
+          this.children.push(tile);
+        }
+      }
     }
 
-    if (updateRange)
-      this.updateRange();
+    // Recompute range.
+    this.range.setNull();
+    for (const element of this._elements)
+      this.range.extendRange(element.range);
+
+    this._imodelRoot.updateDynamicRange(this);
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (errpr: Error) => void): void {
@@ -115,21 +136,38 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
     throw new Error("Root dynamic tile has no content");
   }
+}
 
-  private updateRange(): void {
-    const session = InteractiveEditingSession.get(this.iModel)!;
-    const changes = session.getGeometryChangesForModel(this.tree.modelId);
-    assert(undefined !== changes);
+/** Represents a single element that has been inserted or had its geometric properties modified during the current [[InteractiveEditingSession]].
+ * It has no graphics of its own; it has any number of child tiles, each of which have graphics of a different level of detail.
+ * Its contentId is the element's Id.
+ */
+class ElementTile extends Tile {
+  public constructor(parent: RootTile, elementId: Id64String, range: Range3d) {
+    super({
+      parent,
+      isLeaf: false,
+      contentId: elementId,
+      range,
+      maximumSize: parent.maximumSize,
+    }, parent.tree);
 
-    const scratchRange = Range3d.createNull();
-    this.range.setNull();
-    for (const change of changes) {
-      if (change.type !== DbOpcode.Delete && !change.range.isNull) {
-        const range = this.transformToTree.multiplyRange(change.range, scratchRange);
-        this.range.extendRange(range);
-      }
-    }
+    this.loadChildren();
+    this.setIsReady();
+  }
 
-    this._imodelRoot.updateDynamicRange(this);
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+    // Invoked from constructor. We'll add child tiles later as needed.
+    resolve([]);
+  }
+
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+    // ###TODO
+    return undefined;
+  }
+
+  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
+    // ###TODO
+    throw new Error("unimplemented");
   }
 }
