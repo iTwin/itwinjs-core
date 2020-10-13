@@ -326,7 +326,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
    * * perpendicular to a face of the unit cube.
    * * or pass through a nearby vertex or edge of the unit cube.
    * @param zVector existing z vector.
-   * @param zTolerance tolerance to determine if a z vector component is close to zero or 1.
+   * @param tolerance tolerance to determine if a z vector component is close to zero or 1.
    */
   private static snapVectorToCubeFeatures(zVector: XYAndZ, tolerance: number): Vector3d {
     const x = CubeNavigationAid.correctSmallNumber(zVector.x, tolerance);
@@ -355,7 +355,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
    * Adjust a worldToView matrix to favor both
    * * direct view at faces, edges, and corners of a view cube.
    * * heads up
-   * @param matrix candidate matrix
+   * @param worldToView candidate matrix
    * @param tolerance tolerance for cleaning up fuzz.  The default (1.0e-6) is appropriate if very dirty viewing operations are expected.
    * @param result optional result.
    */

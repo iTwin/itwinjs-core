@@ -112,7 +112,7 @@
     ],
     "extends": [
       "plugin:@bentley/ui",
-      "plugin:jsx-a11y/recommended"
+      "plugin:@bentley/jsdoc"
     ]
   }
 }

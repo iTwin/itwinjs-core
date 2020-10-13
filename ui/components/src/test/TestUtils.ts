@@ -13,7 +13,7 @@ import { TableFilterDescriptorCollection } from "../ui-components/table/columnfi
 
 // cSpell:ignore buttongroup
 
-
+/** @internal */
 export class TestUtils {
   private static _i18n?: I18N;
   private static _uiComponentsInitialized = false;

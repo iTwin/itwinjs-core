@@ -25,7 +25,6 @@ import { PropertyList, PropertyListProps } from "./PropertyList";
 /** Properties for [[PropertyGrid]] React component
  * @public
  */
-
 export interface PropertyGridProps extends CommonPropertyGridProps {
   /** Property data provider */
   dataProvider: IPropertyDataProvider;

@@ -5,7 +5,7 @@
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UiAbstract } from "../ui-abstract/UiAbstract";
 
-
+/** @internal */
 export class TestUtils {
   private static _i18n?: I18N;
   private static _uiAbstractInitialized = false;

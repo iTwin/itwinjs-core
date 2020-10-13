@@ -99,6 +99,9 @@
     "plugins": [
       "@bentley"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": [
+      "plugin:@bentley/imodeljs-recommended",
+      "plugin:@bentley/jsdoc"
+    ]
   }
 }

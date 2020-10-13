@@ -17,6 +17,7 @@ import { PropertyCategory, PropertyData } from "../../../../../ui-components/pro
 import * as faker from "faker";
 import { IPropertyGridModel } from "../../../../../ui-components/propertygrid/internal/PropertyGridModel";
 
+/** @internal */
 export interface GridModelLastItemData {
   [selectionKey: string]: {
     isLastInRootCategory: boolean;
@@ -24,32 +25,39 @@ export interface GridModelLastItemData {
   };
 }
 
+/** @internal */
 export interface PropertyGridModelTestData {
   testName: string;
   propertyData: PropertyData;
   expectedLastItemData: GridModelLastItemData;
 }
 
+/** @internal */
 export interface GridItemToMock {
   type: CategorizedPropertyTypes;
   isVisible: boolean;
 }
 
+/** @internal */
 export interface FlattenedPropertyBase {
   selectionKey: string;
 }
 
+/** @internal */
 export interface FlattenedRecord extends FlattenedPropertyBase {
   item: PropertyRecord;
   originalRecord: PropertyRecord;
 }
 
+/** @internal */
 export interface FlattenedCategory extends FlattenedPropertyBase {
   item: PropertyCategory;
 }
 
+/** @internal */
 export type FlattenedProperty = (FlattenedRecord | FlattenedCategory);
 
+/** @internal */
 export class FlatGridTestUtils {
   public static getSelectionKey(property: PropertyCategory, parentSelectionKey?: string): string;
   public static getSelectionKey(property: PropertyRecord, parentSelectionKey: string): string;

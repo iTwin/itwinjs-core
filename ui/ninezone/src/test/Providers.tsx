@@ -16,10 +16,12 @@ import { DragManager } from "../ui-ninezone/base/DragManager";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
+/** @internal */
 export type NineZoneProviderProps =
   PartialBy<RealNineZoneProviderProps, "measure" | "state" | "dispatch"> &
   Pick<DragManagerConsumerProps, "dragManagerRef">;
 
+/** @internal */
 export function NineZoneProvider(props: NineZoneProviderProps) {
   const { children, dragManagerRef, ...otherProps } = props;
   return (
@@ -36,6 +38,7 @@ export function NineZoneProvider(props: NineZoneProviderProps) {
   );
 }
 
+/** @internal */
 export function DragManagerProvider(props: { children?: React.ReactNode }) {
   const dragManager = React.useRef(new DragManager());
   return (
@@ -64,6 +67,7 @@ function DragManagerConsumer(props: DragManagerConsumerProps) {
 
 type DragItemInfo = Parameters<DragManager["handleDragStart"]>[0]["info"];
 
+/** @internal */
 export function createDragItemInfo(args?: Partial<DragItemInfo>): DragItemInfo {
   return {
     initialPointerPosition: new Point(),
@@ -74,6 +78,7 @@ export function createDragItemInfo(args?: Partial<DragItemInfo>): DragItemInfo {
   };
 }
 
+/** @internal */
 export function createDragStartArgs(): Parameters<DragManager["handleDragStart"]>[0] {
   return {
     info: createDragItemInfo(),
@@ -84,6 +89,7 @@ export function createDragStartArgs(): Parameters<DragManager["handleDragStart"]
   };
 }
 
+/** @internal */
 export function setRefValue<T>(ref: React.Ref<T>, value: T) {
   if (typeof ref === "function") {
     ref(value);
@@ -96,6 +102,7 @@ interface WithOnRenderProps {
   onRender?(): void;
 }
 
+/** @internal */
 export const withOnRender = <P extends {}, C>(
   // tslint:disable-next-line:variable-name
   Component: React.JSXElementConstructor<P> & C,
@@ -117,6 +124,7 @@ interface ContextConsumerProps<T> {
   contextRef?: React.RefObject<T>;
 }
 
+/** @internal */
 export function ContextConsumer<T>(props: ContextConsumerProps<T>) {
   const context = React.useContext(props.context);
   if (props.contextRef) {

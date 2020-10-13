@@ -157,6 +157,9 @@
     "plugins": [
       "@bentley"
     ],
-    "extends": "plugin:@bentley/ui"
+    "extends": [
+      "plugin:@bentley/ui",
+      "plugin:@bentley/jsdoc"
+    ]
   }
 }
