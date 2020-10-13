@@ -110,3 +110,10 @@ Behavior of `RelatedInstanceNodes` specification when used with many-to-x relati
 Previously, when traversing from a parent node, that is based on multiple instances on the "many" side of the relationship where the other side of the relationship points to the same other instance, we would see duplication.
 
 Now, in the situation described above, there will be no more duplication.
+
+## Hilite/Emphasis interaction modified.
+
+The visual interaction between hilited and emphasized geometry has been modified to look better.  Hilited geometry now always shows through emphasized geometry and visa versa.  Geometry which is both hilited and emphasized now shows the outline for both (provided they are of different widths).
+
+![Cylinder is hilited, Torus is emphasized, and Block is both hilited and emphasized](./assets/HiliteEmphasisInteraction.png)
+<p align="center">Cylinder is hilited, Torus is emphasized, and Block is both hilited and emphasized.</p>
