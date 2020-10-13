@@ -16,7 +16,9 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { RenderSystem } from "../render/RenderSystem";
-import { IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeParams } from "./internal";
+import {
+  DynamicIModelTile, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeParams,
+} from "./internal";
 
 /** @internal */
 export interface IModelTileTreeOptions {
@@ -112,18 +114,16 @@ class InteractiveState {
 /** Elements in the tile tree's model have been modified during the current interactive editing session. */
 class DynamicState {
   public readonly type = "dynamic";
-  public readonly appearanceProvider = new StaticAppearanceProvider();
+  public readonly rootTile: DynamicIModelTile;
   private readonly _dispose: () => void;
 
   public dispose(): void {
     this._dispose();
-    // ###TODO tiles etc
+    this.rootTile.dispose();
   }
 
   public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>, session: InteractiveEditingSession) {
-    this.addChanges(elemChanges);
-
-    // ###TODO tiles etc
+    this.rootTile = DynamicIModelTile.create(root, elemChanges);
 
     const removeEndingListener = session.onEnding.addOnce((_) => {
       root.transition(new StaticState(root));
@@ -133,21 +133,13 @@ class DynamicState {
       assert(session === _session);
       const elems = findElementChangesForModel(changes, root.tree.modelId);
       if (elems)
-        this.addChanges(elems);
+        this.rootTile.handleGeometryChanges(elems);
     });
 
     this._dispose = () => {
       removeEndingListener();
       removeGeomListener();
     };
-  }
-
-  private addChanges(changes: Iterable<ElementGeometryChange>): void {
-    for (const change of changes)
-      if (change.type !== DbOpcode.Insert)
-        this.appearanceProvider.hiddenElements.addId(change.id);
-
-    // ###TODO update tiles, ranges, etc.
   }
 }
 
@@ -162,6 +154,11 @@ const disposedState = new DisposedState();
 /** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to InteractiveEditingSession events. */
 type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState;
 
+/** The root tile for an [[IModelTileTree]].
+ * @internal
+ */
+export type RootIModelTile = Tile & { updateDynamicRange: (childTile: Tile) => void };
+
 /** Represents the root [[Tile]] of an [[IModelTileTree]]. The root tile has one or two direct child tiles which represent different branches of the tree:
  *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[InteractiveEditingSession]].
  *  - The dynamic branch, containing tiles representing the geometry of elements that have been modified during the current [[InteractiveEditingSession]].
@@ -170,6 +167,7 @@ type RootTileState = StaticState | InteractiveState | DynamicState | DisposedSta
 class RootTile extends Tile {
   private readonly _staticRoot: IModelTile;
   private _tileState: RootTileState;
+  private readonly _staticTreeContentRange?: Range3d;
 
   public get tileState(): RootTileState {
     return this._tileState;
@@ -178,13 +176,18 @@ class RootTile extends Tile {
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     const rootParams: TileParams = {
       ...params,
+      range: params.range.clone(),
+      contentRange: params.contentRange?.clone(),
       isLeaf: false,
       contentId: "",
     };
 
     super(rootParams, tree);
     this._staticRoot = new IModelTile(params, tree);
-    this.setIsReady();
+    this._staticTreeContentRange = tree.contentRange?.clone();
+
+    if (!this._contentRange)
+      this._contentRange = this._staticRoot.contentRange.clone();
 
     // Determine initial state.
     const session = InteractiveEditingSession.get(tree.iModel);
@@ -196,13 +199,13 @@ class RootTile extends Tile {
     }
 
     // Load the children immediately.
+    this.setIsReady();
     this.loadChildren();
   }
 
   public dispose(): void {
+    this.transition(disposedState);
     super.dispose();
-    this._tileState.dispose();
-    this._tileState = disposedState;
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -232,7 +235,7 @@ class RootTile extends Tile {
   public draw(args: TileDrawArgs): void {
     // Draw the static tiles, hiding any elements present in the dynamic tiles.
     if ("dynamic" === this._tileState.type)
-      args.appearanceProvider = this._tileState.appearanceProvider;
+      args.appearanceProvider = this._tileState.rootTile.appearanceProvider;
 
     const tiles: Tile[] = [];
     this._staticRoot.selectTiles(tiles, args, 0);
@@ -261,8 +264,36 @@ class RootTile extends Tile {
   }
 
   public transition(newState: RootTileState): void {
+    assert(newState.type !== this._tileState.type);
+    const resetRange = "dynamic" === this._tileState.type;
+
     this._tileState.dispose();
     this._tileState = newState;
+
+    if (resetRange)
+      this.resetRange();
+  }
+
+  private resetRange(): void {
+    this._staticRoot.range.clone(this.range);
+    this._staticRoot.contentRange.clone(this._contentRange);
+
+    if (this._staticTreeContentRange && this.tree.contentRange)
+      this._staticTreeContentRange.clone(this.tree.contentRange);
+
+  }
+
+  public updateDynamicRange(tile: Tile): void {
+    this.resetRange();
+    if (this._staticTreeContentRange && this.tree.contentRange && !tile.contentRange.isNull)
+        this.tree.contentRange.extendRange(tile.contentRange);
+
+    if (!tile.range.isNull)
+      this.range.extendRange(tile.range);
+
+    assert(undefined !== this._contentRange);
+    if (!tile.contentRange.isNull)
+      this._contentRange.extendRange(tile.contentRange);
   }
 }
 
@@ -329,6 +360,6 @@ export class IModelTileTree extends TileTree {
   /** Exposed strictly for tests. */
   public get hiddenElements(): Id64Array {
     const state = this._rootTile.tileState;
-    return "dynamic" === state.type ? state.appearanceProvider.hiddenElements.toId64Array() : [];
+    return "dynamic" === state.type ? state.rootTile.hiddenElements : [];
   }
 }

@@ -182,16 +182,23 @@ describe("InteractiveEditingSession (#integration)", () => {
     await imodel.models.load([modelId]);
     const model = imodel.models.getLoaded(modelId) as GeometricModel3dState;
     expect(model).not.to.be.undefined;
+    const location = Transform.createTranslationXYZ(0, 0, 2);
+
+    // NB: element ranges are minimum 1mm on each axis. Our line element is aligned to X axis.
     const modelRange = await model.queryModelRange();
+    modelRange.low.y = modelRange.low.z = -0.0005;
+    modelRange.high.y = modelRange.high.z = 0.0005;
+    location.inverse()!.multiplyRange(modelRange, modelRange);
 
     function createTileTree(): IModelTileTree {
       const params: IModelTileTreeParams = {
         id: "",
         modelId,
         iModel: imodel,
-        location: Transform.createIdentity(),
+        location,
         priority: TileLoadPriority.Primary,
         formatVersion: 14,
+        contentRange: modelRange.clone(),
         options: {
           allowInstancing: true,
           edgesRequired: false,
@@ -200,8 +207,8 @@ describe("InteractiveEditingSession (#integration)", () => {
         },
         rootTile: {
           contentId: "",
-          range: modelRange,
-          contentRange: modelRange,
+          range: modelRange.toJSON(),
+          contentRange: modelRange.toJSON(),
           maximumSize: 512,
           isLeaf: true,
         },
@@ -210,32 +217,36 @@ describe("InteractiveEditingSession (#integration)", () => {
       return new IModelTileTree(params);
     }
 
-    const expectTreeState = async (tree: IModelTileTree | IModelTileTree[], expectedState: "static" | "interactive" | "dynamic" | "disposed", expectedHiddenElementCount: number) => {
+    const expectTreeState = async (tree: IModelTileTree | IModelTileTree[], expectedState: "static" | "interactive" | "dynamic" | "disposed", expectedHiddenElementCount: number, expectedRange: Range3d) => {
       // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
       const waitTime = 150;
       await BeDuration.wait(waitTime);
 
+      const rangeTolerance = 0.0001;
       const trees = tree instanceof IModelTileTree ? [ tree ] : tree;
       for (const t of trees) {
         expect(t.tileState).to.equal(expectedState);
         expect(t.hiddenElements.length).to.equal(expectedHiddenElementCount);
+        expect(t.rootTile.range.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
+        expect(t.rootTile.contentRange.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
+        expect(t.contentRange!.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
       }
     };
 
     // No editing session currently active.
     const tree1 = createTileTree();
     expect(tree1.range.isAlmostEqual(modelRange)).to.be.true;
-    await expectTreeState(tree1, "static", 0);
+    await expectTreeState(tree1, "static", 0, modelRange);
 
     const tree0 = createTileTree();
     tree0.dispose();
-    await expectTreeState(tree0, "disposed", 0);
+    await expectTreeState(tree0, "disposed", 0, modelRange);
 
     // Begin an editing session.
     let session = await InteractiveEditingSession.begin(imodel);
     const trees = [ tree1, createTileTree() ];
-    await expectTreeState(trees, "interactive", 0);
-    await expectTreeState(tree0, "disposed", 0);
+    await expectTreeState(trees, "interactive", 0, modelRange);
+    await expectTreeState(tree0, "disposed", 0, modelRange);
 
     // Insert a new element.
     const elem2 = await createLineElement(editor, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(-10, 0, 0)));
@@ -244,8 +255,10 @@ describe("InteractiveEditingSession (#integration)", () => {
     // Newly-inserted elements don't exist in tiles, therefore don't need to be hidden.
     // ###TODO: Test changes to range and content range...
     trees.push(createTileTree());
-    await expectTreeState(tree0, "disposed", 0);
-    await expectTreeState(trees, "dynamic", 0);
+    const range2 = modelRange.clone();
+    range2.low.x = -10;
+    await expectTreeState(tree0, "disposed", 0, modelRange);
+    await expectTreeState(trees, "dynamic", 0, range2);
 
     // Modify an element.
     await editor.startModifyingElements([ elem1 ]);
@@ -253,45 +266,47 @@ describe("InteractiveEditingSession (#integration)", () => {
     await editor.write();
     await imodel.saveChanges();
 
+    const range3 = range2.clone();
+    range3.high.y += 5;
     trees.push(createTileTree());
-    await expectTreeState(tree0, "disposed", 0);
-    await expectTreeState(trees, "dynamic", 1);
+    await expectTreeState(tree0, "disposed", 0, modelRange);
+    await expectTreeState(trees, "dynamic", 1, range3);
 
     // Delete the same element.
     await imodel.editing.deleteElements([ elem1 ]);
     await imodel.saveChanges();
     trees.push(createTileTree());
-    await expectTreeState(tree0, "disposed", 0);
-    await expectTreeState(trees, "dynamic", 1);
+    await expectTreeState(tree0, "disposed", 0, modelRange);
+    await expectTreeState(trees, "dynamic", 1, range2);
 
     // Delete the other element.
     await imodel.editing.deleteElements([ elem2 ]);
     await imodel.saveChanges();
     trees.push(createTileTree());
-    await expectTreeState(tree0, "disposed", 0);
-    await expectTreeState(trees, "dynamic", 2);
+    await expectTreeState(tree0, "disposed", 0, modelRange);
+    await expectTreeState(trees, "dynamic", 2, modelRange);
 
     // ###TODO: test undo/redo (no frontend API for that currently...)
 
     // Terminate the session.
     await session.end();
     trees.push(createTileTree());
-    await expectTreeState(tree0, "disposed", 0);
-    await expectTreeState(trees, "static", 0);
+    await expectTreeState(tree0, "disposed", 0, modelRange);
+    await expectTreeState(trees, "static", 0, modelRange);
 
     // Restart session then terminate with no changes.
     session = await InteractiveEditingSession.begin(imodel);
     const tree2 = trees.pop()!;
-    await expectTreeState(tree0, "disposed", 0);
-    await expectTreeState(trees, "interactive", 0);
+    await expectTreeState(tree0, "disposed", 0, modelRange);
+    await expectTreeState(trees, "interactive", 0, modelRange);
     tree2.dispose();
-    await expectTreeState(tree2, "disposed", 0);
+    await expectTreeState(tree2, "disposed", 0, modelRange);
     await session.end();
-    await expectTreeState(trees, "static", 0);
+    await expectTreeState(trees, "static", 0, modelRange);
 
     for (const tree of trees) {
       tree.dispose();
-      await expectTreeState(tree, "disposed", 0);
+      await expectTreeState(tree, "disposed", 0, modelRange);
     }
 
     await imodel.pushChanges(""); // release locks

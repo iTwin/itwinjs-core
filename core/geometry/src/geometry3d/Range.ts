@@ -129,8 +129,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
 
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
-  public isAlmostEqual(other: Range3d): boolean {
-    return (this.low.isAlmostEqual(other.low) && this.high.isAlmostEqual(other.high))
+  public isAlmostEqual(other: Range3d, tol?: number): boolean {
+    return (this.low.isAlmostEqual(other.low, tol) && this.high.isAlmostEqual(other.high, tol))
       || (this.isNull && other.isNull);
   }
   /** copy low and high values from other. */
