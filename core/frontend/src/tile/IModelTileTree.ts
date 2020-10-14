@@ -341,11 +341,7 @@ export class IModelTileTree extends TileTree {
   }
 
   public draw(args: TileDrawArgs): void {
-    const tiles = this.selectTiles(args);
-    for (const tile of tiles)
-      tile.drawGraphics(args);
-
-    args.drawGraphics();
+    this._rootTile.draw(args);
   }
 
   public prune(): void {

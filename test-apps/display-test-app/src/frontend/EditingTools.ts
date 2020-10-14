@@ -17,17 +17,22 @@ export class EditingSessionTool extends Tool {
   public static get maxArgs() { return 0; }
 
   public run(): boolean {
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (!imodel)
-      return false;
+      return;
 
     const session = InteractiveEditingSession.get(imodel);
     if (session)
-      session.end().then(() => setTitle(imodel));
+      await session.end();
     else
-      InteractiveEditingSession.begin(imodel).then(() => setTitle(imodel));
+      await InteractiveEditingSession.begin(imodel);
 
-    return true;
+    setTitle(imodel);
   }
 }
 
@@ -38,14 +43,24 @@ export class DeleteElementsTool extends Tool {
   public static get maxArgs() { return 0; }
 
   public run(): boolean {
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (!imodel)
-      return false;
+      return;
 
     const elements = imodel.selectionSet.elements;
-    if (0 !== elements.size)
-      IModelWriteRpcInterface.getClient().deleteElements(imodel.getRpcProps(), Array.from(elements));
+    if (0 === elements.size)
+      return;
 
-    return true;
+    try {
+      await IModelWriteRpcInterface.getClient().deleteElements(imodel.getRpcProps(), Array.from(elements));
+      await imodel.saveChanges();
+    } catch (err) {
+      alert(err.toString());
+    }
   }
 }
