@@ -6,9 +6,10 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, compareStrings, DuplicatePolicy, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { ElementGeometryChange, Events, IModelWriteRpcInterface, ModelGeometryChanges, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
+import { IModelApp } from "./IModelApp";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];
@@ -110,15 +111,23 @@ export class InteractiveEditingSession {
 
   private handleGeometryChanges(props: ModelGeometryChangesProps[]): void {
     const changes = ModelGeometryChanges.iterable(props);
+    const modelIds: Id64String[] = [];
     for (const modelChanges of changes) {
       // ###TODO do we care about the model range?
       let list = this._geometryChanges.get(modelChanges.id);
+      modelIds.push(modelChanges.id);
       for (const elementChange of modelChanges.elements) {
         if (!list)
           this._geometryChanges.set(modelChanges.id, list = new SortedArray<ElementGeometryChange>((lhs, rhs) => compareStrings(lhs.id, rhs.id), DuplicatePolicy.Replace));
 
         list.insert(elementChange);
+        if (DbOpcode.Delete === elementChange.type) {
+          this.iModel.selectionSet.remove(elementChange.id);
+          this.iModel.hilited.setHilite(elementChange.id, false);
+        }
       }
+
+    IModelApp.tileAdmin.onModelGeometryChanged(modelIds);
     }
 
     this.onGeometryChanges.raiseEvent(changes, this);

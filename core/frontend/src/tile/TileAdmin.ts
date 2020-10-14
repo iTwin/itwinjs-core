@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
   defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
   RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
@@ -246,6 +246,8 @@ export abstract class TileAdmin {
   public abstract onCacheMiss(): void;
   /** @internal */
   public abstract onActiveRequestCanceled(tile: Tile): void;
+  /** @internal */
+  public abstract onModelGeometryChanged(modelIds: Iterable<Id64String>): void;
 
   /** Event raised when a request to load a tile's content completes.
    * @internal
@@ -1112,6 +1114,21 @@ class Admin extends TileAdmin {
       ++this._totalEmpty;
     else if (!tile.isDisplayable)
       ++this._totalUndisplayable;
+  }
+
+  /** The geometry of one or models has changed during an [[InteractiveEditingSession]]. Invalidate the scenes and feature overrides of any viewports
+   * viewing any of those models.
+   */
+  public onModelGeometryChanged(modelIds: Iterable<Id64String>): void {
+    for (const vp of this._viewports) {
+      for (const modelId of modelIds) {
+        if (vp.view.viewsModel(modelId)) {
+          vp.invalidateScene();
+          vp.setFeatureOverrideProviderChanged();
+          break;
+        }
+      }
+    }
   }
 
   public onActiveRequestCanceled(tile: Tile): void {
