@@ -13,20 +13,20 @@ beta;AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | Primitive
 beta;AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format
 beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps
 beta;AnyStructProperty = StructProperty | StructArrayProperty
-beta;class ArrayProperty 
-beta;ArrayPropertyProps 
-alpha;BaseClassDelta 
+beta;class ArrayProperty
+beta;ArrayPropertyProps
+alpha;BaseClassDelta
 beta;class BaseDiagnostic
 beta;BaseRule
-alpha;class BaseSchemaChange 
-alpha;class BaseSchemaChanges 
+alpha;class BaseSchemaChange
+alpha;class BaseSchemaChanges
 alpha;ChangeType
-alpha;ClassChanges 
+alpha;ClassChanges
 beta;class ClassDiagnostic
 beta;classModifierToString(modifier: ECClassModifier): string
-beta;ClassProps 
-beta;Constant 
-beta;ConstantProps 
+beta;ClassProps
+beta;Constant
+beta;ConstantProps
 beta;containerTypeToString(type: CustomAttributeContainerType): string
 beta;createClassDiagnosticClass
 beta;createCustomAttributeContainerDiagnosticClass
@@ -34,10 +34,10 @@ beta;createPropertyDiagnosticClass
 beta;createRelationshipConstraintDiagnosticClass
 beta;createSchemaDiagnosticClass
 beta;createSchemaItemDiagnosticClass
-beta;CustomAttributeClass 
-beta;CustomAttributeClassProps 
-alpha;CustomAttributeContainerChange 
-alpha;CustomAttributeContainerChanges 
+beta;CustomAttributeClass
+beta;CustomAttributeClassProps
+alpha;CustomAttributeContainerChange
+alpha;CustomAttributeContainerChanges
 beta;class CustomAttributeContainerDiagnostic
 beta;CustomAttributeContainerType
 beta;DecimalPrecision
@@ -51,47 +51,47 @@ beta;DiagnosticCodes:
 beta;Diagnostics:
 beta;DiagnosticType
 beta;diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem"
-beta;class ECClass 
+beta;class ECClass
 beta;ECClassModifier
 beta;ECName
-internal;ECObjectsError 
+internal;ECObjectsError
 beta;ECObjectsStatus
 beta;ECRuleSet: IRuleSet
 internal;ECStringConstants
 beta;ECVersion
 alpha;Editors
-beta;EntityClass 
-beta;EntityClassProps 
-alpha;EntityMixinChange 
-alpha;EntityMixinChanges 
-beta;Enumeration 
-beta;EnumerationArrayProperty 
-alpha;EnumerationChanges 
-beta;EnumerationProperty 
-beta;EnumerationPropertyProps 
-beta;EnumerationProps 
+beta;EntityClass
+beta;EntityClassProps
+alpha;EntityMixinChange
+alpha;EntityMixinChanges
+beta;Enumeration
+beta;EnumerationArrayProperty
+alpha;EnumerationChanges
+beta;EnumerationProperty
+beta;EnumerationPropertyProps
+beta;EnumerationProps
 beta;Enumerator
-alpha;EnumeratorChanges 
-alpha;EnumeratorDelta 
-alpha;EnumeratorMissing 
+alpha;EnumeratorChanges
+alpha;EnumeratorDelta
+alpha;EnumeratorMissing
 beta;EnumeratorProps
-beta;Format 
-alpha;FormatChanges 
-beta;class FormatDiagnosticReporter 
-beta;FormatProps 
+beta;Format
+alpha;FormatChanges
+beta;class FormatDiagnosticReporter
+beta;FormatProps
 internal;formatStringRgx: RegExp
 beta;FormatTraits
 internal;formatTraitsToArray(currentFormatTrait: FormatTraits): string[]
 beta;FormatType
 internal;formatTypeToString(type: FormatType): string
-alpha;FormatUnitChange 
-alpha;FormatUnitChanges 
+alpha;FormatUnitChange
+alpha;FormatUnitChanges
 beta;FractionalPrecision
 internal;getItemNamesFromFormatString(formatString: string): Iterable
 beta;IDiagnostic
 beta;IDiagnosticReporter
-beta;InvertedUnit 
-beta;InvertedUnitProps 
+beta;InvertedUnit
+beta;InvertedUnitProps
 beta;IRule
 beta;IRuleSet
 beta;IRuleSuppressionMap
@@ -104,9 +104,9 @@ beta;ISchemaItemLocater
 beta;ISchemaLocater
 beta;ISchemaPartVisitor
 beta;ISuppressionRule
-beta;KindOfQuantity 
-alpha;KindOfQuantityChanges 
-beta;KindOfQuantityProps 
+beta;KindOfQuantity
+alpha;KindOfQuantityChanges
+beta;KindOfQuantityProps
 beta;LazyLoadedConstant = LazyLoadedSchemaItem
 beta;LazyLoadedCustomAttributeClass = LazyLoadedSchemaItem
 beta;LazyLoadedECClass = LazyLoadedSchemaItem
@@ -125,11 +125,11 @@ beta;LazyLoadedSchemaItem
 beta;LazyLoadedStructClass = LazyLoadedSchemaItem
 beta;LazyLoadedUnit = LazyLoadedSchemaItem
 beta;LazyLoadedUnitSystem = LazyLoadedSchemaItem
-beta;LoggingDiagnosticReporter 
-beta;Mixin 
-beta;MixinProps 
-beta;NavigationProperty 
-beta;NavigationPropertyProps 
+beta;LoggingDiagnosticReporter
+beta;Mixin
+beta;MixinProps
+beta;NavigationProperty
+beta;NavigationPropertyProps
 beta;NoDelayedPromiseMethods
 beta;OverrideFormat
 beta;parseClassModifier(modifier: string): ECClassModifier | undefined
@@ -146,74 +146,74 @@ internal;parseScientificType(scientificType: string): ScientificType | undefined
 internal;parseShowSignOption(showSignOption: string): ShowSignOption | undefined
 beta;parseStrength(strength: string): StrengthType | undefined
 beta;parseStrengthDirection(direction: string): StrengthDirection | undefined
-beta;Phenomenon 
-beta;PhenomenonProps 
-alpha;PresentationUnitChange 
-alpha;PresentationUnitChanges 
-beta;PrimitiveArrayProperty 
-beta;PrimitiveArrayPropertyProps 
-beta;class PrimitiveOrEnumPropertyBase 
-beta;PrimitiveOrEnumPropertyBaseProps 
-beta;PrimitiveProperty 
-beta;PrimitivePropertyProps 
+beta;Phenomenon
+beta;PhenomenonProps
+alpha;PresentationUnitChange
+alpha;PresentationUnitChanges
+beta;PrimitiveArrayProperty
+beta;PrimitiveArrayPropertyProps
+beta;class PrimitiveOrEnumPropertyBase
+beta;PrimitiveOrEnumPropertyBaseProps
+beta;PrimitiveProperty
+beta;PrimitivePropertyProps
 beta;PrimitiveType
 beta;primitiveTypeToString(type: PrimitiveType): string
-beta;class Property 
-beta;PropertyCategory 
-beta;PropertyCategoryProps 
-alpha;PropertyChanges 
+beta;class Property
+beta;PropertyCategory
+beta;PropertyCategoryProps
+alpha;PropertyChanges
 beta;class PropertyDiagnostic
 alpha;PropertyEditResults
-alpha;PropertyMissing 
+alpha;PropertyMissing
 beta;PropertyProps
 beta;PropertyType
 beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty"
 beta;PropertyTypeUtils
-alpha;PropertyValueChange 
-beta;RelationshipClass 
-beta;RelationshipClassProps 
-beta;RelationshipConstraint 
-alpha;RelationshipConstraintChanges 
-alpha;RelationshipConstraintClassChange 
+alpha;PropertyValueChange
+beta;RelationshipClass
+beta;RelationshipClassProps
+beta;RelationshipConstraint
+alpha;RelationshipConstraintChanges
+alpha;RelationshipConstraintClassChange
 beta;class RelationshipConstraintDiagnostic
 beta;RelationshipConstraintProps
 beta;RelationshipEnd
 beta;relationshipEndToString(end: RelationshipEnd): string
 beta;RelationshipMultiplicity
-beta;Schema 
-beta;SchemaCache 
-alpha;SchemaChanges 
+beta;Schema
+beta;SchemaCache
+alpha;SchemaChanges
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
 alpha;SchemaCompareDirection
 alpha;SchemaComparer
-beta;SchemaContext 
+beta;SchemaContext
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
 alpha;SchemaEditResults
 internal;SchemaGraphUtil
 beta;class SchemaItem
-alpha;class SchemaItemChange 
-alpha;SchemaItemChanges 
+alpha;class SchemaItemChange
+alpha;SchemaItemChanges
 beta;class SchemaItemDiagnostic
 alpha;SchemaItemEditResults
 beta;SchemaItemKey
-alpha;SchemaItemMissing 
+alpha;SchemaItemMissing
 beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
 beta;SchemaKey
-beta;SchemaMap 
+beta;SchemaMap
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
 internal;SchemaReadHelper
-alpha;SchemaReferenceDelta 
-alpha;SchemaReferenceMissing 
+alpha;SchemaReferenceDelta
+alpha;SchemaReferenceMissing
 beta;SchemaReferenceProps
 beta;SchemaValidater
-beta;SchemaValidationVisitor 
+beta;SchemaValidationVisitor
 internal;SchemaWalker
 beta;ScientificType
 internal;scientificTypeToString(scientificType: ScientificType): string
@@ -223,16 +223,16 @@ beta;StrengthDirection
 beta;strengthDirectionToString(direction: StrengthDirection): string
 beta;strengthToString(strength: StrengthType): string
 beta;StrengthType
-beta;StructArrayProperty 
-beta;StructArrayPropertyProps 
-beta;StructClass 
+beta;StructArrayProperty
+beta;StructArrayPropertyProps
+beta;StructClass
 beta;StructClassProps = ClassProps
-beta;StructProperty 
-beta;StructPropertyProps 
-beta;class SuppressionDiagnosticReporter 
-beta;Unit 
-alpha;UnitLabelOverrideDelta 
-beta;UnitProps 
-beta;UnitSystem 
+beta;StructProperty
+beta;StructPropertyProps
+beta;class SuppressionDiagnosticReporter
+beta;Unit
+alpha;UnitLabelOverrideDelta
+beta;UnitProps
+beta;UnitSystem
 beta;UnitSystemProps = SchemaItemProps
-internal;XmlParser 
+internal;XmlParser
