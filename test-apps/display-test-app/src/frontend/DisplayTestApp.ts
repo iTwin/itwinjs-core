@@ -8,7 +8,7 @@ import {
 } from "@bentley/frontend-authorization-client";
 import {
   BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, ElectronRpcConfiguration,
-  ElectronRpcManager, IModelError, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
+  ElectronRpcManager, IModelError, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
   RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
@@ -203,7 +203,7 @@ const dtaFrontendMain = async () => {
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
+  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, DtaRpcInterface];
   if (ElectronRpcConfiguration.isElectron) {
     rpcInterfaces.push(NativeAppRpcInterface);
     ElectronRpcManager.initializeClient({}, rpcInterfaces);
@@ -236,7 +236,7 @@ const dtaFrontendMain = async () => {
     if (undefined !== iModelName) {
       const writable = configuration.openReadWrite ?? false;
       iModel = await openIModel(iModelName, writable);
-      setTitle(iModelName, writable);
+      setTitle(iModel);
     }
 
     await uiReady; // Now wait for the HTML UI to finish loading.

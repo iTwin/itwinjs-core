@@ -10,7 +10,7 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, RpcManager,
+  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -85,7 +85,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 }
 
 export const getRpcInterfaces = (appType: "native" | "browser"): RpcInterfaceDefinition[] => {
-  const rpcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
+  const rpcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, DtaRpcInterface];
   if ("native" === appType)
     rpcs.push(NativeAppRpcInterface);
 

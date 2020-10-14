@@ -158,7 +158,7 @@ export class Surface {
 
     try {
       const iModel = await openStandaloneIModel(filename, this.openReadWrite);
-      setTitle(filename, this.openReadWrite);
+      setTitle(iModel);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
     } catch (err) {

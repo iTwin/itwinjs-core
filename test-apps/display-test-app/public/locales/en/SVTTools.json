@@ -105,6 +105,12 @@
     },
     "ApplyModelTransform": {
       "keyin": "dta model transform"
+    },
+    "EditingSession": {
+      "keyin": "dta edit"
+    },
+    "DeleteElements": {
+      "keyin": "dta delete elements"
     }
   }
 }
