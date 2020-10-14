@@ -51,13 +51,16 @@ vec2 computeNearbyHilites() {
         nearest = nearest + readEdgePixel(float(x), float(y));
 
   nearest = nearest * vec2(float(hiliteWidth > 0.0), float(emphWidth > 0.0));
-  if (0.0 == nearest.x + nearest.y && maxWidth > 1.0) {
+
+  if ((0.0 == nearest.x && hiliteWidth > 1.0) || (0.0 == nearest.y && emphWidth > 1.0)) {
+    vec2 farthest = vec2(0.0, 0.0);
     for (int i = -2; i <= 2; i++) {
       float f = float(i);
-      nearest = nearest + readEdgePixel(f, -2.0) + readEdgePixel(-2.0, f) + readEdgePixel(f, 2.0) + readEdgePixel(2.0, f);
+      farthest = farthest + readEdgePixel(f, -2.0) + readEdgePixel(-2.0, f) + readEdgePixel(f, 2.0) + readEdgePixel(2.0, f);
     }
 
-    nearest = nearest * vec2(float(hiliteWidth > 1.0), float(emphWidth > 1.0));
+    farthest = farthest * vec2(float(hiliteWidth > 1.0), float(emphWidth > 1.0));
+    nearest = nearest + farthest;
   }
 
   return nearest;
@@ -80,16 +83,23 @@ const computeHiliteColor = "\nvec4 computeColor() { return computeOpaqueColor();
 const computeHiliteBaseColor = `
   vec4 baseColor = computeColor();
   vec2 flags = TEXTURE(u_hilite, v_texCoord).rg;
-  if (flags.x > 0.0)
-    return vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
   vec2 outline = computeNearbyHilites();
-  if (outline.x > 0.0)
-    return vec4(u_hilite_settings[0], 1.0);
-  if (flags.y > 0.0)
-    return vec4(mix(baseColor.rgb, u_hilite_settings[1], u_hilite_settings[2][1]), 1.0);
-  if (outline.y > 0.0)
-    return vec4(u_hilite_settings[1], 1.0);
-
+  if (u_hilite_width.y < u_hilite_width.x) { // check for emphasis outline first if it is thinner
+    if (outline.y > 0.0 && flags.y == 0.0)
+      return vec4(u_hilite_settings[1], 1.0);
+    if (outline.x > 0.0 && flags.x == 0.0)
+      return vec4(u_hilite_settings[0], 1.0);
+  } else {
+    if (outline.x > 0.0 && flags.x == 0.0)
+      return vec4(u_hilite_settings[0], 1.0);
+    if (outline.y > 0.0 && flags.y == 0.0)
+      return vec4(u_hilite_settings[1], 1.0);
+  }
+  float hiliteMix = flags.x * u_hilite_settings[2][0];
+  float emphasisMix = flags.y * u_hilite_settings[2][1];
+  baseColor.rgb *= (1.0 - (hiliteMix + emphasisMix));
+  baseColor.rgb += u_hilite_settings[0] * hiliteMix;
+  baseColor.rgb += u_hilite_settings[1] * emphasisMix;
   return baseColor;
 `;
 

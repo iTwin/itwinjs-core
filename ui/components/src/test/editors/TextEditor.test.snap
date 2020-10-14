@@ -5,7 +5,6 @@ exports[`<TextEditor /> renders correctly 1`] = `
   aria-label="editor.text"
   className="components-cell-editor components-text-editor"
   data-testid="components-text-editor"
-  defaultValue=""
   onChange={[Function]}
   readOnly={false}
   style={
@@ -14,6 +13,7 @@ exports[`<TextEditor /> renders correctly 1`] = `
     }
   }
   type="text"
+  value=""
 />
 `;
 
@@ -22,7 +22,6 @@ exports[`<TextEditor /> renders correctly with style 1`] = `
   aria-label="editor.text"
   className="components-cell-editor components-text-editor"
   data-testid="components-text-editor"
-  defaultValue=""
   onChange={[Function]}
   readOnly={false}
   style={
@@ -31,5 +30,6 @@ exports[`<TextEditor /> renders correctly with style 1`] = `
     }
   }
   type="text"
+  value=""
 />
 `;

@@ -3,7 +3,6 @@
 exports[`<NumericInputEditor /> renders correctly 1`] = `
 <NumericInput
   className="components-cell-editor components-numeric-input-editor"
-  defaultValue={0}
   onChange={[Function]}
   readOnly={false}
   strict={true}
