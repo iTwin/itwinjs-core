@@ -17,6 +17,7 @@ import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 import { openStandaloneIModel } from "./openStandaloneIModel";
+import { setTitle } from "./Title";
 
 // cspell:ignore textbox topdiv
 
@@ -157,6 +158,7 @@ export class Surface {
 
     try {
       const iModel = await openStandaloneIModel(filename, this.openReadWrite);
+      setTitle(filename, this.openReadWrite);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
     } catch (err) {

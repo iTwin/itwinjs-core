@@ -234,8 +234,9 @@ const dtaFrontendMain = async () => {
     let iModel: IModelConnection | undefined;
     const iModelName = configuration.iModelName;
     if (undefined !== iModelName) {
-      iModel = await openIModel(iModelName, configuration.openReadWrite ?? false);
-      setTitle(iModelName);
+      const writable = configuration.openReadWrite ?? false;
+      iModel = await openIModel(iModelName, writable);
+      setTitle(iModelName, writable);
     }
 
     await uiReady; // Now wait for the HTML UI to finish loading.

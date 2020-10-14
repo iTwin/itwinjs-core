@@ -444,7 +444,7 @@ export class Viewer extends Window {
   private async openIModel(filename: string): Promise<void> {
     try {
       await this.resetIModel(filename);
-      setTitle(filename);
+      setTitle(filename, this.surface.openReadWrite);
     } catch (_) {
       alert("Error - could not open file.");
     }
