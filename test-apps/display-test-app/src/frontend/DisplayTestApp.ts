@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
   BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, ElectronRpcConfiguration,
-  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
-  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, TileContentIdentifier,
+  ElectronRpcManager, IModelError, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
+  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
-  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, SnapshotConnection,
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, StandaloneConnection,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
@@ -23,6 +23,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
+import { openStandaloneIModel } from "./openStandaloneIModel";
 
 const configuration: DtaConfiguration = {};
 
@@ -58,10 +59,9 @@ async function retrieveConfiguration(): Promise<void> {
   });
 }
 
-// opens the configured iModel from disk
-async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
+async function openIModel(filename: string, writable: boolean): Promise<IModelConnection> {
   configuration.standalone = true;
-  const iModelConnection = await SnapshotConnection.openFile(filename);
+  const iModelConnection = await openStandaloneIModel(filename, writable);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
 }
@@ -203,7 +203,7 @@ const dtaFrontendMain = async () => {
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
+  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
   if (ElectronRpcConfiguration.isElectron) {
     rpcInterfaces.push(NativeAppRpcInterface);
     ElectronRpcManager.initializeClient({}, rpcInterfaces);
@@ -234,7 +234,7 @@ const dtaFrontendMain = async () => {
     let iModel: IModelConnection | undefined;
     const iModelName = configuration.iModelName;
     if (undefined !== iModelName) {
-      iModel = await openSnapshotIModel(iModelName);
+      iModel = await openIModel(iModelName, configuration.openReadWrite ?? false);
       setTitle(iModelName);
     }
 
@@ -273,7 +273,7 @@ async function initView(iModel: IModelConnection | undefined) {
     input: document.getElementById("browserFileSelector") as HTMLInputElement,
   } : undefined;
 
-  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector);
+  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
 
   // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
   // Consistently reproducible for some folks, not others...

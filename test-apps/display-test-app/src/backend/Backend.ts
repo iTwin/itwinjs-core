@@ -11,7 +11,7 @@ import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, RpcManager,
-  SnapshotIModelRpcInterface,
+  SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -85,7 +85,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 }
 
 export const getRpcInterfaces = (appType: "native" | "browser"): RpcInterfaceDefinition[] => {
-  const rpcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
+  const rpcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
   if ("native" === appType)
     rpcs.push(NativeAppRpcInterface);
 
@@ -112,6 +112,9 @@ const setupStandaloneConfiguration = () => {
 
   if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
     configuration.signInForStandalone = true;
+
+  if (undefined !== process.env.SVT_READ_WRITE)
+    configuration.openReadWrite = true;
 
   if (undefined !== process.env.SVT_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
