@@ -2369,13 +2369,16 @@ export class IModelCloneContext {
     dispose(): void;
     // @internal
     dump(outputFileName: string): void;
+    filterSubCategory(sourceSubCategoryId: Id64String): void;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
+    get hasSubCategoryFilter(): boolean;
     // @internal
     importCodeSpec(sourceCodeSpecId: Id64String): void;
     // @internal
     importFont(sourceFontNumber: number): void;
     get isBetweenIModels(): boolean;
+    isSubCategoryFiltered(subCategoryId: Id64String): boolean;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;

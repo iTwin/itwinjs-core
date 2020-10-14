@@ -20,8 +20,8 @@ export interface NumericFilterProps {
   placeholder?: string;
 }
 
-/** @internal */
 /* istanbul ignore next */
+/** @internal */
 export class NumericFilter extends React.Component<NumericFilterProps> {
   private _tooltipText = UiComponents.translate("table.filter.numericTooltip");      // "Input Methods: Range (x-y), Greater Then (>x), Less Then (<y)";
   private _placeholder = UiComponents.translate("table.filter.numericPlaceholder");  // "e.g. 3,10-15,>20"

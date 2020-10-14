@@ -12,6 +12,7 @@ import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 
 /* eslint-disable react/jsx-key */
 
+/** @internal */
 export class TestContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -20,6 +21,7 @@ export class TestContentControl extends ContentControl {
   }
 }
 
+/** @internal */
 export class TestWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -28,6 +30,7 @@ export class TestWidget extends WidgetControl {
   }
 }
 
+/** @internal */
 export class TestWidgetElement extends React.Component {
   public componentDidMount() {
   }
@@ -40,6 +43,7 @@ export class TestWidgetElement extends React.Component {
   }
 }
 
+/** @internal */
 export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -54,6 +58,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   }
 }
 
+/** @internal */
 export class TestFrontstage extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -146,6 +151,7 @@ export class TestFrontstage extends FrontstageProvider {
   }
 }
 
+/** @internal */
 export class TestFrontstage2 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -238,6 +244,7 @@ export class TestFrontstage2 extends FrontstageProvider {
   }
 }
 
+/** @internal */
 export class TestFrontstage3 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

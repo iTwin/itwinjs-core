@@ -121,7 +121,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /**
    * Sets provided ruleset as new ruleset for tree.
-   * @param activeRuleset Ruleset to provide to tree.
+   * @param ruleset Ruleset to provide to tree.
    */
   private _setViewType = async (ruleset: RegisteredRuleset) => {
     if (!IModelApp.viewManager || !this.state.activeView) return;

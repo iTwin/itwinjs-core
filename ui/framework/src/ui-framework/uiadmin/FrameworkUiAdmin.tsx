@@ -51,7 +51,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   private _localizedKeyinPreference: KeyinFieldLocalization = KeyinFieldLocalization.NonLocalized;
 
   public get localizedKeyinPreference(): KeyinFieldLocalization { return this._localizedKeyinPreference; }
-  public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference=preference; }
+  public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference = preference; }
 
   /** @internal */
   public onInitialized() { }
@@ -112,7 +112,7 @@ export class FrameworkUiAdmin extends UiAdmin {
           // istanbul ignore else
           if (tool.keyin === tool.englishKeyin)
             break;
-          // istanbul ignore next
+        // istanbul ignore next
         default: // eslint-disable-line no-fallthrough
         case KeyinFieldLocalization.NonLocalized:
           // istanbul ignore next
@@ -201,9 +201,9 @@ export class FrameworkUiAdmin extends UiAdmin {
   }
 
   /** Show a calculator at a particular location.
-   * @param location Location of the calculator, relative to the origin of htmlElement or the window.
    * @param initialValue Value initially displayed in the calculator.
    * @param resultIcon Icon displayed to the left of the value.
+   * @param location Location of the calculator, relative to the origin of htmlElement or the window.
    * @param onOk Function called when the OK button or the Enter key is pressed.
    * @param onCancel Function called when the Cancel button or the Escape key  is pressed.
    * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.

@@ -7,6 +7,7 @@ import {
   getDefaultNineZoneStagePanelsManagerProps, NineZoneNestedStagePanelsManager, NineZoneStagePanelsManager, StagePanelType,
 } from "../../ui-ninezone";
 
+/** @internal */
 export const getDefaultProps = () => ({
   panels: {
     0: {

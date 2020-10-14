@@ -19,7 +19,7 @@ import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatc
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
-
+/** @internal */
 export interface SampleAppState {
   placeHolder?: boolean;
 }
@@ -28,6 +28,8 @@ const initialState: SampleAppState = {
   placeHolder: false,
 };
 
+
+/** @internal */
 export interface RootState {
   sampleAppState: SampleAppState;
   testDifferentFrameworkKey?: FrameworkState;
@@ -38,6 +40,7 @@ export const SampleAppActions = {
   example: () => createAction("SampleApp:EXAMPLE"),
 };
 
+/** @internal */
 export type SampleAppActionsUnion = ActionsUnion<typeof SampleAppActions>;
 
 function SampleAppReducer(state: SampleAppState = initialState, action: SampleAppActionsUnion): DeepReadonly<SampleAppState> {
@@ -50,6 +53,7 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
   return state;
 }
 
+/** @internal */
 export class TestUtils {
   private static _i18n?: I18N;
   private static _uiFrameworkInitialized = false;
@@ -222,6 +226,7 @@ export class TestUtils {
 
 // cSpell:ignore testuser mailinator saml
 
+/** @internal */
 export const mockUserInfo = (): UserInfo => {
   const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
   const email = { id: "testuser001@mailinator.com" };
@@ -231,6 +236,7 @@ export const mockUserInfo = (): UserInfo => {
   return new UserInfo(id, email, profile, organization, featureTracking);
 };
 
+/** @internal */
 export const storageMock = () => {
   const storage: { [key: string]: any } = {};
   return {
@@ -253,6 +259,7 @@ export const storageMock = () => {
   };
 };
 
+/** @internal */
 export class UiSettingsStub implements UiSettings {
   public async deleteSetting(): Promise<UiSettingsResult> {
     return {
@@ -276,6 +283,7 @@ export class UiSettingsStub implements UiSettings {
   }
 }
 
+/** @internal */
 export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
 
 declare module "sinon" {

@@ -31,8 +31,8 @@ interface AutoCompleteFilterState {
   filters?: any;
 }
 
-/** @internal */
 /* istanbul ignore next */
+/** @internal */
 export class AutoCompleteFilter extends React.Component<AutoCompleteFilterProps, AutoCompleteFilterState> {
   private _placeholder = UiComponents.translate("button.label.search");
 

@@ -33,7 +33,7 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
   public static unsetValue: string = "UNSET";
 
   /** Initializes a new instance of the FilterDescriptor class.
-   * @param table           The owning Table.
+   * @param filterableTable The owning Table.
    * @param memberKey       The member (key).
    * @param memberType      The Type of the member.
    * @param filterOperator  The filter operator.
@@ -85,13 +85,13 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
 
   /** Gets the type Converter Name.
    */
-  public get typeConverterName(): string|undefined {
+  public get typeConverterName(): string | undefined {
     return this._typeConverterName;
   }
 
   /** Sets the member type.
    */
-  public set typeConverterName(value: string|undefined) {
+  public set typeConverterName(value: string | undefined) {
     this._typeConverterName = value;
   }
 

@@ -52,6 +52,8 @@ jobs:
 
       node ./common/scripts/install-run-rush rebuild -v --to reality-data-client
 
+      node ./common/scripts/install-run-rush rebuild -v --to usage-logging-client
+
       node ./common/scripts/install-run-rush rebuild -v --to @bentley/imodelhub-client-tests
 
       node ./common/scripts/install-run-rush rebuild -v --to rpcinterface-full-stack-tests
@@ -89,6 +91,11 @@ jobs:
   - script: 'npm run test:integration'
     workingDirectory: clients/reality-data
     displayName: 'Run Reality Data Client Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
+    workingDirectory: 'clients/usage-logging'
+    displayName: 'Run Usage Logging Tests'
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -179,7 +186,6 @@ jobs:
     inputs:
       testResultsFiles: 'clients/usage-logging/lib/test/junit_results.xml'
       testRunTitle: 'Client - Usage Logging Tests - $(Node_Version)'
-    enabled: false
     continueOnError: true
     condition: succeededOrFailed()
 

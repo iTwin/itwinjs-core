@@ -6,7 +6,7 @@
 import { Point3d } from "@bentley/geometry-core";
 import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool } from "@bentley/imodeljs-frontend";
 
-
+/** @internal */
 export class Tool1 extends PrimitiveTool {
   public static toolId = "Tool1";
   public readonly points: Point3d[] = [];

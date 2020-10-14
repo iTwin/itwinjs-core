@@ -305,7 +305,7 @@ const checkVertexHiliteDiscard = "return 0.0 == v_feature_hilited;";
 const computeHiliteColor = `
   float flags = floor(v_feature_hilited + 0.5);
   float hilited = extractNthBit(flags, kEmphBit_Hilite);
-  float emphasized = (1.0 - hilited) * extractNthBit(flags, kEmphBit_Emphasize);
+  float emphasized = extractNthBit(flags, kEmphBit_Emphasize);
   return vec4(hilited, emphasized, 0.0, 0.0);
 `;
 

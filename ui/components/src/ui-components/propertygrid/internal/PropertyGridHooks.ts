@@ -19,8 +19,6 @@ import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGri
 /**
  * Custom hook that gets propertyData from data provider and subscribes to further data changes.
  * Returned property data has links.onClick replaced by passed onPropertyLinkClick or default implementation
- * @param dataProvider Property data provider to get propertyData from.
- * @param onPropertyLinkClick function to replace links.onClick with.
  * @alpha
  */
 export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {

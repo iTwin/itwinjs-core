@@ -90,6 +90,21 @@ export class IModelCloneContext {
     return this._nativeContext.findElementId(sourceElementId);
   }
 
+  /** Filter out the specified SubCategory from GeometryStreams in the target iModel. */
+  public filterSubCategory(sourceSubCategoryId: Id64String): void {
+    this._nativeContext.filterSubCategoryId(sourceSubCategoryId);
+  }
+
+  /** Returns `true` if there are any SubCategories being filtered. */
+  public get hasSubCategoryFilter(): boolean {
+    return this._nativeContext.hasSubCategoryFilter();
+  }
+
+  /** Returns `true` if this SubCategory is being filtered. */
+  public isSubCategoryFiltered(subCategoryId: Id64String): boolean {
+    return this._nativeContext.isSubCategoryFiltered(subCategoryId);
+  }
+
   /** Import the specified font from the source iModel into the target iModel.
    * @internal
    */
