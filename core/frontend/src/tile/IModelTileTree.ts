@@ -248,8 +248,8 @@ class RootTile extends Tile {
       return;
 
     // Draw the dynamic tiles.
-    args.graphics.clear();
-    tiles.length = 0;
+    // args.graphics.clear(); ###TODO no, this holds the static graphics we just dispatched...
+    // tiles.length = 0;
     // ###TODO: this._dynamicRoot.selectTiles(tiles, args);
     // for (const tile of tiles)
     //   tile.drawGraphics(args);
