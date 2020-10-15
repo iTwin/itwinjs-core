@@ -65,6 +65,6 @@ class IModelCloner extends IModelTransformer {
     for (const key in used) {
       values.push(`${key}=${Math.round(used[key] / 1024 / 1024 * 100) / 100}MB `);
     }
-    Logger.logTrace(BackendLoggerCategory.IModelTransformer, `Memory: ${values.join()}`);
+    Logger.logInfo("Memory", `Memory: ${values.join()}`);
   }
 }

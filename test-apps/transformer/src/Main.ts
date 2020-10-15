@@ -18,6 +18,7 @@ import { SubCategoryFilterer } from "./SubCategoryFilterer";
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
   Logger.setLevel("Progress", LogLevel.Info);
+  Logger.setLevel("Memory", LogLevel.Info);
   if (false) {
     Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
     Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
