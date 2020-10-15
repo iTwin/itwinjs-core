@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module WidgetPanels
@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { PanelSide, panelSides } from "./Panel";
 import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
+import { Point, Timer } from "@bentley/ui-core";
 
 /** @internal */
 export interface WidgetPanelExpanderProps {
@@ -21,7 +22,18 @@ export interface WidgetPanelExpanderProps {
  * @internal
  */
 export function WidgetPanelExpander({ side }: WidgetPanelExpanderProps) {
+  const timer = React.useRef(new Timer(200));
+  const lastPosition = React.useRef(new Point());
   const dispatch = React.useContext(NineZoneDispatchContext);
+  React.useEffect(() => {
+    timer.current.setOnExecute(() => {
+      dispatch({
+        side,
+        collapsed: false,
+        type: "PANEL_SET_COLLAPSED",
+      });
+    });
+  }, [side, dispatch]);
   const className = classnames(
     "nz-widgetPanels-expander",
     `nz-${side}`,
@@ -29,12 +41,19 @@ export function WidgetPanelExpander({ side }: WidgetPanelExpanderProps) {
   return (
     <div
       className={className}
-      onMouseOverCapture={() => {
-        dispatch({
-          side,
-          collapsed: false,
-          type: "PANEL_SET_COLLAPSED",
-        });
+      onMouseOverCapture={(e) => {
+        lastPosition.current = new Point(e.clientX, e.clientY);
+        timer.current.start();
+      }}
+      onMouseOutCapture={() => {
+        timer.current.stop();
+      }}
+      onMouseMoveCapture={(e) => {
+        const newPosition = new Point(e.clientX, e.clientY);
+        if (lastPosition.current.getDistanceTo(newPosition) > 5) {
+          timer.current.start();
+          lastPosition.current = newPosition;
+        }
       }}
     />
   );

@@ -102,6 +102,21 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     }
   });
 
+  it("Post feature log using iTwin productID and no projectId (#integration)", async () => {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "2686", "3.4.99");
+
+    for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
+      const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), usageType);
+
+      const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
+      assert(resp);
+      assert.equal(resp.status, BentleyStatus.SUCCESS);
+      assert.equal(resp.message, "Accepted");
+      assert.isTrue(Guid.isGuid(resp.requestId));
+      assert.isAtLeast(resp.time, 0);
+    }
+  });
+
   it("Post feature log with project id (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());

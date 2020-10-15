@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module WidgetPanels
@@ -86,7 +86,8 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
   const horizontalPanel = isHorizontalPanelState(panel) ? panel : undefined;
   const [transition, setTransition] = React.useState<"prepared" | "transitioning">();
   const [size, setSize] = React.useState<number | undefined>(panel.size);
-  const mounted = React.useRef<boolean>(false);
+  const firstLayoutEffect = React.useRef(true);
+  // const lastTransitionTo = React.useRef<number | undefined>(0);
   const style = React.useMemo(() => {
     if (size === undefined)
       return undefined;
@@ -122,23 +123,25 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
     });
   });
   React.useLayoutEffect(() => {
+    const newSize = panel.collapsed ? 0 : panel.size;
     setTransition(undefined);
-    setSize(panel.size);
-  }, [panel.size])
+    setSize(newSize);
+  }, [panel.collapsed, panel.size])
   React.useLayoutEffect(() => {
-    if (!mounted.current)
+    if (firstLayoutEffect.current)
       return;
     setTransition("prepared");
   }, [panel.collapsed, panel.side]);
   React.useLayoutEffect(() => {
+    const transitionTo = panel.collapsed ? 0 : panel.size;
     if (transition === "prepared") {
-      const transitionTo = panel.collapsed ? 0 : panel.size;
       setTransition("transitioning");
       setSize(transitionTo);
+      return;
     }
   }, [transition, panel.side, panel.size, panel.collapsed]);
   React.useEffect(() => {
-    mounted.current = true;
+    firstLayoutEffect.current = false;
   }, []);
   const getBounds = React.useCallback(() => {
     assert(ref.current);

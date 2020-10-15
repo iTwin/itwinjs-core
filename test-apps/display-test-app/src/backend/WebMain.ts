@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
 import { Logger } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
 /* eslint-disable no-console */
@@ -45,9 +45,9 @@ const dtaWebMain = (async () => {
 
   // Enable CORS for all apis
   app.all("/*", (_req: any, res: any, next: any) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "POST, GET");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id");
+    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
+    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
+    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
     next();
   });
 
