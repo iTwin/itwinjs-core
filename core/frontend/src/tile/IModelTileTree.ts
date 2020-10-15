@@ -16,6 +16,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { RenderSystem } from "../render/RenderSystem";
+import { GraphicBranch } from "../render/GraphicBranch";
 import {
   DynamicIModelTile, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeParams,
 } from "./internal";
@@ -233,28 +234,34 @@ class RootTile extends Tile {
   }
 
   public draw(args: TileDrawArgs): void {
-    // Draw the static tiles, hiding any elements present in the dynamic tiles.
-    if ("dynamic" === this._tileState.type)
-      args.appearanceProvider = this._tileState.rootTile.appearanceProvider;
-
+    // Draw the static tiles.
     const tiles: Tile[] = [];
     this._staticRoot.selectTiles(tiles, args, 0);
     for (const tile of tiles)
       tile.drawGraphics(args);
 
-    args.drawGraphics();
-    args.appearanceProvider = undefined;
-    if ("dynamic" !== this._tileState.type)
+    if ("dynamic" !== this._tileState.type) {
+      args.drawGraphics();
       return;
+    }
+
+    // We need to hide any modified elements in the static tiles. Pull their graphics into a separate branch.
+    if (!args.graphics.isEmpty) {
+      const staticBranch = new GraphicBranch();
+      for (const staticGraphic of args.graphics.entries)
+        staticBranch.add(staticGraphic);
+
+      const appearanceProvider = this._tileState.rootTile.appearanceProvider;
+      args.graphics.clear();
+      args.graphics.add(args.context.createGraphicBranch(staticBranch, Transform.createIdentity(), { appearanceProvider }));
+    }
 
     // Draw the dynamic tiles.
-    // args.graphics.clear(); ###TODO no, this holds the static graphics we just dispatched...
-    // tiles.length = 0;
     // ###TODO: this._dynamicRoot.selectTiles(tiles, args);
     // for (const tile of tiles)
     //   tile.drawGraphics(args);
 
-    // args.drawGraphics();
+    args.drawGraphics();
   }
 
   public prune(expirationTime: BeDuration): void {
