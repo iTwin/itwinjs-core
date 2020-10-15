@@ -6,6 +6,7 @@
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
   "ensureConsistentVersions": true,
+  "suppressNodeLtsWarning": true,
   "approvedPackagesPolicy": {
     "reviewCategories": [
       "frontend",
