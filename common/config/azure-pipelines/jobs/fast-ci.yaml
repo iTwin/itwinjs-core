@@ -15,7 +15,7 @@ jobs:
   - template: ci-core.yaml
     parameters:
       name: Node_12
-      nodeVersion: 12.17.0
+      nodeVersion: 14.x
       pool:
         name: $(name)
         demands:
