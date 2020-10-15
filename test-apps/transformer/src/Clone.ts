@@ -1,10 +1,12 @@
-import { Logger } from "@bentley/bentleyjs-core";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BackendLoggerCategory, BackendRequestContext, Element, IModelDb, IModelJsFs, IModelTransformer, SnapshotDb } from "@bentley/imodeljs-backend";
+import { DbResult, Logger } from "@bentley/bentleyjs-core";
+import {
+  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, IModelDb, IModelJsFs, IModelTransformer, SnapshotDb,
+} from "@bentley/imodeljs-backend";
 import { CreateIModelProps, ElementProps } from "@bentley/imodeljs-common";
 
 export class CloneIModel {
@@ -28,17 +30,33 @@ export class CloneIModel {
 }
 
 class IModelCloner extends IModelTransformer {
+  private _numSourceElements = 0;
+  private _numSourceElementsProcessed = 0;
+  private _reportingInterval = 1000;
+  private _saveChangesInterval = 10000;
   /** Construct a new IModelCloner */
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
     super(sourceDb, targetDb, { cloneUsingBinaryGeometry: true });
+    this._numSourceElements = sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+    Logger.logInfo("Progress", `numSourceElements=${this._numSourceElements}`);
   }
   /** Override onTransformElement to log memory usage. */
   protected onTransformElement(sourceElement: Element): ElementProps {
-    this.logMemoryUsage();
-    // if (sourceElement.id === "0x4000000a3f9") {
-    //   Logger.logWarning(BackendLoggerCategory.IModelTransformer, `Problem Element ${sourceElement.id} found`);
-    // }
+    ++this._numSourceElementsProcessed;
+    if (0 === this._numSourceElementsProcessed % this._reportingInterval) {
+      this.logProgress();
+      this.logMemoryUsage();
+    }
+    if (0 === this._numSourceElementsProcessed % this._saveChangesInterval) {
+      Logger.logInfo("Progress", "Saving changes");
+      this.targetDb.saveChanges();
+    }
     return super.onTransformElement(sourceElement);
+  }
+  private logProgress(): void {
+    Logger.logInfo("Progress", `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements}`);
   }
   private logMemoryUsage(): void {
     const used: any = process.memoryUsage();

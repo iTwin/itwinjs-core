@@ -1,11 +1,13 @@
-import { DbResult, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlStatement, Element, IModelDb, IModelJsFs, IModelTransformer, PhysicalPartition, SnapshotDb, Subject } from "@bentley/imodeljs-backend";
-import { CreateIModelProps } from "@bentley/imodeljs-common";
+import { DbResult, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import {
+  BackendLoggerCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalPartition, SnapshotDb, Subject,
+} from "@bentley/imodeljs-backend";
+import { CreateIModelProps, ElementProps } from "@bentley/imodeljs-common";
 
 export class CloneNonPhysical {
   public static async clone(sourceFileName: string, targetFileName: string): Promise<void> {
@@ -30,7 +32,7 @@ class NonPhysicalCloner extends IModelTransformer {
   private _sourceSubjectCodeSpecId: Id64String;
   private _childPhysicalPartitionIds: Id64Set = new Set<Id64String>();
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
-    super(sourceDb, targetDb);
+    super(sourceDb, targetDb, { cloneUsingBinaryGeometry: true, noProvenance: true });
     this._sourceSubjectCodeSpecId = sourceDb.codeSpecs.getByName("bis:Subject").id;
   }
   public clone(): void {
@@ -41,9 +43,11 @@ class NonPhysicalCloner extends IModelTransformer {
   }
   protected shouldExportElement(sourceElement: Element): boolean {
     if ((sourceElement.code.spec === this._sourceSubjectCodeSpecId) && (sourceElement.code.getValue() === "Physical")) {
-      this.forEachChildPhysicalPartition(sourceElement.id, (partitionId: Id64String) => {
-        // create target PhysicalPartition remap physical partition to appropriate consolidated one
-        this._childPhysicalPartitionIds.add(partitionId);
+      const targetPartitionId = PhysicalModel.insert(this.targetDb, this.context.findTargetElementId(sourceElement.parent!.id), "Name");
+      this.importer.doNotUpdateElementIds.add(targetPartitionId);
+      this.forEachChildPhysicalPartition(sourceElement.id, (sourcePartitionId: Id64String) => {
+        this.context.remapElement(sourcePartitionId, targetPartitionId);
+        this._childPhysicalPartitionIds.add(sourcePartitionId);
       });
       return false;
     }
