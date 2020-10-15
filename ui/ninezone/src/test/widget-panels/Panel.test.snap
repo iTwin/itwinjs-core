@@ -95,6 +95,7 @@ exports[`WidgetPanel should render captured 1`] = `
 exports[`WidgetPanel should render collapsed 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-pinned nz-collapsed"
+  style="width: 0px;"
 >
   <div
     class="nz-content"
