@@ -111,6 +111,9 @@
     },
     "DeleteElements": {
       "keyin": "dta delete elements"
+    },
+    "MoveElements": {
+      "keyin": "dta move elements"
     }
   }
 }

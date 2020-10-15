@@ -7,7 +7,7 @@ import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
-  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, ElectronRpcConfiguration,
+  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface, ElectronRpcConfiguration,
   ElectronRpcManager, IModelError, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
   RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
@@ -203,7 +203,16 @@ const dtaFrontendMain = async () => {
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, DtaRpcInterface];
+  const rpcInterfaces: RpcInterfaceDefinition[] = [
+    DtaRpcInterface,
+    Editor3dRpcInterface,
+    IModelReadRpcInterface,
+    IModelTileRpcInterface,
+    IModelWriteRpcInterface,
+    SnapshotIModelRpcInterface,
+    StandaloneIModelRpcInterface,
+  ];
+
   if (ElectronRpcConfiguration.isElectron) {
     rpcInterfaces.push(NativeAppRpcInterface);
     ElectronRpcManager.initializeClient({}, rpcInterfaces);

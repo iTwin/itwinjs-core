@@ -27,7 +27,7 @@ import { TimePointComparisonTool } from "./TimePointComparison";
 import { FenceClassifySelectedTool } from "./Fence";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { PathDecorationTestTool } from "./PathDecorationTest";
-import { DeleteElementsTool, EditingSessionTool } from "./EditingTools";
+import { DeleteElementsTool, EditingSessionTool, MoveElementTool } from "./EditingTools";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -149,6 +149,7 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       ModelClipTool,
+      MoveElementTool,
       OpenIModelTool,
       OutputShadersTool,
       PurgeTileTreesTool,
