@@ -7,7 +7,7 @@
  */
 
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { ElementGeometryChange, Events, IModelWriteRpcInterface, ModelGeometryChanges, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
+import { ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 
@@ -18,8 +18,9 @@ const sessions: InteractiveEditingSession[] = [];
  * "Interactive editing" refers to modifying the geometry contained in the iModel while viewing the iModel's contents in one or more [[Viewports]] - e.g., creating new [GeometricElement]($backend)s, modifying their geometric properties, and/or deleting them. During the session, any changes made by the user will become visually reflected in the viewport, without the need to wait for brand-new tiles to be generated. The graphics update after every call to [[IModelConnection.saveChanges]] as well as in response to undo and redo.
  * When the session ends, new tiles will begin to be generated for any models whose geometry was modified during the session.
  * The session also provides notifications regarding changes to element geometry.
- * @note The [NativeAppRpcInterface]($common) and [IModelWriteRpcInterface]($common) rpc interfaces are required for interactive editing.
  * @note You **must** end the session before closing the iModel.
+ * @note The [NativeAppRpcInterface]($common) must be registered before beginning an interactive editing session.
+ * @note The [IModelWriteRpcInterface]($common) must be registered to modify elements during an interactive editing session.
  * @note iModels with older versions of the BisCore ECSchema (prior to version 0.1.11) do not support interactive editing.
  * @alpha
  */
@@ -55,7 +56,7 @@ export class InteractiveEditingSession {
    * the BisCore ECSchema older than v0.1.11.
    */
   public static async isSupported(imodel: IModelConnection): Promise<boolean> {
-    return IModelWriteRpcInterface.getClient().isInteractiveEditingSupported(imodel.getRpcProps());
+    return NativeAppRpcInterface.getClient().isInteractiveEditingSupported(imodel.getRpcProps());
   }
 
   /** Get the active editing session for the specified iModel, if any.
@@ -78,7 +79,7 @@ export class InteractiveEditingSession {
     const session = new InteractiveEditingSession(imodel);
     sessions.push(session);
     try {
-      const sessionStarted = await IModelWriteRpcInterface.getClient().toggleInteractiveEditingSession(imodel.getRpcProps(), true);
+      const sessionStarted = await NativeAppRpcInterface.getClient().toggleInteractiveEditingSession(imodel.getRpcProps(), true);
       assert(sessionStarted); // If it didn't, the rpc interface threw an error.
     } catch (e) {
       session.dispose();
@@ -110,7 +111,7 @@ export class InteractiveEditingSession {
     try {
       this.onEnding.raiseEvent(this);
     } finally {
-      const sessionEnded = await IModelWriteRpcInterface.getClient().toggleInteractiveEditingSession(this.iModel.getRpcProps(), false);
+      const sessionEnded = await NativeAppRpcInterface.getClient().toggleInteractiveEditingSession(this.iModel.getRpcProps(), false);
       assert(!sessionEnded);
       try {
         this.onEnded.raiseEvent(this);

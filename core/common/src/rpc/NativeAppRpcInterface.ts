@@ -79,7 +79,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.3.0";
+  public static interfaceVersion = "0.3.1";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -243,4 +243,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _config configuration for oidc client
    */
   public async authInitialize(_issuer: string, _config: any): Promise<void> { return this.forward(arguments); }
+
+  public async toggleInteractiveEditingSession(_tokenProps: IModelRpcProps, _startSession: boolean): Promise<boolean> { return this.forward(arguments); }
+  public async isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 }

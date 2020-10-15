@@ -185,18 +185,4 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const iModelDb = IModelDb.findByKey(tokenProps.key);
     return EditingFunctions.createAndInsertSpatialCategory(ClientRequestContext.current as AuthorizedClientRequestContext, iModelDb, scopeModelId, categoryName, appearance);
   }
-
-  public async toggleInteractiveEditingSession(tokenProps: IModelRpcProps, startSession: boolean): Promise<boolean> {
-    const imodel = IModelDb.findByKey(tokenProps.key);
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
-    if (val.error)
-      throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
-
-    return val.result!;
-  }
-
-  public async isInteractiveEditingSupported(tokenProps: IModelRpcProps): Promise<boolean> {
-    const imodel = IModelDb.findByKey(tokenProps.key);
-    return imodel.nativeDb.isGeometricModelTrackingSupported();
-  }
 }
