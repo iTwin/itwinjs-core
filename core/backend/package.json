@@ -6,7 +6,7 @@
   "typings": "lib/imodeljs-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <13.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run build",

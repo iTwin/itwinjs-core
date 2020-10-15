@@ -9,7 +9,7 @@
   "typings": "lib/backend-itwin-client",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <13.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run build",
