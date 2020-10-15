@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/certa",
+      "comment": "Update Access-Control header values",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/certa",
+  "email": "69857376+swbsi@users.noreply.github.com"
+}

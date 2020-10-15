@@ -401,6 +401,11 @@ export enum BatchType {
 
 // @public
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
+    static readonly accessControl: {
+        allowOrigin: string;
+        allowMethods: string;
+        allowHeaders: string;
+    };
     abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
@@ -5850,6 +5855,8 @@ export abstract class RpcRequest<TResponse = any> {
     retryInterval: number;
     protected abstract send(): Promise<number>;
     protected abstract setHeader(name: string, value: string): void;
+    // (undocumented)
+    protected setHeaders(): Promise<void>;
     protected setLastUpdatedTime(): void;
     get status(): RpcRequestStatus;
     // (undocumented)
