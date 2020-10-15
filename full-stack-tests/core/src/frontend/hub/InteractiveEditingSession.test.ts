@@ -16,6 +16,8 @@ import {
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
+let codeSuffix = 1;
+
 describe("InteractiveEditingSession (#integration)", () => {
   let briefcase: RemoteBriefcaseConnection | undefined;
   let imodelId: string;
@@ -59,7 +61,6 @@ describe("InteractiveEditingSession (#integration)", () => {
     return LineSegment3d.create(p1 || new Point3d(0, 0, 0), p2 || new Point3d(0, 0, 0));
   }
 
-  let codeSuffix = 1;
   async function createLineElement(editor: ElementEditor3d, model: Id64String, category: Id64String, line: LineSegment3d): Promise<Id64String> {
     const geomprops = IModelJson.Writer.toIModelJson(line);
     const origin = line.point0Ref;
@@ -89,9 +90,9 @@ describe("InteractiveEditingSession (#integration)", () => {
     const imodel = briefcase!;
 
     const editor = await ElementEditor3d.start(imodel);
-    const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "Geom"));
+    const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "GeomChanges"));
     const dictModelId = await imodel.models.getDictionaryModel();
-    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "Geom",  { color: 0 });
+    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "GeomChanges",  { color: 0 });
     await imodel.saveChanges();
     await imodel.pushChanges("line 1"); // release locks
 
@@ -173,9 +174,9 @@ describe("InteractiveEditingSession (#integration)", () => {
 
     // Initial geometric model contains one line element.
     const editor = await ElementEditor3d.start(imodel);
-    const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "Geom"));
+    const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "TreeState"));
     const dictModelId = await imodel.models.getDictionaryModel();
-    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "Geom",  { color: 0 });
+    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "TreeState",  { color: 0 });
     const elem1 = await createLineElement(editor, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
     await imodel.saveChanges();
 
