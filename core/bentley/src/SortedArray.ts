@@ -159,7 +159,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
    * @beta
    */
   public findEquivalent(criterion: (element: T) => number): T | undefined {
-    const index = this.indexOfEquivalent((element: T) => 0 - criterion(element));
+    const index = this.indexOfEquivalent(criterion);
     return -1 !== index ? this._array[index] : undefined;
   }
 
@@ -171,7 +171,8 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
    * @beta
    */
   public indexOfEquivalent(criterion: (element: T) => number): number {
-    const bound = lowerBoundOfEquivalent(this._array, criterion);
+    // NB: Must invert the ordering.
+    const bound = lowerBoundOfEquivalent(this._array, (elem: T) => 0 - criterion(elem));
     return bound.equal ? bound.index : -1;
   }
 
