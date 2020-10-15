@@ -9,6 +9,8 @@ import * as path from "path";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BackendLoggerCategory, IModelHost } from "@bentley/imodeljs-backend";
 import { CloneIModel } from "./Clone";
+import { CloneRepositoryModel } from "./CloneRepositoryModel";
+import { CloneNonPhysical } from "./CloneNonPhysical";
 
 // interface Args {
 //   input: string;
@@ -69,17 +71,26 @@ import { CloneIModel } from "./Clone";
   //   argv.map as string, argv.mapBias as number,
   //   argv.classifiedURL as string, argv.classifiedName as string, argv.classifiedOutside as string, argv.classifiedInside as string);
 
-  process.stdout.write(`Transform2${EOL}`);
-  let sourceFileName: string;
-  let targetFileName: string;
   if (true) {
-    sourceFileName = "D:/data/bim/snapshots/467d20b7-cf9b-4407-9052-237790253db7.bim";
-    targetFileName = path.join(__dirname, "fmg-clone.bim");
+    let sourceFileName: string;
+    let targetFileName: string;
+    if (true) {
+      sourceFileName = "D:/data/bim/snapshots/467d20b7-cf9b-4407-9052-237790253db7.bim";
+      targetFileName = path.join(__dirname, "fmg-clone.bim");
+    } else {
+      sourceFileName = "D:/data/bim/snapshots/shell4.bim";
+      targetFileName = path.join(__dirname, "shell4-clone.bim");
+    }
+    process.stdout.write(`CloneIModel ${sourceFileName} --> ${targetFileName}${EOL}`);
+    await CloneIModel.clone(sourceFileName, targetFileName);
   } else {
-    sourceFileName = "D:/data/bim/snapshots/shell4.bim";
-    targetFileName = path.join(__dirname, "shell4-clone.bim");
+    const sourceFileName = "D:/data/bim/snapshots/467d20b7-cf9b-4407-9052-237790253db7.bim";
+    const targetFileName1 = path.join(__dirname, "fmg-repository-model.bim");
+    process.stdout.write(`CloneRepositoryModel ${sourceFileName} --> ${targetFileName1}${EOL}`);
+    await CloneRepositoryModel.clone(sourceFileName, targetFileName1);
+    const targetFileName2 = path.join(__dirname, "fmg-non-physical.bim");
+    process.stdout.write(`CloneNonPhysical ${sourceFileName} --> ${targetFileName2}${EOL}`);
+    await CloneNonPhysical.clone(sourceFileName, targetFileName2);
   }
-  process.stdout.write(`Clone ${sourceFileName} --> ${targetFileName}${EOL}`);
-  await CloneIModel.clone(sourceFileName, targetFileName);
   await IModelHost.shutdown();
 })();
