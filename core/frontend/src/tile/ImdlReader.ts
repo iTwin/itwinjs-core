@@ -243,12 +243,17 @@ export class ImdlReader extends GltfReader {
       return undefined;
 
     let textureType = RenderTexture.Type.Normal;
-    if (JsonUtils.asBool(namedTex.isGlyph))
+    const isGlyph = JsonUtils.asBool(namedTex.isGlyph);
+    const isTileSection = !isGlyph && JsonUtils.asBool(namedTex.isTileSection);
+    if (isGlyph)
       textureType = RenderTexture.Type.Glyph;
-    else if (JsonUtils.asBool(namedTex.isTileSection))
+    else if (isTileSection)
       textureType = RenderTexture.Type.TileSection;
 
-    const params = new RenderTexture.Params(namedTex.isGlyph ? undefined : name, textureType);
+    // We produce unique tile sections for very large (> 8 megapixel) textures, and unique glyph atlases for raster text.
+    // Neither should be cached.
+    const cacheable = !isGlyph && !isTileSection;
+    const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
     return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
   }
 
