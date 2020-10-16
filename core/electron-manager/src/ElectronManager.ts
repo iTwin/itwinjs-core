@@ -124,7 +124,9 @@ export class IModelJsElectronManager extends ElectronManager {
   }
 
   public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
-    // Also handle any "electron://" requests and redirect them to "file://" URLs
+    await app.whenReady();
+    // handle any "electron://" requests and redirect them to "file://" URLs
+    // should registerFileProtocol after app is ready, https://www.electronjs.org/docs/api/protocol
     protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
 
     await super.initialize(windowOptions); // must be after registering protocol
