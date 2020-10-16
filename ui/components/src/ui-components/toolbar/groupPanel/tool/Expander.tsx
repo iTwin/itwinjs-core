@@ -15,7 +15,6 @@ import { GroupTool, GroupToolProps } from "./Tool";
 /** Properties of [[GroupToolExpander]] component.
  * @internal
  */
-
 export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" | "children">, NoChildrenProps {
 }
 

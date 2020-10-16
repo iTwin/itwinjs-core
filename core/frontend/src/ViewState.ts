@@ -32,7 +32,7 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileTreeReference, TileTreeSet } from "./tile/internal";
+import { addAnimatedTileTreeReferences, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -1817,14 +1817,18 @@ export abstract class ViewState3d extends ViewState {
   }
 }
 
-/** Maps each model in a [[SpatialViewState]]'s [[ModelSelectorState]] to a [[TileTreeReference]].
+/** Maps each model in a [[SpatialViewState]]'s [[ModelSelectorState]] to a set of [[TileTreeReference]]s.
+ * Each model will have at least 1 tree reference. If the display style's schedule script applies transforms to
+ * the model, an additional tree reference will be present for each transform. The tree references are stored in an
+ * array with the first entry always corresponding to the non-transformed tree.
  * @internal
  */
-export class SpatialModelTileTrees {
+class SpatialTileTrees {
   protected _allLoaded = false;
   protected readonly _view: SpatialViewState;
-  protected _treeRefs = new Map<Id64String, TileTreeReference>();
-  private _swapTreeRefs = new Map<Id64String, TileTreeReference>();
+  protected _treeRefs = new Map<Id64String, TileTreeReference[]>();
+  private _swapTreeRefs = new Map<Id64String, TileTreeReference[]>();
+  private _scheduleScript?: RenderScheduleState.Script;
 
   public constructor(view: SpatialViewState) {
     this._view = view;
@@ -1835,11 +1839,20 @@ export class SpatialModelTileTrees {
   }
 
   private load(): void {
-    if (this._allLoaded)
-      return;
+    if (!this._allLoaded) {
+      this._allLoaded = true;
+      this.update();
+    }
 
-    this._allLoaded = true;
+    const script = this._view.displayStyle.scheduleScript;
+    if (script !== this._scheduleScript) {
+      this._scheduleScript = script;
+      this.updateAnimated();
+    }
+  }
 
+  /** Update the set of tile tree references to match the model selector. */
+  private update(): void {
     const prev = this._treeRefs;
     const cur = this._swapTreeRefs;
     this._treeRefs = cur;
@@ -1853,20 +1866,30 @@ export class SpatialModelTileTrees {
         continue;
       }
 
-      const model = this._iModel.models.getLoaded(modelId);
-      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
-      if (undefined !== model3d) {
-        const ref = this.createTileTreeReference(model3d);
-        if (undefined !== ref)
-          cur.set(modelId, ref);
+      const model = this._iModel.models.getLoaded(modelId)?.asGeometricModel3d;
+      if (undefined !== model)
+        cur.set(modelId, [model.createTileTreeReference(this._view)]);
+    }
+  }
+
+  /** Update the sets of animated tile tree references to match the schedule script. */
+  private updateAnimated(): void {
+    const script = this._scheduleScript?.containsTransform ? this._scheduleScript : undefined;
+    for (const [modelId, refs] of this._treeRefs) {
+      refs.length = 1;
+      if (undefined !== script) {
+        const model = this._iModel.models.getLoaded(modelId)?.asGeometricModel3d;
+        if (model)
+          addAnimatedTileTreeReferences(refs, this._view, model, script)
       }
     }
   }
 
   public forEach(func: (treeRef: TileTreeReference) => void): void {
     this.load();
-    for (const value of this._treeRefs.values())
-      func(value);
+    for (const refs of this._treeRefs.values())
+      for (const ref of refs)
+        func(ref);
   }
 
   protected createTileTreeReference(model: GeometricModel3dState): TileTreeReference | undefined {
@@ -1884,7 +1907,7 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public static get className() { return "SpatialViewDefinition"; }
   public modelSelector: ModelSelectorState;
-  private readonly _treeRefs: SpatialModelTileTrees;
+  private readonly _treeRefs: SpatialTileTrees;
 
   /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],
    * and a non-persistent [[DisplayStyle3dState]] with default values for all of its components. Generally after creating a blank SpatialViewState,
@@ -1921,7 +1944,7 @@ export class SpatialViewState extends ViewState3d {
     if (arg3 instanceof SpatialViewState) // from clone
       this.modelSelector = arg3.modelSelector.clone();
 
-    this._treeRefs = new SpatialModelTileTrees(this);
+    this._treeRefs = new SpatialTileTrees(this);
   }
 
   public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }

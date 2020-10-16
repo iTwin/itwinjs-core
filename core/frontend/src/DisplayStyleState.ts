@@ -126,7 +126,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._backgroundDrapeMap.clearLayers();
   }
 
-  /** @internal */
+  /** @beta
+   * call function for each reality model attached to this display style.
+   * @see [[ContextRealityModelProps]].
+   */
   public forEachRealityModel(func: (model: ContextRealityModelState) => void): void {
     for (const model of this._contextRealityModels)
       func(model);
@@ -205,9 +208,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.detachRealityModelByIndex(index);
   }
 
+  /** Find index of a reality model.
+   * @param accept Method that returns true to indicate that the model index should be returned.
+   * @returns the index for the reality model that was accepted. -1 if none are accepted.
+   * @beta
+   */
+  public findRealityModelIndex(accept: (model: ContextRealityModelState) => boolean): number {
+    return this._contextRealityModels.findIndex((model) => accept(model));
+  }
+
   /**
    * Detach a context reality model from its index.
    * @see [[ContextRealityModelProps]].
+   * @param index The reality model index or -1 to detach all models.
    * @beta
    * */
   public detachRealityModelByIndex(index: number): void {
@@ -216,9 +229,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (!Array.isArray(props) || index >= this._contextRealityModels.length || index >= props.length)
       return;
 
-    assert(this._contextRealityModels[index].url === props[index].tilesetUrl);
-    props.splice(index, 1);
-    this._contextRealityModels.splice(index, 1);
+    if (index < 0) {
+      props.splice(0, props.length);
+      this._contextRealityModels.splice(0, this._contextRealityModels.length);
+    } else {
+      assert(this._contextRealityModels[index].url === props[index].tilesetUrl);
+      props.splice(index, 1);
+      this._contextRealityModels.splice(index, 1);
+    }
   }
 
   /**

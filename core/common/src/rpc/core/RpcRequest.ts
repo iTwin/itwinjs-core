@@ -484,7 +484,7 @@ export abstract class RpcRequest<TResponse = any> {
     RpcRequest.events.raiseEvent(RpcRequestEvent.PendingUpdateReceived, this);
   }
 
-  private async setHeaders(): Promise<void> {
+  protected async setHeaders(): Promise<void> {
     const versionHeader = this.protocol.protocolVersionHeaderName;
     if (versionHeader && RpcProtocol.protocolVersion && this.isHeaderAvailable(versionHeader)) {
       this.setHeader(versionHeader, RpcProtocol.protocolVersion.toString());

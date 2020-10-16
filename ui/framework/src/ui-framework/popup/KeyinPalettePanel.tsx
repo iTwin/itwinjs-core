@@ -22,7 +22,6 @@ const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
 const KEYIN_HISTORY_KEY = "historyArray";
 
 /** @internal */
-
 export function clearKeyinPaletteHistory() {
   const uiSettings = UiFramework.getUiSettings();
   // istanbul ignore else
@@ -41,7 +40,7 @@ interface KeyinPalettePanelProps {
 /**
  * @internal
  */
-export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allowedHistoryLength = 6}: KeyinPalettePanelProps) {
+export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength = 6 }: KeyinPalettePanelProps) {
   const [currentKeyin, setCurrentKeyin] = React.useState<string>("");
   const placeholderLabel = React.useRef(UiFramework.translate("keyinbrowser.placeholder"));
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -54,9 +53,9 @@ export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allow
       const settingsResult = await uiSettings.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
       // istanbul ignore else
       if (UiSettingsStatus.Success === settingsResult.status) {
-        setHistoryKeyins (settingsResult.setting) ;
+        setHistoryKeyins(settingsResult.setting);
       } else {
-        setHistoryKeyins ([]);
+        setHistoryKeyins([]);
       }
     }
 
@@ -64,7 +63,7 @@ export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allow
   }, [uiSettings]);
 
   // istanbul ignore next
-  const storeHistoryKeyins = React.useCallback (async (value: string[]) => {
+  const storeHistoryKeyins = React.useCallback(async (value: string[]) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     const result = await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, value)
     if (result.status !== UiSettingsStatus.Success) {
@@ -111,7 +110,7 @@ export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allow
       IModelApp.notifications.outputMessage(errorDetails);
     } else {
       // istanbul ignore next
-      if (value.length < 400 && value !== ClearKeyinPaletteHistoryTool.keyin && value !==ClearKeyinPaletteHistoryTool.englishKeyin) {
+      if (value.length < 400 && value !== ClearKeyinPaletteHistoryTool.keyin && value !== ClearKeyinPaletteHistoryTool.englishKeyin) {
         const newHistoryEntries: string[] = [value];
         for (const entry of historyKeyins) {
           if (entry !== value) {
@@ -130,7 +129,7 @@ export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allow
   }, [storeHistoryKeyins, onKeyinExecuted, historyKeyins, allowedHistoryLength]);
 
   const selectKeyin = React.useCallback(() => {
-  // istanbul ignore else
+    // istanbul ignore else
     if (inputRef.current) {
       inputRef.current.focus();
       inputRef.current.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length);
@@ -142,7 +141,7 @@ export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allow
     selectKeyin();
   }, [selectKeyin]);
 
-  const getKeyinFromListboxValue = (value: string|undefined) => {
+  const getKeyinFromListboxValue = (value: string | undefined) => {
     // istanbul ignore else
     if (value) {
       const indexSeparator = value.search(keyinSeparator);
@@ -199,7 +198,7 @@ export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allow
         if (matches && matches.length) {
           // istanbul ignore else
           if (value.isHistory) {
-            filteredHistory.push (value);
+            filteredHistory.push(value);
             newKeyinSet.push({ ...value, matches })
           } else {
             // only add entry if no match in filtered history
@@ -257,7 +256,7 @@ export function KeyinPalettePanel({keyins, onKeyinExecuted, historyLength: allow
         onListboxValueChange={onListboxValueChange} >
         {
           filteredKeyins.map((entry, index) => {
-            const value = `${entry.value}${keyinSeparator}${entry.isHistory?"history":"registry"}`;
+            const value = `${entry.value}${keyinSeparator}${entry.isHistory ? "history" : "registry"}`;
             const itemClass = `uifw-command-palette-value-entry${index === lastHistoryIndex ? " uifw-history-bottom-border" : ""}`;
             return <ListboxItem key={`${entry.value}-${index}`} className={itemClass} value={value} >
               <FilteredText value={entry.value} matches={entry.matches} />

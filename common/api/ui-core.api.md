@@ -451,18 +451,6 @@ export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, Comm
 }
 
 // @public
-export enum DateFormat {
-    // (undocumented)
-    Long = 3,
-    // (undocumented)
-    Medium = 2,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    Short = 1
-}
-
-// @public
 export class Dialog extends React.Component<DialogProps, DialogState> {
     constructor(props: DialogProps);
     // (undocumented)
@@ -2101,11 +2089,8 @@ export interface TileProps extends CommonDivProps {
 
 // @public
 export enum TimeFormat {
-    // (undocumented)
     Long = 2,
-    // (undocumented)
     None = 0,
-    // (undocumented)
     Short = 1
 }
 

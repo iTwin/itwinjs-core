@@ -12,6 +12,7 @@ import { ContentJSON } from "./content/Content";
 import { DescriptorJSON, DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
+import { DiagnosticsOptions, DiagnosticsScopeLogs } from "./Diagnostics";
 import { InstanceKeyJSON } from "./EC";
 import { PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
@@ -35,6 +36,8 @@ import { Omit, PagedResponse } from "./Utils";
 export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel"> & {
   /** ID of the client requesting data */
   clientId?: string;
+  /** @alpha */
+  diagnostics?: DiagnosticsOptions;
 };
 
 /**
@@ -48,6 +51,8 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
   errorMessage?: string;
   /** In case of a success response, the result */
   result?: TResult;
+  /** @alpha */
+  diagnostics?: DiagnosticsScopeLogs[];
 }>;
 
 /**

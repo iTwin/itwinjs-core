@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import produce from "immer";
 import * as React from "react";
@@ -206,7 +206,7 @@ describe("WidgetPanel", () => {
 
     nineZone = produce(nineZone, (draft) => {
       draft.panels.left.collapsed = true;
-    })
+    });
 
     rerender(<WidgetPanel
       panel={nineZone.panels.left}

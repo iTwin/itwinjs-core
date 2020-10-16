@@ -514,6 +514,41 @@ export interface DescriptorSource {
     readonly sortingField?: Field;
 }
 
+// @alpha (undocumented)
+export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace";
+
+// @alpha (undocumented)
+export interface DiagnosticsLogMessage {
+    // (undocumented)
+    category: string;
+    // (undocumented)
+    message: string;
+    // (undocumented)
+    severity: {
+        dev?: DiagnosticsLoggerSeverity;
+        editor?: DiagnosticsLoggerSeverity;
+    };
+    // (undocumented)
+    timestamp: number;
+}
+
+// @alpha (undocumented)
+export interface DiagnosticsOptions {
+    dev?: boolean | DiagnosticsLoggerSeverity;
+    editor?: boolean | DiagnosticsLoggerSeverity;
+    perf?: boolean;
+}
+
+// @alpha (undocumented)
+export interface DiagnosticsScopeLogs {
+    // (undocumented)
+    duration?: number;
+    // (undocumented)
+    logs?: Array<DiagnosticsLogMessage | DiagnosticsScopeLogs>;
+    // (undocumented)
+    scope: string;
+}
+
 // @public
 export interface DisabledSortingRule extends SortingRuleBase {
     ruleType: RuleTypes.DisabledSorting;
@@ -1013,6 +1048,7 @@ export class KeySet {
     get nodeKeys(): Set<NodeKey>;
     get nodeKeysCount(): number;
     get size(): number;
+    some(callback: (key: Key) => boolean): boolean;
     toJSON(): KeySetJSON;
 }
 
@@ -1575,6 +1611,7 @@ export class PresentationRpcInterface extends RpcInterface {
 // @public
 export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel"> & {
     clientId?: string;
+    diagnostics?: DiagnosticsOptions;
 };
 
 // @public
@@ -1582,6 +1619,7 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
     statusCode: PresentationStatus;
     errorMessage?: string;
     result?: TResult;
+    diagnostics?: DiagnosticsScopeLogs[];
 }>;
 
 // @public
@@ -1917,6 +1955,7 @@ export interface RelatedInstanceSpecificationNew {
 
 // @public
 export enum RelatedPropertiesSpecialValues {
+    All = "*",
     None = "_none_"
 }
 

@@ -6,7 +6,9 @@
  * @module Tile
  */
 
-import { assert, ByteStream, compareNumbers, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
+import {
+  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, Id64String,
+} from "@bentley/bentleyjs-core";
 import { Range3d, Vector3d } from "@bentley/geometry-core";
 import { BatchType } from "../FeatureTable";
 import { TileProps } from "../TileProps";
@@ -20,6 +22,7 @@ namespace Constants {
   export const tileScreenSize = 512;
   export const minToleranceRatioMultiplier = 2;
   export const minToleranceRatio = tileScreenSize * minToleranceRatioMultiplier;
+  export const untransformedNodeValue = 0xffffffff;
 }
 
 /** Describes an iModel tile tree.
@@ -106,6 +109,7 @@ export interface PrimaryTileTreeId {
   type: BatchType.Primary;
   edgesRequired: boolean;
   animationId?: Id64String;
+  animationTransformNodeId?: number;
   enforceDisplayPriority?: boolean;
 }
 
@@ -116,6 +120,14 @@ export interface ClassifierTileTreeId {
   type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
   expansion: number;
   animationId?: Id64String;
+  animationTransformNodeId?: number;
+}
+
+function animationIdToString(animationId: Id64String, nodeId: number | undefined): string {
+  if (undefined === nodeId)
+    nodeId = Constants.untransformedNodeValue;
+
+  return `A:${animationId}_#${nodeId.toString(16)}_`;
 }
 
 /** Describes the Id of an iModel tile tree.
@@ -132,7 +144,7 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
-      idStr = `${idStr}A:${treeId.animationId}_`;
+      idStr = `${idStr}${animationIdToString(treeId.animationId, treeId.animationTransformNodeId)}`;
     else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
@@ -147,9 +159,8 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
     if (BatchType.VolumeClassifier === treeId.type)
       flags |= TreeFlags.UseProjectExtents;
 
-    if (undefined !== treeId.animationId) {
-      idStr = `${idStr}A:${treeId.animationId}_`;
-    }
+    if (undefined !== treeId.animationId)
+      idStr = `${idStr}${animationIdToString(treeId.animationId, treeId.animationTransformNodeId)}`;
   }
 
   const version = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion);
@@ -165,22 +176,27 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
  * @internal
  */
 export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number {
-  // Sadly this comparison does not suffice for type inference to realize both lhs and rhs have same type.
-  if (lhs.type !== rhs.type)
-    return compareNumbers(lhs.type, rhs.type);
-
-  if (BatchType.Primary === lhs.type) {
-    const r = rhs as PrimaryTileTreeId;
-    if (lhs.edgesRequired !== r.edgesRequired)
-      return lhs.edgesRequired ? -1 : 1;
-
-    if (lhs.enforceDisplayPriority !== r.enforceDisplayPriority)
-      return lhs.enforceDisplayPriority ? -1 : 1;
-
-    return compareStringsOrUndefined(lhs.animationId, r.animationId);
+  let cmp = compareNumbers(lhs.type, rhs.type);
+  if (0 === cmp) {
+    cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
+    if (0 === cmp)
+      cmp = compareNumbersOrUndefined(lhs.animationTransformNodeId, rhs.animationTransformNodeId);
   }
 
-  return compareNumbers(lhs.expansion, (rhs as ClassifierTileTreeId).expansion);
+  if (0 !== cmp)
+    return cmp;
+
+  // NB: The redundant checks on BatchType below are to satisfy compiler.
+  assert(lhs.type === rhs.type);
+  if (BatchType.Primary === lhs.type && BatchType.Primary === rhs.type) {
+    cmp = compareBooleans(lhs.edgesRequired, rhs.edgesRequired);
+    if (0 === cmp)
+      cmp = compareBooleansOrUndefined(lhs.enforceDisplayPriority, rhs.enforceDisplayPriority);
+  } else if (BatchType.Primary !== lhs.type && BatchType.Primary !== rhs.type) {
+    cmp = compareNumbers(lhs.expansion, rhs.expansion);
+  }
+
+  return cmp;
 }
 
 /** Flags controlling how tile content is produced. The flags are part of the ContentId.

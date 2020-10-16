@@ -83,6 +83,7 @@ export enum TextureUnit {
   TerrainMesh3 = WebGLRenderingContext.TEXTURE8,  // These are used only if available.
   TerrainMesh4 = WebGLRenderingContext.TEXTURE9,
   TerrainMesh5 = WebGLRenderingContext.TEXTURE10,
+  TerrainThematicGradient = WebGLRenderingContext.TEXTURE11,
 }
 
 /**

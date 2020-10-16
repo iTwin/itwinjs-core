@@ -76,10 +76,10 @@ export class MutableGridItemFactory implements IMutableGridItemFactory {
 
   /**
    * Converts record into FlatGridItem.
-   * @param parent parent FlatGridItem of provided `record`.
-   * @param depth current depth counting from parent category.
    * @param record record to convert to a FlatGridItem.
-   * @param prevModelMap map of previous property grid full model. Used to transfer state data by selection key.
+   * @param parentSelectionKey parent selection key of provided `record`.
+   * @param parentCategorySelectionKey parent category selection key of provided `record`.
+   * @param depth current depth counting from parent category.
    * @param overrideName property name that overrides original record property name.
    * @param overrideDisplayLabel property display label that overrides original record property display label.
    * @returns converted CategorizedProperty.
@@ -111,9 +111,8 @@ export class MutableGridItemFactory implements IMutableGridItemFactory {
    * Converts category into GridCategoryItem.
    * @param category PropertyCategory to convert.
    * @param recordsDict dictionary of category records.
-   * @param prevModelMap map of previous property grid full model. Used to transfer state data by selection key.
+   * @param parentSelectionKey parent selection key of this category.
    * @param depth current depth counting from root category.
-   * @param parentCategory parent of this category.
    * @returns converted GridCategory.
    */
   public createGridCategory(

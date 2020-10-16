@@ -138,6 +138,7 @@ const applyThematicColorPostlude = `
   float stepCount = u_thematicSettings.z;
 
   vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+  rgba = mix(rgba, baseColor, u_thematicColorMix);
 
   if (kThematicGradientMode_IsoLines == gradientMode) {
     float coord = v_thematicIndex * stepCount;
@@ -161,6 +162,7 @@ const applyThematicColorPostludeForPointClouds = `
   float stepCount = u_thematicSettings.z;
 
   vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+  rgba = mix(rgba, baseColor, u_thematicColorMix);
 
   if (kThematicGradientMode_IsoLines == gradientMode) {
     float coord = v_thematicIndex * stepCount;
@@ -297,6 +299,20 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
       params.target.uniforms.thematic.bindFragSettings(uniform);
     });
   });
+
+  if (isForPointClouds || isForTerrainMesh) {
+    builder.frag.addUniform("u_thematicColorMix", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_thematicColorMix", (uniform, params) => {
+        uniform.setUniform1f(params.target.uniforms.thematic.thematicDisplay?.gradientSettings.colorMix || 0.0);
+      });
+    });
+  } else {
+    builder.frag.addUniform("u_thematicColorMix", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_thematicColorMix", (uniform, _params) => {
+        uniform.setUniform1f(0.0);
+      });
+    });
+  }
 
   frag.addUniform("u_numSensors", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_numSensors", (uniform, params) => {

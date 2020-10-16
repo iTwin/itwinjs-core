@@ -10,14 +10,14 @@ import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  ContentDescriptorRpcRequestOptions, ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides,
-  DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions,
-  ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON,
-  isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, ItemJSON,
-  KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement,
-  NodePathElementJSON, Paged, PagedResponse, PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON,
-  PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo,
-  SelectionScope, SelectionScopeRpcRequestOptions,
+  ContentDescriptorRpcRequestOptions, ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions,
+  DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
+  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
+  InstanceKeyJSON, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isExtendedContentRequestOptions,
+  isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON,
+  NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
+  PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
+  PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -52,19 +52,21 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   public get requestTimeout(): number { return Presentation.getRequestTimeout(); }
 
   /** Returns an ok response with result inside */
-  private successResponse<TResult>(result: TResult) {
+  private successResponse<TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]) {
     return {
       statusCode: PresentationStatus.Success,
       result,
+      diagnostics,
     };
   }
 
   /** Returns a bad request response with empty result and an error code */
-  private errorResponse(errorCode: PresentationStatus, errorMessage?: string) {
+  private errorResponse(errorCode: PresentationStatus, errorMessage?: string, diagnostics?: DiagnosticsScopeLogs[]) {
     return {
       statusCode: errorCode,
       result: undefined,
       errorMessage,
+      diagnostics,
     };
   }
 
@@ -85,7 +87,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return imodel;
   }
 
-  private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
+  private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: DiagnosticsOptions }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${JSON.stringify(requestOptions)}`);
     const requestContext = ClientRequestContext.current;
     let imodel: IModelDb;
@@ -95,10 +97,31 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       return this.errorResponse((e as PresentationError).errorNumber, (e as PresentationError).message);
     }
 
-    const { clientId, ...options } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
-    const resultPromise = request({ ...options, imodel, requestContext })
-      .then((result: TResult) => this.successResponse(result))
-      .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message));
+    const { clientId, diagnostics: diagnosticsOptions, ...options } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const managerRequestOptions: any = {
+      ...options,
+      requestContext,
+      imodel,
+    };
+
+    // set up diagnostics listener
+    let diagnosticLogs: DiagnosticsScopeLogs[] | undefined;
+    if (diagnosticsOptions) {
+      managerRequestOptions.diagnostics = {
+        ...diagnosticsOptions,
+        listener: (logs: DiagnosticsScopeLogs) => {
+          // istanbul ignore else
+          if (!diagnosticLogs)
+            diagnosticLogs = [];
+          diagnosticLogs.push(logs);
+        },
+      };
+    }
+
+    // initiate request
+    const resultPromise = request(managerRequestOptions)
+      .then((result) => this.successResponse(result, diagnosticLogs))
+      .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message, diagnosticLogs));
 
     if (this.requestTimeout === 0)
       return resultPromise;

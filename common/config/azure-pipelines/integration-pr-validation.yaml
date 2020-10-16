@@ -40,6 +40,8 @@ jobs:
     displayName: rush install
 
   - script: |
+      node ./common/scripts/install-run-rush rebuild -v --to backend-itwin-client
+
       node ./common/scripts/install-run-rush rebuild -v --to context-registry-client
 
       node ./common/scripts/install-run-rush rebuild -v --to extension-client
@@ -51,6 +53,8 @@ jobs:
       node ./common/scripts/install-run-rush rebuild -v --to rbac-client
 
       node ./common/scripts/install-run-rush rebuild -v --to reality-data-client
+
+      node ./common/scripts/install-run-rush rebuild -v --to usage-logging-client
 
       node ./common/scripts/install-run-rush rebuild -v --to @bentley/imodelhub-client-tests
 
@@ -89,6 +93,16 @@ jobs:
   - script: 'npm run test:integration'
     workingDirectory: clients/reality-data
     displayName: 'Run Reality Data Client Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
+    workingDirectory: 'clients/usage-logging'
+    displayName: 'Run Usage Logging Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
+    workingDirectory: 'core/backend-itwin-client'
+    displayName: 'Run Backend iTwin Client Tests'
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -179,7 +193,6 @@ jobs:
     inputs:
       testResultsFiles: 'clients/usage-logging/lib/test/junit_results.xml'
       testRunTitle: 'Client - Usage Logging Tests - $(Node_Version)'
-    enabled: false
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -189,6 +202,14 @@ jobs:
       testResultsFiles: 'core/backend/lib/test/junit_results.xml'
       testRunTitle: 'Core - Backend Tests - $(Node_Version)'
     enabled: false
+    continueOnError: true
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Backend iTwin Client Test Results'
+    inputs:
+      testResultsFiles: 'core/backend-itwin-client/lib/test/junit_results.xml'
+      testRunTitle: 'Core - Backend iTwin Client Tests - $(Node_Version)'
     continueOnError: true
     condition: succeededOrFailed()
 

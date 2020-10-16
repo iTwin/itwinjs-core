@@ -44,6 +44,7 @@ import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { ColorDefProps } from '@bentley/imodeljs-common';
 import { ColorIndex } from '@bentley/imodeljs-common';
+import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { Constructor } from '@bentley/bentleyjs-core';
 import { ContentIdProvider } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
@@ -184,6 +185,7 @@ import { PolylineData } from '@bentley/imodeljs-common';
 import { PolylineEdgeArgs } from '@bentley/imodeljs-common';
 import { PolylineFlags } from '@bentley/imodeljs-common';
 import { PolylineTypeFlags } from '@bentley/imodeljs-common';
+import { PrimaryTileTreeId } from '@bentley/imodeljs-common';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { QParams2d } from '@bentley/imodeljs-common';
@@ -1000,6 +1002,9 @@ export enum ActivityMessageEndReason {
     Completed = 0
 }
 
+// @internal
+export function addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void;
+
 // @internal (undocumented)
 export function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void;
 
@@ -1012,6 +1017,12 @@ export class AngleDescription extends FormattedQuantityDescription {
     get parseError(): string;
     // (undocumented)
     get quantityType(): string;
+}
+
+// @internal (undocumented)
+export class AnimatedTreeReference extends PrimaryTreeReference {
+    // (undocumented)
+    protected computeBaseTransform(tree: TileTree): Transform;
 }
 
 // @internal
@@ -1635,7 +1646,7 @@ export enum ContextMode {
     ZAxis = 3
 }
 
-// @internal
+// @beta
 export class ContextRealityModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     // (undocumented)
@@ -2078,7 +2089,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
     findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean): number;
-    // @internal (undocumented)
+    // @beta
+    findRealityModelIndex(accept: (model: ContextRealityModelState) => boolean): number;
+    // @beta
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
     forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void;
@@ -3890,7 +3903,7 @@ export class IModelApp {
     static get toolAdmin(): ToolAdmin;
     static readonly tools: ToolRegistry;
     // @beta
-    static translateErrorNumber(errorNum: number): string;
+    static translateStatus(status: number): string;
     static get uiAdmin(): UiAdmin;
     static get viewManager(): ViewManager;
     }
@@ -5152,7 +5165,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     protected getMarkerToolTip(): Promise<HTMLElement>;
     // (undocumented)
-    protected getShapePoints(ev: BeButtonEvent): Point3d[];
+    protected getShapePoints(cursorPt: Point3d): Point3d[];
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -5161,6 +5174,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     protected _isComplete: boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _lastMotionPt?: Point3d;
     // (undocumented)
     protected _marker?: MeasureLabel;
     // (undocumented)
@@ -5176,7 +5191,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
-    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -5260,6 +5275,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _lastMotionPt?: Point3d;
     // (undocumented)
     protected readonly _locationData: {
         point: Point3d;
@@ -6969,15 +6986,17 @@ export namespace RenderScheduleState {
         // (undocumented)
         batchId: number;
         // (undocumented)
-        get containsAnimation(): boolean;
+        get containsClipping(): boolean;
         // (undocumented)
         get containsFeatureOverrides(): boolean;
         // (undocumented)
-        elementIds: Id64String[];
+        get containsTransform(): boolean;
+        // (undocumented)
+        elementIds: Id64String[] | CompressedId64Set;
         // (undocumented)
         static fromJSON(json?: RenderSchedule.ElementTimelineProps): ElementTimeline;
         // (undocumented)
-        getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number, elementIds: Id64String[]): void;
+        getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number): void;
         // (undocumented)
         get isValid(): boolean;
         // (undocumented)
@@ -7000,11 +7019,13 @@ export namespace RenderScheduleState {
         // (undocumented)
         computeDuration(): Range1d;
         // (undocumented)
-        containsElementAnimation: boolean;
+        containsElementClipping: boolean;
         // (undocumented)
         containsFeatureOverrides: boolean;
         // (undocumented)
-        containsModelAnimation: boolean;
+        containsModelClipping: boolean;
+        // (undocumented)
+        containsTransform: boolean;
         // (undocumented)
         elementTimelines: ElementTimeline[];
         // (undocumented)
@@ -7013,6 +7034,10 @@ export namespace RenderScheduleState {
         getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number): void;
         // (undocumented)
         getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
+        // (undocumented)
+        getTransform(nodeId: number, time: number): Transform | undefined;
+        // (undocumented)
+        getTransformNodeIds(): number[] | undefined;
         // (undocumented)
         modelId: Id64String;
         // (undocumented)
@@ -7026,21 +7051,28 @@ export namespace RenderScheduleState {
         // (undocumented)
         computeDuration(): Range1d;
         // (undocumented)
-        containsElementAnimation: boolean;
+        containsElementClipping: boolean;
         // (undocumented)
         get containsFeatureOverrides(): boolean;
         // (undocumented)
-        containsModelAnimation: boolean;
+        containsModelClipping: boolean;
+        // (undocumented)
+        containsTransform: boolean;
         // (undocumented)
         displayStyleId: Id64String;
         // (undocumented)
         static fromJSON(displayStyleId: Id64String, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined;
         // (undocumented)
         getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
+        getCachedDuration(): Range1d;
         // (undocumented)
         getModelAnimationId(modelId: Id64String): Id64String | undefined;
         // (undocumented)
         getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
+        // (undocumented)
+        getTransform(modelId: Id64String, nodeId: number, time: number): Transform | undefined;
+        // (undocumented)
+        getTransformNodeIds(modelId: Id64String): number[] | undefined;
         // (undocumented)
         modelTimelines: ModelTimeline[];
         // (undocumented)
@@ -8145,25 +8177,6 @@ export class SpatialModelState extends GeometricModel3dState {
     static get className(): string;
 }
 
-// @internal
-export class SpatialModelTileTrees {
-    constructor(view: SpatialViewState);
-    // (undocumented)
-    protected _allLoaded: boolean;
-    // (undocumented)
-    protected createTileTreeReference(model: GeometricModel3dState): TileTreeReference | undefined;
-    // (undocumented)
-    forEach(func: (treeRef: TileTreeReference) => void): void;
-    // (undocumented)
-    protected get _iModel(): IModelConnection;
-    // (undocumented)
-    markDirty(): void;
-    // (undocumented)
-    protected _treeRefs: Map<string, TileTreeReference>;
-    // (undocumented)
-    protected readonly _view: SpatialViewState;
-}
-
 // @public
 export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -8494,8 +8507,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get debugControl(): RenderTargetDebugControl;
     // (undocumented)
-    protected _decorations?: Decorations;
-    // (undocumented)
     readonly decorationsState: BranchState;
     // (undocumented)
     displayDrapeFrustum: boolean;
@@ -8522,8 +8533,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     drawTextureDrapes(): void;
     // (undocumented)
-    get dynamics(): GraphicList | undefined;
-    // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
     endPerfMetricFrame(readPixels?: boolean): void;
@@ -8545,6 +8554,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     getTextureDrape(id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     getWorldDecorations(decs: GraphicList): Branch;
+    // (undocumented)
+    readonly graphics: TargetGraphics;
     // (undocumented)
     get hilites(): Hilites;
     // (undocumented)
@@ -8614,8 +8625,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get renderSystem(): System;
     // (undocumented)
     reset(): void;
-    // (undocumented)
-    get scene(): GraphicList;
     // (undocumented)
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
@@ -10786,6 +10795,8 @@ export abstract class Viewport implements IDisposable {
     set antialiasSamples(numSamples: number);
     // @internal
     applyViewState(val: ViewState): void;
+    // @beta
+    attachRealityModel(props: ContextRealityModelProps): void;
     // (undocumented)
     get auxCoordSystem(): AuxCoordSystemState;
     // @internal (undocumented)
@@ -10823,6 +10834,8 @@ export abstract class Viewport implements IDisposable {
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
     // @internal (undocumented)
     protected _decorationsValid: boolean;
+    // @beta
+    detachRealityModelByIndex(index: number): void;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     get devicePixelRatio(): number;
     // @internal

@@ -14,6 +14,7 @@ import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import TestUtils from "../TestUtils";
 import { BadgeType } from "@bentley/ui-abstract";
 
+/** @internal */
 export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
   execute: () => { },
   groupPriority: 100,
@@ -24,6 +25,7 @@ export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageAct
   ...item ? item : {},
 });
 
+/** @internal */
 export const getStageLauncherItem = (item?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({ // eslint-disable-line deprecation/deprecation
   groupPriority: 100,
   id: "Stage",

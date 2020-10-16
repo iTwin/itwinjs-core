@@ -162,9 +162,11 @@ const DisplayValue: React.FC<DisplayValueProps> = (props) => {
 
 function useResetHeightOnEdit(isEditing?: boolean, onHeightChanged?: (newHeight: number) => void) {
   const previousEditingStatusRef = useRef(isEditing);
-  if (!previousEditingStatusRef.current && isEditing) {
-    onHeightChanged?.(27);
-  }
+  React.useEffect(() => {
+    if (!previousEditingStatusRef.current && isEditing) {
+      onHeightChanged?.(27);
+    }
 
-  previousEditingStatusRef.current = isEditing;
+    previousEditingStatusRef.current = isEditing;
+  });
 }

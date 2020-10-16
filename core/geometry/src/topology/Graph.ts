@@ -847,17 +847,29 @@ export class HalfEdge {
       result);
   }
 
+  /**
+   * return the 3d coordinates at this half edge base
+   */
   public getPoint3d(result?: Point3d): Point3d {
     return Point3d.create(this.x, this.y, this.z, result);
   }
+  /**
+   * return the 2d coordinates at this half edge base
+   */
   public getPoint2d(result?: Point2d): Point2d {
     return Point2d.create(this.x, this.y, result);
   }
+  /**
+   * return a 3d vector from start to end of this half edge.
+   */
   public getVector3dAlongEdge(result?: Vector3d): Vector3d {
     const nodeB = this.faceSuccessor;
     return Vector3d.create(nodeB.x - this.x, nodeB.y - this.y, nodeB.z - this.z, result);
   }
 
+  /**
+   * return a 2d vector from start to end of this half edge
+   */
   public getVector2dAlongEdge(result?: Vector2d): Vector2d {
     const nodeB = this.faceSuccessor;
     return Vector2d.create(nodeB.x - this.x, nodeB.y - this.y, result);

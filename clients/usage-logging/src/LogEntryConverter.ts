@@ -215,6 +215,8 @@ export class LogEntryConverter {
       featureMetaData.push({ name: att, value: entry.additionalData[att] });
     }
 
+    const contextId = entry.contextId ?? "99999999-9999-9999-9999-999999999999"; // All iTwin applications are obligated by ULAS to send the 9-Guid (instead of the 0-Guid or undefined) to denote a global project scope.
+
     const entryJson: FeatureLogEntryJson = {
       hID: machineName,
       polID: LogEntryConverter._policyFileId,
@@ -222,7 +224,7 @@ export class LogEntryConverter {
       prdid: productId,
       fstr: LogEntryConverter._featureString,
       ver: versionNumber,
-      projID: entry.contextId,
+      projID: contextId,
       corID: sessionId,
       lVer: LogEntryConverter._logEntryVersion,
       lSrc: LogEntryConverter._logPostingSource,

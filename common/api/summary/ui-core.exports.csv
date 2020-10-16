@@ -47,7 +47,6 @@ public;Cube
 internal;CubeFace 
 internal;CubeFaceProps 
 public;CubeProps 
-public;DateFormat
 public;Dialog 
 public;DialogAlignment
 public;DialogButtonDef

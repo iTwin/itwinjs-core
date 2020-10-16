@@ -60,9 +60,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
   }
 
   public setFocus(): void {
-    // istanbul ignore else
-    if (this._focusTarget.current)
-      this._focusTarget.current.focus();
+    // istanbul ignore next
+    this._focusTarget.current && this._focusTarget.current.focus();
   }
 
   public static defaultProps = {
@@ -84,8 +83,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
 
   private _handleWeightPicked = (weight: number) => {
     this._closePopup();
-    if (this.props.onLineWeightPick)
-      this.props.onLineWeightPick(weight);
+    this.props.onLineWeightPick && this.props.onLineWeightPick(weight);
   }
 
   public componentDidMount() {
@@ -99,11 +97,14 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
 
   private moveFocusInPopup(moveUp: boolean, event: React.KeyboardEvent<any>) {
     const activeElement = document.activeElement;
+    // istanbul ignore else
     if (this._weightsContainer && activeElement && activeElement.tagName === "BUTTON") {
       const values = activeElement.id.split("-");
+      // istanbul ignore else
       if (values.length === 4 && values[2] === "lineweight") {
         const weight = parseInt(values[3], 10);
         const foundIndex = this.props.weights.findIndex((val) => val === weight);
+        // istanbul ignore next
         if (foundIndex < 0)
           return;
 
@@ -111,6 +112,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
           (foundIndex < this.props.weights.length - 1 ? this.props.weights[foundIndex + 1] : this.props.weights[0]);
 
         const focusLocation = this._weightsContainer.querySelector(`#${this.buildIdForWeight(nextWeight)}`) as HTMLButtonElement;
+        // istanbul ignore else
         if (focusLocation) {
           focusLocation.focus();
           event.preventDefault();

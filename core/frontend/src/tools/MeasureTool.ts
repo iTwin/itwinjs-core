@@ -28,7 +28,7 @@ import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButtonEvent, CoreTools, EventHandled, InputSource } from "./Tool";
+import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
 function translateBold(key: string) { return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `; }
@@ -126,6 +126,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   protected _totalDistance: number = 0.0;
   protected _totalDistanceMarker?: MeasureLabel;
   protected _snapGeomId?: string;
+  protected _lastMotionPt?: Point3d;
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -265,32 +266,28 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (!this.isCompatibleViewport(context.viewport, false))
       return;
 
-    if (!isSuspended && this._locationData.length > 0) {
-      const ev = new BeButtonEvent();
-      IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-      if (undefined !== ev.viewport) {
-        const tmpPoints: Point3d[] = [];
-        for (const loc of this._locationData)
-          tmpPoints.push(loc.point); // Deep copy not necessary...
-        tmpPoints.push(ev.point);
+    if (!isSuspended && this._locationData.length > 0 && undefined !== this._lastMotionPt) {
+      const tmpPoints: Point3d[] = [];
+      for (const loc of this._locationData)
+        tmpPoints.push(loc.point); // Deep copy not necessary...
+      tmpPoints.push(this._lastMotionPt);
 
-        const builderDynVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
-        const colorDynVis = context.viewport.hilite.color;
+      const builderDynVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
+      const colorDynVis = context.viewport.hilite.color;
 
-        builderDynVis.setSymbology(colorDynVis, ColorDef.black, 3);
-        builderDynVis.addLineString(tmpPoints);
+      builderDynVis.setSymbology(colorDynVis, ColorDef.black, 3);
+      builderDynVis.addLineString(tmpPoints);
 
-        context.addDecorationFromBuilder(builderDynVis);
+      context.addDecorationFromBuilder(builderDynVis);
 
-        const builderDynHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-        const colorDynHid = colorDynVis.withAlpha(100);
+      const builderDynHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
+      const colorDynHid = colorDynVis.withAlpha(100);
 
-        builderDynHid.setSymbology(colorDynHid, ColorDef.black, 1, LinePixels.Code2);
-        builderDynHid.addLineString(tmpPoints);
+      builderDynHid.setSymbology(colorDynHid, ColorDef.black, 1, LinePixels.Code2);
+      builderDynHid.addLineString(tmpPoints);
 
-        context.addDecorationFromBuilder(builderDynHid);
-        this.displayDynamicDistance(context, tmpPoints);
-      }
+      context.addDecorationFromBuilder(builderDynHid);
+      this.displayDynamicDistance(context, tmpPoints);
     }
 
     if (this._acceptedSegments.length > 0) {
@@ -336,7 +333,15 @@ export class MeasureDistanceTool extends PrimitiveTool {
   public decorate(context: DecorateContext): void { this.createDecorations(context, false); }
   public decorateSuspended(context: DecorateContext): void { this.createDecorations(context, true); }
 
-  public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._locationData.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
+  public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    if (this._locationData.length > 0 && undefined !== ev.viewport) {
+      if (undefined !== this._lastMotionPt)
+        this._lastMotionPt.setFrom(ev.point);
+      else
+        this._lastMotionPt = ev.point.clone();
+      ev.viewport.invalidateDecorations();
+    }
+  }
 
   protected reportMeasurements(): void {
     if (undefined === this._totalDistanceMarker)
@@ -727,6 +732,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   protected _centroid = Point3d.createZero();
   protected _marker?: MeasureLabel;
   protected _acceptedMeasurement?: MeasureMarker;
+  protected _lastMotionPt?: Point3d;
 
   public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
@@ -852,7 +858,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     hints.sendHints();
   }
 
-  protected getShapePoints(ev: BeButtonEvent): Point3d[] {
+  protected getShapePoints(cursorPt: Point3d): Point3d[] {
     const points: Point3d[] = [];
     if (undefined === this.targetView || this._points.length < 1)
       return points;
@@ -863,14 +869,14 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       return points;
 
     const normal = this._matrix.getColumn(2);
-    let currentPt = EditManipulator.HandleUtils.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
+    let currentPt = EditManipulator.HandleUtils.projectPointToPlaneInView(cursorPt, points[0], normal, this.targetView, true);
     if (undefined === currentPt)
-      currentPt = ev.point.clone();
-    if (2 === points.length && !ev.isControlKey) {
+      currentPt = cursorPt.clone();
+    if (2 === points.length && 0 === (IModelApp.toolAdmin.currentInputState.qualifiers & BeModifierKeys.Control)) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
       const xLen = xDir.magnitude(); xDir.normalizeInPlace();
       const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
-      const cornerPt = EditManipulator.HandleUtils.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
+      const cornerPt = EditManipulator.HandleUtils.projectPointToLineInView(currentPt, points[1], yDir, this.targetView, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
         cornerPt.plusScaled(xDir, -xLen, currentPt);
@@ -888,11 +894,9 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     if (context.viewport !== this.targetView)
       return;
 
-    const ev = new BeButtonEvent();
-    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-    if (undefined === ev.viewport)
+    if (undefined === this._lastMotionPt)
       return;
-    const points = this.getShapePoints(ev);
+    const points = this.getShapePoints(this._lastMotionPt);
     if (points.length < 2)
       return;
 
@@ -921,7 +925,16 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   }
 
   public decorateSuspended(context: DecorateContext): void { if (this._isComplete) this.decorate(context); }
-  public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport && !this._isComplete) ev.viewport.invalidateDecorations(); }
+
+  public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    if (this._points.length > 0 && undefined !== ev.viewport && !this._isComplete) {
+      if (undefined !== this._lastMotionPt)
+        this._lastMotionPt.setFrom(ev.point);
+      else
+        this._lastMotionPt = ev.point.clone();
+      ev.viewport.invalidateDecorations();
+    }
+  }
 
   protected async getMarkerToolTip(): Promise<HTMLElement> {
     const is3d = (undefined === this.targetView || this.targetView.view.is3d());
@@ -1003,7 +1016,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       this.onReinitialize();
 
     if (this._points.length > 1 && !ev.isControlKey) {
-      const points = this.getShapePoints(ev);
+      const points = this.getShapePoints(ev.point);
       if (points.length < 3)
         return EventHandled.No;
 
@@ -1032,7 +1045,9 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
     this.onReinitialize();
     return EventHandled.No;
   }

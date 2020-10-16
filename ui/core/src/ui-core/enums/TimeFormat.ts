@@ -10,7 +10,10 @@
  * @public
  */
 export enum TimeFormat {
+  /** Show Date and time using toISOString */
   None = 0,
+  /** Show Date using toLocaleDateString */
   Short,
+  /** Show Date Time using toLocaleString */
   Long,
 }

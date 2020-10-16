@@ -51,10 +51,10 @@ export class SelectionScopesHelper {
   }
 
   private static getParentInstanceKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
-    const parentRelProps = imodel.elements.getElementProps(id).parent;
-    if (!parentRelProps)
+    const elementProps = imodel.elements.tryGetElementProps(id);
+    if (!elementProps?.parent)
       return undefined;
-    return getElementKey(imodel, parentRelProps.id);
+    return getElementKey(imodel, elementProps.parent.id);
   }
 
   private static getAssemblyKey(imodel: IModelDb, id: Id64String) {
@@ -97,10 +97,11 @@ export class SelectionScopesHelper {
   private static computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const categoryKeys = new KeySet();
     ids.forEach(skipTransients((id) => {
-      const el = requestOptions.imodel.elements.getElement(id);
+      const el = requestOptions.imodel.elements.tryGetElement(id);
       if (el instanceof GeometricElement) {
-        const category = requestOptions.imodel.elements.getElementProps(el.category);
-        categoryKeys.add({ className: category.classFullName, id: category.id! });
+        const category = requestOptions.imodel.elements.tryGetElementProps(el.category);
+        if (category)
+          categoryKeys.add({ className: category.classFullName, id: category.id! });
       }
     }));
     return categoryKeys;
@@ -109,9 +110,10 @@ export class SelectionScopesHelper {
   private static computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const modelKeys = new KeySet();
     ids.forEach(skipTransients((id) => {
-      const el = requestOptions.imodel.elements.getElementProps(id);
-      const model = requestOptions.imodel.models.getModelProps(el.model);
-      modelKeys.add({ className: model.classFullName, id: model.id! });
+      const el = requestOptions.imodel.elements.tryGetElementProps(id);
+      const model = el ? requestOptions.imodel.models.tryGetModelProps(el.model) : undefined;
+      if (model)
+        modelKeys.add({ className: model.classFullName, id: model.id! });
     }));
     return modelKeys;
   }

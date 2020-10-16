@@ -73,7 +73,7 @@ public;DictionaryModel
 public;class DisplayStyle 
 public;DisplayStyle2d 
 public;DisplayStyle3d 
-public;DisplayStyleCreationOptions
+public;DisplayStyleCreationOptions 
 public;class Document 
 internal;class DocumentCarrier 
 public;DocumentListModel 

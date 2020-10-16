@@ -13,6 +13,7 @@ import {
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
+import { PerfTestUtility } from "./PerfTestUtils";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -204,13 +205,13 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Delete_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(size / opCount);
-          assert.equal((stat.maxId - stat.minId + 1), size);
+
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             try {
-              const elId = stat.minId + elementIdIncrement * i;
+              const elId = minId + elementIdIncrement * i;
               perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             } catch (err) {
               assert.isTrue(false);
@@ -236,13 +237,12 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Read_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(size / opCount);
-          assert.equal((stat.maxId - stat.minId + 1), size);
 
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
-            const elId = stat.minId + elementIdIncrement * i;
+            const elId = minId + elementIdIncrement * i;
             perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
           }
           const endTime = new Date().getTime();
@@ -250,7 +250,7 @@ describe("PerformanceElementsTests", () => {
           // Verify values after the timing portion to ensure everything is loaded correctly.
           // This is performed afterwards to avoid including the extra noise in the perf numbers.
           for (let i = 0; i < opCount; ++i) {
-            const elId = stat.minId + elementIdIncrement * i;
+            const elId = minId + elementIdIncrement * i;
             const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             verifyProps(elemFound as any);
           }
@@ -273,8 +273,9 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Update_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(size / opCount);
+
           // first construct modified elements
           // now lets update and record time
           // add Geometry
@@ -291,7 +292,7 @@ describe("PerformanceElementsTests", () => {
           }
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
-            const elId = stat.minId + elementIdIncrement * i;
+            const elId = minId + elementIdIncrement * i;
             const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             (editElem as any).baseStr = "PerfElement - UpdatedValue";
             editElem.setUserProperties("geom", geometryStream);
@@ -305,7 +306,7 @@ describe("PerformanceElementsTests", () => {
 
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
-            const elId = stat.minId + elementIdIncrement * i;
+            const elId = minId + elementIdIncrement * i;
             const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }
@@ -417,13 +418,13 @@ describe("PerformanceElementsTests2d", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Delete_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GraphicalElement2d")[0];
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
-          assert.equal((stat.maxId - stat.minId + 1), size);
+
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             try {
-              const elId = stat.minId + elementIdIncrement * i;
+              const elId = minId + elementIdIncrement * i;
               perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             } catch (err) {
               assert.isTrue(false);
@@ -449,13 +450,12 @@ describe("PerformanceElementsTests2d", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Read_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GraphicalElement2d")[0];
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");;
           const elementIdIncrement = Math.floor(size / opCount);
-          assert.equal((stat.maxId - stat.minId + 1), size);
 
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
-            const elId = stat.minId + elementIdIncrement * i;
+            const elId = minId + elementIdIncrement * i;
             perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
           }
           const endTime = new Date().getTime();
@@ -463,7 +463,7 @@ describe("PerformanceElementsTests2d", () => {
           // Verify values after the timing portion to ensure everything is loaded correctly.
           // This is performed afterwards to avoid including the extra noise in the perf numbers.
           for (let i = 0; i < opCount; ++i) {
-            const elId = stat.minId + elementIdIncrement * i;
+            const elId = minId + elementIdIncrement * i;
             const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             verifyProps(elemFound as any);
           }
@@ -486,8 +486,9 @@ describe("PerformanceElementsTests2d", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Update_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GraphicalElement2d")[0];
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
+
           // first construct modified elements
           const geomArray: Arc3d[] = [
             Arc3d.createXY(Point3d.create(0, 0), 2),
@@ -503,7 +504,7 @@ describe("PerformanceElementsTests2d", () => {
           // now lets update and record time
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
-            const elId = stat.minId + elementIdIncrement * i;
+            const elId = minId + elementIdIncrement * i;
             const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             (editElem as any).baseStr = "PerfElement - UpdatedValue";
             editElem.setUserProperties("geom", geometryStream);
@@ -517,7 +518,7 @@ describe("PerformanceElementsTests2d", () => {
 
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
-            const elId = stat.minId + elementIdIncrement * i;
+            const elId = minId + elementIdIncrement * i;
             const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }

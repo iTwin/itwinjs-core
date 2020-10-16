@@ -572,7 +572,7 @@ export class ToolWithSettings extends PrimitiveTool {
     // clone coordinateValue if storing value within tool - in this case we are not
     const syncItem: DialogPropertySyncItem = { value: coordinateValue, propertyName: ToolWithSettings._coordinateName, isDisabled: true };
     const stationValue: DialogItemValue = { value: station };
-    const stationSyncItem: DialogPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName, isDisabled: true };
+    const stationSyncItem: DialogPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName, isDisabled: false };
 
     const surveyLengthValue: DialogItemValue = { value: distance, displayValue: this._surveyLengthDescription.format(distance) };
     const surveySyncItem: DialogPropertySyncItem = { value: surveyLengthValue, propertyName: ToolWithSettings._surveyLengthName, isDisabled: true };
@@ -633,7 +633,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
-    const readonly = true;
+    const readonly = false;
     const toolSettings = new Array<DialogItem>();
     toolSettings.push({ value: this._colorValue, property: ToolWithSettings._getColorDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 } });
     toolSettings.push({ value: this._lockValue, property: ToolWithSettings._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });

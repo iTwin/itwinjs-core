@@ -15,11 +15,12 @@ import {
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, UserInfo, WsgError } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { AzureFileHandler, LocalhostHandler, StorageServiceFileHandler, UrlFileHandler } from "@bentley/backend-itwin-client";
 import { RequestType, ResponseBuilder, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
+import { assetsPath } from "./TestConstants";
+import { createFileHandler } from "./FileHandler";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
@@ -44,28 +45,6 @@ function configMockSettings() {
   Config.App.set("imjs_test_serviceAccount1_user_password", "test");
   Config.App.set("imjs_test_manager_user_name", "test");
   Config.App.set("imjs_test_manager_user_password", "test");
-}
-export function createFileHandler(useDownloadBuffer?: boolean) {
-  if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
-    return createIModelBankFileHandler(useDownloadBuffer);
-  }
-  return new AzureFileHandler(useDownloadBuffer);
-}
-
-export function createIModelBankFileHandler(useDownloadBuffer?: boolean) {
-  const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
-  switch (handler.toLowerCase()) {
-    case "azure":
-      return new AzureFileHandler(useDownloadBuffer);
-    case "localhost":
-      return new LocalhostHandler();
-    case "url":
-      return new UrlFileHandler();
-    case "storageservice":
-      return new StorageServiceFileHandler();
-    default:
-      throw new Error(`File handler '${handler}' is not supported.`);
-  }
 }
 
 export function getExpectedFileHandlerUrlSchemes(): string[] {
@@ -211,9 +190,6 @@ export function getDefaultClient() {
 export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
   return requestBehaviorOptions;
 }
-
-export const assetsPath = `${__dirname}/../../lib/assets/`;
-export const workDir = `${__dirname}/../../lib/output/`;
 
 /**
  * Generates request URL.

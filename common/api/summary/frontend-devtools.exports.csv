@@ -56,6 +56,7 @@ alpha;DataListProps
 alpha;DefaultTileSizeModifierTool 
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 alpha;DetachMapLayersTool 
+beta;DetachRealityModelTool 
 beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
 beta;class DisplayStyleTool 

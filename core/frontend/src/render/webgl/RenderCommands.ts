@@ -25,6 +25,7 @@ import { LayerCommandLists } from "./LayerCommands";
 import { MeshGraphic } from "./Mesh";
 import { Primitive } from "./Primitive";
 import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
+import { TargetGraphics } from "./TargetGraphics";
 import { Target } from "./Target";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
@@ -445,64 +446,61 @@ export class RenderCommands {
     this._addTranslucentAsOpaque = false;
   }
 
-  public init(scene: GraphicList, backgroundMap: GraphicList, overlayGraphics?: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
+  public initForReadPixels(gfx: TargetGraphics): void {
     this.clear();
 
-    if (initForReadPixels) {
-      this._addTranslucentAsOpaque = true;      // Set flag to force translucent geometry to be put into the opaque pass.
+    // Set flag to force translucent geometry to be put into the opaque pass.
+    this._addTranslucentAsOpaque = true;
 
-      // Add the scene graphics.
-      this.addGraphics(scene);
+    // Add the scene graphics.
+    this.addGraphics(gfx.foreground);
 
-      // Also add any pickable decorations.
-      if (undefined !== dec)
-        this.addPickableDecorations(dec);
+    // Also add any pickable decorations.
+    if (undefined !== gfx.decorations)
+      this.addPickableDecorations(gfx.decorations);
 
-      // Also background map is pickable
-      this.addBackgroundMapGraphics(backgroundMap);
+    // Also background map is pickable
+    this.addBackgroundMapGraphics(gfx.background);
 
-      this._addTranslucentAsOpaque = false;
-      this.setupClassificationByVolume();
-      this._layers.outputCommands();
+    this._addTranslucentAsOpaque = false;
 
-      return;
-    }
+    this.setupClassificationByVolume();
+    this._layers.outputCommands();
+  }
 
-    this.addGraphics(scene);
-    this.addBackgroundMapGraphics(backgroundMap);
-    if (undefined !== overlayGraphics)
-      this.addOverlayGraphics(overlayGraphics);
+  public initForRender(gfx: TargetGraphics): void {
+    this.clear();
 
-    if (undefined !== dynamics && 0 < dynamics.length) {
+    this.addGraphics(gfx.foreground);
+    this.addBackgroundMapGraphics(gfx.background);
+    this.addOverlayGraphics(gfx.overlays);
+
+    const dynamics = gfx.dynamics;
+    if (dynamics && dynamics.length > 0)
       this.addDecorations(dynamics);
-    }
 
+    const dec = gfx.decorations;
     if (undefined !== dec) {
       this.addBackground(dec.viewBackground as Graphic);
 
       this.addSkyBox(dec.skyBox as Graphic);
 
-      if (undefined !== dec.normal && 0 < dec.normal.length) {
+      if (undefined !== dec.normal && 0 < dec.normal.length)
         this.addGraphics(dec.normal);
-      }
 
-      if (undefined !== dec.world && 0 < dec.world.length) {
+      if (undefined !== dec.world && 0 < dec.world.length)
         this.addWorldDecorations(dec.world);
-      }
 
       this.pushAndPopState(this.target.decorationsState, () => {
-        if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
+        if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length)
           this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
-        }
 
-        if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
+        if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length)
           this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
-        }
       });
     }
 
     this.setupClassificationByVolume();
-
     this._layers.outputCommands();
   }
 

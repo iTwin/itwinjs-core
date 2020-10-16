@@ -11,11 +11,11 @@ import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera,
-  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dProps, DisplayStyle3dSettings,
-  DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, PlanProjectionSettingsProps, RelatedElement, SkyBoxImageProps,
-  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d,
-  ViewFlags,
+  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera,
+  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, DisplayStyleSettings, LightLocationProps, MapImageryProps, ModelSelectorProps, PlanProjectionSettingsProps, RelatedElement,
+  RenderSchedule, SkyBoxImageProps, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  ViewDetails3d, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
@@ -125,17 +125,26 @@ export class DisplayStyle2d extends DisplayStyle {
   }
 }
 
-/** Creation options for display styles
+/** Describes initial settings for a new [[DisplayStyle3d]].
+ * Most properties are inherited from [DisplayStyle3dSettingsProps]($common), but for backwards compatibility reasons, this interface is slightly awkward:
+ * - It adds a `viewFlags` member that differs only in case and type from [DisplayStyleSettingsProps.viewflags]($common); and
+ * - It extends the type of [DisplayStyleSettingsProps.backgroundColor]($common) to include [ColorDef]($common); and
+ * - It decreases type-safety of [DisplayStyleSettingsProps.scheduleScript]($common) by redefining its type as `object`. If it is not an array, it is ignored.
+ * These idiosyncrasies will be addressed in a future version of imodeljs-backend.
+ * @see [[DisplayStyle3d.create]].
  * @public
  */
-export interface DisplayStyleCreationOptions {
+export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
+  /** If supplied, the [ViewFlags]($common) applied by the display style.
+   * If undefined, [DisplayStyle3dSettingsProps.viewflags]($common) will be used if present (note the difference in case); otherwise, default-constructed [ViewFlags]($common) will be used.
+   */
   viewFlags?: ViewFlags;
-  backgroundColor?: ColorDef;
-  analysisStyle?: AnalysisStyleProps;
-  contextRealityModels?: ContextRealityModelProps[];
-  scheduleScript?: object;
-  backgroundMap?: BackgroundMapProps;
+  backgroundColor?: ColorDef | number;
+  /** Schedule script controlling timeline animation. Ignored if it is not an array. */
+  scheduleScript?: object | RenderSchedule.ModelTimelineProps[];
+  mapImagery?: MapImageryProps;
 }
+
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  * @public
@@ -218,33 +227,30 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
    * @throws [[IModelError]] if unable to create the element.
    */
   public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d {
-    const stylesIn: { [k: string]: any } = { viewflags: (options && options.viewFlags) ? options.viewFlags : new ViewFlags() };
+    options = options ?? { };
+    let viewflags = options.viewFlags?.toJSON();
+    if (!viewflags)
+      viewflags = options.viewflags ?? new ViewFlags().toJSON();
 
-    if (options) {
-      if (options.analysisStyle)
-        stylesIn.analysisStyle = options.analysisStyle;
+    const scheduleScript = Array.isArray(options.scheduleScript) ? options.scheduleScript : undefined;
+    const backgroundColor = options.backgroundColor instanceof ColorDef ? options.backgroundColor.toJSON() : options.backgroundColor;
 
-      if (options.backgroundColor)
-        stylesIn.backgroundColor = options.backgroundColor;
-
-      if (options.scheduleScript)
-        stylesIn.scheduleScript = options.scheduleScript;
-
-      if (options.contextRealityModels)
-        stylesIn.contextRealityModels = options.contextRealityModels;
-
-      if (options.backgroundMap)
-        stylesIn.backgroundMap = options.backgroundMap;
-    }
+    const settings: DisplayStyle3dSettingsProps = {
+      ...options,
+      viewflags,
+      scheduleScript,
+      backgroundColor,
+    };
 
     const displayStyleProps: DisplayStyle3dProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
       model: definitionModelId,
-      jsonProperties: { styles: stylesIn },
+      jsonProperties: { styles: settings },
       isPrivate: false,
 
     };
+
     return new DisplayStyle3d(displayStyleProps, iModelDb);
   }
   /**

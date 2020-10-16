@@ -31,6 +31,7 @@ import { UnionFindContext } from "../numerics/UnionFind";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { FacetOrientationFixup } from "./FacetOrientation";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
+import { BuildAverageNormalsContext } from "./multiclip/BuildAverageNormalsContext";
 import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
@@ -910,6 +911,29 @@ export class PolyfaceQuery {
   public static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean {
     return FacetOrientationFixup.doFixup(mesh);
   }
+
+  /**
+   * Set up indexed normals with one normal in the plane of each facet of the mesh.
+   * @param polyface
+   */
+  public static buildPerFaceNormals(polyface: IndexedPolyface) {
+    BuildAverageNormalsContext.buildPerFaceNormals(polyface);
+  }
+
+  /**
+  * * At each vertex of the mesh
+  *   * Find clusters of almost parallel normals
+  *   * Compute simple average of those normals
+  *   * Index to the averages
+  * * For typical meshes, this correctly clusters adjacent normals.
+  * * One cam imagine a vertex with multiple "smooth cone-like" sets of incident facets such that averaging occurs among two nonadjacent cones.  But this does not seem to be a problem in practice.
+  * @param polyface polyface to update.
+  * @param toleranceAngle averaging is done between normals up to this angle.
+  */
+  public static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle: Angle = Angle.createDegrees(31.0)) {
+    BuildAverageNormalsContext.buildFastAverageNormals(polyface, toleranceAngle);
+  }
+
 }
 
 /** Announce the points on a drape panel.
@@ -924,3 +948,4 @@ export class PolyfaceQuery {
  */
 export type AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number,
   polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any;
+

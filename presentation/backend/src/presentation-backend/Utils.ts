@@ -8,7 +8,7 @@
 
 import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Element, IModelDb } from "@bentley/imodeljs-backend";
-import { InstanceKey } from "@bentley/presentation-common";
+import { DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@bentley/presentation-common";
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
@@ -24,8 +24,15 @@ export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | u
   return key;
 }
 
+/** @alpha */
+export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
+  listener: (diagnostics: DiagnosticsScopeLogs) => void;
+}
+
 /** @beta */
 export type WithClientRequestContext<T> = T & {
   /** Context of a client request */
   requestContext: ClientRequestContext;
+  /** @alpha */
+  diagnostics?: BackendDiagnosticsOptions;
 };

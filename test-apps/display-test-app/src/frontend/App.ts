@@ -23,7 +23,6 @@ import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
 import { ApplyModelTransformTool } from "./DisplayTransform";
-import { VersionComparisonTool } from "./VersionComparison";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { FenceClassifySelectedTool } from "./Fence";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
@@ -161,7 +160,6 @@ export class DisplayTestApp {
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
-      VersionComparisonTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
