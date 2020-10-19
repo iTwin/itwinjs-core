@@ -1438,8 +1438,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 983040,
-    Major = 15,
+    Combined = 1048576,
+    Major = 16,
     Minor = 0
 }
 
@@ -3389,6 +3389,7 @@ export enum ImageSourceFormat {
 // @internal
 export enum ImdlFlags {
     ContainsCurves = 1,
+    DisallowMagnification = 8,
     Incomplete = 4,
     None = 0
 }
