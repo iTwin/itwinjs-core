@@ -114,6 +114,9 @@
     },
     "MoveElements": {
       "keyin": "dta move elements"
+    },
+    "PlaceLineString": {
+      "keyin": "dta place line string"
     }
   }
 }
