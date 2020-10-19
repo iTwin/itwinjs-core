@@ -109,7 +109,7 @@
     "webpack": "4.42.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "2.7.6",
+    "@bentley/imodeljs-native": "2.7.8",
     "@bentley/context-registry-client": "2.7.3",
     "@bentley/usage-logging-client": "2.7.3",
     "@azure/storage-blob": "10.4.0",
