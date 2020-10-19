@@ -97,8 +97,6 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
     const panel = panelStateRef.current;
     if (resizeBy === 0)
       return;
-    if (panel.size === undefined)
-      return;
     if (panel.collapsed) {
       if (size >= panel.collapseOffset) {
         dispatch({
@@ -110,6 +108,9 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
       }
       return;
     }
+
+    if (panel.size === undefined)
+      return;
 
     // New size should match drag direction (i.e. dragging `left` panel grip to the left should not increase left panel size).
     const sizeDiff = size - panel.size;
