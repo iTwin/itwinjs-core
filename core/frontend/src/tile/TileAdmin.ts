@@ -8,13 +8,15 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
+  defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, ModelGeometryChanges, NativeAppRpcInterface, RpcOperation, RpcRegistry,
   RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
+import { InteractiveEditingSession } from "../InteractiveEditingSession";
+import { GeometricModelState } from "../ModelState";
 import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
@@ -246,8 +248,6 @@ export abstract class TileAdmin {
   public abstract onCacheMiss(): void;
   /** @internal */
   public abstract onActiveRequestCanceled(tile: Tile): void;
-  /** @internal */
-  public abstract onModelGeometryChanged(modelIds: Iterable<Id64String>): void;
 
   /** Event raised when a request to load a tile's content completes.
    * @internal
@@ -625,6 +625,7 @@ class Admin extends TileAdmin {
   private _canceledRequests?: Map<IModelConnection, Map<string, Set<string>>>;
   private _cancelBackendTileRequests: boolean;
   private _tileTreePropsRequests: TileTreePropsRequest[] = [];
+  private _cleanup?: () => void;
 
   public get emptyViewportSet(): ReadonlyViewportSet { return UniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -715,6 +716,15 @@ class Admin extends TileAdmin {
     this._contextPreloadParentDepth = Math.max(0, Math.min((options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth), 8));
     // If unspecified skip one level before preloading  of parents of context tiles.
     this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
+
+    this._cleanup = InteractiveEditingSession.onBegin.addListener((session) => {
+      const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
+      session.onEnded.addOnce((sesh: InteractiveEditingSession) => {
+        assert(sesh === session);
+        removeGeomListener();
+        this.onSessionEnd(session);
+      });
+    });
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
@@ -988,6 +998,11 @@ class Admin extends TileAdmin {
   }
 
   public onShutDown(): void {
+    if (this._cleanup) {
+      this._cleanup();
+      this._cleanup = undefined;
+    }
+
     this._removeIModelConnectionOnCloseListener();
 
     for (const request of this._activeRequests)
@@ -1119,12 +1134,34 @@ class Admin extends TileAdmin {
   /** The geometry of one or models has changed during an [[InteractiveEditingSession]]. Invalidate the scenes and feature overrides of any viewports
    * viewing any of those models.
    */
-  public onModelGeometryChanged(modelIds: Iterable<Id64String>): void {
+  private onModelGeometryChanged(changes: Iterable<ModelGeometryChanges>): void {
+    for (const vp of this._viewports) {
+      for (const change of changes) {
+        if (vp.view.viewsModel(change.id)) {
+          vp.invalidateScene();
+          vp.setFeatureOverrideProviderChanged();
+          break;
+        }
+      }
+    }
+  }
+
+  /** An interactive editing session has ended. Update geometry guid for affected models and invalidate scenes of affected viewports. */
+  private onSessionEnd(session: InteractiveEditingSession): void {
+    // Updating model's geometry guid will cause TileTreeReference to request new TileTree if guid changed.
+    const modelIds: Id64String[] = [];
+    for (const change of session.getGeometryChanges()) {
+      modelIds.push(change.id);
+      const model = session.iModel.models.getLoaded(change.id);
+      if (model && model instanceof GeometricModelState)
+        model.geometryGuid = change.geometryGuid;
+    }
+
+    // Invalidate scenes of all viewports viewing any affected model.
     for (const vp of this._viewports) {
       for (const modelId of modelIds) {
         if (vp.view.viewsModel(modelId)) {
           vp.invalidateScene();
-          vp.setFeatureOverrideProviderChanged();
           break;
         }
       }

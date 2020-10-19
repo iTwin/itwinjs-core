@@ -6,13 +6,25 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
 import { ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];
+
+class ModelChanges extends SortedArray<ElementGeometryChange> {
+  public geometryGuid: GuidString;
+  public readonly range: Range3d;
+
+  public constructor(geometryGuid: GuidString, range: Range3d) {
+    super((lhs, rhs) => compareStrings(lhs.id, rhs.id), DuplicatePolicy.Replace);
+    this.geometryGuid = geometryGuid;
+    this.range = range;
+  }
+}
 
 /** Represents an active session for performing interactive editing of an [[IModelConnection]].
  * "Interactive editing" refers to modifying the geometry contained in the iModel while viewing the iModel's contents in one or more [[Viewports]] - e.g., creating new [GeometricElement]($backend)s, modifying their geometric properties, and/or deleting them. During the session, any changes made by the user will become visually reflected in the viewport, without the need to wait for brand-new tiles to be generated. The graphics update after every call to [[IModelConnection.saveChanges]] as well as in response to undo and redo.
@@ -26,7 +38,7 @@ const sessions: InteractiveEditingSession[] = [];
  */
 export class InteractiveEditingSession {
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
-  private readonly _geometryChanges = new Map<Id64String, SortedArray<ElementGeometryChange>>();
+  private readonly _geometryChanges = new Map<Id64String, ModelChanges>();
   private _disposed = false;
   private _cleanup?: { off: () => void }; // ###TODO EventSource.on() should just return a function...
   /** The iModel being edited. */
@@ -126,6 +138,22 @@ export class InteractiveEditingSession {
     return this._geometryChanges.get(modelId);
   }
 
+  /** Obtain all geometric changes to models accumulated during this session. */
+  public getGeometryChanges(): Iterable<ModelGeometryChanges> {
+    return { [Symbol.iterator]: () => this.geometryChangeIterator() };
+  }
+
+  private * geometryChangeIterator(): Iterator<ModelGeometryChanges> {
+    for (const [key, value] of this._geometryChanges) {
+      yield {
+        id: key,
+        geometryGuid: value.geometryGuid,
+        range: value.range,
+        elements: value,
+      };
+    }
+  }
+
   private constructor(iModel: IModelConnection) {
     this.iModel = iModel;
     if (iModel.eventSource) // ###TODO make this always defined
@@ -159,8 +187,12 @@ export class InteractiveEditingSession {
       let list = this._geometryChanges.get(modelChanges.id);
       modelIds.push(modelChanges.id);
       for (const elementChange of modelChanges.elements) {
-        if (!list)
-          this._geometryChanges.set(modelChanges.id, list = new SortedArray<ElementGeometryChange>((lhs, rhs) => compareStrings(lhs.id, rhs.id), DuplicatePolicy.Replace));
+        if (!list) {
+          this._geometryChanges.set(modelChanges.id, list = new ModelChanges(modelChanges.geometryGuid, modelChanges.range));
+        } else {
+          list.geometryGuid = modelChanges.geometryGuid;
+          modelChanges.range.clone(list.range);
+        }
 
         list.insert(elementChange);
         if (DbOpcode.Delete === elementChange.type) {
@@ -168,8 +200,6 @@ export class InteractiveEditingSession {
           this.iModel.hilited.setHilite(elementChange.id, false);
         }
       }
-
-    IModelApp.tileAdmin.onModelGeometryChanged(modelIds);
     }
 
     this.onGeometryChanges.raiseEvent(changes, this);

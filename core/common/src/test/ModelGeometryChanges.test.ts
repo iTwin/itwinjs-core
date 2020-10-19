@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, DbOpcode, Id64String, OrderedId64Iterable, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, DbOpcode, Guid, Id64String, OrderedId64Iterable, TransientIdSequence } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../rpc/ModelGeometryChanges";
 
@@ -92,6 +92,7 @@ function elementChangesToJSON(changes: ElementChangeSets): ModelGeometryChangesP
   return {
     inserted, updated, deleted,
     id: ids.next,
+    guid: Guid.createValue(),
     range: nextRange().toJSON(),
   };
 }
@@ -134,6 +135,7 @@ describe("ModelGeometryChanges", () => {
       for (const modelChanges of ModelGeometryChanges.iterable(props)) {
         expect(modelChanges.id).to.equal(props[index].id);
         expect(modelChanges.range).to.deep.equal(Range3d.fromJSON(props[index].range));
+        expect(modelChanges.geometryGuid).to.equal(props[index].guid);
         const actualElems = extractElementChanges(modelChanges.elements);
         expect(actualElems).to.deep.equal(expected[index]);
         index++;

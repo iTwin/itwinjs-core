@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import { assert, compareBooleans, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import { BatchType, compareIModelTileTreeIds, iModelTileTreeIdToString, PrimaryTileTreeId, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -40,14 +40,13 @@ class PlanProjectionTileTree extends IModelTileTree {
 
 class PrimaryTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
-    // NB: We intentionally do not compare the guids. They are expected to be equal if the modelIds are equal.
-    // Similarly we don't compare isPlanProjection - it should always have the same value for a given modelId.
+    // NB: we don't compare isPlanProjection or is3d - they should always have the same value for a given modelId.
+    // NB: We do compare the guids, because a model's guid may change when an InteractiveEditingSession ends.
     let cmp = compareStrings(lhs.modelId, rhs.modelId);
     if (0 === cmp) {
-      cmp = compareBooleans(lhs.is3d, rhs.is3d);
-      if (0 === cmp) {
+      cmp = compareStringsOrUndefined(lhs.guid, rhs.guid);
+      if (0 === cmp)
         cmp = compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
-      }
     }
 
     return cmp;
@@ -131,12 +130,12 @@ class PrimaryTreeReference extends TileTreeReference {
 
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this._view, this._id.modelId, this._id.treeId.animationTransformNodeId);
-    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
+    if (this._model.geometryGuid !== this._id.guid || 0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
         treeId: newId,
-        guid: this._id.guid,
+        guid: this._model.geometryGuid,
         isPlanProjection: this._id.isPlanProjection,
       };
 

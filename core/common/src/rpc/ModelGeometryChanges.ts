@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, CompressedId64Set, DbOpcode, Id64String,
+  assert, CompressedId64Set, DbOpcode, GuidString, Id64String,
 } from "@bentley/bentleyjs-core";
 import {
   Range3d, Range3dProps,
@@ -37,6 +37,8 @@ export interface ModelGeometryChangesProps {
   readonly id: Id64String;
   /** The range of the model. */
   readonly range: Range3dProps;
+  /** The geometry GUID of the model. */
+  readonly guid: GuidString;
   /** If defined, the Ids and ranges of newly-inserted [GeometricElement]($backend)s. */
   readonly inserted?: ElementIdsAndRangesProps;
   /** If defined, the Ids and ranges of [GeometricElement]($backend)s whose geometric properties were modified. */
@@ -120,6 +122,8 @@ export namespace ElementGeometryChange {
 export interface ModelGeometryChanges {
   /** The model's Id. */
   readonly id: Id64String;
+  /** The model's geometry GUID. */
+  readonly geometryGuid: GuidString;
   /** The model's range. */
   readonly range: Range3d;
   /** The individual geometric element changes. */
@@ -145,6 +149,7 @@ export namespace ModelGeometryChanges {
   export function fromJSON(props: ModelGeometryChangesProps): ModelGeometryChanges {
     return {
       id: props.id,
+      geometryGuid: props.guid,
       range: Range3d.fromJSON(props.range),
       elements: ElementGeometryChange.iterable(props),
     };
