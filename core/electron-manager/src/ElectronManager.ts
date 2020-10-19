@@ -33,7 +33,7 @@ class ElectronManager {
     const opts: BrowserWindowConstructorOptions = {
       autoHideMenuBar: true,
       webPreferences: {
-        preload: path.join(__dirname, "./ElectronPreload.js"),
+        preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
         nodeIntegration: false,
         experimentalFeatures: false,
         enableRemoteModule: false,

@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "chalk": "^3.0.0",
+    "file-loader": "^4.2.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
     "source-map-loader": "^1.0.0",
