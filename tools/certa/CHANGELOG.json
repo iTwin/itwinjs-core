@@ -2,6 +2,18 @@
   "name": "@bentley/certa",
   "entries": [
     {
+      "version": "2.7.4",
+      "tag": "@bentley/certa_v2.7.4",
+      "date": "Mon, 19 Oct 2020 17:57:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Access-Control header values"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.3",
       "tag": "@bentley/certa_v2.7.3",
       "date": "Wed, 14 Oct 2020 17:00:58 GMT",

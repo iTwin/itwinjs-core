@@ -1,6 +1,13 @@
 # Change Log - @bentley/express-server
 
-This log was last generated on Wed, 14 Oct 2020 17:00:58 GMT and should not be manually modified.
+This log was last generated on Mon, 19 Oct 2020 17:57:01 GMT and should not be manually modified.
+
+## 2.7.4
+Mon, 19 Oct 2020 17:57:01 GMT
+
+### Updates
+
+- Update Access-Control header values
 
 ## 2.7.3
 Wed, 14 Oct 2020 17:00:58 GMT

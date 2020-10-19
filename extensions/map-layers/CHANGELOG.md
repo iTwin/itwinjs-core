@@ -1,6 +1,11 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Wed, 14 Oct 2020 17:00:59 GMT and should not be manually modified.
+This log was last generated on Mon, 19 Oct 2020 17:57:02 GMT and should not be manually modified.
+
+## 2.7.4
+Mon, 19 Oct 2020 17:57:01 GMT
+
+_Version update only_
 
 ## 2.7.3
 Wed, 14 Oct 2020 17:00:59 GMT

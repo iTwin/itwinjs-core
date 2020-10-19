@@ -2,6 +2,18 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.7.4",
+      "tag": "@bentley/ui-ninezone_v2.7.4",
+      "date": "Mon, 19 Oct 2020 17:57:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add timer to panel auto expander."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.3",
       "tag": "@bentley/ui-ninezone_v2.7.3",
       "date": "Wed, 14 Oct 2020 17:00:59 GMT",

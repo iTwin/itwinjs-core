@@ -18,8 +18,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.7.3",
-    "@bentley/eslint-plugin": "2.7.3",
+    "@bentley/build-tools": "2.7.4",
+    "@bentley/eslint-plugin": "2.7.4",
     "@bentley/react-scripts": "3.4.5",
     "@types/classnames": "^2.2.3",
     "@types/highlight.js": "^9.12.3",
@@ -30,10 +30,10 @@
   },
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@bentley/ui-abstract": "2.7.3",
-    "@bentley/ui-components": "2.7.3",
-    "@bentley/ui-core": "2.7.3",
-    "@bentley/ui-ninezone": "2.7.3",
+    "@bentley/ui-abstract": "2.7.4",
+    "@bentley/ui-components": "2.7.4",
+    "@bentley/ui-core": "2.7.4",
+    "@bentley/ui-ninezone": "2.7.4",
     "classnames": "^2.2.5",
     "highlight.js": "~10.0.3",
     "raf-schd": "^4.0.0",
