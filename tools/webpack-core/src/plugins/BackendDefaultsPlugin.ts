@@ -7,7 +7,7 @@ import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
 import { CopyAppAssetsPlugin, CopyBentleyStaticResourcesPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
-import { addExternalPrefix, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
+import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
 
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
@@ -25,6 +25,17 @@ export class BackendDefaultsPlugin {
     compiler.options.optimization!.minimize = false;
 
     compiler.options = new IModelJsOptionsDefaulter().process(compiler.options);
+    compiler.options.module!.rules = [
+      ...(compiler.options.module!.rules || []),
+      {
+        test: /\.ecschema\.xml$/,
+        loader: require.resolve("file-loader"),
+        options: {
+          name: "ecschemas/[name].[ext]",
+        },
+      },
+      copyFilesRule,
+    ];
 
     // Add default plugins
     const plugins = [
@@ -37,6 +48,7 @@ export class BackendDefaultsPlugin {
       new FilterWarningsPlugin({ exclude: /Failed to parse source map/ }),
       new IgnoreOptionalDependenciesPlugin([
         "debug",
+        "diagnostic-channel-publishers",
         "express",
         "got",
         "keyv",
@@ -46,6 +58,11 @@ export class BackendDefaultsPlugin {
         {
           test: /webpack: *external/i,
           handler: addExternalPrefix,
+        },
+        {
+          test: /webpack: *copyfile/i,
+          handler: addCopyFilesSuffix,
+          convertResolve: true,
         },
       ]),
       new ExternalsPlugin("commonjs", [

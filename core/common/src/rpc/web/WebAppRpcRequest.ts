@@ -134,6 +134,7 @@ export class WebAppRpcRequest extends RpcRequest {
   public async preflight(): Promise<Response | undefined> {
     this.method = "options";
     this._request.method = "options";
+    await this.setHeaders();
     await this.send();
     return this._response;
   }

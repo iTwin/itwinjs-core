@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import { Server as HttpServer } from "http";
-import { RpcConfiguration, WebAppRpcProtocol } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@bentley/imodeljs-common";
 
 /**
  * An express web server with some reasonable defaults for web applications built with @bentley/webpack-tools.
@@ -32,9 +32,9 @@ export class IModelJsExpressServer {
   protected _configureHeaders() {
     // enable CORS for all apis
     this._app.all("/**", (_req, res, next) => {
-      res.header("Access-Control-Allow-Origin", "*");
-      res.header("Access-Control-Allow-Methods", "POST, GET");
-      res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id, X-Protocol-Version");
+      res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
+      res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
+      res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
       next();
     });
   }

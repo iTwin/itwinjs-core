@@ -401,6 +401,11 @@ export enum BatchType {
 
 // @public
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
+    static readonly accessControl: {
+        allowOrigin: string;
+        allowMethods: string;
+        allowHeaders: string;
+    };
     abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
@@ -1433,8 +1438,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 983040,
-    Major = 15,
+    Combined = 1048576,
+    Major = 16,
     Minor = 0
 }
 
@@ -3384,6 +3389,7 @@ export enum ImageSourceFormat {
 // @internal
 export enum ImdlFlags {
     ContainsCurves = 1,
+    DisallowMagnification = 8,
     Incomplete = 4,
     None = 0
 }
@@ -3958,6 +3964,7 @@ export class MapSubLayerSettings {
     get idString(): string;
     get isLeaf(): boolean;
     get isNamed(): boolean;
+    get isUnnamedGroup(): boolean;
     readonly name: string;
     readonly parent?: SubLayerId;
     readonly title?: string;
@@ -5852,6 +5859,8 @@ export abstract class RpcRequest<TResponse = any> {
     retryInterval: number;
     protected abstract send(): Promise<number>;
     protected abstract setHeader(name: string, value: string): void;
+    // (undocumented)
+    protected setHeaders(): Promise<void>;
     protected setLastUpdatedTime(): void;
     get status(): RpcRequestStatus;
     // (undocumented)

@@ -291,7 +291,7 @@ export class ViewportAddRealityModel extends Tool {
   public run(url: string): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
-      vp.displayStyle.attachRealityModel({ tilesetUrl: url });
+      vp.attachRealityModel({ tilesetUrl: url });
 
     return true;
   }

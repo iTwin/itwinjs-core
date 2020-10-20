@@ -28,9 +28,8 @@ export class AttachRealityModelTool extends Tool {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Properties ${props} are not valid`));
     }
 
-    vp.displayStyle.attachRealityModel(props);
+    vp.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${props.tilesetUrl} attached`));
-    vp.invalidateRenderPlan();
 
     return true;
   }
@@ -151,6 +150,28 @@ export class SetRealityModelEmphasizedTool extends Tool {
   }
 }
 
+/** Detach reality model from display style.
+ * @beta
+ */
+export class DetachRealityModelTool extends Tool {
+  public static toolId = "ViewportDetachRealityModel";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(index: number): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp === undefined)
+      return false;
+
+    vp.detachRealityModelByIndex(index);
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args.length > 1 ? parseInt(args[1], 10) : -1);
+  }
+}
+
 /** Set reality model appearance override for color in display style.
  * @beta
  */
@@ -210,9 +231,8 @@ export class AttachCesiumAssetTool extends Tool {
     if (vp === undefined)
       return false;
     const props = { tilesetUrl: `$CesiumIonAsset=${assetId}:${requestKey}` };
-    vp.displayStyle.attachRealityModel(props);
+    vp.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
-    vp.invalidateRenderPlan();
     return true;
   }
 

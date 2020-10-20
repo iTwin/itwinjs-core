@@ -138,7 +138,13 @@ describe("DisplayStyle", () => {
           expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
           if (undefined !== a.classifiers && undefined !== e.classifiers)
             expect(a.classifiers.length).to.equal(e.classifiers.length);
+
+          const foundIndex = style3d.findRealityModelIndex((accept) => { return accept.url === a.url; });
+          expect(i === foundIndex);
         }
+        // Detach all.
+        style3d.detachRealityModelByIndex(-1);
+        style3d.forEachRealityModel((_model) => expect(false));
       } else {
         expect(models.length).to.equal(0);
       }
@@ -181,7 +187,25 @@ describe("DisplayStyle", () => {
           name: "bing",
           isActive: true,
         }],
-      }],
+      },
+      {
+        tilesetUrl: "google.com",
+        name: "google",
+        description: "a popular search engine",
+        classifiers: [{
+          modelId: "0x321",
+          expand: 1.5,
+          flags: {
+            inside: SpatialClassificationProps.Display.Dimmed,
+            outside: SpatialClassificationProps.Display.On,
+            isVolumeClassifier: false,
+            type: 0,
+          },
+          name: "google",
+          isActive: true,
+        }],
+      },
+      ],
     });
 
     test({

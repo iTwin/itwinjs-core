@@ -31,7 +31,7 @@ async function getAccessToken(): Promise<AccessToken | undefined> {
 
 /** A reference to a [[TileTree]] obtained from a reality data service and associated to a [[ViewState]] by way of its [[DisplayStyleState]].
  * Contrast with a persistent [[GeometricModelState]] which may contain a URL pointing to a [[TileTree]] hosted on a reality data service.
- * @internal
+ * @beta
  */
 export class ContextRealityModelState {
   private readonly _treeRef: RealityModelTileTree.Reference;

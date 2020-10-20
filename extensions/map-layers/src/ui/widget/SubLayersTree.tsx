@@ -8,7 +8,9 @@ import { PropertyValueFormat } from "@bentley/ui-abstract";
 import { CheckBoxState, ImageCheckBox, Input, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
-  SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeModelSource, TreeNodeItem, TreeNodeLoader,
+  MutableTreeModel,
+  MutableTreeModelNode,
+  SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeImageLoader, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem, TreeNodeLoader,
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useVisibleTreeNodes,
 } from "@bentley/ui-components";
 import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
@@ -165,9 +167,94 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
 
 /** TreeEventHandler derived class that handler processing changes to subLayer visibility */
 class SubLayerCheckboxHandler extends TreeEventHandler {
+  private _removeModelChangedListener: () => void;
+
   constructor(private _mapLayer: StyleMapLayerSettings, nodeLoader: AbstractTreeNodeLoaderWithProvider<TreeDataProvider>) {
     super({ modelSource: nodeLoader.modelSource, nodeLoader, collapsedChildrenDisposalEnabled: true });
+    this._removeModelChangedListener = this.modelSource.onModelChanged.addListener(this.onModelChanged);
   }
+
+  public dispose() {
+    this._removeModelChangedListener();
+    super.dispose();
+  }
+
+  // Cascade state
+  // Children on unnamed groups must get disabled in the tree view, because
+  // they get rendered anyway.
+  private cascadeStateToAllChildren(model: MutableTreeModel, parentId?: string) {
+    const children = model.getChildren(parentId);
+    if (children === undefined)
+      return;
+
+    for (const childID of children) {
+      const childNode = childID ? model.getNode(childID) : undefined;
+
+      if (childNode)
+        this.syncNodeStateWithParent(model, childNode);
+
+      // Drill down the tree.
+      this.cascadeStateToAllChildren(model, childID);
+    }
+  }
+
+  //-----------------------------------------------------------------------
+  // Listen to model changes
+  //------------------------------------------------------------------------
+  // This is required because nodes are delay loaded in the model until
+  // they are made visible (i.e. parent node is expanded).  So even though
+  // you might have created nodes in the data provided with a proper
+  // initial state, by the time it gets loaded, their state might have became
+  // out of date in the TreeView's active model.  So whenever a node
+  // is added, when must confirm its state matches the current model
+  // (i.e. state of their parent.)
+  public onModelChanged = (args: [TreeModel, TreeModelChanges]) => {
+    this.modelSource.modifyModel((model) => {
+      const addedNodes = args[1].addedNodeIds.map((id) => model.getNode(id));
+      addedNodes.forEach((node) => {
+        if (!node)
+          return;
+
+        this.syncNodeStateWithParent(model, node);
+      });
+    });
+  }
+
+  private static isUnnamedGroup(subLayer: MapSubLayerProps | undefined): boolean {
+    if (!subLayer)
+      return false;
+
+    return (!subLayer.name || subLayer.name.length === 0) && (subLayer.children !== undefined && subLayer.children.length > 0);
+  }
+
+  // Ensure the state of changed node matches the state of its parent.
+  private syncNodeStateWithParent(model: MutableTreeModel, changedNode: MutableTreeModelNode) {
+    // Lookup node parent. If non exists, I assume thats the root node,
+    // and it must have a proper initial state.
+    const parentNode = changedNode.parentId ? model.getNode(changedNode.parentId) : undefined;
+    if (!parentNode)
+      return;
+
+    if (!changedNode.checkbox)
+      return; // don't see why this would happen, but if there is no checkbox, we cant do much here.
+
+    const parentLayerId = undefined !== parentNode.item.extendedData?.subLayerId ? parentNode.item.extendedData?.subLayerId : parentNode.item.id;
+    const parentSubLayer = this._mapLayer.subLayers?.find((subLayer) => subLayer.id === parentLayerId);
+
+    // If parent is disabled, then children must be too.
+    // Also, Non-visible unnamed group must have their children disabled (unamed groups have visibility inherence)
+    if (parentNode.checkbox.isDisabled || (SubLayerCheckboxHandler.isUnnamedGroup(parentSubLayer) && parentNode.checkbox.state === CheckBoxState.Off)) {
+      changedNode.checkbox.isDisabled = true;
+      changedNode.checkbox.state = CheckBoxState.Off;
+    } else {
+      // Visibility state from StyleMapLayerSettings applies
+      const subLayerId = undefined !== changedNode.item.extendedData?.subLayerId ? changedNode.item.extendedData?.subLayerId : changedNode.item.id;
+      const foundSubLayer = this._mapLayer.subLayers?.find((subLayer) => subLayer.id === subLayerId);
+      changedNode.checkbox.isDisabled = false;
+      changedNode.checkbox.state = foundSubLayer?.visible ? CheckBoxState.On : CheckBoxState.Off;
+    }
+  }
+
 
   /** Changes nodes checkboxes states until event is handled or handler is disposed */
   public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
@@ -182,10 +269,24 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
         const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(this._mapLayer.name, this._mapLayer.url, this._mapLayer.isOverlay) : -1;
         changes.forEach((change) => {
           const isSelected = (change.newState === CheckBoxState.On);
+
+          // Update sublayer object, otherwise state would get out of sync with DisplayStyle each time the TreeView is re-rendered
+          const subLayerId = undefined !== change.nodeItem.extendedData?.subLayerId ? change.nodeItem.extendedData?.subLayerId : change.nodeItem.id;
+          const foundSubLayer = this._mapLayer.subLayers?.find((subLayer) => subLayer.id === subLayerId);
+          if (foundSubLayer)
+            foundSubLayer.visible = isSelected;
+
+          // Update displaystyle state
           if (-1 !== indexInDisplayStyle && displayStyle) {
-            displayStyle.changeMapSubLayerProps({ visible: isSelected }, undefined !== change.nodeItem.extendedData?.subLayerId ? change.nodeItem.extendedData?.subLayerId : change.nodeItem.id, indexInDisplayStyle, this._mapLayer.isOverlay);
+            displayStyle.changeMapSubLayerProps({ visible: isSelected }, subLayerId, indexInDisplayStyle, this._mapLayer.isOverlay);
           }
+
+          // Cascade state
+          this.modelSource.modifyModel((model) => {
+            this.cascadeStateToAllChildren(model, change.nodeItem.id);
+          });
         });
+
         if (vp)
           vp.invalidateRenderPlan();
       },
@@ -209,10 +310,12 @@ const eyeCheckboxRenderer = (props: NodeCheckboxRenderProps) => (
 );
 
 /** Custom node renderer. It uses default 'TreeNodeRenderer' but overrides default checkbox renderer to render checkbox as an eye */
+const imageLoader = new TreeImageLoader();
 const nodeWithEyeCheckboxRenderer = (props: TreeNodeRendererProps) => (
   <TreeNodeRenderer
     {...props}
     checkboxRenderer={eyeCheckboxRenderer}
+    imageLoader={imageLoader}
   />
 );
 

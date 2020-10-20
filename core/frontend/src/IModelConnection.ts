@@ -851,7 +851,10 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
 
     requestContext.useContextForRpc = true;
     const iModelProps = await NativeAppRpcInterface.getClient().openBriefcase(briefcaseProps.key);
-    return new this({ ...briefcaseProps, ...iModelProps });
+    const connection = new this({ ...briefcaseProps, ...iModelProps });
+
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
   }
 
   /** Close this LocalBriefcaseConnection
