@@ -1402,6 +1402,7 @@ export interface ContextRealityModelProps {
     name?: string;
     // @alpha (undocumented)
     orbitGtBlob?: OrbitGtBlobProps;
+    realityDataId?: string;
     // (undocumented)
     tilesetUrl: string;
 }

@@ -1669,6 +1669,7 @@ export class ContextRealityModelState {
     readonly name: string;
     // (undocumented)
     readonly orbitGtBlob?: OrbitGtBlobProps;
+    readonly realityDataId?: string;
     // (undocumented)
     toJSON(): ContextRealityModelProps;
     // (undocumented)

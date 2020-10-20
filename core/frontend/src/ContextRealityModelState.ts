@@ -38,6 +38,8 @@ export class ContextRealityModelState {
   public readonly name: string;
   public readonly url: string;
   public readonly orbitGtBlob?: OrbitGtBlobProps;
+  /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
+  public readonly realityDataId?: string;
   public readonly description: string;
   public readonly iModel: IModelConnection;
   private _appearanceOverrides?: FeatureAppearance;
@@ -45,6 +47,7 @@ export class ContextRealityModelState {
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     this.url = props.tilesetUrl;
     this.orbitGtBlob = props.orbitGtBlob;
+    this.realityDataId = props.realityDataId;
     this.name = undefined !== props.name ? props.name : "";
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
@@ -79,6 +82,7 @@ export class ContextRealityModelState {
     return {
       tilesetUrl: this.url,
       orbitGtBlob: this.orbitGtBlob,
+      realityDataId: this.realityDataId,
       name: 0 > this.name.length ? this.name : undefined,
       description: 0 > this.description.length ? this.description : undefined,
       appearanceOverrides: this.appearanceOverrides,
@@ -193,9 +197,24 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
     // If the RealityData is valid then we add it to the list.
     if (currentRealityData.id && validRd === true) {
       const url = await client.getRealityDataUrl(requestContext, contextId, currentRealityData.id);
+      let opcConfig: OrbitGtBlobProps | undefined;
+
+      if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
+        const rootDocUrl: string = await currentRealityData.getBlobStringUrl(requestContext, currentRealityData.rootDocument);
+        opcConfig = {
+          containerName: "",
+          blobFileName: rootDocUrl,
+          accountName: "",
+          sasToken: "",
+        };
+      }
+
       requestContext.enter();
       if (!modelRealityDataIds.has(currentRealityData.id))
-        availableRealityModels.push({ tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : "") });
+        availableRealityModels.push({
+          tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : ""),
+          realityDataId: currentRealityData.id, orbitGtBlob: opcConfig,
+        });
     }
   }
   return availableRealityModels;
