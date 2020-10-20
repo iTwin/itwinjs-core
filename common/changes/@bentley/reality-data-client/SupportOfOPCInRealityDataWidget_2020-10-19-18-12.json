@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/reality-data-client",
+      "comment": "Add support for OPC point clouds in Reality Data widget.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/reality-data-client",
+  "email": "chantal.poulin@bentley.com"
+}

@@ -535,6 +535,20 @@ export class DetachMapLayersTool extends Tool {
 }
 
 // @beta
+export class DetachRealityModelTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(index: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class DiagnosticsPanel {
     constructor(vp: Viewport, props?: DiagnosticsPanelProps);
     // (undocumented)

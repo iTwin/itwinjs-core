@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-common",
-      "comment": "Update Access-Control header values",
+      "comment": "Support down-sampling very large textures in tiles.",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-common",
-  "email": "69857376+swbsi@users.noreply.github.com"
+  "email": "22944042+pmconne@users.noreply.github.com"
 }

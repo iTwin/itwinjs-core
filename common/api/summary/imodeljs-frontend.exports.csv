@@ -74,7 +74,7 @@ internal;ClipResult
 public;Cluster
 internal;CompassMode
 internal;ContextMode
-internal;ContextRealityModelState
+beta;ContextRealityModelState
 alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource

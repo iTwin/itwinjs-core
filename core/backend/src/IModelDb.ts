@@ -25,8 +25,8 @@ import {
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
   SyncMode, ThumbnailProps, TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
+import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
+import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
@@ -2608,6 +2608,70 @@ export class SnapshotDb extends IModelDb {
       throw new IModelError(status, `Could not open iModel '${filePath}'`, Logger.logError, loggerCategory);
 
     return new SnapshotDb(nativeDb, OpenMode.Readonly);
+  }
+
+  /** Open a *checkpoint*, a special form of snapshot iModel that represents a read-only snapshot of an iModel from iModelHub at a particular point in time.
+   * > Note: The blockcache daemon must already be running and a checkpoint must already exist in iModelHub's storage *before* this function is called.
+   * @param requestContext The client request context.
+   * @param contextId The Guid that identifies the *context* that owns this iModel.
+   * @param iModelDb The Guid that identifies this iModel.
+   * @param changeSetId Id of the last ChangeSet that was applied to this checkpoint file.
+   * @throws [[IModelError]] If the checkpoint is not found in iModelHub or the blockcache daemon is not supported in the current environment.
+   * @internal
+   */
+  public static async openCheckpoint(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<SnapshotDb> {
+    const filePath = await SnapshotDb.attachCheckpoint(requestContext, iModelId, changeSetId);
+    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true });
+    snapshot._contextId = contextId;
+    snapshot._changeSetId = changeSetId;
+    return snapshot;
+  }
+
+  /** Used to refresh the blockcache daemon's access to this checkpoint's storage container.
+   * @param requestContext The client request context.
+   * @throws [[IModelError]] If the db is not a checkpoint.
+   * @internal
+   */
+  public async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
+    if (!this._changeSetId)
+      throw new IModelError(IModelStatus.WrongIModel, `SnapshotDb is not a checkpoint`, Logger.logError, loggerCategory);
+
+    await SnapshotDb.attachCheckpoint(requestContext, this.iModelId, this._changeSetId);
+  }
+
+  private static async attachCheckpoint(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString): Promise<string> {
+    requestContext.enter();
+    const bcvDaemonCachePath = process.env.BLOCKCACHE_DIR;
+    if (!bcvDaemonCachePath)
+      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set!", Logger.logError, loggerCategory);
+
+    const checkpointQuery = new CheckpointQuery().byChangeSetId(changeSetId).selectBCVAccessKey();
+    const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, iModelId, checkpointQuery);
+    requestContext.enter();
+
+    if (checkpoints.length < 1)
+      throw new IModelError(IModelStatus.NotFound, "Checkpoint not found", Logger.logError, loggerCategory);
+
+    const { bcvAccessKeyContainer, bcvAccessKeySAS, bcvAccessKeyAccount, bcvAccessKeyDbName } = checkpoints[0];
+    if (!bcvAccessKeyContainer || !bcvAccessKeySAS || !bcvAccessKeyAccount || !bcvAccessKeyDbName)
+      throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory, () => ({ checkpoint: checkpoints[0] }));
+
+    // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
+    const attachArgs: BlobDaemonCommandArg = {
+      container: bcvAccessKeyContainer,
+      auth: bcvAccessKeySAS,
+      daemonDir: bcvDaemonCachePath,
+      storageType: "azure",
+      user: bcvAccessKeyAccount,
+      dbAlias: bcvAccessKeyDbName,
+      writeable: false,
+    };
+    const attachResult = await BlobDaemon.command("attach", attachArgs);
+
+    if (attachResult.result !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(attachResult.result, `BlockCacheVfs attach failed: ${attachResult.errMsg}`, Logger.logError, loggerCategory);
+
+    return BlobDaemon.getDbFileName(attachArgs);
   }
 
   /** Close this local read-only iModel *snapshot*, if it is currently open.

@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/ui-ninezone",
-      "comment": "Add timer to panel auto expander.",
+      "comment": "",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-ninezone",
-  "email": "Gerardas.Butkevicius@bentley.com"
+  "email": "31107829+calebmshafer@users.noreply.github.com"
 }

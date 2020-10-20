@@ -224,6 +224,7 @@ export class IModelHost {
   public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
   public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
+  private static _imodelClient?: IModelClient;
   private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
   /** @alpha */
   public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
@@ -373,7 +374,10 @@ export class IModelHost {
     if (!IModelHost.configuration) {
       throw new IModelError(BentleyStatus.ERROR, "startup must be called first");
     }
-    return IModelHost.configuration.imodelClient || new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new MobileFileHandler() : new AzureFileHandler());
+    if (!IModelHost._imodelClient) {
+      IModelHost._imodelClient = new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new MobileFileHandler() : new AzureFileHandler());
+    }
+    return IModelHost._imodelClient;
   }
   public static get isUsingIModelBankClient(): boolean {
     return IModelHost.iModelClient instanceof IModelBankClient;
@@ -449,6 +453,7 @@ export class IModelHost {
     }
 
     this.setupCacheDirs(configuration);
+    this._imodelClient = configuration.imodelClient;
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     IModelHost.setupRpcRequestContext();

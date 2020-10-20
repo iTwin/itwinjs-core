@@ -81,18 +81,14 @@ export namespace WmsCapability {
     public readonly srs?: string[];
     public readonly cartoRange?: MapCartoRectangle;
     public readonly subLayers = new Array<SubLayer>();
+    private static readonly PREFIX_SEPARATOR = ":";
 
     constructor(_json: any) {
       this.queryable = _json.queryable;
       this.title = _json.title;
       this.srs = initArray<string>(_json.SRS);
       this.cartoRange = rangeFromJSON(_json);
-      if (Array.isArray(_json.Layer)) {
-        for (const subLayer of _json.Layer)
-          this.subLayers.push(new SubLayer(subLayer));
-      } else {
-        this.subLayers.push(new SubLayer(_json));
-      }
+      this.subLayers.push(new SubLayer(_json));
 
     }
     public getSubLayers(visible = true): MapSubLayerProps[] {
@@ -117,8 +113,8 @@ export namespace WmsCapability {
       if (!childrenFound) {
         const prefixed = new Map<string, MapSubLayerProps[]>();
         subLayers.forEach((subLayer) => {
-          if (subLayer.name && subLayer.name.indexOf(":") > 0) {
-            const prefix = subLayer.name.slice(0, subLayer.name.indexOf(":"));
+          if (subLayer.name && subLayer.name.indexOf(Layer.PREFIX_SEPARATOR) > 0) {
+            const prefix = subLayer.name.slice(0, subLayer.name.indexOf(Layer.PREFIX_SEPARATOR));
             const found = prefixed.get(prefix);
             if (found)
               found.push(subLayer);
@@ -127,9 +123,16 @@ export namespace WmsCapability {
           }
         });
         if (prefixed.size > 1) {
+          // Preserve the root node if any.
+          const rootNode = (this.subLayers.length === 1 && this.subLayers[0].children && this.subLayers[0].children.length > 1) ? subLayers.find((curSubLayer) => this.subLayers[0].name === curSubLayer.name)?.id : undefined;
           prefixed.forEach((children, parent) => {
-            children.forEach((child) => child.parent = index);
-            subLayers.push({ name: "", title: parent, parent: undefined, id: index++, children: children.map((child) => child.id as number), visible });
+            children.forEach((child) => {
+              child.parent = index;
+              // Remove the prefix from the title if present.
+              if (child.title && child.title.indexOf(parent + Layer.PREFIX_SEPARATOR) === 0)
+                child.title = child.title.slice(parent.length + Layer.PREFIX_SEPARATOR.length);
+            });
+            subLayers.push({ name: "", title: parent, parent: rootNode, id: index++, children: children.map((child) => child.id as number), visible });
           });
         }
       }
