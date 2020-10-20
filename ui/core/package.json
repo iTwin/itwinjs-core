@@ -50,7 +50,7 @@
     "@bentley/bentleyjs-core": "2.8.0-dev.17",
     "@bentley/imodeljs-i18n": "2.8.0-dev.17",
     "@bentley/ui-abstract": "2.8.0-dev.17",
-    "@bentley/react-scripts": "3.4.5",
+    "@bentley/react-scripts": "3.4.6",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
