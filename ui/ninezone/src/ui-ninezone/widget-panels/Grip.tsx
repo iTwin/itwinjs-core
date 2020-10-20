@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module WidgetPanels
@@ -47,7 +47,7 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip(props: Common
         className="nz-handle"
         ref={ref}
         onMouseOverCapture={() => {
-          panelState.collapsed && !panelState.pinned && dispatch({
+          panelState.collapsed && !panelState.pinned && !resizing && dispatch({
             side,
             collapsed: false,
             type: "PANEL_SET_COLLAPSED",
@@ -97,8 +97,6 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
     const panel = panelStateRef.current;
     if (resizeBy === 0)
       return;
-    if (panel.size === undefined)
-      return;
     if (panel.collapsed) {
       if (size >= panel.collapseOffset) {
         dispatch({
@@ -110,6 +108,9 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
       }
       return;
     }
+
+    if (panel.size === undefined)
+      return;
 
     // New size should match drag direction (i.e. dragging `left` panel grip to the left should not increase left panel size).
     const sizeDiff = size - panel.size;

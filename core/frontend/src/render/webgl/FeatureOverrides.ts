@@ -62,7 +62,7 @@ export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): bool
 /** @internal */
 export class FeatureOverrides implements WebGLDisposable {
   public readonly target: Target;
-  private _lut?: TextureHandle;
+  private _lut?: Texture2DHandle;
   private _mostRecentSymbologyOverrides?: FeatureSymbology.Overrides;
   private _lastFlashId = Id64.invalid;
   private _hiliteSyncObserver: SyncObserver = {};
@@ -86,7 +86,7 @@ export class FeatureOverrides implements WebGLDisposable {
     if (!this.isUniform || undefined === this._lut)
       return false;
 
-    const lut = this._lut as Texture2DHandle;
+    const lut = this._lut;
     const flags = lut.dataBytes![0];
     return 0 !== (flags & OvrFlags.Flashed);
   }
@@ -97,7 +97,7 @@ export class FeatureOverrides implements WebGLDisposable {
       this._uniformSymbologyFlags += 1;
   }
 
-  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Hilites, flashed?: Id64.Uint32Pair): TextureHandle | undefined {
+  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims = computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
@@ -114,7 +114,7 @@ export class FeatureOverrides implements WebGLDisposable {
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  private _update(map: PackedFeatureTable, lut: TextureHandle, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
+  private _update(map: PackedFeatureTable, lut: Texture2DHandle, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs) {
@@ -124,7 +124,7 @@ export class FeatureOverrides implements WebGLDisposable {
       this.buildLookupTable(updater, map, ovrs, flashed, hilites);
     }
 
-    (lut as Texture2DHandle).update(updater);
+    lut.update(updater);
   }
 
   private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedIdParts: Id64.Uint32Pair | undefined, hilites: Hilites) {
@@ -330,8 +330,10 @@ export class FeatureOverrides implements WebGLDisposable {
 
     const hilite = this.target.hilites;
     if (ovrsUpdated || hiliteUpdated || flashedId !== this._lastFlashId) {
-      this._update(features, this._lut!, this.target.flashed, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
-
+      // _lut can be undefined if context was lost, (gl.createTexture returns null)
+      if (this._lut) {
+        this._update(features, this._lut, this.target.flashed, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
+      }
       this._lastFlashId = flashedId;
     }
   }

@@ -33,6 +33,13 @@ export interface BentleyCloudRpcParams {
  * @public
  */
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
+  /** Access-Control header values for backend servers that serve frontends using BentleyCloudRpcProtocol. */
+  public static readonly accessControl = {
+    allowOrigin: "*",
+    allowMethods: "POST, GET, OPTIONS",
+    allowHeaders: "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id, X-Protocol-Version",
+  };
+
   /** The protocol of the configuration. */
   public abstract readonly protocol: BentleyCloudRpcProtocol;
 }

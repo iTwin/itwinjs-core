@@ -15,6 +15,25 @@ const RequireResolveHeaderDependency = require("webpack/lib/dependencies/Require
 interface MagicCommentHandlerConfig {
   test: string | RegExp;
   handler: (request: string, comment: string) => string;
+  /**
+   * By default, webpack will transform `require.resolve` such that it always returns a module identifier that can then be used with `require` later.
+   * This normally makes sense, but when using a loader that transforms assets into js modules that export a filepath (such as file-loader),
+   * it can be more idiomatic to convert a `require.resolve` to just `require`.
+   *
+   * For example, if a handler were to transform:
+   * ```
+   *    const x = require.resolve(/﻿* foo *﻿/"bar.txt");
+   *    // to:
+   *    const x = require.resolve("file-loader!bar.txt");
+   * ```
+   * Then `x` would just be a webpack module ID (usually a number).
+   * However, with `convertResolve: true`, you can transform that same original `require.resolve` statement to:
+   * ```
+   *    const x = require("file-loader!bar.txt");
+   * ```
+   * In which case `x` will be the path to bar.txt in the output directory.
+   */
+  convertResolve?: boolean;
 }
 
 /**
@@ -57,7 +76,7 @@ export class RequireMagicCommentsPlugin {
       let param: any;
       let request: any;
       for (const comment of parser.getComments(expr.range)) {
-        for (const { test, handler } of this._configs) {
+        for (const { test, handler, convertResolve } of this._configs) {
           if (!this.testComment(comment.value, test))
             continue;
 
@@ -70,6 +89,11 @@ export class RequireMagicCommentsPlugin {
             request = param.string;
           }
 
+          if (convertResolve && depType !== CommonJsRequireDependency) {
+            depType = CommonJsRequireDependency;
+            headerType = RequireHeaderDependency;
+            logger.log(`Converting require.resolve => require for "${param.string}" at ${getSourcePosition(parser.state.current, expr.loc)}`);
+          }
           request = handler(request, comment.value);
           logger.log(`Handler for /*${comment.value}*/ - transformed "${param.string}" => "${request}" at ${getSourcePosition(parser.state.current, expr.loc)}`);
         }
@@ -99,4 +123,15 @@ export const handlePrefixedExternals = (_ctx: any, request: string, cb: any) => 
     return;
   }
   cb();
+};
+
+const copyFilesSuffix = "BeWebpack-COPYFILE";
+export const addCopyFilesSuffix = (req: string) => `${req}?${copyFilesSuffix}}`;
+export const copyFilesRule = {
+  resourceQuery: new RegExp(copyFilesSuffix).compile(),
+  loader: require.resolve("file-loader"),
+  options: {
+    name: "static/[name].[hash:6].[ext]",
+    postTransformPublicPath: (p: string) => `require("path").resolve(__dirname, ${p})`,
+  },
 };
