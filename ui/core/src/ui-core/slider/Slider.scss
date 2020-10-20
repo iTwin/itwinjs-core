@@ -96,7 +96,7 @@ $uicore-slider-minmax-margin:   6px;
       }
 
       &:focus, &:active {
-        @include uicore-buttons-button-focused
+        @include uicore-buttons-button-focused;
       }
     }
 
