@@ -4,7 +4,7 @@ dependencies:
   '@bentley/icons-generic': 1.0.27
   '@bentley/icons-generic-webfont': 1.0.27
   '@bentley/imodeljs-native': 2.8.6
-  '@bentley/react-scripts': 3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba
+  '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': 2.5.9
   '@openid/appauth': 1.3.0
@@ -318,7 +318,7 @@ dependencies:
   request-promise-native: 1.0.9_request@2.88.2
   require-dir: 1.2.0
   resize-observer-polyfill: 1.5.1
-  resolve-url-loader: 3.1.1
+  resolve-url-loader: 3.1.2
   rimraf: 3.0.2
   rxjs: 6.6.3
   save: 2.4.0
@@ -1689,7 +1689,7 @@ packages:
     requiresBuild: true
     resolution:
       integrity: sha512-mIxxUdV2TNgo8eHZZsCQbxTpmrY8sIsGFxJCO9oNFTfamL/uT5lNw9U2qrGQT9Vs83XlBVMnLUfxiwYFGXGhLw==
-  /@bentley/react-scripts/3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba:
+  /@bentley/react-scripts/3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba:
     dependencies:
       '@babel/core': 7.9.0
       '@bentley/webpack-tools-core': 2.7.4_webpack@4.42.0
@@ -1736,7 +1736,7 @@ packages:
       react-app-polyfill: 1.0.6
       react-dev-utils: 10.2.1
       resolve: 1.15.0
-      resolve-url-loader: 3.1.1
+      resolve-url-loader: 3.1.2
       sass-loader: 8.0.2_node-sass@4.13.1+webpack@4.42.0
       semver: 6.3.0
       source-map-loader: 1.1.1_webpack@4.42.0
@@ -1767,7 +1767,7 @@ packages:
       typescript:
         optional: true
     resolution:
-      integrity: sha512-CPsieDij1r6XcBJCAF8CV4AlgAcXo5hs7yFvN4umpFPnON5Zp5fE7CFCMGV1j7hCvRq7DbBi58k8SrYwlc4kwg==
+      integrity: sha512-lFxmClVnb6XoqPlB39YS/FfzwDfLytCrAo5pm8qrLuKQyM3dCKor1ov3F1UAMrDjX5DpB8UVfBodR/rPViNWTQ==
   /@bentley/webpack-tools-core/2.7.4_webpack@4.42.0:
     dependencies:
       chalk: 3.0.0
@@ -2723,7 +2723,7 @@ packages:
   /@types/glob/7.1.3:
     dependencies:
       '@types/minimatch': 3.0.3
-      '@types/node': 10.14.1
+      '@types/node': 12.12.69
     dev: false
     resolution:
       integrity: sha512-SEYeGAIQIQX8NN6LDKprLjbrd5dARM5EXsd8GI/A5l0apYI1fGMWgPHSe4ZKL4eozlAyI+doUE9XbYS4xCkQ1w==
@@ -3554,16 +3554,15 @@ packages:
       node: '>= 0.12.0'
     resolution:
       integrity: sha512-aT6camzM4xEA54YVJYSqxz1kv4IHnQZRtThJJHhUMRExaU5spC7jX5ugSwTaTgJliIgs4VhZOk7htClvQ/LmRA==
-  /adjust-sourcemap-loader/2.0.0:
+  /adjust-sourcemap-loader/3.0.0:
     dependencies:
-      assert: 1.4.1
-      camelcase: 5.0.0
-      loader-utils: 1.2.3
-      object-path: 0.11.4
-      regex-parser: 2.2.10
+      loader-utils: 2.0.0
+      regex-parser: 2.2.11
     dev: false
+    engines:
+      node: '>=8.9'
     resolution:
-      integrity: sha512-4hFsTsn58+YjrU9qKzML2JSSDqKvN8mUGQ0nNIrfPi8hmIONT4L3uUaT6MKdMsZ9AjsU6D2xDkZxCkbQPxChrA==
+      integrity: sha512-YBrGyT2/uVQ/c6Rr+t6ZJXniY03YtHGMJQYal368burRGYKqhx9qGTWqcBU5s1CwYY9E/ri63RYyG1IacMZtqw==
   /agent-base/4.3.0:
     dependencies:
       es6-promisify: 5.0.0
@@ -3945,12 +3944,6 @@ packages:
       node: '>=0.8'
     resolution:
       integrity: sha1-8S4PPF13sLHN2RRpQuTpbB5N1SU=
-  /assert/1.4.1:
-    dependencies:
-      util: 0.10.3
-    dev: false
-    resolution:
-      integrity: sha1-mZEtWRg2tab1s0XA8H7vwI/GXZE=
   /assert/1.5.0:
     dependencies:
       object-assign: 4.1.1
@@ -4096,7 +4089,7 @@ packages:
       '@babel/types': 7.12.1
       eslint: 6.8.0
       eslint-visitor-keys: 1.3.0
-      resolve: 1.15.0
+      resolve: 1.18.1
     dev: false
     engines:
       node: '>=6'
@@ -4912,12 +4905,6 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-1UVjW+HjPFQmScaRc+Xeas+uNN0=
-  /camelcase/5.0.0:
-    dev: false
-    engines:
-      node: '>=6'
-    resolution:
-      integrity: sha512-faqwZqnWxbxn+F1d399ygeamQNy3lPp/H9H6rNrqYh4FSVCtcY+3cub1MxA8o9mDd55mM8Aghuu/kuyYA6VTsA==
   /camelcase/5.3.1:
     dev: false
     engines:
@@ -7734,7 +7721,7 @@ packages:
       integrity: sha1-9K8+qfNNiicc9YrSs3WfQx8LMY0=
   /faye-websocket/0.10.0:
     dependencies:
-      websocket-driver: 0.6.5
+      websocket-driver: 0.7.4
     dev: false
     engines:
       node: '>=0.4.0'
@@ -12409,12 +12396,6 @@ packages:
       node: '>= 0.4'
     resolution:
       integrity: sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==
-  /object-path/0.11.4:
-    dev: false
-    engines:
-      node: '>=0.10.0'
-    resolution:
-      integrity: sha1-NwrnUvvzfePqcKhhwju6iRVpGUk=
   /object-visit/1.0.1:
     dependencies:
       isobject: 3.0.1
@@ -14984,10 +14965,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-J6SDjUgDxQj5NusnOtdFxDwN/+HWykR8GELwctJ7mdqhcyy1xEc4SRFHUXvxTp661YaVKAjfRLZ9cCqS6tn32A==
-  /regex-parser/2.2.10:
+  /regex-parser/2.2.11:
     dev: false
     resolution:
-      integrity: sha512-8t6074A68gHfU8Neftl0Le6KTDwfGAj7IyjPIMSfikI2wJUTHDMaIq42bUsfVnj8mhx0R+45rdUXHGpN164avA==
+      integrity: sha512-jbD/FT0+9MBU2XAZluI7w2OBs1RBi6p9M83nkoZayQXXU9e8Robt69FcZc7wU4eJD/YFTjn1JdCk3rbMJajz8Q==
   /regexp.prototype.flags/1.3.0:
     dependencies:
       define-properties: 1.1.3
@@ -15275,9 +15256,9 @@ packages:
     dev: false
     resolution:
       integrity: sha512-C7rARubxI8bXFNB/hqcp/4iUeIXJhJZvFPFPiSPRnhU5UPxzMFIl+2E6yY6c4k9giDJAhtV+enfA+G89N6Csng==
-  /resolve-url-loader/3.1.1:
+  /resolve-url-loader/3.1.2:
     dependencies:
-      adjust-sourcemap-loader: 2.0.0
+      adjust-sourcemap-loader: 3.0.0
       camelcase: 5.3.1
       compose-function: 3.0.3
       convert-source-map: 1.7.0
@@ -15291,7 +15272,7 @@ packages:
     engines:
       node: '>=6.0.0'
     resolution:
-      integrity: sha512-K1N5xUjj7v0l2j/3Sgs5b8CjrrgtC70SmdCuZiJ8tSyb5J+uk3FoeZ4b7yTnH6j7ngI+Bc5bldHJIa8hYdu2gQ==
+      integrity: sha512-QEb4A76c8Mi7I3xNKXlRKQSlLBwjUV/ULFMP+G7n3/7tJZ8MG5wsZ3ucxP1Jz8Vevn6fnJsxDx9cIls+utGzPQ==
   /resolve-url/0.2.1:
     deprecated: 'https://github.com/lydell/resolve-url#deprecated'
     dev: false
@@ -17071,7 +17052,7 @@ packages:
       lodash.memoize: 4.1.2
       make-error: 1.3.6
       mkdirp: 0.5.5
-      resolve: 1.15.0
+      resolve: 1.18.1
       semver: 5.7.1
       yargs-parser: 10.1.0
     dev: false
@@ -18873,7 +18854,7 @@ packages:
     version: 0.0.0
   'file:projects/display-performance-test-app.tgz_a57ed3b074e44b815c5b6b01ce3d54f8':
     dependencies:
-      '@bentley/react-scripts': 3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba
+      '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.8
       '@types/node': 10.14.1
@@ -18898,14 +18879,14 @@ packages:
       node-sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-gYk9+Tggojpgr4DBKWwomPJh2n8foOizfrXfrBGTo6SNTqmC/yptRyieZIdkdCQDOtoENsU4DD+0NxpUpdKlLg==
+      integrity: sha512-wRNYhaMxhfqJ51PdqDs7Lu7UK7makPP8h96pnRWyR6LXYgKlsqH0QRXSiWiVpiy5eZPQxwqyxR6Zkw16VN3orw==
       tarball: 'file:projects/display-performance-test-app.tgz'
     version: 0.0.0
   'file:projects/display-test-app.tgz_webpack-cli@3.3.12':
     dependencies:
       '@bentley/icons-generic': 1.0.27
       '@bentley/icons-generic-webfont': 1.0.27
-      '@bentley/react-scripts': 3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba
+      '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.8
       '@types/fs-extra': 4.0.11
@@ -18932,7 +18913,7 @@ packages:
     peerDependencies:
       webpack-cli: '*'
     resolution:
-      integrity: sha512-CVtQYdzoP+F1RnyawV7aTwnZZPKG5zQOfURGCDlkB+QTsgCoyuvU/btmYNTDQ62NMn5hklWIeqI31a1UNkaK+Q==
+      integrity: sha512-2MDK8w/+lG4lXsjCsrzjLfIFy/KgSS7ELe+PK9xMwlr2oGd8ZZiKOkU2ri8EZ8xYOD7pYYCQkWwdh9oSblE/Xg==
       tarball: 'file:projects/display-test-app.tgz'
     version: 0.0.0
   'file:projects/ecschema-locaters.tgz':
@@ -19242,7 +19223,7 @@ packages:
       postcss-safe-parser: 4.0.1
       react-dev-utils: 10.2.1
       readline: 1.3.0
-      resolve-url-loader: 3.1.1
+      resolve-url-loader: 3.1.2
       rimraf: 3.0.2
       source-map-loader: 1.1.1_webpack@4.42.0
       style-loader: 1.3.0_webpack@4.42.0
@@ -19258,7 +19239,7 @@ packages:
     dev: false
     name: '@rush-temp/extension-webpack-tools'
     resolution:
-      integrity: sha512-8bwjjzUHHflCTry4bmIw9r5LSSDFCXoRA8WZO7gfj6c4gI3seTo/vKxXwyHIsPu1957tBjjapjCf8XQL83IkrQ==
+      integrity: sha512-QXdfe8sk0f0LyPvwHnM3G4v5snxPLInHqXLivz7sVIRbJO1RymWfHNCBzqGT4q/p1o1jGE0xkQL6xjvh6Vaoug==
       tarball: 'file:projects/extension-webpack-tools.tgz'
     version: 0.0.0
   'file:projects/forms-data-management-client.tgz':
@@ -19858,7 +19839,7 @@ packages:
   'file:projects/ninezone-test-app.tgz_2a16efbb158a443d40285518dce87fdc':
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.27
-      '@bentley/react-scripts': 3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba
+      '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
       '@types/classnames': 2.2.10
       '@types/highlight.js': 9.12.4
       '@types/react': 16.9.43
@@ -19880,7 +19861,7 @@ packages:
       node-sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-7xfwN+7clfhdqSBvoVJDELZZjIIysAjAEacIc6CZujOg8jSp9fGNMZ2PIpZseDaViYpT3uqJvj5+7iaY7pzo4Q==
+      integrity: sha512-C27OA58ZJX6Qd9roBn9wEmoIHzhsPpGmXqhUHy2mkjBjyZPbhCOym8MfdKY19JSUUV5PgFFcgwqe1gzFtIcodQ==
       tarball: 'file:projects/ninezone-test-app.tgz'
     version: 0.0.0
   'file:projects/oidc-signin-tool.tgz':
@@ -20174,7 +20155,7 @@ packages:
   'file:projects/presentation-test-app.tgz_a57ed3b074e44b815c5b6b01ce3d54f8':
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.27
-      '@bentley/react-scripts': 3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba
+      '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
       '@types/bunyan': 1.8.6
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.8
@@ -20201,7 +20182,7 @@ packages:
       node-sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-aPAyB9ZJ7w3G4OQq+ic+TqsbEAMeldvUlU6BPZNIDexCTH5osYptxFBP8/m7ijU0EeIe7wDTjnTWz3zsSMi6FQ==
+      integrity: sha512-2dIH45syrKl5CwQzmHgILKjrjOY28suxDFnd/u0UYhlknMyFcDqvTPop9mfHfJQUz+f6OGDGXUcqMaTnRE90aQ==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz_jsdom@11.12.0':
@@ -20549,7 +20530,7 @@ packages:
   'file:projects/ui-core.tgz_61fa1f55fd4ae8f7721688649885d554':
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.27
-      '@bentley/react-scripts': 3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba
+      '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.4.2_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.14
@@ -20611,14 +20592,14 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-awklsZi6+l04FZlmoxC9bWgdg/Aj/Yb800EvMEvcfuPf0SoFKdpE0zpe82aRHgcnvrXLaZS73rngb/k6EKqWUQ==
+      integrity: sha512-vwgPG27Wv7ifhsStDmgfO8FdefmaMLJS6B4lAsty6EKqdEd3ApB6jy2a7+deHse9iyk0lN/1+EjbpdxRzJqRng==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz_61fa1f55fd4ae8f7721688649885d554':
     dependencies:
       '@bentley/icons-generic': 1.0.27
       '@bentley/icons-generic-webfont': 1.0.27
-      '@bentley/react-scripts': 3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba
+      '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.4.2_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.14
@@ -20685,7 +20666,7 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-Rh90otmH+Rd18LK3zVX2Ip8GTEBjn/Ahk5Z1Ex7j8LdoFwt7O1ZqPZFTZ4tsq/JRFoO1VVggEIdBy+mSy2Ky2w==
+      integrity: sha512-BDo8bcaiSfOacBi50TtoBPWWz6y3Rp6q1/ihQ5S3gfI62xd5rV0GdmHWWcRi/J9jcgyIIbX0rKFu0dWTrbn6Lw==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz_react-test-renderer@16.14.0':
@@ -20743,7 +20724,7 @@ packages:
     dependencies:
       '@bentley/icons-generic': 1.0.27
       '@bentley/icons-generic-webfont': 1.0.27
-      '@bentley/react-scripts': 3.4.5_2ce93b467f9fa052344b2dfa2e61a9ba
+      '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
       '@types/classnames': 2.2.10
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
@@ -20784,7 +20765,7 @@ packages:
       node-sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-OVQppElrdSo6/Q3olLxQIqzu2WMZ41qsDVVW33f2y2DsDXR7hue+O63g6fLdH2an4ss+3tagbVxbNe+iilpjRw==
+      integrity: sha512-l24P/hUs9M9mNON7uhDHy1QrO3yUOURz4C68dcsqq1zf79XkZBhCZuA8pg/9Zo9lLKJhYbwn3p6+AZebHsKhMg==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/ui-test-extension.tgz_webpack@4.42.0':
@@ -20873,13 +20854,14 @@ packages:
       integrity: sha512-oLdDdWtAOGnRN7ldm75Efr81oli0wRBEggVRU+gnOR+gbOZkfvldn5C++1VRuyM0W92AQdAwCJ5TqeCZj+VA2Q==
       tarball: 'file:projects/webpack-tools-core.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@babel/core': 7.7.4
   '@bentley/icons-generic': ^1.0.15
   '@bentley/icons-generic-webfont': ^1.0.15
   '@bentley/imodeljs-native': 2.8.6
-  '@bentley/react-scripts': 3.4.5
+  '@bentley/react-scripts': 3.4.6
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': ^2.5.5
   '@openid/appauth': ^1.2.6
@@ -21193,7 +21175,7 @@ specifiers:
   request-promise-native: ^1.0.5
   require-dir: ^1.2.0
   resize-observer-polyfill: 1.5.1
-  resolve-url-loader: 3.1.1
+  resolve-url-loader: 3.1.2
   rimraf: ^3.0.2
   rxjs: ^6.6.2
   save: ^2.3.3
