@@ -3964,6 +3964,7 @@ export class MapSubLayerSettings {
     get idString(): string;
     get isLeaf(): boolean;
     get isNamed(): boolean;
+    get isUnnamedGroup(): boolean;
     readonly name: string;
     readonly parent?: SubLayerId;
     readonly title?: string;

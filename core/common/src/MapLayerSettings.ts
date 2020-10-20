@@ -93,8 +93,13 @@ export class MapSubLayerSettings {
   }
   /** return true if this sublayer is named. */
   public get isNamed(): boolean { return this.name.length > 0; }
+
   /** return true if this sublayer is a leaf (has no children) */
   public get isLeaf(): boolean { return this.children === undefined || this.children.length === 0; }
+
+  /** return true if this sublayer is an unnamed group */
+  public get isUnnamedGroup(): boolean { return !this.isLeaf && !this.isNamed; }
+
   /** return a string representing this sublayer id (converting to string if underlying id is number) */
   public get idString(): string { return (typeof this.id === "number") ? this.id.toString(10) : this.id; }
 }
@@ -153,11 +158,16 @@ export class MapLayerSettings {
     this.isBase = isBase;
     this.subLayers = new Array<MapSubLayerSettings>();
     if (jsonSubLayers !== undefined) {
+      let hasUnnamedGroups = false;
       for (const jsonSubLayer of jsonSubLayers) {
         const subLayer = MapSubLayerSettings.fromJSON(jsonSubLayer);
-        if (undefined !== subLayer)
+        if (undefined !== subLayer) {
           this.subLayers.push(subLayer);
+          if (subLayer.children?.length !== 0 && !subLayer.isNamed && !hasUnnamedGroups)
+            hasUnnamedGroups = true;
+        }
       }
+
       this.userName = userName;
       this.password = password;
     }
@@ -298,19 +308,33 @@ export class MapLayerSettings {
     return id === undefined ? undefined : this.subLayers.find((subLayer) => subLayer.id === id);
   }
 
+  private hasInvisibleAncestors(subLayer?: MapSubLayerSettings): boolean {
+    if (!subLayer || !subLayer.parent)
+      return false;
+
+    const parent = this.subLayerById(subLayer.parent);
+    if (!parent)
+      return false;
+
+    // Visibility of named group has no impact on the visibility of children (only unnamed group does)
+    // i.e For WMS, its should be possible to request a child layer when its parent is not visible (if the parent is also named)
+    return (!parent.visible && !parent.isNamed) || this.hasInvisibleAncestors(parent);
+  }
+
   /** Return true if sublayer is visible -- testing ancestors for visibility if they exist. */
   public isSubLayerVisible(subLayer: MapSubLayerSettings): boolean {
     if (!subLayer.visible)
       return false;
-    const parent = this.subLayerById(subLayer.parent);
-    return parent === undefined || this.isSubLayerVisible(parent);
+
+    return !this.hasInvisibleAncestors(subLayer);
   }
 
   /** Return true if all sublayers are visible. */
   public get allSubLayersInvisible(): boolean {
     if (this.subLayers.length === 0)
       return false;
-    return this.subLayers.every((subLayer) => !subLayer.isLeaf || !this.isSubLayerVisible(subLayer));
+
+    return this.subLayers.every((subLayer) => (subLayer.isUnnamedGroup || !this.isSubLayerVisible(subLayer)));
   }
 
   /** Return the children for a sublayer */
