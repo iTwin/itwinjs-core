@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/electron-manager",
-      "comment": "Electron should registerFIleProtocol after app is ready",
+      "comment": "",
       "type": "none"
     }
   ],
   "packageName": "@bentley/electron-manager",
-  "email": "gintaras.volkvicius@bentley.com"
+  "email": "31107829+calebmshafer@users.noreply.github.com"
 }

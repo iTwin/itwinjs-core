@@ -1,6 +1,26 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Mon, 05 Oct 2020 12:55:35 GMT and should not be manually modified.
+This log was last generated on Tue, 20 Oct 2020 14:37:01 GMT and should not be manually modified.
+
+## 2.7.4
+Mon, 19 Oct 2020 17:57:02 GMT
+
+_Version update only_
+
+## 2.7.3
+Wed, 14 Oct 2020 17:00:59 GMT
+
+_Version update only_
+
+## 2.7.2
+Tue, 13 Oct 2020 18:20:39 GMT
+
+_Version update only_
+
+## 2.7.1
+Thu, 08 Oct 2020 13:04:35 GMT
+
+_Version update only_
 
 ## 2.7.0
 Fri, 02 Oct 2020 18:03:32 GMT
