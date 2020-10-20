@@ -8,9 +8,8 @@ import * as path from "path";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BackendLoggerCategory, IModelHost } from "@bentley/imodeljs-backend";
 import { CloneIModel } from "./Clone";
+import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
 import { CloneRepositoryModel } from "./CloneRepositoryModel";
-import { CloneNonPhysical } from "./CloneNonPhysical";
-import { SubCategoryFilterer } from "./SubCategoryFilterer";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
@@ -38,17 +37,18 @@ import { SubCategoryFilterer } from "./SubCategoryFilterer";
     process.stdout.write(`CloneIModel ${sourceFileName} --> ${targetFileName}${EOL}`);
     await CloneIModel.clone(sourceFileName, targetFileName);
   } else if (true) {
-    const sourceFileName = "D:/data/bim/snapshots/shell-full-1015.bim";
+    // const sourceFileName = "D:/data/bim/snapshots/shell-full-1015.bim";
+    const sourceFileName = "D:/data/bim/snapshots/shell4.bim";
     const targetFileName = path.join(__dirname, "shell-filtered.bim");
-    await SubCategoryFilterer.filter(sourceFileName, targetFileName);
+    await PhysicalModelCombiner.combine(sourceFileName, targetFileName);
   } else {
     const sourceFileName = "D:/data/bim/snapshots/467d20b7-cf9b-4407-9052-237790253db7.bim";
     const targetFileName1 = path.join(__dirname, "fmg-repository-model.bim");
     process.stdout.write(`CloneRepositoryModel ${sourceFileName} --> ${targetFileName1}${EOL}`);
     await CloneRepositoryModel.clone(sourceFileName, targetFileName1);
-    const targetFileName2 = path.join(__dirname, "fmg-non-physical.bim");
-    process.stdout.write(`CloneNonPhysical ${sourceFileName} --> ${targetFileName2}${EOL}`);
-    await CloneNonPhysical.clone(sourceFileName, targetFileName2);
+    const targetFileName2 = path.join(__dirname, "fmg-physical-combined.bim");
+    process.stdout.write(`PhysicalModelCombiner ${targetFileName1} --> ${targetFileName2}${EOL}`);
+    await PhysicalModelCombiner.combine(targetFileName1, targetFileName2);
   }
   await IModelHost.shutdown();
 })();
