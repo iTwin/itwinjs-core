@@ -8,7 +8,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
+import { NativeAppRpcInterface, QueuedEvent, RpcPushChannel, RpcPushConnection, RpcRegistry } from "@bentley/imodeljs-common";
 import { EmitOptions, EmitStrategy } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
@@ -22,8 +22,12 @@ export class EventSink {
   private _eventQueues: QueuedEvent[] = [];
   private readonly _namespaces: Set<string> = new Set<string>();
   private readonly _maxEventId = Number.MAX_SAFE_INTEGER - 10;
+  private _pushChannel: RpcPushChannel<any>;
+  private _scheduledPush: any = undefined;
 
-  constructor(public readonly id: string) { }
+  constructor(public readonly id: string) {
+    this._pushChannel = new RpcPushChannel<any>(id);
+  }
 
   private add(namespace: string): void {
     const namespaces = this._namespaces;
@@ -84,6 +88,22 @@ export class EventSink {
 
     ++this._eventId;
     this._eventQueues.unshift({ eventId: this._eventId, namespace, eventName, data });
+
+    if (this._pushChannel.enabled) {
+      this._schedulePush();
+    }
+  }
+
+  private _schedulePush() {
+    if (typeof (this._scheduledPush) !== "undefined") {
+      return;
+    }
+
+    this._scheduledPush = setTimeout(async () => {
+      this._scheduledPush = undefined;
+      const events = this.fetch(this._eventQueues.length);
+      await RpcPushConnection.for(this._pushChannel).send(events);
+    });
   }
 
   public fetch(limit: number): QueuedEvent[] {
@@ -120,8 +140,10 @@ export class EventSinkManager {
   }
 
   public static delete(id: string): void {
-    if (this.has(id))
+    if (this.has(id)) {
       this._sinks.delete(id);
+      RpcPushChannel.delete(id);
+    }
   }
 
   public static get(id: string): EventSink {
@@ -137,6 +159,9 @@ export class EventSinkManager {
   }
 
   public static clear() {
+    for (const id of this._sinks.keys())
+      RpcPushChannel.delete(id);
+
     this._sinks.clear();
   }
 }

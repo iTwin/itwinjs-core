@@ -2648,7 +2648,7 @@ export type EventListener = (data: any) => void;
 
 // @internal
 export class EventSource {
-    constructor(tokenProps: IModelRpcProps);
+    constructor(tokenProps: IModelRpcProps, id: string);
     clear(): void;
     // (undocumented)
     get fetching(): boolean;
