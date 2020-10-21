@@ -852,17 +852,11 @@ describe("setPanelSize", () => {
 });
 
 describe("setWidgetState", () => {
-  it("should not update if tab is not found", () => {
-    const nineZone = createNineZoneState();
-    const sut = setWidgetState(nineZone, "t1", WidgetState.Open);
-    sut.should.eq(nineZone);
-  });
-
   it("should not update for other states", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
-    const sut = setWidgetState(nineZone, "t1", WidgetState.Floating);
+    const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
     sut.should.eq(nineZone);
   });
 
@@ -871,8 +865,51 @@ describe("setWidgetState", () => {
       let nineZone = createNineZoneState();
       nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
       nineZone = addTab(nineZone, "t1");
-      const sut = setWidgetState(nineZone, "t1", WidgetState.Open);
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Open);
       sut.widgets.w1.activeTabId.should.eq("t1");
+    });
+
+    it("should add removed tab", () => {
+      let nineZone = createNineZoneState();
+      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+      nineZone = addTab(nineZone, "t1");
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t2" }), WidgetState.Open);
+      sut.panels.left.widgets.length.should.eq(2);
+    });
+
+    it("should add removed tab by existing widget", () => {
+      let nineZone = createNineZoneState();
+      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+      nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
+      nineZone = addTab(nineZone, "t1");
+      nineZone = addTab(nineZone, "t2");
+      const widgetDef = new WidgetDef({ id: "t3" });
+      widgetDef.tabLocation = {
+        ...widgetDef.tabLocation,
+        widgetId: "w2",
+      };
+      const sut = setWidgetState(nineZone, widgetDef, WidgetState.Open);
+      sut.widgets.w2.tabs.should.eql(["t3", "t2"]);
+    });
+
+    it("should add removed tab to existing panel widget", () => {
+      let nineZone = createNineZoneState();
+      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+      nineZone = addPanelWidget(nineZone, "left", "w2", ["t2_1", "t2_2", "t2_3"]);
+      nineZone = addPanelWidget(nineZone, "left", "w3", ["t3"]);
+      nineZone = addTab(nineZone, "t1");
+      nineZone = addTab(nineZone, "t2_1");
+      nineZone = addTab(nineZone, "t2_2");
+      nineZone = addTab(nineZone, "t2_3");
+      nineZone = addTab(nineZone, "t3");
+      const widgetDef = new WidgetDef({ id: "t4" });
+      widgetDef.tabLocation = {
+        ...widgetDef.tabLocation,
+        widgetIndex: 1,
+        tabIndex: 2,
+      };
+      const sut = setWidgetState(nineZone, widgetDef, WidgetState.Open);
+      sut.widgets.w2.tabs.should.eql(["t2_1", "t2_2", "t4", "t2_3"]);
     });
   });
 
@@ -882,7 +919,7 @@ describe("setWidgetState", () => {
       nineZone = addFloatingWidget(nineZone, "w1", ["t1", "t2"], undefined, { activeTabId: "t2" });
       nineZone = addTab(nineZone, "t1");
       nineZone = addTab(nineZone, "t2");
-      const sut = setWidgetState(nineZone, "t1", WidgetState.Closed);
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Closed);
       sut.should.eq(nineZone);
     });
 
@@ -890,7 +927,7 @@ describe("setWidgetState", () => {
       let nineZone = createNineZoneState();
       nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
       nineZone = addTab(nineZone, "t1");
-      const sut = setWidgetState(nineZone, "t1", WidgetState.Closed);
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Closed);
       sut.widgets.w1.minimized.should.true;
     });
 
@@ -899,7 +936,7 @@ describe("setWidgetState", () => {
       nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
       nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
       nineZone = addTab(nineZone, "t1");
-      const sut = setWidgetState(nineZone, "t1", WidgetState.Closed);
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Closed);
       sut.widgets.w1.minimized.should.true;
     });
 
@@ -907,10 +944,45 @@ describe("setWidgetState", () => {
       let nineZone = createNineZoneState();
       nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
       nineZone = addTab(nineZone, "t1");
-      const sut = setWidgetState(nineZone, "t1", WidgetState.Closed);
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Closed);
       sut.widgets.w1.minimized.should.false;
     });
+
+    it("should add removed tab", () => {
+      let nineZone = createNineZoneState();
+      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+      nineZone = addTab(nineZone, "t1");
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t2" }), WidgetState.Closed);
+      sut.panels.left.widgets.length.should.eq(2);
+    });
   });
+
+  describe("WidgetState.Hidden", () => {
+    it("should not update if tab is not found", () => {
+      const nineZone = createNineZoneState();
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Hidden);
+      sut.should.eq(nineZone);
+    });
+
+    it("should hide the widget", () => {
+      let nineZone = createNineZoneState();
+      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1", "t2"]);
+      nineZone = addTab(nineZone, "t1");
+      const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Hidden);
+      sut.widgets.w1.tabs.should.eql(["t2"]);
+    });
+
+    it("should use default panel side for a floating widget", () => {
+      let nineZone = createNineZoneState();
+      nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+      nineZone = addTab(nineZone, "t1");
+      const widgetDef = new WidgetDef({ id: "t1" });
+      setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
+      widgetDef.tabLocation.side.should.eq("left");
+      widgetDef.tabLocation.widgetIndex.should.eq(0);
+    });
+  });
+
 });
 
 describe("showWidget ", () => {

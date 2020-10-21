@@ -12,7 +12,7 @@ import * as React from "react";
 import { StagePanelLocation, UiItemProviderRegisteredEventArgs, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, createNineZoneState, createTabsState, createWidgetState, findTab, floatingWidgetBringToFront, FloatingWidgets,
+  addPanelWidget, addTab, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront, FloatingWidgets,
   getUniqueId, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
@@ -247,6 +247,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
     const label = getWidgetLabel(widgetDef.label);
     state = addTab(state, widgetDef.id, {
       label,
+      preferredPanelWidgetSize: widgetDef.preferredPanelSize,
     });
     tabs.push(widgetDef.id);
   }
@@ -588,20 +589,58 @@ export const setPanelSize = produce((
   panel.size = size === undefined ? size : Math.min(Math.max(size, panel.minSize), panel.maxSize);
 });
 
+function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
+  const newTab = createTabState(widgetDef.id, {
+    label: getWidgetLabel(widgetDef.label),
+    preferredPanelWidgetSize: widgetDef.preferredPanelSize,
+  });
+  nineZone.tabs[newTab.id] = newTab;
+  if (widgetDef.tabLocation.widgetId in nineZone.widgets) {
+    // Add to existing widget (by widget id).
+    const widgetId = widgetDef.tabLocation.widgetId;
+    const newTabWidget = nineZone.widgets[widgetId];
+    newTabWidget.tabs.splice(widgetDef.tabLocation.tabIndex, 0, newTab.id);
+  } else {
+    const newTabPanel = nineZone.panels[widgetDef.tabLocation.side];
+    if (newTabPanel.maxWidgetCount === newTabPanel.widgets.length) {
+      // Add to existing panel widget.
+      const widgetIndex = Math.min(newTabPanel.maxWidgetCount - 1, widgetDef.tabLocation.widgetIndex);
+      const newTabWidgetId = newTabPanel.widgets[widgetIndex];
+      const newTabWidget = nineZone.widgets[newTabWidgetId];
+      newTabWidget.tabs.splice(widgetDef.tabLocation.tabIndex, 0, newTab.id);
+    } else {
+      // Create a new panel widget.
+      const newWidget = createWidgetState(getUniqueId(), [newTab.id]);
+      nineZone.widgets[newWidget.id] = castDraft(newWidget);
+      newTabPanel.widgets.splice(widgetDef.tabLocation.widgetIndex, 0, newWidget.id);
+    }
+  }
+}
+
 /** @internal */
 export const setWidgetState = produce((
   nineZone: Draft<NineZoneState>,
-  id: TabState["id"],
+  widgetDef: WidgetDef,
   state: WidgetState,
 ) => {
-  const location = findTab(nineZone, id);
-  if (!location)
-    return;
-  const widget = nineZone.widgets[location.widgetId];
+  const id = widgetDef.id;
+  let location = findTab(nineZone, id);
   if (state === WidgetState.Open) {
+    if (!location) {
+      addRemovedTab(nineZone, widgetDef);
+      location = findTab(nineZone, id);
+      assert(!!location);
+    }
+    const widget = nineZone.widgets[location.widgetId];
     widget.minimized = false;
     widget.activeTabId = id;
   } else if (state === WidgetState.Closed) {
+    if (!location) {
+      addRemovedTab(nineZone, widgetDef);
+      location = findTab(nineZone, id);
+      assert(!!location);
+    }
+    const widget = nineZone.widgets[location.widgetId];
     if (id !== widget.activeTabId)
       return;
     const minimized = widget.minimized;
@@ -616,7 +655,20 @@ export const setWidgetState = produce((
         widget.minimized = minimized;
       return;
     }
-    return;
+  } else if (state === WidgetState.Hidden) {
+    if (!location)
+      return;
+    const widgetId = location.widgetId;
+    const side = "side" in location ? location.side : "left";
+    const widgetIndex = "side" in location ? nineZone.panels[side].widgets.indexOf(widgetId) : 0;
+    const tabIndex = nineZone.widgets[location.widgetId].tabs.indexOf(id);
+    widgetDef.tabLocation = {
+      side,
+      tabIndex,
+      widgetId,
+      widgetIndex,
+    }
+    removeTab(nineZone, id);
   }
 });
 
@@ -764,7 +816,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef, widgetState }: WidgetStateChangedEventArgs) => {
       assert(!!frontstageDef.nineZoneState);
-      frontstageDef.nineZoneState = setWidgetState(frontstageDef.nineZoneState, widgetDef.id, widgetState);
+      frontstageDef.nineZoneState = setWidgetState(frontstageDef.nineZoneState, widgetDef, widgetState);
     });
     FrontstageManager.onWidgetStateChangedEvent.addListener(listener);
     return () => {
