@@ -6,7 +6,8 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run copy:assets && tsc 1>&2",
+    "build": "npm run copy:assets && tsc 1>&2 && npm run build:extension",
+    "build:extension": "extension-webpack-tools build -s ./src/extension.ts -o ./lib/extension --sourceMap",
     "copy:assets": "cpx \"./public/**/*\" ./lib/public",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@bentley/build-tools": "2.9.0-dev.0",
     "@bentley/eslint-plugin": "2.9.0-dev.0",
+    "@bentley/extension-webpack-tools": "2.9.0-dev.0",
     "@types/node": "10.14.1",
     "@types/file-saver": "^2.0.1",
     "cpx": "^1.5.0",
