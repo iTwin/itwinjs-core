@@ -506,6 +506,7 @@ public;SyncUiEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
+internal;TabLocation
 public;TargetChangeHandler
 public;Task 
 public;TaskActivatedEvent 

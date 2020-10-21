@@ -1102,6 +1102,7 @@ export class Version extends WsgInstance {
     changeSetId?: GuidString;
     createdDate?: string;
     description?: string;
+    hidden?: boolean;
     // (undocumented)
     id?: GuidString;
     largeThumbnailId?: GuidString;
@@ -1132,6 +1133,7 @@ export class VersionHandler {
 export class VersionQuery extends InstanceIdQuery {
     byChangeSet(changeSetId: string): this;
     byName(name: string): this;
+    notHidden(): this;
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
 }
 

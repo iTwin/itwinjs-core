@@ -14,7 +14,11 @@ import { ExtensionFile } from "./ExtensionFile";
 import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
 
 /**
- * Client for querying, publishing and deleting iModel.js Extensions
+ * Client for querying, publishing and deleting iModel.js Extensions.
+ *
+ * The `imodel-extension-service-api` OIDC scope is required for all operations and the `imodel-extension-service:modify` is
+ * required for modification operations (modify, publish, and deleting).
+ *
  * @beta
  */
 export class ExtensionClient extends Client {

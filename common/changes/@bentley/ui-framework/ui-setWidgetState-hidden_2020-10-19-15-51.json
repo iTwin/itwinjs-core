@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/ui-framework",
-      "comment": "",
+      "comment": "Respect WidgetState.Hidden when rendering widget tabs.",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-framework",
-  "email": "paulius.valiunas@bentley.com"
+  "email": "Gerardas.Butkevicius@bentley.com"
 }
