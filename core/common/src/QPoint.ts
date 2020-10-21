@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d, Range3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range2d, Range3d, Vector3d } from "@bentley/geometry-core";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
@@ -86,6 +86,7 @@ export class QPoint2d {
   public set x(x: number) { assert(Quantization.isQuantized(x)); this._x = x; }
   public get y() { return this._y; }
   public set y(y: number) { assert(Quantization.isQuantized(y)); this._y = y; }
+
 
   public constructor() { }
 
@@ -268,6 +269,9 @@ export class QParams3d {
 
   /** Creates parameters supporting quantization of values within the range [0.0, 1.0]. */
   public static fromZeroToOne(rangeScale = Quantization.rangeScale16) { return QParams3d.fromRange(Range3d.createArray([Point3d.create(0, 0, 0), Point3d.create(1, 1, 1)]), undefined, rangeScale); }
+
+  /** Return the range range diagonal. */
+  public get rangeDiagonal(): Vector3d { return Vector3d.createFrom({ x: Quantization.rangeScale16 / this.scale.x, y: Quantization.rangeScale16 / this.scale.y, z: Quantization.rangeScale16 / this.scale.z }); }
 }
 
 /** Represents a quantized 3d point as an (x, y, z) triplet in the integer range [0, 0xffff].
@@ -431,6 +435,12 @@ export class QPoint3dList {
     }
 
     return array;
+  }
+  public fromTypedArray(range: Range3d, array: Uint16Array) {
+    this.params.setFromRange(range);
+    this._list.length = array.length / 3;
+    for (let i = 0, j = 0; i < this.list.length; i++)
+      this._list[i].setFromScalars(array[j++], array[j++], array[j++]);
   }
 
   public static createFrom(points: Point3d[], params: QParams3d): QPoint3dList {

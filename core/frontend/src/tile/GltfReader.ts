@@ -503,7 +503,7 @@ export abstract class GltfReader {
       if (undefined === bufferView) return undefined;
       const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
 
-      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData);
+      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData, dracoExtension.attributes);
     }
     if (!this.readVertices(mesh.points, primitive, pseudoRtcBias))
       return undefined;

@@ -17,6 +17,8 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { extractFlashedVolumeClassifierCommands } from "../render/webgl/DrawCommand";
+import { DracoDecoder } from "./DracoDecoder";
 
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
@@ -33,34 +35,53 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
   const featureStr = utf8ToString(featureStrData);
   const featureValue = JSON.parse(featureStr as string);
 
-  if (undefined === featureValue) { }
-  if (undefined === featureValue.POSITION_QUANTIZED ||
-    undefined === featureValue.QUANTIZED_VOLUME_OFFSET ||
-    undefined === featureValue.QUANTIZED_VOLUME_SCALE ||
-    undefined === featureValue.POINTS_LENGTH ||
-    undefined === featureValue.POSITION_QUANTIZED) {
-    assert(false, "quantized point cloud points not found");
+  if (undefined === featureValue)
     return undefined;
-  }
 
-  const qOrigin = new Point3d(featureValue.QUANTIZED_VOLUME_OFFSET[0], featureValue.QUANTIZED_VOLUME_OFFSET[1], featureValue.QUANTIZED_VOLUME_OFFSET[2]);
-  const qScale = new Point3d(Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[0]), Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[1]), Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[2]));
-  const qParams = QParams3d.fromOriginAndScale(qOrigin, qScale);
-  const qPoints = new Uint16Array(stream.arrayBuffer, featureTableJsonOffset + header.featureTableJsonLength + featureValue.POSITION_QUANTIZED.byteOffset, 3 * featureValue.POINTS_LENGTH);
+  let qParams, qPoints;
+  let dracoPointExtension = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
+  const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
+  if (dracoPointExtension && dracoPointExtension.byteLength !== undefined && dracoPointExtension.byteOffset !== undefined && dracoPointExtension.properties?.POSITION !== undefined) {
+    const bufferData = new Uint8Array(stream.arrayBuffer, dataOffset + dracoPointExtension.byteOffset, dracoPointExtension.byteLength);
+    const qParamsAndPoints = DracoDecoder.readDracoPointCloud(bufferData, dracoPointExtension.properties?.POSITION);
+    if (qParamsAndPoints) {
+      qPoints = qParamsAndPoints.qPoints;
+      qParams = qParamsAndPoints.qParams;
+    }
+  } else {
+    if (undefined === featureValue.POSITION_QUANTIZED ||
+      undefined === featureValue.QUANTIZED_VOLUME_OFFSET ||
+      undefined === featureValue.QUANTIZED_VOLUME_SCALE ||
+      undefined === featureValue.POINTS_LENGTH ||
+      undefined === featureValue.POSITION_QUANTIZED) {
+      assert(false, "quantized point cloud points not found");
+      return undefined;
+    }
+
+    const qOrigin = new Point3d(featureValue.QUANTIZED_VOLUME_OFFSET[0], featureValue.QUANTIZED_VOLUME_OFFSET[1], featureValue.QUANTIZED_VOLUME_OFFSET[2]);
+    const qScale = new Point3d(Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[0]), Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[1]), Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[2]));
+    qParams = QParams3d.fromOriginAndScale(qOrigin, qScale);
+    qPoints = new Uint16Array(stream.arrayBuffer, dataOffset + featureValue.POSITION_QUANTIZED.byteOffset, 3 * featureValue.POINTS_LENGTH);
+  }
   let colors: Uint8Array | undefined;
 
   if (undefined !== featureValue.RGB) {
-    colors = new Uint8Array(stream.arrayBuffer, featureTableJsonOffset + header.featureTableJsonLength + featureValue.RGB.byteOffset, 3 * featureValue.POINTS_LENGTH);
+    colors = new Uint8Array(stream.arrayBuffer, dataOffset + featureValue.RGB.byteOffset, 3 * featureValue.POINTS_LENGTH);
   } else {
     colors = new Uint8Array(3 * featureValue.POINTS_LENGTH);
     colors.fill(0xff, 0, colors.length);    // TBD... Default color?
   }
+  if (!qPoints || !qParams)
+    return undefined;
+
+  if (featureValue.RTC_CENTER)
+    qParams = QParams3d.fromOriginAndScale(qParams.origin.plus(Vector3d.fromJSON(featureValue.RTC_CENTER)), qParams.scale);
 
   // ###TODO? Do we expect a batch table? not currently handled...
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
   const features = new Mesh.Features(featureTable);
   features.add(new Feature(modelId), 1);
-  const voxelSize = featureValue.QUANTIZED_VOLUME_SCALE[0] / 256;
+  const voxelSize = qParams.rangeDiagonal.magnitude() / 256;
 
   let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features, voxelSize), iModel);
   renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
