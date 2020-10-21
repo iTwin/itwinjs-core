@@ -3632,7 +3632,11 @@ export class SnapshotDb extends IModelDb {
     static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb;
     get filePath(): string;
+    // @internal
+    static openCheckpoint(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<SnapshotDb>;
     static openFile(filePath: string, props?: SnapshotOpenOptions): SnapshotDb;
+    // @internal
+    reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }

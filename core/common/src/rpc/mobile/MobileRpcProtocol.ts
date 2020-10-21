@@ -11,7 +11,9 @@ import { IModelError } from "../../IModelError";
 import { RpcEndpoint } from "../core/RpcConstants";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
+import { RpcPushChannel, RpcPushConnection } from "../core/RpcPush";
 import { RpcRequest } from "../core/RpcRequest";
+import { MobilePushConnection, MobilePushTransport } from "./MobilePush";
 import { MobileRpcConfiguration } from "./MobileRpcManager";
 import { MobileRpcRequest } from "./MobileRpcRequest";
 
@@ -24,6 +26,7 @@ export interface MobileRpcGateway {
   sendString: (message: string, connectionId: number) => void;
   sendBinary: (message: Uint8Array, connectionId: number) => void;
   port: number;
+  connectionId: number;
 }
 
 /** RPC interface protocol for an Mobile-based application.
@@ -41,6 +44,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _partialFulfillment: RpcRequestFulfillment | undefined = undefined;
   private _partialData: Uint8Array[] = [];
   private _port: number = 0;
+  private _transport?: MobilePushTransport;
   public static obtainInterop(): MobileRpcGateway { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
 
   public static async encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks> {
@@ -50,7 +54,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     return [JSON.stringify(serialized), ...data];
   }
 
-  private static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks {
+  public static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks {
     const data = fulfillment.result.data;
     fulfillment.result.data = data.map((v) => v.byteLength) as any[];
     const raw = fulfillment.rawResult;
@@ -86,6 +90,10 @@ export class MobileRpcProtocol extends RpcProtocol {
       this._port = port;
       this.connect(port, true);
     };
+
+    const transport = new MobilePushTransport(this);
+    this._transport = transport;
+    RpcPushChannel.setup(transport);
   }
 
   private connect(port: number, reset: boolean) {
@@ -227,6 +235,10 @@ export class MobileRpcProtocol extends RpcProtocol {
     this.consumePartialData(response.result);
     this._partialFulfillment = undefined;
 
+    if (this._transport && this._transport.consume(response)) {
+      return;
+    }
+
     const request = this.requests.get(response.id) as MobileRpcRequest;
     this.requests.delete(response.id);
     request.notifyResponse(response);
@@ -247,6 +259,8 @@ export class MobileRpcProtocol extends RpcProtocol {
     }
 
     mobilegateway.handler = (payload, connectionId) => this.handleMessageFromFrontend(payload, connectionId);
+    RpcPushConnection.for = (channel, client) => new MobilePushConnection(channel, client, this);
+    RpcPushChannel.enabled = true;
   }
 
   private handleMessageFromFrontend(data: string | ArrayBuffer, connectionId: number) {
@@ -301,14 +315,14 @@ export class MobileRpcProtocol extends RpcProtocol {
     this.scheduleSend();
   }
 
-  private sendToFrontend(message: MobileRpcChunks, connection: number): void {
+  public sendToFrontend(message: MobileRpcChunks, connection?: number): void {
     const mobilegateway = MobileRpcProtocol.obtainInterop();
 
     for (const chunk of message) {
       if (typeof (chunk) === "string") {
-        mobilegateway.sendString(chunk, connection);
+        mobilegateway.sendString(chunk, connection || mobilegateway.connectionId);
       } else {
-        mobilegateway.sendBinary(chunk, connection);
+        mobilegateway.sendBinary(chunk, connection || mobilegateway.connectionId);
       }
     }
   }

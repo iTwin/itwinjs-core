@@ -649,7 +649,7 @@ export function mockDeniedLocks(imodelId: GuidString, locks: Lock[], requestOpti
 }
 
 /** Named versions */
-export function generateVersion(name?: string, changesetId?: string, addInstanceId: boolean = true, smallThumbnailId?: GuidString, largeThumbnailId?: GuidString): Version {
+export function generateVersion(name?: string, changesetId?: string, addInstanceId: boolean = true, smallThumbnailId?: GuidString, largeThumbnailId?: GuidString, hidden?: boolean): Version {
   const result = new Version();
   if (addInstanceId) {
     result.id = Guid.createValue();
@@ -659,6 +659,7 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
   result.name = name || `TestVersion-${result.changeSetId}`;
   result.smallThumbnailId = smallThumbnailId;
   result.largeThumbnailId = largeThumbnailId;
+  result.hidden = hidden;
   return result;
 }
 

@@ -8,7 +8,7 @@
 
 import { ClientRequestContext, Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, MapSubLayerProps, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -436,7 +436,7 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   }
   protected getLayerString(prefix = "show"): string {
     const layers = new Array<string>();
-    this._settings.subLayers.forEach((subLayer) => { if (subLayer.isLeaf && this._settings.isSubLayerVisible(subLayer)) layers.push(subLayer.idString); });
+    this._settings.subLayers.forEach((subLayer) => { if (this._settings.isSubLayerVisible(subLayer)) layers.push(subLayer.idString); });
     return `${prefix}: ${layers.join(",")} `;
   }
   // construct the Url from the desired Tile
@@ -526,19 +526,54 @@ class TileUrlImageryProvider extends MapLayerImageryProvider {
 
 class WmsMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "WMS";
+
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmsMapLayerImageryProvider(settings);
   }
   public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
     try {
-      let subLayers;
+      let subLayers: MapSubLayerProps[] | undefined;
       const maxVisibleSubLayers = 50;
       const capabilities = await WmsCapabilities.create(url, credentials);
       if (capabilities !== undefined) {
-        subLayers = capabilities.getSubLayers(true);
-        if (Array.isArray(subLayers) && subLayers.length > maxVisibleSubLayers)
-          subLayers = capabilities.getSubLayers(false);
+        subLayers = capabilities.getSubLayers(false);
+        const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
+        const hasTooManyLayers = subLayers && subLayers.length > maxVisibleSubLayers
 
+        if (!Array.isArray(subLayers))
+          return { status: MapLayerSourceStatus.Valid, subLayers };
+
+        for (const subLayer of subLayers) {
+          // In general for WMS, we prefer to have the children of root node visible, but not the root itself.
+          // Thats simply to give more flexibility in the UI.
+          // Two exceptions to this rule: If there are too many layers or the root node is not named.
+          if (subLayer.id && subLayer.id === rootsSubLayer?.id
+            && (!(subLayer.name && subLayer.name.length > 0) || hasTooManyLayers)) {
+            subLayer.visible = true;
+            break;  // if root node is visible, don't bother turning ON any other layers
+          }
+
+          // Make children of the root node visible.
+          if (subLayer.parent && subLayer.parent === rootsSubLayer?.id && !hasTooManyLayers) {
+            const isUnnamedGroup = (layer: MapSubLayerProps) => { return layer.children && layer.children.length > 0 && (!layer.name || layer.name.length === 0) };
+            const makeChildrenVisible = (layers: MapSubLayerProps[] | undefined, layer: MapSubLayerProps) => {
+              layer?.children?.forEach((childId) => {
+                const childSubLayer = subLayers?.find((child) => child?.id === childId);
+                if (childSubLayer) {
+                  childSubLayer.visible = true;
+                  if (isUnnamedGroup(childSubLayer))
+                    makeChildrenVisible(layers, childSubLayer);
+                }
+              });
+            }
+
+            subLayer.visible = true;
+
+            // If we got a unnamed group, make children visible recursively until we have a leaf or named group
+            if (isUnnamedGroup(subLayer))
+              makeChildrenVisible(subLayers, subLayer);
+          }
+        }
       }
 
       return { status: MapLayerSourceStatus.Valid, subLayers };

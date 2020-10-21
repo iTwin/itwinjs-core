@@ -1669,6 +1669,7 @@ export class ContextRealityModelState {
     readonly name: string;
     // (undocumented)
     readonly orbitGtBlob?: OrbitGtBlobProps;
+    readonly realityDataId?: string;
     // (undocumented)
     toJSON(): ContextRealityModelProps;
     // (undocumented)
@@ -2647,7 +2648,7 @@ export type EventListener = (data: any) => void;
 
 // @internal
 export class EventSource {
-    constructor(tokenProps: IModelRpcProps);
+    constructor(tokenProps: IModelRpcProps, id: string);
     clear(): void;
     // (undocumented)
     get fetching(): boolean;

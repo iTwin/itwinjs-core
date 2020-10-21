@@ -8,7 +8,7 @@
 
 import * as multiparty from "multiparty";
 import * as FormData from "form-data";
-import { BentleyStatus, HttpServerRequest, IModelError, MobileRpcGateway, MobileRpcProtocol, RpcMultipart, RpcSerializedValue } from "@bentley/imodeljs-common";
+import { BentleyStatus, HttpServerRequest, IModelError, MobileRpcConfiguration, MobileRpcGateway, MobileRpcProtocol, RpcMultipart, RpcSerializedValue } from "@bentley/imodeljs-common";
 import * as ws from "ws";
 import { MobileDevice } from "./MobileDevice";
 
@@ -73,7 +73,7 @@ export function initializeRpcBackend() {
     });
   };
 
-  if (typeof (process) !== "undefined" && (process.platform as any) === "ios") {
+  if (MobileRpcConfiguration.setup.checkPlatform()) {
     setupMobileRpc();
   }
 }
@@ -86,6 +86,7 @@ class MobileRpcServer {
     sendString: (_message: string, _connectionId: number) => { throw new IModelError(BentleyStatus.ERROR, "No connection."); },
     sendBinary: (_message: Uint8Array, _connectionId: number) => { throw new IModelError(BentleyStatus.ERROR, "No connection."); },
     port: 0,
+    connectionId: 0,
   };
 
   private _server: ws.Server;
@@ -104,9 +105,10 @@ class MobileRpcServer {
      * be effective
      */
     this._pingTimer = setInterval(() => { }, 5);
-    this._port = 0;
+    this._port = MobileRpcConfiguration.setup.obtainPort();
     this._server = new ws.Server({ port: this._port });
     this._connectionId = ++MobileRpcServer._nextId;
+    MobileRpcServer.interop.connectionId = this._connectionId;
     this._onListening();
     this._onConnection();
   }
@@ -134,6 +136,7 @@ class MobileRpcServer {
       this._connection = connection;
       this._connection.on("message", (data) => this._onConnectionMessage(data));
       this._createSender();
+      (global as any).__imodeljsRpcReady = true;
     });
   }
 

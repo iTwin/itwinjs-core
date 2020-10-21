@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { FontMap } from "@bentley/imodeljs-common";
+import { FontMap, GeometryContainmentRequestProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { TestContext } from "./setup/TestContext";
 
@@ -37,5 +37,15 @@ describe("IModel Views", () => {
 
     // IModelUnitTestGateway is intentionally not configured, expect failure
     // expect(iModel.executeTest("rotateCameraLocal", {})).to.be.rejectedWith(IModelError);
+  });
+
+  it("should successfully get geometry containment", async () => {
+    const requestProps: GeometryContainmentRequestProps = {
+      candidates: [],
+      clip: {},
+    };
+
+    const result = await iModel.getGeometryContainment(requestProps);
+    expect(result).to.be.not.be.empty;
   });
 });
