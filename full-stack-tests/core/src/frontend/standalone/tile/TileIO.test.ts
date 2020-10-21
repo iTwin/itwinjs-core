@@ -611,12 +611,12 @@ describe("mirukuru TileTree", () => {
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", undefined, options);
     const tree = new IModelTileTree(params);
 
-    const response: TileRequest.Response = await tree.rootTile.requestContent(() => false);
+    const response: TileRequest.Response = await tree.staticBranch.requestContent(() => false);
     expect(response).not.to.be.undefined;
     expect(response).instanceof(Uint8Array);
 
     const isCanceled = () => false; // Our tile has no Request, therefore not considered in "loading" state, so would be immediately treated as "canceled" during loading...
-    const gfx = await tree.rootTile.readContent(response as Uint8Array, IModelApp.renderSystem, isCanceled);
+    const gfx = await tree.staticBranch.readContent(response as Uint8Array, IModelApp.renderSystem, isCanceled);
     expect(gfx).not.to.be.undefined;
     expect(gfx.graphic).not.to.be.undefined;
     expect(gfx.isLeaf).to.be.true;
@@ -633,10 +633,10 @@ describe("mirukuru TileTree", () => {
   });
 
   it("should have expected metadata for root tile", async () => {
-    const test = async (tree: TileTree, expectedVersion: number, expectedRootContentId: string) => {
+    const test = async (tree: IModelTileTree, expectedVersion: number, expectedRootContentId: string) => {
       expect(tree).not.to.be.undefined;
-      expect(tree.rootTile.contentId).to.equal(expectedRootContentId);
-      const response = await tree.rootTile.requestContent(() => false);
+      expect(tree.staticBranch.contentId).to.equal(expectedRootContentId);
+      const response = await tree.staticBranch.requestContent(() => false);
       expect(response).instanceof(Uint8Array);
 
       // The model contains a single rectangular element.
@@ -795,7 +795,7 @@ describe("mirukuru TileTree", () => {
       };
 
       const tree = await getPrimaryTileTree(model, edgesRequired);
-      await tree.rootTile.requestContent(() => false);
+      await tree.staticBranch.requestContent(() => false);
       expect(contentId).not.to.be.undefined;
       expect(contentId!.includes(expected)).to.be.true;
     };
@@ -903,8 +903,8 @@ describe("TileAdmin", () => {
         expect(treeNoEdges3).not.to.equal(tree);
       }
 
-      private static async rootTileHasEdges(tree: TileTree, imodel: IModelConnection): Promise<boolean> {
-        const response = await tree.rootTile.requestContent(() => false) as Uint8Array;
+      private static async rootTileHasEdges(tree: IModelTileTree, imodel: IModelConnection): Promise<boolean> {
+        const response = await tree.staticBranch.requestContent(() => false) as Uint8Array;
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
@@ -1005,7 +1005,7 @@ describe("TileAdmin", () => {
           return new Uint8Array(1);
         };
 
-        await tree.rootTile.requestContent(() => false);
+        await tree.staticBranch.requestContent(() => false);
 
         intfc.requestTileContent = requestTileContent;
 

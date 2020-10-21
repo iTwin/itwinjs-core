@@ -166,7 +166,7 @@ export type RootIModelTile = Tile & { updateDynamicRange: (childTile: Tile) => v
  * If no editing session is currently active, the dynamic branch does not exist, and the static branch represents the current state of all elements in the model.
  */
 class RootTile extends Tile {
-  private readonly _staticRoot: IModelTile;
+  public readonly staticBranch: IModelTile;
   private _tileState: RootTileState;
   private readonly _staticTreeContentRange?: Range3d;
 
@@ -184,11 +184,11 @@ class RootTile extends Tile {
     };
 
     super(rootParams, tree);
-    this._staticRoot = new IModelTile(params, tree);
+    this.staticBranch = new IModelTile(params, tree);
     this._staticTreeContentRange = tree.contentRange?.clone();
 
     if (!this._contentRange)
-      this._contentRange = this._staticRoot.contentRange.clone();
+      this._contentRange = this.staticBranch.contentRange.clone();
 
     // Determine initial state.
     const session = InteractiveEditingSession.get(tree.iModel);
@@ -210,7 +210,7 @@ class RootTile extends Tile {
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
-    const children: Tile[] = [ this._staticRoot ];
+    const children: Tile[] = [ this.staticBranch ];
     // ###TODO if (this._dynamicRoot)
     //   children.push(this._dynamicRoot); Will need to add dynamic root tile to children when session starts.
 
@@ -226,21 +226,14 @@ class RootTile extends Tile {
     throw new Error("Root iModel tile has no content");
   }
 
-  public selectTiles(args: TileDrawArgs): Tile[] {
-    const tiles: Tile[] = [];
-    this._staticRoot.selectTiles(tiles, args, 0);
-    // ###TODO this._dynamicRoot.selectTiles(tiles, args);
-    return tiles;
-  }
+  public draw(args: TileDrawArgs, tiles: Tile[], numStaticTiles: number): void {
+    assert(numStaticTiles >= 0 && numStaticTiles <= tiles.length);
 
-  public draw(args: TileDrawArgs): void {
     // Draw the static tiles.
-    const tiles: Tile[] = [];
-    this._staticRoot.selectTiles(tiles, args, 0);
-    for (const tile of tiles)
-      tile.drawGraphics(args);
+    for (let i = 0; i < numStaticTiles; i++)
+      tiles[i].drawGraphics(args);
 
-    if ("dynamic" !== this._tileState.type) {
+    if ("dynamic" !== this._tileState.type || numStaticTiles == tiles.length) {
       args.drawGraphics();
       return;
     }
@@ -257,16 +250,15 @@ class RootTile extends Tile {
     }
 
     // Draw the dynamic tiles.
-    // ###TODO: this._dynamicRoot.selectTiles(tiles, args);
-    // for (const tile of tiles)
-    //   tile.drawGraphics(args);
+    for (let i = numStaticTiles; i < tiles.length; i++)
+      tiles[i].drawGraphics(args);
 
     args.drawGraphics();
   }
 
   public prune(expirationTime: BeDuration): void {
     const olderThan = BeTimePoint.now().minus(expirationTime);
-    this._staticRoot.pruneChildren(olderThan);
+    this.staticBranch.pruneChildren(olderThan);
     // ###TODO prune dynamic tiles
   }
 
@@ -282,8 +274,8 @@ class RootTile extends Tile {
   }
 
   private resetRange(): void {
-    this._staticRoot.range.clone(this.range);
-    this._staticRoot.contentRange.clone(this._contentRange);
+    this.staticBranch.range.clone(this.range);
+    this.staticBranch.contentRange.clone(this._contentRange);
 
     if (this._staticTreeContentRange && this.tree.contentRange)
       this._staticTreeContentRange.clone(this.tree.contentRange);
@@ -317,6 +309,11 @@ export class IModelTileTree extends TileTree {
   public readonly contentIdProvider: ContentIdProvider;
   /** Strictly for debugging/testing - forces tile selection to halt at the specified depth. */
   public debugMaxDepth?: number;
+  /** A little hacky...we must not override selectTiles(), but draw() needs to distinguish between static and dynamic tiles.
+   * So _selectTiles() puts the static tiles first in the Tile[] array, and records the number of static tiles selected, to be
+   * used by draw().
+   */
+  private _numStaticTilesSelected = 0;
 
   public constructor(params: IModelTileTreeParams) {
     super(params);
@@ -336,6 +333,8 @@ export class IModelTileTree extends TileTree {
 
   public get maxDepth() { return 32; }
   public get rootTile(): Tile { return this._rootTile; }
+  /** Exposed chiefly for tests. */
+  public get staticBranch(): IModelTile { return this._rootTile.staticBranch; }
   public get is3d() { return this._options.is3d; }
   public get isContentUnbounded() { return false; }
   public get viewFlagOverrides() { return viewFlagOverrides; }
@@ -344,11 +343,19 @@ export class IModelTileTree extends TileTree {
   public get hasEdges(): boolean { return this._options.edgesRequired; }
 
   protected _selectTiles(args: TileDrawArgs): Tile[] {
-    return this._rootTile.selectTiles(args);
+    args.markUsed(this._rootTile);
+    const tiles: Tile[] = [];
+    this._rootTile.staticBranch.selectTiles(tiles, args, 0);
+    this._numStaticTilesSelected = tiles.length;
+
+    // ###TODO select dynamic tiles.
+
+    return tiles;
   }
 
   public draw(args: TileDrawArgs): void {
-    this._rootTile.draw(args);
+    const tiles = this.selectTiles(args);
+    this._rootTile.draw(args, tiles, this._numStaticTilesSelected);
   }
 
   public prune(): void {
