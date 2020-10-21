@@ -89,7 +89,7 @@ describe("Model geometry changes", () => {
 
   it("emits events", async () => {
     expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true)).to.be.true;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
     const sink = imodel.eventSink!;
     expect(sink).not.to.be.undefined;
 
@@ -139,7 +139,7 @@ describe("Model geometry changes", () => {
     expectChanges(sink, { modelId, deleted: [ elemId0 ] });
 
     // Stop tracking geometry changes
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false)).to.be.false;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
     expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
 
     // Modify element's geometry.
@@ -150,7 +150,7 @@ describe("Model geometry changes", () => {
     expectNoChanges(sink);
 
     // Restart tracking and undo everything.
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true)).to.be.true;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
     expect(imodel.txns.reverseTo(txnBeforeInsert)).to.equal(IModelStatus.Success);
     expectChanges(sink, { modelId, deleted: [ elemId0, elemId1 ] });
 
@@ -158,6 +158,6 @@ describe("Model geometry changes", () => {
     expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
     expectChanges(sink, { modelId, updated: [ elemId1 ], deleted: [ elemId0 ] });
 
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false)).to.be.false;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
   });
 });
