@@ -22,6 +22,7 @@ module.exports = {
     "react-hooks",
     "import",
     "prefer-arrow",
-    "deprecation"
+    "deprecation",
+    "jsx-a11y"
   ]
 }
