@@ -158,7 +158,7 @@ class RealityModelTileTreeProps {
     this.client = client;
     this.location = tilesetTransform;
     this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
-    if (json.asset.gltfUpAxis !== undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
+    if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
   }
 }

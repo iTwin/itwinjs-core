@@ -10,12 +10,19 @@ import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { OctEncodedNormal, QParams3d, QPoint3d, QPoint3dList } from "@bentley/imodeljs-common";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
+import { assert } from "@bentley/bentleyjs-core";
+
+export interface DecodedPointCloud {
+  qParams: QParams3d;
+  qPoints: Uint16Array;
+  colors?: Uint8Array
+}
 
 /** @internal */
 export class DracoDecoder {
   private static _dracoDecoderModule: any;
 
-  public static readDracoPointCloud(bufferData: Uint8Array, attributeId: number): undefined | { qParams: QParams3d, qPoints: Uint16Array } {
+  public static readDracoPointCloud(bufferData: Uint8Array, attributeId: number, colorAttributeId?: number): undefined | DecodedPointCloud {
     if (!DracoDecoder._dracoDecoderModule)
       DracoDecoder._dracoDecoderModule = createDecoderModule(undefined);
 
@@ -25,41 +32,37 @@ export class DracoDecoder {
     const buffer = new dracoModule.DecoderBuffer();
     buffer.Init(bufferData, bufferData.length);
 
-    var geometryType = dracoDecoder.GetEncodedGeometryType(buffer);
+    const geometryType = dracoDecoder.GetEncodedGeometryType(buffer);
     if (geometryType !== dracoModule.POINT_CLOUD)
       return undefined;
 
-    var dracoPointCloud = new dracoModule.PointCloud();
-    var decodingStatus = dracoDecoder.DecodeBufferToPointCloud(buffer, dracoPointCloud);
+    const dracoPointCloud = new dracoModule.PointCloud();
+    const decodingStatus = dracoDecoder.DecodeBufferToPointCloud(buffer, dracoPointCloud);
     dracoModule.destroy(buffer);
     if (!decodingStatus.ok() || dracoPointCloud.ptr === 0)
       return undefined;
 
-    const dracoAttribute = dracoDecoder.GetAttributeByUniqueId(dracoPointCloud, attributeId);
-    const numPoints = dracoPointCloud.num_points();
-
-    const unquantizedValues = new DracoDecoder._dracoDecoderModule.DracoFloat32Array();
-    const range = Range3d.createNull();
-    dracoDecoder.GetAttributeFloatForAllPoints(dracoPointCloud, dracoAttribute, unquantizedValues);
-    for (let i = 0, j = 0; i < numPoints; i++)
-      range.extendXYZ(unquantizedValues.GetValue(j++), unquantizedValues.GetValue(j++), unquantizedValues.GetValue(j++));
-
-    const qParams = QParams3d.fromRange(range);
-    const qPoints = new Uint16Array(3 * numPoints);
-    const point = Point3d.createZero();
-    const qPoint = QPoint3d.create(point, qParams);
-    for (let i = 0, j = 0; i < numPoints; i++) {
-      point.set(unquantizedValues.GetValue(j), unquantizedValues.GetValue(j + 1), unquantizedValues.GetValue(j + 2));
-      qPoint.init(point, qParams);
-      qPoints[j++] = qPoint.x;
-      qPoints[j++] = qPoint.y;
-      qPoints[j++] = qPoint.z;
+    const quantizedPoints = DracoDecoder.decodeAndQuantize(dracoPointCloud, dracoDecoder, attributeId);
+    let decodedPointCloud: DecodedPointCloud | undefined;
+    if (quantizedPoints) {
+      decodedPointCloud = quantizedPoints;
+      if (undefined !== colorAttributeId) {
+        const colorDracoAttribute = dracoDecoder.GetAttributeByUniqueId(dracoPointCloud, colorAttributeId);
+        if (colorDracoAttribute) {
+          const dracoColors = new DracoDecoder._dracoDecoderModule.DracoUInt8Array();
+          dracoDecoder.GetAttributeUInt8ForAllPoints(dracoPointCloud, colorDracoAttribute, dracoColors);
+          const length = 3 * dracoPointCloud.num_points()
+          const attrLength = dracoColors.size();
+          assert(length === attrLength);
+          decodedPointCloud.colors = new Uint8Array(length);
+          for (let i = 0; i < length; i++)
+            decodedPointCloud.colors[i] = dracoColors.GetValue(i);
+        }
+      }
     }
-
-    dracoModule.destroy(unquantizedValues);
     dracoModule.destroy(dracoPointCloud);
     dracoModule.destroy(dracoDecoder);
-    return { qParams, qPoints };
+    return decodedPointCloud;
   }
 
   public static readDracoMesh(mesh: Mesh, _primitive: any, bufferData: Uint8Array, attributes: any): Mesh | undefined {
@@ -85,7 +88,7 @@ export class DracoDecoder {
     if (!DracoDecoder.decodeTriangles(mesh, dracoGeometry, dracoDecoder) ||
       !DracoDecoder.decodeVertices(mesh.points, dracoGeometry, dracoDecoder, attributes.POSITION))
       return undefined;
-    DracoDecoder.decodeUVParams(mesh.uvParams, dracoGeometry, dracoDecoder, attributes.TEX_COORD);
+    DracoDecoder.decodeUVParams(mesh.uvParams, dracoGeometry, dracoDecoder, attributes.TEXCOORD_0);
     DracoDecoder.decodeNormals(mesh.normals, dracoGeometry, dracoDecoder, attributes.NORMAL);
     dracoModule.destroy(dracoGeometry);
     dracoModule.destroy(dracoDecoder);
@@ -96,15 +99,8 @@ export class DracoDecoder {
     const dracoAttribute = dracoDecoder.GetAttributeByUniqueId(dracoGeometry, attributeId);
     if (undefined === dracoAttribute) return false;
 
-    const numPoints = dracoGeometry.num_points();
-    const unquantizedValues = new DracoDecoder._dracoDecoderModule.DracoFloat32Array();
-    dracoDecoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, unquantizedValues);
-    const points = [];
-    for (let i = 0, j = 0; i < numPoints; i++)
-      points.push(new Point3d(unquantizedValues.GetValue(j++), unquantizedValues.GetValue(j++), unquantizedValues.GetValue(j++)));
-
-    DracoDecoder._dracoDecoderModule.destroy(unquantizedValues);
-    QPoint3dList.fromPoints(points, qPoints);
+    const quantized = DracoDecoder.decodeAndQuantize(dracoGeometry, dracoDecoder, attributeId);
+    qPoints.fromTypedArray(quantized.range, quantized.qPoints);
     return true;
   }
   private static decodeUVParams(points: Point2d[], dracoGeometry: any, dracoDecoder: any, attributeId: number): boolean {
@@ -151,5 +147,32 @@ export class DracoDecoder {
       typedArray: indexArray,
       numberOfIndices: numIndices,
     };
+  }
+
+  private static decodeAndQuantize(dracoGeometry: any, dracoDecoder: any, attributeId: number): { qParams: QParams3d, range: Range3d, qPoints: Uint16Array } {
+    const dracoModule = DracoDecoder._dracoDecoderModule;
+    const dracoAttribute = dracoDecoder.GetAttributeByUniqueId(dracoGeometry, attributeId);
+    const numPoints = dracoGeometry.num_points();
+
+    const unquantizedValues = new DracoDecoder._dracoDecoderModule.DracoFloat32Array();
+    const range = Range3d.createNull();
+    dracoDecoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, unquantizedValues);
+    for (let i = 0, j = 0; i < numPoints; i++)
+      range.extendXYZ(unquantizedValues.GetValue(j++), unquantizedValues.GetValue(j++), unquantizedValues.GetValue(j++));
+
+    const qParams = QParams3d.fromRange(range);
+    const qPoints = new Uint16Array(3 * numPoints);
+    const point = Point3d.createZero();
+    const qPoint = QPoint3d.create(point, qParams);
+    for (let i = 0, j = 0; i < numPoints; i++) {
+      point.set(unquantizedValues.GetValue(j), unquantizedValues.GetValue(j + 1), unquantizedValues.GetValue(j + 2));
+      qPoint.init(point, qParams);
+      qPoints[j++] = qPoint.x;
+      qPoints[j++] = qPoint.y;
+      qPoints[j++] = qPoint.z;
+    }
+
+    dracoModule.destroy(unquantizedValues);
+    return { qParams, range, qPoints };
   }
 }

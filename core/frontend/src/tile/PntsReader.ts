@@ -23,8 +23,7 @@ import { DracoDecoder } from "./DracoDecoder";
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
  */
-export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean,
-  range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined {
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined {
   const header = new PntsHeader(stream);
 
   if (!header.isValid)
@@ -39,14 +38,16 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
     return undefined;
 
   let qParams, qPoints;
+  let colors: Uint8Array | undefined;
   let dracoPointExtension = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
   if (dracoPointExtension && dracoPointExtension.byteLength !== undefined && dracoPointExtension.byteOffset !== undefined && dracoPointExtension.properties?.POSITION !== undefined) {
     const bufferData = new Uint8Array(stream.arrayBuffer, dataOffset + dracoPointExtension.byteOffset, dracoPointExtension.byteLength);
-    const qParamsAndPoints = DracoDecoder.readDracoPointCloud(bufferData, dracoPointExtension.properties?.POSITION);
-    if (qParamsAndPoints) {
-      qPoints = qParamsAndPoints.qPoints;
-      qParams = qParamsAndPoints.qParams;
+    const decoded = DracoDecoder.readDracoPointCloud(bufferData, dracoPointExtension.properties?.POSITION, dracoPointExtension.properties?.RGB);
+    if (decoded) {
+      qPoints = decoded.qPoints;
+      qParams = decoded.qParams;
+      colors = decoded.colors;
     }
   } else {
     if (undefined === featureValue.POSITION_QUANTIZED ||
@@ -62,20 +63,19 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
     const qScale = new Point3d(Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[0]), Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[1]), Quantization.computeScale(featureValue.QUANTIZED_VOLUME_SCALE[2]));
     qParams = QParams3d.fromOriginAndScale(qOrigin, qScale);
     qPoints = new Uint16Array(stream.arrayBuffer, dataOffset + featureValue.POSITION_QUANTIZED.byteOffset, 3 * featureValue.POINTS_LENGTH);
-  }
-  let colors: Uint8Array | undefined;
-
-  if (undefined !== featureValue.RGB) {
-    colors = new Uint8Array(stream.arrayBuffer, dataOffset + featureValue.RGB.byteOffset, 3 * featureValue.POINTS_LENGTH);
-  } else {
-    colors = new Uint8Array(3 * featureValue.POINTS_LENGTH);
-    colors.fill(0xff, 0, colors.length);    // TBD... Default color?
+    if (undefined !== featureValue.RGB)
+      colors = new Uint8Array(stream.arrayBuffer, dataOffset + featureValue.RGB.byteOffset, 3 * featureValue.POINTS_LENGTH);
   }
   if (!qPoints || !qParams)
     return undefined;
 
   if (featureValue.RTC_CENTER)
     qParams = QParams3d.fromOriginAndScale(qParams.origin.plus(Vector3d.fromJSON(featureValue.RTC_CENTER)), qParams.scale);
+
+  if (undefined === colors) {
+    colors = new Uint8Array(3 * featureValue.POINTS_LENGTH);
+    colors.fill(0xff, 0, colors.length);    // TBD... Default color?
+  }
 
   // ###TODO? Do we expect a batch table? not currently handled...
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
@@ -85,14 +85,5 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
 
   let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features, voxelSize), iModel);
   renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
-
-  if (yAxisUp) {
-    const branch = new GraphicBranch();
-    branch.add(renderGraphic);
-    const transform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)));
-
-    renderGraphic = system.createBranch(branch, transform);
-  }
-
   return renderGraphic;
 }

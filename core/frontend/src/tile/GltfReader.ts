@@ -496,8 +496,6 @@ export abstract class GltfReader {
     if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
       return undefined;
     if (primitive.extensions && primitive.extensions.KHR_draco_mesh_compression) {
-      // return undefined;     // Defer Draco support until moved to web worker.
-
       const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
       const bufferView = this._bufferViews[dracoExtension.bufferView];
       if (undefined === bufferView) return undefined;
