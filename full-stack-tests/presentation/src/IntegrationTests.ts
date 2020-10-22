@@ -16,7 +16,7 @@ import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
 import {
-  Presentation as PresentationBackend, PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory,
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory,
   PresentationProps as PresentationBackendProps,
 } from "@bentley/presentation-backend";
 import { RequestPriority } from "@bentley/presentation-common";
@@ -85,7 +85,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     taskAllocationsMap: {
       [RequestPriority.Max]: 1,
     },
-    cacheDirectory: path.join("lib", "cache"),
+    cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join("lib", "cache") },
   };
   const frontendInitProps: PresentationFrontendProps = {
     activeLocale: "en-PSEUDO",
