@@ -111,6 +111,25 @@ Previously, when traversing from a parent node, that is based on multiple instan
 
 Now, in the situation described above, there will be no more duplication.
 
+### Breaking changes
+
+- In `@bentley/presentation-backend` changed `cacheDirectory?: string` property to `cacheConfig?: HierarchyCacheConfig` on `PresentationManagerProps` interface. This adds ability to control cache mode.
+Fix:
+
+  ```ts
+  Presentation.initialize({
+    cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "cacheLocation" },
+  });
+  ```
+
+  instead of:
+
+  ```ts
+  Presentation.initialize({
+    cacheDirectory: "cacheLocation",
+  });
+  ```
+
 ## Hilite/Emphasis interaction modified.
 
 The visual interaction between hilited and emphasized geometry has been modified to look better.  Hilited geometry now always shows through emphasized geometry and visa versa.  Geometry which is both hilited and emphasized now shows the outline for both (provided they are of different widths).

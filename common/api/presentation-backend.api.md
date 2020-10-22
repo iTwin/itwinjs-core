@@ -46,11 +46,47 @@ import { VariableValueJSON } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
 
 // @beta
+export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
+    directory?: string;
+    // (undocumented)
+    mode: HierarchyCacheMode.Disk;
+}
+
+// @beta
 export enum DuplicateRulesetHandlingStrategy {
     // (undocumented)
     Replace = 1,
     // (undocumented)
     Skip = 0
+}
+
+// @beta
+export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
+
+// @beta
+export interface HierarchyCacheConfigBase {
+    // (undocumented)
+    mode: HierarchyCacheMode;
+}
+
+// @beta
+export enum HierarchyCacheMode {
+    Disk = "disk",
+    Hybrid = "hybrid",
+    Memory = "memory"
+}
+
+// @beta
+export interface HybridCacheConfig extends HierarchyCacheConfigBase {
+    disk?: DiskHierarchyCacheConfig;
+    // (undocumented)
+    mode: HierarchyCacheMode.Hybrid;
+}
+
+// @beta
+export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
+    // (undocumented)
+    mode: HierarchyCacheMode.Memory;
 }
 
 // @public
@@ -204,7 +240,7 @@ export interface PresentationManagerProps {
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
     // @beta
-    cacheDirectory?: string;
+    cacheConfig?: HierarchyCacheConfig;
     enableSchemasPreload?: boolean;
     // @internal (undocumented)
     eventSink?: EventSink;

@@ -7,7 +7,7 @@ import faker from "faker";
 import fs from "fs";
 import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
 import { SnapshotDb } from "@bentley/imodeljs-backend";
-import { DuplicateRulesetHandlingStrategy, Presentation, PresentationManagerMode, RulesetEmbedder } from "@bentley/presentation-backend";
+import { DuplicateRulesetHandlingStrategy, HierarchyCacheMode, Presentation, PresentationManagerMode, RulesetEmbedder } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -70,7 +70,6 @@ describe("RulesEmbedding", () => {
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
       isChangeTrackingEnabled: false,
-      cacheDirectory: "",
     });
     nativePlatform = new TNativePlatform();
     imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");

@@ -19,7 +19,7 @@ import { IPresentationTreeDataProvider } from "@bentley/presentation-components"
 import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import {
-  HierarchyBuilder, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
+  HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
 } from "@bentley/presentation-testing";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { SelectionMode, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
@@ -1743,7 +1743,7 @@ describe("ModelsTree", () => {
     beforeEach(async () => {
       await initializePresentationTesting({
         backendProps: {
-          cacheDirectory: path.join("lib", "test", "cache"),
+          cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join("lib", "test", "cache") },
         },
       });
       imodel = await SnapshotConnection.openFile(testIModelPath);
