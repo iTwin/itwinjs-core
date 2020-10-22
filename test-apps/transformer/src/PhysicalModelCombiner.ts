@@ -5,7 +5,7 @@
 
 import { DbResult, Id64, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalPartition, SnapshotDb, SubCategory, Subject,
+  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalPartition, Relationship, SnapshotDb, SubCategory, Subject,
 } from "@bentley/imodeljs-backend";
 import { CreateIModelProps } from "@bentley/imodeljs-common";
 
@@ -25,13 +25,14 @@ export class PhysicalModelCombiner extends IModelTransformer {
     combiner.combine();
     combiner.dispose();
     sourceDb.close();
-    targetDb.saveChanges();
     targetDb.close();
   }
   private _numSourceElements = 0;
   private _numSourceElementsProcessed = 0;
-  private _reportingInterval = 1000;
-  private _saveChangesInterval = 10000;
+  private _numSourceRelationships = 0;
+  private _numSourceRelationshipsProcessed = 0;
+  private readonly _reportingInterval = 1000;
+  private readonly _saveChangesInterval = 10000; // must be a multiple of reportingInterval
   private _childPhysicalPartitionIds: Id64Set = new Set<Id64String>();
   private _targetComponentsModelId: Id64String = Id64.invalid;
   private _targetPhysicalTagsModelId: Id64String = Id64.invalid;
@@ -41,26 +42,35 @@ export class PhysicalModelCombiner extends IModelTransformer {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
     Logger.logInfo("Progress", `numSourceElements=${this._numSourceElements}`);
+    this._numSourceRelationships = sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${ElementRefersToElements.classFullName}`, (statement: ECSqlStatement): number => {
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+    Logger.logInfo("Progress", `numSourceRelationships=${this._numSourceRelationships}`);
   }
   public combine(): void {
     this.exporter.visitRelationships = false;
     this.initSubCategoryFilter();
+    this.importer.simplifyElementGeometry = true;
     this.processAll();
+    this.targetDb.saveChanges(`Finished processing non-physical models`);
     this._childPhysicalPartitionIds.forEach((partitionId: Id64String) => {
       this.processModel(partitionId);
+      this.targetDb.saveChanges(`Finished processing PhysicalPartition ${partitionId}`);
     });
     this.exporter.visitRelationships = true;
     this.processRelationships(ElementRefersToElements.classFullName);
+    this.targetDb.saveChanges(`Finished processing relationships`);
   }
   protected shouldExportElement(sourceElement: Element): boolean {
     ++this._numSourceElementsProcessed;
     if (0 === this._numSourceElementsProcessed % this._reportingInterval) {
-      this.logProgress();
+      const progressMessage = `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`;
+      Logger.logInfo("Progress", progressMessage);
       this.logMemoryUsage();
-    }
-    if (0 === this._numSourceElementsProcessed % this._saveChangesInterval) {
-      Logger.logInfo("Progress", "Saving changes");
-      this.targetDb.saveChanges();
+      if (0 === this._numSourceElementsProcessed % this._saveChangesInterval) {
+        Logger.logInfo("Progress", "Saving changes");
+        this.targetDb.saveChanges();
+      }
     }
     if (sourceElement instanceof Subject) {
       if (sourceElement.code.getValue() === "Physical") { // FMG case
@@ -117,8 +127,18 @@ export class PhysicalModelCombiner extends IModelTransformer {
       }
     });
   }
-  private logProgress(): void {
-    Logger.logInfo("Progress", `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements}`);
+  protected shouldExportRelationship(relationship: Relationship): boolean {
+    ++this._numSourceRelationshipsProcessed;
+    if (0 === this._numSourceRelationshipsProcessed % this._reportingInterval) {
+      const progressMessage = `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`;
+      Logger.logInfo("Progress", progressMessage);
+      this.logMemoryUsage();
+      if (0 === this._numSourceRelationshipsProcessed % this._saveChangesInterval) {
+        Logger.logInfo("Progress", "Saving changes");
+        this.targetDb.saveChanges(progressMessage);
+      }
+    }
+    return super.shouldExportRelationship(relationship);
   }
   private logMemoryUsage(): void {
     const used: any = process.memoryUsage();
