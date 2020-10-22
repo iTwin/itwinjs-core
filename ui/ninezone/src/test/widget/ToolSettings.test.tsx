@@ -2,20 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Point, Rectangle } from "@bentley/ui-core";
 import { ResizeGrip, ResizeHandle, ToolSettings, ToolSettingsProps } from "../../ui-ninezone";
-import { createBoundingClientRect } from "../Utils";
+import { createBoundingClientRect, mount } from "../Utils";
 
 describe("<ToolSettings />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<ToolSettings />);
   });
@@ -59,7 +53,7 @@ describe("<ToolSettings />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
     const sut = mount<ToolSettings>(<ToolSettings />);
     const element = sut.getDOMNode();
     sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));

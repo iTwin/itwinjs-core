@@ -7,7 +7,7 @@ import * as React from "react";
 // import * as sinon from "sinon";
 import { Provider } from "react-redux";
 import { WidgetState } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, SelectionInfoField, SessionStateActionId, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, UiFramework, WidgetDef,
@@ -15,9 +15,6 @@ import {
 import TestUtils from "../TestUtils";
 
 describe("SelectionInfoField", () => {
-
-  afterEach(cleanup);
-
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);

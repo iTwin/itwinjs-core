@@ -11,11 +11,11 @@ import { Orientation } from "../../ui-core/enums/Orientation";
 
 describe("ElementSeparator", () => {
   let clock: sinon.SinonFakeTimers;
-  before(() => {
+  beforeEach(() => {
     clock = sinon.useFakeTimers({ now: Date.now() });
   });
 
-  after(() => {
+  afterEach(() => {
     clock.restore();
   });
 

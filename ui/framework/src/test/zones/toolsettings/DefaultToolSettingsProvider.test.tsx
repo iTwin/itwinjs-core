@@ -8,7 +8,7 @@ import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
 } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import {
   ConfigurableUiManager, CoreTools, DefaultToolSettingsProvider, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs, ToolUiManager, Widget, Zone,
@@ -136,8 +136,6 @@ describe("DefaultToolUiSettingsProvider", () => {
     },
   };
 
-  afterEach(cleanup);
-
   before(async () => {
     await TestUtils.initializeUiFramework();
 
@@ -248,7 +246,6 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       const renderedComponent = render(toolSettingsNode as React.ReactElement<any>);
       expect(renderedComponent).not.to.be.undefined;
-      // renderedComponent.debug();
 
       expect(renderedComponent.queryByText("TEST-USELENGTH:")).to.be.null;
 
@@ -341,7 +338,6 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       const renderedComponent = render(toolSettingsNode as React.ReactElement<any>);
       expect(renderedComponent).not.to.be.undefined;
-      // renderedComponent.debug();
 
       expect(renderedComponent.queryByText("TEST-USELENGTH:")).to.be.null;
 

@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import { Provider } from "react-redux";
 import { WidgetState } from "@bentley/ui-abstract";
@@ -11,7 +10,7 @@ import {
   ConfigurableCreateInfo, ConfigurableUiControlType, MessageManager, PromptField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs,
   WidgetDef,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("PromptField", () => {
 
@@ -66,8 +65,6 @@ describe("PromptField", () => {
     wrapper.update();
     expect(wrapper.find("div.uifw-statusFields-promptField").length).to.eq(1);
     expect(wrapper.find("div.uifw-statusFields-promptField").text()).to.eq(goodBye);
-
-    wrapper.unmount();
   });
 
 });

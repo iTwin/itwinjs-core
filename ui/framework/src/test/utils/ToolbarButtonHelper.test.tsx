@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { cleanup, prettyDOM, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { CommandItemDef, GroupButton, ToolbarButtonHelper, ToolButton, ToolWidget } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
@@ -67,8 +67,6 @@ describe("Locate Toolbar items", () => {
     TestUtils.terminateUiFramework();
   });
 
-  afterEach(cleanup);
-
   it("Find item in horizontal and vertical toolbars.", () => {
     const component = render(
       <ToolWidget // eslint-disable-line deprecation/deprecation
@@ -78,14 +76,7 @@ describe("Locate Toolbar items", () => {
       />,
     );
 
-    // component.debug();
     expect(component).not.to.be.null;
-
-    const dumpDocument = false;
-    if (dumpDocument) {
-      // eslint-disable-next-line no-console
-      console.log(prettyDOM(document.documentElement));
-    }
 
     const foundHorizontalToolbarItem = ToolbarButtonHelper.searchHorizontalToolbarsByTitle("SampleApp:buttons.tool1");
     expect(foundHorizontalToolbarItem).not.to.be.null;

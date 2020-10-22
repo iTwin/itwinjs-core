@@ -2,25 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { withContainIn } from "../../ui-ninezone";
-import { containHorizontally, containVertically } from "../../ui-ninezone/base/WithContainIn";
-import { createBoundingClientRect } from "../Utils";
+import { containHorizontally, containVertically, withContainIn } from "../../ui-ninezone";
+import { createBoundingClientRect, mount } from "../Utils";
 
 const component = () => <div></div>;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ContainedComponent = withContainIn(component);
 
 describe("<WithContainIn />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<ContainedComponent />);
   });
@@ -30,15 +22,15 @@ describe("<WithContainIn />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
     mount(<ContainedComponent />);
   });
 
   it("should use window bounds when container reference is not set", () => {
-    sandbox.stub(window, "innerWidth").get(() => {
+    sinon.stub(window, "innerWidth").get(() => {
       return 333;
     });
-    sandbox.stub(window, "innerHeight").get(() => {
+    sinon.stub(window, "innerHeight").get(() => {
       return 222;
     });
 
@@ -83,7 +75,7 @@ describe("<WithContainIn />", () => {
     const expectedResult = new Rectangle();
     const createdRect = new Rectangle();
     const containHorizontallyInStub = sinon.stub(createdRect, "containHorizontallyIn").returns(expectedResult);
-    const createRectangleStub = sandbox.stub(Rectangle, "create").returns(createdRect);
+    const createRectangleStub = sinon.stub(Rectangle, "create").returns(createdRect);
 
     const contained = containHorizontally(new Rectangle(), new Rectangle());
     createRectangleStub.calledOnce.should.true;
@@ -95,7 +87,7 @@ describe("<WithContainIn />", () => {
     const expectedResult = new Rectangle();
     const createdRect = new Rectangle();
     const containVerticallyInStub = sinon.stub(createdRect, "containVerticallyIn").returns(expectedResult);
-    const createRectangleStub = sandbox.stub(Rectangle, "create").returns(createdRect);
+    const createRectangleStub = sinon.stub(Rectangle, "create").returns(createdRect);
 
     const contained = containVertically(new Rectangle(), new Rectangle());
     createRectangleStub.calledOnce.should.true;

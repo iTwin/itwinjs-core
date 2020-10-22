@@ -1,25 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetStateContext, WidgetTabProvider,
-  WidgetTabsEntryContext,
+  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
+  WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
 } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
-import { WidgetOverflowContext } from "../../ui-ninezone/widget/Overflow";
-import { WidgetTab } from "../../ui-ninezone/widget/Tab";
 
 describe("WidgetTab", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render active", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
@@ -146,7 +138,7 @@ describe("WidgetTab", () => {
   });
 
   it("should dispatch WIDGET_TAB_CLICK", () => {
-    const fakeTimers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
@@ -186,7 +178,7 @@ describe("WidgetTab", () => {
   });
 
   it("should dispatch WIDGET_TAB_DOUBLE_CLICK", () => {
-    const fakeTimers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
@@ -284,7 +276,7 @@ describe("WidgetTab", () => {
   });
 
   it("should not dispatch WIDGET_TAB_DRAG_START w/o initial pointer position", () => {
-    const fakeTimers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);

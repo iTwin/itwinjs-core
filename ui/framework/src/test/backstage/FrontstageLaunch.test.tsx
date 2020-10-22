@@ -3,19 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import {
-  BackstageItemState, ConfigurableUiManager, Frontstage, FrontstageActivatedEventArgs, FrontstageLaunchBackstageItem, FrontstageManager,
-  FrontstageProps, FrontstageProvider,
+  BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageLaunchBackstageItem, FrontstageManager,
+  FrontstageProps, FrontstageProvider, SyncUiEventDispatcher,
 } from "../../ui-framework";
-import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
-import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -34,7 +32,6 @@ describe("Backstage", () => {
 
   describe("<FrontstageLaunchBackstageItem />", () => {
     it("FrontstageLaunchBackstageItem should render & execute", async () => {
-      const spyMethod = sinon.stub();
       let stateFuncRun = false;
       const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // eslint-disable-line deprecation/deprecation
         stateFuncRun = true;
@@ -55,7 +52,7 @@ describe("Backstage", () => {
       }
       ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
 
-      const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
+      const spy = sinon.spy(FrontstageManager.onFrontstageActivatedEvent, "emit");
       const wrapper = mount(
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
           isEnabled={true} isActive={false}
@@ -71,9 +68,7 @@ describe("Backstage", () => {
       backstageItem.find(".nz-backstage-item").simulate("click");
 
       await TestUtils.flushAsyncOperations();
-      expect(spyMethod.calledOnce).to.be.true;
-      remove();
-      wrapper.unmount();
+      expect(spy.calledOnce).to.be.true;
     });
 
     it("FrontstageLaunchBackstageItem should log error when invalid frontstageId is provided", async () => {
@@ -85,16 +80,12 @@ describe("Backstage", () => {
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       spyMethod.calledOnce.should.true;
-
-      wrapper.unmount();
-      (Logger.logError as any).restore();
     });
 
     it("FrontstageLaunchBackstageItem renders correctly when inactive", async () => {
       await FrontstageManager.setActiveFrontstageDef(undefined);
       const wrapper = shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       wrapper.should.matchSnapshot();
-      wrapper.unmount();
     });
 
     it("FrontstageLaunchBackstageItem renders correctly when active", async () => {
@@ -105,7 +96,6 @@ describe("Backstage", () => {
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const wrapper = shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
         wrapper.should.matchSnapshot();
-        wrapper.unmount();
       }
     });
 
@@ -117,13 +107,9 @@ describe("Backstage", () => {
       const frontstageDef = FrontstageManager.findFrontstageDef("Test1");
       expect(frontstageDef).to.not.be.undefined;
 
-      if (frontstageDef) {
-        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        wrapper.update();
-        expect(wrapper.find("li.nz-active").length).to.eq(1);
-      }
-
-      wrapper.unmount();
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      wrapper.update();
+      expect(wrapper.find("li.nz-active").length).to.eq(1);
     });
 
     it("FrontstageLaunchBackstageItem updates on property change", async () => {
@@ -133,8 +119,6 @@ describe("Backstage", () => {
       wrapper.setProps({ isEnabled: true });
       wrapper.update();
       expect(wrapper.find("li.nz-disabled").length).to.eq(0);
-
-      wrapper.unmount();
     });
   });
 });

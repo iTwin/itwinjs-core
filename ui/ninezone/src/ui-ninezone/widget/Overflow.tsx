@@ -49,8 +49,7 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
       className={className}
       ref={refs}
     >
-      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-      <div
+      <div // eslint-disable-line jsx-a11y/click-events-have-key-events
         className="nz-button"
         onClick={handleClick}
         ref={targetRef}

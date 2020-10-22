@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
@@ -12,12 +12,6 @@ import { createDOMRect } from "../Utils";
 import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTabs", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
@@ -44,7 +38,7 @@ describe("WidgetTabs", () => {
     nineZone = addTab(nineZone, "t1");
     nineZone = addTab(nineZone, "t2");
     nineZone = addTab(nineZone, "t3");
-    sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
     const { container } = render(
       <NineZoneProvider
         state={nineZone}

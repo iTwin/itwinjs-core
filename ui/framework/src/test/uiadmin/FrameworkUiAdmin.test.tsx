@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import { AbstractMenuItemProps, AbstractToolbarProps, PropertyDescription, RelativePosition, UiDataProvider } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
-import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
-import { FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import TestUtils from "../TestUtils";
+import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework";
 import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
 import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
+import TestUtils from "../TestUtils";
 
 // cSpell:ignore uiadmin
 
@@ -98,7 +96,7 @@ describe("FrameworkUiAdmin", () => {
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
     expect(uiAdmin.showKeyinPalette(doc.documentElement)).to.be.false;
     expect(uiAdmin.hideKeyinPalette()).to.be.false;
-    uiAdmin.updateFeatureFlags ({allowKeyinPalette:true});
+    uiAdmin.updateFeatureFlags({ allowKeyinPalette: true });
     expect(uiAdmin.showKeyinPalette(doc.documentElement)).to.be.true;
     expect(uiAdmin.hideKeyinPalette()).to.be.true;
   });
@@ -204,19 +202,18 @@ describe("FrameworkUiAdmin", () => {
     const stub = sinon.stub(keyinExports, "clearKeyinPaletteHistory").returns();
     const tool = new ClearKeyinPaletteHistoryTool();
     tool.parseAndRun();
-    expect (stub).to.be.calledOnce;
-    sinon.restore();
+    expect(stub).to.be.calledOnce;
   });
 
   it("should get/set keyin preference", () => {
-    expect (uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.NonLocalized);
+    expect(uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.NonLocalized);
     const nonLocalKeyins = uiAdmin.getKeyins();
     uiAdmin.localizedKeyinPreference = KeyinFieldLocalization.Both;
     const bothKeyins = uiAdmin.getKeyins();
-    expect (bothKeyins.length > nonLocalKeyins.length);
-    expect (uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.Both);
+    expect(bothKeyins.length > nonLocalKeyins.length);
+    expect(uiAdmin.localizedKeyinPreference).to.eq(KeyinFieldLocalization.Both);
     uiAdmin.localizedKeyinPreference = KeyinFieldLocalization.Localized;
     const localizedKeyins = uiAdmin.getKeyins();
-    expect (localizedKeyins.length === nonLocalKeyins.length);
+    expect(localizedKeyins.length === nonLocalKeyins.length);
   });
 });

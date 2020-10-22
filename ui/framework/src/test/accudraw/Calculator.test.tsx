@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, ReactWrapper, shallow } from "enzyme";
+import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Icon } from "@bentley/ui-core";
 import { Calculator } from "../../ui-framework/accudraw/Calculator";
 import { CalculatorEngine, CalculatorOperator } from "../../ui-framework/accudraw/CalculatorEngine";
+import { mount } from "../TestUtils";
 
 describe("Calculator", () => {
 
@@ -34,8 +35,6 @@ describe("Calculator", () => {
     const wrapper = mount(<Calculator engine={new CalculatorEngine()} initialValue={100} />);
 
     expect(wrapper.state("displayValue")).to.eq("100");
-
-    wrapper.unmount();
   });
 
   it("clicking on 1 button should put it in display", () => {
@@ -45,8 +44,6 @@ describe("Calculator", () => {
     simulateButtonClick(calculatorButton);
 
     expect(wrapper.state("displayValue")).to.eq(keyChar);
-
-    wrapper.unmount();
   });
 
   it("clicking on buttons, operator and equals should give correct result", () => {
@@ -74,8 +71,6 @@ describe("Calculator", () => {
     const equalsButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "OperatorButton" && n.prop("operator") === CalculatorOperator.Equals);
     simulateButtonClick(equalsButton);
     expect(wrapper.state("displayValue")).to.eq("20");
-
-    wrapper.unmount();
   });
 
   it("clicking on OK button should fire onOk", () => {
@@ -94,8 +89,6 @@ describe("Calculator", () => {
     okButton.simulate("click");
     spyMethod.called.should.true;
     expect(value).to.eq(5);
-
-    wrapper.unmount();
   });
 
   it("clicking on Cancel button should fire onCancel", () => {
@@ -111,8 +104,6 @@ describe("Calculator", () => {
     expect(cancelButton.length).to.eq(1);
     cancelButton.simulate("click");
     spyMethod.called.should.true;
-
-    wrapper.unmount();
   });
 
   it("Pressing Esc should fire onCancel", () => {
@@ -124,8 +115,6 @@ describe("Calculator", () => {
     mainDiv.simulate("keydown", { key: "Escape" });
 
     spyMethod.called.should.true;
-
-    wrapper.unmount();
   });
 
   it("pressing keys and multiply should give correct result", () => {
@@ -150,8 +139,6 @@ describe("Calculator", () => {
 
     mainDiv.simulate("keydown", { key: "a" });
     expect(wrapper.state("displayValue")).to.eq("0");
-
-    wrapper.unmount();
   });
 
   it("pressing keys and subtract should give correct result", () => {
@@ -170,8 +157,6 @@ describe("Calculator", () => {
 
     mainDiv.simulate("keydown", { key: "=" });
     expect(wrapper.state("displayValue")).to.eq("1");
-
-    wrapper.unmount();
   });
 
   it("pressing keys and divide should give correct result", () => {
@@ -190,8 +175,6 @@ describe("Calculator", () => {
 
     mainDiv.simulate("keydown", { key: "=" });
     expect(wrapper.state("displayValue")).to.eq("3");
-
-    wrapper.unmount();
   });
 
   it("pressing keys and add should give correct result", () => {
@@ -222,8 +205,6 @@ describe("Calculator", () => {
 
     mainDiv.simulate("keydown", { key: "=" });
     expect(wrapper.state("displayValue")).to.eq("880.5");
-
-    wrapper.unmount();
   });
 
   it("pressing keys and Enter should give correct result", () => {
@@ -244,8 +225,6 @@ describe("Calculator", () => {
     mainDiv.simulate("keydown", { key: "Enter" });
     expect(wrapper.state("displayValue")).to.eq("2");
     spyMethod.called.should.true;
-
-    wrapper.unmount();
   });
 
   it("pressing keys and Clear should give correct result", () => {
@@ -258,8 +237,6 @@ describe("Calculator", () => {
 
     mainDiv.simulate("keydown", { key: "c" });
     expect(wrapper.state("displayValue")).to.eq("0");
-
-    wrapper.unmount();
   });
 
   it("pressing keys and Backspace should give correct result", () => {
@@ -278,8 +255,6 @@ describe("Calculator", () => {
 
     mainDiv.simulate("keydown", { key: "Backspace" });
     expect(wrapper.state("displayValue")).to.eq("0");
-
-    wrapper.unmount();
   });
 
   it("pressing keys and Equal and Enter should give correct result", () => {
@@ -306,8 +281,6 @@ describe("Calculator", () => {
     mainDiv.simulate("keydown", { key: "Enter" });
     expect(wrapper.state("displayValue")).to.eq("61");
     spyMethod.called.should.true;
-
-    wrapper.unmount();
   });
 
   it("pressing keys and Equal and Clear should give correct result", () => {
@@ -329,8 +302,6 @@ describe("Calculator", () => {
 
     mainDiv.simulate("keydown", { key: "c" });
     expect(wrapper.state("displayValue")).to.eq("0");
-
-    wrapper.unmount();
   });
 
 });

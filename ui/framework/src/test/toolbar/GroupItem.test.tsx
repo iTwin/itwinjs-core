@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, ReactWrapper, shallow } from "enzyme";
+import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@bentley/ui-abstract";
@@ -14,7 +14,7 @@ import {
   ToolbarDragInteractionContext, ToolGroupPanelContext,
 } from "../../ui-framework";
 import * as GroupItemModule from "../../ui-framework/toolbar/GroupItem";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",
@@ -50,8 +50,6 @@ const group1 = new GroupItemDef({
 });
 
 describe("GroupItem", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
@@ -60,13 +58,9 @@ describe("GroupItem", () => {
     TestUtils.terminateUiFramework();
   });
 
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   describe("<GroupButton />", () => {
     it("should render", () => {
-      const wrapper = mount(
+      mount(
         <GroupButton
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
@@ -75,11 +69,10 @@ describe("GroupItem", () => {
           itemsInColumn={4}
         />,
       );
-      wrapper.unmount();
     });
 
     it("should not render if not visible", () => {
-      const wrapper = mount(
+      mount(
         <GroupButton
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
@@ -89,7 +82,6 @@ describe("GroupItem", () => {
           isVisible={false}
         />,
       );
-      wrapper.unmount();
     });
 
     it("renders correctly", () => {
@@ -116,7 +108,6 @@ describe("GroupItem", () => {
       );
 
       wrapper.setProps({ labelKey: "UiFramework:tests.label2" });
-      wrapper.unmount();
     });
 
     it("sync event should trigger stateFunc", () => {
@@ -124,7 +115,7 @@ describe("GroupItem", () => {
       let stateFunctionCalled = false;
       const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
 
-      const wrapper = mount(
+      mount(
         <GroupButton
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
@@ -143,14 +134,12 @@ describe("GroupItem", () => {
       stateFunctionCalled = false;
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(`${testEventId}-noop`);
       expect(stateFunctionCalled).to.eq(false);
-
-      wrapper.unmount();
     });
 
     it("sync event should trigger stateFunc in items", () => {
       const testEventId = "test-button-state";
 
-      const wrapper = mount(
+      mount(
         <GroupButton
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
@@ -161,8 +150,6 @@ describe("GroupItem", () => {
       );
 
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
-
-      wrapper.unmount();
     });
 
     it("should set focus to home on Esc", () => {
@@ -171,7 +158,6 @@ describe("GroupItem", () => {
       element.simulate("focus");
       element.simulate("keyDown", { key: "Escape" });
       expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
-      wrapper.unmount();
     });
   });
 
@@ -271,8 +257,6 @@ describe("GroupItem", () => {
 
         backArrowDiv.simulate("click");
         wrapper.update();
-
-        wrapper.unmount();
       });
 
       it("should execute active item on click", () => {
@@ -446,7 +430,7 @@ describe("GroupItem", () => {
         items: [],
       });
       groupItemDef.resolveItems();
-      sandbox.stub(GroupItemModule, "getFirstItemId").returns("asd");
+      sinon.stub(GroupItemModule, "getFirstItemId").returns("asd");
       const sut = mount<GroupItem>(<GroupItem
         groupItemDef={groupItemDef}
       />);

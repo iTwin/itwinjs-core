@@ -7,9 +7,8 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import * as moq from "typemoq";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { cleanup, render } from "@testing-library/react";
-import { SyncUiEventDispatcher, useActiveIModelConnection } from "../../ui-framework";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { render } from "@testing-library/react";
+import { SyncUiEventDispatcher, UiFramework, useActiveIModelConnection } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("useActiveIModelConnection", () => {
@@ -25,8 +24,6 @@ describe("useActiveIModelConnection", () => {
     await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
-
-  afterEach(cleanup);
 
   describe("useActiveIModelConnection Hook", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -57,7 +54,6 @@ describe("useActiveIModelConnection", () => {
       expect(initialLabel.innerHTML).to.be.eq("NoConnection");
 
       UiFramework.setIModelConnection(imodelMock.object, true);
-      // result.debug();
 
       // --- the following does not work yet
       // const updatedLabel = result.getByTestId("mylabel");

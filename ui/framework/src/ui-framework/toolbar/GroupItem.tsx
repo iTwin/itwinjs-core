@@ -42,7 +42,7 @@ const ItemWithDragInteraction = withDragInteraction(Item);
 
 /** An Item that opens a group of items.
  * @public
- */
+ */
 export class GroupItemDef extends ActionButtonItemDef {
   private static _sId = 0;
   public static groupIdPrefix = "Group-";
@@ -174,7 +174,7 @@ interface GroupItemState extends BaseItemState {
 
 /** Group Item React component.
  * @internal
- */
+ */
 export class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
   /** @internal */
   public readonly state: Readonly<GroupItemState>;
@@ -476,8 +476,10 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   }
 
   private _handleToolPanelOpenedEvent = () => {
+    // istanbul ignore else
     if (!this._closeOnPanelOpened)
       return;
+    // istanbul ignore next
     this.closeGroupButton();
   }
 

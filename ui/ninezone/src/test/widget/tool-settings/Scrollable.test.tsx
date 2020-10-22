@@ -2,24 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ScrollableToolSettings } from "../../../ui-ninezone";
+import { mount } from "../../Utils";
 
 describe("<ScrollableToolSettings />", () => {
-  const sandbox = sinon.createSandbox();
-
-  before(() => {
-    window.requestAnimationFrame = (cb: FrameRequestCallback) => {
-      return window.setTimeout(cb, 1);
-    };
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<ScrollableToolSettings />);
   });
@@ -49,8 +38,8 @@ describe("<ScrollableToolSettings />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
-    const rafSpy = sandbox.spy(window, "requestAnimationFrame");
+    sinon.stub(React, "createRef").returns(ref);
+    const rafSpy = sinon.spy(window, "requestAnimationFrame");
 
     const sut = mount<ScrollableToolSettings>(<ScrollableToolSettings />);
     sut.setState({
@@ -63,8 +52,8 @@ describe("<ScrollableToolSettings />", () => {
   });
 
   it("should scroll bottom", () => {
-    const fakeTimers = sandbox.useFakeTimers();
-    const rafSpy = sandbox.spy(window, "requestAnimationFrame");
+    const fakeTimers = sinon.useFakeTimers();
+    const rafSpy = sinon.spy(window, "requestAnimationFrame");
     const sut = mount<ScrollableToolSettings>(<ScrollableToolSettings />);
     sut.setState({
       isBottomIndicatorVisible: true,
@@ -80,7 +69,7 @@ describe("<ScrollableToolSettings />", () => {
     scrollTopGetter.calledOnce.should.true;
     rafSpy.calledOnce.should.true;
 
-    const dateNowStub = sandbox.stub(Date, "now").returns(0);
+    const dateNowStub = sinon.stub(Date, "now").returns(0);
     fakeTimers.tick(1);
     scrollTopSetter.calledOnce.should.true;
     rafSpy.calledTwice.should.true;
@@ -92,7 +81,7 @@ describe("<ScrollableToolSettings />", () => {
   });
 
   it("should scroll top", () => {
-    const rafSpy = sandbox.spy(window, "requestAnimationFrame");
+    const rafSpy = sinon.spy(window, "requestAnimationFrame");
     const sut = mount<ScrollableToolSettings>(<ScrollableToolSettings />);
     sut.setState({
       isTopIndicatorVisible: true,

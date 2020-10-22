@@ -14,8 +14,8 @@ import { mockPresentationManager } from "@bentley/presentation-components/lib/te
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import { CategoryTree, toggleAllCategories } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
+import { fireEvent, render, waitForElement } from "@testing-library/react";
+import { CategoryTree, toggleAllCategories } from "../../../ui-framework";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 import TestUtils from "../../TestUtils";
 
@@ -23,16 +23,18 @@ describe("CategoryTree", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
     Presentation.terminate();
-    sinon.restore();
+  });
+
+  beforeEach(() => {
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -44,8 +46,6 @@ describe("CategoryTree", () => {
   const viewManagerMock = moq.Mock.ofType<ViewManager>();
 
   beforeEach(() => {
-    cleanup();
-
     viewManagerMock.reset();
     imodelMock.reset();
     selectionManagerMock.reset();
@@ -83,12 +83,10 @@ describe("CategoryTree", () => {
 
   describe("<CategoryTree />", () => {
     const visibilityHandler = moq.Mock.ofType<CategoryVisibilityHandler>();
-    const visibilityChangeSpy = sinon.spy();
     let dataProvider: IPresentationTreeDataProvider;
 
     beforeEach(() => {
       visibilityHandler.reset();
-      visibilityChangeSpy.resetHistory();
       dataProvider = {
         imodel: imodelMock.object,
         rulesetId: "",
@@ -349,10 +347,6 @@ describe("CategoryTree", () => {
 
       imodelMock.setup((x) => x.query(moq.It.isAny())).returns(() => generator());
       imodelMock.setup((x) => x.subcategories).returns(() => subcategoriesCacheMock.object);
-    });
-
-    afterEach(() => {
-      enableAllStub.restore();
     });
 
     it("enables all categories", async () => {

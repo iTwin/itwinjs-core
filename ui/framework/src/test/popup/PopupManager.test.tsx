@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -14,16 +13,9 @@ import {
 } from "@bentley/ui-abstract";
 import { EditorContainer, Toolbar, ToolbarWithOverflow } from "@bentley/ui-components";
 import { LeadingText, Point } from "@bentley/ui-core";
-import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
-import { Calculator } from "../../ui-framework/accudraw/Calculator";
-import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
-import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
-import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
-import TestUtils, { storageMock } from "../TestUtils";
+import { AccuDrawPopupManager, Calculator, DialogGridContainer, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, MenuButton, MenuItemProps, PopupManager, PopupRenderer } from "../../ui-framework";
 import { Card } from "../../ui-framework/popup/CardPopup";
-import { DialogGridContainer } from "../../ui-framework/uiprovider/DefaultDialogGridContainer";
-import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import { KeyinPalettePanel } from "../../ui-framework/popup/KeyinPalettePanel";
+import TestUtils, { mount, storageMock } from "../TestUtils";
 const myLocalStorage = storageMock();
 
 describe("PopupManager", () => {
@@ -36,7 +28,7 @@ describe("PopupManager", () => {
 
     await TestUtils.initializeUiFramework();
     // use mock renderer so standards tools are registered.
-    const opts: IModelAppOptions = {uiAdmin: new FrameworkUiAdmin()};
+    const opts: IModelAppOptions = { uiAdmin: new FrameworkUiAdmin() };
     await MockRender.App.startup(opts);
   });
 
@@ -103,7 +95,6 @@ describe("PopupManager", () => {
       AccuDrawPopupManager.hideMenuButton("invalid-id");
 
       spyMethod.calledOnce.should.true;
-      (Logger.logError as any).restore();
     });
 
     it("showCalculator should show Calculator", () => {
@@ -204,8 +195,7 @@ describe("PopupManager", () => {
 
   describe("PopupRenderer", () => {
     it("PopupRenderer should render", () => {
-      const wrapper = mount(<PopupRenderer />);
-      wrapper.unmount();
+      mount(<PopupRenderer />);
     });
 
     it("PopupRenderer should render menuButton with menu item", () => {
@@ -220,8 +210,6 @@ describe("PopupManager", () => {
 
       wrapper.update();
       expect(wrapper.find(MenuButton).length).to.eq(1);
-
-      wrapper.unmount();
     });
 
     it("PopupRenderer should render Calculator", () => {
@@ -235,8 +223,6 @@ describe("PopupManager", () => {
 
       wrapper.update();
       expect(wrapper.find(Calculator).length).to.eq(1);
-
-      wrapper.unmount();
     });
 
     it("PopupRenderer should render InputEditor", async () => {
@@ -272,8 +258,6 @@ describe("PopupManager", () => {
       inputNode.simulate("keyDown", { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.called).to.be.true;
-
-      wrapper.unmount();
     });
 
     it("PopupRenderer should render Toolbar", async () => {
@@ -300,8 +284,6 @@ describe("PopupManager", () => {
       buttonNodes.at(0).simulate("keyDown", { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
-
-      wrapper.unmount();
     });
 
     it("PopupRenderer should render HTMLElement", async () => {
@@ -316,8 +298,6 @@ describe("PopupManager", () => {
       PopupManager.showHTMLElement(display.documentElement, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
       wrapper.update();
       wrapper.should.matchSnapshot();
-
-      wrapper.unmount();
     });
 
     it("PopupRenderer should render Card", async () => {
@@ -363,8 +343,6 @@ describe("PopupManager", () => {
       expect(wrapper.find(Card).length).to.eq(1);
       expect(wrapper.find(LeadingText).length).to.eq(0);
       PopupManager.hideCard();
-
-      wrapper.unmount();
     });
 
     it("PopupRenderer should render Tool Settings", async () => {
@@ -439,13 +417,11 @@ describe("PopupManager", () => {
       inputNode.at(0).simulate("keyDown", { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
-
-      wrapper.unmount();
     });
 
     it("PopupRenderer should render Keyin Palette", async () => {
       const wrapper = mount(<PopupRenderer />);
-      const keyins: KeyinEntry[] = [{value: "keyin one"}, {value: "keyin two"}]
+      const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyOk = sinon.spy();
       const spyCancel = sinon.spy();
@@ -459,8 +435,6 @@ describe("PopupManager", () => {
       inputNode.at(0).simulate("keyDown", { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
-
-      wrapper.unmount();
     });
   });
 

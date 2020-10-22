@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import produce from "immer";
 import * as React from "react";
@@ -15,12 +15,6 @@ import {
 import { createDragItemInfo, NineZoneProvider, NineZoneProviderProps } from "../Providers";
 
 describe("WidgetPanelGrip", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   const wrapper = (props: any) => <WidgetPanelContext.Provider
     value={{
       getBounds: () => ({
@@ -80,7 +74,7 @@ describe("WidgetPanelGrip", () => {
   });
 
   it("should start resize via timer and dispatch PANEL_SET_SIZE", () => {
-    const fakeTimers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState({
       panels: createPanelsState({
@@ -215,12 +209,6 @@ describe("useResizeGrip", () => {
   }
   const wrapper = Wrapper;
 
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should resize top panel", () => {
     const state = produce(createNineZoneState(), (draft) => {
       draft.panels.top.size = 200;
@@ -314,7 +302,7 @@ describe("useResizeGrip", () => {
   });
 
   it("should not start drag in timeout w/o required args", () => {
-    const fakeTimers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const { result } = renderHook(() => useResizeGrip(), { wrapper });
     const element = document.createElement("div");
     result.current[0](element);

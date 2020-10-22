@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
@@ -11,8 +11,9 @@ import {
 } from "@bentley/ui-abstract";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
 import { BackstageComposer, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
+import { act } from "@testing-library/react";
 
 const uiSyncEventId = "appuiprovider:backstage-item-visibility-changed";
 
@@ -37,8 +38,6 @@ class TestUiItemsProvider implements UiItemsProvider {
 }
 
 describe("BackstageComposer", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
@@ -47,19 +46,15 @@ describe("BackstageComposer", () => {
     TestUtils.terminateUiFramework();
   });
 
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", async () => {
-    sandbox.stub(UiFramework, "backstageManager").get(() => new BackstageManager());
+    sinon.stub(UiFramework, "backstageManager").get(() => new BackstageManager());
     shallow(<BackstageComposer items={[]} />).should.matchSnapshot();
   });
 
   it("should close the backstage", async () => {
     const backstageManager = new BackstageManager();
-    const spy = sandbox.spy(backstageManager, "close");
-    sandbox.stub(UiFramework, "backstageManager").get(() => backstageManager);
+    const spy = sinon.spy(backstageManager, "close");
+    sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
     const sut = shallow(<BackstageComposer items={[]} />);
     const backstage = sut.find(NZ_Backstage);
 
@@ -89,7 +84,7 @@ describe("BackstageComposer", () => {
     let addonItem = wrapper.find("i.icon-addon");
     expect(addonItem.exists()).to.be.false;
 
-    UiItemsManager.register(uiProvider);
+    act(() => UiItemsManager.register(uiProvider));
 
     await TestUtils.flushAsyncOperations();
     wrapper.update();
@@ -98,23 +93,18 @@ describe("BackstageComposer", () => {
     let addonItem2 = wrapper.find("i.icon-addon2");
     expect(addonItem.exists()).to.be.true;
 
-    triggerSyncRefresh();
+    act(() => triggerSyncRefresh());
     await TestUtils.flushAsyncOperations();
     wrapper.update();
     addonItem2 = wrapper.find("i.icon-addon2");
     expect(addonItem2.exists()).to.be.false;
 
-    UiItemsManager.unregister(uiProvider.id);
+    act(() => UiItemsManager.unregister(uiProvider.id));
     await TestUtils.flushAsyncOperations();
     wrapper.update();
 
-    // eslint-disable-next-line no-console
-    // console.log(wrapper.debug());
-
     addonItem = wrapper.find("i.icon-addon");
     expect(addonItem.exists()).to.be.false;
-
-    wrapper.unmount();
   });
 
   it("should honor items from addons loaded before component", async () => {
@@ -136,32 +126,22 @@ describe("BackstageComposer", () => {
     let addonItem2 = wrapper.find("i.icon-addon2");
     expect(addonItem.exists()).to.be.true;
 
-    triggerSyncRefresh();
+    act(() => triggerSyncRefresh());
     await TestUtils.flushAsyncOperations();
     wrapper.update();
     addonItem2 = wrapper.find("i.icon-addon2");
     expect(addonItem2.exists()).to.be.false;
 
-    UiItemsManager.unregister(uiProvider.id);
+    act(() => UiItemsManager.unregister(uiProvider.id));
     await TestUtils.flushAsyncOperations();
     wrapper.update();
 
-    // eslint-disable-next-line no-console
-    // console.log(wrapper.debug());
-
     addonItem = wrapper.find("i.icon-addon");
     expect(addonItem.exists()).to.be.false;
-
-    wrapper.unmount();
   });
 
   describe("useGroupedItems", () => {
     const itemsManager = new BackstageItemsManager();
-    const hooksSandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      hooksSandbox.restore();
-    });
 
     interface TestHookProps {
       renderItems: (items: ReturnType<typeof useGroupedItems>) => void;
@@ -175,7 +155,7 @@ describe("BackstageComposer", () => {
     };
 
     it("should omit invisible items", () => {
-      const spy = hooksSandbox.stub<TestHookProps["renderItems"]>();
+      const spy = sinon.stub<TestHookProps["renderItems"]>();
       const items = [
         getActionItem({ isHidden: true }),
       ];
@@ -186,7 +166,7 @@ describe("BackstageComposer", () => {
     });
 
     it("should group items by group priority", () => {
-      const spy = hooksSandbox.stub<TestHookProps["renderItems"]>();
+      const spy = sinon.stub<TestHookProps["renderItems"]>();
       const items = [
         getActionItem(),
         getStageLauncherItem(),

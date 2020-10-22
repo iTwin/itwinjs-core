@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module ToolSettings
@@ -38,7 +38,7 @@ export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps)
       offset={0}
       onClose={props.onClose}
       style={props.style}
-      showShadow={true}
+      showShadow
       target={props.target}
     >
       {props.children}

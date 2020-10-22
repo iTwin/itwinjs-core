@@ -1,12 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, render } from "@testing-library/react";
-import { ScrollableWidgetContent, TabIdContext, TabState, WidgetContentManagerContext } from "../../ui-ninezone";
-import { EventEmitter } from "../../ui-ninezone/base/Event";
+import { EventEmitter, ScrollableWidgetContent, TabIdContext, TabState, WidgetContentManagerContext } from "../../ui-ninezone";
 
 describe("ScrollableWidgetContent", () => {
   it("should save and restore scroll position", () => {
