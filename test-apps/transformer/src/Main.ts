@@ -5,16 +5,29 @@
 
 import { EOL } from "os";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BackendLoggerCategory, IModelHost } from "@bentley/imodeljs-backend";
+import { GetMetaDataFunction, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BackendLoggerCategory, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { CloneIModel } from "./Clone";
-import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
 import { CloneRepositoryModel } from "./CloneRepositoryModel";
+import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
   // initialize logging
-  Logger.initializeToConsole();
+  if (true) {
+    Logger.initializeToConsole();
+  } else {
+    const logFileName = path.join(__dirname, "transformer-log.txt");
+    if (IModelJsFs.existsSync(logFileName)) {
+      IModelJsFs.removeSync(logFileName);
+    }
+    Logger.initialize(
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Error   |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Warning |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Info    |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Trace   |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
+    );
+  }
   Logger.setLevelDefault(LogLevel.Error);
   Logger.setLevel("Progress", LogLevel.Info);
   Logger.setLevel("Memory", LogLevel.Info);
@@ -37,9 +50,12 @@ import { CloneRepositoryModel } from "./CloneRepositoryModel";
     process.stdout.write(`CloneIModel ${sourceFileName} --> ${targetFileName}${EOL}`);
     await CloneIModel.clone(sourceFileName, targetFileName);
   } else if (true) {
-    // const sourceFileName = "D:/data/bim/snapshots/shell-full-1015.bim";
-    const sourceFileName = "D:/data/bim/snapshots/shell4.bim";
-    const targetFileName = path.join(__dirname, "shell-filtered.bim");
+    const sourceDirectoryName = "D:/data/bim/snapshots";
+    const sourceBaseName = "shell4";
+    // const sourceBaseName = "shell-full-1015";
+    // const sourceBaseName = "shell-full-1018";
+    const sourceFileName = path.join(sourceDirectoryName, `${sourceBaseName}.bim`);
+    const targetFileName = path.join(__dirname, `${sourceBaseName}-optimized.bim`);
     await PhysicalModelCombiner.combine(sourceFileName, targetFileName);
   } else {
     const sourceFileName = "D:/data/bim/snapshots/467d20b7-cf9b-4407-9052-237790253db7.bim";
