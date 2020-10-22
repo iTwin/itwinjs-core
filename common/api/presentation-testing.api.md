@@ -5,6 +5,7 @@
 ```ts
 
 import { Content } from '@bentley/presentation-common';
+import { HierarchyCacheMode } from '@bentley/presentation-backend';
 import { IModelApp } from '@bentley/imodeljs-frontend';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
@@ -12,8 +13,9 @@ import { InstanceKey } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { Omit } from '@bentley/presentation-common';
 import { PageOptions } from '@bentley/presentation-common';
-import { PresentationManagerProps } from '@bentley/presentation-backend';
-import { PresentationManagerProps as PresentationManagerProps_2 } from '@bentley/presentation-frontend';
+import { PresentationManagerProps as PresentationBackendProps } from '@bentley/presentation-backend';
+import { PresentationManagerMode } from '@bentley/presentation-backend';
+import { PresentationManagerProps } from '@bentley/presentation-frontend';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { Ruleset } from '@bentley/presentation-common';
 import { TreeNodeItem } from '@bentley/ui-components';
@@ -50,6 +52,8 @@ export interface HierarchyBuilderProps {
     nodeMappingFunc?: NodeMappingFunc;
 }
 
+export { HierarchyCacheMode }
+
 // @public
 export interface HierarchyNode extends Omit<MappedNode, "children"> {
     children?: HierarchyNode[];
@@ -74,14 +78,18 @@ export interface MappedNode {
 // @public
 export type NodeMappingFunc = (node: TreeNodeItem) => MappedNode;
 
+export { PresentationBackendProps }
+
+export { PresentationManagerMode }
+
 // @public (undocumented)
 export interface PresentationTestingInitProps {
-    backendProps?: PresentationManagerProps;
+    backendProps?: PresentationBackendProps;
     frontendApp?: {
         startup: (opts?: IModelAppOptions) => Promise<void>;
     };
     frontendAppOptions?: IModelAppOptions;
-    frontendProps?: PresentationManagerProps_2;
+    frontendProps?: PresentationManagerProps;
 }
 
 // @public

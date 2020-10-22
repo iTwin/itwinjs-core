@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import * as React from "react";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
+import { HierarchyBuilder, HierarchyCacheMode, initialize, terminate } from "@bentley/presentation-testing";
 import { render } from "@testing-library/react";
 import { ConfigurableUiControlType, ModelSelectorWidget, ModelSelectorWidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
 import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions";
@@ -24,7 +23,7 @@ describe("ModelSelector", () => {
     await TestUtils.initializeUiFramework();
     await initialize({
       backendProps: {
-        cacheDirectory: path.join("lib", "test", "cache"),
+        cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join("lib", "test", "cache") },
       },
     });
     imodel = await SnapshotConnection.openFile(testIModelPath);
