@@ -162,7 +162,7 @@ export class RealityTileTree extends TileTree {
       let targetBranch;
       if (undefined !== tileGraphicType && tileGraphicType !== args.context.graphicType) {
         if (!(targetBranch = graphicTypeBranches.get(tileGraphicType))) {
-          graphicTypeBranches.set(tileGraphicType, targetBranch = new GraphicBranch());
+          graphicTypeBranches.set(tileGraphicType, targetBranch = new GraphicBranch(false));
           targetBranch.setViewFlagOverrides(args.graphics.viewFlagOverrides);
           targetBranch.symbologyOverrides = args.graphics.symbologyOverrides;
         }
@@ -195,7 +195,7 @@ export class RealityTileTree extends TileTree {
                     for (const plane of clipPlanes.planes)
                       plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
-              const branch = new GraphicBranch();
+              const branch = new GraphicBranch(false);
               const doClipOverride = new ViewFlagOverrides();
               doClipOverride.setShowClipVolume(true);
               branch.add(graphics);

@@ -88,7 +88,7 @@ export abstract class RealityTileLoader {
       case TileFormat.Cmpt:
         const header = new CompositeTileHeader(streamBuffer);
         if (!header.isValid) return {};
-        const branch = new GraphicBranch();
+        const branch = new GraphicBranch(true);
         for (let i = 0; i < header.tileCount; i++) {
           const tilePosition = streamBuffer.curPos;
           streamBuffer.advance(8);    // Skip magic and version.

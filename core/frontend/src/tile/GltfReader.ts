@@ -195,7 +195,7 @@ export abstract class GltfReader {
     renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
     let transform;
     if (undefined !== this._returnToCenter || undefined !== pseudoRtcBias || this._yAxisUp || undefined !== transformToRoot) {
-      const branch = new GraphicBranch();
+      const branch = new GraphicBranch(true);
       branch.add(renderGraphic);
       if (undefined !== this._returnToCenter)
         transform = Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
@@ -267,7 +267,7 @@ export abstract class GltfReader {
           }
           if (renderGraphic) {
             if (thisTransform && !thisTransform.isIdentity) {
-              const branch = new GraphicBranch();
+              const branch = new GraphicBranch(true);
               branch.add(renderGraphic);
               renderGraphic = this._system.createBranch(branch, thisTransform);
             }
