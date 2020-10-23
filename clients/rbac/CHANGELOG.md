@@ -1,6 +1,11 @@
 # Change Log - @bentley/rbac-client
 
-This log was last generated on Mon, 19 Oct 2020 17:57:02 GMT and should not be manually modified.
+This log was last generated on Fri, 23 Oct 2020 16:23:50 GMT and should not be manually modified.
+
+## 2.7.5
+Fri, 23 Oct 2020 16:23:50 GMT
+
+_Version update only_
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:02 GMT
