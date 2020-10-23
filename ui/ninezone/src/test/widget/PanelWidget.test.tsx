@@ -1,15 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, addTab, createNineZoneState, NineZoneState, PanelSide, PanelStateContext, PanelWidget, WidgetContentManagerContext } from "../../ui-ninezone";
+import {
+  addPanelWidget, addTab, createNineZoneState, NineZoneState, PanelSide, PanelStateContext, PanelWidget,
+  WidgetContentManagerContext, WidgetContentManagerContextArgs,
+} from "../../ui-ninezone";
 import { ContextConsumer, NineZoneProvider } from "../Providers";
 import { createDOMRect } from "../Utils";
-import { WidgetContentManagerContextArgs } from "../../ui-ninezone/widget/ContentManager";
 
 describe("PanelWidget", () => {
   interface ProviderProps {
@@ -30,12 +32,6 @@ describe("PanelWidget", () => {
       </NineZoneProvider>
     );
   }
-
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
 
   it("should render", () => {
     let nineZone = createNineZoneState();
@@ -120,7 +116,7 @@ describe("PanelWidget", () => {
     nineZone = addTab(nineZone, "t1");
     nineZone = addTab(nineZone, "t2");
 
-    const getBoundingClientRectStub = sandbox.stub(Element.prototype, "getBoundingClientRect");
+    const getBoundingClientRectStub = sinon.stub(Element.prototype, "getBoundingClientRect");
     getBoundingClientRectStub.returns(createDOMRect({ width: 200 }));
 
     const { container, rerender } = render(
@@ -165,7 +161,7 @@ describe("PanelWidget", () => {
     nineZone = addTab(nineZone, "t1");
     nineZone = addTab(nineZone, "t2");
 
-    const getBoundingClientRectStub = sandbox.stub(Element.prototype, "getBoundingClientRect");
+    const getBoundingClientRectStub = sinon.stub(Element.prototype, "getBoundingClientRect");
     getBoundingClientRectStub.returns(createDOMRect({ height: 200 }));
 
     const { container, rerender } = render(
@@ -208,7 +204,7 @@ describe("PanelWidget", () => {
     nineZone = addTab(nineZone, "t1");
     nineZone = addTab(nineZone, "t2");
 
-    const getBoundingClientRectStub = sandbox.stub(Element.prototype, "getBoundingClientRect");
+    const getBoundingClientRectStub = sinon.stub(Element.prototype, "getBoundingClientRect");
     getBoundingClientRectStub.returns(createDOMRect({ height: 200 }));
 
     const { container, rerender } = render(
@@ -243,7 +239,7 @@ describe("PanelWidget", () => {
     nineZone = addTab(nineZone, "t1_2", { preferredPanelWidgetSize: "fit-content" });
     nineZone = addTab(nineZone, "t2_1");
 
-    const getBoundingClientRectStub = sandbox.stub(Element.prototype, "getBoundingClientRect");
+    const getBoundingClientRectStub = sinon.stub(Element.prototype, "getBoundingClientRect");
     getBoundingClientRectStub.returns(createDOMRect({ height: 200 }));
 
     const contentManagerRef = React.createRef<WidgetContentManagerContextArgs>();

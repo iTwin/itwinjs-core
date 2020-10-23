@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
@@ -11,11 +11,10 @@ import { BadgeType, WidgetState } from "@bentley/ui-abstract";
 import { HorizontalAnchor, Tab as NZ_Tab, Stacked as NZ_WidgetStack, ResizeHandle, TabMode, VerticalAnchor } from "@bentley/ui-ninezone";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
-  FrontstageProps, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabs,
-  Zone, ZoneState,
+  FrontstageProps, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabGroupProps,
+  WidgetStackTabs, Zone, ZoneState,
 } from "../../ui-framework";
-import { WidgetStackTabGroupProps } from "../../ui-framework/widgets/WidgetStack";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 const defaultWidgetTabs = {
   [1]: [],
@@ -29,8 +28,6 @@ const defaultWidgetTabs = {
 };
 
 describe("WidgetStack", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     await TestUtils.initializeUiFramework();
 
@@ -122,10 +119,6 @@ describe("WidgetStack", () => {
     widgetChangeHandler.reset();
   });
 
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should produce a WidgetStack with 2 widgets", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
     const wrapper = mount(<FrontstageComposer />);
@@ -140,8 +133,6 @@ describe("WidgetStack", () => {
 
     const tabs = wrapper.find("div.nz-draggable");
     expect(tabs.length).to.eq(2);
-
-    wrapper.unmount();
   });
 
   it("should not render w/o tabs", () => {
@@ -242,7 +233,7 @@ describe("WidgetStack", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const sut = mount(<WidgetStack
       {...props}
@@ -316,7 +307,6 @@ describe("WidgetStackTabs", () => {
 describe("WidgetStackTabGroup", () => {
   const onTabClick = moq.Mock.ofType<WidgetStackTabGroupProps["onTabClick"]>();
   const onTabDragStart = moq.Mock.ofType<WidgetStackTabGroupProps["onTabDragStart"]>();
-  const sandbox = sinon.createSandbox();
 
   const props = {
     activeTabIndex: 0,
@@ -337,10 +327,6 @@ describe("WidgetStackTabGroup", () => {
   beforeEach(() => {
     onTabClick.reset();
     onTabDragStart.reset();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
   });
 
   it("should render with draggedWidget", () => {
@@ -429,7 +415,7 @@ describe("WidgetStackTabGroup", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const sut = mount<WidgetStackTabGroup>(<WidgetStackTabGroup
       {...props}
@@ -449,7 +435,7 @@ describe("WidgetStackTabGroup", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const sut = mount<WidgetStackTabGroup>(<WidgetStackTabGroup
       {...props}

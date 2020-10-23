@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import { ElementTooltip } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ElementTooltip", () => {
 
@@ -20,7 +19,7 @@ describe("ElementTooltip", () => {
 
   it("showTooltip & hideTooltip set isTooltipVisible appropriately", () => {
     const divElement = document.createElement("div");
-    const wrapper = mount(<ElementTooltip />);
+    mount(<ElementTooltip />);
 
     ElementTooltip.showTooltip(divElement, "Tooltip message", { x: 10, y: 10 });
     ElementTooltip.showTooltip(divElement, "Tooltip message 2", { x: 20, y: 20 });
@@ -28,8 +27,6 @@ describe("ElementTooltip", () => {
 
     ElementTooltip.hideTooltip();
     expect(ElementTooltip.isTooltipVisible).to.be.false;
-
-    wrapper.unmount();
   });
 
   it("showTooltip should support HTMLElement", () => {
@@ -45,8 +42,6 @@ describe("ElementTooltip", () => {
 
     wrapper.update();
     expect(wrapper.html().indexOf("<p>HTMLElement message</p>")).to.not.eq(0);
-
-    wrapper.unmount();
   });
 
 });

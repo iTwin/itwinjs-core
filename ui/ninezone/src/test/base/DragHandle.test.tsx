@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { DragHandle, DragHandleProps } from "../../ui-ninezone/base/DragHandle";
-import { PointerCaptor } from "../../ui-ninezone/base/PointerCaptor";
-import { createPointerEvent } from "../Utils";
+import { DragHandle, DragHandleProps, PointerCaptor } from "../../ui-ninezone";
+import { createPointerEvent, mount } from "../Utils";
 
 describe("<DragHandle />", () => {
   it("should render", () => {

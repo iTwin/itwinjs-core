@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
+import { mount } from "../TestUtils";
 
 describe("MenuButton", () => {
   it("should render", () => {
@@ -31,8 +32,6 @@ describe("MenuButton", () => {
     button = wrapper.find("button.uifw-square-button");
     button.simulate("click");
     expect(menuButton.state("expanded")).to.be.false;
-
-    wrapper.unmount();
   });
 
 });

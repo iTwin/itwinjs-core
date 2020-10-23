@@ -141,6 +141,5 @@ describe("ToolUiManager", () => {
 
     IModelApp.toolAdmin.dispatchImmediateUiSyncEvent("test2");
     immediateStub.calledOnce.should.be.true;
-    sinon.restore();
   });
 });

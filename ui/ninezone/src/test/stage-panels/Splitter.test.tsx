@@ -2,19 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Splitter } from "../../ui-ninezone";
-import { createBoundingClientRect } from "../Utils";
+import { createBoundingClientRect, mount } from "../Utils";
 
 describe("<Splitter />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<Splitter />);
   });
@@ -38,7 +32,7 @@ describe("<Splitter />", () => {
   });
 
   it("should add document event listeners", () => {
-    const addEventListenerSpy = sandbox.spy(document, "addEventListener");
+    const addEventListenerSpy = sinon.spy(document, "addEventListener");
 
     mount(<Splitter />);
     addEventListenerSpy.calledWith("pointerup").should.true;
@@ -47,7 +41,7 @@ describe("<Splitter />", () => {
   });
 
   it("should remove event listeners", () => {
-    const removeEventListenerSpy = sandbox.spy(document, "removeEventListener");
+    const removeEventListenerSpy = sinon.spy(document, "removeEventListener");
     const sut = mount(<Splitter />);
     sut.unmount();
 
@@ -86,7 +80,7 @@ describe("<Splitter />", () => {
     };
     sinon.stub(gripRef, "current").set(() => { });
 
-    const createRefStub = sandbox.stub(React, "createRef");
+    const createRefStub = sinon.stub(React, "createRef");
     createRefStub.onSecondCall().returns(gripRef);
     createRefStub.returns({ current: null });
     const sut = mount<Splitter>(
@@ -175,7 +169,7 @@ describe("<Splitter />", () => {
     const gripRef = {
       current: null,
     };
-    const createRefStub = sandbox.stub(React, "createRef");
+    const createRefStub = sinon.stub(React, "createRef");
     createRefStub.onSecondCall().returns(gripRef);
     createRefStub.returns({ current: null });
     const sut = mount<Splitter>(
@@ -197,7 +191,7 @@ describe("<Splitter />", () => {
 
     grip.simulate("pointerDown");
 
-    sinon.stub(gripRef, "current").get(() => null);
+    sinon.stub(gripRef, "current").get(() => null).set(() => { });
 
     const pointerMove = document.createEvent("MouseEvent");
     pointerMove.initEvent("pointermove");

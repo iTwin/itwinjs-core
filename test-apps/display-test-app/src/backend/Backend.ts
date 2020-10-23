@@ -8,7 +8,7 @@ import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
@@ -238,8 +238,10 @@ export const initializeDtaBackend = async () => {
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
-
-  await IModelHost.startup(hostConfig);
+  if (MobileRpcConfiguration.isMobileBackend)
+    await NativeAppBackend.startup(hostConfig);
+  else
+    await IModelHost.startup(hostConfig);
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();

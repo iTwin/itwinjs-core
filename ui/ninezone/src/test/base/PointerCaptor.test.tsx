@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, renderHook } from "@testing-library/react-hooks";
+import { act, fireEvent } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
 import { PointerCaptor, usePointerCaptor } from "../../ui-ninezone";
-import { fireEvent } from "@testing-library/react";
 import { DragManagerProvider } from "../Providers";
-
-/* eslint-disable @typescript-eslint/no-floating-promises */
+import { mount } from "../Utils";
 
 describe("<PointerCaptor />", () => {
   it("should render", () => {
@@ -25,9 +24,15 @@ describe("<PointerCaptor />", () => {
     shallow(<PointerCaptor isPointerDown />).should.matchSnapshot();
   });
 
-  it("should unmount", () => {
+  it("should remove event listeners", () => {
+    const removeEventListenerSpy = sinon.spy(document, "removeEventListener");
+
     const sut = mount(<PointerCaptor isPointerDown={false} />);
     sut.unmount();
+
+    sinon.assert.calledTwice(removeEventListenerSpy);
+    sinon.assert.calledWithExactly(removeEventListenerSpy.firstCall, "pointerup", sinon.match.any);
+    sinon.assert.calledWithExactly(removeEventListenerSpy.secondCall, "pointermove", sinon.match.any);
   });
 
   it("should call pointer down prop", () => {
@@ -64,12 +69,6 @@ describe("<PointerCaptor />", () => {
 
 describe("usePointerCaptor", () => {
   const wrapper = DragManagerProvider;
-
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
 
   it("should call onPointerDown", () => {
     const spy = sinon.stub<NonNullable<Parameters<typeof usePointerCaptor>[0]>>();
@@ -202,7 +201,7 @@ describe("usePointerCaptor", () => {
       result.current(element);
     });
 
-    const spy = sandbox.spy(HTMLElement.prototype, "addEventListener");
+    const spy = sinon.spy(HTMLElement.prototype, "addEventListener");
     act(() => {
       const touchStart = document.createEvent("TouchEvent");
       touchStart.initEvent("touchstart");
@@ -225,7 +224,7 @@ describe("usePointerCaptor", () => {
       });
     });
 
-    const spy = sandbox.spy(HTMLElement.prototype, "removeEventListener");
+    const spy = sinon.spy(HTMLElement.prototype, "removeEventListener");
     act(() => {
       const touchEnd = document.createEvent("TouchEvent");
       touchEnd.initEvent("touchend");

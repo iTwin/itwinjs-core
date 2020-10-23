@@ -5,16 +5,16 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent, BeUiEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitForElement } from "@testing-library/react";
 import { CategoryTreeWithSearchBox } from "../../../ui-framework/imodel-components/category-tree/CategoriesTreeWithSearchBox";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 import TestUtils from "../../TestUtils";
@@ -23,16 +23,18 @@ describe("CategoryTreeWithSearchBox", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
     Presentation.terminate();
-    sinon.restore();
+  });
+
+  beforeEach(() => {
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -44,8 +46,6 @@ describe("CategoryTreeWithSearchBox", () => {
   const subcategoriesCacheMock = moq.Mock.ofType<SubCategoriesCache>();
 
   beforeEach(() => {
-    cleanup();
-
     viewManagerMock.reset();
     imodelMock.reset();
     selectionManagerMock.reset();
@@ -104,10 +104,6 @@ describe("CategoryTreeWithSearchBox", () => {
       };
 
       visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: true, isDisabled: false }));
-    });
-
-    afterEach(() => {
-      enableCategoryStub.restore();
     });
 
     const setupDataProvider = (nodes: TreeNodeItem[]) => {

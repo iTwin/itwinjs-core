@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BackstageItemsManager, isActionItem, isStageLauncher } from "@bentley/ui-abstract";
 import { useDefaultBackstageItems } from "../../ui-framework";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
+import { mount } from "../TestUtils";
 
 describe("isActionItem", () => {
   it("should return true for ActionItem", () => {
@@ -182,11 +183,10 @@ describe("useDefaultBackstageItems", () => {
     manager.items = [
       getActionItem(),
     ];
-    const sut = mount(<TestHook
+    const wrapper = mount(<TestHook
       onRender={() => useDefaultBackstageItems(manager)}
     />);
-    sut.unmount();
-
+    wrapper.unmount();
     spy.calledOnce.should.true;
   });
 
@@ -213,7 +213,6 @@ describe("useDefaultBackstageItems", () => {
       ];
       sut.setProps({ mrg: manager2 });
       sut.update();
-      sut.unmount();
     });
   });
 });

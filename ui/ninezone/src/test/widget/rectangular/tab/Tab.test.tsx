@@ -2,23 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { PointProps } from "@bentley/ui-core";
-import { HorizontalAnchor, Tab, TabMode, TabModeHelpers } from "../../../../ui-ninezone";
-import { DragHandle } from "../../../../ui-ninezone/base/DragHandle";
-import { PointerCaptor } from "../../../../ui-ninezone/base/PointerCaptor";
-import { VerticalAnchor } from "../../../../ui-ninezone/widget/Stacked";
-import { createBoundingClientRect, createPointerEvent } from "../../../Utils";
+import { DragHandle, HorizontalAnchor, PointerCaptor, Tab, TabMode, TabModeHelpers, VerticalAnchor } from "../../../../ui-ninezone";
+import { createBoundingClientRect, createPointerEvent, mount } from "../../../Utils";
 
 describe("<Tab />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<Tab
       horizontalAnchor={HorizontalAnchor.Left}
@@ -88,7 +79,7 @@ describe("<Tab />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
     const sut = mount<Tab>(<Tab
       horizontalAnchor={HorizontalAnchor.Left}
       mode={TabMode.Open}
@@ -231,7 +222,7 @@ describe("<Tab />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<Tab

@@ -8,14 +8,8 @@ import * as sinon from "sinon";
 import { FrontstageDef, FrontstageManager, WidgetDef, WidgetPanelsToolbars, ZoneDef } from "../../ui-framework";
 
 describe("WidgetPanelsToolbars", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should not render", () => {
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
     const sut = shallow(<WidgetPanelsToolbars />);
     sut.should.matchSnapshot();
   });
@@ -26,13 +20,13 @@ describe("WidgetPanelsToolbars", () => {
     const topRight = new ZoneDef();
     const topLeftWidget = new WidgetDef({});
     const topRightWidget = new WidgetDef({});
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
-    sandbox.stub(frontstageDef, "topLeft").get(() => topLeft);
-    sandbox.stub(frontstageDef, "topRight").get(() => topRight);
-    sandbox.stub(topLeft, "getSingleWidgetDef").returns(topLeftWidget);
-    sandbox.stub(topRight, "getSingleWidgetDef").returns(topRightWidget);
-    sandbox.stub(topLeftWidget, "reactNode").get(() => <>tools</>);
-    sandbox.stub(topRightWidget, "reactNode").get(() => <>navigation</>);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(frontstageDef, "topLeft").get(() => topLeft);
+    sinon.stub(frontstageDef, "topRight").get(() => topRight);
+    sinon.stub(topLeft, "getSingleWidgetDef").returns(topLeftWidget);
+    sinon.stub(topRight, "getSingleWidgetDef").returns(topRightWidget);
+    sinon.stub(topLeftWidget, "reactNode").get(() => <>tools</>);
+    sinon.stub(topRightWidget, "reactNode").get(() => <>navigation</>);
     const sut = shallow(<WidgetPanelsToolbars />);
     sut.should.matchSnapshot();
   });

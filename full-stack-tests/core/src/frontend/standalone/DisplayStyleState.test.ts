@@ -132,6 +132,7 @@ describe("DisplayStyle", () => {
           expect(a.name).to.equal(e.name);
           expect(a.url).to.equal(e.tilesetUrl);
           expect(a.orbitGtBlob).to.equal(e.orbitGtBlob);
+          expect(a.realityDataId).to.equal(e.realityDataId);
           expect(a.description).to.equal(e.description);
           expect(a.treeRef).not.to.be.undefined;
 

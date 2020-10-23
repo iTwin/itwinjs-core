@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
@@ -11,12 +10,12 @@ import {
   AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, StageUsage, StatusBarLabelSide, StatusBarSection, UiItemsManager,
   UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
   StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, WidgetState, withMessageCenterFieldProps, withStatusFieldProps,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 import { createDOMRect } from "../Utils";
 
 describe("StatusBarComposer", () => {
@@ -100,8 +99,6 @@ describe("StatusBarComposer", () => {
       const statusBarComposer = wrapper.find(StatusBarComposer);
       expect(statusBarComposer.length).to.eq(1);
       expect(wrapper.find("div.uifw-statusbar-space-between").length).to.eq(1);
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should render items", () => {
@@ -126,8 +123,6 @@ describe("StatusBarComposer", () => {
       const rightItems = wrapper.find("div.uifw-statusbar-right");
       expect(rightItems.length).to.eq(1);
       expect(rightItems.find(AppStatusBarComponent).length).to.eq(1);
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should support changing props", () => {
@@ -155,8 +150,6 @@ describe("StatusBarComposer", () => {
       const centerItems = wrapper.find("div.uifw-statusbar-center");
       expect(centerItems.length).to.eq(1);
       expect(centerItems.find(AppStatusBarComponent).length).to.eq(1);
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should sort items", () => {
@@ -173,8 +166,6 @@ describe("StatusBarComposer", () => {
       const leftItems = wrapper.find("div.uifw-statusbar-left");
       expect(leftItems.length).to.eq(1);
       expect(leftItems.find(AppStatusBarComponent).length).to.eq(3);
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should support withStatusBarField components ", () => {
@@ -191,8 +182,6 @@ describe("StatusBarComposer", () => {
       const leftItems = wrapper.find("div.uifw-statusbar-left");
       expect(leftItems.length).to.eq(1);
       expect(leftItems.find(ActivityCenterField).length).to.eq(1);
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should support withMessageCenter components ", () => {
@@ -210,8 +199,6 @@ describe("StatusBarComposer", () => {
       const leftItems = wrapper.find("div.uifw-statusbar-left");
       expect(leftItems.length).to.eq(1);
       expect(leftItems.find(MessageCenterField).length).to.eq(1);
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should support item.isVisible", () => {
@@ -231,8 +218,6 @@ describe("StatusBarComposer", () => {
       // wrapper.update();
       leftItems = wrapper.find("div.uifw-statusbar-left");
       // expect(leftItems.find(AppStatusBarComponent).length).to.eq(2);
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should support extension items", async () => {
@@ -257,9 +242,6 @@ describe("StatusBarComposer", () => {
       const leftItems = wrapper.find("div.uifw-statusbar-left");
       expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
 
-      // eslint-disable-next-line no-console
-      // console.log(wrapper.debug());
-
       const addonItem1 = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem1.exists()).to.be.true;
       const addonItem2 = wrapper.find("i.icon-hand-2");
@@ -271,8 +253,6 @@ describe("StatusBarComposer", () => {
 
       addonItem = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem.exists()).to.be.false;
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should support addon items loaded before component", async () => {
@@ -288,9 +268,6 @@ describe("StatusBarComposer", () => {
 
       const leftItems = wrapper.find("div.uifw-statusbar-left");
       expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
-
-      // eslint-disable-next-line no-console
-      // console.log(wrapper.debug());
 
       let addonItem1 = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem1.exists()).to.be.true;
@@ -317,8 +294,6 @@ describe("StatusBarComposer", () => {
 
       addonItem1 = wrapper.find("i.icon-visibility-hide-2");
       expect(addonItem1.exists()).to.be.false;
-
-      wrapper.unmount();
     });
 
     it("StatusBarComposer should render items with custom CSS classes", () => {
@@ -346,15 +321,11 @@ describe("StatusBarComposer", () => {
       const rightItems = wrapper.find("div.right-test");
       expect(rightItems.length).to.eq(1);
       expect(rightItems.find(AppStatusBarComponent).length).to.eq(1);
-
-      wrapper.unmount();
     });
 
   });
 
   describe("StatusBarComposer React-Testing", () => {
-    const sandbox = sinon.createSandbox();
-
     before(async () => {
       await TestUtils.initializeUiFramework();
       await NoRenderApp.startup();
@@ -373,14 +344,9 @@ describe("StatusBarComposer", () => {
       await IModelApp.shutdown();
     });
 
-    afterEach(() => {
-      sandbox.restore();
-      afterEach(cleanup);
-    });
-
     it("will render 4 items without overflow", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+      sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
           return createDOMRect({ width: 168 }); // 4*42
         } else if (this.classList.contains("uifw-statusbar-item-container")) {
@@ -402,7 +368,6 @@ describe("StatusBarComposer", () => {
       const renderedComponent = render(<StatusBarComposer items={items} mainClassName="main-test" leftClassName="left-test" centerClassName="center-test" rightClassName="right-test" />);
 
       expect(renderedComponent).not.to.be.undefined;
-      // renderedComponent.debug();
       expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(4);
 
       const newItems: StatusBarItem[] = [
@@ -417,7 +382,7 @@ describe("StatusBarComposer", () => {
 
     it("will render 1 item with overflow - 4 in overflow panel", async () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+      sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
           return createDOMRect({ width: 84 }); // 2*42
         } else if (this.classList.contains("uifw-statusbar-item-container")) {
@@ -439,18 +404,15 @@ describe("StatusBarComposer", () => {
 
       const renderedComponent = render(<StatusBarComposer items={items} mainClassName="main-test" leftClassName="left-test" centerClassName="center-test" rightClassName="right-test" />);
       expect(renderedComponent).not.to.be.undefined;
-      // renderedComponent.debug();
       expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(1);
       const overflow = renderedComponent.container.querySelector(".uifw-statusbar-overflow") as HTMLDivElement;
       expect(overflow).not.to.be.null;
       fireEvent.click(overflow);
       await TestUtils.flushAsyncOperations();
-      // renderedComponent.debug();
       const containerInPortal = renderedComponent.getByTestId("uifw-statusbar-overflow-items-container");
       expect(containerInPortal.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(4);
       fireEvent.click(overflow);
       await TestUtils.flushAsyncOperations();
-      // renderedComponent.debug();
       expect(renderedComponent.container.querySelectorAll(".uifw-statusbar-item-container")).lengthOf(1);
     });
   });

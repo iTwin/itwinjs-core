@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
 import { IModelApp, MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { ClearEmphasisStatusField } from "../../ui-framework/selection/ClearEmphasisStatusField";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "../../ui-framework/selection/HideIsolateEmphasizeManager";
 import { StatusBarFieldId } from "../../ui-framework/statusbar/StatusBarWidgetControl";
@@ -29,8 +29,6 @@ describe("ClearEmphasisStatusField", () => {
     HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = functionToRestore;
   });
 
-  afterEach(cleanup);
-
   it("ClearEmphasisStatusField renders visible", () => {
     HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesActive;
 
@@ -39,7 +37,6 @@ describe("ClearEmphasisStatusField", () => {
     expect(component).not.to.be.undefined;
     // Having trouble with useActiveViewport hook with viewport mocks
     // expect(component.container.querySelector("div.uifw-indicator-fade-in")).not.to.be.null;
-    // component.debug();
 
     HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesNotActive;
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent();
@@ -53,7 +50,6 @@ describe("ClearEmphasisStatusField", () => {
     const component = render(<ClearEmphasisStatusField isInFooterMode={false} hideWhenUnused={true} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);
     expect(component).not.to.be.undefined;
     expect(component.container.querySelector("div.uifw-indicator-fade-out")).not.to.be.null;
-    // component.debug();
   });
 
   it("ClearEmphasisStatusField renders always", () => {
@@ -63,7 +59,6 @@ describe("ClearEmphasisStatusField", () => {
     const component = render(<ClearEmphasisStatusField isInFooterMode={false} hideWhenUnused={false} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);
     expect(component).not.to.be.undefined;
     expect(component.container.querySelector("div.uifw-indicator-fade-in")).not.to.be.null;
-    // component.debug();
   });
 
 });

@@ -46,6 +46,8 @@ export interface ElectronRpcParams {
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
   public static readonly isElectron = isElectronMain || isElectronRenderer;
 
+  public static targetWindowId?: number;
+
   /** The protocol of the configuration. */
   public abstract protocol: ElectronRpcProtocol;
 }

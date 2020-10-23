@@ -73,6 +73,8 @@ export interface ContextRealityModelProps {
   tilesetUrl: string;
   /** @alpha */
   orbitGtBlob?: OrbitGtBlobProps;
+  /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
+  realityDataId?: string;
   name?: string;
   description?: string;
   /** @beta */

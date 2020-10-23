@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { ToolbarWithOverflow } from "@bentley/ui-components";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { ActionItemButton, CoreTools, ToolWidget, ToolWidgetComposer } from "../ui-framework";
 import { ToolbarHelper } from "../ui-framework/toolbar/ToolbarHelper";
-import TestUtils from "./TestUtils";
+import TestUtils, { mount } from "./TestUtils";
 
 describe("CoreToolDefinitions", () => {
 
@@ -65,12 +65,11 @@ describe("CoreToolDefinitions", () => {
   });
 
   it("ToolWidget should render with Core Tool Definitions", () => {
-    const wrapper = mount(
+    mount(
       <ToolWidget // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbar}
       />,
     );
-    wrapper.unmount();
   });
 
   it("ToolWidget should render correctly with Core Tool Definitions", () => {
@@ -83,12 +82,11 @@ describe("CoreToolDefinitions", () => {
   });
 
   it("ToolWidgetComposer should render with Core Tool Definitions", () => {
-    const wrapper = mount(
+    mount(
       <ToolWidgetComposer // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbarWithOverflow}
       />,
     );
-    wrapper.unmount();
   });
 
   it("ToolWidgetComposer should render correctly with Core Tool Definitions", () => {

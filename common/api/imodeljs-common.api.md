@@ -1402,6 +1402,7 @@ export interface ContextRealityModelProps {
     name?: string;
     // @alpha (undocumented)
     orbitGtBlob?: OrbitGtBlobProps;
+    realityDataId?: string;
     // (undocumented)
     tilesetUrl: string;
 }
@@ -1944,6 +1945,8 @@ export abstract class ElectronRpcConfiguration extends RpcConfiguration {
     // (undocumented)
     static readonly isElectron: boolean;
     abstract protocol: ElectronRpcProtocol;
+    // (undocumented)
+    static targetWindowId?: number;
 }
 
 // @beta
@@ -4100,10 +4103,17 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
     static get platform(): RpcMobilePlatform;
     // (undocumented)
     abstract protocol: MobileRpcProtocol;
+    // @internal (undocumented)
+    static setup: {
+        obtainPort: () => number;
+        checkPlatform: () => boolean;
+    };
 }
 
 // @beta (undocumented)
 export interface MobileRpcGateway {
+    // (undocumented)
+    connectionId: number;
     // (undocumented)
     handler: (payload: ArrayBuffer | string, connectionId: number) => void;
     // (undocumented)
@@ -4118,13 +4128,17 @@ export interface MobileRpcGateway {
 export class MobileRpcManager {
     static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
     static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
-    }
+    // @internal (undocumented)
+    static ready(): Promise<void>;
+}
 
 // @beta
 export class MobileRpcProtocol extends RpcProtocol {
     constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
     // (undocumented)
     static encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks>;
+    // (undocumented)
+    static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks;
     // (undocumented)
     static obtainInterop(): MobileRpcGateway;
     // (undocumented)
@@ -4133,6 +4147,8 @@ export class MobileRpcProtocol extends RpcProtocol {
     readonly requestType: typeof MobileRpcRequest;
     // (undocumented)
     sendToBackend(message: MobileRpcChunks): void;
+    // (undocumented)
+    sendToFrontend(message: MobileRpcChunks, connection?: number): void;
     // (undocumented)
     socket: WebSocket;
     }
@@ -5772,6 +5788,67 @@ export enum RpcProtocolEvent {
 
 // @public
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void;
+
+// @alpha
+export class RpcPushChannel<T> {
+    constructor(name: string, service?: RpcPushService);
+    // @internal
+    static delete(name: string, service?: RpcPushService): void;
+    // @internal (undocumented)
+    static enabled: boolean;
+    // (undocumented)
+    get enabled(): boolean;
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly service: RpcPushService;
+    // (undocumented)
+    static setup(transport: RpcPushTransport): void;
+    // (undocumented)
+    subscribe(): RpcPushSubscription<T>;
+    }
+
+// @alpha
+export abstract class RpcPushConnection<T> {
+    protected constructor(channel: RpcPushChannel<T>, client: unknown);
+    // (undocumented)
+    readonly channel: RpcPushChannel<T>;
+    // (undocumented)
+    readonly client: unknown;
+    // (undocumented)
+    static for<T>(_channel: RpcPushChannel<T>, _client?: unknown): RpcPushConnection<T>;
+    // (undocumented)
+    abstract send(messageData: T): Promise<void>;
+}
+
+// @alpha (undocumented)
+export type RpcPushMessageListener<T> = (message: T) => void;
+
+// @alpha
+export class RpcPushService {
+    constructor(name: string);
+    static dedicated: RpcPushService;
+    // (undocumented)
+    readonly name: string;
+}
+
+// @alpha
+export class RpcPushSubscription<T> {
+    // @internal
+    constructor(channel: RpcPushChannel<T>);
+    // (undocumented)
+    readonly channel: RpcPushChannel<T>;
+    // (undocumented)
+    readonly onMessage: BeEvent<RpcPushMessageListener<T>>;
+}
+
+// @alpha
+export abstract class RpcPushTransport {
+    // (undocumented)
+    onMessage?: (channelId: string, messageData: any) => void;
+}
 
 // @internal (undocumented)
 export class RpcRegistry {

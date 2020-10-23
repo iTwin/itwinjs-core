@@ -1,24 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext, PanelTarget } from "../../ui-ninezone";
-import { createDragItemInfo, createDragStartArgs, NineZoneProvider } from "../Providers";
-import { addPanelWidget, addTab } from "../../ui-ninezone/base/NineZoneState";
 import { renderHook } from "@testing-library/react-hooks";
-import { useAllowedPanelTarget } from "../../ui-ninezone/widget-panels/PanelTarget";
+import {
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
+  PanelTarget, useAllowedPanelTarget,
+} from "../../ui-ninezone";
+import { createDragItemInfo, createDragStartArgs, NineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render targeted", () => {
     const dragManager = React.createRef<DragManager>();
     const nineZone = createNineZoneState();
@@ -33,7 +28,7 @@ describe("PanelTarget", () => {
       </NineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
-    sandbox.stub(document, "elementFromPoint").returns(target);
+    sinon.stub(document, "elementFromPoint").returns(target);
     act(() => {
       dragManager.current!.handleDragStart(createDragStartArgs());
       fireEvent.mouseMove(target);
@@ -57,7 +52,7 @@ describe("PanelTarget", () => {
       </NineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
-    sandbox.stub(document, "elementFromPoint").returns(target);
+    sinon.stub(document, "elementFromPoint").returns(target);
     act(() => {
       dragManager.current!.handleDragStart(createDragStartArgs());
       fireEvent.mouseMove(target);
@@ -85,7 +80,7 @@ describe("PanelTarget", () => {
       </NineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
-    sandbox.stub(document, "elementFromPoint").returns(target);
+    sinon.stub(document, "elementFromPoint").returns(target);
     act(() => {
       dragManager.current!.handleDragStart(createDragStartArgs());
       fireEvent.mouseMove(target);

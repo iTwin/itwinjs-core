@@ -8,23 +8,17 @@ import * as sinon from "sinon";
 import { FrontstageDef, FrontstageManager, WidgetPanelsFrontstageContent } from "../../ui-framework";
 
 describe("WidgetPanelsFrontstageContent", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     const frontstageDef = new FrontstageDef();
-    sandbox.stub(frontstageDef, "contentLayoutDef").get(() => ({}));
-    sandbox.stub(frontstageDef, "contentGroup").get(() => ({}));
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(frontstageDef, "contentLayoutDef").get(() => ({}));
+    sinon.stub(frontstageDef, "contentGroup").get(() => ({}));
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
     const sut = shallow(<WidgetPanelsFrontstageContent />);
     sut.should.matchSnapshot();
   });
 
   it("should not render", () => {
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
     const sut = shallow(<WidgetPanelsFrontstageContent />);
     sut.should.matchSnapshot();
   });

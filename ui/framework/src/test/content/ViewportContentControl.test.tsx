@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
@@ -14,7 +13,7 @@ import {
   CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
   ViewportContentControl, Widget, Zone,
 } from "../../ui-framework";
-import TestUtils, { storageMock } from "../TestUtils";
+import TestUtils, { mount, storageMock } from "../TestUtils";
 
 const mySessionStorage = storageMock();
 
@@ -160,7 +159,7 @@ describe("ViewportContentControl", () => {
   });
 
   it("onViewClassFullNameChangedEvent should cause a NavigationAid change", async () => {
-    const wrapper = mount(<FrontstageComposer />);
+    mount(<FrontstageComposer />);
     const spyMethod = sinon.spy();
     const remove = FrontstageManager.onNavigationAidActivatedEvent.addListener(spyMethod);
 
@@ -189,7 +188,6 @@ describe("ViewportContentControl", () => {
     }
 
     remove();
-    wrapper.unmount();
   });
 
   it("FrontstageManager.setActiveFrontstageDef should cause onActiveContentChangedEvent", async () => {

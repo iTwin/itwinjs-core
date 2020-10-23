@@ -436,11 +436,13 @@ export class RealityDataClient extends WsgClient {
    */
   public async getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string, type?: string): Promise<RealityData[]> {
     requestContext.enter();
-    if (!type)
-      type = "RealityMesh3DTiles";
 
     const newQueryOptions = { project: projectId } as RequestQueryOptions;
-    newQueryOptions.$filter = `Type+eq+'${type}'`;
+    if (!type)
+      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'`;
+    else
+      newQueryOptions.$filter = `Type+eq+'${type}'`;
+
     const realityDatas: RealityData[] = await this.getRealityDatas(requestContext, projectId, newQueryOptions);
     requestContext.enter();
     return realityDatas;
@@ -461,11 +463,11 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
     const polygonString = `{\"points\":[[${minLongDeg},${minLatDeg}],[${maxLongDeg},${minLatDeg}],[${maxLongDeg},${maxLatDeg}],[${minLongDeg},${maxLatDeg}],[${minLongDeg},${minLatDeg}]], \"coordinate_system\":\"4326\"}`;
 
-    if (!type)
-      type = "RealityMesh3DTiles";
-
     const newQueryOptions = { project: projectId, polygon: polygonString } as RequestQueryOptions;
-    newQueryOptions.$filter = `Type+eq+'${type}'`;
+    if (!type)
+      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'`;
+    else
+      newQueryOptions.$filter = `Type+eq+'${type}'`;
     return this.getRealityDatas(requestContext, projectId, newQueryOptions);
   }
 

@@ -7,6 +7,7 @@ import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
+import { setupPushTest } from "./push";
 
 async function init() {
   await commonSetup();
@@ -18,6 +19,8 @@ async function init() {
     rpcConfig.protocol.transferChunkThreshold = value;
     return true;
   });
+
+  await setupPushTest();
 }
 
 module.exports = init();

@@ -6,7 +6,7 @@
  * @module EventSource
  */
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
+import { IModelRpcProps, NativeAppRpcInterface, QueuedEvent, RpcPushChannel, RpcPushSubscription, RpcRegistry } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 
@@ -21,7 +21,10 @@ export type EventListener = (data: any) => void;
 export class EventSource {
   private _timeoutHandle: any;
   private _namespaces = new Map<string, Map<string, EventListener[]>>();
-  constructor(public readonly tokenProps: IModelRpcProps) {
+  private _pushChannel: RpcPushChannel<any>;
+  private _pushSubscription?: RpcPushSubscription<any>;
+  constructor(public readonly tokenProps: IModelRpcProps, id: string) {
+    this._pushChannel = new RpcPushChannel<any>(id);
   }
   private scheduleNextPoll() {
     const onPoll = async () => {
@@ -41,6 +44,11 @@ export class EventSource {
   }
   public get fetching() { return !this._timeoutHandle; }
   private onListenerChanged() {
+    if (this._pushChannel.enabled) {
+      this.setupPushSubscription();
+      return;
+    }
+
     // if there is nothing to listen for, stop polling;
     if (this._namespaces.size === 0) {
       if (this._timeoutHandle) {
@@ -54,6 +62,18 @@ export class EventSource {
         Logger.logError(loggingCategory, "EventSource is disabled. Interface 'NativeAppRpcInterface' is not registered");
       }
     }
+  }
+  private setupPushSubscription() {
+    if (this._pushSubscription) {
+      return;
+    }
+
+    this._pushSubscription = this._pushChannel.subscribe();
+    this._pushSubscription.onMessage.addListener((queuedEvents) => {
+      queuedEvents.forEach((event: QueuedEvent) => {
+        this.dispatchEvent(event);
+      });
+    });
   }
   private dispatchEvent(event: QueuedEvent) {
     const listeners = this.getListeners(event.namespace, event.eventName, false);
@@ -173,6 +193,7 @@ export abstract class EventSourceManager {
   public static delete(id: string): void {
     if (EventSourceManager.has(id)) {
       EventSourceManager._sources.delete(id);
+      RpcPushChannel.delete(id);
     }
   }
   public static has(id: string): boolean {
@@ -182,7 +203,7 @@ export abstract class EventSourceManager {
     if (EventSourceManager._sources.has(id)) {
       throw new Error(`EventSource with key='${id}' already exist`);
     }
-    const eventSource = new EventSource(tokenProps);
+    const eventSource = new EventSource(tokenProps, id);
     EventSourceManager._sources.set(id, eventSource);
     return eventSource;
   }

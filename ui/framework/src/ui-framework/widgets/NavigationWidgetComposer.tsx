@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Widget
@@ -53,6 +53,7 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
   const [navigationAidId, setNavigationAidId] = React.useState(() => activeContentControl ? activeContentControl.navigationAidControl : /* istanbul ignore next */ "");
 
   React.useEffect(() => {
+    // istanbul ignore next
     const handleContentControlActivated = (args: ContentControlActivatedEventArgs) => {
       setActiveContentControl(args.activeContentControl);
       setActiveContentViewport(args.activeContentControl.viewport);

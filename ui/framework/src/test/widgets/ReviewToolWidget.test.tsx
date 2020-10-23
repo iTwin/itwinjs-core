@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { ItemList } from "../../ui-framework/shared/ItemMap";
 import { ReviewToolWidget } from "../../ui-framework/widgets/ReviewToolWidget";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ReviewToolWidget", () => {
 
@@ -20,8 +20,7 @@ describe("ReviewToolWidget", () => {
   });
 
   it("ReviewToolWidget should render", () => {
-    const wrapper = mount(<ReviewToolWidget />);
-    wrapper.unmount();
+    mount(<ReviewToolWidget />);
   });
 
   it("ReviewToolWidget should render correctly", () => {
@@ -33,8 +32,7 @@ describe("ReviewToolWidget", () => {
   });
 
   it("ReviewToolWidget with Categories and Models should render", () => {
-    const wrapper = mount(<ReviewToolWidget showCategoryAndModelsContextTools={true} />);
-    wrapper.unmount();
+    mount(<ReviewToolWidget showCategoryAndModelsContextTools={true} />);
   });
 
   it("ReviewToolWidget with suffix and prefix items should render correctly", () => {
