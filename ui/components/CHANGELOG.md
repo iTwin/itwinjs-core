@@ -1,6 +1,18 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 20 Oct 2020 14:37:01 GMT and should not be manually modified.
+This log was last generated on Fri, 23 Oct 2020 17:04:02 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Add Date/Time TypeEditor
+- Fixed initial processing of scrollToRow in Table component
+- Preventing setState call warning in TimelineComponent unit test
+- Update all editors to be controlled components.
+- PropertyGrid: Fix component not updating on data provider change
+- Added jsdoc ESLint rule for UI packages
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:02 GMT

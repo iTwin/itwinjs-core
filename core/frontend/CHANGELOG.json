@@ -2,6 +2,69 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@bentley/imodeljs-frontend_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ensure transform animations in schedule scripts are applied correctly to tile graphics."
+          },
+          {
+            "comment": "#460803 Improve clip arrow control visibility."
+          },
+          {
+            "comment": "handle undefined _lut in FeatureOverrides when webgl context is lost, which obscured the actual context loss"
+          },
+          {
+            "comment": "link to webgl compatibility checker in context loss error message"
+          },
+          {
+            "comment": "Restore reality model and schedule script init - inadvertently removed."
+          },
+          {
+            "comment": "fixed hilite/emphasis interaction for for non-default options"
+          },
+          {
+            "comment": "fixed hilite/emphasize interaction"
+          },
+          {
+            "comment": "Root WMS sublayer is now included is the list of Sublayers.  First level of children is visible by default, unless too many layers are found (in that case we make the root sublayer visible only).  Made sure prefixed sublayers groups are correctly linked to root sublayer.  Also removed prefix from title for prefixed sublayers."
+          },
+          {
+            "comment": "Added optional wms authentication"
+          },
+          {
+            "comment": "#468491 Stop touch viewing operations from affect last dynamics point."
+          },
+          {
+            "comment": "IModelConnection.onOpen is not raised when opening iModel with NativeApp.openBriefcase"
+          },
+          {
+            "comment": "Support down-sampling very large textures in tiles."
+          },
+          {
+            "comment": "Reduce threshold for ecef validation."
+          },
+          {
+            "comment": "Remove deprecated SpatialModelTileTrees."
+          },
+          {
+            "comment": "Add methods on viewport for attach/detach reality models.  Support -1 for detach."
+          },
+          {
+            "comment": "Add support for OPC point clouds in Reality Data widget."
+          },
+          {
+            "comment": "Added color mix to thematic display for background map terrain and point clouds"
+          },
+          {
+            "comment": "added IModelApp.translateErrorNumber"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.4",
       "tag": "@bentley/imodeljs-frontend_v2.7.4",
       "date": "Mon, 19 Oct 2020 17:57:01 GMT",

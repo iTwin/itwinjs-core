@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Tue, 20 Oct 2020 14:37:01 GMT and should not be manually modified.
+This log was last generated on Fri, 23 Oct 2020 17:04:02 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Do not request transient elements' content
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:02 GMT

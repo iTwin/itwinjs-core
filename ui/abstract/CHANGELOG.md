@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Tue, 20 Oct 2020 14:37:01 GMT and should not be manually modified.
+This log was last generated on Fri, 23 Oct 2020 17:04:02 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Add definitions used to define DateTime component options.
+- Added jsdoc ESLint rule for UI packages
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:02 GMT

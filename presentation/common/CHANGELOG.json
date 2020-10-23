@@ -2,6 +2,33 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@bentley/presentation-common_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add diagnostics-related types"
+          },
+          {
+            "comment": "Add `KeySet.some` method"
+          },
+          {
+            "comment": "Do not hide grouping nodes when `hideNodesInHierarchy` is specified in hierarchy specification"
+          },
+          {
+            "comment": "Do not duplicate nodes when traversing from node that merges multiple instances from the 'many' side of relationship"
+          },
+          {
+            "comment": "Add support for specifying \"*\" and property overrides in `RelatedPropertiesSpecification.properties`"
+          },
+          {
+            "comment": "Ruleset creation fails for (0, 0) 2D point"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.4",
       "tag": "@bentley/presentation-common_v2.7.4",
       "date": "Mon, 19 Oct 2020 17:57:02 GMT",

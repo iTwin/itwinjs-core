@@ -1,6 +1,18 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Tue, 20 Oct 2020 14:37:01 GMT and should not be manually modified.
+This log was last generated on Fri, 23 Oct 2020 17:04:02 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Add diagnostics-related types
+- Add `KeySet.some` method
+- Do not hide grouping nodes when `hideNodesInHierarchy` is specified in hierarchy specification
+- Do not duplicate nodes when traversing from node that merges multiple instances from the 'many' side of relationship
+- Add support for specifying "*" and property overrides in `RelatedPropertiesSpecification.properties`
+- Ruleset creation fails for (0, 0) 2D point
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:02 GMT
