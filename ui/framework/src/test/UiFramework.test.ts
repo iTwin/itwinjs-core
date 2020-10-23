@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as moq from "typemoq";
+import * as sinon from "sinon";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, MockRender, ViewState } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -58,7 +58,6 @@ describe("UiFramework", () => {
     expect(UiFramework.initialized).to.be.true;
     await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
     spyLogger.calledOnce.should.true;
-    (Logger.logInfo as any).restore();
   });
 
   it("calling initialize without I18N will use IModelApp.i18n", async () => {

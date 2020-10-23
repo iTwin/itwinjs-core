@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
@@ -19,7 +19,7 @@ import {
   StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
   useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
-import TestUtils, { storageMock, UiSettingsStub } from "../TestUtils";
+import TestUtils, { mount, storageMock, UiSettingsStub } from "../TestUtils";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name */
 
@@ -50,15 +50,9 @@ function createFrontstageState(nineZone = createSavedNineZoneState()) {
 }
 
 describe("WidgetPanelsFrontstage", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     const frontstageDef = new FrontstageDef();
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
     const wrapper = shallow(<WidgetPanelsFrontstage />);
     wrapper.should.matchSnapshot();
   });
@@ -68,25 +62,23 @@ describe("WidgetPanelsFrontstage", () => {
       title: "TestModalStage",
       content: <div>Hello World!</div>,
     };
-    sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => modalStageInfo);
+    sinon.stub(FrontstageManager, "activeModalFrontstage").get(() => modalStageInfo);
     const frontstageDef = new FrontstageDef();
     const contentGroup = moq.Mock.ofType<FrontstageDef["contentGroup"]>();
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
-    sandbox.stub(frontstageDef, "contentGroup").get(() => contentGroup.object);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(frontstageDef, "contentGroup").get(() => contentGroup.object);
     const wrapper = shallow(<WidgetPanelsFrontstage />);
     wrapper.should.matchSnapshot();
   });
 
   it("should not render w/o frontstage", () => {
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
     const wrapper = shallow(<WidgetPanelsFrontstage />);
     wrapper.should.matchSnapshot();
   });
 });
 
 describe("ModalFrontstageComposer", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
@@ -95,22 +87,17 @@ describe("ModalFrontstageComposer", () => {
     TestUtils.terminateUiFramework();
   });
 
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render modal stage content when mounted", () => {
     const modalStageInfo = {
       title: "TestModalStage",
       content: <div>Hello World!</div>,
     };
-    const wrapper = mount(<ModalFrontstageComposer stageInfo={modalStageInfo} />);
-    wrapper.unmount();
+    mount(<ModalFrontstageComposer stageInfo={modalStageInfo} />);
   });
 
   it("should add tool activated event listener", () => {
-    const addListenerSpy = sandbox.spy(FrontstageManager.onModalFrontstageChangedEvent, "addListener");
-    const removeListenerSpy = sandbox.spy(FrontstageManager.onModalFrontstageChangedEvent, "removeListener");
+    const addListenerSpy = sinon.spy(FrontstageManager.onModalFrontstageChangedEvent, "addListener");
+    const removeListenerSpy = sinon.spy(FrontstageManager.onModalFrontstageChangedEvent, "removeListener");
     const sut = renderHook(() => useActiveModalFrontstageInfo());
     sut.unmount();
     addListenerSpy.calledOnce.should.true;
@@ -123,15 +110,15 @@ describe("ModalFrontstageComposer", () => {
       content: <div>Hello World!</div>,
     };
 
-    sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => undefined);
+    sinon.stub(FrontstageManager, "activeModalFrontstage").get(() => undefined);
     renderHook(() => useActiveModalFrontstageInfo());
     act(() => {
-      sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => undefined);
+      sinon.stub(FrontstageManager, "activeModalFrontstage").get(() => undefined);
       FrontstageManager.onModalFrontstageChangedEvent.emit({
         modalFrontstageCount: 0,
       });
 
-      sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => modalStageInfo);
+      sinon.stub(FrontstageManager, "activeModalFrontstage").get(() => modalStageInfo);
       FrontstageManager.onModalFrontstageChangedEvent.emit({
         modalFrontstageCount: 1,
       });
@@ -142,7 +129,6 @@ describe("ModalFrontstageComposer", () => {
 describe("ActiveFrontstageDefProvider", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
   const localStorageMock = storageMock();
-  const nineZoneSizeToRestore = FrontstageManager.nineZoneSize;
 
   before(async () => {
     Object.defineProperty(window, "localStorage", {
@@ -153,9 +139,12 @@ describe("ActiveFrontstageDefProvider", () => {
   });
 
   after(() => {
-    FrontstageManager.nineZoneSize = nineZoneSizeToRestore;
     Object.defineProperty(window, "localStorage", localStorageToRestore);
     TestUtils.terminateUiFramework();
+  });
+
+  beforeEach(() => {
+    sinon.stub(FrontstageManager, "nineZoneSize").set(() => { });
   });
 
   it("should render", () => {
@@ -176,12 +165,14 @@ describe("ActiveFrontstageDefProvider", () => {
 
     const nineZone = wrapper.find(NineZone);
     nineZone.prop("state").should.eq(frontstageDef.nineZoneState);
-
-    wrapper.unmount();
   });
 });
 
 describe("useNineZoneDispatch", () => {
+  beforeEach(() => {
+    sinon.stub(FrontstageManager, "nineZoneSize").set(() => { });
+  });
+
   it("should modify nineZoneState with default NineZoneReducer", () => {
     const frontstageDef = new FrontstageDef();
     const nineZoneState = createNineZoneState();
@@ -374,14 +365,8 @@ describe("useSavedFrontstageState", () => {
 });
 
 describe("useSaveFrontstageSettings", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("should save frontstage settings", async () => {
-    const clock = sandbox.useFakeTimers();
+  it("should save frontstage settings", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const uiSettings = new UiSettingsStub();
     const spy = sinon.stub(uiSettings, "saveSetting").resolves({
       status: UiSettingsStatus.Success,
@@ -391,13 +376,14 @@ describe("useSaveFrontstageSettings", () => {
     renderHook(() => useSaveFrontstageSettings(frontstageDef), {
       wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
     });
-    clock.tick(1000);
-    await Promise.resolve();
+    fakeTimers.tick(1000);
+    fakeTimers.restore();
+
     spy.calledOnce.should.true;
   });
 
-  it("should not save if tab is dragged", async () => {
-    const clock = sandbox.useFakeTimers();
+  it("should not save if tab is dragged", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const uiSettings = new UiSettingsStub();
     const spy = sinon.stub(uiSettings, "saveSetting").resolves({
       status: UiSettingsStatus.Success,
@@ -409,8 +395,9 @@ describe("useSaveFrontstageSettings", () => {
     renderHook(() => useSaveFrontstageSettings(frontstageDef), {
       wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
     });
-    clock.tick(1000);
-    await Promise.resolve();
+    fakeTimers.tick(1000);
+    fakeTimers.restore();
+
     spy.notCalled.should.true;
   });
 });
@@ -642,12 +629,6 @@ describe("useSyncDefinitions", () => {
 });
 
 describe("initializeNineZoneState", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should initialize widgets", () => {
     const frontstageDef = new FrontstageDef();
     sinon.stub(frontstageDef, "centerLeft").get(() => new ZoneDef());
@@ -677,7 +658,7 @@ describe("initializeNineZoneState", () => {
   });
 
   it("should initialize size", () => {
-    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    sinon.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
     const frontstageDef = new FrontstageDef();
     const sut = initializeNineZoneState(frontstageDef);
     sut.size.should.eql({ width: 10, height: 20 });
@@ -1020,14 +1001,8 @@ describe("expandWidget ", () => {
 });
 
 describe("restoreNineZoneState", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should log error if widgetDef is not found", () => {
-    const spy = sandbox.spy(Logger, "logError");
+    const spy = sinon.spy(Logger, "logError");
     const frontstageDef = new FrontstageDef();
     const savedState = {
       ...createSavedNineZoneState(),
@@ -1063,7 +1038,7 @@ describe("restoreNineZoneState", () => {
   it("should restore tabs", () => {
     const frontstageDef = new FrontstageDef();
     const widgetDef = new WidgetDef({});
-    sandbox.stub(frontstageDef, "findWidgetDef").returns(widgetDef);
+    sinon.stub(frontstageDef, "findWidgetDef").returns(widgetDef);
     const savedState = {
       ...createSavedNineZoneState(),
       tabs: {
@@ -1075,7 +1050,7 @@ describe("restoreNineZoneState", () => {
   });
 
   it("should RESIZE", () => {
-    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    sinon.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
     const frontstageDef = new FrontstageDef();
     const savedState = {
       ...createSavedNineZoneState({
@@ -1123,19 +1098,13 @@ describe("packNineZoneState", () => {
 });
 
 describe("useUpdateNineZoneSize", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should update size of nine zone state when new frontstage is activated", () => {
     const { rerender } = renderHook((props) => useUpdateNineZoneSize(props), { initialProps: new FrontstageDef() });
 
     const newFrontstageDef = new FrontstageDef();
     newFrontstageDef.nineZoneState = createNineZoneState();
 
-    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    sinon.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
     rerender(newFrontstageDef);
 
     newFrontstageDef.nineZoneState.size.should.eql({ width: 10, height: 20 });

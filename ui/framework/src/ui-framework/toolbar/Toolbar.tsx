@@ -49,7 +49,7 @@ interface State {
 
 /** Toolbar React component.
  * @internal
- */
+ */
 export class Toolbar extends React.Component<ToolbarProps, State> {
   private _dimension: number = 0;
   private _minToolbarSize = (ActionButtonItemDef.defaultButtonSize + 2);

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { StandardRotationNavigationAid } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("StandardRotationNavigationAid", () => {
 
@@ -39,8 +39,6 @@ describe("StandardRotationNavigationAid", () => {
       wrapper.find("div.nz-toolbar-item-expandable-group-tool-item").at(1).simulate("click");
       expect(wrapper.find("span.icon-cube-faces-top").length).to.eq(0);
       expect(wrapper.find("span.icon-cube-faces-bottom").length).to.eq(1);
-
-      wrapper.unmount();
     });
 
   });

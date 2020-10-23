@@ -5,9 +5,8 @@
 import * as sinon from "sinon";
 import {
   getDefaultNineZoneStagePanelManagerProps, HorizontalAnchor, NineZoneStagePanelManager, NineZoneStagePanelManagerProps,
-  NineZoneStagePanelPaneManager, VerticalAnchor,
+  NineZoneStagePanelPaneManager, StagePanelType, VerticalAnchor,
 } from "../../ui-ninezone";
-import { StagePanelType } from "../../ui-ninezone/stage-panels/StagePanel";
 
 describe("NineZoneStagePanelManager", () => {
   describe("getHorizontalAnchor", () => {

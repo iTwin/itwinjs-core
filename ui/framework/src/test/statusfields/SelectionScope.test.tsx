@@ -9,7 +9,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import { WidgetState } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, PresentationSelectionScope, SelectionScopeField, SessionStateActionId, StatusBar,
   StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework, WidgetDef,
@@ -49,8 +49,6 @@ describe("SelectionScopeField", () => {
   after(() => {
     TestUtils.terminateUiFramework();
   });
-
-  afterEach(cleanup);
 
   it("SelectionScopeField with default data", () => {
     const component = render(<Provider store={TestUtils.store}>
@@ -113,8 +111,6 @@ describe("Test that requires Presentation", () => {
     TestUtils.terminateUiFramework();
     await terminatePresentationTesting();
   });
-
-  afterEach(cleanup);
 
   it("SelectionScopeField with specific scopes", () => {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, [

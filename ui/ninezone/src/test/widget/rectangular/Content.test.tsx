@@ -2,18 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { HorizontalAnchor, WidgetContent } from "../../../ui-ninezone";
+import { mount } from "../../Utils";
 
 describe("<WidgetContent />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<WidgetContent anchor={HorizontalAnchor.Right} />);
   });
@@ -48,7 +43,7 @@ describe("<WidgetContent />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const sut = mount<WidgetContent>(<WidgetContent anchor={HorizontalAnchor.Right} />);
     const child = sut.find("div").first();

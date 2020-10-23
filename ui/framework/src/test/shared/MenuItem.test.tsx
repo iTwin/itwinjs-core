@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@bentley/ui-abstract";
 import { ContextMenuItem, ContextSubMenu } from "@bentley/ui-core";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { MenuItem, MenuItemHelpers, MenuItemProps } from "../../ui-framework/shared/MenuItem";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("MenuItem", () => {
 
@@ -123,8 +122,6 @@ describe("MenuItem", () => {
     expect(wrapper.find(".core-badge").length).to.eq(1);
     expect(wrapper.find(".icon-placeholder").length).to.eq(1)
     expect(wrapper.find(".icon-checkmark").length).to.eq(1)
-
-    wrapper.unmount();
   });
 
   it("onSelect handled correctly on click", async () => {
@@ -151,8 +148,6 @@ describe("MenuItem", () => {
     handleSelect.should.have.been.calledOnce;
     handleSelect2.should.have.been.calledOnce;
     expect(component.container.querySelector(".core-badge")).not.to.be.null;
-
-    cleanup();
   });
 
   it("createMenuItemNodes should create a valid submenu", () => {
@@ -174,8 +169,6 @@ describe("MenuItem", () => {
 
     const wrapper = mount(<div>{menuItemNodes}</div>);
     expect(wrapper.find(ContextSubMenu).length).to.eq(1);
-
-    wrapper.unmount();
   });
 
 });

@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, ReactWrapper, shallow } from "enzyme";
+import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@bentley/ui-abstract";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../ui-framework";
 /* eslint-disable deprecation/deprecation */
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 // cSpell:ignore buttonstate
 
@@ -24,8 +24,6 @@ describe("<PopupButton />", async () => {
   after(() => {
     TestUtils.terminateUiFramework();
   });
-
-  afterEach(cleanup);
 
   it("should render", async () => {
     const renderedComponent = render(<PopupButton iconSpec="icon-arrow-down" label="Popup-Test">

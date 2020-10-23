@@ -7,21 +7,14 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType, WidgetState } from "@bentley/ui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, FrontstageManager, SyncUiEventId, WidgetControl, WidgetDef, WidgetProps,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, FrontstageManager, SyncUiEventDispatcher, SyncUiEventId, WidgetChangedEventArgs,
+  WidgetControl, WidgetDef, WidgetProps,
 } from "../../ui-framework";
-import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 import TestUtils from "../TestUtils";
-import { WidgetChangedEventArgs } from "../../ui-framework/widgets/WidgetDef";
 
 // cSpell:ignore widgetstate
 
 describe("WidgetDef", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   class TestWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
@@ -168,7 +161,7 @@ describe("WidgetDef", () => {
 
   describe("show", () => {
     it("should emit onWidgetShowEvent", () => {
-      const spy = sandbox.spy(FrontstageManager.onWidgetShowEvent, "emit");
+      const spy = sinon.spy(FrontstageManager.onWidgetShowEvent, "emit");
       const widgetDef = new WidgetDef({});
       widgetDef.show();
       spy.calledOnceWithExactly(sinon.match({
@@ -179,7 +172,7 @@ describe("WidgetDef", () => {
 
   describe("expand", () => {
     it("should emit onWidgetExpandEvent", () => {
-      const spy = sandbox.spy(FrontstageManager.onWidgetExpandEvent, "emit");
+      const spy = sinon.spy(FrontstageManager.onWidgetExpandEvent, "emit");
       const widgetDef = new WidgetDef({});
       widgetDef.expand();
       spy.calledOnceWithExactly(sinon.match({

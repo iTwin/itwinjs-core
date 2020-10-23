@@ -3,20 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import {
-  BackstageItemState, ConfigurableUiManager, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider,
-  TaskLaunchBackstageItem, TaskPropsList, WorkflowPropsList,
+  BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps,
+  FrontstageProvider, SyncUiEventDispatcher, TaskLaunchBackstageItem, TaskPropsList, WorkflowManager, WorkflowPropsList,
 } from "../../ui-framework";
-import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
-import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import { WorkflowManager } from "../../ui-framework/workflow/Workflow";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -85,8 +82,7 @@ describe("Backstage", () => {
 
       ConfigurableUiManager.loadWorkflows(workflowPropsList);
 
-      const spyMethod = sinon.stub();
-      const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
+      const spy = sinon.spy(FrontstageManager.onFrontstageActivatedEvent, "emit");
       const wrapper = mount(
         <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
           isEnabled={true} isActive={false}
@@ -100,9 +96,7 @@ describe("Backstage", () => {
 
       backstageItem.find(".nz-backstage-item").simulate("click");
       await TestUtils.flushAsyncOperations();
-      expect(spyMethod.calledOnce).to.be.true;
-      remove();
-      wrapper.unmount();
+      expect(spy.calledOnce).to.be.true;
     });
 
     it("TaskLaunchBackstageItem should log error when invalid workflowId is provided", async () => {
@@ -113,8 +107,6 @@ describe("Backstage", () => {
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       spyMethod.calledOnce.should.true;
-      wrapper.unmount();
-      (Logger.logError as any).restore();
     });
 
     it("TaskLaunchBackstageItem should log error when invalid taskId is provided", async () => {
@@ -125,15 +117,12 @@ describe("Backstage", () => {
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       spyMethod.calledOnce.should.true;
-      wrapper.unmount();
-      (Logger.logError as any).restore();
     });
 
     it("TaskLaunchBackstageItem renders correctly when inactive", async () => {
       WorkflowManager.setActiveWorkflow(undefined);
       const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       wrapper.should.matchSnapshot();
-      wrapper.unmount();
     });
 
     it("TaskLaunchBackstageItem renders correctly when active", async () => {
@@ -144,12 +133,9 @@ describe("Backstage", () => {
         const task1 = workflow.getTask("Task1");
         expect(task1).to.not.be.undefined;
 
-        if (task1) {
-          await WorkflowManager.setActiveWorkflowAndTask(workflow, task1);
-          const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
-          wrapper.should.matchSnapshot();
-          wrapper.unmount();
-        }
+        await WorkflowManager.setActiveWorkflowAndTask(workflow, task1!);
+        const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+        wrapper.should.matchSnapshot();
       }
     });
 
@@ -160,8 +146,6 @@ describe("Backstage", () => {
       wrapper.setProps({ isEnabled: true });
       wrapper.update();
       expect(wrapper.find("li.nz-disabled").length).to.eq(0);
-
-      wrapper.unmount();
     });
 
   });

@@ -21,7 +21,7 @@ import { ListItem, ListItemType, ListPicker } from "./ListPicker";
 
 /** [[ViewSelectorChangedEvent]] Args interface.
  * @beta
- */
+ */
 export interface ViewSelectorChangedEventArgs {
   iModelConnection: IModelConnection;
   viewDefinitionId: Id64String;
@@ -31,7 +31,7 @@ export interface ViewSelectorChangedEventArgs {
 
 /** ViewSelector Changed Event class.
  * @beta
- */
+ */
 export class ViewSelectorChangedEvent extends UiEvent<ViewSelectorChangedEventArgs> { }
 
 /** Properties for the [[ViewSelector]] component
@@ -66,7 +66,7 @@ interface ViewSelectorState {
 export type ViewSelectorDefaultProps = Pick<ViewSelectorProps, "showSpatials" | "showDrawings" | "showSheets" | "showUnknown">;
 
 /** ViewSelector Show Update Event Args interface.
- */
+ */
 interface ViewSelectorShowUpdateEventArgs {
   showSpatials: boolean;
   showDrawings: boolean;
@@ -75,7 +75,7 @@ interface ViewSelectorShowUpdateEventArgs {
 }
 
 /** ViewSelector Show Update Event class.
- */
+ */
 class ViewSelectorShowUpdateEvent extends UiEvent<ViewSelectorShowUpdateEventArgs> { }
 
 /** View Selector React component
@@ -128,6 +128,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
   public componentWillUnmount() {
     this._isMounted = false;
+    // istanbul ignore else
     if (this._removeShowUpdateListener)
       this._removeShowUpdateListener();
   }

@@ -19,11 +19,15 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
 
   const throttleMs = 16;
   before(async () => {
-    clock = sinon.useFakeTimers({ now: Date.now() });
     await TestUtils.initializeUiComponents();
   });
 
-  after(() => {
+  beforeEach(() => {
+    clock = sinon.useFakeTimers({ now: Date.now() });
+    records = [TestUtils.createPrimitiveStringProperty("CADID", "0000 0005 00E0 02D8")];
+  });
+
+  afterEach(() => {
     clock.restore();
   });
 
@@ -31,10 +35,6 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
     document.dispatchEvent(new MouseEvent("pointermove", moveAmount));
     clock.tick(moveDelayMs);
   }
-
-  beforeEach(() => {
-    records = [TestUtils.createPrimitiveStringProperty("CADID", "0000 0005 00E0 02D8")];
-  });
 
   describe("ratio between label and value when width below minimum column size", () => {
     const getBoundingClientRect = Element.prototype.getBoundingClientRect;

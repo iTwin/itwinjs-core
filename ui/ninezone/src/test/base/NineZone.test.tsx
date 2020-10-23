@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
@@ -13,12 +13,6 @@ import { NineZoneProvider } from "../Providers";
 import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils";
 
 describe("<NineZone />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("renders correctly", () => {
     const { container } = render(<NineZone
       dispatch={sinon.stub()}
@@ -59,8 +53,8 @@ describe("<NineZone />", () => {
   it("should dispatch RESIZE", () => {
     let resizeObserver: ResizeObserverMock | undefined;
     let measurer: Element | undefined;
-    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
-    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+    sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       resizeObserver = this;
       measurer = element;
     });
@@ -73,7 +67,7 @@ describe("<NineZone />", () => {
 
     spy.reset();
 
-    sandbox.stub(measurer!, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 10, 20));
+    sinon.stub(measurer!, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 10, 20));
     resizeObserver!.callback([{
       contentRect: createDOMRect(),
       target: measurer!,
@@ -91,13 +85,13 @@ describe("<NineZone />", () => {
   it("should not dispatch RESIZE if size did not change", () => {
     let resizeObserver: ResizeObserverMock | undefined;
     let measurer: Element | undefined;
-    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
-    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+    sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       resizeObserver = this;
       measurer = element;
     });
 
-    sandbox.stub(HTMLElement.prototype, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 10, 20));
+    sinon.stub(HTMLElement.prototype, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 10, 20));
 
     const spy = sinon.stub<NineZoneDispatch>();
     render(<NineZone

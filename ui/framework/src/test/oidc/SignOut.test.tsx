@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { SignOutModalFrontstage } from "../../ui-framework/oidc/SignOut";
-import TestUtils, { mockUserInfo } from "../TestUtils";
+import { SignOutModalFrontstage } from "../../ui-framework";
+import TestUtils, { mockUserInfo, mount } from "../TestUtils";
 
 describe("SignOutModalFrontstage", () => {
 
@@ -27,7 +26,6 @@ describe("SignOutModalFrontstage", () => {
 
     const wrapper = mount(stage.content as React.ReactElement<any>);
     expect(wrapper).not.to.be.undefined;
-    wrapper.unmount();
   });
 
   it("should call onSignOut handler", () => {
@@ -37,9 +35,6 @@ describe("SignOutModalFrontstage", () => {
     const wrapper = mount(stage.content as React.ReactElement<any>);
     wrapper.find("button").simulate("click");
     spyMethod.calledOnce.should.true;
-
-    wrapper.unmount();
-    (Logger.logError as any).restore();
   });
 
 });
