@@ -11,8 +11,6 @@ import { IModelAppUiSettings, settingsStatusToUiSettingsStatus } from "../../ui-
 import { TestUtils } from "../TestUtils";
 
 describe("IModelAppUiSettings", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
@@ -23,41 +21,37 @@ describe("IModelAppUiSettings", () => {
   });
 
   beforeEach(() => {
-    sandbox.stub(AuthorizedFrontendRequestContext, "create").resolves({} as AuthorizedFrontendRequestContext);
-  });
-
-  afterEach(() => {
-    sandbox.restore();
+    sinon.stub(AuthorizedFrontendRequestContext, "create").resolves({} as AuthorizedFrontendRequestContext);
   });
 
   it("should save setting", async () => {
-    const saveUserSetting = sandbox.stub<SettingsAdmin["saveUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success));
-    sandbox.stub(IModelApp, "settings").get(() => ({
+    const saveUserSetting = sinon.stub<SettingsAdmin["saveUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success));
+    sinon.stub(IModelApp, "settings").get(() => ({
       saveUserSetting,
     }));
-    sandbox.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
+    sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
     const sut = new IModelAppUiSettings();
     await sut.saveSetting("TESTNAMESPACE", "TESTNAME", "testvalue");
     saveUserSetting.calledOnceWithExactly(sinon.match.any, "testvalue", "TESTNAMESPACE", "TESTNAME", true).should.true;
   });
 
   it("should delete setting", async () => {
-    const deleteUserSetting = sandbox.stub<SettingsAdmin["deleteUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success));
-    sandbox.stub(IModelApp, "settings").get(() => ({
+    const deleteUserSetting = sinon.stub<SettingsAdmin["deleteUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success));
+    sinon.stub(IModelApp, "settings").get(() => ({
       deleteUserSetting,
     }));
-    sandbox.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
+    sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
     const sut = new IModelAppUiSettings();
     await sut.deleteSetting("TESTNAMESPACE", "TESTNAME");
     deleteUserSetting.calledOnceWithExactly(sinon.match.any, "TESTNAMESPACE", "TESTNAME", true).should.true;
   });
 
   it("should get setting", async () => {
-    const getUserSetting = sandbox.stub<SettingsAdmin["getUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success, undefined, "testvalue"));
-    sandbox.stub(IModelApp, "settings").get(() => ({
+    const getUserSetting = sinon.stub<SettingsAdmin["getUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success, undefined, "testvalue"));
+    sinon.stub(IModelApp, "settings").get(() => ({
       getUserSetting,
     }));
-    sandbox.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
+    sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
     const sut = new IModelAppUiSettings();
     const settingResult = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
     getUserSetting.calledOnceWithExactly(sinon.match.any, "TESTNAMESPACE", "TESTNAME", true).should.true;
@@ -65,21 +59,21 @@ describe("IModelAppUiSettings", () => {
   });
 
   it("should fail to save setting", async () => {
-    sandbox.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
+    sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
     const sut = new IModelAppUiSettings();
     const result = await sut.saveSetting("TESTNAMESPACE", "TESTNAME", "testvalue");
     expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
   });
 
   it("should fail to delete setting", async () => {
-    sandbox.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
+    sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
     const sut = new IModelAppUiSettings();
     const result = await sut.deleteSetting("TESTNAMESPACE", "TESTNAME");
     expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
   });
 
   it("should fail to get setting", async () => {
-    sandbox.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
+    sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
     const sut = new IModelAppUiSettings();
     const result = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
     expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);

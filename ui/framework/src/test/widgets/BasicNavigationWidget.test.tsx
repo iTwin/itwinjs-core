@@ -2,21 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Matrix3d } from "@bentley/geometry-core";
 import { MockRender, OrthographicViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ConfigurableUiManager, ContentViewManager, ViewportContentControl } from "../../ui-framework";
-import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
-import { ToolbarHelper } from "../../ui-framework/toolbar/ToolbarHelper";
-import { BasicNavigationWidget } from "../../ui-framework/widgets/BasicNavigationWidget";
-import TestUtils from "../TestUtils";
+import { BasicNavigationWidget, CommandItemDef, ConfigurableUiManager, ContentViewManager, ToolbarHelper, ViewportContentControl } from "../../ui-framework";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("BasicNavigationWidget", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
@@ -28,13 +23,8 @@ describe("BasicNavigationWidget", () => {
     TestUtils.terminateUiFramework();
   });
 
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("BasicNavigationWidget should render", () => {
-    const wrapper = mount(<BasicNavigationWidget />);
-    wrapper.unmount();
+    mount(<BasicNavigationWidget />);
   });
 
   it("BasicNavigationWidget should render correctly", () => {
@@ -96,12 +86,9 @@ describe("BasicNavigationWidget", () => {
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => spatialViewStateMock.object);
 
-    sandbox.stub(ContentViewManager, "getActiveContentControl").returns(contentControlMock.object);
+    sinon.stub(ContentViewManager, "getActiveContentControl").returns(contentControlMock.object);
 
-    const wrapper = mount(<BasicNavigationWidget />);
-    // eslint-disable-next-line no-console
-    // console.log(wrapper.debug());
-    wrapper.unmount();
+    mount(<BasicNavigationWidget />);
   });
 
 });

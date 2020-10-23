@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { SignIn } from "../../ui-framework/oidc/SignIn";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("SignIn", () => {
 
@@ -23,7 +22,6 @@ describe("SignIn", () => {
     const spyMethod = sinon.spy();
     const wrapper = mount(<SignIn onSignedIn={spyMethod} />);
     expect(wrapper).not.to.be.undefined;
-    wrapper.unmount();
   });
 
   it("should handle signIn button click", () => {
@@ -33,8 +31,6 @@ describe("SignIn", () => {
 
     wrapper.find("button.components-signin-button").simulate("click");
     spyMethod.calledOnce.should.true;
-
-    wrapper.unmount();
   });
 
 });

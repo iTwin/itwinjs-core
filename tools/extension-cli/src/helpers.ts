@@ -14,7 +14,7 @@ export async function signIn(): Promise<AccessToken> {
   const client = new DesktopAuthorizationClient({
     clientId,
     redirectUri,
-    scope: "openid imodel-extension-service-api context-registry-service:read-only offline_access",
+    scope: "openid imodel-extension-service-api context-registry-service:read-only offline_access imodel-extension-service:modify",
   });
   await client.initialize(requestContext);
   return new Promise<AccessToken>((resolve, reject) => {

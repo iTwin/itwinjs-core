@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("StatusBarWidgetControl", () => {
 
@@ -50,8 +49,7 @@ describe("StatusBarWidgetControl", () => {
     if (widgetControl)
       expect(widgetControl.getType()).to.eq(ConfigurableUiControlType.StatusBarWidget);
 
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-    wrapper.unmount();
+    mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
   });
 
 });

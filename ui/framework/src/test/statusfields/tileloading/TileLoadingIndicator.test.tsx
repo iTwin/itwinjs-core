@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as enzyme from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelApp, MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { TileLoadingIndicator } from "../../../ui-framework";
-import TestUtils from "../../TestUtils";
+import TestUtils, { mount } from "../../TestUtils";
 
 describe("TileLoadingIndicator", () => {
 
@@ -23,24 +23,19 @@ describe("TileLoadingIndicator", () => {
   });
 
   it("should render correctly footer", () => {
-    enzyme.shallow(
+    shallow(
       <TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />,
     ).should.matchSnapshot();
   });
 
   it("should render correctly not footer", () => {
-    enzyme.shallow(
+    shallow(
       <TileLoadingIndicator isInFooterMode={false} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />,
     ).should.matchSnapshot();
   });
 
   it("should unmount correctly", () => {
-    const sut = enzyme.mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
-    sut.unmount();
-  });
-
-  it("should handle onrender messages", () => {
-    const sut = enzyme.mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
+    const sut = mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
     sut.unmount();
   });
 
@@ -56,12 +51,11 @@ describe("TileLoadingIndicator", () => {
     viewportMock.setup((x) => x.onRender).returns(() => onRenderEvent);
 
     IModelApp.viewManager.setSelectedView(viewportMock.object);
-    const sut = enzyme.mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
+    mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
     // 50% complete
     onRenderEvent.raiseEvent(viewportMock.object);
     numRequestedTiles = 0;
     // 100% complete
     onRenderEvent.raiseEvent(viewportMock.object);
-    sut.unmount();
   });
 });

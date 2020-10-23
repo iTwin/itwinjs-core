@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
@@ -13,7 +12,7 @@ import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, MessageCenterField, MessageManager, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, WidgetDef,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("MessageCenter", () => {
 
@@ -78,8 +77,6 @@ describe("MessageCenter", () => {
 
     wrapper.find("div.nz-balloon").simulate("click"); // Closes it
     wrapper.update();
-
-    wrapper.unmount();
   });
 
   it("Message Center should change tabs", () => {
@@ -105,8 +102,6 @@ describe("MessageCenter", () => {
 
     tabs.at(0).simulate("click"); // Change tab back
     wrapper.update();
-
-    wrapper.unmount();
   });
 
   it("Message Center should close on outside click", () => {

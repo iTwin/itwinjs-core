@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as enzyme from "enzyme";
+import { HTMLAttributes, ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MessageManager, ValidationTextbox } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ValidationTextbox", () => {
   before(async () => {
@@ -21,16 +21,16 @@ describe("ValidationTextbox", () => {
   const onValueChanged = sinon.spy();
   const onEnterPressed = sinon.spy();
   const onEscPressed = sinon.spy();
-  let simpleBox: enzyme.ReactWrapper<any, any>;
-  let simpleInput: enzyme.ReactWrapper<enzyme.HTMLAttributes, any>;
-  let box: enzyme.ReactWrapper<any, any>;
-  let input: enzyme.ReactWrapper<enzyme.HTMLAttributes, any>;
+  let simpleBox: ReactWrapper<any, any>;
+  let simpleInput: ReactWrapper<HTMLAttributes, any>;
+  let box: ReactWrapper<any, any>;
+  let input: ReactWrapper<HTMLAttributes, any>;
 
   beforeEach(async () => {
     onValueChanged.resetHistory();
     onEnterPressed.resetHistory();
     onEscPressed.resetHistory();
-    box = enzyme.mount(
+    box = mount(
       <ValidationTextbox
         onValueChanged={onValueChanged}
         onEnterPressed={onEnterPressed}
@@ -40,7 +40,7 @@ describe("ValidationTextbox", () => {
     );
     input = box.find("input");
 
-    simpleBox = enzyme.mount(
+    simpleBox = mount(
       <ValidationTextbox
         placeholder="Placeholder"
         size={12}
@@ -51,7 +51,7 @@ describe("ValidationTextbox", () => {
   });
 
   it("should render correctly", () => {
-    enzyme.shallow(
+    shallow(
       <ValidationTextbox />,
     ).should.matchSnapshot();
   });

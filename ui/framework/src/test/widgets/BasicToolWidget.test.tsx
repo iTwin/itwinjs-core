@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { ToolbarHelper } from "../../ui-framework";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { BasicToolWidget } from "../../ui-framework/widgets/BasicToolWidget";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("BasicToolWidget", () => {
 
@@ -20,8 +20,7 @@ describe("BasicToolWidget", () => {
   });
 
   it("BasicToolWidget should render", () => {
-    const wrapper = mount(<BasicToolWidget />);
-    wrapper.unmount();
+    mount(<BasicToolWidget />);
   });
 
   it("BasicToolWidget should render correctly", () => {
@@ -33,8 +32,7 @@ describe("BasicToolWidget", () => {
   });
 
   it("BasicToolWidget with Categories and Models should render", () => {
-    const wrapper = mount(<BasicToolWidget showCategoryAndModelsContextTools={true} />);
-    wrapper.unmount();
+    mount(<BasicToolWidget showCategoryAndModelsContextTools={true} />);
   });
 
   const testH1Def = new CommandItemDef({

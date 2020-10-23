@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { AnyWidgetProps, ConfigurableUiManager, NavigationWidgetDef, SheetNavigationAid, SheetNavigationAidControl } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("SheetNavigationAid", () => {
 
@@ -29,7 +29,7 @@ describe("SheetNavigationAid", () => {
   const connection = moq.Mock.ofType<IModelConnection>();
 
   describe("<SheetNavigationAid />", () => {
-    it("should render", () => {
+    it("should mount and unmount", () => {
       const wrapper = mount(<SheetNavigationAid iModelConnection={connection.object} />);
       wrapper.unmount();
     });

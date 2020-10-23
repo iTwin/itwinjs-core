@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, ReactWrapper, shallow } from "enzyme";
+import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as useTargetedModule from "@bentley/ui-core";
 import { WidgetTarget, WidgetTargetProps } from "../../../ui-ninezone/zones/target/Target";
+import { mount } from "../../Utils";
 
 describe("<WidgetTarget />", () => {
-  const sandbox = sinon.createSandbox();
-
   function target(widgetTarget: ReactWrapper) {
     const targetElement = widgetTarget.find(".nz-zones-target-target");
     sinon.stub(targetElement.getDOMNode(), "contains").returns(true);
@@ -19,10 +18,6 @@ describe("<WidgetTarget />", () => {
     document.dispatchEvent(pointerMove);
     widgetTarget.setProps({});
   }
-
-  afterEach(() => {
-    sandbox.restore();
-  });
 
   it("should render", () => {
     mount(<WidgetTarget />);
@@ -33,7 +28,7 @@ describe("<WidgetTarget />", () => {
   });
 
   it("renders targeted correctly", () => {
-    sandbox.stub(useTargetedModule, "useTargeted").returns(true);
+    sinon.stub(useTargetedModule, "useTargeted").returns(true);
     shallow(<WidgetTarget />).should.matchSnapshot();
   });
 

@@ -36,6 +36,7 @@ import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
+import { UVSurfaceOps } from "../geometry3d/UVSurfaceOps";
 import { Box } from "../solid/Box";
 import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
@@ -142,56 +143,7 @@ class FacetSector {
     }
   }
 }
-/**
- * UVSurfaceOps is a class containing static methods operating on UVSurface objects.
- * @public
- */
-export class UVSurfaceOps {
-  private constructor() { }  // private constructor -- no instances.
-  /**
-   * * evaluate `numEdge+1` points at surface uv parameters interpolated between (u0,v0) and (u1,v1)
-   * * accumulate the xyz in a linestring.
-   * * If xyzToUV is given, also accumulate transformed values as surfaceUV
-   * * use xyzToUserUV transform to convert xyz to uv stored in the linestring (this uv is typically different from surface uv -- e.g. torus cap plane coordinates)
-   * @param surface
-   * @param u0 u coordinate at start of parameter space line
-   * @param v0 v coordinate at end of parameter space line
-   * @param u1 u coordinate at start of parameter space line
-   * @param v1 v coordinate at end of parameter space line
-   * @param numEdge number of edges.   (`numEdge+1` points are evaluated)
-   * @param saveUV if true, save each surface uv fractions with `linestring.addUVParamsAsUV (u,v)`
-   * @param saveFraction if true, save each fractional coordinate (along the u,v line) with `linestring.addFraction (fraction)`
-   *
-   * @param xyzToUV
-   */
-  public static createLinestringOnUVLine(
-    surface: UVSurface,
-    u0: number,
-    v0: number,
-    u1: number,
-    v1: number,
-    numEdge: number,
-    saveUV: boolean = false,
-    saveFraction: boolean = false): LineString3d {
 
-    const ls = LineString3d.create();
-    const xyz = Point3d.create();
-    let fraction, u, v;
-    const numEvaluate = numEdge + 1;
-    for (let i = 0; i < numEvaluate; i++) {
-      fraction = i / numEdge;
-      u = Geometry.interpolate(u0, fraction, u1);
-      v = Geometry.interpolate(v0, fraction, v1);
-      surface.uvFractionToPoint(u, v, xyz);
-      ls.addPoint(xyz);
-      if (saveUV)
-        ls.addUVParamAsUV(u, v);
-      if (saveFraction)
-        ls.addFraction(fraction);
-    }
-    return ls;
-  }
-}
 /**
  *
  * * Simple construction for strongly typed GeometryQuery objects:

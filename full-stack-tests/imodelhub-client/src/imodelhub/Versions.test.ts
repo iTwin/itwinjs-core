@@ -284,4 +284,54 @@ describe("iModelHub VersionHandler", () => {
     const versions: Version[] = await iModelClient.versions.get(requestContext, imodelId, new VersionQuery().byName(versionName));
     chai.expect(versions.length).to.be.equal(1);
   });
+
+  it("should hide named version", async () => {
+    const mockedVersions = Array(1)
+      .fill(0)
+      .map(() => utils.generateVersion(undefined, undefined, undefined, undefined, undefined, false));
+    utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
+
+    let version: Version = (await iModelClient.versions.get(requestContext, imodelId))[0];
+    chai.assert(!!version);
+    chai.assert(!!version.id);
+    chai.expect(version.changeSetId).to.be.equal(version.changeSetId!);
+    chai.expect(version.name).to.be.equal(version.name!);
+    chai.expect(version.hidden).to.be.equal(false);
+
+    version.hidden = true;
+    utils.mockUpdateVersion(imodelId, version);
+    version = await iModelClient.versions.update(
+      requestContext,
+      imodelId,
+      version
+    );
+
+    chai.assert(!!version);
+    chai.assert(!!version.id);
+    chai.expect(version.hidden).to.be.equal(true);
+  });
+
+  it("should get only not hidden named versions", async () => {
+    const mockedVersions = [
+      utils.generateVersion(undefined, undefined, undefined, undefined, undefined, false),
+      utils.generateVersion(undefined, undefined, undefined, undefined, undefined, true),
+    ];
+    utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
+    utils.mockGetVersions(
+      imodelId,
+      `?$filter=Hidden+eq+false`,
+      ...mockedVersions.filter((v) => !v.hidden)
+    );
+    const versions: Version[] = await iModelClient.versions.get(
+      requestContext,
+      imodelId,
+      new VersionQuery()
+    );
+    const notHiddenversions: Version[] = await iModelClient.versions.get(
+      requestContext,
+      imodelId,
+      new VersionQuery().notHidden()
+    );
+    chai.expect(versions.length - notHiddenversions.length).to.be.equal(1);
+  });
 });

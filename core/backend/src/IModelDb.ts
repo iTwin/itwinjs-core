@@ -2654,7 +2654,7 @@ export class SnapshotDb extends IModelDb {
 
     const { bcvAccessKeyContainer, bcvAccessKeySAS, bcvAccessKeyAccount, bcvAccessKeyDbName } = checkpoints[0];
     if (!bcvAccessKeyContainer || !bcvAccessKeySAS || !bcvAccessKeyAccount || !bcvAccessKeyDbName)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory, () => ({ checkpoint: checkpoints[0] }));
+      throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory);
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     const attachArgs: BlobDaemonCommandArg = {

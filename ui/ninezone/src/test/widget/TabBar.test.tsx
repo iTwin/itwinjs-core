@@ -1,28 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Rectangle } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext, PanelTarget,
-  useDrag, WidgetIdContext, WidgetTabTarget,
+  addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
+  PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";
-import { renderHook } from "@testing-library/react-hooks";
-import { addFloatingWidget } from "../../ui-ninezone/base/NineZoneState";
 
 describe("WidgetTitleBar", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should dispatch WIDGET_DRAG_END", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
@@ -85,7 +78,7 @@ describe("WidgetTitleBar", () => {
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     const target = container.getElementsByClassName("nz-widget-tabTarget")[0];
 
-    sandbox.stub(document, "elementFromPoint").returns(target);
+    sinon.stub(document, "elementFromPoint").returns(target);
 
     act(() => {
       fireEvent.mouseDown(handle);
@@ -105,7 +98,7 @@ describe("WidgetTitleBar", () => {
   });
 
   it("should dispatch WIDGET_DRAG_END with panel target", () => {
-    sandbox.stub(NineZoneModule, "getUniqueId").returns("newId");
+    sinon.stub(NineZoneModule, "getUniqueId").returns("newId");
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
@@ -133,7 +126,7 @@ describe("WidgetTitleBar", () => {
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
-    sandbox.stub(document, "elementFromPoint").returns(target);
+    sinon.stub(document, "elementFromPoint").returns(target);
     act(() => {
       fireEvent.mouseDown(handle);
       fireEvent.mouseMove(target);
@@ -188,14 +181,8 @@ describe("WidgetTitleBar", () => {
 });
 
 describe("useDrag", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should start drag action after timeout", () => {
-    const fakeTimers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const spy = sinon.stub<Required<Parameters<typeof useDrag>>[0]>();
     const { result } = renderHook(() => useDrag(spy));
     act(() => {

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { WidgetState } from "@bentley/ui-abstract";
@@ -13,12 +13,10 @@ import {
   ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider,
   ToolSettingsZone, ToolSettingsZoneProps, ToolUiProvider, Widget, Zone,
 } from "../../../ui-framework";
-import TestUtils, { ReactWrapper } from "../../TestUtils";
+import TestUtils, { mount, ReactWrapper } from "../../TestUtils";
 import { Tool1 } from "../../tools/Tool1";
 
 describe("ToolSettingsZone", () => {
-  const sandbox = sinon.createSandbox();
-
   const widgetChangeHandler: ToolSettingsZoneProps["widgetChangeHandler"] = {
     handleResize: () => { },
     handleTabClick: () => { },
@@ -43,10 +41,6 @@ describe("ToolSettingsZone", () => {
     widgetChangeHandler,
     zone,
   };
-
-  afterEach(() => {
-    sandbox.restore();
-  });
 
   class Tool1UiProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any) {
@@ -171,8 +165,6 @@ describe("ToolSettingsZone", () => {
       expect(wrapper.find(".nz-widget-toolSettings").length).to.eq(1);
       expect(wrapper.find(".nz-footer-dialog-button").length).to.eq(1);
     }
-
-    wrapper.unmount();
   });
 
   it("should be closed with defaultState of Closed", async () => {
@@ -197,8 +189,6 @@ describe("ToolSettingsZone", () => {
       expect(wrapper.find(".nz-widget-toolSettings").length).to.eq(0);
       expect(wrapper.find(".nz-footer-dialog-button").length).to.eq(0);
     }
-
-    wrapper.unmount();
   });
 
   it("should hide title bar buttons when floating", async () => {
@@ -231,7 +221,7 @@ describe("ToolSettingsZone", () => {
   });
 
   it("should handle drag start", () => {
-    const spy = sandbox.spy(props.widgetChangeHandler, "handleTabDragStart");
+    const spy = sinon.spy(props.widgetChangeHandler, "handleTabDragStart");
     const sut = mount<ToolSettingsZone>(<ToolSettingsZone
       {...props}
     />);
@@ -247,12 +237,12 @@ describe("ToolSettingsZone", () => {
   });
 
   it("should not handle drag start with unset ref", () => {
-    const spy = sandbox.spy(props.widgetChangeHandler, "handleTabDragStart");
+    const spy = sinon.spy(props.widgetChangeHandler, "handleTabDragStart");
     const ref = {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
     const sut = mount<ToolSettingsZone>(<ToolSettingsZone
       {...props}
     />);
@@ -272,7 +262,7 @@ describe("ToolSettingsZone", () => {
         stackId: 0,
       },
     };
-    const spy = sandbox.spy(props.widgetChangeHandler, "handleResize");
+    const spy = sinon.spy(props.widgetChangeHandler, "handleResize");
     const sut = mount<ToolSettingsZone>(<ToolSettingsZone
       {...props}
       zone={floatingZone}

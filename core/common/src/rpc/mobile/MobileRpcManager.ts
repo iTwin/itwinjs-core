@@ -15,6 +15,12 @@ import { MobileRpcProtocol } from "./MobileRpcProtocol";
  * @beta
  */
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
+  /** @internal */
+  public static setup = {
+    obtainPort: () => 0,
+    checkPlatform: () => typeof (process) !== "undefined" && (process.platform as any) === "ios",
+  };
+
   public abstract protocol: MobileRpcProtocol;
   private static _args: any;
   private static getArgs(): any {
@@ -77,6 +83,17 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
  * @beta
  */
 export class MobileRpcManager {
+  /** @internal */
+  public static async ready() {
+    return new Promise<void>(async (resolve) => {
+      while (!(global as any).__imodeljsRpcReady) {
+        await new Promise((r) => setTimeout(r));
+      }
+
+      resolve();
+    });
+  }
+
   private static performInitialization(interfaces: RpcInterfaceDefinition[], endPoint: RpcEndpoint): MobileRpcConfiguration {
     const config = class extends MobileRpcConfiguration {
       public interfaces = () => interfaces;

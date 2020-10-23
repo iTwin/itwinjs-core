@@ -1,6 +1,12 @@
 sep=;
 Release Tag;API Item
+beta;DiskHierarchyCacheConfig 
 beta;DuplicateRulesetHandlingStrategy
+beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
+beta;HierarchyCacheConfigBase
+beta;HierarchyCacheMode
+beta;HybridCacheConfig 
+beta;MemoryHierarchyCacheConfig 
 public;Presentation
 beta;PresentationBackendLoggerCategory
 beta;PresentationBackendNativeLoggerCategory

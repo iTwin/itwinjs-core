@@ -5,8 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { cleanup, render } from "@testing-library/react";
-
+import { render } from "@testing-library/react";
 import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
@@ -147,7 +146,6 @@ describe("IModelViewportControl", () => {
         expect(componentWrapper.getByTestId("ViewOverlay")).to.not.be.undefined;
       }
     }
-    cleanup();
   });
 
 });

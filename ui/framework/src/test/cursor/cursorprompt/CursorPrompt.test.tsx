@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
+import * as sinon from "sinon";
 import { ToolAssistance } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
@@ -12,7 +12,7 @@ import { CursorInformation } from "../../../ui-framework/cursor/CursorInformatio
 import { CursorPopup } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";
 import { CursorPopupManager, CursorPopupRenderer } from "../../../ui-framework/cursor/cursorpopup/CursorPopupManager";
 import { CursorPrompt } from "../../../ui-framework/cursor/cursorprompt/CursorPrompt";
-import TestUtils from "../../TestUtils";
+import TestUtils, { mount } from "../../TestUtils";
 
 describe("CursorPrompt", () => {
 
@@ -33,17 +33,16 @@ describe("CursorPrompt", () => {
     expect(wrapper.find("div.uifw-cursor-prompt").length).to.eq(1);
 
     cursorPrompt.close(false);
-    wrapper.unmount();
   });
 
-  it("should display, update and close", async () => {
+  it("should display, update and close", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const wrapper = mount(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
     CursorPopup.fadeOutTime = 50;
 
     const cursorPrompt = new CursorPrompt(20, true);
     cursorPrompt.display("icon-placeholder", ToolAssistance.createInstruction("icon-placeholder", "Prompt string"), new Point(20, 20), RelativePosition.BottomRight);
-    await TestUtils.flushAsyncOperations();
     wrapper.update();
 
     expect(CursorPopupManager.popupCount).to.eq(1);
@@ -53,25 +52,20 @@ describe("CursorPrompt", () => {
     expect(pt.x).to.eq(CursorInformation.cursorX);
     expect(pt.y).to.eq(CursorInformation.cursorY);
 
-    const currX = 50;
-    const currY = 60;
-    CursorInformation.handleMouseMove(new Point(currX, currY));
-    await TestUtils.flushAsyncOperations();
+    CursorInformation.handleMouseMove(new Point(50, 60));
+    fakeTimers.tick(0);
 
     expect(CursorPopupManager.popupCount).to.eq(1);
     pt = wrapper.state("pt");
-    expect(pt.x).to.eq(currX);
-    expect(pt.y).to.eq(currY);
+    expect(pt.x).to.eq(50);
+    expect(pt.y).to.eq(60);
 
-    await TestUtils.tick(40);
-    // Note: This test does not always close the popup because of timer issues
-    // expect(CursorPopupManager.popupCount).to.eq(1);
+    fakeTimers.tick(40);
+    expect(CursorPopupManager.popupCount).to.eq(1);
 
-    await TestUtils.tick(1000);
-    // Note: This test does not always close the popup because of timer issues
-    // expect(CursorPopupManager.popupCount).to.eq(0);
-
-    wrapper.unmount();
+    fakeTimers.tick(1000);
+    fakeTimers.restore();
+    expect(CursorPopupManager.popupCount).to.eq(0);
   });
 
   it("should close if passed a blank instruction", async () => {
@@ -92,8 +86,6 @@ describe("CursorPrompt", () => {
 
     expect(CursorPopupManager.popupCount).to.eq(0);
     expect(wrapper.find("div.uifw-cursor-prompt").length).to.eq(0);
-
-    wrapper.unmount();
   });
 
 });

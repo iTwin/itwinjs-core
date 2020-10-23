@@ -45,6 +45,10 @@ export class Version extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
   public changeSetId?: GuidString;
 
+  /** Set to true, if named Version is hidden. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Hidden")
+  public hidden?: boolean;
+
   /** Id of the [[SmallThumbnail]] of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId")
   public smallThumbnailId?: GuidString;
@@ -98,6 +102,15 @@ export class VersionQuery extends InstanceIdQuery {
       this._query.$select += `,HasThumbnail-forward-${size}Thumbnail.*`;
     }
 
+    return this;
+  }
+
+  /**
+   * Query only not hidden versions.
+   * @returns This query.
+   */
+  public notHidden() {
+    this.addFilter("Hidden+eq+false");
     return this;
   }
 }

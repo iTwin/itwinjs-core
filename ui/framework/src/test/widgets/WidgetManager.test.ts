@@ -1,14 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
-import { WidgetManager, WidgetProvider } from "../../ui-framework/widgets/WidgetManager";
-import { ZoneLocation } from "../../ui-framework/zones/Zone";
+import { WidgetDef, WidgetManager, WidgetProvider, ZoneLocation } from "../../ui-framework";
 import { TestUtils } from "../TestUtils";
 
 class TestUiProvider implements UiItemsProvider {
@@ -40,7 +38,6 @@ describe("WidgetManager", () => {
     const widgetDef = new WidgetDef({ id: "test" });
     widgetManager.addWidgetDef(widgetDef, undefined, undefined, ZoneLocation.BottomRight);
     spyMethod.calledOnce.should.true;
-    (Logger.logError as any).restore();
   });
 
   it("addWidgetDef should add a WidgetDef targeting a stageId", () => {

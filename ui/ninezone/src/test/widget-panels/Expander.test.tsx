@@ -37,14 +37,8 @@ describe("WidgetPanelExpanders", () => {
 });
 
 describe("WidgetPanelExpander", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should dispatch `PANEL_SET_COLLAPSED`", () => {
-    const timers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
       <NineZoneProvider
@@ -55,7 +49,7 @@ describe("WidgetPanelExpander", () => {
     );
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);
-    timers.tick(300);
+    fakeTimers.tick(300);
 
     sinon.assert.calledOnceWithExactly(dispatch, {
       type: "PANEL_SET_COLLAPSED",
@@ -65,7 +59,7 @@ describe("WidgetPanelExpander", () => {
   });
 
   it("should not dispatch `PANEL_SET_COLLAPSED` if mouse moves out", () => {
-    const timers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
       <NineZoneProvider
@@ -77,13 +71,13 @@ describe("WidgetPanelExpander", () => {
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);
     fireEvent.mouseOut(expander);
-    timers.tick(300);
+    fakeTimers.tick(300);
 
     sinon.assert.notCalled(dispatch);
   });
 
   it("should reset timer if mouse moves", () => {
-    const timers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
       <NineZoneProvider
@@ -94,14 +88,14 @@ describe("WidgetPanelExpander", () => {
     );
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);
-    timers.tick(150);
+    fakeTimers.tick(150);
 
     fireEvent.mouseMove(expander, { clientX: 20 });
 
-    timers.tick(150);
+    fakeTimers.tick(150);
     sinon.assert.notCalled(dispatch);
 
-    timers.tick(100);
+    fakeTimers.tick(100);
     sinon.assert.calledOnceWithExactly(dispatch, {
       type: "PANEL_SET_COLLAPSED",
       side: "left",
@@ -110,7 +104,7 @@ describe("WidgetPanelExpander", () => {
   });
 
   it("should not reset timer if mouse move threshold is not exceeded", () => {
-    const timers = sandbox.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
       <NineZoneProvider
@@ -121,11 +115,11 @@ describe("WidgetPanelExpander", () => {
     );
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);
-    timers.tick(150);
+    fakeTimers.tick(150);
 
     fireEvent.mouseMove(expander, { clientX: 4 });
 
-    timers.tick(100);
+    fakeTimers.tick(100);
 
     sinon.assert.calledOnceWithExactly(dispatch, {
       type: "PANEL_SET_COLLAPSED",

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
 import { ConfigurableUiContent } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {
@@ -16,12 +16,10 @@ describe("ConfigurableUiContent", () => {
   });
 
   it("ConfigurableUiContent should render", () => {
-    const wrapper = mount(
+    mount(
       <Provider store={TestUtils.store} >
         <ConfigurableUiContent />
       </Provider>);
-
-    wrapper.unmount();
   });
 
   it("ConfigurableUiContent renders correctly", () => {
@@ -48,8 +46,6 @@ describe("ConfigurableUiContent", () => {
       </Provider>);
 
     wrapper.simulate("mouseMove", { buttons: 1 });
-
-    wrapper.unmount();
   });
 
   after(() => {
