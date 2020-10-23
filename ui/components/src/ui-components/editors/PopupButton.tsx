@@ -165,6 +165,7 @@ export function PopupOkCancelButtons(props: OkCancelProps) {
       </Button>
       <Button
         className={classnames("components-popup-large-button", "components-popup-cancel-button")}
+        data-testid="components-popup-cancel-button"
         title={UiCore.translate("dialog.cancel")}
         onClick={props.onCancel}
       >

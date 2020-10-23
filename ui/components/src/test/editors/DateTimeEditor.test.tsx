@@ -105,7 +105,8 @@ function createDateProperty(propertyName: string, value: Date, option: number) {
 }
 
 describe("<DateTimeEditor />", () => {
-  const date = new Date(Date.UTC(2018, 0, 1));
+  const date = new Date(2018, 0, 1);
+  const jan4Ticks = new Date(2018, 0, 4).getTime();
 
   before(async () => {
     await TestUtils.initializeUiComponents();
@@ -194,10 +195,11 @@ describe("<DateTimeEditor />", () => {
     fireEvent.click(popupButton);
     const portalDiv = await waitForElement(() => renderedComponent.getByTestId("core-popup"));
 
-    const dataValueSelector = `li[data-value='1515042000000']`; // Jan 4 2018 (UTC-0)
+    const dataValueSelector = `li[data-value='${jan4Ticks}']`; // Jan 4 2018 (UTC-0)
     const dayEntry = portalDiv.querySelector(dataValueSelector);
     expect(dayEntry).not.to.be.null;
     fireEvent.click(dayEntry!);
+
     const okButton = renderedComponent.getByTestId("components-popup-ok-button");
     fireEvent.click(okButton);
     await TestUtils.flushAsyncOperations();
@@ -215,15 +217,15 @@ describe("<DateTimeEditor />", () => {
     expect(renderedComponent).not.to.be.undefined;
     const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
     fireEvent.click(popupButton);
-
     const portalDiv = await waitForElement(() => renderedComponent.getByTestId("core-popup"));
-    const dataValueSelector = `li[data-value='1515042000000']`; // Jan 4 2018 (UTC-0)
+
+    const dataValueSelector = `li[data-value='${jan4Ticks}']`; // Jan 4 2018 (UTC-0)
     const dayEntry = portalDiv.querySelector(dataValueSelector);
     expect(dayEntry).not.to.be.null;
     fireEvent.click(dayEntry!);
 
-    const cancelButton = portalDiv.querySelector(".components-popup-cancel-button");
-    fireEvent.click(cancelButton!);
+    const cancelButton = renderedComponent.getByTestId("components-popup-cancel-button");
+    fireEvent.click(cancelButton);
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.notCalled);
   });
