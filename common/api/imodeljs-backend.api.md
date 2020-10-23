@@ -2735,7 +2735,7 @@ export class IModelHostConfiguration {
 // @beta
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    readonly autoExtendProjectExtents: boolean;
+    autoExtendProjectExtents: boolean;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
@@ -2755,6 +2755,7 @@ export class IModelImporter {
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
     protected onUpdateModel(modelProps: ModelProps): void;
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
+    simplifyElementGeometry: boolean;
     readonly targetDb: IModelDb;
 }
 
@@ -2866,7 +2867,6 @@ export class IModelTransformer extends IModelExportHandler {
 
 // @beta
 export interface IModelTransformOptions {
-    // @alpha
     cloneUsingBinaryGeometry?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;

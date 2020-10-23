@@ -36,8 +36,8 @@ export class IModelImporter {
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
   /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are imported. If `false`, throw an Error if an element would be outside of the projectExtents. */
-  public autoExtendProjectExtents: boolean = true;
-  /** If `true`, simplify the element geometry for visualization purposes. For example, convert Parasolid bodies into meshes.
+  public autoExtendProjectExtents: boolean;
+  /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @note `false` is the default
    */
   public simplifyElementGeometry: boolean = false;
@@ -52,9 +52,7 @@ export class IModelImporter {
    */
   public constructor(targetDb: IModelDb, options?: IModelImportOptions) {
     this.targetDb = targetDb;
-    if (undefined !== options?.autoExtendProjectExtents) {
-      this.autoExtendProjectExtents = options.autoExtendProjectExtents;
-    }
+    this.autoExtendProjectExtents = options?.autoExtendProjectExtents ?? true;
     // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
     this.doNotUpdateElementIds.add(IModel.dictionaryId);

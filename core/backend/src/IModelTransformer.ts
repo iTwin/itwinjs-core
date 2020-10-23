@@ -50,9 +50,8 @@ export interface IModelTransformOptions {
   loadSourceGeometry?: boolean;
 
   /** Flag that indicates whether or not the transformation process should clone using binary geometry.
-   * Transformations that do not need to manipulate geometry should set this flag to optimize performance.
-   * @note The default is `false`.
-   * @alpha
+   * Only transformations that need to manipulate geometry should consider setting this flag as it impacts performance.
+   * @note The default is `true`.
    */
   cloneUsingBinaryGeometry?: boolean;
 }
@@ -92,7 +91,7 @@ export class IModelTransformer extends IModelExportHandler {
     // initialize IModelTransformOptions
     this.targetScopeElementId = options?.targetScopeElementId ?? IModel.rootSubjectId;
     this._noProvenance = options?.noProvenance ?? false;
-    this._cloneUsingBinaryGeometry = options?.cloneUsingBinaryGeometry ?? false;
+    this._cloneUsingBinaryGeometry = options?.cloneUsingBinaryGeometry ?? true;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);

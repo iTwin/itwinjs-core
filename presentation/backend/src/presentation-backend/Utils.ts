@@ -29,7 +29,10 @@ export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
   listener: (diagnostics: DiagnosticsScopeLogs) => void;
 }
 
-/** @beta */
+/**
+ * A type that injects [[ClientRequestContext]] attribute into another given type. *
+ * @beta
+ */
 export type WithClientRequestContext<T> = T & {
   /** Context of a client request */
   requestContext: ClientRequestContext;
