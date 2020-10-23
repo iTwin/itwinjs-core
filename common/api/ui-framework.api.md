@@ -1753,7 +1753,7 @@ export const expandWidget: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -1769,7 +1769,7 @@ export const expandWidget: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -1836,7 +1836,7 @@ export const expandWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4374,7 +4374,7 @@ export const setPanelSize: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4390,7 +4390,7 @@ export const setPanelSize: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4457,7 +4457,7 @@ export const setPanelSize: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4477,7 +4477,7 @@ export const setPanelSize: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, side: "bottom" | "left" | "top" | "right", size: number | undefined) => Base;
+}>(base: Base, side: PanelSide, size: number | undefined) => Base;
 
 // @internal (undocumented)
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
@@ -4493,7 +4493,7 @@ export const setWidgetLabel: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4509,7 +4509,7 @@ export const setWidgetLabel: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4576,7 +4576,7 @@ export const setWidgetLabel: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4609,7 +4609,7 @@ export const setWidgetState: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4625,7 +4625,7 @@ export const setWidgetState: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4692,7 +4692,7 @@ export const setWidgetState: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4712,7 +4712,7 @@ export const setWidgetState: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string, state: WidgetState_2) => Base;
+}>(base: Base, widgetDef: WidgetDef, state: WidgetState_2) => Base;
 
 // @alpha
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
@@ -4789,7 +4789,7 @@ export const showWidget: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4805,7 +4805,7 @@ export const showWidget: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4872,7 +4872,7 @@ export const showWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -5447,6 +5447,18 @@ export enum SyncUiEventId {
 
 // @public
 export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
+
+// @internal (undocumented)
+export interface TabLocation {
+    // (undocumented)
+    side: PanelSide;
+    // (undocumented)
+    tabIndex: number;
+    // (undocumented)
+    widgetId: string;
+    // (undocumented)
+    widgetIndex: number;
+}
 
 // @public
 export interface TargetChangeHandler {
@@ -6633,6 +6645,9 @@ export class WidgetDef {
     get stateFunc(): WidgetStateFunc | undefined;
     // (undocumented)
     get syncEventIds(): string[];
+    // @internal (undocumented)
+    get tabLocation(): TabLocation;
+    set tabLocation(tabLocation: TabLocation);
     get tooltip(): string;
     // (undocumented)
     get widgetControl(): WidgetControl | undefined;

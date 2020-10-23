@@ -6,6 +6,7 @@ import { expect } from "chai";
 import * as path from "path";
 import * as React from "react";
 import * as sinon from "sinon";
+import { fireEvent, render, waitForElement } from "@testing-library/react";
 import { BeEvent, Id64, Id64String, using } from "@bentley/bentleyjs-core";
 import {
   IModelConnection, PerModelCategoryVisibility, SnapshotConnection, SpatialViewState, Viewport, ViewState, ViewState3d,
@@ -24,25 +25,26 @@ import {
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { SelectionMode, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { isPromiseLike } from "@bentley/ui-core";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import {
   ModelsTree, ModelsTreeNodeType, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS, VisibilityHandler, VisibilityHandlerProps,
-} from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
+} from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 
 describe("ModelsTree", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
-    sinon.restore();
+  });
+
+  beforeEach(() => {
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
   describe("#unit", () => {
@@ -53,8 +55,6 @@ describe("ModelsTree", () => {
     let dataProvider: IPresentationTreeDataProvider;
 
     beforeEach(() => {
-      cleanup();
-
       imodelMock.reset();
       selectionManagerMock.reset();
       dataProvider = {

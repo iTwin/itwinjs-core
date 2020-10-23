@@ -5302,6 +5302,8 @@ export interface UVSurfaceIsoParametricDistance {
 // @public
 export class UVSurfaceOps {
     static createLinestringOnUVLine(surface: UVSurface, u0: number, v0: number, u1: number, v1: number, numEdge: number, saveUV?: boolean, saveFraction?: boolean): LineString3d;
+    static sampledRangeOfOffsetEllipsoidPatch(patch: EllipsoidPatch, offsetDistance: number | undefined, options?: StrokeOptions): Range3d;
+    static sampledRangeOfOffsetPatch(patch: UVSurface, offsetDistance: number | undefined, numU: number, numV: number): Range3d;
 }
 
 // @public

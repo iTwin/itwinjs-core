@@ -3,6 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
+import * as enzyme from "enzyme";
+
+before(() => {
+  window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+    return window.setTimeout(cb, 1);
+  };
+});
 
 /** @internal */
 export const createRect = (left: number, top: number, right: number, bottom: number): ClientRect => ({
@@ -58,7 +65,6 @@ export const createDOMRect = (args?: { width?: number, height?: number }): DOMRe
 };
 
 /** @internal */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export class ResizeObserverMock implements ResizeObserver {
   public constructor(public readonly callback: ResizeObserverCallback) {
   }
@@ -84,3 +90,6 @@ declare module "sinon" {
 export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 /** @internal */
 export type SinonStub<T extends (...args: any) => any> = sinon.SinonStub<Parameters<T>, ReturnType<T>>;
+
+/** Enzyme mount with automatic unmount after the test. */
+export const mount: typeof enzyme.mount = (global as any).enzymeMount;

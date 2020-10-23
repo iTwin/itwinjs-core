@@ -37,12 +37,12 @@ export class SnapMode extends React.PureComponent<SnapModeProps> {
         className={classnames("nz-footer-snapMode-indicator", this.props.className)}
         {...props}
       >
-        {/* eslint-disable jsx-a11y/no-static-element-interactions */}
-        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-        <div
+        <div // eslint-disable-line jsx-a11y/click-events-have-key-events
           className="nz-indicator"
           onClick={onClick}
           ref={indicatorRef}
+          role="button"
+          tabIndex={-1}
         >
           {children !== undefined &&
             <span className="nz-label">{children}</span>

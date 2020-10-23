@@ -40,12 +40,6 @@ describe("DragManager", () => {
 });
 
 describe("useTabTarget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should clear target", () => {
     const dragManager = new DragManager();
     const spy = sinon.spy(dragManager, "handleTargetChanged");
@@ -57,7 +51,7 @@ describe("useTabTarget", () => {
     });
 
     const element = document.createElement("div");
-    sandbox.stub(document, "elementFromPoint").returns(element);
+    sinon.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
 
     dragManager.handleDragStart(createDragStartArgs());
@@ -73,12 +67,6 @@ describe("useTabTarget", () => {
 });
 
 describe("usePanelTarget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should clear target", () => {
     const dragManager = new DragManager();
     const spy = sinon.spy(dragManager, "handleTargetChanged");
@@ -89,7 +77,7 @@ describe("usePanelTarget", () => {
     });
 
     const element = document.createElement("div");
-    sandbox.stub(document, "elementFromPoint").returns(element);
+    sinon.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
 
     dragManager.handleDragStart(createDragStartArgs());
@@ -105,12 +93,6 @@ describe("usePanelTarget", () => {
 });
 
 describe("useWidgetTarget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should clear target", () => {
     const dragManager = new DragManager();
     const spy = sinon.spy(dragManager, "handleTargetChanged");
@@ -122,7 +104,7 @@ describe("useWidgetTarget", () => {
     });
 
     const element = document.createElement("div");
-    sandbox.stub(document, "elementFromPoint").returns(element);
+    sinon.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
 
     dragManager.handleDragStart(createDragStartArgs());

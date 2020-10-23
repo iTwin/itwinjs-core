@@ -65,6 +65,11 @@ function RightPanel() {
       <button onClick={() => {
         const frontstageDef = FrontstageManager.activeFrontstageDef!;
         const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
+        widgetDef.setWidgetState(WidgetState.Hidden);
+      }}>setWidgetState(Hidden)</button>
+      <button onClick={() => {
+        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
         widgetDef.show();
       }}>Show</button>
       <button onClick={() => {

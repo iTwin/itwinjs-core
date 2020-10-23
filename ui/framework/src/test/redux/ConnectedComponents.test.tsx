@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { connectIModelConnection } from "../../ui-framework/redux/connectIModel";
 import { SessionStateActionsProps, sessionStateMapDispatchToProps } from "../../ui-framework/redux/SessionState";
 import { UiFramework } from "../../ui-framework/UiFramework";
@@ -16,8 +16,6 @@ describe("ConnectedContent", () => {
   before(async () => {
     await TestUtils.initializeUiFramework(true);
   });
-
-  afterEach(cleanup);
 
   it("TestComponent connected should render", () => {
     const numSelected = 10;

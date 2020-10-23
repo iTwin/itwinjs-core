@@ -7,7 +7,7 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { AlternateDateFormats, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardTypeNames, TimeDisplay } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render , waitForElement } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { EditorContainer /* PropertyUpdatedArgs */ } from "../../ui-components/editors/EditorContainer";
 import { DateTimeEditor } from "../../ui-components/editors/DateTimeEditor";
 import TestUtils from "../TestUtils";
@@ -30,68 +30,68 @@ function createDateProperty(propertyName: string, value: Date, option: number) {
       break;
     case 2:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {timeDisplay: TimeDisplay.H24M }}; // DateTime with 24hr time
+      converter = { options: { timeDisplay: TimeDisplay.H24M } }; // DateTime with 24hr time
       break;
     case 3:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {timeDisplay: TimeDisplay.H24MS }}; // DateTime with 24hr time
+      converter = { options: { timeDisplay: TimeDisplay.H24MS } }; // DateTime with 24hr time
       break;
     case 4:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {timeDisplay: TimeDisplay.H12MSC }}; // DateTime with 12hr time
+      converter = { options: { timeDisplay: TimeDisplay.H12MSC } }; // DateTime with 12hr time
       break;
     case 5:
       typename = StandardTypeNames.ShortDate;
-      converter = {name: "mm-dd-yyyy"};
+      converter = { name: "mm-dd-yyyy" };
       break;
     case 6:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.IsoDateTime }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.IsoDateTime } };
       break;
     case 7:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.IsoShort }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.IsoShort } };
       break;
     case 8:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcShort}};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcShort } };
       break;
     case 9:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcShortWithDay }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcShortWithDay } };
       break;
     case 10:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcDateTime }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcDateTime } };
       break;
     case 11:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay } };
       break;
     case 12:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.IsoDateTime }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.IsoDateTime } };
       break;
     case 13:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.IsoShort }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.IsoShort } };
       break;
     case 14:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcShort}};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcShort } };
       break;
     case 15:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcShortWithDay }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcShortWithDay } };
       break;
     case 16:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcDateTime }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcDateTime } };
       break;
     case 17:
     default:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay } };
       break;
   }
 
@@ -128,7 +128,7 @@ describe("<DateTimeEditor />", () => {
     const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
     fireEvent.click(popupButton);
     const timeDiv = await waitForElement(() => renderedComponent.getByTestId("components-time-input"));
-    const hrInput = timeDiv.querySelector (".uicore-inputs-input.components-time-input") as HTMLInputElement;
+    const hrInput = timeDiv.querySelector(".uicore-inputs-input.components-time-input") as HTMLInputElement;
     expect(hrInput).not.to.be.null;
     hrInput.focus();
     fireEvent.change(hrInput, { target: { value: "09" } });
@@ -148,7 +148,7 @@ describe("<DateTimeEditor />", () => {
     const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
     fireEvent.click(popupButton);
     const timeDiv = await waitForElement(() => renderedComponent.getByTestId("components-time-input"));
-    const hrInput = timeDiv.querySelector (".uicore-inputs-input.components-time-input") as HTMLInputElement;
+    const hrInput = timeDiv.querySelector(".uicore-inputs-input.components-time-input") as HTMLInputElement;
     expect(hrInput).not.to.be.null;
     hrInput.focus();
     fireEvent.change(hrInput, { target: { value: "09" } });
@@ -177,7 +177,7 @@ describe("<DateTimeEditor />", () => {
     let record = createDateProperty("Test", date, 0);
     const renderedComponent = render(<EditorContainer propertyRecord={record} title="date" onCommit={() => { }} onCancel={() => { }} />);
 
-    for (let i=1; i<18; i++) {
+    for (let i = 1; i < 18; i++) {
       record = createDateProperty("Test", date, i);
       renderedComponent.rerender(<EditorContainer propertyRecord={record} title="date" onCommit={() => { }} onCancel={() => { }} />);
       const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
@@ -194,7 +194,7 @@ describe("<DateTimeEditor />", () => {
     fireEvent.click(popupButton);
     const portalDiv = await waitForElement(() => renderedComponent.getByTestId("core-popup"));
 
-    const dataValueSelector=`li[data-value='1515042000000']`; // Jan 4 2018 (UTC-0)
+    const dataValueSelector = `li[data-value='1515042000000']`; // Jan 4 2018 (UTC-0)
     const dayEntry = portalDiv.querySelector(dataValueSelector);
     expect(dayEntry).not.to.be.null;
     fireEvent.click(dayEntry!);
@@ -217,7 +217,7 @@ describe("<DateTimeEditor />", () => {
     fireEvent.click(popupButton);
 
     const portalDiv = await waitForElement(() => renderedComponent.getByTestId("core-popup"));
-    const dataValueSelector=`li[data-value='1515042000000']`; // Jan 4 2018 (UTC-0)
+    const dataValueSelector = `li[data-value='1515042000000']`; // Jan 4 2018 (UTC-0)
     const dayEntry = portalDiv.querySelector(dataValueSelector);
     expect(dayEntry).not.to.be.null;
     fireEvent.click(dayEntry!);

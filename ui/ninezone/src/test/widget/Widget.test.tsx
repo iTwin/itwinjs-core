@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
@@ -13,15 +13,9 @@ import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";
 
 describe("PanelWidget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   describe("PANEL_WIDGET_DRAG_START", () => {
     it("should dispatch", () => {
-      sandbox.stub(NineZoneModule, "getUniqueId").returns("newId");
+      sinon.stub(NineZoneModule, "getUniqueId").returns("newId");
       const dispatch = sinon.stub<NineZoneDispatch>();
       let nineZone = createNineZoneState();
       nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);

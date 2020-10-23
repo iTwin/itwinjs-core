@@ -42,16 +42,18 @@ function getConfig(env) {
     target: "node",
     devtool: "source-map",
     module: {
+      rules: []
     },
     stats: {
       warnings: false
     },
+    externals: {
+      "electron": "electron",
+    },
     plugins: [
       new plugins.CopyAppAssetsPlugin("./assets/"),
       new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
-      new webpack.ProvidePlugin({}),
-      new webpack.EnvironmentPlugin({}),
-      new webpack.DefinePlugin({ "global.GENTLY": false })
+      new webpack.DefinePlugin({ "global.GENTLY": false, "process.version": "'v10.9.0'" })
     ],
   };
 

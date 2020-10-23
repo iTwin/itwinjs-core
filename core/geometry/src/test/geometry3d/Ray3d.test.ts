@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
 import { AxisOrder, Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
@@ -235,6 +236,28 @@ describe("Ray3d", () => {
     const range1d = Range1d.createXX(0, 1);
     ck.testTrue(ray2.intersectionWithRange3d(null3d).isNull, "ray intersect null range");
     ck.testFalse(range1d.clipLinearMapToInterval(0, 1, 3, 1), "range1d clipLinearMapToInterval with null interval");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("IntersectWithPlane", () => {
+    const ck = new Checker();
+    const plane = Plane3dByOriginAndUnitNormal.createXYZUVW(1, 3, 2, 5, 2, 9)!;
+    const rayA = Ray3d.createXYZUVW(5, 4, 2, 1, 3, 2);
+    const rayB = Ray3d.createXYZUVW(5, 4, 1, -2, 5, 0);
+    const fractionA = rayA.intersectionWithPlane(plane);
+    if (fractionA !== undefined && ck.testIsFinite(fractionA)) {
+      const point = rayA.fractionToPoint(fractionA);
+      ck.testCoordinate(0, plane.altitude(point));
+    }
+    const fractionB = rayB.intersectionWithPlane(plane);
+    ck.testUndefined(fractionB, "Detect ray parallel to plane");
+    // This pair generates aDotN and UDotN both near zero
+    const planeQ = Plane3dByOriginAndUnitNormal.createXYZUVW(
+      101.38054428331306, -7.136947376249823, 14.575798896766162,
+      1.4069516995683865e-17, 1.0468826690441132e-32, 1)!;
+    const rayQ = Ray3d.createXYZUVW(95.87780347429201, -7.1369473762498234, 14.575798896766187,
+      - 1, -4.61132646190051e-31, 4.567684502237405e-15);
+    ck.testUndefined(rayQ.intersectionWithPlane(planeQ));
     expect(ck.getNumErrors()).equals(0);
   });
 });

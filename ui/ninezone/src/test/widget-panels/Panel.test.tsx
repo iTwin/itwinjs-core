@@ -13,12 +13,6 @@ import { createDOMRect } from "../Utils";
 import { NineZoneProvider } from "../Providers";
 
 describe("WidgetPanel", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render vertical", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
@@ -152,7 +146,7 @@ describe("WidgetPanel", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
-    sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 300 }));
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 300 }));
     render(
       <NineZoneProvider
         state={nineZone}

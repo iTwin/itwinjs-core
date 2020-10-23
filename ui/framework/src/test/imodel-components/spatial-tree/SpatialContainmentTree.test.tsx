@@ -5,32 +5,33 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { cleanup, render, waitForElement } from "@testing-library/react";
-import { SpatialContainmentTree } from "../../../ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
+import { render, waitForElement } from "@testing-library/react";
+import { SpatialContainmentTree } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 
 describe("SpatialContainmentTree", () => {
-
   before(async () => {
     await TestUtils.initializeUiFramework();
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
-    sinon.restore();
+  });
+
+  beforeEach(() => {
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
   describe("<SpatialContainmentTree />", () => {
@@ -48,8 +49,6 @@ describe("SpatialContainmentTree", () => {
     };
 
     beforeEach(() => {
-      cleanup();
-
       dataProvider = {
         imodel: imodelMock.object,
         rulesetId: "",

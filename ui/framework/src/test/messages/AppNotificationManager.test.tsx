@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
@@ -12,7 +11,7 @@ import {
   OutputMessagePriority, OutputMessageType,
 } from "@bentley/imodeljs-frontend";
 import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("AppNotificationManager", () => {
 
@@ -28,10 +27,6 @@ describe("AppNotificationManager", () => {
 
   beforeEach(() => {
     notifications = new AppNotificationManager();
-  });
-
-  afterEach(() => {
-    sinon.restore();
   });
 
   it("outputPromptByKey", () => {
@@ -115,7 +110,6 @@ describe("AppNotificationManager", () => {
 
     const boxValue = await boxResult;
     expect(boxValue).to.eq(MessageBoxValue.Ok);
-    wrapper.unmount();
   });
 
   it("setupActivityMessage", () => {

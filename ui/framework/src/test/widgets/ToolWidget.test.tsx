@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import {
   ActionItemButton, AnyWidgetProps, CommandItemDef, CoreTools, FrontstageManager, GroupButton, GroupItemDef, ItemList, ToolbarDragInteractionContext,
   ToolButton, ToolWidget, ToolWidgetDef,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 const testCallback = sinon.stub();
 
@@ -116,14 +116,13 @@ describe("ToolWidget", () => {
     });
 
     it("ToolWidget should render", () => {
-      const wrapper = mount(
+      mount(
         <ToolWidget // eslint-disable-line deprecation/deprecation
           appButton={backstageToggleCommand}
           horizontalToolbar={horizontalToolbar}
           verticalToolbar={verticalToolbar}
         />,
       );
-      wrapper.unmount();
     });
 
     it("ToolWidget should render correctly", () => {
@@ -150,8 +149,6 @@ describe("ToolWidget", () => {
       wrapper.setProps({ verticalToolbar: undefined });
       wrapper.update();
       expect(wrapper.find(ToolButton).length).to.eq(2);
-
-      wrapper.unmount();
     });
 
     it("ToolWidget should tool activated", () => {
@@ -165,8 +162,6 @@ describe("ToolWidget", () => {
 
       FrontstageManager.onToolActivatedEvent.emit({ toolId: "tool1" });
       wrapper.update();
-
-      wrapper.unmount();
     });
   });
 
@@ -181,8 +176,6 @@ describe("ToolWidget", () => {
       TestUtils.terminateUiFramework();
       await IModelApp.shutdown();
     });
-
-    afterEach(cleanup);
 
     // NOTE: none of the following attempts to get the ToolWidget to size itself is working.
     const parentDivStyle: React.CSSProperties = {

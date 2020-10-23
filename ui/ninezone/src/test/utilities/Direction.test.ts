@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Direction, DirectionHelpers } from "../../ui-ninezone";
-import { OrthogonalDirection } from "../../ui-ninezone/utilities/Direction";
+import { Direction, DirectionHelpers, OrthogonalDirection } from "../../ui-ninezone";
 
 describe("Direction", () => {
   describe("CLASS_NAME", () => {

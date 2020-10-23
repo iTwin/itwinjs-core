@@ -5,7 +5,6 @@
 
 import { MobileRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-
 const dtaMobileMain = (async () => {
   // Initialize the backend
   await initializeDtaBackend();

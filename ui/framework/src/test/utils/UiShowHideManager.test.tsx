@@ -159,7 +159,8 @@ describe("UiShowHideManager", () => {
       priority: 100,
     });
 
-    it("Mouse move in content view should show the UI then hide after inactivity", async () => {
+    it("Mouse move in content view should show the UI then hide after inactivity", () => {
+      const fakeTimers = sinon.useFakeTimers();
       UiFramework.setIsUiVisible(false);
       UiShowHideManager.autoHideUi = true;
       UiShowHideManager.inactivityTime = 20;
@@ -169,12 +170,12 @@ describe("UiShowHideManager", () => {
       const container = component.getByTestId("single-content-container");
       container.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window }));
 
-      await TestUtils.flushAsyncOperations();
+      fakeTimers.tick(0);
       expect(UiShowHideManager.isUiVisible).to.eq(true);
 
-      await TestUtils.tick(1000);
-      // Note: This test does not always succeed because of timer issues
-      // expect(UiShowHideManager.isUiVisible).to.eq(false);
+      fakeTimers.tick(1000);
+      fakeTimers.restore();
+      expect(UiShowHideManager.isUiVisible).to.eq(false);
     });
 
     it("Mouse move in content view should do nothing if autoHideUi is off", async () => {

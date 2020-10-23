@@ -68,7 +68,7 @@ interface ToolbarGroupItemState {
 
 /** Group Item React component.
  * @internal
- */
+ */
 export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentProps, ToolbarGroupItemState> {
   /** @internal */
   public readonly state: Readonly<ToolbarGroupItemState>;
@@ -280,12 +280,14 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     this._ref.current && (e.target instanceof Node) && !this._ref.current.contains(e.target) && this.closeGroupButton();
   }
 
+  // istanbul ignore next
   private _handleToolActivatedEvent = ({ toolId }: ToolActivatedEventArgs) => {
     this.setState({
       activeToolId: toolId,
     });
   }
 
+  // istanbul ignore next
   private _handleToolPanelOpenedEvent = () => {
     if (!this._closeOnPanelOpened)
       return;

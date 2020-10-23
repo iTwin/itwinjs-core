@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { HorizontalAnchor, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
 import { ToolSettingsContent } from "../../ui-framework/widgets/ToolSettingsContent";
+import { mount } from "../TestUtils";
 
 describe("ToolSettingsContent", () => {
   it("should render in tab mode", () => {
@@ -38,8 +39,6 @@ describe("ToolSettingsContent", () => {
     wrapper.update();
 
     expect(wrapper.state("availableContentWidth")).to.be.eq(0); // Can't get clientRect measurement in unit test
-
-    wrapper.unmount();
   });
 
 });
