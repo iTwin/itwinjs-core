@@ -387,7 +387,9 @@ export class BackgroundMapLocation {
 
     const ecefOriginTest = ecefLocationDbToEcef.multiplyPoint3d(origin);
     const cartoOriginTest = Cartographic.fromEcef(ecefOriginTest);
-    if (cartoOriginTest !== undefined && Math.abs(cartoOriginTest.height) < 1.0E5) {
+    // If the project center is within 5KM of the ellipsoid then assume that the existing ECEF is valid.  Otherwise recalculate
+    // from the GCS.
+    if (cartoOriginTest !== undefined && Math.abs(cartoOriginTest.height) < 5.0E3) {
       this._ecefValidated = true;     // ECEF looks reasonable - use it...
       return;
     }
