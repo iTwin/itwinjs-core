@@ -684,13 +684,6 @@ export class PresentationManager {
    * @alpha
    */
   public async getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
-    if (requestOptions.fieldDescriptor.parent) {
-      // not supported yet
-      return {
-        total: 0,
-        items: [],
-      };
-    }
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {

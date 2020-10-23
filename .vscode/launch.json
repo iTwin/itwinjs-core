@@ -706,7 +706,8 @@
         "lib/**/*.js"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",
+        "${workspaceFolder}/full-stack-tests/presentation/lib/**/*.js"
       ]
     },
     {

@@ -757,8 +757,6 @@ export namespace FieldDescriptor {
 // @beta
 export interface FieldDescriptorBase {
     // (undocumented)
-    parent?: FieldDescriptor;
-    // (undocumented)
     type: FieldDescriptorType;
 }
 
@@ -1688,6 +1686,7 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
 // @public
 export interface Property {
     property: PropertyInfo;
+    // @deprecated
     relatedClassPath: RelationshipPath;
 }
 
@@ -1821,7 +1820,7 @@ export interface PropertyInfoJSON {
 export interface PropertyJSON {
     // (undocumented)
     property: PropertyInfoJSON;
-    // (undocumented)
+    // @deprecated (undocumented)
     relatedClassPath: RelationshipPathJSON;
 }
 
