@@ -6,8 +6,8 @@
  * @module Favorite
  */
 
-import React from "react";
-import ReactDOM from "react-dom";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyData } from "../propertygrid/PropertyDataProvider";
 import { FavoritePropertyList } from "./FavoritePropertyList";

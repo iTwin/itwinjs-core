@@ -333,6 +333,32 @@ export class FrameworkUiAdmin extends UiAdmin {
     return PopupManager.showCard(content, title, toolbarProps, el, position, offset, onItemExecuted, onCancel, relativePosition);
   }
 
+  /** Show a Card containing React-based content, a title and a toolbar at a particular location.
+   * @param content The React node of the content to display
+   * @param title Title to display at the top of the card.
+   * @param toolbarProps Properties of the Toolbar to display.
+   * @param location Location of the Card, relative to the origin of htmlElement or the window.
+   * @param offset Offset of the Card from the location.
+   * @param onItemExecuted Function invoked after a Toolbar item is executed
+   * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the Card
+   * @param relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param anchorElement The HTMLElement that anchors the Card. If undefined, the location is relative to the overall window.
+   * @return true if the Card was displayed, false if the Card could not be displayed.
+   */
+  public showReactCard(
+    content: React.ReactNode, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
+    location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc,
+    relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, anchorElement);
+    const reactContent = { reactNode: content };
+
+    // istanbul ignore if
+    if (relativePosition === undefined)
+      relativePosition = RelativePosition.TopRight;
+
+    return PopupManager.showCard(reactContent, title, toolbarProps, el, position, offset, onItemExecuted, onCancel, relativePosition);
+  }
+
   /** Hides the Card. */
   public hideCard(): boolean {
     return PopupManager.hideCard();
