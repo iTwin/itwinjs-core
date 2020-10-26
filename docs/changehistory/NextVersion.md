@@ -3,6 +3,10 @@ publish: false
 ---
 # NextVersion
 
+## Add Node 14 support
+
+With Node 14 moving to LTS on October 27th, iModel.js has been updated to add support.  iModel.js now supports Node >10.16, 12.x, and 14.x.
+
 ## Custom particle effects
 
 The display system now makes it easy to implement [particle effects](https://en.wikipedia.org/wiki/Particle_system) using [decorators](../learning/frontend/ViewDecorations.md). Particle effects simulate phenomena like fire, smoke, snow, and rain by animating hundreds or thousands of small particles. The new [ParticleCollectionBuilder]($frontend) API allows such collections to be efficiently created and rendered.
