@@ -4,7 +4,7 @@
 
 Writing an iModel.js application requires the following software:
 
-- [Node.js](https://nodejs.org) (12.x LTS version)
+- [Node.js](https://nodejs.org) (14.x LTS version)
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
 - [Git](https://git-scm.com/downloads)
