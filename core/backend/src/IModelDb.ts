@@ -1579,16 +1579,20 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Query for aspects of a particular class (polymorphically) associated with this element.
      * @throws [[IModelError]]
+     * @note Most cases should use the [[getAspects]] wrapper rather than calling this method directly.
+     * @internal
      */
-    private _queryAspects(elementId: Id64String, fromClassFullName: string): ElementAspect[] {
-      const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId`;
+    public _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[] { // eslint-disable-line @typescript-eslint/naming-convention
+      const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId ORDER BY ECClassId,ECInstanceId`; // ORDER BY to maximize statement reuse
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
           const aspectInstanceId: Id64String = statement.getValue(0).getId();
           const aspectClassFullName: string = statement.getValue(1).getClassNameForClassId().replace(".", ":");
-          aspects.push(this._queryAspect(aspectInstanceId, aspectClassFullName));
+          if ((undefined === excludedClassFullNames) || (!excludedClassFullNames.has(aspectClassFullName))) {
+            aspects.push(this._queryAspect(aspectInstanceId, aspectClassFullName));
+          }
         }
         return aspects;
       });
