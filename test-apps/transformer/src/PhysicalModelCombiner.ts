@@ -36,6 +36,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
   private _childPhysicalPartitionIds: Id64Set = new Set<Id64String>();
   private _targetComponentsModelId: Id64String = Id64.invalid;
   private _targetPhysicalTagsModelId: Id64String = Id64.invalid;
+  private _startTime = new Date();
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
     super(sourceDb, targetDb, { cloneUsingBinaryGeometry: true, noProvenance: true });
     this._numSourceElements = sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
@@ -66,6 +67,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
     if (0 === this._numSourceElementsProcessed % this._reportingInterval) {
       const progressMessage = `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`;
       Logger.logInfo("Progress", progressMessage);
+      this.logElapsedTime();
       this.logMemoryUsage();
       if (0 === this._numSourceElementsProcessed % this._saveChangesInterval) {
         Logger.logInfo("Progress", "Saving changes");
@@ -132,6 +134,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
     if (0 === this._numSourceRelationshipsProcessed % this._reportingInterval) {
       const progressMessage = `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`;
       Logger.logInfo("Progress", progressMessage);
+      this.logElapsedTime();
       this.logMemoryUsage();
       if (0 === this._numSourceRelationshipsProcessed % this._saveChangesInterval) {
         Logger.logInfo("Progress", "Saving changes");
@@ -148,5 +151,9 @@ export class PhysicalModelCombiner extends IModelTransformer {
       values.push(`${key}=${Math.round(used[key] / 1024 / 1024 * 100) / 100}MB `);
     }
     Logger.logInfo("Memory", `Memory: ${values.join()}`);
+  }
+  private logElapsedTime(): void {
+    const elapsedTimeMinutes: number = (new Date().valueOf() - this._startTime.valueOf()) / 60000.0;
+    Logger.logInfo("Progress", `Elapsed time: ${Math.round(100 * elapsedTimeMinutes) / 100.0} minutes`);
   }
 }
