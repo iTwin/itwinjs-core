@@ -87,7 +87,7 @@ export class EventSink implements IDisposable {
       this._scheduledPush = undefined;
       const events = [...this._queue];
       this._queue.length = 0;
-      if (this._channel)
+      if (this._channel && this._channel.enabled)
         await RpcPushConnection.for(this._channel).send(events);
     });
   }
