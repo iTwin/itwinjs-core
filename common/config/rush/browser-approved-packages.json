@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/extension-webpack-tools",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/frontend-application-insights-client",
@@ -340,7 +340,7 @@
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "chalk",

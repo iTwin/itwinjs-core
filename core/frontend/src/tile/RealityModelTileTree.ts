@@ -125,7 +125,11 @@ export class RealityModelTileUtils {
 
   }
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
-    const minToleranceRatio = 1.0;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
+    const minToleranceRatio = true === IModelApp.renderSystem.isMobile ? IModelApp.tileAdmin.mobileRealityTileMinToleranceRatio : 1.0;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
+
+    // NB: We increase the above minToleranceRatio on mobile devices in order to help avoid pruning too often based on the memory threshold for
+    // pruning currently used by reality tile trees on mobile.
+
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
   public static transformFromJson(jTrans: number[] | undefined): Transform {
@@ -175,7 +179,7 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
     this.id = url;
     this.modelId = modelId;
     this.iModel = iModel;
-    this.rootTile = new RealityModelTileProps(loader.tree.tilesetJson, undefined, "");
+    this.rootTile = new RealityModelTileProps(loader.tree.tilesetJson, undefined, "", undefined);
   }
 }
 
@@ -366,6 +370,7 @@ export namespace RealityModelTileTree {
     const props = await getTileTreeProps(url, tilesetToDb, iModel);
     const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
     const params = new RealityModelTileTreeParams(url, iModel, modelId, loader);
+
     return new RealityModelTileTree(params);
   }
 

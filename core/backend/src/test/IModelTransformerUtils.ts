@@ -89,6 +89,8 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(sourcePhysicalCategoryId));
     const subCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue.toJSON() });
     assert.isTrue(Id64.isValidId64(subCategoryId));
+    const filteredSubCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "FilteredSubCategory", { color: ColorDef.green.toJSON() });
+    assert.isTrue(Id64.isValidId64(filteredSubCategoryId));
     const drawingCategoryId = DrawingCategory.insert(sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(drawingCategoryId));
     const spatialCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId, sourcePhysicalCategoryId]);
@@ -195,6 +197,22 @@ export namespace IModelTransformerUtils {
     };
     const physicalObjectId3: Id64String = sourceDb.elements.insertElement(physicalObjectProps3);
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
+    // Insert PhysicalObject4
+    const physicalObjectProps4: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject4",
+      geom: createBoxes([subCategoryId, filteredSubCategoryId]),
+      placement: {
+        origin: Point3d.create(4, 4, 4),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId4: Id64String = sourceDb.elements.insertElement(physicalObjectProps4);
+    assert.isTrue(Id64.isValidId64(physicalObjectId4));
+    // Insert PhysicalElement1
     const sourcePhysicalElementProps: PhysicalElementProps = {
       classFullName: "TestTransformerSource:SourcePhysicalElement",
       model: physicalModelId,
@@ -487,6 +505,8 @@ export namespace IModelTransformerUtils {
     // SubCategory
     const subCategoryId = targetDb.elements.queryElementIdByCode(SubCategory.createCode(targetDb, spatialCategoryId, "SubCategory"))!;
     assertTargetElement(sourceDb, targetDb, subCategoryId);
+    const filteredSubCategoryId = targetDb.elements.queryElementIdByCode(SubCategory.createCode(targetDb, spatialCategoryId, "FilteredSubCategory"));
+    assert.isUndefined(filteredSubCategoryId);
     // DrawingCategory
     const drawingCategoryId = targetDb.elements.queryElementIdByCode(DrawingCategory.createCode(targetDb, definitionModelId, "DrawingCategory"))!;
     assertTargetElement(sourceDb, targetDb, drawingCategoryId);
@@ -523,31 +543,33 @@ export namespace IModelTransformerUtils {
     const physicalObjectId1: Id64String = queryByUserLabel(targetDb, "PhysicalObject1");
     const physicalObjectId2: Id64String = queryByUserLabel(targetDb, "PhysicalObject2");
     const physicalObjectId3: Id64String = queryByUserLabel(targetDb, "PhysicalObject3");
+    const physicalObjectId4: Id64String = queryByUserLabel(targetDb, "PhysicalObject4");
     const physicalElementId1: Id64String = queryByUserLabel(targetDb, "PhysicalElement1");
     const childObjectId1A: Id64String = queryByUserLabel(targetDb, "ChildObject1A");
     const childObjectId1B: Id64String = queryByUserLabel(targetDb, "ChildObject1B");
     assertTargetElement(sourceDb, targetDb, physicalObjectId1);
     assertTargetElement(sourceDb, targetDb, physicalObjectId2);
     assertTargetElement(sourceDb, targetDb, physicalObjectId3);
+    assertTargetElement(sourceDb, targetDb, physicalObjectId4);
     assertTargetElement(sourceDb, targetDb, physicalElementId1);
     assertTargetElement(sourceDb, targetDb, childObjectId1A);
     assertTargetElement(sourceDb, targetDb, childObjectId1B);
     const physicalObject1: PhysicalObject = targetDb.elements.getElement<PhysicalObject>({ id: physicalObjectId1, wantGeometry: true });
     const physicalObject2: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
     const physicalObject3: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId3);
+    const physicalObject4: PhysicalObject = targetDb.elements.getElement<PhysicalObject>({ id: physicalObjectId4, wantGeometry: true });
     const physicalElement1: PhysicalElement = targetDb.elements.getElement<PhysicalElement>(physicalElementId1);
     const childObject1A: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1A);
     const childObject1B: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1B);
     assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
     assert.isDefined(physicalObject1.geom);
-    const it = new GeometryStreamIterator(physicalObject1.geom!);
-    let itIndex = 0;
-    for (const entry of it) {
-      if (0 === itIndex) {
+    let index1 = 0;
+    for (const entry of new GeometryStreamIterator(physicalObject1.geom!)) {
+      if (0 === index1) {
         assert.equal(entry.primitive.type, "geometryQuery");
         assert.equal(entry.geomParams.subCategoryId, subCategoryId);
         assert.equal(entry.geomParams.materialId, renderMaterialId);
-      } else if (1 === itIndex) {
+      } else if (1 === index1) {
         assert.equal(entry.primitive.type, "partReference");
         assert.equal(entry.geomParams.subCategoryId, subCategoryId);
         assert.equal(entry.geomParams.materialId, renderMaterialId);
@@ -556,10 +578,22 @@ export namespace IModelTransformerUtils {
       } else {
         assert.fail(undefined, undefined, "Only expected 2 entries");
       }
-      itIndex++;
+      index1++;
     }
     assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     assert.equal(physicalObject3.federationGuid, federationGuid3, "Source FederationGuid should have been transferred to target element");
+    assert.equal(physicalObject4.category, spatialCategoryId);
+    let index4 = 0;
+    for (const entry of new GeometryStreamIterator(physicalObject4.geom!)) {
+      assert.equal(entry.primitive.type, "geometryQuery");
+      if (0 === index4) {
+        assert.notEqual(entry.geomParams.subCategoryId, subCategoryId, "Expect the default SubCategory");
+      } else if (1 === index4) {
+        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
+      }
+      index4++;
+    }
+    assert.equal(index4, 2, "Expect 2 remaining boxes since 1 was filtered out");
     assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
     assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by onTransformElement override");
@@ -988,6 +1022,25 @@ export namespace IModelTransformerUtils {
     return SpatialCategory.insert(iModelDb, modelId, categoryName, appearance);
   }
 
+  export function createBoxes(subCategoryIds: Id64String[]): GeometryStreamProps {
+    const length = 1.0;
+    const entryOrigin = Point3d.createZero();
+    const geometryStreamBuilder = new GeometryStreamBuilder();
+    geometryStreamBuilder.appendGeometry(Box.createDgnBox(
+      entryOrigin, Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, length),
+      length, length, length, length, true,
+    )!);
+    for (const subCategoryId of subCategoryIds) {
+      entryOrigin.addInPlace({ x: 1, y: 1, z: 1 });
+      geometryStreamBuilder.appendSubCategoryChange(subCategoryId);
+      geometryStreamBuilder.appendGeometry(Box.createDgnBox(
+        entryOrigin, Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, length),
+        length, length, length, length, true,
+      )!);
+    }
+    return geometryStreamBuilder.geometryStream;
+  }
+
   export function createBox(size: Point3d, categoryId?: Id64String, subCategoryId?: Id64String, renderMaterialId?: Id64String, geometryPartId?: Id64String): GeometryStreamProps {
     const geometryStreamBuilder = new GeometryStreamBuilder();
     if ((undefined !== categoryId) && (undefined !== subCategoryId)) {
@@ -1133,7 +1186,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   private readonly _targetModelId: Id64String;
   /** Construct a new PhysicalModelConsolidator */
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetModelId: Id64String) {
-    super(sourceDb, targetDb);
+    super(sourceDb, targetDb, { cloneUsingBinaryGeometry: true });
     this._targetModelId = targetModelId;
     this.importer.doNotUpdateElementIds.add(targetModelId);
   }
@@ -1154,6 +1207,7 @@ export class TestIModelTransformer extends IModelTransformer {
     this.initCodeSpecRemapping();
     this.initCategoryRemapping();
     this.initClassRemapping();
+    this.initSubCategoryFilters();
   }
 
   /** Initialize some sample exclusion rules for testing */
@@ -1187,6 +1241,23 @@ export class TestIModelTransformer extends IModelTransformer {
     this.context.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
     this.context.remapElementClass("TestTransformerSource:SourcePhysicalElementUsesCommonDefinition", "TestTransformerTarget:TargetPhysicalElementUsesCommonDefinition");
     this.context.remapElementClass("TestTransformerSource:SourceInformationRecord", "TestTransformerTarget:TargetInformationRecord");
+  }
+
+  /** */
+  private initSubCategoryFilters(): void {
+    assert.isFalse(this.context.hasSubCategoryFilter);
+    const sql = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE CodeValue=:codeValue`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindString("codeValue", "FilteredSubCategory");
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const subCategoryId = statement.getValue(0).getId();
+        assert.isFalse(this.context.isSubCategoryFiltered(subCategoryId));
+        this.context.filterSubCategory(subCategoryId);
+        this.exporter.excludeElement(subCategoryId);
+        assert.isTrue(this.context.isSubCategoryFiltered(subCategoryId));
+      }
+    });
+    assert.isTrue(this.context.hasSubCategoryFilter);
   }
 
   /** Override shouldExportElement to exclude all elements from the Functional schema. */

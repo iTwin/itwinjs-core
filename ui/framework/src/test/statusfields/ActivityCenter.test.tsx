@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageManager, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, WidgetDef,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ActivityCenter", () => {
 
@@ -47,8 +46,7 @@ describe("ActivityCenter", () => {
   });
 
   it("Status Bar with ActivityCenterField should mount", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-    wrapper.unmount();
+    mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
   });
 
   it("MessageManager.onActivityMessageUpdatedEvent should be handled", async () => {
@@ -61,7 +59,6 @@ describe("ActivityCenter", () => {
     expect(field.state("message")).to.eq(message);
     expect(field.state("percentage")).to.eq(percentage);
     expect(field.state("isActivityMessageVisible")).to.be.true;
-    wrapper.unmount();
   });
 
   it("MessageManager.onActivityMessageCancelledEvent should be handled", () => {
@@ -73,8 +70,6 @@ describe("ActivityCenter", () => {
 
     MessageManager.endActivityMessage(false);
     expect(field.state("isActivityMessageVisible")).to.be.false;
-
-    wrapper.unmount();
   });
 
   it("click should be handled", () => {
@@ -89,8 +84,6 @@ describe("ActivityCenter", () => {
     const clickable = wrapper.find("div.open-activity-message");
     clickable.simulate("click");
     expect(field.state("isActivityMessageVisible")).to.be.true;
-
-    wrapper.unmount();
   });
 
 });

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webgl-compatibility",
-  "version": "2.8.0-dev.6",
+  "version": "2.9.0-dev.3",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/webgl-compatibility.js",
@@ -11,7 +11,7 @@
     "cover": "npm test -- --cover",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
     "extract-api": "betools extract-api --entry=webgl-compatibility",
-    "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "npm run webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
@@ -34,9 +34,9 @@
   "dependencies": {},
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.8.0-dev.6",
-    "@bentley/eslint-plugin": "2.8.0-dev.6",
-    "@bentley/certa": "2.8.0-dev.6",
+    "@bentley/build-tools": "2.9.0-dev.3",
+    "@bentley/eslint-plugin": "2.9.0-dev.3",
+    "@bentley/certa": "2.9.0-dev.3",
     "@types/node": "10.14.1",
     "@types/mocha": "^5.2.5",
     "@types/chai": "^4.1.4",

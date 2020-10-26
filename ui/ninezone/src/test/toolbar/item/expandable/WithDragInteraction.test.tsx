@@ -2,26 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
-import { withDragInteraction } from "../../../../ui-ninezone";
-import { getDragDistance } from "../../../../ui-ninezone/toolbar/item/expandable/WithDragInteraction";
-import { Direction } from "../../../../ui-ninezone/utilities/Direction";
-
-/* eslint-disable @typescript-eslint/unbound-method */
+import { Direction, getDragDistance, withDragInteraction } from "../../../../ui-ninezone";
+import { mount } from "../../../Utils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const WithDragInteraction = withDragInteraction(() => <div></div>);
 
 describe("<WithDragInteraction />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<WithDragInteraction
       direction={Direction.Right}
@@ -35,7 +26,7 @@ describe("<WithDragInteraction />", () => {
   });
 
   it("should invoke onOpenPanel handler", () => {
-    const spy = sandbox.spy();
+    const spy = sinon.spy();
     const sut = mount(<WithDragInteraction
       direction={Direction.Right}
       onOpenPanel={spy}
@@ -46,14 +37,14 @@ describe("<WithDragInteraction />", () => {
 
     const pointerMove = document.createEvent("MouseEvent");
     pointerMove.initEvent("pointermove");
-    sandbox.stub(pointerMove, "clientX").get(() => 30);
+    sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
     spy.calledOnceWithExactly().should.true;
   });
 
   it("should not invoke onOpenPanel handler if initial position is not set", () => {
-    const spy = sandbox.spy();
+    const spy = sinon.spy();
     mount(<WithDragInteraction
       direction={Direction.Right}
       onOpenPanel={spy}
@@ -61,14 +52,14 @@ describe("<WithDragInteraction />", () => {
 
     const pointerMove = document.createEvent("MouseEvent");
     pointerMove.initEvent("pointermove");
-    sandbox.stub(pointerMove, "clientX").get(() => 30);
+    sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
     spy.notCalled.should.true;
   });
 
   it("should not invoke onOpenPanel handler if distance is < 20", () => {
-    const spy = sandbox.spy();
+    const spy = sinon.spy();
     const sut = mount(<WithDragInteraction
       direction={Direction.Right}
       onOpenPanel={spy}
@@ -79,14 +70,14 @@ describe("<WithDragInteraction />", () => {
 
     const pointerMove = document.createEvent("MouseEvent");
     pointerMove.initEvent("pointermove");
-    sandbox.stub(pointerMove, "clientX").get(() => 19);
+    sinon.stub(pointerMove, "clientX").get(() => 19);
     document.dispatchEvent(pointerMove);
 
     spy.notCalled.should.true;
   });
 
   it("should reset initial position on pointer up", () => {
-    const spy = sandbox.spy();
+    const spy = sinon.spy();
     const sut = mount(<WithDragInteraction
       direction={Direction.Right}
       onOpenPanel={spy}
@@ -101,7 +92,7 @@ describe("<WithDragInteraction />", () => {
 
     const pointerMove = document.createEvent("MouseEvent");
     pointerMove.initEvent("pointermove");
-    sandbox.stub(pointerMove, "clientX").get(() => 30);
+    sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
     spy.notCalled.should.true;
@@ -112,7 +103,7 @@ describe("<WithDragInteraction />", () => {
       direction={Direction.Right}
     />);
 
-    const spy = sandbox.spy(document, "removeEventListener");
+    const spy = sinon.spy(document, "removeEventListener");
     sut.unmount();
 
     spy.calledTwice.should.true;
@@ -121,7 +112,7 @@ describe("<WithDragInteraction />", () => {
   });
 
   it("should invoke onClick handler", () => {
-    const spy = sandbox.spy();
+    const spy = sinon.spy();
     const sut = mount(<WithDragInteraction
       direction={Direction.Right}
       onClick={spy}
@@ -134,7 +125,7 @@ describe("<WithDragInteraction />", () => {
   });
 
   it("should not invoke onClick handler if panel is opened", () => {
-    const spy = sandbox.spy();
+    const spy = sinon.spy();
     const sut = mount(<WithDragInteraction
       direction={Direction.Right}
       onClick={spy}
@@ -145,7 +136,7 @@ describe("<WithDragInteraction />", () => {
 
     const pointerMove = document.createEvent("MouseEvent");
     pointerMove.initEvent("pointermove");
-    sandbox.stub(pointerMove, "clientX").get(() => 30);
+    sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
     div.simulate("click");
@@ -154,8 +145,8 @@ describe("<WithDragInteraction />", () => {
   });
 
   it("should invoke onOpenPanel handler on long press", () => {
-    const fakeTimers = sandbox.useFakeTimers();
-    const spy = sandbox.spy();
+    const fakeTimers = sinon.useFakeTimers();
+    const spy = sinon.spy();
     const sut = mount(<WithDragInteraction
       direction={Direction.Right}
       onOpenPanel={spy}
@@ -170,8 +161,8 @@ describe("<WithDragInteraction />", () => {
   });
 
   it("should not invoke onOpenPanel handler if mouse moves", () => {
-    const fakeTimers = sandbox.useFakeTimers();
-    const spy = sandbox.spy();
+    const fakeTimers = sinon.useFakeTimers();
+    const spy = sinon.spy();
     const sut = mount(<WithDragInteraction
       direction={Direction.Right}
       onOpenPanel={spy}
@@ -182,7 +173,7 @@ describe("<WithDragInteraction />", () => {
 
     const pointerMove = document.createEvent("MouseEvent");
     pointerMove.initEvent("pointermove");
-    sandbox.stub(pointerMove, "clientX").get(() => 2);
+    sinon.stub(pointerMove, "clientX").get(() => 2);
     document.dispatchEvent(pointerMove);
 
     fakeTimers.tick(750);

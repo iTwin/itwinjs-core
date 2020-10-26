@@ -68,8 +68,8 @@ export class CellEditingEngine {
   }
 
   /**
-   * @param getEditorState Function, that returns currently edited node
-   * @param setEditorState Function, that sets currently edited node
+   * @param getCurrentNode Function, that returns currently edited node
+   * @param setCurrentNode Function, that sets currently edited node
    */
   public subscribe(getCurrentNode: GetCurrentlyEditedNode, setCurrentNode: SetCurrentlyEditedNode) {
     this._getCurrentlyEditedNode = getCurrentNode;

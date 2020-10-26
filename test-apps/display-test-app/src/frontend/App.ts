@@ -6,7 +6,7 @@
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, SelectionTool, SnapMode, TileAdmin, Tool,
+  AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, NativeApp, SelectionTool, SnapMode, TileAdmin, Tool,
 } from "@bentley/imodeljs-frontend";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -28,6 +28,7 @@ import { FenceClassifySelectedTool } from "./Fence";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
+import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -120,7 +121,10 @@ export class DisplayTestApp {
     opts.notifications = new Notifications();
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
     opts.uiAdmin = new UiManager();
-    await IModelApp.startup(opts);
+    if (MobileRpcConfiguration.isMobileFrontend)
+      await NativeApp.startup(opts);
+    else
+      await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));

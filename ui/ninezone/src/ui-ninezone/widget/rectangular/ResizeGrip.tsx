@@ -109,8 +109,7 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
         onPointerMove={this._handlePointerMove}
         style={this.props.style}
       >
-        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-        <div
+        <div // eslint-disable-line jsx-a11y/click-events-have-key-events
           className="nz-grip"
           onClick={this._handleClick}
           ref={this._grip}

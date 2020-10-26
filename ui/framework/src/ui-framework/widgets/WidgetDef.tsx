@@ -9,7 +9,7 @@
 import * as React from "react";
 import { AbstractWidgetProps, BadgeType, ConditionalStringValue, StringGetter, UiError, WidgetState } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
-import { Direction } from "@bentley/ui-ninezone";
+import { Direction, PanelSide } from "@bentley/ui-ninezone";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -31,7 +31,7 @@ const widgetStateNameMap = new Map<WidgetState, string>([
 
 /** Widget State Changed Event Args interface.
  * @public
- */
+ */
 export interface WidgetStateChangedEventArgs {
   widgetDef: WidgetDef;
   widgetState: WidgetState;
@@ -39,7 +39,7 @@ export interface WidgetStateChangedEventArgs {
 
 /** Widget State Changed Event class.
  * @public
- */
+ */
 export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
 
 /** @internal */
@@ -54,7 +54,7 @@ export interface WidgetEventArgs {
 
 /** Widget type enum.
  * @public
- */
+ */
 export enum WidgetType {
   Tool,
   Navigation,
@@ -66,7 +66,7 @@ export enum WidgetType {
 
 /** Properties for a Toolbar Widget.
  * @public
- */
+ */
 export interface ToolbarWidgetProps extends WidgetProps {
   horizontalDirection?: Direction;
   verticalDirection?: Direction;
@@ -77,21 +77,21 @@ export interface ToolbarWidgetProps extends WidgetProps {
 
 /** Properties for a Tool Widget.
  * @public
- */
+ */
 export interface ToolWidgetProps extends ToolbarWidgetProps {
   appButton?: CommandItemDef;
 }
 
 /** Properties for a Navigation Widget.
  * @public
- */
+ */
 export interface NavigationWidgetProps extends ToolbarWidgetProps {
   navigationAidId?: string;
 }
 
 /** Union of all Widget properties.
  * @public
- */
+ */
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 /** Prototype for WidgetDef StateFunc
@@ -99,11 +99,19 @@ export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetPro
  */
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
 
+/** @internal */
+export interface TabLocation {
+  widgetId: string;
+  widgetIndex: number;
+  side: PanelSide;
+  tabIndex: number;
+}
+
 // -----------------------------------------------------------------------------
 
 /** A Widget Definition in the 9-Zone Layout system.
  * @public
- */
+ */
 export class WidgetDef {
   private static _sId = 0;
   private _label: string | ConditionalStringValue | StringGetter = "";
@@ -131,6 +139,12 @@ export class WidgetDef {
   private _saveTransientState?: () => void;
   private _restoreTransientState?: () => boolean;
   private _preferredPanelSize: "fit-content" | undefined;
+  private _tabLocation: TabLocation = {
+    side: "left",
+    tabIndex: 0,
+    widgetId: "",
+    widgetIndex: 0,
+  };
 
   public get state(): WidgetState { return this._state; }
   public get id(): string { return this._id; }
@@ -152,6 +166,10 @@ export class WidgetDef {
 
   public get widgetType(): WidgetType { return this._widgetType; }
   public set widgetType(type: WidgetType) { this._widgetType = type; }
+
+  /** @internal */
+  public get tabLocation() { return this._tabLocation; }
+  public set tabLocation(tabLocation: TabLocation) { this._tabLocation = tabLocation; }
 
   constructor(widgetProps: WidgetProps) {
     if (widgetProps.id !== undefined)

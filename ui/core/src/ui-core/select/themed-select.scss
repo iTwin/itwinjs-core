@@ -140,7 +140,7 @@
       }
 
       .react-select__menu-list {
-        @include uicore-scrollbar()
+        @include uicore-scrollbar();
       }
     }
   }

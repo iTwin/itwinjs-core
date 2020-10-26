@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as enzyme from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("InputFieldMessage", () => {
   before(async () => {
@@ -20,15 +20,14 @@ describe("InputFieldMessage", () => {
   });
 
   it("should render correctly", () => {
-    const sut = enzyme.shallow(
+    const sut = shallow(
       <InputFieldMessage />,
     );
     sut.should.matchSnapshot();
-    sut.unmount();
   });
 
   it("should unmount correctly", () => {
-    const sut = enzyme.mount(
+    const sut = mount(
       <InputFieldMessage />,
     );
     sut.unmount();
@@ -38,7 +37,7 @@ describe("InputFieldMessage", () => {
     let details = new NotifyMessageDetails(OutputMessagePriority.Error, "Input field message.", "Detailed input field message.", OutputMessageType.InputField);
     const divElement = document.createElement("div");
     details.setInputFieldTypeDetails(divElement);
-    const wrapper = enzyme.mount(<InputFieldMessage showCloseButton />);
+    const wrapper = mount(<InputFieldMessage showCloseButton />);
     MessageManager.displayInputFieldMessage(details.inputField!, details.briefMessage, details.detailedMessage, details.priority);
     wrapper.update();
 
@@ -73,8 +72,6 @@ describe("InputFieldMessage", () => {
     MessageManager.displayInputFieldMessage(details.inputField!, details.briefMessage, details.detailedMessage, details.priority);
     wrapper.update();
     expect(wrapper.find("div.uifw-popup-message-inputField").length).to.eq(0);
-
-    wrapper.unmount();
   });
 
 });

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { ItemList } from "../../ui-framework/shared/ItemMap";
 import { DefaultNavigationWidget } from "../../ui-framework/widgets/DefaultNavigationWidget";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("DefaultNavigationWidget", () => {
 
@@ -20,8 +20,7 @@ describe("DefaultNavigationWidget", () => {
   });
 
   it("DefaultNavigationWidget should render", () => {
-    const wrapper = mount(<DefaultNavigationWidget />); // eslint-disable-line deprecation/deprecation
-    wrapper.unmount();
+    mount(<DefaultNavigationWidget />); // eslint-disable-line deprecation/deprecation
   });
 
   it("DefaultNavigationWidget should render correctly", () => {

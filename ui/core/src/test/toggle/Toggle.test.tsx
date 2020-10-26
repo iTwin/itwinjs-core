@@ -8,7 +8,6 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { Toggle, ToggleButtonType } from "../../ui-core";
-import { TestUtils } from "../TestUtils";
 
 describe("<Toggle />", () => {
   it("should render", () => {
@@ -34,7 +33,8 @@ describe("<Toggle />", () => {
     shallow(<Toggle large={true} />).should.matchSnapshot();
   });
 
-  it("Toggle should call onChange handler", async () => {
+  it("Toggle should call onChange handler", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const spyMethod = sinon.spy();
     let checked = false;
     const handleChange = (_checked: boolean) => {
@@ -55,11 +55,11 @@ describe("<Toggle />", () => {
     let toggling = wrapper.find(".core-toggling");
     toggling.length.should.not.eq(0);
 
-    await TestUtils.flushAsyncOperations();
     spyMethod.calledOnce.should.true;
     expect(checked).to.be.true;
 
-    await TestUtils.tick(1000);
+    fakeTimers.tick(1000);
+    fakeTimers.restore();
     wrapper.update();
     toggling = wrapper.find(".core-toggling");
     toggling.length.should.eq(0);

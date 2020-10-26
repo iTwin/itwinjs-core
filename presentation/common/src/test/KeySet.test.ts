@@ -744,6 +744,44 @@ describe("KeySet", () => {
 
   });
 
+  describe("some", () => {
+
+    it("returns true if callback returns true for instance key", () => {
+      const instanceKey = createRandomECInstanceKey();
+      const set = new KeySet([instanceKey]);
+      const callback = sinon.stub();
+      callback.returns(true);
+      expect(set.some(callback)).to.be.true;
+      expect(callback.callCount).to.eq(1);
+      expect(callback).to.be.calledWith(instanceKey);
+    });
+
+    it("returns true if callback returns true for node key", () => {
+      const nodeKey = createRandomECInstancesNodeKey();
+      const set = new KeySet([nodeKey]);
+      const callback = sinon.stub();
+      callback.returns(true);
+      expect(set.some(callback)).to.be.true;
+      expect(callback.callCount).to.eq(1);
+      expect(callback).to.be.calledWith(nodeKey);
+    });
+
+    it("returns false if callback returns false", () => {
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
+      const set = new KeySet([...instanceKeys, ...nodeKeys]);
+      const callback = sinon.stub();
+      callback.returns(false);
+      expect(set.some(callback)).to.be.false;
+      expect(callback.callCount).to.eq(4);
+      expect(callback).to.be.calledWith(instanceKeys[0]);
+      expect(callback).to.be.calledWith(instanceKeys[1]);
+      expect(callback).to.be.calledWith(nodeKeys[0]);
+      expect(callback).to.be.calledWith(nodeKeys[1]);
+    });
+
+  });
+
   describe("forEach", () => {
 
     it("calls callback for every key in set", () => {

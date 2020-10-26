@@ -67,6 +67,7 @@ export class StrokeOptions {
   public get hasMaxEdgeLength(): boolean { return this.maxEdgeLength !== undefined && this.maxEdgeLength > 0.0; }
   /** return stroke count which is the larger of the minCount or count needed for edge length condition. */
   public applyMaxEdgeLength(minCount: number, totalLength: number): number {
+    totalLength = Math.abs(totalLength);
     if (this.maxEdgeLength && this.maxEdgeLength > 0.0 && minCount * this.maxEdgeLength < totalLength) {
       minCount = Geometry.stepCount(this.maxEdgeLength, totalLength, minCount);
     }

@@ -47,6 +47,17 @@ export interface PropertyEditorInfo {
 }
 
 /**
+ * Information about a Property Converter
+ * @beta
+ */
+export interface PropertyConverterInfo {
+  /** Converter name used in addition to the typename to find the registered property converter */
+  name?: string;
+  /** map of options for type converter */
+  options?: { [key: string]: any };
+}
+
+/**
  * [[PropertyDescription]] contains metadata about a Property
  * @beta
  */
@@ -63,6 +74,8 @@ export interface PropertyDescription {
   renderer?: PropertyRendererInfo;
   /** Information for a property editor */
   editor?: PropertyEditorInfo;
+  /** Information for a property converter */
+  converter?: PropertyConverterInfo;
   /** Quantity type key used to look up formatting and parsing specs. This is typically either the name of a quantity type used by a tool
    *  or the full name of a KOQ (schema:koq).
    * @alpha

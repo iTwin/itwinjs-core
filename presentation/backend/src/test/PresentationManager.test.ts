@@ -28,7 +28,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
-import { PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
+import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
@@ -40,8 +40,7 @@ import { WithClientRequestContext } from "../presentation-backend/Utils";
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 describe("PresentationManager", () => {
 
-  beforeEach(async () => {
-    await IModelHost.shutdown();
+  before(async () => {
     try {
       await IModelHost.startup();
     } catch (e) {
@@ -53,6 +52,10 @@ describe("PresentationManager", () => {
       if (!isLoaded)
         throw e; // re-throw if startup() failed to set up NativePlatform
     }
+  });
+
+  after(async () => {
+    await IModelHost.shutdown();
   });
 
   const setupIModelForElementKey = (imodelMock: moq.IMock<IModelDb>, key: InstanceKey) => {
@@ -82,14 +85,14 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
         using(new PresentationManager(), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWithExactly(
-            "",
-            [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
-            IModelHost.platform.ECPresentationManagerMode.ReadWrite,
-            false,
-            "",
-          );
+          expect(constructorSpy).to.be.calledOnceWithExactly({
+            id: "",
+            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
+            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
+            isChangeTrackingEnabled: false,
+            cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
+          });
         });
       });
 
@@ -97,6 +100,9 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
         const testLocale = faker.random.locale();
         const testTaskAllocations = { [999]: 111 };
+        const cacheConfig = {
+          mode: HierarchyCacheMode.Memory,
+        }
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
@@ -104,19 +110,90 @@ describe("PresentationManager", () => {
           taskAllocationsMap: testTaskAllocations,
           mode: PresentationManagerMode.ReadWrite,
           updatesPollInterval: 1,
-          cacheDirectory: faker.random.word(),
+          cacheConfig,
         };
-        const expectedCacheDirectory = path.resolve(props.cacheDirectory!);
+        const expectedCacheConfig = {
+          mode: HierarchyCacheMode.Memory,
+        };
         using(new PresentationManager(props), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWithExactly(
-            props.id,
-            [getLocalesDirectory("/test"), testLocale],
-            testTaskAllocations,
-            IModelHost.platform.ECPresentationManagerMode.ReadWrite,
-            true,
-            expectedCacheDirectory,
-          );
+          expect(constructorSpy).to.be.calledOnceWithExactly({
+            id: props.id,
+            localeDirectories: [getLocalesDirectory("/test"), testLocale],
+            taskAllocationsMap: testTaskAllocations,
+            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
+            isChangeTrackingEnabled: true,
+            cacheConfig: expectedCacheConfig,
+          });
+        });
+      });
+
+      it("creates with disk cache config", () => {
+        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        using(new PresentationManager({ cacheConfig: { mode: HierarchyCacheMode.Disk } }), (manager) => {
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect(constructorSpy).to.be.calledOnceWithExactly({
+            id: "",
+            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
+            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
+            isChangeTrackingEnabled: false,
+            cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
+          });
+        });
+        constructorSpy.resetHistory();
+        const cacheConfig = {
+          mode: HierarchyCacheMode.Disk,
+          directory: faker.random.word(),
+        };
+        const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
+        using(new PresentationManager({ cacheConfig }), (manager) => {
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect(constructorSpy).to.be.calledOnceWithExactly({
+            id: "",
+            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
+            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
+            isChangeTrackingEnabled: false,
+            cacheConfig: expectedConfig,
+          });
+        });
+      });
+
+      it("creates with hybrid cache config", () => {
+        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        using(new PresentationManager({ cacheConfig: { mode: HierarchyCacheMode.Hybrid } }), (manager) => {
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect(constructorSpy).to.be.calledOnceWithExactly({
+            id: "",
+            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
+            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
+            isChangeTrackingEnabled: false,
+            cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
+          });
+        });
+        constructorSpy.resetHistory();
+        const cacheConfig: HybridCacheConfig = {
+          mode: HierarchyCacheMode.Hybrid,
+          disk: {
+            mode: HierarchyCacheMode.Disk,
+            directory: faker.random.word(),
+          },
+        }
+        const expectedConfig = {
+          ...cacheConfig, disk: { ...cacheConfig.disk, directory: path.resolve(cacheConfig.disk!.directory!) },
+        };
+        using(new PresentationManager({ cacheConfig }), (manager) => {
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect(constructorSpy).to.be.calledOnceWithExactly({
+            id: "",
+            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
+            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
+            isChangeTrackingEnabled: false,
+            cacheConfig: expectedConfig,
+          });
         });
       });
 
@@ -2240,36 +2317,6 @@ describe("PresentationManager", () => {
     });
 
     describe("getPagedDistinctValues", () => {
-
-      it("returns empty result for nested content request", async () => {
-        nativePlatformMock.reset();
-        // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
-        const descriptor = createRandomDescriptor();
-        const fieldDescriptor: FieldDescriptor = {
-          type: FieldDescriptorType.Name,
-          fieldName: faker.random.word(),
-          parent: {
-            type: FieldDescriptorType.Name,
-            fieldName: faker.random.word(),
-          },
-        };
-        // test
-        const options: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          descriptor,
-          keys,
-          fieldDescriptor,
-        };
-        const result = await manager.getPagedDistinctValues(options);
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()), moq.Times.never());
-        expect(result).to.deep.eq({
-          total: 0,
-          items: [],
-        });
-      });
 
       it("returns distinct values", async () => {
         // what the addon receives

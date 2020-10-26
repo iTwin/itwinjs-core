@@ -2,19 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as useTargetedModule from "@bentley/ui-core";
 import { GroupTool } from "../../../../../../ui-ninezone";
+import { mount } from "../../../../../Utils";
 
 describe("<GroupTool />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<GroupTool />);
   });
@@ -44,7 +39,7 @@ describe("<GroupTool />", () => {
   });
 
   it("renders targeted correctly", () => {
-    sandbox.stub(useTargetedModule, "useTargeted").returns(true);
+    sinon.stub(useTargetedModule, "useTargeted").returns(true);
     shallow(<GroupTool />).dive().should.matchSnapshot();
   });
 

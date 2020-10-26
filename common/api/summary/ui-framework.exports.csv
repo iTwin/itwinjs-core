@@ -274,6 +274,7 @@ internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Mini
 internal;isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is
 beta;isNoSelectionActive(): boolean
 internal;isPanelCollapsed(zoneStates: ReadonlyArray
+internal;isReactContent: (content: PopupContentType) => content is ReactContent
 internal;isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails
 alpha;isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem
 internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
@@ -379,6 +380,7 @@ public;PopupButton
 public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode
 public;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
+alpha;PopupContentType = HTMLElement | ReactContent
 alpha;PopupInfo
 alpha;PopupManager
 alpha;PopupPropsBase
@@ -395,6 +397,7 @@ internal;ProjectScope
 internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
+alpha;ReactContent
 public;ReactMessage = ReactMessage_2
 public;ReactNotifyMessageDetails
 public;Reducer
@@ -506,6 +509,7 @@ public;SyncUiEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
+internal;TabLocation
 public;TargetChangeHandler
 public;Task 
 public;TaskActivatedEvent 

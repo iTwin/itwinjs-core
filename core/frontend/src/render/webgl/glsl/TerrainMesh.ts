@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module WebGL
@@ -12,7 +12,7 @@ import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsAnimated, IsClassified, IsShadowable, IsThematic } from "../TechniqueFlags";
+import { FeatureMode, IsClassified, IsShadowable, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addUInt32s } from "./Common";
@@ -20,7 +20,6 @@ import { unquantize2d } from "./Decode";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addModelViewProjectionMatrix } from "./Vertex";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
-import { addTexture } from "./Surface";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 
@@ -66,7 +65,7 @@ function createBuilder(shadowable: IsShadowable): ProgramBuilder {
   return builder;
 }
 
-function addTextures(builder: ProgramBuilder) {
+function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
   builder.vert.addFunction(unquantize2d);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
@@ -78,7 +77,6 @@ function addTextures(builder: ProgramBuilder) {
     });
   });
 
-  const maxTexturesPerMesh = System.instance.maxTerrainImageryLayers;
   builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
     program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
       const textureCount = params.geometry.asTerrainMesh!.textureParams?.textures.length;
@@ -122,7 +120,13 @@ export default function createTerrainMeshBuilder(_classified: IsClassified, _fea
   const builder = createBuilder(shadowable);
   const frag = builder.frag;
   const applyTextureStrings = [];
-  const textureCount = System.instance.maxTerrainImageryLayers;
+  let textureCount = System.instance.maxTerrainImageryLayers;
+  let gradientTextureUnit = TextureUnit.TerrainThematicGradient;
+  const caps = System.instance.capabilities;
+  if (Math.min(caps.maxFragTextureUnits, caps.maxVertTextureUnits) < 16 && IsThematic.Yes === thematic) {
+    textureCount--; // steal the last bg map layer texture for thematic gradient (just when thematic display is applied)
+    gradientTextureUnit = -1; // is dependent on drawing mode so will set later
+  }
 
   for (let i = 0; i < textureCount; i++)
     applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texTransform${i})) doDiscard = false; `);
@@ -157,12 +161,16 @@ export default function createTerrainMeshBuilder(_classified: IsClassified, _fea
       uniform.setUniform1f(1.0 - params.target.terrainTransparency);
     });
   });
-  addTextures(builder);
+  addTextures(builder, textureCount);
 
   if (IsThematic.Yes === thematic) {
     addThematicDisplay(builder, false, true);
     builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, true)); // For now do not support slope and hillshade
-    addTexture(builder, IsAnimated.No, IsThematic.Yes, true); // for now pretend to be a point cloud since slope & hillshade modes are not supported yet
+    builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("s_texture", (uniform, params) => {
+        params.target.uniforms.thematic.bindTexture(uniform, gradientTextureUnit >= 0 ? gradientTextureUnit : (params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder));
+      });
+    });
   }
 
   return builder;

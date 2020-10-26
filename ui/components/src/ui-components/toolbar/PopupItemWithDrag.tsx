@@ -100,6 +100,7 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
 
   const processPanelOpenClose = React.useCallback((isOpening: boolean) => {
     setPanelShown((prev) => {
+      // istanbul ignore else
       if (prev !== isOpening)
         onPopupPanelOpenClose(isOpening);
       return isOpening;

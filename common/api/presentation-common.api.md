@@ -232,6 +232,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     handleInstancesPolymorphically?: boolean;
+    handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
     specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
 }
@@ -757,8 +758,6 @@ export namespace FieldDescriptor {
 // @beta
 export interface FieldDescriptorBase {
     // (undocumented)
-    parent?: FieldDescriptor;
-    // (undocumented)
     type: FieldDescriptorType;
 }
 
@@ -1048,6 +1047,7 @@ export class KeySet {
     get nodeKeys(): Set<NodeKey>;
     get nodeKeysCount(): number;
     get size(): number;
+    some(callback: (key: Key) => boolean): boolean;
     toJSON(): KeySetJSON;
 }
 
@@ -1687,6 +1687,7 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
 // @public
 export interface Property {
     property: PropertyInfo;
+    // @deprecated
     relatedClassPath: RelationshipPath;
 }
 
@@ -1820,7 +1821,7 @@ export interface PropertyInfoJSON {
 export interface PropertyJSON {
     // (undocumented)
     property: PropertyInfoJSON;
-    // (undocumented)
+    // @deprecated (undocumented)
     relatedClassPath: RelationshipPathJSON;
 }
 

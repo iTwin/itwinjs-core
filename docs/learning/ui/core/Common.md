@@ -11,7 +11,6 @@ The [Common]($ui-core:Common) category in the `@bentley/ui-core` package include
 ## Common Enums
 
 * [CheckBoxState]($ui-core) - State of a checkbox: On, Off or Partial
-* [DateFormat]($ui-core) - Short, Medium or Long
 * [HorizontalAlignment]($ui-core) - Left, Center, Right or Justify
 * [Orientation]($ui-core) - Horizontal or Vertical
 * [SortDirection]($ui-core) - Direction for column sorting: Ascending, Descending or NoSort

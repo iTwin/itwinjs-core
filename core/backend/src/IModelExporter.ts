@@ -407,8 +407,10 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportModel()`);
     if (this.shouldExportElement(modeledElement)) {
       this.exportModelContainer(model);
-      this.exportModelContents(modeledElementId);
-      this.exportSubModels(modeledElementId);
+      if (this.visitElements) {
+        this.exportModelContents(modeledElementId);
+        this.exportSubModels(modeledElementId);
+      }
     }
   }
 
@@ -522,7 +524,7 @@ export class IModelExporter {
       }
     }
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
-    Logger.logTrace(loggerCategory, `exportElement("${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
+    Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);
       this.exportElementAspects(elementId);

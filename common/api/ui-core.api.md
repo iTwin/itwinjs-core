@@ -451,18 +451,6 @@ export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, Comm
 }
 
 // @public
-export enum DateFormat {
-    // (undocumented)
-    Long = 3,
-    // (undocumented)
-    Medium = 2,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    Short = 1
-}
-
-// @public
 export class Dialog extends React.Component<DialogProps, DialogState> {
     constructor(props: DialogProps);
     // (undocumented)
@@ -1510,6 +1498,19 @@ export interface ProgressBarProps extends CommonProps {
     percent?: number;
 }
 
+// @beta
+export function ProgressSpinner(props: ProgressSpinnerProps): JSX.Element;
+
+// @beta
+export interface ProgressSpinnerProps extends CommonProps {
+    children?: React.ReactNode;
+    error?: boolean;
+    indeterminate?: boolean;
+    size?: SpinnerSize;
+    success?: boolean;
+    value?: number;
+}
+
 // @internal
 export const PROXIMITY_THRESHOLD_DEFAULT = 100;
 
@@ -1879,13 +1880,9 @@ export interface SpinnerProps {
 
 // @public
 export enum SpinnerSize {
-    // (undocumented)
     Large = 2,
-    // (undocumented)
     Medium = 1,
-    // (undocumented)
     Small = 0,
-    // (undocumented)
     XLarge = 3
 }
 
@@ -2101,11 +2098,8 @@ export interface TileProps extends CommonDivProps {
 
 // @public
 export enum TimeFormat {
-    // (undocumented)
     Long = 2,
-    // (undocumented)
     None = 0,
-    // (undocumented)
     Short = 1
 }
 

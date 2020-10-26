@@ -15,7 +15,7 @@ import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps } from "@bentley/presentation-backend";
+import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@bentley/presentation-backend";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { Presentation as PresentationFrontend, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 
@@ -39,6 +39,8 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 }
 
 let isInitialized = false;
+
+export { HierarchyCacheMode, PresentationManagerMode, PresentationBackendProps };
 
 /** @public */
 export interface PresentationTestingInitProps {
@@ -103,7 +105,12 @@ export const terminate = async (frontendApp = IModelApp) => {
     return;
 
   // store directory that needs to be cleaned-up
-  const cacheDirectory = PresentationBackend.initProps?.cacheDirectory;
+  let cacheDirectory: string | undefined;
+  const cacheConfig = PresentationBackend.initProps?.cacheConfig;
+  if (cacheConfig?.mode === HierarchyCacheMode.Disk)
+    cacheDirectory = cacheConfig?.directory;
+  else if (cacheConfig?.mode === HierarchyCacheMode.Hybrid)
+    cacheDirectory = cacheConfig?.disk?.directory;
 
   // terminate backend
   PresentationBackend.terminate();

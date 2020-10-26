@@ -13,7 +13,7 @@ import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geome
 import {
   AxisAlignedBox3d, BentleyStatus, BriefcaseProps, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
   FontMap, FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel,
-  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
+  IModelConnectionProps, IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
   mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
   QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
   SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams,
@@ -22,7 +22,7 @@ import {
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
 import { EntityState } from "./EntityState";
-import { EventSource, EventSourceManager } from "./EventSource";
+import { EventSource } from "./EventSource";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { GeoServices } from "./GeoServices";
@@ -64,10 +64,8 @@ export abstract class IModelConnection extends IModel {
   public readonly codeSpecs: IModelConnection.CodeSpecs;
   /** The [[ViewState]]s in this IModelConnection. */
   public readonly views: IModelConnection.Views;
-  /** The event source that listen for backend generated events
-   * @internal
-   */
-  public readonly eventSource: EventSource | undefined;
+  /** @internal */
+  protected _eventSource: EventSource;
   /** The set of currently hilited elements for this IModelConnection.
    * @beta
    */
@@ -118,6 +116,14 @@ export abstract class IModelConnection extends IModel {
       this._editing = new EditingFunctions(this);
     return this._editing;
   }
+
+  /** Supplies access to push events originating on the backend.
+   * @beta
+   */
+  public get eventSource(): EventSource { return this._eventSource; }
+
+  /** @internal */
+  protected getEventSourceProps(): IModelEventSourceProps { return { eventSourceName: this.eventSource.id }; }
 
   /** Type guard for instanceof [[BriefcaseConnection]] */
   public isBriefcaseConnection(): this is BriefcaseConnection { return this instanceof BriefcaseConnection; }
@@ -255,9 +261,7 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-    if (this._fileKey !== "") {
-      this.eventSource = EventSourceManager.get(this._fileKey, this.getRpcProps());
-    }
+    this._eventSource = EventSource.create(iModelProps.eventSourceName);
   }
 
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.
@@ -266,6 +270,7 @@ export abstract class IModelConnection extends IModel {
   protected beforeClose() {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
+    this.eventSource.dispose();
     this.tiles.dispose();
   }
 
@@ -789,6 +794,11 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
       // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
       this._changeSetId = openResponse.changeSetId;
+
+      if (openResponse.eventSourceName !== this.eventSource.id) {
+        this._eventSource.dispose();
+        this._eventSource = EventSource.create(openResponse.eventSourceName);
+      }
     } catch (error) {
       reject(error.message);
     } finally {
@@ -816,9 +826,6 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     requestContext.useContextForRpc = true;
 
     const closePromise: Promise<boolean> = IModelReadRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps()); // Ensure the method isn't awaited right away.
-    if (this.eventSource) {
-      EventSourceManager.delete(this._fileKey);
-    }
     try {
       await closePromise;
     } finally {
@@ -851,7 +858,10 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
 
     requestContext.useContextForRpc = true;
     const iModelProps = await NativeAppRpcInterface.getClient().openBriefcase(briefcaseProps.key);
-    return new this({ ...briefcaseProps, ...iModelProps });
+    const connection = new this({ ...briefcaseProps, ...iModelProps });
+
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
   }
 
   /** Close this LocalBriefcaseConnection
@@ -869,10 +879,9 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
 
     requestContext.useContextForRpc = true;
     const closePromise: Promise<void> = NativeAppRpcInterface.getClient().closeBriefcase(this._fileKey); // Ensure the method isn't awaited right away.
-    if (this.eventSource) {
-      EventSourceManager.delete(this._fileKey);
-    }
+
     try {
+      this.eventSource.dispose();
       await closePromise;
     } finally {
       requestContext.enter();
@@ -919,6 +928,7 @@ export class BlankConnection extends IModelConnection {
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
       contextId: props.contextId,
+      eventSourceName: "",
     });
   }
 

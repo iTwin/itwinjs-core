@@ -75,7 +75,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   }
 
   private focus() {
-    // istanbul ignore else
+    // istanbul ignore next
     if (this._inputElement.current)
       this._inputElement.current.focus();
   }

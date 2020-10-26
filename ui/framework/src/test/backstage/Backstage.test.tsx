@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
   Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher, TaskLaunchBackstageItem,
 } from "../../ui-framework";
 import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
-import TestUtils, { mockUserInfo } from "../TestUtils";
+import TestUtils, { mockUserInfo, mount } from "../TestUtils";
 
 describe("Backstage", () => {
 
@@ -27,13 +27,11 @@ describe("Backstage", () => {
 
   describe("<Backstage />", () => {
     it("should render - isVisible", () => {
-      const wrapper = mount(<Backstage isVisible={true} />); // eslint-disable-line deprecation/deprecation
-      wrapper.unmount();
+      mount(<Backstage isVisible={true} />); // eslint-disable-line deprecation/deprecation
     });
 
     it("should render - !isVisible", () => {
-      const wrapper = mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
-      wrapper.unmount();
+      mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
     });
 
     it("renders correctly - isVisible", () => {
@@ -67,23 +65,21 @@ describe("Backstage", () => {
     });
 
     it("should show", () => {
-      const wrapper = mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
+      mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
       expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
       Backstage.show(); // eslint-disable-line deprecation/deprecation
       expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
-      wrapper.unmount();
     });
 
     it("should hide", () => {
-      const wrapper = mount(<Backstage isVisible={true} />); // eslint-disable-line deprecation/deprecation
+      mount(<Backstage isVisible={true} />); // eslint-disable-line deprecation/deprecation
       expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
       Backstage.hide(); // eslint-disable-line deprecation/deprecation
       expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
-      wrapper.unmount();
     });
 
     it("should toggle", () => {
-      const wrapper = mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
+      mount(<Backstage isVisible={false} />); // eslint-disable-line deprecation/deprecation
       expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
 
       const toggleCommand = Backstage.backstageToggleCommand; // eslint-disable-line deprecation/deprecation
@@ -92,8 +88,6 @@ describe("Backstage", () => {
 
       toggleCommand.execute();
       expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
-
-      wrapper.unmount();
     });
 
     it("should show by updating isVisible prop", () => {
@@ -101,7 +95,6 @@ describe("Backstage", () => {
       expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
       wrapper.setProps({ isVisible: true });
       expect(Backstage.isBackstageVisible).to.be.true; // eslint-disable-line deprecation/deprecation
-      wrapper.unmount();
     });
 
     it("should close when clicking the overlay", () => {
@@ -112,7 +105,6 @@ describe("Backstage", () => {
       overlay.simulate("click");
       expect(Backstage.isBackstageVisible).to.be.false; // eslint-disable-line deprecation/deprecation
       expect(spyMethod.calledOnce).to.be.true;
-      wrapper.unmount();
     });
   });
 });

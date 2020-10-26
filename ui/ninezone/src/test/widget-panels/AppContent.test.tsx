@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { renderHook } from "@testing-library/react-hooks";
-import { createNineZoneState, NineZoneDispatch, usePanelsAutoCollapse } from "../../ui-ninezone";
-import { NineZoneProvider, setRefValue } from "../Providers";
 import { fireEvent } from "@testing-library/react";
-import { createPanelsState, createVerticalPanelState } from "../../ui-ninezone/base/NineZoneState";
+import { renderHook } from "@testing-library/react-hooks";
+import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../ui-ninezone";
+import { NineZoneProvider, setRefValue } from "../Providers";
 
 describe("usePanelsAutoCollapse", () => {
   it("should collapse unpinned panels", () => {

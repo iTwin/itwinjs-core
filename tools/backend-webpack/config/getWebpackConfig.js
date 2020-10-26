@@ -36,6 +36,10 @@ function getWebpackConfig(srcFile, outDir, profile) {
       new CaseSensitivePathsPlugin(),
     ],
     profile,
+    node: {
+      __dirname: false,
+      __filename: false,
+    }
   };
 };
 

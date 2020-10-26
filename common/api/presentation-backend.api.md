@@ -45,12 +45,57 @@ import { VariableValue } from '@bentley/presentation-common';
 import { VariableValueJSON } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
 
+// @alpha (undocumented)
+export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
+    // (undocumented)
+    listener: (diagnostics: DiagnosticsScopeLogs) => void;
+}
+
+// @beta
+export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
+    directory?: string;
+    // (undocumented)
+    mode: HierarchyCacheMode.Disk;
+}
+
 // @beta
 export enum DuplicateRulesetHandlingStrategy {
     // (undocumented)
     Replace = 1,
     // (undocumented)
     Skip = 0
+}
+
+// @internal (undocumented)
+export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
+
+// @beta
+export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
+
+// @beta
+export interface HierarchyCacheConfigBase {
+    // (undocumented)
+    mode: HierarchyCacheMode;
+}
+
+// @beta
+export enum HierarchyCacheMode {
+    Disk = "disk",
+    Hybrid = "hybrid",
+    Memory = "memory"
+}
+
+// @beta
+export interface HybridCacheConfig extends HierarchyCacheConfigBase {
+    disk?: DiskHierarchyCacheConfig;
+    // (undocumented)
+    mode: HierarchyCacheMode.Hybrid;
+}
+
+// @beta
+export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
+    // (undocumented)
+    mode: HierarchyCacheMode.Memory;
 }
 
 // @public
@@ -204,7 +249,7 @@ export interface PresentationManagerProps {
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
     // @beta
-    cacheDirectory?: string;
+    cacheConfig?: HierarchyCacheConfig;
     enableSchemasPreload?: boolean;
     // @internal (undocumented)
     eventSink?: EventSink;
@@ -277,6 +322,12 @@ export interface RulesetVariablesManager {
     setString(variableId: string, value: string): void;
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
 }
+
+// @beta
+export type WithClientRequestContext<T> = T & {
+    requestContext: ClientRequestContext;
+    diagnostics?: BackendDiagnosticsOptions;
+};
 
 
 // (No @packageDocumentation comment for this package)

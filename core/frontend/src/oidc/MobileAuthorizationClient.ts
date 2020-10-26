@@ -11,7 +11,7 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { defaultMobileAuthorizationClientExpiryBuffer, Events, MobileAuthorizationClientConfiguration, NativeAppRpcInterface } from "@bentley/imodeljs-common";
-import { EventSourceManager } from "../EventSource";
+import { EventSource } from "../EventSource";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 
 const loggerCategory: string = FrontendLoggerCategory.MobileAuthorizationClient;
@@ -25,7 +25,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
   public constructor(clientConfiguration: MobileAuthorizationClientConfiguration) {
     super();
     this._clientConfiguration = clientConfiguration;
-    EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onUserStateChanged, (args: any) => {
+    EventSource.global.on(Events.NativeApp.namespace, Events.NativeApp.onUserStateChanged, (args: any) => {
       if (args.accessToken) {
         this._accessToken = AccessToken.fromJson(args.accessToken);
       } else {

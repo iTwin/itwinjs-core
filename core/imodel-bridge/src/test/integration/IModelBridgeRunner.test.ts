@@ -10,7 +10,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { BridgeTestUtils, TestIModelInfo } from "../BridgeTestUtils";
 import { BriefcaseDb, BriefcaseManager, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BentleyStatus, ClientRequestContext, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyStatus, ClientRequestContext, Guid, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BridgeJobDefArgs, BridgeRunner } from "../../BridgeRunner";
 import { HubUtility } from "./HubUtility";
@@ -39,16 +39,23 @@ describe("IModelBridgeFwk (#integration)", () => {
     }
 
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
-    const targetIModelId = await HubUtility.recreateIModel(requestContext, testProjectId, "TestBridge_ReadWrite");
+    const imodelName = `TestBridge_ReadWrite_${Guid.createValue()}`;
+    const targetIModelId = await HubUtility.recreateIModel(requestContext, testProjectId, imodelName);
     expect(undefined !== targetIModelId);
-    readWriteTestIModel = await BridgeTestUtils.getTestModelInfo(requestContext, testProjectId, "TestBridge_ReadWrite");
+    readWriteTestIModel = await BridgeTestUtils.getTestModelInfo(requestContext, testProjectId, imodelName);
 
     // Purge briefcases that are close to reaching the acquire limit
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "TestBridge_ReadWrite");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", imodelName);
   });
 
   after(async () => {
+    // Clean up the iModel
+    try {
+      await BriefcaseManager.imodelClient.iModels.delete(requestContext, testProjectId, readWriteTestIModel.id);
+    } catch (err) {
+    }
+
     await BridgeTestUtils.shutdownBackend();
   });
 

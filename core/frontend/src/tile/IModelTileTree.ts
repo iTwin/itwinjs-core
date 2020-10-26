@@ -372,4 +372,8 @@ export class IModelTileTree extends TileTree {
     const state = this._rootTile.tileState;
     return "dynamic" === state.type ? state.rootTile.hiddenElements : [];
   }
+
+  public forcePrune(): void {
+    this.rootTile.pruneChildren(BeTimePoint.now());
+  }
 }

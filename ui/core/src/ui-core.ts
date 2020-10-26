@@ -41,7 +41,6 @@ export * from "./ui-core/elementseparator/ElementSeparator";
 
 export * from "./ui-core/enums/Alignment";
 export * from "./ui-core/enums/CheckBoxState";
-export * from "./ui-core/enums/DateFormat";
 export * from "./ui-core/enums/Orientation";
 export * from "./ui-core/enums/SortDirection";
 export * from "./ui-core/enums/TimeFormat";
@@ -97,6 +96,7 @@ export * from "./ui-core/notification/MessageType";
 export * from "./ui-core/popup/Popup";
 
 export * from "./ui-core/progress-indicators/ProgressBar";
+export * from "./ui-core/progress-indicators/ProgressSpinner";
 
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";

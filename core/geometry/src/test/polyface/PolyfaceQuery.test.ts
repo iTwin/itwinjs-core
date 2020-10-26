@@ -22,6 +22,7 @@ import { ChainMergeContext } from "../../topology/ChainMerge";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 
 /* eslint-disable no-console */
 /** Functions useful for modifying test data. */
@@ -570,6 +571,54 @@ describe("ReOrientFacets", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "MarkVisibility", "XYBoundaryHoles");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("ComputeNormals", () => {
+
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const solids = Sample.createClosedSolidSampler(true);
+    const creaseAngle1 = Angle.createDegrees(20);
+    const creaseAngle2 = Angle.createDegrees(45);
+    const defaultOptions = StrokeOptions.createForFacets();
+    const triangulatedOptions = StrokeOptions.createForFacets();
+    triangulatedOptions.shouldTriangulate = true;
+    // REMARK: (EDL Oct 2020) Mutter and grumble.  The builder does not observe shouldTriangulate !!!
+    for (const solid of solids) {
+      for (const options of [defaultOptions]) {
+        const builder = PolyfaceBuilder.create(options);
+        builder.addGeometryQuery(solid);
+        const mesh = builder.claimPolyface();
+        ck.testUndefined(mesh.data.normalIndex);
+        ck.testUndefined(mesh.data.normal);
+        let y0 = 0;
+        if (ck.testType<IndexedPolyface>(mesh)) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
+          y0 += 10.0;
+          PolyfaceQuery.buildPerFaceNormals(mesh);
+          ck.testDefined(mesh.data.normalIndex);
+          ck.testDefined(mesh.data.normal);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
+          y0 += 10.0;
+          PolyfaceQuery.buildAverageNormals(mesh, creaseAngle1);
+          ck.testDefined(mesh.data.normalIndex);
+          ck.testDefined(mesh.data.normal);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
+          mesh.data.normalIndex = undefined;
+          mesh.data.normal = undefined;
+          y0 += 10.0;
+          PolyfaceQuery.buildAverageNormals(mesh, creaseAngle2);
+          ck.testDefined(mesh.data.normalIndex);
+          ck.testDefined(mesh.data.normal);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
+        }
+        x0 += 20;
+      }
+      x0 += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ComputeNormals");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });
 
@@ -603,6 +652,7 @@ function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[],
     const boundaryE = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.Intersection, dataB);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryE, x0, y0 += yStep);
   }
+
 }
 /**
  * * Restructure mesh data as a polyface.

@@ -3,187 +3,139 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module EventSource
+ * @module IModelConnection
  */
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelApp } from "./IModelApp";
+import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
+import { QueuedEvent, RpcPushChannel } from "@bentley/imodeljs-common";
 
-const loggingCategory = FrontendLoggerCategory.EventSource;
-/** Describe the event listener
- * @internal
+let globalSource: EventSource | undefined;
+
+/** A function that can respond to events originating from an [[EventSource]].
+ * The type of `eventData` depends on the specific event.
+ * @see [[EventSource.on]] to register a listener for a specific event.
+ * @beta
  */
-export type EventListener = (data: any) => void;
-/** Event source class that allow listen to server side events
- * @internal
+export type EventListener = (eventData: any) => void;
+
+/** A function returned from [[EventSource.on]] that can be invoked to remove the [[EventListener]].
+ * @beta
  */
-export class EventSource {
-  private _timeoutHandle: any;
-  private _namespaces = new Map<string, Map<string, EventListener[]>>();
-  constructor(public readonly tokenProps: IModelRpcProps) {
+export type RemoveEventListener = () => void;
+
+/** Provides access to push events emitted by the backend.
+ * @note Push events will only be received if `RpcPushChannel.enabled` is `true`.
+ * @see [[IModelConnection.eventSource]] for an event source associated with a specific iModel.
+ * @see [[EventSource.global]] for an event source not associated with a specific iModel.
+ * @beta
+ */
+export class EventSource implements IDisposable {
+  /** Identifies this event source. */
+  public readonly id: string;
+  private readonly _namespaces = new Map<string, Map<string, EventListener[]>>();
+  private _channel?: RpcPushChannel<any>;
+
+  protected constructor(id: string) {
+    this.id = id;
+    if (!RpcPushChannel.enabled || "" === id)
+      return;
+
+    this._channel = RpcPushChannel.obtain(id);
+    const subscription = this._channel.subscribe();
+    subscription.onMessage.addListener((events: QueuedEvent[]) => {
+      for (const event of events)
+        this.dispatchEvent(event);
+    });
   }
-  private scheduleNextPoll() {
-    const onPoll = async () => {
-      try {
-        const queuedEvents = await NativeAppRpcInterface.getClient().fetchEvents(this.tokenProps, IModelApp.eventSourceOptions.prefetchLimit);
-        // dispatch events
-        queuedEvents.forEach((event: QueuedEvent) => {
-          this.dispatchEvent(event);
-        });
-      } finally {
-        if (this._timeoutHandle) {
-          this._timeoutHandle = setTimeout(onPoll, IModelApp.eventSourceOptions.pollInterval);
-        }
-      }
-    };
-    this._timeoutHandle = setTimeout(onPoll, IModelApp.eventSourceOptions.pollInterval);
+
+  /** Create a new [[EventSource]] with the specified Id.
+   * @note The caller is responsible for invoking [[EventSource.dispose]] when finished with the event sink.
+   * @note Multiple event sources may exist with the same id, listening for events emitted over the same channel.
+   */
+  public static create(id: string): EventSource {
+    return new EventSource(id);
   }
-  public get fetching() { return !this._timeoutHandle; }
-  private onListenerChanged() {
-    // if there is nothing to listen for, stop polling;
-    if (this._namespaces.size === 0) {
-      if (this._timeoutHandle) {
-        clearTimeout(this._timeoutHandle);
-        this._timeoutHandle = undefined;
-      }
-    } else if (!this._timeoutHandle) {
-      if (RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
-        this.scheduleNextPoll();
-      } else {
-        Logger.logError(loggingCategory, "EventSource is disabled. Interface 'NativeAppRpcInterface' is not registered");
-      }
-    }
+
+  /** Obtain the source for "global" events not associated with a more specific context, such as changes in network connectivity.
+   * @note [[EventListener]]s registered with this event source are removed when [[IModelApp.shutdown]] is called.
+   */
+  public static get global(): EventSource {
+    return globalSource ?? (globalSource = EventSource.create("__globalEvents__"));
   }
-  private dispatchEvent(event: QueuedEvent) {
-    const listeners = this.getListeners(event.namespace, event.eventName, false);
-    if (listeners) {
-      listeners.forEach((listener: EventListener) => {
-        listener.apply(undefined, [event.data]);
-      });
-    }
-  }
-  private getListeners(namespace: string, eventName: string, create: boolean): EventListener[] | undefined {
-    const namespaces = this._namespaces;
-    let nsCol = namespaces.get(namespace);
-    if (!nsCol) {
-      if (create) {
-        nsCol = new Map<string, EventListener[]>();
-        namespaces.set(namespace, nsCol);
-      } else {
-        return undefined;
-      }
-    }
-    let evtCol = nsCol.get(eventName);
-    if (!evtCol) {
-      if (create) {
-        evtCol = [];
-        nsCol.set(eventName, evtCol);
-      } else {
-        return undefined;
-      }
-    }
-    this.onListenerChanged();
-    return evtCol;
-  }
-  /** Hook a listener to a event in a given namespace
-   * @param namespace event namespace which allow you to group event
-   * @param eventName name of the event. It should be unique per namespace
-   * @param listener callback for the event.
-   * @returns callback that allow  you to remove event by calling off()
+
+  /** Invoked on [[IModelApp.shutdown]] to clear out event listeners.
    * @internal
    */
-  public on(namespace: string, eventName: string, listener: EventListener) {
-    const listeners = this.getListeners(namespace, eventName, true)!;
-    listeners.push(listener);
-    return { off: () => { this.off(namespace, eventName, listener); } };
+  public static clearGlobal(): void {
+    globalSource = dispose(globalSource);
   }
-  /** Remove a listener for a event from a given namespace
-   * @param namespace event namespace which allow you to group event
-   * @param eventName name of the event. It should be unique per namespace
-   * @param listener callback for the event.
-   * @internal
+
+  /** Disposes of this EventSource, detaching it from the backend and removing all [[EventListener]]s.
+   * @note It is the responsibility of the caller of [[EventSource.create]] to dispose of it when it is no longer needed.
    */
-  public off(namespace: string, eventName: string, listener: EventListener) {
-    const namespaces = this._namespaces;
-    const listeners = this.getListeners(namespace, eventName, false);
-    if (listeners) {
-      listeners.some((value: EventListener, index: number) => {
-        if (value === listener) {
-          listeners.splice(index, 1);
-          return true;
-        }
-        return false;
-      });
-      if (listeners.length === 0) {
-        const nsCol = namespaces.get(namespace)!;
-        nsCol.delete(eventName);
-        if (nsCol.size === 0) {
-          namespaces.delete(namespace);
-        }
-      }
-    }
-    this.onListenerChanged();
-  }
-  /** remove all events and event listeners
-   * @internal
-   */
-  public clear() {
+  public dispose(): void {
+    this._channel = dispose(this._channel);
     this._namespaces.clear();
-    this.onListenerChanged();
   }
-}
 
-/** Registry for event sources
- * @internal
- */
-export abstract class EventSourceManager {
-  private static _sources: Map<string, EventSource> = new Map<string, EventSource>();
-  private static _global?: EventSource;
-  public static readonly GLOBAL = "__globalEvents__";
-  private constructor() {
+  /** Returns true if this event source has been disconnected from the backend. */
+  public get isDisposed(): boolean {
+    return undefined === this._channel;
   }
-  public static get global() {
-    if (!EventSourceManager._global) {
-      EventSourceManager._global = this.create(EventSourceManager.GLOBAL, {
-        key: EventSourceManager.GLOBAL,
-      });
-    }
-    return EventSourceManager._global;
+
+  /** Add an [[EventListener]] for the specified event.
+   * @returns A function that can be used to remove the event listener.
+   */
+  public on(namespace: string, eventName: string, listener: EventListener): RemoveEventListener {
+    if (this.isDisposed)
+      return () => undefined;
+
+    const listeners = this.getListeners(namespace, eventName, true);
+    assert(undefined !== listeners);
+    listeners.push(listener);
+    return () => { this.off(namespace, eventName, listener); };
   }
-  public static get(id: string, tokenProps?: IModelRpcProps): EventSource {
-    if (EventSourceManager._sources.has(id)) {
-      return EventSourceManager._sources.get(id)!;
+
+  private off(namespace: string, eventName: string, listener: EventListener): void {
+    const listeners = this.getListeners(namespace, eventName, false);
+    if (!listeners)
+      return;
+
+    const index = listeners.indexOf(listener);
+    if (index < 0)
+      return;
+
+    if (listeners.length > 1) {
+      listeners.splice(index, 1);
+      return;
     }
-    if (id === EventSourceManager.GLOBAL) {
-      return this.global;
-    }
-    if (tokenProps) {
-      if (!EventSourceManager._sources.has(id)) {
-        return this.create(id, tokenProps);
-      } else {
-        if (tokenProps.key !== EventSourceManager.get(id).tokenProps.key) {
-          throw new Error(`EventSource with id='${id}' has different iModelToken`);
-        }
-        // WIP: not sure why the above checks exists since it will fall through and throw anyway...
-      }
-    }
-    throw new Error(`EventSource with id='${id}' not found`);
+
+    const ns = this._namespaces.get(namespace);
+    assert(undefined !== ns);
+    ns.delete(eventName);
+    if (0 === ns.size)
+      this._namespaces.delete(namespace);
   }
-  public static delete(id: string): void {
-    if (EventSourceManager.has(id)) {
-      EventSourceManager._sources.delete(id);
-    }
+
+  private dispatchEvent(event: QueuedEvent): void {
+    const listeners = this.getListeners(event.namespace, event.eventName, false);
+    if (listeners)
+      for (const listener of listeners)
+        listener.apply(undefined, [event.data]);
   }
-  public static has(id: string): boolean {
-    return EventSourceManager._sources.has(id);
-  }
-  public static create(id: string, tokenProps: IModelRpcProps): EventSource {
-    if (EventSourceManager._sources.has(id)) {
-      throw new Error(`EventSource with key='${id}' already exist`);
+
+  private getListeners(namespace: string, eventName: string, create: boolean): EventListener[] | undefined {
+    let ns = this._namespaces.get(namespace);
+    if (!ns) {
+      if (!create)
+        return undefined;
+
+      this._namespaces.set(namespace, ns = new Map<string, EventListener[]>());
     }
-    const eventSource = new EventSource(tokenProps);
-    EventSourceManager._sources.set(id, eventSource);
-    return eventSource;
+
+    let listeners = ns.get(eventName);
+    if (!listeners && create)
+      ns.set(eventName, listeners = []);
+
+    return listeners;
   }
 }

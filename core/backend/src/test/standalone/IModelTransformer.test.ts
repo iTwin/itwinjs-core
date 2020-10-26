@@ -248,6 +248,8 @@ describe("IModelTransformer", () => {
       code: Code.createEmpty(),
       userLabel: "PhysicalObject-M1-E1",
       category: sourceCategoryId,
+      geom: IModelTransformerUtils.createBox(new Point3d(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 1, y: 1 }, angles: {} }),
     };
     const sourceElementId11 = sourceDb.elements.insertElement(elementProps11);
     const elementProps21: PhysicalElementProps = {
@@ -256,6 +258,8 @@ describe("IModelTransformer", () => {
       code: Code.createEmpty(),
       userLabel: "PhysicalObject-M2-E1",
       category: sourceCategoryId,
+      geom: IModelTransformerUtils.createBox(new Point3d(2, 2, 2)),
+      placement: Placement3d.fromJSON({ origin: { x: 2, y: 2 }, angles: {} }),
     };
     const sourceElementId21 = sourceDb.elements.insertElement(elementProps21);
     sourceDb.saveChanges();
@@ -472,6 +476,16 @@ describe("IModelTransformer", () => {
     assert.equal(125, count(targetDb, PhysicalObject.classFullName));
     const aspects = targetDb.elements.getAspects(targetPartition.id, ExternalSourceAspect.classFullName);
     assert.isAtLeast(aspects.length, 5, "Provenance should be recorded for each source PhysicalModel");
+
+    const sql = `SELECT ECInstanceId FROM ${PhysicalObject.classFullName}`;
+    targetDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const targetElementId = statement.getValue(0).getId();
+        const targetElement = targetDb.elements.getElement<PhysicalObject>({ id: targetElementId, wantGeometry: true });
+        assert.exists(targetElement.geom);
+        assert.isFalse(targetElement.calculateRange3d().isNull);
+      }
+    });
 
     sourceDb.close();
     targetDb.close();

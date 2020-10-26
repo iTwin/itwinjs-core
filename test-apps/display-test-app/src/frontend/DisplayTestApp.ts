@@ -8,11 +8,11 @@ import {
 } from "@bentley/frontend-authorization-client";
 import {
   BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface, ElectronRpcConfiguration,
-  ElectronRpcManager, IModelError, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
+  ElectronRpcManager, IModelError, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
   RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
-  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, StandaloneConnection,
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClientConfiguration, RenderDiagnostics, RenderSystem, StandaloneConnection,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
@@ -67,10 +67,10 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
 }
 
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
-  const redirectUri = "http://localhost:3000/signin-callback";
+  const redirectUri = MobileRpcConfiguration.isMobileFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
-  return ElectronRpcConfiguration.isElectron
+  return ElectronRpcConfiguration.isElectron || MobileRpcConfiguration.isMobileFrontend
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
@@ -90,11 +90,15 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient | MobileAuthorizationClient> {
   if (ElectronRpcConfiguration.isElectron) {
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
+  } else if (MobileRpcConfiguration.isMobileFrontend) {
+    const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
+    await mobileClient.initialize(requestContext);
+    return mobileClient;
   } else {
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
     return browserClient;
@@ -198,10 +202,6 @@ const dtaFrontendMain = async () => {
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
-  await DisplayTestApp.startup({ renderSys: renderSystemOptions });
-  if (false !== configuration.enableDiagnostics)
-    IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
-
   // Choose RpcConfiguration based on whether we are in electron or browser
   const rpcInterfaces: RpcInterfaceDefinition[] = [
     DtaRpcInterface,
@@ -224,6 +224,10 @@ const dtaFrontendMain = async () => {
     BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
   }
 
+  await DisplayTestApp.startup({ renderSys: renderSystemOptions });
+  if (false !== configuration.enableDiagnostics)
+    IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set SVT_STANDALONE_FILENAME in environment");
 
@@ -234,7 +238,7 @@ const dtaFrontendMain = async () => {
 
   // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
-    if ((!configuration.standalone || configuration.signInForStandalone) && !MobileRpcConfiguration.isMobileFrontend) {
+    if (!configuration.standalone || configuration.signInForStandalone) {
       const signedIn: boolean = await signIn();
       if (!signedIn)
         return;

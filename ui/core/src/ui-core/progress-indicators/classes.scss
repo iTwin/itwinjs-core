@@ -19,3 +19,15 @@
 .uicore-progress-bar-labeled {
   @include uicore-progress-bar-labeled;
 }
+
+.uicore-progress-spinner {
+  @include uicore-progress-spinner;
+
+  &.determinate {
+    @include uicore-progress-spinner-determinate;
+  }
+
+  &.indeterminate {
+    @include uicore-progress-spinner-indeterminate;
+  }
+}

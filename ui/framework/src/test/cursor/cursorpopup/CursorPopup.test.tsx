@@ -3,26 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
-import { CursorInformation } from "../../../ui-framework/cursor/CursorInformation";
-import { CursorPopup, CursorPopupContent, CursorPopupShow } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";
-import { CursorPopupManager, CursorPopupOptions, CursorPopupRenderer } from "../../../ui-framework/cursor/cursorpopup/CursorPopupManager";
-import TestUtils from "../../TestUtils";
+import { CursorInformation, CursorPopup, CursorPopupContent, CursorPopupManager, CursorPopupOptions, CursorPopupRenderer, CursorPopupShow } from "../../../ui-framework";
+import TestUtils, { mount } from "../../TestUtils";
 
 describe("CursorPopup", () => {
-
-  it("should render", () => {
-    const wrapper = mount(<CursorPopupRenderer />);
-    wrapper.unmount();
+  it("should mount", () => {
+    mount(<CursorPopupRenderer />);
   });
 
   it("should open and close", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
+    mount(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
@@ -33,12 +28,10 @@ describe("CursorPopup", () => {
     CursorPopupManager.close("test", false);
     await TestUtils.flushAsyncOperations();
     expect(CursorPopupManager.popupCount).to.eq(0);
-
-    wrapper.unmount();
   });
 
   it("should open, update and close", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
+    mount(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
@@ -53,12 +46,10 @@ describe("CursorPopup", () => {
     CursorPopupManager.close("test", false);
     await TestUtils.flushAsyncOperations();
     expect(CursorPopupManager.popupCount).to.eq(0);
-
-    wrapper.unmount();
   });
 
   it("should open and close with Props", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
+    mount(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const spyClose = sinon.spy();
@@ -80,55 +71,49 @@ describe("CursorPopup", () => {
 
     spyClose.calledOnce.should.true;
     spyApply.calledOnce.should.true;
-
-    wrapper.unmount();
   });
 
-  it("should open and close with fadeOut", async () => {
+  it("should open and close with fadeOut", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const wrapper = mount(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
     CursorPopupManager.open("test", <div>Hello</div>, CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
-    await TestUtils.flushAsyncOperations();
     expect(CursorPopupManager.popupCount).to.eq(1);
 
     CursorPopupManager.close("test", false, true);
-    await TestUtils.flushAsyncOperations();
     wrapper.update();
     const cursorPopup = wrapper.find(CursorPopup);
     expect(cursorPopup.state("showPopup")).to.eq(CursorPopupShow.FadeOut);
 
-    await TestUtils.tick(1000);
+    fakeTimers.tick(1000);
+    fakeTimers.restore();
     expect(CursorPopupManager.popupCount).to.eq(0);
-
-    wrapper.unmount();
   });
 
-  it("should fadeOut correct popup", async () => {
+  it("should fadeOut correct popup", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const wrapper = mount(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
     CursorPopupManager.open("test", <div>Hello</div>, CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
     CursorPopupManager.open("test2", <div>Hello</div>, CursorInformation.cursorPosition, new Point(20, 20), relativePosition);
-    await TestUtils.flushAsyncOperations();
     expect(CursorPopupManager.popupCount).to.eq(2);
 
     CursorPopupManager.close("test", false, true);
-    await TestUtils.flushAsyncOperations();
     wrapper.update();
     const cursorPopup = wrapper.find(CursorPopup);
     expect(cursorPopup.length).to.eq(2);
     expect(cursorPopup.at(0).state("showPopup")).to.eq(CursorPopupShow.FadeOut);
 
-    await TestUtils.tick(1000);
+    fakeTimers.tick(1000);
+    fakeTimers.restore();
     expect(CursorPopupManager.popupCount).to.eq(1);
 
     CursorPopupManager.close("test2", false);
     expect(CursorPopupManager.popupCount).to.eq(0);
-
-    wrapper.unmount();
   });
 
   it("should set relativePosition", async () => {
@@ -184,8 +169,6 @@ describe("CursorPopup", () => {
     expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.Left);
 
     CursorPopupManager.close("test", false);
-
-    wrapper.unmount();
   });
 
   it("should set offset if more than one popup in a position", async () => {
@@ -238,8 +221,6 @@ describe("CursorPopup", () => {
 
     CursorPopupManager.close("test", false);
     CursorPopupManager.close("test2", false);
-
-    wrapper.unmount();
   });
 
   it("should flip right to left appropriately", async () => {
@@ -280,8 +261,6 @@ describe("CursorPopup", () => {
     expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
 
     CursorPopupManager.close("test", false);
-
-    wrapper.unmount();
   });
 
   it("should flip bottom to top appropriately", async () => {
@@ -322,8 +301,6 @@ describe("CursorPopup", () => {
     expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.TopLeft);
 
     CursorPopupManager.close("test", false);
-
-    wrapper.unmount();
   });
 
   it("should flip left to right appropriately", async () => {
@@ -345,8 +322,6 @@ describe("CursorPopup", () => {
     expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.BottomRight);
 
     CursorPopupManager.close("test", false);
-
-    wrapper.unmount();
   });
 
   it("should flip top to bottom appropriately", async () => {
@@ -368,8 +343,6 @@ describe("CursorPopup", () => {
     expect(cursorPopup.prop("relativePosition")).to.eq(RelativePosition.BottomRight);
 
     CursorPopupManager.close("test", false);
-
-    wrapper.unmount();
   });
 
   it("CursorPopupContent should render", () => {
@@ -383,7 +356,6 @@ describe("CursorPopup", () => {
     CursorPopupManager.update("xyz", <div>Hello</div>, new Point(0, 0), new Point(20, 20), RelativePosition.Left);
 
     spyMethod.calledOnce.should.true;
-    (Logger.logError as any).restore();
   });
 
   it("CursorPopupManager.close should log error when id not found", () => {
@@ -392,7 +364,6 @@ describe("CursorPopup", () => {
     CursorPopupManager.close("xyz", false);
 
     spyMethod.calledOnce.should.true;
-    (Logger.logError as any).restore();
   });
 
 });

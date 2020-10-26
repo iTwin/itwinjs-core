@@ -3,29 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as UiCore from "@bentley/ui-core";
 import { Toast } from "../../../ui-ninezone";
-import { createBoundingClientRect } from "../../Utils";
+import { createBoundingClientRect, mount } from "../../Utils";
 
 describe("<Toast />", () => {
-  let timerConstructorStub: sinon.SinonStub | undefined;
-  let fakeTimers: sinon.SinonFakeTimers | undefined;
-  const rafSpy = sinon.spy((cb: FrameRequestCallback) => {
-    return window.setTimeout(cb, 0);
-  });
-
-  before(() => {
-    window.requestAnimationFrame = rafSpy;
-  });
-
-  afterEach(() => {
-    timerConstructorStub && timerConstructorStub.restore();
-    fakeTimers && fakeTimers.restore();
-  });
-
   it("should render", () => {
     mount(<Toast />);
   });
@@ -37,7 +22,7 @@ describe("<Toast />", () => {
   it("should stop the timer when unmounting", () => {
     const timer = new UiCore.Timer(1000);
     const stopSpy = sinon.spy(timer, "stop");
-    timerConstructorStub = sinon.stub(UiCore, "Timer").returns(timer);
+    sinon.stub(UiCore, "Timer").returns(timer);
 
     const sut = mount(<Toast />);
     sut.unmount();
@@ -46,7 +31,7 @@ describe("<Toast />", () => {
   });
 
   it("should animate out to specified element", () => {
-    fakeTimers = sinon.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
 
     const animateOutTo = document.createElement("div");
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -67,7 +52,7 @@ describe("<Toast />", () => {
   });
 
   it("should not prepare for animation if component is unmounted", () => {
-    fakeTimers = sinon.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
 
     const animateOutTo = document.createElement("div");
     const mounted = mount(<Toast
@@ -85,7 +70,7 @@ describe("<Toast />", () => {
   });
 
   it("should not start animation if component is unmounted", () => {
-    fakeTimers = sinon.useFakeTimers();
+    const fakeTimers = sinon.useFakeTimers();
 
     const animateOutTo = document.createElement("div");
     const mounted = mount(<Toast

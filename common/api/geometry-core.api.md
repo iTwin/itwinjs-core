@@ -1665,18 +1665,16 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     clone(): DirectSpiral3d;
     cloneTransformed(transform: Transform): DirectSpiral3d;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
-    // (undocumented)
     static createArema(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createAustralianRail(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
-    // (undocumented)
     static createChineseCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createCzechCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     // (undocumented)
     static createDirectHalfCosine(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createFromLengthAndRadius(spiralType: string, radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, _bearing1: Angle | undefined, arcLength: number | undefined, activeInterval: undefined | Segment1d, localToWorld: Transform): TransitionSpiral3d | undefined;
-    // (undocumented)
     static createJapaneseCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createTruncatedClothoid(spiralType: string, localToWorld: Transform, numXTerm: number, numYTerm: number, originalProperties: TransitionConditionalProperties | undefined, nominalL1: number, nominalR1: number, activeInterval: Segment1d | undefined): DirectSpiral3d | undefined;
+    static createWesternAustralian(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     curveLength(): number;
     readonly curvePrimitiveType = "transitionSpiral";
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -2211,13 +2209,9 @@ export class HalfEdge {
     fractionToY(fraction: number): number;
     fractionToZ(fraction: number): number;
     getMask(mask: HalfEdgeMask): number;
-    // (undocumented)
     getPoint2d(result?: Point2d): Point2d;
-    // (undocumented)
     getPoint3d(result?: Point3d): Point3d;
-    // (undocumented)
     getVector2dAlongEdge(result?: Vector2d): Vector2d;
-    // (undocumented)
     getVector3dAlongEdge(result?: Vector3d): Vector3d;
     static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge;
     static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined;
@@ -4063,6 +4057,8 @@ export class PolyfaceQuery {
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
     static boundaryEdges(source: Polyface | undefined, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
+    static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
+    static buildPerFaceNormals(polyface: IndexedPolyface): void;
     static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
@@ -5306,6 +5302,8 @@ export interface UVSurfaceIsoParametricDistance {
 // @public
 export class UVSurfaceOps {
     static createLinestringOnUVLine(surface: UVSurface, u0: number, v0: number, u1: number, v1: number, numEdge: number, saveUV?: boolean, saveFraction?: boolean): LineString3d;
+    static sampledRangeOfOffsetEllipsoidPatch(patch: EllipsoidPatch, offsetDistance: number | undefined, options?: StrokeOptions): Range3d;
+    static sampledRangeOfOffsetPatch(patch: UVSurface, offsetDistance: number | undefined, numU: number, numV: number): Range3d;
 }
 
 // @public

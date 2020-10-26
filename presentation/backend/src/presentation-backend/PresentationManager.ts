@@ -9,7 +9,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, EventSink, EventSinkManager, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, EventSink, IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
@@ -42,6 +42,74 @@ export enum PresentationManagerMode {
    * react to changes. This involves some additional work and gives slightly worse performance.
    */
   ReadWrite,
+}
+
+/**
+ * Presentation hierarchy cache mode.
+ * @beta
+ */
+export enum HierarchyCacheMode {
+  /**
+   * Hierarchy cache is created in memory.
+   */
+  Memory = "memory",
+  /**
+   * Hierarchy cache is created on disk. In this mode hierarchy cache is persisted between iModel
+   * openings.
+   */
+  Disk = "disk",
+  /**
+   * Hierarchy cache is created on disk. In this mode everything is cached in memory while creating hierarchy level
+   * and persisted in disk cache when whole hierarchy level is created.
+   */
+  Hybrid = "hybrid",
+}
+
+/**
+ * Configuration for hierarchy cache.
+ * @beta
+ */
+export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
+
+/**
+ * Base interface for all [[HierarchyCacheConfig]] implementations.
+ * @beta
+ */
+export interface HierarchyCacheConfigBase {
+  mode: HierarchyCacheMode;
+}
+
+/**
+ * Configuration for memory hierarchy cache.
+ * @beta
+ */
+export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
+  mode: HierarchyCacheMode.Memory;
+}
+
+/**
+ * Configuration for disk hierarchy cache.
+ * @beta
+ */
+export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
+  mode: HierarchyCacheMode.Disk;
+  /**
+   * A directory for Presentation hierarchy cache. If not set hierarchy cache is created
+   * along side iModel.
+   */
+  directory?: string;
+}
+
+/**
+ * Configuration for hybrid hierarchy cache.
+ * @beta
+ */
+export interface HybridCacheConfig extends HierarchyCacheConfigBase {
+  mode: HierarchyCacheMode.Hybrid;
+  /**
+   * Configuration for disk cache used to persist hierarchy.
+   */
+  disk?: DiskHierarchyCacheConfig;
 }
 
 /**
@@ -150,12 +218,10 @@ export interface PresentationManagerProps {
   updatesPollInterval?: number;
 
   /**
-   * A directory for Presentation hierarchy caches. If not set hierarchy cache is created
-   * along side iModel.
-   *
+   * A configuration for Presentation hierarchy cache.
    * @beta
    */
-  cacheDirectory?: string;
+  cacheConfig?: HierarchyCacheConfig;
 
   /**
    * An identifier which helps separate multiple presentation managers. It's
@@ -216,7 +282,7 @@ export class PresentationManager {
         taskAllocationsMap: createTaskAllocationsMap(props),
         mode,
         isChangeTrackingEnabled,
-        cacheDirectory: this._props.cacheDirectory ? path.resolve(this._props.cacheDirectory) : "",
+        cacheConfig: createCacheConfig(this._props.cacheConfig),
       });
       this._nativePlatform = new nativePlatformImpl();
     }
@@ -238,7 +304,7 @@ export class PresentationManager {
       this._isOneFrontendPerBackend = true;
       this._updatesTracker = UpdatesTracker.create({
         nativePlatformGetter: this.getNativePlatform,
-        eventSink: (props && props.eventSink) ? props.eventSink /* istanbul ignore next */ : EventSinkManager.global,
+        eventSink: (props && props.eventSink) ? props.eventSink /* istanbul ignore next */ : EventSink.global,
         pollInterval: props!.updatesPollInterval!, // set if `isChangeTrackingEnabled == true`
       });
     }
@@ -618,13 +684,6 @@ export class PresentationManager {
    * @alpha
    */
   public async getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
-    if (requestOptions.fieldDescriptor.parent) {
-      // not supported yet
-      return {
-        total: 0,
-        items: [],
-      };
-    }
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {
@@ -855,3 +914,17 @@ const normalizeLocale = (locale?: string) => {
     return undefined;
   return locale.toLocaleLowerCase();
 };
+
+const normalizeDirectory = (directory?: string) => {
+  return directory ? path.resolve(directory) : "";
+}
+
+const createCacheConfig = (config?: HierarchyCacheConfig): IModelJsNative.ECPresentationHierarchyCacheConfig => {
+  if (config?.mode === HierarchyCacheMode.Disk)
+    return { ...config, directory: normalizeDirectory(config.directory) };
+  if (config?.mode === HierarchyCacheMode.Hybrid)
+    return { ...config, disk: config.disk ? { ...config.disk, directory: normalizeDirectory(config.disk.directory) } : undefined };
+  if (config?.mode === HierarchyCacheMode.Memory)
+    return config;
+  return { mode: HierarchyCacheMode.Disk, directory: "" };
+}

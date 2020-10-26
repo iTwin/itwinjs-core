@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, FooterModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("FooterModeField", () => {
 
@@ -50,13 +49,11 @@ describe("FooterModeField", () => {
   it("should mount with isInFooterMode", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
     expect(wrapper.find(FooterSeparator).length).to.eq(1);
-    wrapper.unmount();
   });
 
   it("should mount with isInFooterMode=false", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
     expect(wrapper.find(FooterSeparator).length).to.eq(0);
-    wrapper.unmount();
   });
 
   it("should change with Props change", () => {
@@ -65,7 +62,6 @@ describe("FooterModeField", () => {
     wrapper.setProps({ isInFooterMode: false });
     wrapper.update();
     expect(wrapper.find(FooterSeparator).length).to.eq(0);
-    wrapper.unmount();
   });
 
 });

@@ -11,7 +11,7 @@ import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend"
 import {
   DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValueJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
-import { PresentationManagerMode } from "./PresentationManager";
+import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -66,7 +66,7 @@ export interface DefaultNativePlatformProps {
   taskAllocationsMap: { [priority: number]: number };
   mode: PresentationManagerMode;
   isChangeTrackingEnabled: boolean;
-  cacheDirectory: string;
+  cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
 }
 
 /** @internal */
@@ -77,7 +77,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     private _nativeAddon: IModelJsNative.ECPresentationManager;
     public constructor() {
       const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager(props.id, props.localeDirectories, props.taskAllocationsMap, mode, props.isChangeTrackingEnabled, props.cacheDirectory);
+      const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig });
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {

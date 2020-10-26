@@ -7,28 +7,18 @@
  */
 
 import * as React from "react";
-import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
+import { DateFormatter, RelativePosition, SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 import { BodyText, CommonProps, Popup } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { DatePicker } from "./DatePicker";
-import { DateField, TimeDisplay } from "./DateField";
+import { DateField } from "./DateField";
 import { TimeField, TimeSpec } from "./TimeField";
 import "./DatePickerPopupButton.scss";
-
-/** Interface used to provide a custom Date Time formatter and optional parser
- * for use by [[DatePickerPopup]]. If a parseData function is not implemented the edit field
- * showing the formatted date string will not editable.
- * @alpha
- */
-export interface DateFormatter {
-  formateDate: (day: Date) => string;
-  parseDate?: (dateString: string) => Date | undefined;
-}
 
 /** Props used by [[DatePickerPopupButton]] component.
  * @alpha */
 export interface DatePickerPopupButtonProps extends CommonProps {
-  /** Date to show a being selected. */
+  /** Date to be shown as the selected date. */
   selected: Date;
   /** If true show the date (and optionally time) edit field next to button */
   displayEditField?: boolean;
@@ -75,7 +65,7 @@ export function DatePickerPopupButton({ displayEditField, timeDisplay, selected,
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const togglePopupDisplay = React.useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
-    setShowFocusOutline (false);
+    setShowFocusOutline(false);
     setIsSettingsOpen((prev) => !prev);
   }, [setIsSettingsOpen]);
 
@@ -99,14 +89,14 @@ export function DatePickerPopupButton({ displayEditField, timeDisplay, selected,
     onDateChange && onDateChange(newWorkingDate);
   }
 
-  const [showFocusOutline, setShowFocusOutline] = React.useState (false);
+  const [showFocusOutline, setShowFocusOutline] = React.useState(false);
   const handlePopupKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLButtonElement>) => {
     // istanbul ignore else
     if (event.key === SpecialKey.Space) {
-      setShowFocusOutline (true);
+      setShowFocusOutline(true);
       setIsSettingsOpen(true);
     }
-  },[]);
+  }, []);
 
   const timeSpec: TimeSpec = { hours: workingDate.getHours(), minutes: workingDate.getMinutes(), seconds: workingDate.getSeconds() };
   return (

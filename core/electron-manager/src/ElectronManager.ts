@@ -7,6 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
+import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
 
 // cSpell:ignore signin devserver webcontents
 
@@ -33,7 +34,7 @@ class ElectronManager {
     const opts: BrowserWindowConstructorOptions = {
       autoHideMenuBar: true,
       webPreferences: {
-        preload: path.join(__dirname, "./ElectronPreload.js"),
+        preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
         nodeIntegration: false,
         experimentalFeatures: false,
         enableRemoteModule: false,
@@ -45,6 +46,7 @@ class ElectronManager {
     };
 
     this._mainWindow = new BrowserWindow(opts);
+    ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 
@@ -124,7 +126,9 @@ export class IModelJsElectronManager extends ElectronManager {
   }
 
   public async initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
-    // Also handle any "electron://" requests and redirect them to "file://" URLs
+    await app.whenReady();
+    // handle any "electron://" requests and redirect them to "file://" URLs
+    // should registerFileProtocol after app is ready, https://www.electronjs.org/docs/api/protocol
     protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
 
     await super.initialize(windowOptions); // must be after registering protocol

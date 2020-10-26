@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  ActionItemButton, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
-  ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneState,
+  BaseItemState,
+  CommandItemDef,
+  ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
+  SessionStateActionId,
+  SyncUiEventId,
+  ToolWidget, UiFramework, Widget, WidgetState, Zone, ZoneState,
 } from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
@@ -16,6 +19,8 @@ import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import {
   HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 /* eslint-disable react/jsx-key */
 
@@ -39,7 +44,7 @@ export class Frontstage2 extends FrontstageProvider {
         contents: [
           {
             classId: "UiFramework.IModelViewportControl",
-            applicationData: { label: "Content 1a", bgColor: "black" },
+            applicationData: { label: "Content 1a", bgColor: "black", disableDefaultViewOverlay: true },
           },
           {
             classId: TreeExampleContentControl,
@@ -47,7 +52,7 @@ export class Frontstage2 extends FrontstageProvider {
           },
           {
             classId: "TestApp.IModelViewport",
-            applicationData: { label: "Content 3a", bgColor: "black" },
+            applicationData: { label: "Content 3a", bgColor: "black", disableDefaultViewOverlay: true },
           },
           {
             classId: HorizontalPropertyGridContentControl,
@@ -61,7 +66,7 @@ export class Frontstage2 extends FrontstageProvider {
       <Frontstage id="Test2"
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
-        isInFooterMode={false} applicationData={{ key: "value" }}
+        isInFooterMode={false} applicationData={{ key: "value", disableDefaultViewOverlay: true }}
 
         contentManipulationTools={
           <Zone
@@ -118,49 +123,84 @@ export class Frontstage2 extends FrontstageProvider {
   }
 }
 
+function getSelectionContextSyncEventIds(): string[] {
+  return [SyncUiEventId.SelectionSetChanged, SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SessionStateActionId.SetNumItemsSelected];
+}
+
+function isSelectionSetEmpty(): boolean {
+  const activeContentControl = ContentViewManager.getActiveContentControl();
+  let selectionCount = 0;
+  if (!UiFramework.frameworkStateKey)
+    selectionCount = UiFramework.store.getState()[UiFramework.frameworkStateKey].frameworkState.sessionState.numItemsSelected;
+
+  if (activeContentControl && activeContentControl.viewport
+    && (activeContentControl.viewport.view.iModel.selectionSet.size > 0 || selectionCount > 0))
+    return false;
+  return true;
+}
+
+function selectionContextStateFunc(state: Readonly<BaseItemState>): BaseItemState {
+  const isVisible = !isSelectionSetEmpty();
+  return { ...state, isVisible };
+}
+
+function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue {
+  return new ConditionalBooleanValue(isSelectionSetEmpty, getSelectionContextSyncEventIds());
+}
+
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
 class FrontstageToolWidget extends React.Component {
-  private _horizontalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Bottom}
-      items={
-        <>
-          <ActionItemButton actionItem={AppTools.item1} />
-          <ActionItemButton actionItem={AppTools.item2} />
-          <GroupButton
-            labelKey="SampleApp:buttons.toolGroup"
-            iconSpec="icon-placeholder"
-            items={[AppTools.tool1, AppTools.tool2]}
-            direction={Direction.Bottom}
-            itemsInColumn={7}
-          />
-        </>
-      }
-    />
-  );
+  // example toolbar item that hides/shows based on selection set
+  public get myClearSelectionItemDef() {
+    return new CommandItemDef({
+      commandId: "UiFramework.ClearSelection",
+      iconSpec: "icon-selection-clear",
+      labelKey: "UiFramework:buttons.clearSelection",
+      stateSyncIds: getSelectionContextSyncEventIds(), /* only used when in ui 1.0 mode */
+      stateFunc: selectionContextStateFunc,  /* only used when in ui 1.0 mode */
+      isHidden: getIsHiddenIfSelectionNotActive(),  /* only used when in ui 2.0 mode */
+      execute: () => {
+        const iModelConnection = UiFramework.getIModelConnection();
+        if (iModelConnection) {
+          iModelConnection.selectionSet.emptyAll();
+        }
+        const tool = IModelApp.toolAdmin.primitiveTool;
+        if (tool)
+          tool.onRestartTool();
+        else
+          IModelApp.toolAdmin.startDefaultTool();
+      },
+    });
+  }
 
-  private _verticalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Right}
-      items={
-        <>
-          <GroupButton
-            labelKey="SampleApp:buttons.anotherGroup"
-            iconSpec="icon-placeholder"
-            items={[AppTools.item3, AppTools.item4, AppTools.item5, AppTools.item6, AppTools.item7, AppTools.item8]}
-          />
-        </>
-      }
-    />
-  );
+  private get _horizontalToolbarItems(): ItemList {
+    const items = new ItemList([
+      this.myClearSelectionItemDef,
+      AppTools.item1,
+      AppTools.item2,
+      new GroupItemDef({
+        groupId: "SampleApp:buttons-toolGroup",
+        labelKey: "SampleApp:buttons.toolGroup",
+        iconSpec: "icon-symbol",
+        items: [AppTools.tool1, AppTools.tool2],
+        itemsInColumn: 7,
+      }),
+    ]);
+    return items;
+  }
+
+  private get _verticalToolbarItems(): ItemList {
+    const items = new ItemList([AppTools.item3, AppTools.item4, AppTools.item5, AppTools.item6, AppTools.item7, AppTools.item8]);
+    return items;
+  }
 
   public render() {
     return (
       <ToolWidget
         appButton={AppTools.backstageToggleCommand}
-        horizontalToolbar={this._horizontalToolbar}
-        verticalToolbar={this._verticalToolbar}
+        horizontalItems={this._horizontalToolbarItems}
+        verticalItems={this._verticalToolbarItems}
       />
     );
   }
@@ -169,35 +209,23 @@ class FrontstageToolWidget extends React.Component {
 /** Define a NavigationWidget with Buttons to display in the TopRight zone.
  */
 class FrontstageNavigationWidget extends React.Component {
-
-  private _horizontalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Bottom}
-      items={
-        <>
-          <ToolButton toolId="item5" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item5" />
-          <ToolButton toolId="item6" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-          <ToolButton toolId="item7" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item7" />
-        </>
-      }
-    />);
-
-  private _verticalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Right}
-      items={
-        <>
-          <ToolButton toolId="item8" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item8" />
-        </>
-      }
-    />);
-
   public render() {
+    const horizontalItems = new ItemList([
+      CoreTools.fitViewCommand,
+      CoreTools.windowAreaCommand,
+      CoreTools.zoomViewCommand,
+      CoreTools.panViewCommand,
+      CoreTools.rotateViewCommand,
+    ]);
+
+    const verticalItems = new ItemList([
+      CoreTools.toggleCameraViewCommand,
+    ]);
+
     return (
       <NavigationWidget
-        navigationAidId="StandardRotationNavigationAid"
-        horizontalToolbar={this._horizontalToolbar}
-        verticalToolbar={this._verticalToolbar}
+        horizontalItems={horizontalItems}
+        verticalItems={verticalItems}
       />
     );
   }

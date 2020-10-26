@@ -79,13 +79,12 @@ describe("NavigationWidget", () => {
     />;
 
   it("NavigationWidget should render", () => {
-    const wrapper = mount(
+    mount(
       <NavigationWidget // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />,
     );
-    wrapper.unmount();
   });
 
   it("NavigationWidget should render correctly", () => {
@@ -102,13 +101,12 @@ describe("NavigationWidget", () => {
     const hItemList = new ItemList([CoreTools.selectElementCommand]);
     const vItemList = new ItemList([CoreTools.fitViewCommand]);
 
-    const wrapper = mount(
+    mount(
       <NavigationWidget // eslint-disable-line deprecation/deprecation
         horizontalItems={hItemList}
         verticalItems={vItemList}
       />,
     );
-    wrapper.unmount();
   });
 
   it("NavigationWidget should support update", () => {
@@ -123,8 +121,6 @@ describe("NavigationWidget", () => {
     wrapper.setProps({ verticalToolbar: undefined });
     wrapper.update();
     expect(wrapper.find(ToolButton).length).to.eq(2);
-
-    wrapper.unmount();
   });
 
   class TestContentControl extends ContentControl {
@@ -169,24 +165,21 @@ describe("NavigationWidget", () => {
     FrontstageManager.setActiveToolId(CoreTools.selectElementCommand.toolId);
 
     ConfigurableUiManager.unregisterControl("Aid1");
-    wrapper.unmount();
   });
 
   it("NavigationAidHost should render in 2.0 mode", () => {
-    const wrapper = mount(
+    mount(
       <FrameworkVersion version="2">
         <NavigationAidHost />
       </FrameworkVersion>);
-    wrapper.unmount();
   });
 
   it("NavigationAidHost should render in 2.0 mode with snapWidgetOpacity", () => {
     UiShowHideManager.snapWidgetOpacity = true;
-    const wrapper = mount(
+    mount(
       <FrameworkVersion version="2">
         <NavigationAidHost />
       </FrameworkVersion>);
-    wrapper.unmount();
     UiShowHideManager.snapWidgetOpacity = false;
   });
 

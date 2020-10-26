@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import { BooleanSyncUiListener, SyncUiEventDispatcher } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 const syncUiEventId = "showhellocomponentchanged";  // must be lower case
 
@@ -40,8 +39,6 @@ describe("BooleanSyncUiListener", () => {
 
     expect(wrapper.find("div").length).to.eq(1);
     expect(wrapper.find("div").text()).to.eq(goodBye);
-
-    wrapper.unmount();
   });
 
   it("BooleanSyncUiListener should mount - default non-visible children", () => {
@@ -65,8 +62,6 @@ describe("BooleanSyncUiListener", () => {
     // now that sync event forced function to run it should be showing true contents
     expect(wrapper.find("div").length).to.eq(1);
     expect(wrapper.find("div").text()).to.eq(helloWorld);
-
-    wrapper.unmount();
   });
 
 });

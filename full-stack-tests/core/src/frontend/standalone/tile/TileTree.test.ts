@@ -60,6 +60,7 @@ class MockTree extends TileTree {
 
   public draw(_args: TileDrawArgs): void { }
   public prune(): void { }
+  public forcePrune(): void { }
 }
 
 describe("TileTreeSupplier", () => {

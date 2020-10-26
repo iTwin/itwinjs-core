@@ -237,13 +237,22 @@ export class OrbitGtTileTree extends TileTree {
   public get isContentUnbounded(): boolean { return false; }
   public get maxDepth(): number | undefined { return undefined; }
 
-  public prune() {
-    const olderThan = BeTimePoint.now().minus(this.expirationTime);
+  private _doPrune(olderThan: BeTimePoint) {
     for (const [key, graphic] of this._tileGraphics)
       if (graphic.isExpired(olderThan)) {
         graphic.dispose();
         this._tileGraphics.delete(key);
       }
+  }
+
+  public prune() {
+    const olderThan = BeTimePoint.now().minus(this.expirationTime);
+    this._doPrune(olderThan);
+  }
+
+  public forcePrune() {
+    const rightNow = BeTimePoint.now();
+    this._doPrune(rightNow);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

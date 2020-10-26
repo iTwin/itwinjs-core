@@ -132,6 +132,7 @@ import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
+import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
@@ -1646,7 +1647,7 @@ export enum ContextMode {
     ZAxis = 3
 }
 
-// @internal
+// @beta
 export class ContextRealityModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     // (undocumented)
@@ -1669,6 +1670,7 @@ export class ContextRealityModelState {
     readonly name: string;
     // (undocumented)
     readonly orbitGtBlob?: OrbitGtBlobProps;
+    readonly realityDataId?: string;
     // (undocumented)
     toJSON(): ContextRealityModelProps;
     // (undocumented)
@@ -2089,7 +2091,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
     findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean): number;
-    // @internal (undocumented)
+    // @beta
+    findRealityModelIndex(accept: (model: ContextRealityModelState) => boolean): number;
+    // @beta
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
     forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void;
@@ -2640,43 +2644,20 @@ export enum EventHandled {
     Yes = 1
 }
 
-// @internal
-export type EventListener = (data: any) => void;
+// @beta
+export type EventListener = (eventData: any) => void;
 
-// @internal
-export class EventSource {
-    constructor(tokenProps: IModelRpcProps);
-    clear(): void;
-    // (undocumented)
-    get fetching(): boolean;
-    off(namespace: string, eventName: string, listener: EventListener): void;
-    on(namespace: string, eventName: string, listener: EventListener): {
-        off: () => void;
-    };
-    // (undocumented)
-    readonly tokenProps: IModelRpcProps;
-}
-
-// @internal
-export abstract class EventSourceManager {
-    // (undocumented)
-    static create(id: string, tokenProps: IModelRpcProps): EventSource;
-    // (undocumented)
-    static delete(id: string): void;
-    // (undocumented)
-    static get(id: string, tokenProps?: IModelRpcProps): EventSource;
-    // (undocumented)
-    static readonly GLOBAL = "__globalEvents__";
-    // (undocumented)
+// @beta
+export class EventSource implements IDisposable {
+    protected constructor(id: string);
+    // @internal
+    static clearGlobal(): void;
+    static create(id: string): EventSource;
+    dispose(): void;
     static get global(): EventSource;
-    // (undocumented)
-    static has(id: string): boolean;
-    }
-
-// @internal
-export interface EventSourceOptions {
-    pollInterval: number;
-    prefetchLimit: number;
+    readonly id: string;
+    get isDisposed(): boolean;
+    on(namespace: string, eventName: string, listener: EventListener): RemoveEventListener;
 }
 
 // @beta
@@ -3832,8 +3813,6 @@ export class IModelApp {
     static authorizationClient?: FrontendAuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
-    // @internal
-    static eventSourceOptions: EventSourceOptions;
     // @beta
     static get extensionAdmin(): ExtensionAdmin;
     // @internal
@@ -3960,14 +3939,18 @@ export abstract class IModelConnection extends IModel {
     // @alpha
     get editing(): EditingFunctions;
     readonly elements: IModelConnection.Elements;
-    // @internal
-    readonly eventSource: EventSource | undefined;
+    // @beta
+    get eventSource(): EventSource;
+    // @internal (undocumented)
+    protected _eventSource: EventSource;
     // @internal
     expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
     // @internal
     readonly geoServices: GeoServices;
+    // @internal (undocumented)
+    protected getEventSourceProps(): IModelEventSourceProps;
     // @beta
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta
@@ -4165,6 +4148,8 @@ export class IModelTileTree extends TileTree {
     debugMaxDepth?: number;
     // (undocumented)
     draw(args: TileDrawArgs): void;
+    // (undocumented)
+    forcePrune(): void;
     // (undocumented)
     readonly geometryGuid?: string;
     // (undocumented)
@@ -5163,7 +5148,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     protected getMarkerToolTip(): Promise<HTMLElement>;
     // (undocumented)
-    protected getShapePoints(ev: BeButtonEvent): Point3d[];
+    protected getShapePoints(cursorPt: Point3d): Point3d[];
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -5172,6 +5157,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     protected _isComplete: boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _lastMotionPt?: Point3d;
     // (undocumented)
     protected _marker?: MeasureLabel;
     // (undocumented)
@@ -5187,7 +5174,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
-    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -5271,6 +5258,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _lastMotionPt?: Point3d;
     // (undocumented)
     protected readonly _locationData: {
         point: Point3d;
@@ -5989,6 +5978,8 @@ export class OrbitGtTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    forcePrune(): void;
+    // (undocumented)
     get is3d(): boolean;
     // (undocumented)
     get isContentUnbounded(): boolean;
@@ -6597,6 +6588,8 @@ export class RealityTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    forcePrune(): void;
+    // (undocumented)
     getBaseRealityDepth(_sceneContext: SceneContext): number;
     // (undocumented)
     getTraversalChildren(depth: number): TraversalChildrenDetails;
@@ -6672,6 +6665,9 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     close(): Promise<void>;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteBriefcaseConnection>;
     }
+
+// @beta
+export type RemoveEventListener = () => void;
 
 // @beta
 export abstract class RenderClipVolume implements IDisposable {
@@ -7194,6 +7190,8 @@ export abstract class RenderSystem implements IDisposable {
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
+    // @internal (undocumented)
+    get isMobile(): boolean;
     // @internal (undocumented)
     abstract get isValid(): boolean;
     // @internal
@@ -8171,25 +8169,6 @@ export class SpatialModelState extends GeometricModel3dState {
     static get className(): string;
 }
 
-// @internal @deprecated
-export class SpatialModelTileTrees {
-    constructor(view: SpatialViewState);
-    // (undocumented)
-    protected _allLoaded: boolean;
-    // (undocumented)
-    protected createTileTreeReference(model: GeometricModel3dState): TileTreeReference | undefined;
-    // (undocumented)
-    forEach(func: (treeRef: TileTreeReference) => void): void;
-    // (undocumented)
-    protected get _iModel(): IModelConnection;
-    // (undocumented)
-    markDirty(): void;
-    // (undocumented)
-    protected _treeRefs: Map<string, TileTreeReference>;
-    // (undocumented)
-    protected readonly _view: SpatialViewState;
-}
-
 // @public
 export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -8951,6 +8930,10 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get minimumSpatialTolerance(): number;
     // @internal (undocumented)
+    abstract get mobileExpirationMemoryThreshold(): number;
+    // @internal (undocumented)
+    abstract get mobileRealityTileMinToleranceRatio(): number;
+    // @internal (undocumented)
     abstract onActiveRequestCanceled(tile: Tile): void;
     // @internal (undocumented)
     abstract onCacheMiss(): void;
@@ -9015,6 +8998,8 @@ export namespace TileAdmin {
         // @internal
         maximumMajorTileFormatVersion?: number;
         minimumSpatialTolerance?: number;
+        mobileExpirationMemoryThreshold?: number;
+        mobileRealityTileMinToleranceRatio?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
@@ -9257,6 +9242,8 @@ export abstract class TileTree {
     dispose(): void;
     abstract draw(args: TileDrawArgs): void;
     readonly expirationTime: BeDuration;
+    // @alpha
+    abstract forcePrune(): void;
     readonly id: string;
     // (undocumented)
     readonly iModel: IModelConnection;
@@ -10808,6 +10795,8 @@ export abstract class Viewport implements IDisposable {
     set antialiasSamples(numSamples: number);
     // @internal
     applyViewState(val: ViewState): void;
+    // @beta
+    attachRealityModel(props: ContextRealityModelProps): void;
     // (undocumented)
     get auxCoordSystem(): AuxCoordSystemState;
     // @internal (undocumented)
@@ -10845,6 +10834,8 @@ export abstract class Viewport implements IDisposable {
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
     // @internal (undocumented)
     protected _decorationsValid: boolean;
+    // @beta
+    detachRealityModelByIndex(index: number): void;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     get devicePixelRatio(): number;
     // @internal

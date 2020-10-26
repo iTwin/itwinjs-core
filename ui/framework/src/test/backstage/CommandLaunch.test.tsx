@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager } from "../../ui-framework";
-import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import TestUtils from "../TestUtils";
+import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher } from "../../ui-framework";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -46,7 +45,6 @@ describe("Backstage", () => {
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
-      wrapper.unmount();
     });
 
     it("CommandLaunchBackstageItem should render & execute with args", () => {
@@ -63,7 +61,6 @@ describe("Backstage", () => {
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(argsPassed).to.be.true;
-      wrapper.unmount();
     });
 
     it("CommandLaunchBackstageItem should log error when no execute function provided", () => {
@@ -76,16 +73,12 @@ describe("Backstage", () => {
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       spyMethod.calledOnce.should.true;
-
-      wrapper.unmount();
-      (Logger.logError as any).restore();
     });
 
     it("CommandLaunchBackstageItem renders correctly", () => {
       const commandHandler = () => { };
       const wrapper = shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />);
       wrapper.should.matchSnapshot();
-      wrapper.unmount();
     });
   });
 });

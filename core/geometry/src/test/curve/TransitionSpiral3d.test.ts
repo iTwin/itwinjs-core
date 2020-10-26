@@ -33,6 +33,10 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { Quadrature } from "../../numerics/Quadrature";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import * as fs from "fs";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { CurveCollection } from "../../curve/CurveCollection";
 
 function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalProperties) {
   const data1 = data.clone();
@@ -509,29 +513,41 @@ describe("TransitionSpiral3d", () => {
     let y0 = 0;
     const dyA = 2;
     const bearingChange = Angle.createDegrees(8);
-    const r1 = 500;
-    const length = bearingChange.radians / Geometry.meanCurvatureOfRadii(0, r1);
+    const bigRadius = 500;
+    const length = bearingChange.radians / Geometry.meanCurvatureOfRadii(0, bigRadius);
     const dxB = length;
     const spirals: TransitionSpiral3d[] = [];
     for (const spiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine",
-      "Czech", "Arema"]) {
+      "Czech", "Arema", "AustralianRailCorp"]) {
       for (const activeInterval of [Segment1d.create(0, 1), Segment1d.create(0.35, 0.75)]) {
-        for (const reversed of [false, true]) {
-          const spiralA = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
-            Segment1d.create(0, 500), AngleSweep.createStartEndDegrees(0, 8),
-            activeInterval, Transform.createIdentity(), spiralType);
-          if (spiralA) {
-            if (reversed)
-              spiralA.reverseInPlace();
-            spirals.push(spiralA);
-          } else {
-            const spiralB = DirectSpiral3d.createFromLengthAndRadius(spiralType, 0, r1,
-              undefined, undefined, length,
-              activeInterval, Transform.createIdentity());
-            if (spiralB) {
-              if (reversed)
-                spiralB.reverseInPlace();
-              spirals.push(spiralB);
+        for (const radiusSign of [1.0, -1.0]) {
+          for (const reverseRadii of [false, true]) {
+            let r0, r1;
+            if (reverseRadii) {
+              r0 = bigRadius; r1 = 0;
+            } else {
+              r0 = 0; r1 = bigRadius;
+            }
+            r0 *= radiusSign;
+            r1 *= radiusSign;
+            for (const reverseAfterCreate of [false, true]) {
+              const spiralA = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+                Segment1d.create(r0, r1), AngleSweep.createStartEndDegrees(0, 8),
+                activeInterval, Transform.createIdentity(), spiralType);
+              if (spiralA) {
+                if (reverseAfterCreate)
+                  spiralA.reverseInPlace();
+                spirals.push(spiralA);
+              } else {
+                const spiralB = DirectSpiral3d.createFromLengthAndRadius(spiralType, r0, r1,
+                  undefined, undefined, length,
+                  activeInterval, Transform.createIdentity());
+                if (spiralB) {
+                  if (reverseAfterCreate)
+                    spiralB.reverseInPlace();
+                  spirals.push(spiralB);
+                }
+              }
             }
           }
         }
@@ -544,7 +560,7 @@ describe("TransitionSpiral3d", () => {
     for (const spiral of spirals) {
       const spiralType1 = spiral.spiralType;
       if (spiralType1 !== spiralType0)
-        y0 += 10;
+        y0 += 100;
       spiralType0 = spiralType1;
       let y1 = y0;
       if (ck.testType<TransitionSpiral3d>(spiral)) {
@@ -558,7 +574,7 @@ describe("TransitionSpiral3d", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, x0 + dxB, y1);
         y1 += dyA;
       }
-      y0 += 2;
+      y0 += 25;
     }
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "Types");
@@ -765,8 +781,7 @@ describe("TransitionSpiral3d", () => {
     const directHalfCosine = DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), nominalL1, nominalR1)!;
     const spiral3 = DirectSpiral3d.createTruncatedClothoid("ClothoidSeriesX3Y3",
       Transform.createIdentity(), 3, 3, undefined, nominalL1, nominalR1, undefined)!;
-    const westernAustralianSpiral = DirectSpiral3d.createTruncatedClothoid("WesternAustralian",
-      Transform.createIdentity(), 2, 1, undefined, nominalL1, nominalR1, undefined)!;
+    const westernAustralianSpiral = DirectSpiral3d.createWesternAustralian(Transform.createIdentity(), nominalL1, nominalR1, undefined)!;
     const spiral4 = DirectSpiral3d.createTruncatedClothoid("ClothoidSeriesX3Y3",
       Transform.createIdentity(), 4, 4, undefined, nominalL1, nominalR1, undefined)!;
     const czechSpiral = DirectSpiral3d.createCzechCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
@@ -788,7 +803,63 @@ describe("TransitionSpiral3d", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("AlexGStroking", () => {
+    // const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
+    captureStroked(allGeometry, alignment);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGStroking");
+  });
+
+  it("spiralStroking", () => {
+    // const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const exitDegrees = 4.0;
+    const x0 = 0;
+    let y0 = 0;
+    for (const radiusA of [200, 400]) {
+      const spiralA = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0, radiusA, Angle.createDegrees(0), Angle.createDegrees(exitDegrees), undefined, undefined, Transform.createIdentity());
+      const spiralB = IntegratedSpiral3d.createFrom4OutOf5("clothoid", radiusA, 0, Angle.createDegrees(0), Angle.createDegrees(exitDegrees), undefined, undefined, Transform.createIdentity());
+
+      captureStroked(allGeometry, spiralB, x0, y0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiralB, x0, y0, 0);
+      y0 += 10;
+
+      captureStroked(allGeometry, spiralA, x0, y0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiralA, x0, y0, 0);
+      y0 += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "spiralStroking");
+  });
 });
 function xyString(name: string, x: number, y: number): string {
   return (`  (${name}  ${x} + ${y})`);
+}
+function captureStroked(allGeometry: GeometryQuery[], data: any, dx: number = 0, dy: number = 0, dz: number = 0): number {
+  let numStroked = 0;
+  const strokeOptions = StrokeOptions.createForCurves();
+  strokeOptions.maxEdgeLength = 1.0;
+  if (Array.isArray(data)) {
+    for (const g of data) {
+      numStroked += captureStroked(allGeometry, g, dx, dy, dz);
+    }
+  } else if (data instanceof CurvePrimitive) {
+    const linestring = LineString3d.create();
+    data.emitStrokes(linestring, strokeOptions);
+    GeometryCoreTestIO.captureGeometry(allGeometry, linestring, dx, dy, dz);
+    if (data instanceof TransitionSpiral3d) {
+      for (const fraction of [0.0, 0.10, 0.5, 0.75, 1.0]) {
+        const frame = data.fractionToFrenetFrame(fraction);
+        if (frame)
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(frame.multiplyXYZ(2, 0, 0), frame.getOrigin(), frame.multiplyXYZ(0, 1, 0), frame.multiplyXYZ(0, 0, 1)),
+            dx, dy, dz);
+      }
+    }
+    numStroked++;
+  } else if (data instanceof CurveCollection) {
+    for (const child of data.children!)
+      numStroked += captureStroked(allGeometry, child, dx, dy, dz);
+  }
+  return numStroked;
 }

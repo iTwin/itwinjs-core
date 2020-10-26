@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { UserInfo } from "@bentley/itwin-client";
 import { FrontstageManager } from "../../ui-framework";
 import { UserProfileBackstageItem } from "../../ui-framework/backstage/UserProfile";
-import TestUtils, { mockUserInfo } from "../TestUtils";
+import TestUtils, { mockUserInfo, mount } from "../TestUtils";
 
 describe("UserProfileBackstageItem", () => {
 
@@ -46,23 +45,19 @@ describe("UserProfileBackstageItem", () => {
   });
 
   it("should render", () => {
-    const wrapper = mount(<UserProfileBackstageItem userInfo={mockUserInfo()} />);
-    wrapper.unmount();
+    mount(<UserProfileBackstageItem userInfo={mockUserInfo()} />);
   });
 
   it("should render with an UserInfo with no Email or Profile", () => {
-    const wrapper = mount(<UserProfileBackstageItem userInfo={getNoEmailProfileUserInfo()} />);
-    wrapper.unmount();
+    mount(<UserProfileBackstageItem userInfo={getNoEmailProfileUserInfo()} />);
   });
 
   it("should render with an UserInfo with Email array", () => {
-    const wrapper = mount(<UserProfileBackstageItem userInfo={getEmailArrayUserInfo()} />);
-    wrapper.unmount();
+    mount(<UserProfileBackstageItem userInfo={getEmailArrayUserInfo()} />);
   });
 
   it("should render with an UserInfo with empty Email array", () => {
-    const wrapper = mount(<UserProfileBackstageItem userInfo={getEmailEmptyArrayUserInfo()} />);
-    wrapper.unmount();
+    mount(<UserProfileBackstageItem userInfo={getEmailEmptyArrayUserInfo()} />);
   });
 
   it("should open SignOut modal frontstage on click", () => {
@@ -71,8 +66,6 @@ describe("UserProfileBackstageItem", () => {
 
     wrapper.find(".nz-backstage-userProfile").simulate("click");
     spyMethod.calledOnce.should.true;
-
-    wrapper.unmount();
 
     FrontstageManager.closeModalFrontstage();
   });

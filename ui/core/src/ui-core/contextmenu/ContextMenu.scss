@@ -21,7 +21,7 @@ $uicore-menu-top-bottom-padding:  $uicore-menu-padding * 2/3;
   width: 0px;
   height: 0px;
 
-  @include uicore-z-index(context-menu-z)
+  @include uicore-z-index(context-menu-z);
 }
 
 .core-context-menu {
@@ -36,7 +36,7 @@ $uicore-menu-top-bottom-padding:  $uicore-menu-padding * 2/3;
   height: 0px;
   position: relative;
 
-  @include uicore-z-index(context-menu-z)
+  @include uicore-z-index(context-menu-z);
 
   .core-context-menu-container {
     position: absolute;

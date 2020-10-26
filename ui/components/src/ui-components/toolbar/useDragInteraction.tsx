@@ -66,7 +66,6 @@ function useLongPress(args: UseLongPressArgs) {
 
 /**
  * Hook used on expandable item that require drag or long press to open
- * @param direction Drag direction to open the panel.
  * @param onClick Function called when item is clicked.
  * @param onOpenPanel Function called when item is dragged or long pressed to open panel.
  */

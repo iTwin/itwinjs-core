@@ -6,10 +6,11 @@ import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, NativeAppRpcInterface, RpcManager, SubCategoryAppearance,
+  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface,
+  QueuedEvent, RpcManager, RpcPushChannel, RpcPushConnection, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
-  EventSink, EventSinkManager, IModelHost, IModelJsFs, NativeAppBackend, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
+  EventSink, IModelHost, IModelJsFs, NativeAppBackend, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -17,8 +18,18 @@ describe("Model geometry changes", () => {
   let imodel: StandaloneDb;
   let modelId: string;
   let categoryId: string;
+  const rpcPushConnectionFor = RpcPushConnection.for;
+
+  function mockRpcPushConnection(channel: RpcPushChannel<any>, client: unknown): RpcPushConnection<any> {
+    return {
+      channel,
+      client,
+      send: async (_data: any) => Promise.resolve(),
+    };
+  }
 
   before(async () => {
+    RpcPushConnection.for = mockRpcPushConnection;
     await IModelHost.shutdown();
     RpcManager.initializeInterface(NativeAppRpcInterface);
     await NativeAppBackend.startup();
@@ -38,6 +49,8 @@ describe("Model geometry changes", () => {
   after(async () => {
     imodel.nativeDb.setGeometricModelTrackingEnabled(false);
     imodel.close();
+    RpcPushConnection.for = rpcPushConnectionFor;
+
     await NativeAppBackend.shutdown();
     await IModelHost.startup();
   });
@@ -49,10 +62,15 @@ describe("Model geometry changes", () => {
     deleted?: string[];
   }
 
+  function fetchEvents(sink: EventSink): QueuedEvent[] {
+    const queue = (sink as any)._queue;
+    const events = [...queue];
+    queue.length = 0;
+    return events;
+  }
+
   function expectChanges(sink: EventSink, expected: GeometricModelChange | undefined): void {
-    // const sink = imodel.eventSink!; only on BriefcaseDb for some reason...
-    // expect(sink).not.to.be.undefined;
-    const events = sink.fetch(-1);
+    const events = fetchEvents(sink);
     if (!expected) {
       expect(events.length).to.equal(0);
       return;
@@ -83,15 +101,14 @@ describe("Model geometry changes", () => {
   }
 
   function expectNoChanges(sink: EventSink): void {
-    const events = sink.fetch(-1);
+    const events = fetchEvents(sink);
     expect(events.length).to.equal(0);
   }
 
   it("emits events", async () => {
     expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
-    const sink = imodel.eventSink!;
-    expect(sink).not.to.be.undefined;
+    const sink = imodel.eventSink;
 
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));

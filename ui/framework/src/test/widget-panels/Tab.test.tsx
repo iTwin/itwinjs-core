@@ -5,19 +5,12 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import {
-  FrontstageDef, FrontstageManager, getBadgeClassName, WidgetPanelsTab,
-} from "../../ui-framework";
 import { BadgeType } from "@bentley/ui-abstract";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import {
+  FrontstageDef, FrontstageManager, getBadgeClassName, WidgetDef, WidgetPanelsTab,
+} from "../../ui-framework";
 
 describe("WidgetPanelsTab", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     const wrapper = shallow(<WidgetPanelsTab />);
     wrapper.should.matchSnapshot();
@@ -25,9 +18,9 @@ describe("WidgetPanelsTab", () => {
 
   it("should render with badge", () => {
     const frontstageDef = new FrontstageDef();
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
     const widgetDef = new WidgetDef({ badgeType: BadgeType.New });
-    sandbox.stub(frontstageDef, "findWidgetDef").returns(widgetDef);
+    sinon.stub(frontstageDef, "findWidgetDef").returns(widgetDef);
     const wrapper = shallow(<WidgetPanelsTab />);
     wrapper.should.matchSnapshot();
   });

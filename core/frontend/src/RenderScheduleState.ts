@@ -529,12 +529,12 @@ export namespace RenderScheduleState {
     }
 
     public getModelAnimationId(modelId: Id64String): Id64String | undefined {
-      // Only if the script contains animation (cutting plane or visibility by node ID)  do we require separate tilesets for animations.
+      // Only if the script contains animation (cutting plane, transform or visibility by node ID) do we require separate tilesets for animations.
       if (Id64.isTransient(modelId))
         return undefined;
 
       for (const modelTimeline of this.modelTimelines)
-        if (modelTimeline.modelId === modelId && modelTimeline.containsElementClipping)
+        if (modelTimeline.modelId === modelId && (modelTimeline.containsElementClipping || modelTimeline.containsTransform))
           return this.displayStyleId;
 
       return undefined;

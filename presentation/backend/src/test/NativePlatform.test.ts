@@ -17,7 +17,6 @@ describe("default NativePlatform", () => {
   const addonMock = moq.Mock.ofType<IModelJsNative.ECPresentationManager>();
 
   beforeEach(async () => {
-    await IModelHost.shutdown();
     try {
       await IModelHost.startup();
     } catch (e) {
@@ -37,7 +36,6 @@ describe("default NativePlatform", () => {
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadOnly,
       isChangeTrackingEnabled: false,
-      cacheDirectory: "",
     });
     nativePlatform = new TNativePlatform();
     // we're replacing the native addon with our mock - make sure the original
@@ -46,8 +44,9 @@ describe("default NativePlatform", () => {
     (nativePlatform as any)._nativeAddon = addonMock.object;
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     nativePlatform.dispose();
+    await IModelHost.shutdown();
   });
 
   it("calls addon's dispose", async () => {
