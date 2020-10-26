@@ -193,6 +193,9 @@ export abstract class RenderSystem implements IDisposable {
   public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
 
   /** @internal */
+  public get isMobile(): boolean { return false; }
+
+  /** @internal */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
   /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;

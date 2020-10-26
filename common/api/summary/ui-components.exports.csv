@@ -154,6 +154,8 @@ beta;ExtendedTreeNodeRendererProps
 internal;FaceCell 
 internal;FaceCellProps 
 beta;FavoritePropertiesRenderer
+alpha;FavoritePropertyList 
+alpha;FavoritePropertyListProps
 beta;FieldFilterDescriptor 
 beta;FilterableColumn
 beta;FilterableTable

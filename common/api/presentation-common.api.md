@@ -232,6 +232,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     handleInstancesPolymorphically?: boolean;
+    handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
     specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
 }

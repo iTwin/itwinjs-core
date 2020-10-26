@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { FavoritePropertiesDataProvider } from "@bentley/presentation-components";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { AbstractToolbarProps, CommonToolbarItem, RelativePosition, WidgetState } from "@bentley/ui-abstract";
-import { FavoritePropertiesRenderer } from "@bentley/ui-components";
+import { FavoritePropertiesRenderer, FavoritePropertyList } from "@bentley/ui-components";
 import {
-  ActionButtonItemDef, CommandItemDef, CoreTools, ElementTooltip, FrontstageManager, SelectionContextToolDefinitions, ToolbarHelper,
+  ActionButtonItemDef, CommandItemDef, CoreTools, ElementTooltip,
+  FrameworkUiAdmin, FrontstageManager, SelectionContextToolDefinitions, ToolbarHelper,
 } from "@bentley/ui-framework";
 import { ViewsFrontstage } from "../appui/frontstages/ViewsFrontstage";
 import { appendContent } from "./appendContent";
@@ -39,7 +41,8 @@ export class ElementSelectionListener {
     if (selection.isEmpty) {
       this._closeCard();
     } else {
-      await this._showCard(evt, selection);
+      /** _showCard demonstrates HTMLElement content. _showReactCard demonstrates React content. */
+      await this._showReactCard(evt, selection);
     }
   }
 
@@ -58,6 +61,26 @@ export class ElementSelectionListener {
     ElementTooltip.isTooltipHalted = true;
 
     IModelApp.uiAdmin.showCard(contentContainer, propertyData.label, this._toolbar(false),
+      IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+      this._toolbarItemExecuted, this._toolbarCancel, RelativePosition.Right);
+  }
+
+  private async _showReactCard(evt: SelectionChangeEventArgs, selection: Readonly<KeySet>) {
+    let content: React.ReactNode;
+    const propertyData = await this._favoritePropertiesDataProvider.getData(evt.imodel, new KeySet(selection));
+    const hasFavorites = this._favoritePropertiesRenderer.hasFavorites(propertyData);
+
+    if (hasFavorites) {
+      content = (
+        <FavoritePropertyList propertyData={propertyData} />
+      );
+    } else if (!this.displayCardWhenNoFavorites) {
+      return;
+    }
+
+    ElementTooltip.isTooltipHalted = true;
+
+    (IModelApp.uiAdmin as FrameworkUiAdmin).showReactCard(content, propertyData.label, this._toolbar(false),
       IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
       this._toolbarItemExecuted, this._toolbarCancel, RelativePosition.Right);
   }

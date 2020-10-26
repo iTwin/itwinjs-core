@@ -68,7 +68,7 @@ export abstract class EventsTestRpcInterface extends RpcInterface {
   }
 
   // Set a event that would be fired from backend and received on frontend.
-  public async echo(_iModelRpcProps: IModelRpcProps, _id: GuidString, _message: string): Promise<void> { return this.forward(arguments); }
+  public async echo(_id: GuidString, _message: string): Promise<void> { return this.forward(arguments); }
 }
 
 export const rpcInterfaces = [

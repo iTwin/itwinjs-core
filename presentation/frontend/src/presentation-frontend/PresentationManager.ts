@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
-import { EventSource, EventSourceManager, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
@@ -65,12 +65,11 @@ export interface PresentationManagerProps {
  * @public
  */
 export class PresentationManager implements IDisposable {
-
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
   private _localizationHelper: LocalizationHelper;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
-  private _eventSource: EventSource;
+  private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
 
   /**
@@ -98,7 +97,6 @@ export class PresentationManager implements IDisposable {
     }
 
     this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
-    this._eventSource = props?.eventSource ?? EventSourceManager.global;
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new LocalizationHelper();
@@ -107,14 +105,17 @@ export class PresentationManager implements IDisposable {
     if (IModelApp.isNativeApp) {
       // EventSource only works in native apps, so the `onUpdate` callback will only be called there. Adding
       // under the condition just to avoid an error message being logged.
-      this._eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+      const eventSource = props?.eventSource ?? EventSource.global;
+      this._clearEventListener = eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
     }
   }
 
   public dispose() {
     this._requestsHandler.dispose();
-    if (IModelApp.isNativeApp)
-      this._eventSource.off(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+    if (this._clearEventListener) {
+      this._clearEventListener();
+      this._clearEventListener = undefined;
+    }
   }
 
   private async onConnection(imodel: IModelConnection) {

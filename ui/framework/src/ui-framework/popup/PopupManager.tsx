@@ -24,6 +24,8 @@ import { ToolSettingsPopup } from "./ToolSettingsPopup";
 import { KeyinPalettePopup } from "./KeyinPalettePopup";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 
+// cSpell:ignore uiadmin
+
 /** Information maintained by PopupManager about a Popup
  * @alpha
  */
@@ -52,6 +54,25 @@ export interface PopupPropsBase {
   pt: XAndY;
   offset: XAndY;
 }
+
+/** Describes React based content
+ * @alpha
+ */
+export interface ReactContent {
+  reactNode: React.ReactNode;
+}
+
+/** Type for Popup Content
+ * @alpha
+ */
+export type PopupContentType = HTMLElement | ReactContent;
+
+/** ReactContent type guard.
+ * @internal
+ */
+export const isReactContent = (content: PopupContentType): content is ReactContent => {
+  return (content as ReactContent).reactNode !== undefined;
+};
 
 /** Popup Manager class
  * @alpha
@@ -231,7 +252,7 @@ export class PopupManager {
   }
 
   public static showCard(
-    content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
+    content: PopupContentType, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
     el: HTMLElement, pt: XAndY, offset: XAndY,
     onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition,
   ): boolean {

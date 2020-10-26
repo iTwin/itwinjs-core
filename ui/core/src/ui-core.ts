@@ -96,6 +96,7 @@ export * from "./ui-core/notification/MessageType";
 export * from "./ui-core/popup/Popup";
 
 export * from "./ui-core/progress-indicators/ProgressBar";
+export * from "./ui-core/progress-indicators/ProgressSpinner";
 
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";

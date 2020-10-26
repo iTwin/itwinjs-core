@@ -16,6 +16,7 @@ export {
 export { RulesetManager } from "./presentation-backend/RulesetManager";
 export { RulesetVariablesManager } from "./presentation-backend/RulesetVariablesManager";
 export { RulesetEmbedder, RulesetEmbedderProps, DuplicateRulesetHandlingStrategy } from "./presentation-backend/RulesetEmbedder";
+export * from "./presentation-backend/Utils";
 
 /**
  * @module Logging

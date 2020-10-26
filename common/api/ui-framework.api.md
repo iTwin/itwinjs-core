@@ -1984,6 +1984,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showKeyinPalette(htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
+    showReactCard(content: React_2.ReactNode, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
@@ -2920,6 +2921,9 @@ export function isNoSelectionActive(): boolean;
 
 // @internal (undocumented)
 export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined>, panelStates: ReadonlyArray<StagePanelState | undefined>): boolean;
+
+// @internal
+export const isReactContent: (content: PopupContentType) => content is ReactContent;
 
 // @internal
 export const isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails;
@@ -3877,6 +3881,9 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
 }
 
 // @alpha
+export type PopupContentType = HTMLElement | ReactContent;
+
+// @alpha
 export interface PopupInfo {
     // (undocumented)
     component: React.ReactNode;
@@ -3921,7 +3928,7 @@ export class PopupManager {
     // (undocumented)
     static removePopup(id: string): boolean;
     // (undocumented)
-    static showCard(content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
+    static showCard(content: PopupContentType, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
@@ -4038,6 +4045,12 @@ export class PropsHelper {
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
+}
+
+// @alpha
+export interface ReactContent {
+    // (undocumented)
+    reactNode: React.ReactNode;
 }
 
 // @public @deprecated
