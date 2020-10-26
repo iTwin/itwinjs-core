@@ -4169,6 +4169,8 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    forcePrune(): void;
+    // (undocumented)
     readonly geometryGuid?: string;
     // (undocumented)
     get hasEdges(): boolean;
@@ -5996,6 +5998,8 @@ export class OrbitGtTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    forcePrune(): void;
+    // (undocumented)
     get is3d(): boolean;
     // (undocumented)
     get isContentUnbounded(): boolean;
@@ -6604,6 +6608,8 @@ export class RealityTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    forcePrune(): void;
+    // (undocumented)
     getBaseRealityDepth(_sceneContext: SceneContext): number;
     // (undocumented)
     getTraversalChildren(depth: number): TraversalChildrenDetails;
@@ -7201,6 +7207,8 @@ export abstract class RenderSystem implements IDisposable {
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
+    // @internal (undocumented)
+    get isMobile(): boolean;
     // @internal (undocumented)
     abstract get isValid(): boolean;
     // @internal
@@ -8939,6 +8947,10 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get minimumSpatialTolerance(): number;
     // @internal (undocumented)
+    abstract get mobileExpirationMemoryThreshold(): number;
+    // @internal (undocumented)
+    abstract get mobileRealityTileMinToleranceRatio(): number;
+    // @internal (undocumented)
     abstract onActiveRequestCanceled(tile: Tile): void;
     // @internal (undocumented)
     abstract onCacheMiss(): void;
@@ -9003,6 +9015,8 @@ export namespace TileAdmin {
         // @internal
         maximumMajorTileFormatVersion?: number;
         minimumSpatialTolerance?: number;
+        mobileExpirationMemoryThreshold?: number;
+        mobileRealityTileMinToleranceRatio?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
@@ -9245,6 +9259,8 @@ export abstract class TileTree {
     dispose(): void;
     abstract draw(args: TileDrawArgs): void;
     readonly expirationTime: BeDuration;
+    // @alpha
+    abstract forcePrune(): void;
     readonly id: string;
     // (undocumented)
     readonly iModel: IModelConnection;

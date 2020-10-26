@@ -151,3 +151,27 @@ The visual interaction between hilited and emphasized geometry has been modified
 
 ![Cylinder is hilited, Torus is emphasized, and Block is both hilited and emphasized](./assets/HiliteEmphasisInteraction.png)
 <p align="center">Cylinder is hilited, Torus is emphasized, and Block is both hilited and emphasized.</p>
+
+## Memory threshold for mobile devices
+
+### The problem
+
+On mobile devices, GPU memory is shared with system memory; furthermore, the amount of overall memory is limited compared to a desktop environment. If too much system memory is consumed during a period of time, a memory pressure event can be triggered by the mobile operating system to terminate the offending process.
+
+Reality datasets, with their per-tile textures, can trigger this condition during certain view dynamics on iPad devices because of the unused tiles' consumption of GPU texture resources.
+
+This is because unused tiles (and their GPU resources) only expire periodically - not quickly enough to avoid memory pressure on an iPad.
+
+### How it is addressed
+
+[TileAdmin]($frontend) now has a `mobileExpirationMemoryThreshold` property that contains a numeric value in bytes. When the total used memory in bytes of all tile trees exceeds this value, tiles belonging to those trees will be immediately considered eligible for disposal after disuse; effectively, tiles unused by any viewport will be discarded. This value only has an effect on mobile devices. This has a default value of 200MB.
+
+To customize this setting, specify a value for the `mobileExpirationMemoryThreshold` property on [TileAdmin.Props]($frontend) when calling `create` on [TileAdmin]($frontend).
+
+### Other changes
+
+To avoid this forced pruning from occurring too frequently on mobile devices due to memory usage, preloading of reality tiles is now disabled for mobile devices.
+
+The minimum tolerance ratio for reality tiles has been increased for mobile devices to make the rendering coarser, consuming less memory. This ratio can be customized for mobile devices using the `mobileRealityTileMinToleranceRatio` property on [TileAdmin]($frontend). This has a default value of 3.0. This is nominally the error on screen size of a reality tile. The minimum value of 1.0 will apply a direct 1:1 scale. A ratio higher than 1.0 will result in lower quality display as the reality tile refinement becomes more coarse. This value only has an effect on mobile devices. On non-mobile devices, this ratio will always internally be 1.0.
+
+To customize this setting, specify a value for the `mobileRealityTileMinToleranceRatio` property on [TileAdmin.Props]($frontend) when calling `create` on [TileAdmin]($frontend).
