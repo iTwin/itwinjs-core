@@ -186,6 +186,8 @@ alpha;PopupContextMenuProps
 public;PopupProps 
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 
+beta;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
+beta;ProgressSpinnerProps 
 internal;PROXIMITY_THRESHOLD_DEFAULT = 100
 beta;RadialButton 
 beta;RadialButtonProps 

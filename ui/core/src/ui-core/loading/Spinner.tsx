@@ -15,9 +15,13 @@ import * as React from "react";
  * @public
  */
 export enum SpinnerSize {
+  /** width/height of 16px */
   Small,
+  /** width/height of 32px */
   Medium,
+  /** width/height of 64px */
   Large,
+  /** width/height of 96px */
   XLarge,
 }
 

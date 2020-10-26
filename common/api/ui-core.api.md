@@ -1498,6 +1498,19 @@ export interface ProgressBarProps extends CommonProps {
     percent?: number;
 }
 
+// @beta
+export function ProgressSpinner(props: ProgressSpinnerProps): JSX.Element;
+
+// @beta
+export interface ProgressSpinnerProps extends CommonProps {
+    children?: React.ReactNode;
+    error?: boolean;
+    indeterminate?: boolean;
+    size?: SpinnerSize;
+    success?: boolean;
+    value?: number;
+}
+
 // @internal
 export const PROXIMITY_THRESHOLD_DEFAULT = 100;
 
@@ -1867,13 +1880,9 @@ export interface SpinnerProps {
 
 // @public
 export enum SpinnerSize {
-    // (undocumented)
     Large = 2,
-    // (undocumented)
     Medium = 1,
-    // (undocumented)
     Small = 0,
-    // (undocumented)
     XLarge = 3
 }
 
