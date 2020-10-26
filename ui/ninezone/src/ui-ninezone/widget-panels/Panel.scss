@@ -206,6 +206,18 @@
   }
 
   &:not(.nz-collapsed) {
+    &.nz-left, &.nz-right {
+      > .nz-content {
+        max-width: 100%;
+      }
+    }
+
+    &.nz-top, &.nz-bottom {
+      > .nz-content {
+        max-height: 100%;
+      }
+    }
+
     > .nz-content {
       height: 100%;
       width: 100%;
