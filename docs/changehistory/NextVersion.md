@@ -103,6 +103,21 @@ rules: [{
   +-+ Two     (instance node of class "A", ECInstanceId = 2)
 ```
 
+### `ContentInstancesOfSpecificClasses` specification and properties of derived classes
+
+When `handleInstancesPolymorphically` attribute is set to `true`, only properties from specified classes used to be retrieved. We added a new attribute `handlePropertiesPolymorphically`, which tells the rules engine to also collect properties from derived classes.
+
+```json
+{
+  "specType": "ContentInstancesOfSpecificClasses",
+  "classes": [
+    {"schemaName": "BisCore", "classNames": ["PhysicalElement"] },
+  ],
+  "handleInstancesPolymorphically": true,
+  "handlePropertiesPolymorphically": true
+}
+```
+
 ### Nodes' duplication when using `RelatedInstanceNodes` specification
 
 Behavior of `RelatedInstanceNodes` specification when used with many-to-x relationships was changed.
