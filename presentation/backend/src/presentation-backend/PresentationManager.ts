@@ -9,7 +9,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, EventSink, EventSinkManager, IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, EventSink, IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
@@ -304,7 +304,7 @@ export class PresentationManager {
       this._isOneFrontendPerBackend = true;
       this._updatesTracker = UpdatesTracker.create({
         nativePlatformGetter: this.getNativePlatform,
-        eventSink: (props && props.eventSink) ? props.eventSink /* istanbul ignore next */ : EventSinkManager.global,
+        eventSink: (props && props.eventSink) ? props.eventSink /* istanbul ignore next */ : EventSink.global,
         pollInterval: props!.updatesPollInterval!, // set if `isChangeTrackingEnabled == true`
       });
     }

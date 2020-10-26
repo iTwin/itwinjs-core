@@ -8,7 +8,7 @@ import {
   RpcPushChannel, RpcRoutingToken, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 
-export const testChannel = new RpcPushChannel<number>("test");
+export const testChannel = RpcPushChannel.create<number>("test");
 
 export interface TestOp1Params {
   a: number;

@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevToolsStatsOptions, IModelRpcProps } from "@bentley/imodeljs-common";
-import { DevTools, EventSourceManager, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
+import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
 
 describe("DevTools", () => {
   let devTools: DevTools;
@@ -16,7 +16,7 @@ describe("DevTools", () => {
     const iModelRpcProps: IModelRpcProps = {
       iModelId: "test",
       changeSetId: "test",
-      key: EventSourceManager.GLOBAL,
+      key: "__globalEvents__",
     }; // Supply a real token in an integration test
     devTools = DevTools.connectToBackendInstance(iModelRpcProps);
   });
