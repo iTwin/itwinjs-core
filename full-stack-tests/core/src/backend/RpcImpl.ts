@@ -5,7 +5,7 @@
 import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config, GuidString } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSinkManager, IModelDb, IModelHost, IModelJsFs,
+  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSink, IModelDb, IModelHost, IModelJsFs,
 } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
@@ -88,15 +88,8 @@ export class EventsTestRpcImpl extends RpcInterface implements EventsTestRpcInte
   public static register() { RpcManager.registerImpl(EventsTestRpcInterface, EventsTestRpcImpl); }
 
   // set event that will be send to the frontend
-  public async echo(tokenProps: IModelRpcProps, id: GuidString, message: string): Promise<void> {
-    if (EventSinkManager.GLOBAL === tokenProps.key) {
-      EventSinkManager.global.emit(EventsTestRpcInterface.name, "echo", { id, message });
-    } else {
-      const iModelDb = IModelDb.findByKey(tokenProps.key);
-      if (iModelDb.isBriefcaseDb()) {
-        iModelDb.eventSink!.emit(EventsTestRpcInterface.name, "echo", { id, message });
-      }
-    }
+  public async echo(id: GuidString, message: string): Promise<void> {
+    EventSink.global.emit(EventsTestRpcInterface.name, "echo", { id, message });
   }
 }
 EventsTestRpcImpl.register();

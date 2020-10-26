@@ -9,7 +9,7 @@
  * @module RpcInterface
  */
 
-import { BeEvent, BentleyStatus } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 
 /** @alpha */
@@ -52,19 +52,17 @@ export class RpcPushChannel<T> {
 
   private static notifySubscribers(channelId: string, messageData: any) {
     const channel = this._channels.get(channelId);
-    if (!channel) {
+    if (!channel)
       return;
-    }
 
-    for (const subscriber of channel._subscribers) {
+    for (const subscriber of channel._subscribers)
       subscriber.onMessage.raiseEvent(messageData);
-    }
   }
 
   private _subscribers: RpcPushSubscription<T>[] = [];
   public readonly name: string;
   public readonly service: RpcPushService;
-  public get id() { return `${this.service.name}-${this.name}`; }
+  public get id() { return RpcPushChannel.formatId(this.name, this.service); }
   public get enabled() { return RpcPushChannel.enabled; }
 
   public subscribe(): RpcPushSubscription<T> {
@@ -73,24 +71,57 @@ export class RpcPushChannel<T> {
     return subscription;
   }
 
-  public constructor(name: string, service = RpcPushService.dedicated) {
-    this.name = name;
-    this.service = service;
-
-    if (RpcPushChannel._channels.has(this.id)) {
-      throw new IModelError(BentleyStatus.ERROR, "Channel already exists.");
-    }
-
-    RpcPushChannel._channels.set(this.id, this);
+  private static formatId(name: string, service: RpcPushService): string {
+    return `${service.name}-${name}`;
   }
 
-  /** Delete the specified channel.
-   * Temporary, pending more extensive changes to event system - to be replaced with a `dispose()` method.
-   * @internal
+  private constructor(name: string, service: RpcPushService) {
+    this.name = name;
+    this.service = service;
+  }
+
+  /** Creates a new RpcPushChannel.
+   * @throws IModelError if a channel with the specified name and service already exist.
    */
-  public static delete(name: string, service = RpcPushService.dedicated): void {
-    const id = `${service.name}-${name}`;
-    RpcPushChannel._channels.delete(id);
+  public static create<T>(name: string, service = RpcPushService.dedicated): RpcPushChannel<T> {
+    return this.get<T>(name, service, false);
+  }
+
+  /** Obtains an RpcPushChannel, creating it if one with the specified name and service does not already exists. */
+  public static obtain<T>(name: string, service = RpcPushService.dedicated): RpcPushChannel<T> {
+    return this.get<T>(name, service, true);
+  }
+
+  private static get<T>(name: string, service: RpcPushService, reuseExisting: boolean): RpcPushChannel<T> {
+    const id = this.formatId(name, service);
+    let channel = this._channels.get(id);
+    if (channel) {
+      if (!reuseExisting)
+        throw new IModelError(BentleyStatus.ERROR, `Channel "${id}" already exists.`);
+
+      ++channel._refCount;
+      return channel;
+    }
+
+    channel = new RpcPushChannel(name, service);
+    this._channels.set(id, channel);
+    return channel;
+  }
+
+  private _refCount = 1;
+  public dispose(): void {
+    if (this.isDisposed)
+      return;
+
+    assert(this._refCount > 0);
+    if (--this._refCount === 0) {
+      RpcPushChannel._channels.delete(this.id);
+      this._subscribers.length = 0;
+    }
+  }
+
+  public get isDisposed(): boolean {
+    return 0 === this._refCount;
   }
 }
 

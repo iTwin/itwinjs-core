@@ -116,7 +116,7 @@ export class ConcurrencyControl {
     this.applyTransactionOptions();
     this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
     const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
-    this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
+    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
   }
 
   /** @internal */
@@ -451,7 +451,7 @@ export class ConcurrencyControl {
     requestContext.enter();
 
     const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
-    this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
+    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
 
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
   }
@@ -459,7 +459,7 @@ export class ConcurrencyControl {
   /** @internal */
   private emitOnSavedChangesEvent() {
     const data = { hasPendingTxns: this.iModel.txns.hasPendingTxns, time: Date.now() }; // Note that not all calls to saveChanges create a txn. For example, an update to be_local does not.
-    this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onSavedChanges", data);
+    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onSavedChanges", data);
   }
 
   /** @internal */

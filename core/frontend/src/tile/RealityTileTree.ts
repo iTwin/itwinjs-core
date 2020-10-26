@@ -124,7 +124,6 @@ export class RealityTileTree extends TileTree {
     this.loader = params.loader;
     this.yAxisUp = true === params.yAxisUp;
     this._rootTile = this.createTile(params.rootTile);
-
   }
   public get rootTile(): RealityTile { return this._rootTile; }
   public get is3d() { return true; }
@@ -141,6 +140,10 @@ export class RealityTileTree extends TileTree {
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.purgeContents(olderThan);
+  }
+
+  public forcePrune(): void {
+    this.rootTile.purgeContents(BeTimePoint.now());
   }
 
   public draw(args: TileDrawArgs): void {
@@ -244,7 +247,7 @@ export class RealityTileTree extends TileTree {
 
     const baseDepth = this.getBaseRealityDepth(args.context);
 
-    if (0 === context.missing.length) {
+    if (!args.context.target.renderSystem.isMobile && 0 === context.missing.length) { // We skip preloading on mobile devices.
       if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 

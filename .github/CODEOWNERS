@@ -1,0 +1,130 @@
+# This CODEOWNERS file follows the format of Github's CODEOWNERS
+#   Documentation for reference, https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
+
+# This is a comment.
+# Each line is a file pattern followed by one or more owners.
+
+# These owners will be the default owners for everything in
+# the repo. Unless a later match takes precedence,
+# @global-owner1 and @global-owner2 will be requested for
+# review when someone opens a pull request.
+
+*  @kabentley @scsewall @ramanujam-raman @pmconne @calebmshafer @swwilson-bsi
+
+.gitattributes .gitignore rush.json @calebmshafer @scsewall
+
+/clients              @calebmshafer @ramanujam-raman
+/clients/imodelhub    @amikoliunas @Animagne
+
+/common/api/analytical-backend.api.md               @scsewall @diegoalexdiaz
+/common/api/backend-application-insights-client.api.md @calebmshafer @ramanujam-raman
+/common/api/backend-itwin-client.api.md             @calebmshafer @ramanujam-raman
+/common/api/bentleyjs-core.api.md                   @kabentley @grigasp @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/common/api/config-loader.api.md                    @calebmshafer @wgoehrig
+/common/api/context-registry-client.api.md          @calebmshafer @ramanujam-raman
+/common/api/ecschema-locaters.api.md                @calebmshafer @ColinKerr @wgoehrig
+/common/api/ecschema-metadata.api.md                @calebmshafer @ColinKerr @wgoehrig
+/common/api/ecschema2ts.api.md                      @calebmshafer @ColinKerr @wgoehrig
+/common/api/electron-manager.api.md                 @wgoehrig @ramanujam-raman
+/common/api/express-server.api.md                   @wgoehrig @calebmshafer
+/common/api/extension-client.api.md                 @calebmshafer @pauliunas
+/common/api/forms-data-management-client.api.md     @calebmshafer @ramanujam-raman
+/common/api/frontend-application-insights-client.api.md     @calebmshafer @ramanujam-raman
+/common/api/frontend-authorization-client.api.md     @calebmshafer @ramanujam-raman
+/common/api/frontend-devtools.api.md                @pmconne @mgooding
+/common/api/geometry-core.api.md                    @mgooding @RBBentley @bbastings @EarlinLutz
+/common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
+/common/api/imodel-bridge.api.md                    @abeesh @c-macdonald @swwilson-bsi
+/common/api/imodelhub-client.api.md                 @amikoliunas @Animagne
+/common/api/imodeljs-backend.api.md                 @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/common/api/imodeljs-common.api.md                  @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/common/api/imodeljs-frontend.api.md                @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/common/api/imodeljs-i18n.api.md                    @calebmshafer @wgoehrig
+/common/api/imodeljs-markup.api.md                  @kabentley @pmconne
+/common/api/imodeljs-quantity.api.md                @bsteinbk @calebmshafer
+/common/api/itwin-client.api.md                     @calebmshafer @ramanujam-raman
+/common/api/linear-referencing-backend.api.md       @scsewall @diegoalexdiaz
+/common/api/linear-referencing-common.api.md        @scsewall @diegoalexdiaz
+/common/api/logger-config.api.md                    @swwilson-bsi @scsewall
+/common/api/oauth-introspection-client.api.model    @calebmshafer @ramanujam-raman
+/common/api/orbitgt-core.api.md                     @RBBentley @pmconne
+/common/api/perf-tools.api.md                       @calebmshafer @wgoehrig
+/common/api/physical-material-backend.api.md        @scsewall
+/common/api/presentation-*.api.md                   @grigasp @saskliutas @roluk
+/common/api/product-settings-client.api.md          @calebmshafer @ramanujam-raman
+/common/api/projectshare-client.api.md              @calebmshafer @ramanujam-raman
+/common/api/rbac-client.api.md                      @calebmshafer @ramanujam-raman
+/common/api/reality-data-client.api.md              @calebmshafer @ramanujam-raman
+/common/api/telemetry-client.api.md                 @calebmshafer @ramanujam-raman
+/common/api/ui-*.api.md                             @bsteinbk @Dan-East @GerardasB @grigasp
+/common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
+/common/api/webgl-compatibility.api.md
+
+/common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
+
+/core/backend                   @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/core/backend-itwin-client
+/core/bentley                   @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/core/common                    @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/core/common/src/rpc/IModelTileRpcInterface.ts            @pmconne
+/core/ecschema-locaters         @calebmshafer @wgoehrig @ColinKerr
+/core/ecschema-metadata         @calebmshafer @wgoehrig @ColinKerr
+/core/electron-manager          @wgoehrig @ramanujam-raman
+/core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
+/core/frontend                  @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/core/frontend-devtools         @pmconne @mgooding
+/core/geometry                  @mgooding @RBBentley @bbastings @EarlinLutz
+/core/hypermodeling             @pmconne @bbastings
+/core/i18n                      @wgoehrig @calebmshafer
+/core/imodel-bridge             @abeesh @c-macdonald @swwilson-bsi
+/core/logger-config             @swwilson-bsi @scsewall
+/core/markup                    @kabentley @pmconne
+/core/orbitgt                   @RBBentley @pmconne
+/core/quantity                  @bsteinbk @calebmshafer
+/core/webgl-compatibility       @pmconne @mgooding
+
+/docs/getting-started/ /docs/config   @calebmshafer @williamkbentley
+
+# These domains should most likely be split up
+/domains      @scsewall
+/domains/analytical @diegoalexdiaz @scsewall
+/domains/linear-referencing @diegoalexdiaz @scsewall
+
+
+/example-code                         @scsewall @swwilson-bsi
+
+/extensions                           @bsteinbk @calebmshafer
+
+/full-stack-tests/core                @pmconne @kabentley @scsewall @ramanujam-raman
+/full-stack-tests/imodelhub-client    @amikoliunas @Animagne
+/full-stack-tests/native-app    @calebmshafer @khanaffan @ramanujam-raman
+/full-stack-tests/presentation  @grigasp @saskliutas @roluk
+/full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
+/full-stack-tests/rpc-interface @calebmshafer @wgoehrig
+
+/presentation                   @grigasp @saskliutas @roluk
+/presentation/common/src/PresentationRpcInterface.ts  @grigasp
+
+/test-apps/analysis-importer                @RBBentley
+/test-apps/display-performance-test-app     @hnn0003 @pmconne
+/test-apps/display-test-app                 @mgooding @pmconne @RBBentley @kabentley
+/test-apps/export-gltf                      @mgooding
+/test-apps/export-obj                       @mgooding
+/test-apps/imjs-importer                    @EarlinLutz
+/test-apps/imodel-from-geojson              @mgooding
+/test-apps/imodel-from-orbitgt              @RBBentley
+/test-apps/imodel-from-reality-model        @RBBentley
+/test-apps/ninezone-test-app                @bsteinbk @Dan-East @GerardasB
+/test-apps/presentation-test-app            @grigasp @saskliutas @roluk
+/test-apps/synchro-schedule-importer        @RBBentley
+/test-apps/ui-test-app                      @bsteinbk @Dan-East @GerardasB @grigasp
+/test-apps/ui-test-extension                @bsteinbk @Dan-East @GerardasB
+
+/tools/backend-webpack /tools/build /tools/certa /tools/config-loader /tools/extension-webpack /tools/oidc-signin-tool /tools/webpack-core   @wgoehrig @calebmshafer
+/tools/ecschema2ts @calebmshafer @wgoehrig @ColinKerr
+/tools/eslint-plugin /tools/extension-cli @calebmshafer @pauliunas
+/tools/internal @calebmshafer
+/tools/perf-tools @calebmshafer
+
+/ui @bsteinbk @Dan-East @GerardasB @grigasp
+/ui/components/src/ui-components/properties /ui/components/src/ui-components/propertygrid /ui/components/src/ui-components/tree   @bsteinbk @Dan-East @grigasp @saskliutas @roluk

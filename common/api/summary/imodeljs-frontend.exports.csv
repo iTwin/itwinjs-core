@@ -127,10 +127,8 @@ public;Environment
 internal;ErrorNums
 public;EventController
 public;EventHandled
-internal;EventListener = (data: any) => void
-internal;EventSource
-internal;class EventSourceManager
-internal;EventSourceOptions
+beta;EventListener = (eventData: any) => void
+beta;EventSource 
 beta;class Extension
 beta;ExtensionAdmin
 beta;ExtensionAdminProps
@@ -354,6 +352,7 @@ internal;RealityTileTree
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
 public;RemoteBriefcaseConnection 
+beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics

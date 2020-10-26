@@ -96,6 +96,7 @@ import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
+import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
@@ -141,7 +142,6 @@ import { QueryLimit } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
 import { QueryResponse } from '@bentley/imodeljs-common';
-import { QueuedEvent } from '@bentley/imodeljs-common';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
@@ -418,8 +418,6 @@ export class BriefcaseDb extends IModelDb {
     // @beta
     get concurrencyControl(): ConcurrencyControl;
     get contextId(): GuidString;
-    // @internal
-    get eventSink(): EventSink | undefined;
     // @internal
     static findByKey(key: string): BriefcaseDb;
     // @internal
@@ -1813,41 +1811,16 @@ export class Entity implements EntityProps {
 }
 
 // @internal
-export class EventSink {
+export class EventSink implements IDisposable {
     constructor(id: string);
-    // (undocumented)
+    static clearGlobal(): void;
+    dispose(): void;
     emit(namespace: string, eventName: string, data: any, options?: EmitOptions): void;
-    // (undocumented)
-    fetch(limit: number): QueuedEvent[];
-    // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    purge(namespace: string): void;
-}
-
-// @internal
-export class EventSinkManager {
-    // (undocumented)
-    static clear(): void;
-    // (undocumented)
-    static delete(id: string): void;
-    // (undocumented)
-    static get(id: string): EventSink;
-    // (undocumented)
-    static readonly GLOBAL = "__globalEvents__";
-    // (undocumented)
     static get global(): EventSink;
     // (undocumented)
-    static has(id: string): boolean;
+    readonly id: string;
+    get isDisposed(): boolean;
     }
-
-// @internal
-export interface EventSinkOptions {
-    // (undocumented)
-    maxNamespace: number;
-    // (undocumented)
-    maxQueueSize: number;
-}
 
 // @public
 export namespace ExportGraphics {
@@ -2420,6 +2393,8 @@ export abstract class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
+    // @internal
+    get eventSink(): EventSink;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static findByKey(key: string): IModelDb;
@@ -2429,6 +2404,8 @@ export abstract class IModelDb extends IModel {
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     getBriefcaseId(): BriefcaseId;
+    // @internal (undocumented)
+    protected getEventSourceProps(): IModelEventSourceProps;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta
     getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
@@ -2517,6 +2494,8 @@ export namespace IModelDb {
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): void;
         insertElement(elProps: ElementProps): Id64String;
+        // @internal
+        _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal
@@ -2714,8 +2693,6 @@ export class IModelHostConfiguration {
     static defaultLogTileSizeThreshold: number;
     // @internal
     static defaultTileRequestTimeout: number;
-    // @internal
-    eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
     // @internal
     logTileLoadTimeThreshold: number;

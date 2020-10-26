@@ -12,6 +12,8 @@ export class Capabilities {
     static create(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined;
     init(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo;
     // (undocumented)
+    get isMobile(): boolean;
+    // (undocumented)
     get isWebGL2(): boolean;
     // (undocumented)
     get maxAntialiasSamples(): number;

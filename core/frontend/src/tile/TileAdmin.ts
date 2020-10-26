@@ -13,6 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { RenderMemory } from "../render/RenderMemory";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
@@ -113,6 +114,10 @@ export abstract class TileAdmin {
   public abstract get maximumMajorTileFormatVersion(): number;
   /** @internal */
   public abstract get maximumLevelsToSkip(): number;
+  /** @internal */
+  public abstract get mobileExpirationMemoryThreshold(): number;
+  /** @internal */
+  public abstract get mobileRealityTileMinToleranceRatio(): number;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -410,6 +415,31 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     tileTreeExpirationTime?: number;
 
+    /** When the total used memory of all tile trees exceeds this many bytes, tiles belonging to the trees will be immediately considered eligible for disposal if they are unused by any viewport.
+     * This disposal will occur by calling the `forcePrune` method on every tree.
+     * This pruning criteria exists in addition to the pruning eligibility based on expiration time.
+     *
+     * @note This value only has an effect on mobile devices. On non-mobile devices, unused tiles will only be pruned based on expiration time, not memory usage.
+     *
+     * Default value: 200MB (200,000,000 bytes)
+     * Minimum value: 100MB (100,000,000 bytes)
+     *
+     * @alpha
+     */
+    mobileExpirationMemoryThreshold?: number;
+
+    /** Nominally the error on screen size of a reality tile. The minimum value of 1.0 will apply a direct 1:1 scale.
+     * A ratio higher than 1.0 will result in lower quality display as the reality tile refinement becomes more coarse.
+     *
+     * @note This value only has an effect on mobile devices. On non-mobile devices, this ratio will always internally be 1.0 and any setting here will be ignored.
+     *
+     * Default value: 3.0
+     * Minimum value: 1.0
+     *
+     * @alpha
+     */
+    mobileRealityTileMinToleranceRatio?: number;
+
     /** Used strictly for tests to circumvent the minimum expiration times.
      * This allows tests to reduce the expiration times below their stated minimums so that tests execute more quickly.
      * @internal
@@ -599,6 +629,8 @@ class Admin extends TileAdmin {
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
   private readonly _maximumLevelsToSkip: number;
+  private readonly _mobileExpirationMemoryThreshold: number;
+  private readonly _mobileRealityTileMinToleranceRatio: number;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
@@ -618,6 +650,8 @@ class Admin extends TileAdmin {
   private _nextPruneTime: BeTimePoint;
   private _nextPurgeTime: BeTimePoint;
   private readonly _treeExpirationTime: BeDuration;
+  private _nextPruneForMemoryUsageTime: BeTimePoint;
+  private readonly _pruneForMemoryUsageTime: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
   private _canceledRequests?: Map<IModelConnection, Map<string, Set<string>>>;
@@ -676,6 +710,9 @@ class Admin extends TileAdmin {
     this._alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this._maxMajorVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this._useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
+    this._mobileExpirationMemoryThreshold = Math.max(options.mobileExpirationMemoryThreshold ?? 200000000, 100000000);
+    this._mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
+    this._pruneForMemoryUsageTime = BeDuration.fromSeconds(1);
 
     if (undefined !== options.maximumLevelsToSkip)
       this._maximumLevelsToSkip = Math.floor(Math.max(0, options.maximumLevelsToSkip));
@@ -706,6 +743,7 @@ class Admin extends TileAdmin {
     const now = BeTimePoint.now();
     this._nextPruneTime = now.plus(this._tileExpirationTime);
     this._nextPurgeTime = now.plus(this._treeExpirationTime);
+    this._nextPruneForMemoryUsageTime = now.plus(this._pruneForMemoryUsageTime);
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
 
@@ -720,6 +758,8 @@ class Admin extends TileAdmin {
   public get ignoreAreaPatterns() { return this._ignoreAreaPatterns; }
   public get useProjectExtents() { return this._useProjectExtents; }
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
+  public get mobileExpirationMemoryThreshold() { return this._mobileExpirationMemoryThreshold; }
+  public get mobileRealityTileMinToleranceRatio() { return this._mobileRealityTileMinToleranceRatio; }
   public get disableMagnification() { return this._disableMagnification; }
   public get alwaysRequestEdges() { return this._alwaysRequestEdges; }
   public get alwaysSubdivideIncompleteTiles() { return this._alwaysSubdivideIncompleteTiles; }
@@ -813,8 +853,46 @@ class Admin extends TileAdmin {
     }
   }
 
+  // Possibly prune tiles belonging to trees based on overall tree memory usage.
+  // Note: this currently only occurs on mobile devices.
+  private pruneForMemoryUsage(): void {
+    const memoryTrees = new TileTreeSet();
+    for (const vp of this._viewports) {
+      if (!vp.iModel.isOpen) // case of closing an IModelConnection while keeping the Viewport open, possibly for reuse with a different IModelConnection.
+        continue;
+      vp.discloseTileTrees(memoryTrees);
+    }
+
+    let exceedsThreshold = false;
+
+    // Gather total memory used by trees.
+    const stats = new RenderMemory.Statistics();
+    for (const tree of memoryTrees.trees) {
+      tree.collectStatistics(stats);
+      if (stats.totalBytes > this.mobileExpirationMemoryThreshold) {
+        exceedsThreshold = true;
+        break;
+      }
+    }
+
+    // Force pruning those trees if total bytes consumed exceeds the threshold.
+    if (exceedsThreshold) {
+      for (const tree of memoryTrees.trees)
+        tree.forcePrune();
+    }
+  }
+
   private pruneAndPurge(): void {
     const now = BeTimePoint.now();
+
+    if (IModelApp.renderSystem.isMobile) {
+      const needPruneForMemoryUsage = this._nextPruneForMemoryUsageTime.before(now);
+      if (needPruneForMemoryUsage) {
+        this.pruneForMemoryUsage();
+        this._nextPruneForMemoryUsageTime = now.plus(this._pruneForMemoryUsageTime);
+      }
+    }
+
     const needPrune = this._nextPruneTime.before(now);
     const needPurge = this._nextPurgeTime.before(now);
     if (!needPrune && !needPurge)

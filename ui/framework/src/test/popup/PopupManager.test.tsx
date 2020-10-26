@@ -12,7 +12,7 @@ import {
   PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames, UiDataProvider,
 } from "@bentley/ui-abstract";
 import { EditorContainer, Toolbar, ToolbarWithOverflow } from "@bentley/ui-components";
-import { LeadingText, Point } from "@bentley/ui-core";
+import { Button, LeadingText, Point } from "@bentley/ui-core";
 import { AccuDrawPopupManager, Calculator, DialogGridContainer, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, MenuButton, MenuItemProps, PopupManager, PopupRenderer } from "../../ui-framework";
 import { Card } from "../../ui-framework/popup/CardPopup";
 import TestUtils, { mount, storageMock } from "../TestUtils";
@@ -338,9 +338,11 @@ describe("PopupManager", () => {
       expect(wrapper.find(LeadingText).length).to.eq(1);
       PopupManager.hideCard();
 
-      PopupManager.showCard(content.documentElement, undefined, undefined, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      const reactContent = { reactNode: <Button>Label</Button> };
+      PopupManager.showCard(reactContent, undefined, undefined, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       wrapper.update();
       expect(wrapper.find(Card).length).to.eq(1);
+      expect(wrapper.find(Button).length).to.eq(1);
       expect(wrapper.find(LeadingText).length).to.eq(0);
       PopupManager.hideCard();
     });
