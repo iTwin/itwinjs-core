@@ -28,6 +28,7 @@ import * as categorySelectorState from "./CategorySelectorState";
 import * as displayStyleState from "./DisplayStyleState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
+import { EventSource } from "./EventSource";
 import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { FeatureToggleClient } from "./FeatureToggleClient";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -129,15 +130,7 @@ export interface IModelAppOptions {
    */
   featureToggles?: FeatureToggleClient;
 }
-/** Setting for [[EventSource]]
- * @internal
- */
-export interface EventSourceOptions {
-  /** Poll interval in milliseconds use to poll backend for events */
-  pollInterval: number;
-  /** Prefetch limit set limit on number of event returned by backend */
-  prefetchLimit: number;
-}
+
 /** Options for [[IModelApp.makeModalDiv]]
  *  @internal
  */
@@ -208,10 +201,6 @@ export class IModelApp {
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
 
-  /** Global event source options
-   * @internal
-   */
-  public static eventSourceOptions: EventSourceOptions = { pollInterval: 3000, prefetchLimit: 512 };
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: FrontendAuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
@@ -446,6 +435,7 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
+    EventSource.clearGlobal();
     this._initialized = false;
   }
 

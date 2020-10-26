@@ -115,8 +115,6 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity 
 internal;EventSink
-internal;EventSinkManager
-internal;EventSinkOptions
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo

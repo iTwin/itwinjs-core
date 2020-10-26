@@ -1726,6 +1726,22 @@ export class FavoritePropertiesRenderer {
     renderFavorites(propertyData: PropertyData, orientation?: Orientation): HTMLElement | string;
 }
 
+// @alpha
+export class FavoritePropertyList extends React.PureComponent<FavoritePropertyListProps> {
+    // @internal (undocumented)
+    render(): JSX.Element | null;
+}
+
+// @alpha
+export interface FavoritePropertyListProps {
+    // (undocumented)
+    orientation?: Orientation;
+    // (undocumented)
+    propertyData: PropertyData;
+    // (undocumented)
+    propertyValueRendererManager?: PropertyValueRendererManager;
+}
+
 // @beta
 export interface FieldFilterDescriptor extends FilterDescriptor {
     addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;

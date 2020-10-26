@@ -335,6 +335,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
   public get isWebGL2(): boolean { return this.capabilities.isWebGL2; }
+  public get isMobile(): boolean { return this.capabilities.isMobile; }
 
   public setDrawBuffers(attachments: GLenum[]): void { this._extensions.setDrawBuffers(attachments); }
 

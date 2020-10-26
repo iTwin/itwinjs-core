@@ -103,7 +103,6 @@ describe("NativeApp (#integration)", () => {
     const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
 
     let events = 0;
-    IModelApp.eventSourceOptions.pollInterval = 1000;
     const downloader: BriefcaseDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
       (_progress: ProgressInfo) => {
         events++;

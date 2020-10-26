@@ -132,6 +132,7 @@ import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
+import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
@@ -2643,43 +2644,20 @@ export enum EventHandled {
     Yes = 1
 }
 
-// @internal
-export type EventListener = (data: any) => void;
+// @beta
+export type EventListener = (eventData: any) => void;
 
-// @internal
-export class EventSource {
-    constructor(tokenProps: IModelRpcProps, id: string);
-    clear(): void;
-    // (undocumented)
-    get fetching(): boolean;
-    off(namespace: string, eventName: string, listener: EventListener): void;
-    on(namespace: string, eventName: string, listener: EventListener): {
-        off: () => void;
-    };
-    // (undocumented)
-    readonly tokenProps: IModelRpcProps;
-}
-
-// @internal
-export abstract class EventSourceManager {
-    // (undocumented)
-    static create(id: string, tokenProps: IModelRpcProps): EventSource;
-    // (undocumented)
-    static delete(id: string): void;
-    // (undocumented)
-    static get(id: string, tokenProps?: IModelRpcProps): EventSource;
-    // (undocumented)
-    static readonly GLOBAL = "__globalEvents__";
-    // (undocumented)
+// @beta
+export class EventSource implements IDisposable {
+    protected constructor(id: string);
+    // @internal
+    static clearGlobal(): void;
+    static create(id: string): EventSource;
+    dispose(): void;
     static get global(): EventSource;
-    // (undocumented)
-    static has(id: string): boolean;
-    }
-
-// @internal
-export interface EventSourceOptions {
-    pollInterval: number;
-    prefetchLimit: number;
+    readonly id: string;
+    get isDisposed(): boolean;
+    on(namespace: string, eventName: string, listener: EventListener): RemoveEventListener;
 }
 
 // @beta
@@ -3835,8 +3813,6 @@ export class IModelApp {
     static authorizationClient?: FrontendAuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
-    // @internal
-    static eventSourceOptions: EventSourceOptions;
     // @beta
     static get extensionAdmin(): ExtensionAdmin;
     // @internal
@@ -3963,14 +3939,18 @@ export abstract class IModelConnection extends IModel {
     // @alpha
     get editing(): EditingFunctions;
     readonly elements: IModelConnection.Elements;
-    // @internal
-    readonly eventSource: EventSource | undefined;
+    // @beta
+    get eventSource(): EventSource;
+    // @internal (undocumented)
+    protected _eventSource: EventSource;
     // @internal
     expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
     // @internal
     readonly geoServices: GeoServices;
+    // @internal (undocumented)
+    protected getEventSourceProps(): IModelEventSourceProps;
     // @beta
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta
@@ -4168,6 +4148,8 @@ export class IModelTileTree extends TileTree {
     debugMaxDepth?: number;
     // (undocumented)
     draw(args: TileDrawArgs): void;
+    // (undocumented)
+    forcePrune(): void;
     // (undocumented)
     readonly geometryGuid?: string;
     // (undocumented)
@@ -5996,6 +5978,8 @@ export class OrbitGtTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    forcePrune(): void;
+    // (undocumented)
     get is3d(): boolean;
     // (undocumented)
     get isContentUnbounded(): boolean;
@@ -6604,6 +6588,8 @@ export class RealityTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    forcePrune(): void;
+    // (undocumented)
     getBaseRealityDepth(_sceneContext: SceneContext): number;
     // (undocumented)
     getTraversalChildren(depth: number): TraversalChildrenDetails;
@@ -6679,6 +6665,9 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     close(): Promise<void>;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteBriefcaseConnection>;
     }
+
+// @beta
+export type RemoveEventListener = () => void;
 
 // @beta
 export abstract class RenderClipVolume implements IDisposable {
@@ -7201,6 +7190,8 @@ export abstract class RenderSystem implements IDisposable {
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
+    // @internal (undocumented)
+    get isMobile(): boolean;
     // @internal (undocumented)
     abstract get isValid(): boolean;
     // @internal
@@ -8939,6 +8930,10 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get minimumSpatialTolerance(): number;
     // @internal (undocumented)
+    abstract get mobileExpirationMemoryThreshold(): number;
+    // @internal (undocumented)
+    abstract get mobileRealityTileMinToleranceRatio(): number;
+    // @internal (undocumented)
     abstract onActiveRequestCanceled(tile: Tile): void;
     // @internal (undocumented)
     abstract onCacheMiss(): void;
@@ -9003,6 +8998,8 @@ export namespace TileAdmin {
         // @internal
         maximumMajorTileFormatVersion?: number;
         minimumSpatialTolerance?: number;
+        mobileExpirationMemoryThreshold?: number;
+        mobileRealityTileMinToleranceRatio?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
@@ -9245,6 +9242,8 @@ export abstract class TileTree {
     dispose(): void;
     abstract draw(args: TileDrawArgs): void;
     readonly expirationTime: BeDuration;
+    // @alpha
+    abstract forcePrune(): void;
     readonly id: string;
     // (undocumented)
     readonly iModel: IModelConnection;

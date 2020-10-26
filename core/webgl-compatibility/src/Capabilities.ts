@@ -60,6 +60,26 @@ export enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
+function _detectIsMobile() {
+  // Modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
+  // ###TODO: consume and use the actual full 'detect-gpu' package when querying capabilities so we can stay up to date.
+
+  const { userAgent, platform, maxTouchPoints } = window.navigator;
+
+  const isIOS = /(iphone|ipod|ipad)/i.test(userAgent);
+
+  // Workaround for ipadOS, force detection as tablet
+  // SEE: https://github.com/lancedikson/bowser/issues/329
+  // SEE: https://stackoverflow.com/questions/58019463/how-to-detect-device-name-in-safari-on-ios-13-while-it-doesnt-show-the-correct
+  const isIpad =
+    platform === "iPad" ||
+    (platform === "MacIntel" && maxTouchPoints > 0 && !window.MSStream);
+
+  const isAndroid = /android/i.test(userAgent);
+
+  return isAndroid || isIOS || isIpad;
+}
+
 /** Describes the rendering capabilities of the host system.
  * @internal
  */
@@ -83,6 +103,7 @@ export class Capabilities {
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
 
   private _isWebGL2: boolean = false;
+  private _isMobile: boolean = false;
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
@@ -124,6 +145,8 @@ export class Capabilities {
   }
 
   public get supportsAntiAliasing(): boolean { return this._isWebGL2 && this.maxAntialiasSamples > 1 }
+
+  public get isMobile(): boolean { return this._isMobile; }
 
   private findExtension(name: WebGLExtensionName): any {
     const ext = this._extensionMap[name];
@@ -212,6 +235,8 @@ export class Capabilities {
   public init(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo {
     const gl2 = !(gl instanceof WebGLRenderingContext) ? gl : undefined;
     this._isWebGL2 = undefined !== gl2;
+
+    this._isMobile = _detectIsMobile();
 
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);

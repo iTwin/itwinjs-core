@@ -9,7 +9,7 @@
 import { Id64String, LogLevel } from "@bentley/bentleyjs-core";
 import { Range3dProps } from "@bentley/geometry-core";
 import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOptions, RequestBriefcaseProps } from "../BriefcaseTypes";
-import { IModelProps, IModelRpcProps } from "../IModel";
+import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 
@@ -19,16 +19,21 @@ import { RpcManager } from "../RpcManager";
  */
 export type StorageValue = string | number | boolean | null | Uint8Array;
 
-/** Represents a queued event retrieved from NativeAppRpcInterface.fetchEvent.
+/** Represents a push event emitted from an [EventSink]($backend) to an [EventSource]($frontend).
+ * @note Events are received by an EventSink in the order in which they were emitted by the EventSource.
  * @internal
  */
 export interface QueuedEvent {
-  eventId: number; // stable auto-incremented id used to determine order of events
-  namespace: string; // namespace for the event
-  eventName: string; // name of the event
-  data: any; // this will be serialized to json
+  /** Auto-incremented id. */
+  eventId: number;
+  /** A namespace used for preventing collisions between event names. */
+  namespace: string;
+  /** A name uniquely identifying the type of event within its namespace. */
+  eventName: string;
+  /** Event payload. The specific type depends on the event name. */
+  data: any;
 }
-/** List of event by namespace
+/** Event names and namespace exposed by iModel.js.
  * @internal
  */
 export namespace Events {
@@ -104,7 +109,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.3.0";
+  public static interfaceVersion = "0.4.1";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -117,14 +122,6 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _metaData metaData if any.
    */
   public async log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void> { return this.forward(arguments); }
-
-  /** Fetch a list of queue events for the specified iModel from the backend, up to the specified maximum number of events.
-   * The order of the events in the returned array matches the order in which the events occurred.
-   * @param _iModelToken Identifies the iModel
-   * @param _maxToFetch The maximum number of events to return. If this is less than or equal to zero, all queued events will be returned.
-   * @returns Up to _maxToFetch queued events.
-   */
-  public async fetchEvents(_iModelToken: IModelRpcProps, _maxToFetch: number): Promise<QueuedEvent[]> { return this.forward(arguments); }
 
   /** Check if internet is reachable and how its reachable. */
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> { return this.forward(arguments); }
@@ -171,7 +168,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _openOptions Options to open the briefcase
    * @returns IModelRpcProps which allow to create IModelConnection.
    */
-  public async openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelProps> { return this.forward(arguments); }
+  public async openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
   /**
    * Closes the briefcase on disk - this api can be called offline

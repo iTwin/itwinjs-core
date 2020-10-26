@@ -40,16 +40,16 @@ export function Icon(props: IconProps) {
     // if string begins with "svg:" then we assume it was imported (into extension source file) using webpack loader svg-sprite-loader
     if (svgSource !== undefined)
       return (
-        <i className={classnames("icon", "core-svg-icon", props.className)}>
+        <i className={classnames("icon", "core-svg-icon", props.className)} style={props.style}>
           <SvgSprite src={svgSource} />
         </i>
       );
 
-    return (<i className={classnames("icon", iconString, props.className)} />);
+    return (<i className={classnames("icon", iconString, props.className)} style={props.style} />);
   }
 
   return (
-    <i className={classnames("icon", "core-svg-icon", props.className)}>
+    <i className={classnames("icon", "core-svg-icon", props.className)} style={props.style}>
       {props.iconSpec}
     </i>
   );

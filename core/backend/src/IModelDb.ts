@@ -20,7 +20,7 @@ import {
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
-  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion,
+  IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
   SyncMode, ThumbnailProps, TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
@@ -38,7 +38,7 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
-import { EventSink, EventSinkManager } from "./EventSink";
+import { EventSink } from "./EventSink";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -113,6 +113,7 @@ export interface ComputedProjectExtents {
  */
 export abstract class IModelDb extends IModel {
   protected static readonly _edit = "StandaloneEdit";
+  private static _nextEventSinkId = 0;
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   public readonly models = new IModelDb.Models(this);
@@ -130,6 +131,12 @@ export abstract class IModelDb extends IModel {
   protected _fontMap?: FontMap;
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
+  private readonly _eventSink: EventSink;
+
+  /** Emits push events to the frontend.
+   * @internal
+   */
+  public get eventSink(): EventSink { return this._eventSink; }
 
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
   public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
@@ -153,6 +160,11 @@ export abstract class IModelDb extends IModel {
     this._nativeDb = nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
+
+    // The same file can be opened by multiple IModelDbs - make sure each gets a unique EventSink name.
+    const eventSinkId = `${this._fileKey}-${(IModelDb._nextEventSinkId++).toString()}`
+    this._eventSink = new EventSink(eventSinkId);
+    this.nativeDb.setEventSink(this._eventSink);
   }
   /**
    * Called by derived classes before closing the connection
@@ -162,12 +174,18 @@ export abstract class IModelDb extends IModel {
     this.clearSqliteStatementCache();
     this.clearStatementCache();
     this._concurrentQueryStats.dispose();
+    this._eventSink.dispose();
   }
 
   /** @internal */
   protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     super.initialize(props.rootSubject.name, props);
+  }
+
+  /** @internal */
+  protected getEventSourceProps(): IModelEventSourceProps {
+    return { eventSourceName: this._eventSink.id };
   }
 
   /** Type guard for instanceof [[BriefcaseDb]] */
@@ -2120,32 +2138,11 @@ export class BriefcaseDb extends IModelDb {
    */
   public get isPushEnabled(): boolean { return this.syncMode === SyncMode.PullAndPush && this.openMode === OpenMode.ReadWrite; }
 
-  /** Return event sink for associated [[BriefcaseDb]].
-   * @internal
-   */
-  public get eventSink(): EventSink | undefined { return this._eventSink; }
-  private _eventSink?: EventSink;
-
-  private clearEventSink() {
-    if (this._eventSink) {
-      EventSinkManager.delete(this._eventSink.id);
-      this._eventSink = undefined;
-    }
-  }
-
-  private initializeEventSink() {
-    if (this._fileKey !== "") {
-      this._eventSink = EventSinkManager.get(this._fileKey);
-      this.nativeDb.setEventSink(this._eventSink);
-    }
-  }
-
   private constructor(briefcaseEntry: BriefcaseEntry) {
     super(briefcaseEntry.nativeDb, briefcaseEntry.getIModelRpcProps(), briefcaseEntry.openMode);
     this.syncMode = briefcaseEntry.syncMode;
     this.setupBriefcaseEntry(briefcaseEntry);
     this.setDefaultConcurrentControlAndPolicy();
-    this.initializeEventSink();
   }
 
   private setDefaultConcurrentControlAndPolicy() {
@@ -2324,11 +2321,11 @@ export class BriefcaseDb extends IModelDb {
       this.beforeClose();
       if (this.isPushEnabled)
         this.concurrencyControl.onClose();
+
       BriefcaseManager.close(this.briefcase);
     } catch (error) {
       throw error;
     } finally {
-      this.clearEventSink();
       this.clearBriefcaseEntry();
     }
   }

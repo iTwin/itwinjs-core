@@ -37,8 +37,12 @@ export class SchemaGraphUtil {
     if (this.directlyReferences(schema, possibleDependency))
       return true;
 
-    // Possible SupplementalSchema support?
-    // ...
+    // search for dependencies in indirect references
+    for (const reference of schema.references) {
+      if (this.dependsOn(reference, possibleDependency))
+        return true;
+    }
+
     return false;
   }
 

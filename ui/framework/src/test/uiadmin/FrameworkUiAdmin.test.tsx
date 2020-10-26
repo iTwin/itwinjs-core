@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { AbstractMenuItemProps, AbstractToolbarProps, PropertyDescription, RelativePosition, UiDataProvider } from "@bentley/ui-abstract";
-import { Point } from "@bentley/ui-core";
+import { Button, Point } from "@bentley/ui-core";
 import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework";
 import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
 import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
@@ -182,6 +183,27 @@ describe("FrameworkUiAdmin", () => {
     expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.true;
     expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight)).to.be.true;
     expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel)).to.be.true;
+    expect(uiAdmin.hideCard()).to.be.true;
+    expect(uiAdmin.hideCard()).to.be.false;
+  });
+
+  it("showReactCard should return true", () => {
+    const content = <Button>Label</Button>;
+    const toolbarProps: AbstractToolbarProps = {
+      toolbarId: "test",
+      items: [
+        { id: "tool", itemPriority: 10, label: "tool label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command", itemPriority: 20, label: "command label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command2", itemPriority: 30, label: "command label", icon: "icon-placeholder", execute: () => { } },
+      ],
+    };
+    const spySelect = sinon.fake();
+    const spyCancel = sinon.fake();
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+
+    expect(uiAdmin.showReactCard(content, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.true;
+    expect(uiAdmin.showReactCard(content, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight)).to.be.true;
+    expect(uiAdmin.showReactCard(content, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel)).to.be.true;
     expect(uiAdmin.hideCard()).to.be.true;
     expect(uiAdmin.hideCard()).to.be.false;
   });

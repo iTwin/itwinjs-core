@@ -12,7 +12,7 @@ import {
   NativeAppRpcInterface, OverriddenBy, RequestBriefcaseProps, RpcRegistry, StorageValue,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/itwin-client";
-import { EventSourceManager } from "./EventSource";
+import { EventSource } from "./EventSource";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { LocalBriefcaseConnection } from "./IModelConnection";
@@ -70,21 +70,20 @@ export class NativeApp {
       RequestGlobalOptions.online = window.navigator.onLine;
       await NativeApp.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
-    EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => {
+    EventSource.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => {
       Logger.logWarning(FrontendLoggerCategory.NativeApp, "Low memory warning");
       if (NativeApp.onMemoryWarning.numberOfListeners === 0) {
         alert("Low memory warning");
       }
       NativeApp.onMemoryWarning.raiseEvent();
     });
-    EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, (args: any) => {
+    EventSource.global.on(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, (args: any) => {
       Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
       NativeApp.onInternetConnectivityChanged.raiseEvent(args.status);
     });
   }
 
   public static async shutdown() {
-    EventSourceManager.global.clear();
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
     await IModelApp.shutdown();
@@ -105,11 +104,11 @@ export class NativeApp {
     let stopProgressEvents = () => { };
     const reportProgress = progress !== undefined;
     if (reportProgress) {
-      stopProgressEvents = EventSourceManager.global.on(
+      stopProgressEvents = EventSource.global.on(
         Events.NativeApp.namespace,
         `${Events.NativeApp.onBriefcaseDownloadProgress}-${iModelId}`, (data: any) => {
           progress!(data.progress as ProgressInfo);
-        }).off;
+        });
     }
 
     requestContext.useContextForRpc = true;
