@@ -13,6 +13,7 @@
   },
   "main": "lib/plugins/index.js",
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",

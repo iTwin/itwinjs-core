@@ -20,6 +20,7 @@
   "main": "lib/presentation-testing.js",
   "typings": "lib/presentation-testing",
   "scripts": {
+    "compile": "npm run build",
     "build": "npm run extract && tsc 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",

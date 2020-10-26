@@ -6,6 +6,7 @@
   "version": "0.0.0",
   "homepage": "http://localhost:3000/",
   "scripts": {
+    "compile": "npm run build:backend & tsc",
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
     "build:frontend": "npm run pseudolocalize && cross-env GENERATE_SOURCEMAP=false EXTEND_ESLINT=true react-scripts build",

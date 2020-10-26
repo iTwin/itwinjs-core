@@ -7,6 +7,7 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
+    "compile": "npm run build",
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx ./src/loader/checkbrowser.js ./lib/loader && cpx \"./src/public/**/*\" ./lib/public",

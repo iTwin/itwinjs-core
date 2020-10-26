@@ -21,6 +21,7 @@
   "main": "lib/presentation-common.js",
   "typings": "lib/presentation-common",
   "scripts": {
+    "compile": "npm run build",
     "build": "npm run ruleset-json-schema && npm run build:assets && npm run build:public && npm run extract && tsc 1>&2",
     "build:assets": "cpx \"./assets/**/*\" ./lib/assets && npm run pseudolocalize:assets",
     "build:public": "cpx \"./assets/**/*\" ./lib/public && npm run pseudolocalize:public",

@@ -6,6 +6,7 @@
   "main": "lib/webgl-compatibility.js",
   "imodeljsSharedLibrary": true,
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "npm test -- --cover",

@@ -24,6 +24,7 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
+    "compile": "npm run build",
     "copy:locale": "cpx \"../common/assets/**/*\" ./lib/public && cpx \"./public/**/*\" ./lib/public",
     "copy:assets": "cpx \"./src/**/*.{scss,json}\" ./lib",
     "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",

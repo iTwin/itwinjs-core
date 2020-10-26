@@ -5,6 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "compile": "npm run build",
     "build": "extension-webpack-tools build -s ./src/geoNames.ts -o ./lib/extension",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",

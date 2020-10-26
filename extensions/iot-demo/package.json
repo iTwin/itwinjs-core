@@ -5,6 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "compile": "npm run build",
     "prebuild": "npm run pseudolocalize && npm run copy:assets",
     "build": "npm run prebuild && extension-webpack-tools build -s ./src/iotDemo.ts -o ./lib/extension",
     "clean": "rimraf lib .rush/temp/package-deps*.json",

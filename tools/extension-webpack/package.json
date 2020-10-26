@@ -12,6 +12,7 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",

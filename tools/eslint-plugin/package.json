@@ -11,6 +11,7 @@
   ],
   "main": "dist/index.js",
   "scripts": {
+    "compile": "npm run build",
     "build": "",
     "clean": "",
     "lint": "",

@@ -11,6 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/abstract"
   },
   "scripts": {
+    "compile": "npm run build",
     "copy:assets": "cpx \"./src/**/*.{*css,svg}\" ./lib && cpx \"./public/**/*\" ./lib/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",

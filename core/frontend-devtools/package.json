@@ -6,6 +6,7 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
+    "compile": "npm run build",
     "build": "npm run copy:assets && tsc 1>&2 && npm run build:extension",
     "build:extension": "extension-webpack-tools build -s ./src/extension.ts -o ./lib/extension --sourceMap",
     "copy:assets": "cpx \"./public/**/*\" ./lib/public",

@@ -11,6 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/ninezone"
   },
   "scripts": {
+    "compile": "npm run build",
     "copy:assets": "cpx \"./src/**/*.*css\" \"./lib\"",
     "build": "npm run copy:assets && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",

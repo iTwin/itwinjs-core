@@ -5,6 +5,7 @@
   "license": "MIT",
   "version": "0.0.0",
   "scripts": {
+    "compile": "",
     "start": "react-scripts start",
     "build": "",
     "clean": "",

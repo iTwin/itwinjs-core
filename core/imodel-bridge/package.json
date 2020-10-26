@@ -13,6 +13,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/imodel-bridge"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --tsIndexFile=./imodel-bridge.ts --json=../../generated-docs/core/imodel-bridge/file.json --onlyJson",

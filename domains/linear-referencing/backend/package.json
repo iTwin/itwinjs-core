@@ -8,6 +8,7 @@
     "node": ">=10.16.0 <13.0"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2 && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",

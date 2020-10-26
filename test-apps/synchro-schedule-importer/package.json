@@ -4,6 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "compile": "npm run build",
     "build": "npm run build-code && npm run extract-assets",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "build-code": "tsc 1>&2",

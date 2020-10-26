@@ -6,6 +6,7 @@
   "description": "Converter to import IModelJson files into bim files.",
   "main": "./lib/main.js",
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
