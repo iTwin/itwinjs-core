@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Id64, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelJsFs, IModelTransformer,
-  PhysicalModel, PhysicalPartition, Relationship, SnapshotDb, SubCategory, Subject,
+  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalPartition,
+  Relationship, SnapshotDb, SubCategory, Subject,
 } from "@bentley/imodeljs-backend";
 import { CreateIModelProps } from "@bentley/imodeljs-common";
 
@@ -17,12 +17,15 @@ export class PhysicalModelCombiner extends IModelTransformer {
       IModelJsFs.removeSync(targetFileName);
     }
     const targetDbProps: CreateIModelProps = {
-      rootSubject: { name: "Combine-PhysicalModels-Target" },
+      rootSubject: { name: `${sourceDb.rootSubject.name} (Optimized)` },
       ecefLocation: sourceDb.ecefLocation,
     };
     const targetDb = SnapshotDb.createEmpty(targetFileName, targetDbProps);
     const combiner = new PhysicalModelCombiner(sourceDb, targetDb);
     await combiner.processSchemas(new BackendRequestContext());
+    if (sourceFileName.includes("fmg")) {
+      combiner.exporter.excludeElement("0x40000009395"); // exclude problem element
+    }
     combiner.combine();
     combiner.dispose();
     sourceDb.close();
@@ -57,12 +60,9 @@ export class PhysicalModelCombiner extends IModelTransformer {
     this.exporter.visitRelationships = true;
     this.processRelationships(ElementRefersToElements.classFullName);
     this.targetDb.saveChanges(`Finished processing relationships`);
+    this.logElapsedTime();
   }
   protected shouldExportElement(sourceElement: Element): boolean {
-    if (!this.importer.simplifyElementGeometry) {
-      this.importer.simplifyElementGeometry = true; // turn back on simplification
-      Logger.logInfo(BackendLoggerCategory.IModelImporter, "Turn back on element geometry simplification");
-    }
     ++this._numSourceElementsProcessed;
     if (0 === this._numSourceElementsProcessed % this._reportingInterval) {
       const progressMessage = `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`;
@@ -97,9 +97,6 @@ export class PhysicalModelCombiner extends IModelTransformer {
         }
         this.context.remapElement(sourceElement.id, this._targetComponentsModelId);
       }
-    } else if ((Id64.invalid === this._targetPhysicalTagsModelId) && ("0x40000009395" === sourceElement.id)) { // hack for problem element in FMG dataset
-      this.importer.simplifyElementGeometry = false; // temporarily turn off simplification
-      Logger.logInfo(BackendLoggerCategory.IModelImporter, `Disabling element geometry simplification for ${sourceElement.id}`);
     }
     return super.shouldExportElement(sourceElement);
   }
