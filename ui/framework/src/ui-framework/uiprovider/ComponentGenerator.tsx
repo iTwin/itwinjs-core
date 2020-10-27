@@ -50,7 +50,23 @@ function EditorLabel({ uiDataProvider, item, isLeftmostRecord }: { uiDataProvide
 }
 
 function PropertyEditor({ uiDataProvider, record, isLock, setFocus }: { uiDataProvider: UiLayoutDataProvider, record: PropertyRecord, isLock?: boolean, setFocus?: boolean }) {
+  const initialRecord = React.useRef(record);
+  const isMounted = React.useRef(false);
   const [propertyRecord, setPropertyRecord] = React.useState(record);
+
+  React.useEffect(() => {
+    if (record !== initialRecord.current) {
+      initialRecord.current = record;
+      setPropertyRecord(record);
+    }
+  }, [record]);
+
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // monitor tool for sync UI events
   React.useEffect(() => {
@@ -92,10 +108,11 @@ function PropertyEditor({ uiDataProvider, record, isLock, setFocus }: { uiDataPr
     assert(commit.newValue.valueFormat === PropertyValueFormat.Primitive && commit.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive);
     const newPropertyValue = propertyRecord.copyWithNewValue(commit.newValue);
     const syncItem: DialogPropertySyncItem = { value: commit.newValue as DialogItemValue, propertyName: record.property.name, isDisabled: newPropertyValue.isDisabled };
-    setPropertyRecord(newPropertyValue);
-    setImmediate(() => {
-      uiDataProvider.applyUiPropertyChange(syncItem);
-    });
+    uiDataProvider.applyUiPropertyChange(syncItem);
+    // The above call could trigger a complete refresh of the UI, so ensure the component
+    // is still mounted before calling set state.
+    if (isMounted.current)
+      setPropertyRecord(newPropertyValue);
   }, [propertyRecord, uiDataProvider, record.property.name]);
   // istanbul ignore next
   const handleCancel = React.useCallback(() => {

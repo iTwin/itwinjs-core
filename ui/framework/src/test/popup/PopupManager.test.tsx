@@ -382,7 +382,7 @@ describe("PopupManager", () => {
         public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
           if (properties.length > 0) {
             for (const prop of properties) {
-              this.applyUiPropertyChange (prop);
+              this.applyUiPropertyChange(prop);
             }
           }
           return { status: PropertyChangeStatus.Success };
@@ -409,9 +409,7 @@ describe("PopupManager", () => {
 
       fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter", code: "Enter" })
       await TestUtils.flushAsyncOperations();
-      setImmediate (()=>{
-        expect(spyChange.calledOnce).to.be.true;
-      })
+      expect(spyChange.calledOnce).to.be.true;
 
       PopupManager.openToolSettings(uiDataProvider, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-default-container").length).to.eq(1);
@@ -421,9 +419,7 @@ describe("PopupManager", () => {
       fireEvent.click(inputNode as HTMLElement);
       fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape", code: "Escape" })
       await TestUtils.flushAsyncOperations();
-      setImmediate (()=>{
-        expect(spyCancel.calledOnce).to.be.true;
-      })
+      expect(spyCancel.calledOnce).to.be.true;
     });
 
     it("PopupRenderer should render Keyin Palette", async () => {

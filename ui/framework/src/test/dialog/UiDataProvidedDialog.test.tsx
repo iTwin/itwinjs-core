@@ -100,14 +100,14 @@ class TestUiDataProvider extends DialogLayoutDataProvider {
 
   public disableUserInputReplaceDescription(): void {
     const newUserValue: DialogItemValue = { value: "xxx" };
-    const syncItem: DialogPropertySyncItem = { value: newUserValue, propertyName: TestUiDataProvider.userPropertyName, isDisabled: true,  property: TestUiDataProvider._getUserDescription()};
-    this.fireSyncPropertiesEvent ([syncItem]);
+    const syncItem: DialogPropertySyncItem = { value: newUserValue, propertyName: TestUiDataProvider.userPropertyName, isDisabled: true, property: TestUiDataProvider._getUserDescription() };
+    this.fireSyncPropertiesEvent([syncItem]);
   }
 
   public disableUserInput(): void {
     const newUserValue: DialogItemValue = { value: "xxx" };
-    const syncItem: DialogPropertySyncItem = { value: newUserValue, propertyName: TestUiDataProvider.userPropertyName, isDisabled: true};
-    this.fireSyncPropertiesEvent ([syncItem]);
+    const syncItem: DialogPropertySyncItem = { value: newUserValue, propertyName: TestUiDataProvider.userPropertyName, isDisabled: true };
+    this.fireSyncPropertiesEvent([syncItem]);
   }
 
   public supplyButtonData(): DialogButtonDef[] | undefined {
@@ -139,7 +139,7 @@ describe("UiDataProvidedDialog", () => {
 
   describe("Modal Dialog", () => {
     it("should handle button presses", async () => {
-    // const spyOnEscape = sinon.spy();
+      // const spyOnEscape = sinon.spy();
       const reactNode = <UiDataProvidedDialog
         title="My Title"
         uiDataProvider={new TestUiDataProvider()}
@@ -147,17 +147,17 @@ describe("UiDataProvidedDialog", () => {
       />;
       const component = render(reactNode);
       let nextButton = component.getByText("dialog.next");
-      fireEvent.click (nextButton);
+      fireEvent.click(nextButton);
       const previousButton = component.getByText("dialog.previous");
-      fireEvent.click (previousButton);
+      fireEvent.click(previousButton);
       nextButton = component.getByText("dialog.next");
-      fireEvent.click (nextButton);
+      fireEvent.click(nextButton);
       const cancelButton = component.getByText("dialog.cancel");
-      fireEvent.click (cancelButton);
+      fireEvent.click(cancelButton);
       const okButton = component.getByText("dialog.ok") as HTMLButtonElement;
-      fireEvent.click (okButton);
-      const inputs = component.container.querySelectorAll ("input");
-      expect (okButton.disabled).to.be.true;
+      fireEvent.click(okButton);
+      const inputs = component.container.querySelectorAll("input");
+      expect(okButton.disabled).to.be.true;
       expect(inputs.length).to.be.eq(2);
       inputs[0].focus();
       fireEvent.change(inputs[0], { target: { value: "test-user" } });
@@ -167,14 +167,12 @@ describe("UiDataProvidedDialog", () => {
       fireEvent.change(inputs[1], { target: { value: "test-city" } });
       inputs[1].blur();
       await TestUtils.flushAsyncOperations();
-      setImmediate(() => {
-        expect (okButton.disabled).to.be.false;
-        fireEvent.click (okButton);
-        expect(spyOK.calledOnce).to.be.true;
+      expect(okButton.disabled).to.be.false;
+      fireEvent.click(okButton);
+      expect(spyOK.calledOnce).to.be.true;
 
-        component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
-        expect(spyCancel.calledOnce).to.be.true;
-      });
+      component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
+      expect(spyCancel.calledOnce).to.be.true;
     });
   });
 
@@ -191,17 +189,17 @@ describe("UiDataProvidedDialog", () => {
       />;
       const component = render(reactNode);
       let nextButton = component.getByText("dialog.next");
-      fireEvent.click (nextButton);
+      fireEvent.click(nextButton);
       const previousButton = component.getByText("dialog.previous");
-      fireEvent.click (previousButton);
+      fireEvent.click(previousButton);
       nextButton = component.getByText("dialog.next");
-      fireEvent.click (nextButton);
+      fireEvent.click(nextButton);
       const cancelButton = component.getByText("dialog.cancel");
-      fireEvent.click (cancelButton);
+      fireEvent.click(cancelButton);
       const okButton = component.getByText("dialog.ok") as HTMLButtonElement;
-      fireEvent.click (okButton);
-      const inputs = component.container.querySelectorAll ("input");
-      expect (okButton.disabled).to.be.true;
+      fireEvent.click(okButton);
+      const inputs = component.container.querySelectorAll("input");
+      expect(okButton.disabled).to.be.true;
       expect(inputs.length).to.be.eq(2);
       inputs[0].focus();
       fireEvent.change(inputs[0], { target: { value: "test-user" } });
@@ -211,17 +209,15 @@ describe("UiDataProvidedDialog", () => {
       fireEvent.change(inputs[1], { target: { value: "test-city" } });
       inputs[1].blur();
       await TestUtils.flushAsyncOperations();
-      setImmediate(() => {
-        expect (okButton.disabled).to.be.false;
-        fireEvent.click (okButton);
-        expect(spyOK.calledOnce).to.be.true;
+      expect(okButton.disabled).to.be.false;
+      fireEvent.click(okButton);
+      expect(spyOK.calledOnce).to.be.true;
 
-        component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
-        expect(spyCancel.calledOnce).to.be.true;
+      component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
+      expect(spyCancel.calledOnce).to.be.true;
 
-        dataProvider.disableUserInputReplaceDescription();
-        dataProvider.disableUserInput();
-      });
+      dataProvider.disableUserInputReplaceDescription();
+      dataProvider.disableUserInput();
     });
   });
 
