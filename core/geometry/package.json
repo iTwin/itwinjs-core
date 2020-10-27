@@ -49,9 +49,10 @@
     "rimraf": "^3.0.2",
     "semver": "^5.5.0",
     "ts-node": "^7.0.1",
-    "typescript": "~3.7.4"
+    "typescript": "~3.7.4",
+    "@types/flatbuffers": "~1.10.0"
   },
-  "dependencies": {},
+  "dependencies": {"flatbuffers":"~1.12.0"},
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",
     "check-coverage": true,

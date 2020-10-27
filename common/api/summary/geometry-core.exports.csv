@@ -27,6 +27,7 @@ public;AxisScaleSelect
 public;BagOfCurves 
 public;BarycentricTriangle
 public;BeJSONFunctions
+public;BentleyGeometryFlatBuffer
 public;Bezier1dNd
 internal;BezierBezierIntersectionXYRRToRRD 
 internal;class BezierCoffs
