@@ -14,10 +14,11 @@ import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
   await IModelHost.startup();
   if (true) {
     const sourceDirectoryName = "D:/data/bim/snapshots";
-    const sourceBaseName = "fmg";
+    // const sourceBaseName = "fmg";
     // const sourceBaseName = "shell4";
     // const sourceBaseName = "shell-full-1015";
     // const sourceBaseName = "shell-full-1018";
+    const sourceBaseName = "cassia-05";
     const sourceFileName = path.join(sourceDirectoryName, `${sourceBaseName}.bim`);
     const targetFileName = path.join(__dirname, `${sourceBaseName}-optimized.bim`);
     initializeLogging(path.join(__dirname, `${sourceBaseName}-log.txt`));

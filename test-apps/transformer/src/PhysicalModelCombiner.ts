@@ -34,7 +34,6 @@ export class PhysicalModelCombiner extends IModelTransformer {
   private _numSourceRelationshipsProcessed = 0;
   private readonly _reportingInterval = 1000;
   private readonly _saveChangesInterval = 10000; // must be a multiple of reportingInterval
-  private _childPhysicalPartitionIds: Id64Set = new Set<Id64String>();
   private _targetComponentsModelId: Id64String = Id64.invalid;
   private _targetPhysicalTagsModelId: Id64String = Id64.invalid;
   private _startTime = new Date();
@@ -54,11 +53,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
     this.initSubCategoryFilter();
     this.importer.simplifyElementGeometry = true;
     this.processAll();
-    this.targetDb.saveChanges(`Finished processing non-physical models`);
-    this._childPhysicalPartitionIds.forEach((partitionId: Id64String) => {
-      this.processModel(partitionId);
-      this.targetDb.saveChanges(`Finished processing PhysicalPartition ${partitionId}`);
-    });
+    this.targetDb.saveChanges(`Finished processing elements`);
     this.exporter.visitRelationships = true;
     this.processRelationships(ElementRefersToElements.classFullName);
     this.targetDb.saveChanges(`Finished processing relationships`);
@@ -80,12 +75,11 @@ export class PhysicalModelCombiner extends IModelTransformer {
       }
     }
     if (sourceElement instanceof Subject) {
-      if (sourceElement.code.getValue() === "Physical") { // FMG case
+      if (sourceElement.code.getValue() === "Physical") { // FMG, BP case
         const targetPartitionId = PhysicalModel.insert(this.targetDb, this.context.findTargetElementId(sourceElement.parent!.id), "Combined Physical");
         this.importer.doNotUpdateElementIds.add(targetPartitionId);
         this.forEachChildPhysicalPartition(sourceElement.id, (sourcePartitionId: Id64String) => {
           this.context.remapElement(sourcePartitionId, targetPartitionId);
-          this._childPhysicalPartitionIds.add(sourcePartitionId);
         });
         return false;
       }
