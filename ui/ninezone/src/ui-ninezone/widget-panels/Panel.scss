@@ -30,6 +30,7 @@
 
   &.nz-left, &.nz-right {
     max-width: 100%;
+    min-height: 0;
 
     > .nz-content {
       height: 100%;
