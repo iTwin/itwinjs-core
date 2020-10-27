@@ -5,7 +5,8 @@
 
 import { DbResult, Id64, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelJsFs, IModelTransformer, PhysicalModel, PhysicalPartition, Relationship, SnapshotDb, SubCategory, Subject,
+  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelJsFs, IModelTransformer,
+  PhysicalModel, PhysicalPartition, Relationship, SnapshotDb, SubCategory, Subject,
 } from "@bentley/imodeljs-backend";
 import { CreateIModelProps } from "@bentley/imodeljs-common";
 
@@ -63,6 +64,10 @@ export class PhysicalModelCombiner extends IModelTransformer {
     this.targetDb.saveChanges(`Finished processing relationships`);
   }
   protected shouldExportElement(sourceElement: Element): boolean {
+    if (!this.importer.simplifyElementGeometry) {
+      this.importer.simplifyElementGeometry = true; // turn back on simplification
+      Logger.logInfo(BackendLoggerCategory.IModelImporter, "Turn back on element geometry simplification");
+    }
     ++this._numSourceElementsProcessed;
     if (0 === this._numSourceElementsProcessed % this._reportingInterval) {
       const progressMessage = `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`;
@@ -98,6 +103,9 @@ export class PhysicalModelCombiner extends IModelTransformer {
         }
         this.context.remapElement(sourceElement.id, this._targetComponentsModelId);
       }
+    } else if ((Id64.invalid === this._targetPhysicalTagsModelId) && ("0x40000009395" === sourceElement.id)) { // hack for problem element in FMG dataset
+      this.importer.simplifyElementGeometry = false; // temporarily turn off simplification
+      Logger.logInfo(BackendLoggerCategory.IModelImporter, `Disabling element geometry simplification for ${sourceElement.id}`);
     }
     return super.shouldExportElement(sourceElement);
   }

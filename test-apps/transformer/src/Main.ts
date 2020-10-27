@@ -14,8 +14,8 @@ import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
   await IModelHost.startup();
   if (true) {
     const sourceDirectoryName = "D:/data/bim/snapshots";
-    // const sourceBaseName = "fmg";
-    const sourceBaseName = "shell4";
+    const sourceBaseName = "fmg";
+    // const sourceBaseName = "shell4";
     // const sourceBaseName = "shell-full-1015";
     // const sourceBaseName = "shell-full-1018";
     const sourceFileName = path.join(sourceDirectoryName, `${sourceBaseName}.bim`);
