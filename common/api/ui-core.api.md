@@ -965,6 +965,10 @@ export class Input extends React.PureComponent<InputProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
+    componentDidUpdate(prevProps: InputProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
     render(): JSX.Element;
 }
 
@@ -982,6 +986,8 @@ export interface InputLabelProps extends LabeledComponentProps, MessagedComponen
 
 // @public
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+    // (undocumented)
+    nativeKeyHandler?: (e: KeyboardEvent) => void;
     setFocus?: boolean;
 }
 

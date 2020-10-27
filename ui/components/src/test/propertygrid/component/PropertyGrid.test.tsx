@@ -18,6 +18,7 @@ import {
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
+import { fireEvent, render } from "@testing-library/react";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -51,6 +52,10 @@ describe("PropertyGrid", () => {
 
   before(async () => {
     await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
   });
 
   describe("rendering", () => {
@@ -739,7 +744,7 @@ describe("PropertyGrid", () => {
 
     it("starts editor on click & commits on Enter", async () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(
+      const wrapper = render(
         <PropertyGrid
           orientation={Orientation.Horizontal}
           dataProvider={dataProvider}
@@ -749,20 +754,15 @@ describe("PropertyGrid", () => {
 
       await TestUtils.flushAsyncOperations();
 
-      wrapper.update();
+      const clickable = wrapper.container.querySelector(".components--clickable");
+      expect(clickable).not.to.be.null;
+      fireEvent.click(clickable!);
 
-      const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
-      expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+      expect(wrapper.container.querySelector("input.components-cell-editor")).not.to.be.null;
 
-      categoryBlock.find(".components--clickable").simulate("click");
-      wrapper.update();
-
-      expect(wrapper.find("input.components-cell-editor").length).to.eq(1);
-
-      const inputNode = wrapper.find("input");
-      expect(inputNode.length).to.eq(1);
-
-      inputNode.simulate("keyDown", { key: "Enter" });
+      const inputNode = wrapper.container.querySelector("input");
+      expect(inputNode).not.to.be.null;
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter", code: "Enter" })
       await TestUtils.flushAsyncOperations();
       expect(spyMethod).to.be.calledOnce;
     });
@@ -790,7 +790,7 @@ describe("PropertyGrid", () => {
     });
 
     it("starts editor on click if clicked before to select", async () => {
-      const wrapper = mount(
+      const wrapper = render(
         <PropertyGrid
           orientation={Orientation.Horizontal}
           dataProvider={dataProvider}
@@ -800,25 +800,19 @@ describe("PropertyGrid", () => {
 
       await TestUtils.flushAsyncOperations();
 
-      wrapper.update();
+      const clickable = wrapper.container.querySelector(".components--clickable");
+      expect(clickable).not.to.be.null;
+      fireEvent.click(clickable!);
+      expect(wrapper.container.querySelector(".components--selected")).not.to.be.null;
 
-      const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
-      expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+      fireEvent.click(clickable!);
+      expect(wrapper.container.querySelector("input.components-cell-editor")).not.to.be.null;
 
-      categoryBlock.find(".components--clickable").simulate("click");
-      wrapper.update();
-      expect(wrapper.find(".components--selected").length).to.eq(1);
-
-      categoryBlock.find(".components--clickable").simulate("click");
-      wrapper.update();
-      expect(wrapper.find("input.components-cell-editor").length).to.eq(1);
-
-      const inputNode = wrapper.find("input");
-      expect(inputNode.length).to.eq(1);
-      inputNode.simulate("keyDown", { key: "Escape" });
+      const inputNode = wrapper.container.querySelector("input");
+      expect(inputNode).not.to.be.null;
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape", code: "Escape" })
       await TestUtils.flushAsyncOperations();
-      wrapper.update();
-      expect(wrapper.find(".components-cell-editor").length, "Cell editor did not disappear after pressing Escape").to.eq(0);
+      expect(wrapper.container.querySelector(".components-cell-editor"), "Cell editor did not disappear after pressing Escape").to.be.null;
     });
 
   });
