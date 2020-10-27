@@ -8,9 +8,12 @@
 
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface } from "@bentley/imodeljs-common";
+import {
+  ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface
+} from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
+import { RemoveEventListener } from "./EventSource";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];
@@ -40,7 +43,7 @@ export class InteractiveEditingSession {
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
   private readonly _geometryChanges = new Map<Id64String, ModelChanges>();
   private _disposed = false;
-  private _cleanup?: { off: () => void }; // ###TODO EventSource.on() should just return a function...
+  private _cleanup?: RemoveEventListener;
   /** The iModel being edited. */
   public readonly iModel: IModelConnection;
 
@@ -170,7 +173,7 @@ export class InteractiveEditingSession {
     this._geometryChanges.clear();
 
     if (this._cleanup) {
-      this._cleanup.off();
+      this._cleanup();
       this._cleanup = undefined;
     }
 

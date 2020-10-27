@@ -38,8 +38,6 @@ describe("InteractiveEditingSession (#integration)", () => {
       applicationVersion: "1.2.1.1",
     });
 
-    IModelApp.eventSourceOptions.pollInterval = 10;
-
     projectId = await TestUtility.getTestProjectId(projectName);
     imodelId = await TestUtility.createIModel("interactiveEditingSessionTest", projectId, true);
   });

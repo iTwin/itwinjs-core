@@ -256,8 +256,7 @@ class RootTile extends Tile {
     args.drawGraphics();
   }
 
-  public prune(expirationTime: BeDuration): void {
-    const olderThan = BeTimePoint.now().minus(expirationTime);
+  public prune(olderThan: BeTimePoint): void {
     this.staticBranch.pruneChildren(olderThan);
     // ###TODO prune dynamic tiles
   }
@@ -359,7 +358,11 @@ export class IModelTileTree extends TileTree {
   }
 
   public prune(): void {
-    this._rootTile.prune(this.expirationTime);
+    const olderThan = BeTimePoint.now().minus(this.expirationTime);
+  }
+
+  public forcePrune(): void {
+    this._rootTile.prune(BeTimePoint.now());
   }
 
   /** Exposed strictly for tests. */
@@ -371,9 +374,5 @@ export class IModelTileTree extends TileTree {
   public get hiddenElements(): Id64Array {
     const state = this._rootTile.tileState;
     return "dynamic" === state.type ? state.rootTile.hiddenElements : [];
-  }
-
-  public forcePrune(): void {
-    this.rootTile.pruneChildren(BeTimePoint.now());
   }
 }

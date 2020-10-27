@@ -12,7 +12,7 @@ import {
   RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
-  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClientConfiguration, RenderDiagnostics, RenderSystem, StandaloneConnection,
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem, StandaloneConnection,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
