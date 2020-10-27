@@ -131,6 +131,16 @@ export interface MapLayerProps {
   userName?: string;
   /** Password - if required for authentication */
   password?: string;
+  /** Access Key for the Layer, like a subscription key or access token */
+  accessKey?: MapLayerKey;
+}
+/**
+ * stores key-value pair to be added to all requests made involving map layer.
+ * @beta
+ */
+export interface MapLayerKey {
+  key: string;
+  value: string;
 }
 
 /** Normalized representation of a [[MapLayerProps]] for which values have been  validated and default values have been applied where explicit values not defined.
@@ -149,8 +159,9 @@ export class MapLayerSettings {
   public readonly isBase: boolean;
   public readonly userName?: string;
   public readonly password?: string;
+  public readonly accessKey?: MapLayerKey
   // eslint-disable-next-line no-undef-init
-  private constructor(url: string, name: string, formatId: string = "WMS", visible = true, jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0, transparentBackground = true, isBase = false, userName?: string, password?: string) {
+  private constructor(url: string, name: string, formatId: string = "WMS", visible = true, jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0, transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
     this.formatId = formatId;
     this.name = name;
     this.visible = visible;
@@ -171,7 +182,7 @@ export class MapLayerSettings {
       this.userName = userName;
       this.password = password;
     }
-
+    this.accessKey = accessKey;
     this.transparency = transparency;
     this.url = url;
   }
@@ -181,7 +192,7 @@ export class MapLayerSettings {
       return undefined;
 
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, json.userName, json.password);
+    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, json.userName, json.password, json.accessKey);
   }
   /** return JSON representation of this MapLayerSettings object */
   public toJSON(): MapLayerProps {
@@ -199,6 +210,7 @@ export class MapLayerSettings {
     props.url = this.url;
     props.userName = this.userName;
     props.password = this.password;
+    props.accessKey = this.accessKey;
     if (0 !== this.transparency)
       props.transparency = this.transparency;
     if (this.transparentBackground === false)
@@ -282,6 +294,7 @@ export class MapLayerSettings {
       subLayers: undefined !== changedProps.subLayers ? changedProps.subLayers : this.subLayers,
       userName: undefined !== changedProps.userName ? changedProps.userName : this.userName,
       password: undefined !== changedProps.password ? changedProps.password : this.password,
+      accessKey: undefined !== changedProps.accessKey ? changedProps.accessKey : this.accessKey,
     };
     return MapLayerSettings.fromJSON(props)!;
   }

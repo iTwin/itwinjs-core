@@ -149,6 +149,7 @@ import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { Map4d } from '@bentley/geometry-core';
+import { MapLayerKey } from '@bentley/imodeljs-common';
 import { MapLayerProps } from '@bentley/imodeljs-common';
 import { MapLayerSettings } from '@bentley/imodeljs-common';
 import { MapSubLayerProps } from '@bentley/imodeljs-common';
@@ -3851,7 +3852,7 @@ export class IModelApp {
     // @internal
     static makeModalDiv(options: ModalOptions): ModalReturn;
     // @internal
-    static mapLayerFormatRegistry: MapLayerFormatRegistry;
+    static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
@@ -3901,6 +3902,8 @@ export interface IModelAppOptions {
     imodelClient?: IModelClient;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
+    // @beta
+    mapLayerOptions?: MapLayerOptions;
     notifications?: NotificationManager;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
@@ -4516,7 +4519,9 @@ export class MapLayerFormat {
 
 // @internal (undocumented)
 export class MapLayerFormatRegistry {
-    constructor();
+    constructor(opts: MapLayerOptions);
+    // (undocumented)
+    get configOptions(): MapLayerOptions;
     // (undocumented)
     createImageryMapLayerTree(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
     // (undocumented)
@@ -4592,6 +4597,18 @@ export abstract class MapLayerImageryProvider {
     get usesCachedTiles(): boolean;
     // (undocumented)
     protected _usesCachedTiles: boolean;
+}
+
+// @beta
+export interface MapLayerOptions {
+    // (undocumented)
+    [format: string]: MapLayerKey | undefined;
+    // (undocumented)
+    AzureMaps?: MapLayerKey;
+    // (undocumented)
+    BingMaps?: MapLayerKey;
+    // (undocumented)
+    MapBoxImagery?: MapLayerKey;
 }
 
 // @internal (undocumented)

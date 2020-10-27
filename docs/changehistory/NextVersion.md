@@ -3,6 +3,17 @@ ignore: true
 ---
 # NextVersion
 
+## Map Layers
+
+Map layers such as BingMaps and MapBox require keys so that they may be accessed. These keys were previously hardcoded in multiple locations. These keys have been moved and added as default [MapLayerOptions]($frontend). Keys should now be passed through [IModelApp.startup]($frontend), as an IModelAppOption like:
+```
+IModelApp.startup({mapLayerOptions: {BingMaps: {key: "expected-key-name-for-key-value-pair", value: "access-token-goes-here"}}})
+```
+
+The default options will be used both when no options are passed or some option in default options exists that does not in the passed options.
+
+**NOTE: These default options may be removed in a later version, so if you are relying on these, please keep that in mind.**
+
 ## Color mix property added to thematic gradient settings
 
 Thematic display gradient properties now supports a colorMix value for mixing the color of background map terrain or point clouds in with the thematic gradient color.  The `colorMix` property of [ThematicGradientSettings]($common) is a value between 0.0 and 1.0, defaulting to 0.0, which determines the percentage of the original color to blend in with the thematic gradient color (so 0.0 will be only the thematic gradient color, and 1.0 will be only the original terrain map or point cloud color).

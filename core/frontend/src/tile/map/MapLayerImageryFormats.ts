@@ -455,8 +455,9 @@ class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
 
   // construct the Url from the desired Tile
   public constructUrl(y: number, x: number, zoom: number): string {
-    const subscriptionId = "TBD";   // To be supplied when Azure maps is supported.
-    return `${this._settings.url}&subscription-key=${subscriptionId}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
+    if (!this._settings.accessKey)
+      return "";
+    return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
   }
 
   public getLogo(_vp: ScreenViewport) {
@@ -482,10 +483,14 @@ class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
 
   // construct the Url from the desired Tile
   public constructUrl(row: number, column: number, zoomLevel: number): string {
+    if (!this._settings.accessKey) {
+      return "";
+    }
+
     // from the template url, construct the tile url.
     let url: string = this._baseUrl.concat(zoomLevel.toString());
     url = url.concat("/").concat(column.toString()).concat("/").concat(row.toString());
-    url = url.concat(".jpg80?access_token=pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg");
+    url = url.concat(`.jpg80?${this._settings.accessKey.key}=${this._settings.accessKey.value}`);
 
     return url;
   }
