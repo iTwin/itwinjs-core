@@ -35,11 +35,11 @@ export interface SchemaTestCase {
 }
 
 export function getAssetsDir(): string {
-  return path.normalize(__dirname + "/../assets/");
+  return path.normalize(`${__dirname}/../assets/`);
 }
 
 export function getOutDir(): string {
-  const outputDir = path.normalize(__dirname + "/../../../lib/test/output/");
+  const outputDir = path.normalize(`${__dirname}/../../../lib/test/output/`);
   fs.ensureDirSync(outputDir);
   return outputDir;
 }
@@ -79,7 +79,7 @@ export function testGeneratedTypescriptProperty(testCases: PropertyTestCase[]): 
   testCases.forEach((testCase) => {
     it(testCase.testName, () => {
       const schemaLocator = new SchemaXmlFileLocater();
-      schemaLocator.addSchemaSearchPath(getAssetsDir() + "schema3.2");
+      schemaLocator.addSchemaSearchPath(`${getAssetsDir()}schema3.2`);
       const context = new SchemaContext();
       context.addLocater(schemaLocator);
 
@@ -102,7 +102,7 @@ export function testGeneratedSchemaTypescript(testCases: SchemaTestCase[]): void
   testCases.forEach((testCase) => {
     it(testCase.testName, () => {
       const schemaLocator = new SchemaXmlFileLocater();
-      schemaLocator.addSchemaSearchPath(getAssetsDir() + "schema3.2");
+      schemaLocator.addSchemaSearchPath(`${getAssetsDir()}schema3.2`);
       const context = new SchemaContext();
       context.addLocater(schemaLocator);
 
@@ -172,7 +172,7 @@ export function dedent(callSite: TemplateStringsArray | string, ...args: any[]):
 
       if (m1.match(/\n/) && m1.length > 1)
         return _m.slice(0, m1.length - size + 1);
-      return "\n" + m1.slice(Math.min(m1.length, size));
+      return `\n${m1.slice(Math.min(m1.length, size))}`;
     });
   }
 

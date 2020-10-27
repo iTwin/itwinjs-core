@@ -31,7 +31,7 @@ if (!program.input || !program.output) {
 }
 
 // begin converting schema file to typescript
-console.log("Creating a typescript file for " + program.input + ".");
+console.log(`Creating a typescript file for ${program.input}.`);
 
 // check references path
 const referencePaths: string[] = [];
@@ -58,7 +58,7 @@ if (undefined !== program.references) {
     const writer = new ECSchemaToTsXmlWriter(program.output);
     createdFiles = await writer.convertSchemaFile(new SchemaContext(), program.input, referencePaths);
   } catch (err) {
-    console.log(chalk.red("Failed to create: " + err.message));
+    console.log(chalk.red(`Failed to create: ${err.message}`));
     process.exit(1);
   }
 
