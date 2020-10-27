@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import { Cartographic, IModelError } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -392,26 +392,11 @@ export namespace RealityModelTileTree {
     const accessToken = await getAccessToken();
     const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
     const json = await tileClient.getRootDocument(url);
-    const ecefLocation = iModel.ecefLocation;
-    let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();
+    let rootTransform = iModel.ecefLocation ? iModel.backgroundMapLocation.getMapEcefToDb(0) : Transform.createIdentity();
     if (json.root.transform) {
       const realityToEcef = RealityModelTileUtils.transformFromJson(json.root.transform);
       rootTransform = rootTransform.multiplyTransformTransform(realityToEcef);
-      if (undefined !== ecefLocation) {
-        const carto = Cartographic.fromEcef(realityToEcef.getOrigin());
-        const ypr = YawPitchRollAngles.createFromMatrix3d(rootTransform.matrix);
-        // If the reality model is located in the same region and height and their is significant misalignment in their orientation,
-        //  then align the cartesian systems as otherwise different origins
-        // can result in a misalignment from the curvature of the earth. (EWR - large point cloud)
-        if (undefined !== ypr && undefined !== carto && Math.abs(ypr.roll.degrees) > 1.0E-6 && carto.height < 300.0) {  // Don't test yaw- it may be present from eccentricity fix.
-          ypr.pitch.setRadians(0);
-          ypr.roll.setRadians(0);
-          ypr.toMatrix3d(rootTransform.matrix);
-          rootTransform.origin.z = carto.height;
-        }
-      }
-    } else if (json.root.boundingVolume && Array.isArray(json.root.boundingVolume.region))
-      rootTransform = Transform.createTranslationXYZ(0, 0, (json.root.boundingVolume.region[4] + json.root.boundingVolume.region[5]) / 2.0).multiplyTransformTransform(rootTransform);
+    }
 
     if (undefined !== tilesetToDbJson)
       rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
