@@ -1066,6 +1066,13 @@ export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
 }
 
+// @beta
+export function LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element;
+
+// @beta
+export interface LabeledThemedSelectProps extends ThemedSelectProps, LabeledComponentProps, MessagedComponentProps {
+}
+
 // @public
 export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
     // (undocumented)
