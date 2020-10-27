@@ -277,8 +277,10 @@ describe("DefaultToolUiSettingsProvider", () => {
       const newUseLengthValue: DialogItemValue = { value: false };
       const syncItem: DialogPropertySyncItem = { value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
-      ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
-
+      // ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
+      FrontstageManager.activeToolSettingsProvider?.syncToolSettingsProperties(syncArgs);
+      FrontstageManager.activeToolSettingsProvider?.reloadPropertiesFromTool();
+      FrontstageManager.onToolSettingsReloadEvent.emit ();
       // restore the overriden property getter
       Object.defineProperty(ToolUiManager, "toolSettingsProperties", propertyDescriptorToRestore);
     }
@@ -321,14 +323,15 @@ describe("DefaultToolUiSettingsProvider", () => {
         if (toolUiProvider) {
           expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
           // simulate property update
+
           const newlengthValue: DialogItemValue = { value: 7.5 };
           const lengthSyncItem: DialogPropertySyncItem = { value: newlengthValue, propertyName: lengthDescription.name };
           const newUselengthValue: DialogItemValue = { value: false };
           const useLengthSyncItem: DialogPropertySyncItem = { value: newUselengthValue, propertyName: useLengthDescription.name };
           const defaultProvider = toolUiProvider as DefaultToolSettingsProvider;
           if (defaultProvider) {
-            defaultProvider.applyUiPropertyChange(lengthSyncItem);
-            defaultProvider.applyUiPropertyChange(useLengthSyncItem);
+            defaultProvider.uiDataProvider.applyUiPropertyChange (lengthSyncItem);
+            defaultProvider.uiDataProvider.applyUiPropertyChange (useLengthSyncItem);
           }
         }
       }
@@ -354,7 +357,9 @@ describe("DefaultToolUiSettingsProvider", () => {
       const newUseLengthValue: DialogItemValue = { value: false };
       const syncItem: DialogPropertySyncItem = { value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
-      ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
+      FrontstageManager.activeToolSettingsProvider?.syncToolSettingsProperties(syncArgs);
+      FrontstageManager.activeToolSettingsProvider?.reloadPropertiesFromTool();
+      FrontstageManager.onToolSettingsReloadEvent.emit ();
 
       // restore the overriden property getter
       Object.defineProperty(ToolUiManager, "toolSettingsProperties", propertyDescriptorToRestore);

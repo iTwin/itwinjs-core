@@ -150,14 +150,14 @@ beta;CustomItemProps
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
-beta;DefaultDialogGridContainer({ itemsManager, componentGenerator, isToolSettings }:
+beta;DefaultDialogGridContainer({ componentGenerator, isToolSettings }:
 beta;DefaultNavigationProps
 beta;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
 alpha;DefaultViewOverlay 
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
-internal;DialogGridContainer({ itemsManager, componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element
+internal;DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element
 public;DialogInfo
 internal;DialogManagerBase
 internal;DialogRendererBase 
@@ -554,7 +554,7 @@ internal;ToolSettingsContent(): JSX.Element | null
 internal;ToolSettingsDockedContent(): JSX.Element
 beta;ToolSettingsEntry
 beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
-beta;ToolSettingsGridContainer({ itemsManager, componentGenerator }:
+beta;ToolSettingsGridContainer({ componentGenerator }:
 beta;ToolSettingsGridProps
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
@@ -570,6 +570,8 @@ public;ToolWidgetPropsEx
 internal;TrackingTime
 internal;UiActivityEvent 
 internal;UiActivityEventArgs
+beta;UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps): JSX.Element
+beta;UiDataProvidedDialogProps
 public;UiFramework
 internal;UiIntervalEvent 
 internal;UiIntervalEventArgs

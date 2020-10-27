@@ -6,11 +6,12 @@
  * @module Admin
  */
 
+import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  AbstractMenuItemProps, AbstractToolbarProps, IMatch, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
-  Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin, UiDataProvider,
+  AbstractMenuItemProps, AbstractToolbarProps, DialogLayoutDataProvider, DialogProps, IMatch, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
+  Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin,
 } from "@bentley/ui-abstract";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
@@ -19,6 +20,9 @@ import { PopupManager } from "../popup/PopupManager";
 import { CursorMenuData } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { ModalDialogManager } from "../dialog/ModalDialogManager";
+import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
+import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog";
 
 /** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
  * @beta
@@ -365,7 +369,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   }
 
   /** Opens a Tool Settings Ui popup at a particular location.
-   * @param dataProvider The UiDataProvider for the tool settings
+   * @param dataProvider The DialogLayoutDataProvider for the tool settings popup dialog.
    * @param location Location of the tool settings, relative to the origin of anchorElement or the window
    * @param offset Offset of the tool settings from the location
    * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the tool settings
@@ -374,7 +378,7 @@ export class FrameworkUiAdmin extends UiAdmin {
    * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
    */
   public openToolSettingsPopup(
-    dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement,
+    dataProvider: DialogLayoutDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement,
   ): boolean {
     const { position, el } = this.resolveHtmlElement(location, anchorElement);
 
@@ -387,5 +391,41 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Closes the Tool Settings Ui popup. */
   public closeToolSettingsPopup(): boolean {
     return PopupManager.closeToolSettings();
+  }
+
+  /** Opens a Dialog and automatically populates it using the properties defined by the UiDataProvider.
+  * @param uiDataProvider The UiDataProvider for the tool settings
+  * @param title Specify title for dialog.
+  * @param isModal Specify if the dialog is opened as a modal or modeless.
+  * @param id Id of the dialog that is used to close it.
+  * @param optionalProps Optional props for Dialog construction.
+  * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
+  */
+  public openDialog(uiDataProvider: DialogLayoutDataProvider, title: string, isModal: boolean, id: string, optionalProps?: DialogProps): boolean {
+    if (isModal) {
+      ModalDialogManager.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id} {...optionalProps} />, id);
+      return true;
+    } else {
+      ModelessDialogManager.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id}  {...optionalProps} />, id);
+      return true;
+    }
+  }
+
+  /** Closes the Tool Settings Ui popup. */
+  public closeDialog(dialogId: string): boolean {
+    // istanbul ignore else
+    if (ModelessDialogManager.dialogManager.dialogs.findIndex ((info) => info.id === dialogId)) {
+      ModelessDialogManager.closeDialog(dialogId);
+      return true;
+    }
+
+    // istanbul ignore else
+    if (ModalDialogManager.dialogManager.dialogs.findIndex ((info) => info.id === dialogId)) {
+      ModalDialogManager.closeDialog();
+      return true;
+    }
+
+    // istanbul ignore next
+    return false;
   }
 }

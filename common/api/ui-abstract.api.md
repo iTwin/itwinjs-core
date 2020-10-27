@@ -884,49 +884,56 @@ export interface DateFormatter {
     parseDate?: (dateString: string) => Date | undefined;
 }
 
+// @public
+export interface DialogButtonDef {
+    buttonStyle?: DialogButtonStyle;
+    className?: string;
+    disabled?: boolean;
+    label?: string;
+    onClick: () => void;
+    type: DialogButtonType;
+}
+
+// @public
+export enum DialogButtonStyle {
+    // (undocumented)
+    Blue = "uicore-buttons-blue",
+    // (undocumented)
+    Hollow = "uicore-buttons-hollow",
+    // (undocumented)
+    None = "",
+    // (undocumented)
+    Primary = "uicore-buttons-primary"
+}
+
+// @public
+export enum DialogButtonType {
+    // (undocumented)
+    Cancel = "cancel",
+    // (undocumented)
+    Close = "close",
+    // (undocumented)
+    Next = "next",
+    // (undocumented)
+    No = "no",
+    // (undocumented)
+    None = "",
+    // (undocumented)
+    OK = "ok",
+    // (undocumented)
+    Previous = "previous",
+    // (undocumented)
+    Retry = "retry",
+    // (undocumented)
+    Yes = "yes"
+}
+
 // @beta
 export interface DialogItem extends BaseDialogItem {
     // (undocumented)
     readonly editorPosition: EditorPosition;
     // (undocumented)
-    readonly isDisabled?: boolean;
-    // (undocumented)
     readonly lockProperty?: BaseDialogItem;
-    // (undocumented)
-    readonly property: PropertyDescription;
-    // (undocumented)
-    readonly value: DialogItemValue;
-}
-
-// @beta
-export interface DialogItemsChangedArgs {
-    // (undocumented)
-    readonly items: ReadonlyArray<DialogPropertySyncItem>;
-}
-
-// @beta
-export class DialogItemsManager {
-    constructor(items?: ReadonlyArray<DialogItem>);
-    applyUiPropertyChange: (_item: DialogPropertySyncItem) => void;
-    static editorWantsLabel(item: DialogItem): boolean;
-    static fromUiDataProvider(uiDataProvider: UiDataProvider): DialogItemsManager;
-    static getItemDisabledState(baseDialogItem: BaseDialogItem): boolean;
-    static getPropertyRecord: (dialogItem: BaseDialogItem) => PropertyRecord;
-    static hasAssociatedLockProperty(item: DialogItem): boolean;
-    isToolSettingsManager: () => boolean;
-    get items(): ReadonlyArray<DialogItem>;
-    set items(items: ReadonlyArray<DialogItem>);
-    // @internal (undocumented)
-    layoutDialogRows(): DialogRow[];
-    static onlyContainButtonGroupEditors(row: DialogRow): boolean;
-    onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
-    rows: DialogRow[];
-}
-
-// @beta
-export interface DialogItemSyncArgs {
-    // (undocumented)
-    readonly items: ReadonlyArray<DialogPropertySyncItem>;
 }
 
 // @beta
@@ -935,6 +942,15 @@ export interface DialogItemValue {
     displayValue?: string;
     // (undocumented)
     value?: number | string | boolean | Date;
+}
+
+// @beta
+export abstract class DialogLayoutDataProvider extends UiLayoutDataProvider {
+    fireDialogButtonsReloadEvent(): void;
+    // (undocumented)
+    onButtonsReloadedEvent: BeUiEvent<void>;
+    // (undocumented)
+    supplyButtonData(): DialogButtonDef[] | undefined;
 }
 
 // @beta
@@ -949,6 +965,20 @@ export interface DialogPropertyItem {
 export interface DialogPropertySyncItem extends DialogPropertyItem {
     // (undocumented)
     readonly isDisabled?: boolean;
+    // (undocumented)
+    readonly property?: PropertyDescription;
+}
+
+// @beta
+export interface DialogProps {
+    height?: string | number;
+    maxHeight?: string | number;
+    maxWidth?: string | number;
+    minHeight?: string | number;
+    minWidth?: string | number;
+    movable?: boolean;
+    resizable?: boolean;
+    width?: string | number;
 }
 
 // @beta
@@ -962,6 +992,7 @@ export interface DialogRow {
 // @beta
 export interface EditorPosition {
     columnIndex: number;
+    // @deprecated
     columnSpan?: number;
     rowPriority: number;
 }
@@ -1353,7 +1384,7 @@ export enum PropertyEditorParamTypes {
 export class PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
     autoExpand?: boolean;
-    copyWithNewValue(newValue: PropertyValue): PropertyRecord;
+    copyWithNewValue(newValue: PropertyValue, newDescription?: PropertyDescription): PropertyRecord;
     description?: string;
     extendedData?: {
         [key: string]: any;
@@ -1787,6 +1818,7 @@ export class UiAbstract {
 
 // @beta
 export class UiAdmin {
+    closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     createXAndY(x: number, y: number): XAndY;
     get cursorPosition(): XAndY;
@@ -1803,6 +1835,7 @@ export class UiAdmin {
     static readonly onGenericUiEvent: GenericUiEvent;
     // @internal (undocumented)
     onInitialized(): void;
+    openDialog(_uiDataProvider: DialogLayoutDataProvider, _title: string, _isModal: boolean, _id: string, _optionalProps?: DialogProps): boolean;
     openToolSettingsPopup(_dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
     static sendUiEvent(args: GenericUiEventArgs): void;
     setFocusToHome(): void;
@@ -1823,10 +1856,13 @@ export class UiAdmin {
 
 // @beta
 export abstract class UiDataProvider {
+    fireItemsReloadedEvent(): void;
+    fireSyncPropertiesEvent(syncProperties: DialogPropertySyncItem[]): void;
+    // (undocumented)
+    onItemsReloadedEvent: BeUiEvent<void>;
     onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
     processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult;
     supplyAvailableProperties(): DialogPropertyItem[];
-    supplyDialogItems(): DialogItem[] | undefined;
     syncProperties(_syncProperties: DialogPropertySyncItem[]): void;
     validateProperty(_item: DialogPropertyItem): PropertyChangeResult;
 }
@@ -1915,6 +1951,26 @@ export interface UiItemsProvider {
     provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
     provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
+}
+
+// @beta (undocumented)
+export abstract class UiLayoutDataProvider extends UiDataProvider {
+    applyUiPropertyChange: (_updatedValue: DialogPropertySyncItem) => void;
+    static editorWantsLabel(item: DialogItem): boolean;
+    static getItemDisabledState(baseDialogItem: BaseDialogItem): boolean;
+    static getPropertyRecord: (dialogItem: BaseDialogItem) => PropertyRecord;
+    static hasAssociatedLockProperty(item: DialogItem): boolean;
+    // (undocumented)
+    get items(): ReadonlyArray<DialogItem>;
+    // @internal (undocumented)
+    layoutDialogRows(): DialogRow[];
+    // (undocumented)
+    protected loadItemsInternal(items: ReadonlyArray<DialogItem> | undefined): void;
+    static onlyContainButtonGroupEditors(row: DialogRow): boolean;
+    processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult;
+    reloadDialogItems(emitEvent?: boolean): void;
+    get rows(): DialogRow[];
+    supplyDialogItems(): DialogItem[] | undefined;
 }
 
 // @beta

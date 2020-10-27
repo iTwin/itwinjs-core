@@ -108,7 +108,7 @@ describe("ToolUiProvider", () => {
 
         if (toolUiProvider) {
           expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
-          expect(toolUiProvider.dataProvider).to.be.undefined;
+          //    expect(toolUiProvider.dataProvider).to.be.undefined;
         }
       }
 

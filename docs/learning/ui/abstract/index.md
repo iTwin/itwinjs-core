@@ -7,8 +7,7 @@ Therefore, code in imodeljs-frontend can use classes and interfaces in ui-abstra
 ## Topics
 
 * [Backstage](./Backstage.md) - Abstractions used by ui-framework package to create and manage the display of Backstage menu items.
-* [DialogItem](./DialogItem.md) - Interfaces used by DialogItemsManager to create UI automatically for use in AppUi apps.
-* [DialogItemsManager](./DialogItemsManager) - Class that organizes component definitions for UI component creation and sets up communication between Tool Settings or Dialog UI and the defining app.
+* [DialogItem](./DialogItem.md) - Interfaces used by UiLayoutDataProvider to create UI automatically for use in AppUi apps.
 * [Item](./Item.md) - Classes for working with an Item in a Toolbar, Widget, Backstage or Context Menu.
 * [Properties](./Properties.md) - Interfaces and classes to create UI editors for Property data.
 * [StatusBar](./StatusBar.md) - Classes for creating and managing items in the status bar.

@@ -130,6 +130,25 @@ describe("ToolUiManager", () => {
     eventCalled = false;
     ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
     expect(eventCalled).to.be.false;
+    ToolUiManager.onReloadToolSettingsProperties.emit();
+    expect(eventCalled).to.be.false;
+  });
+
+  it("handleSyncToolSettingsPropertiesEvent", () => {
+    let eventCalled = false;
+
+    const handleReloadToolSettingsPropertiesEvent = (): void => {
+      eventCalled = true;
+    };
+
+    ToolUiManager.onReloadToolSettingsProperties.addListener(handleReloadToolSettingsPropertiesEvent);
+    expect(eventCalled).to.be.false;
+    ToolUiManager.onReloadToolSettingsProperties.emit();
+    expect(eventCalled).to.be.true;
+    ToolUiManager.onReloadToolSettingsProperties.removeListener(handleReloadToolSettingsPropertiesEvent);
+    eventCalled = false;
+    ToolUiManager.onReloadToolSettingsProperties.emit();
+    expect(eventCalled).to.be.false;
   });
 
   it("handleDispatchSyncUiEvent", () => {

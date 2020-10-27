@@ -39,9 +39,10 @@ import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { CustomToolbarItem } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogItem } from '@bentley/ui-abstract';
-import { DialogItemsManager } from '@bentley/ui-abstract';
+import { DialogLayoutDataProvider } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DialogProps } from '@bentley/ui-core';
+import { DialogProps as DialogProps_2 } from '@bentley/ui-abstract';
 import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
@@ -156,6 +157,7 @@ import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UiDataProvider } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
+import { UiLayoutDataProvider } from '@bentley/ui-abstract';
 import { UiSettings } from '@bentley/ui-core';
 import { UiSettingsResult } from '@bentley/ui-core';
 import { UiSettingsStatus } from '@bentley/ui-core';
@@ -1491,9 +1493,8 @@ export type DeepReadonlyObject<T> = {
 };
 
 // @beta
-export function DefaultDialogGridContainer({ itemsManager, componentGenerator, isToolSettings }: {
-    itemsManager: DialogItemsManager;
-    componentGenerator?: ComponentGenerator;
+export function DefaultDialogGridContainer({ componentGenerator, isToolSettings }: {
+    componentGenerator: ComponentGenerator;
     isToolSettings?: boolean;
 }): JSX.Element;
 
@@ -1515,15 +1516,15 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
 export class DefaultToolSettingsProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
-    applyUiPropertyChange(syncItem: DialogPropertySyncItem): void;
-    // (undocumented)
     onInitialize(): void;
     // (undocumented)
-    toolSettingsDP: ToolSettingsDataProvider;
+    reloadPropertiesFromTool(): void;
+    // (undocumented)
+    syncToolSettingsProperties(args: SyncToolSettingsPropertiesEventArgs): void;
+    // (undocumented)
+    uiDataProvider: ToolSettingsUiDataProvider;
     // (undocumented)
     updateToolSettingsNodes(): void;
-    // (undocumented)
-    valueMap: Map<string, DialogItem>;
 }
 
 // @alpha
@@ -1550,7 +1551,7 @@ export interface DialogChangedEventArgs {
 }
 
 // @internal (undocumented)
-export function DialogGridContainer({ itemsManager, componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element;
+export function DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element;
 
 // @public
 export interface DialogInfo {
@@ -1955,6 +1956,7 @@ export interface FrameworkState {
 
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
+    closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
     // (undocumented)
@@ -1972,7 +1974,8 @@ export class FrameworkUiAdmin extends UiAdmin {
     set localizedKeyinPreference(preference: KeyinFieldLocalization);
     // @internal (undocumented)
     onInitialized(): void;
-    openToolSettingsPopup(dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
+    openDialog(uiDataProvider: DialogLayoutDataProvider, title: string, isModal: boolean, id: string, optionalProps?: DialogProps_2): boolean;
+    openToolSettingsPopup(dataProvider: DialogLayoutDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     setFocusToHome(): void;
     showAngleEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
@@ -1984,7 +1987,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showKeyinPalette(htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
-    showReactCard(content: React_2.ReactNode, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
+    showReactCard(content: React.ReactNode, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
@@ -2335,6 +2338,7 @@ export class FrontstageManager {
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
     // @internal
     static readonly onToolPanelOpenedEvent: UiEvent<void>;
+    static readonly onToolSettingsReloadEvent: UiEvent<void>;
     // @internal (undocumented)
     static readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
     // @internal (undocumented)
@@ -3919,7 +3923,7 @@ export class PopupManager {
     // (undocumented)
     static readonly onPopupsChangedEvent: PopupsChangedEvent;
     // (undocumented)
-    static openToolSettings(dataProvider: UiDataProvider, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
+    static openToolSettings(dataProvider: DialogLayoutDataProvider, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static get popupCount(): number;
     // (undocumented)
@@ -5848,8 +5852,7 @@ export interface ToolSettingsEntry {
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element;
 
 // @beta
-export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: {
-    itemsManager: DialogItemsManager;
+export function ToolSettingsGridContainer({ componentGenerator }: {
     componentGenerator: ComponentGenerator;
 }): JSX.Element;
 
@@ -5906,6 +5909,8 @@ export class ToolUiManager {
     static initialize(): void;
     static initializeDataForTool(tool: InteractiveTool): void;
     static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
+    // (undocumented)
+    static readonly onReloadToolSettingsProperties: UiEvent<void>;
     static readonly onSyncToolSettingsProperties: SyncToolSettingsPropertiesEvent;
     static get toolIdForToolSettings(): string;
     static get toolSettingsProperties(): DialogItem[];
@@ -5916,12 +5921,17 @@ export class ToolUiManager {
 // @public
 export class ToolUiProvider extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // @deprecated
     get dataProvider(): UiDataProvider | undefined;
-    set dataProvider(d: UiDataProvider | undefined);
+    set dataProvider(_d: UiDataProvider | undefined);
     getType(): ConfigurableUiControlType;
     // @beta
     get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
     set horizontalToolSettingNodes(r: ToolSettingsEntry[] | undefined);
+    // (undocumented)
+    reloadPropertiesFromTool(): void;
+    // (undocumented)
+    syncToolSettingsProperties(_args: SyncToolSettingsPropertiesEventArgs): void;
     get toolSettingsNode(): React.ReactNode;
     set toolSettingsNode(r: React.ReactNode);
     }
@@ -5990,6 +6000,25 @@ export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> {
 export interface UiActivityEventArgs {
     // (undocumented)
     event: Event;
+}
+
+// @beta
+export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps): JSX.Element;
+
+// @beta
+export interface UiDataProvidedDialogProps {
+    height?: string | number;
+    id?: string;
+    isModal: boolean;
+    maxHeight?: string | number;
+    maxWidth?: string | number;
+    minHeight?: string | number;
+    minWidth?: string | number;
+    movable?: boolean;
+    resizable?: boolean;
+    title: string;
+    uiDataProvider: DialogLayoutDataProvider;
+    width?: string | number;
 }
 
 // @public

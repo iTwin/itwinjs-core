@@ -17,7 +17,7 @@ import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 
 /** Sync Tool Settings Properties Event Args interface.
  * @public
- */
+ */
 export interface SyncToolSettingsPropertiesEventArgs {
   toolId: string;
   syncProperties: DialogPropertySyncItem[];
@@ -25,7 +25,7 @@ export interface SyncToolSettingsPropertiesEventArgs {
 
 /** Sync Tool Settings Properties Event class.
  * @public
- */
+ */
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> { }
 
 // -----------------------------------------------------------------------------
@@ -46,6 +46,11 @@ export class ToolUiManager {
     ToolUiManager.onSyncToolSettingsProperties.emit({ toolId, syncProperties });
   }
 
+  // istanbul ignore next
+  private static reloadToolSettingsProperties(): void {  // TODO - should we pass in DialogItem[] or just have call back get it from active tool
+    ToolUiManager.onReloadToolSettingsProperties.emit();
+  }
+
   private static dispatchSyncUiEvent(syncEventId: string, useImmediateDispatch?: boolean): void {
     if (useImmediateDispatch)
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(syncEventId);
@@ -58,6 +63,7 @@ export class ToolUiManager {
     // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.toolSettingsChangeHandler = ToolUiManager.syncToolSettingsProperties;
+      IModelApp.toolAdmin.reloadToolSettingsHandler = ToolUiManager.reloadToolSettingsProperties;
       IModelApp.toolAdmin.toolSyncUiEventDispatcher = ToolUiManager.dispatchSyncUiEvent;
     }
   }
@@ -126,6 +132,7 @@ export class ToolUiManager {
 
   /** Get ToolSettings Properties sync event. */
   public static readonly onSyncToolSettingsProperties = new SyncToolSettingsPropertiesEvent();
+  public static readonly onReloadToolSettingsProperties = new UiEvent<void>();
 
   /** Gets the Id of the active tool. If a tool is not active, blank is returned.
    * @return  Id of the active tool, or blank if one is not active.

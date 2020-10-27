@@ -4284,6 +4284,8 @@ export abstract class InteractiveTool extends Tool {
     onUnsuspend(): void;
     receivedDownEvent: boolean;
     // @beta
+    reloadToolSettingsProperties(): void;
+    // @beta
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // @beta
     syncToolSettingsProperties(syncData: DialogPropertySyncItem[]): void;
@@ -9503,6 +9505,11 @@ export class ToolAdmin {
     // @internal
     processEvent(): Promise<void>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
+    // @internal
+    get reloadToolSettingsHandler(): (() => void) | undefined;
+    set reloadToolSettingsHandler(handler: (() => void) | undefined);
+    // @beta
+    reloadToolSettingsProperties(): void;
     // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
     // (undocumented)

@@ -8,8 +8,9 @@ import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelAppOptions, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
 import {
-  AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogPropertyItem, PropertyChangeResult,
-  PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames, UiDataProvider,
+  AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem,
+  DialogPropertySyncItem,
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { EditorContainer, Toolbar, ToolbarWithOverflow } from "@bentley/ui-components";
 import { Button, LeadingText, Point } from "@bentley/ui-core";
@@ -351,7 +352,7 @@ describe("PopupManager", () => {
       const wrapper = mount(<PopupRenderer />);
       const spyChange = sinon.spy();
 
-      class TestUiDataProvider extends UiDataProvider {
+      class TestUiDataProvider extends DialogLayoutDataProvider {
         private static _sourcePropertyName = "source";
         private static _getSourceDescription = (): PropertyDescription => {
           return {
@@ -371,15 +372,18 @@ describe("PopupManager", () => {
           this._sourceValue.value = option;
         }
 
+        public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+          if (updatedValue.propertyName === TestUiDataProvider._sourcePropertyName) {
+            this.source = updatedValue.value.value ? updatedValue.value.value as string : "";
+            spyChange(this.source);
+          }
+        };
+
         /** Called by UI to inform data provider of changes.  */
         public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
           if (properties.length > 0) {
             for (const prop of properties) {
-              if (prop.propertyName === TestUiDataProvider._sourcePropertyName) {
-                this.source = prop.value.value ? prop.value.value as string : "";
-                spyChange(this.source);
-                continue;
-              }
+              this.applyUiPropertyChange (prop);
             }
           }
           return { status: PropertyChangeStatus.Success };
@@ -391,8 +395,8 @@ describe("PopupManager", () => {
             { value: this._sourceValue, property: TestUiDataProvider._getSourceDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } },
           ];
         }
-
       }
+
       const uiDataProvider = new TestUiDataProvider();
 
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
@@ -407,7 +411,9 @@ describe("PopupManager", () => {
 
       inputNode.at(0).simulate("keyDown", { key: "Enter" });
       await TestUtils.flushAsyncOperations();
-      expect(spyChange.calledOnce).to.be.true;
+      setImmediate (()=>{
+        expect(spyChange.calledOnce).to.be.true;
+      })
 
       PopupManager.openToolSettings(uiDataProvider, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
       wrapper.update();
@@ -418,7 +424,9 @@ describe("PopupManager", () => {
 
       inputNode.at(0).simulate("keyDown", { key: "Escape" });
       await TestUtils.flushAsyncOperations();
-      expect(spyCancel.calledOnce).to.be.true;
+      setImmediate (()=>{
+        expect(spyCancel.calledOnce).to.be.true;
+      })
     });
 
     it("PopupRenderer should render Keyin Palette", async () => {

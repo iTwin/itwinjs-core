@@ -203,7 +203,27 @@
         "Red": "Red",
         "White": "White",
         "Blue": "Blue",
-        "Yellow": "Yellow"
+        "Yellow": "Yellow",
+        "Purple": "Purple",
+        "Pink": "Pink",
+        "Green": "Green"
+      }
+    },
+    "ToolWithDynamicSettings": {
+      "keyin": "Tool With Dynamic Settings",
+      "description": "Demo Tool With Dynamic Settings",
+      "flyover": "Tool with Dynamic Settings",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit",
+        "State": "State",
+        "City": "City"
+      },
+      "State": {
+        "None": "Undefined",
+        "Alabama": "Alabama",
+        "California": "California",
+        "Pennsylvania": "Pennsylvania",
+        "NewYork": "New York"
       }
     },
     "Tool1": {

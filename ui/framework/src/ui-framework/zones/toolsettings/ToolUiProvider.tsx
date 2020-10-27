@@ -10,17 +10,16 @@ import * as React from "react";
 import { UiDataProvider } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolSettingsEntry } from "../../widget-panels/ToolSettings";
+import { SyncToolSettingsPropertiesEventArgs } from "./ToolUiManager";
 
 /**
  * ToolUiProvider provides the Tool Settings and/or Tool Assistance UI for a tool.
  * The ToolUiProvider is registered for the tool id via ConfigurableUiManager.registerControl.
  * @public
- */
+ */
 export class ToolUiProvider extends ConfigurableUiControl {
   private _toolSettingsNode: React.ReactNode;
   private _horizontalToolSettingNodes: ToolSettingsEntry[] | undefined;
-
-  private _dataProvider?: UiDataProvider;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -36,11 +35,17 @@ export class ToolUiProvider extends ConfigurableUiControl {
   public get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined { return this._horizontalToolSettingNodes; }
   public set horizontalToolSettingNodes(r: ToolSettingsEntry[] | undefined) { this._horizontalToolSettingNodes = r; }
 
-  /** Tool Settings Data Provider */
-  public get dataProvider(): UiDataProvider | undefined { return this._dataProvider; }
+  /** The UiDataProvider class
+   *  @deprecated no longer participates in Tool Settings
+   */
   // istanbul ignore next
-  public set dataProvider(d: UiDataProvider | undefined) { this._dataProvider = d; }
+  public get dataProvider(): UiDataProvider | undefined { return undefined; }
+  // istanbul ignore next
+  public set dataProvider(_d: UiDataProvider | undefined) { }
 
   /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.ToolUiProvider; }
+
+  public syncToolSettingsProperties(_args: SyncToolSettingsPropertiesEventArgs): void { }
+  public reloadPropertiesFromTool(): void { }
 }

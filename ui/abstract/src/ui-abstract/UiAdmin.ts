@@ -15,14 +15,36 @@ import { Primitives } from "./properties/PrimitiveTypes";
 import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
 import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
+import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-
 
 /** The Generic UI Event args contains information useful for any UI message
  * @beta
  */
 export interface GenericUiEventArgs {
   uiComponentId: string;
+}
+
+/** Optional props to pass to the Dialog control that is generated.
+ * @beta
+ */
+export interface DialogProps {
+  /** Indicates whether the user can resize dialog with cursor. */
+  resizable?: boolean;
+  /** Indicates whether the user can move dialog with cursor.*/
+  movable?: boolean;
+  /** Initial width of dialog. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  width?: string | number;
+  /** Initial height of dialog. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  height?: string | number;
+  /** Minimum width that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  minWidth?: string | number;
+  /** Minimum height that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  minHeight?: string | number;
+  /** Maximum width that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  maxWidth?: string | number;
+  /** Maximum height that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  maxHeight?: string | number;
 }
 
 /** The GenericUiEvent is the base event class for UI events that target a specific component, as identified in uiComponentId.
@@ -33,7 +55,7 @@ export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> { }
 /** Flags that control enabling/disabling certain UI feature
  * @beta
  */
-export  interface UiFlags {
+export interface UiFlags {
   /** if true then Ctrl+F2 will show popup key-in palette */
   allowKeyinPalette?: boolean;
 }
@@ -42,14 +64,14 @@ export  interface UiFlags {
  * @beta
  */
 export class UiAdmin {
-  private _featureFlags: UiFlags = { };
+  private _featureFlags: UiFlags = {};
 
   public get featureFlags(): UiFlags {
-    return {...this._featureFlags}; // return copy so no direct access to modify value
+    return { ...this._featureFlags }; // return copy so no direct access to modify value
   }
 
   public updateFeatureFlags(uiFlags: UiFlags) {
-    this._featureFlags = {...this._featureFlags, ...uiFlags}
+    this._featureFlags = { ...this._featureFlags, ...uiFlags }
   }
 
   /** @internal */
@@ -254,4 +276,20 @@ export class UiAdmin {
   }
   /** GenericUiEvent  */
   public static readonly onGenericUiEvent = new GenericUiEvent();
+
+  /** Opens a Dialog and automatically populates it using the properties defined by the UiDataProvider.
+   * @param _uiDataProvider The UiDataProvider for the tool settings
+   * @param _title Specify title for dialog.
+   * @param _isModal Specify if the dialog is opened as a modal or modeless.
+   * @param _id Id of the dialog that is used to close it.
+   * @param _optionalProps Optional props for Dialog construction.
+   * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
+   */
+  public openDialog(_uiDataProvider: DialogLayoutDataProvider, _title: string, _isModal: boolean, _id: string,
+    _optionalProps?: DialogProps ): boolean {
+    return false;
+  }
+
+  /** Closes the Tool Settings Ui popup. */
+  public closeDialog(_dialogId: string): boolean { return false; }
 }

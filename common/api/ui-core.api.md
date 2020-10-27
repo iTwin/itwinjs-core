@@ -516,11 +516,15 @@ export enum DialogButtonType {
     // (undocumented)
     Close = "close",
     // (undocumented)
+    Next = "next",
+    // (undocumented)
     No = "no",
     // (undocumented)
     None = "",
     // (undocumented)
     OK = "ok",
+    // (undocumented)
+    Previous = "previous",
     // (undocumented)
     Retry = "retry",
     // (undocumented)
