@@ -22,9 +22,13 @@ export class PhysicalModelCombiner extends IModelTransformer {
     };
     const targetDb = SnapshotDb.createEmpty(targetFileName, targetDbProps);
     const combiner = new PhysicalModelCombiner(sourceDb, targetDb);
+    combiner.logMemoryUsage("Before processSchemas");
     await combiner.processSchemas(new BackendRequestContext());
+    combiner.logMemoryUsage("After processSchemas");
     if (sourceFileName.includes("fmg")) {
-      combiner.exporter.excludeElement("0x40000009395"); // exclude problem element
+      // exclude problem elements
+      combiner.exporter.excludeElement("0x40000009395");
+      combiner.exporter.excludeElement("0x400000093a0");
     }
     combiner.combine();
     combiner.dispose();
@@ -142,14 +146,14 @@ export class PhysicalModelCombiner extends IModelTransformer {
     }
     return super.shouldExportRelationship(relationship);
   }
-  private logMemoryUsage(): void {
+  private logMemoryUsage(suffix?: string): void {
     const used: any = process.memoryUsage();
     const values: string[] = [];
     // eslint-disable-next-line guard-for-in
     for (const key in used) {
       values.push(`${key}=${Math.round(used[key] / 1024 / 1024 * 100) / 100}MB `);
     }
-    Logger.logInfo("Memory", `Memory: ${values.join()}`);
+    Logger.logInfo("Memory", `Memory: ${values.join()}${suffix ?? ""}`);
   }
   private logElapsedTime(): void {
     const elapsedTimeMinutes: number = (new Date().valueOf() - this._startTime.valueOf()) / 60000.0;
