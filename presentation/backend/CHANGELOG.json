@@ -2,6 +2,21 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@bentley/presentation-backend_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to get per-request diagnostic logs by specifying `diagnostics` options in RPC request"
+          },
+          {
+            "comment": "Allow computing selection of removed elements. Simply ignore ids that are not found."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.5",
       "tag": "@bentley/presentation-backend_v2.7.5",
       "date": "Fri, 23 Oct 2020 16:23:50 GMT",

@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodelhub-client-tests
 
-This log was last generated on Mon, 26 Oct 2020 13:05:26 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Fix randomly failing test
+- Added tests for notHidden versions
+- Lock event parsing fix
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT

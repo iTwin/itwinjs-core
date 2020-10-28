@@ -1,5 +1,5 @@
 ---
-ignore: true
+publish: false
 ---
 # NextVersion
 
@@ -7,9 +7,9 @@ ignore: true
 
 Two new APIs for creating views:
 
-1) [ViewCreator3d](../../core/frontend/src/ViewCreator3d.ts): provides a convenient way to create a default view (ViewState3d) for any given iModel. This can then be passed into the Viewport to render all 3D models.
+1) [ViewCreator3d]($frontend): provides a convenient way to create a default view (ViewState3d) for any given iModel. This can then be passed into the Viewport to render all 3D models.
 
-2) [ViewCreator2d](../../core/frontend/src/ViewCreator2d.ts): does the same for any given 2D model (drawing or sheet).
+2) [ViewCreator2d]($frontend): does the same for any given 2D model (drawing or sheet).
 
 Examples:
 
