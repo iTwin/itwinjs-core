@@ -138,7 +138,7 @@ export class IModelExporter {
    * @see [ElementLoadProps.wantGeometry]($common)
    */
   public wantGeometry: boolean = true;
-  /** A flag that indicates whether template models should be exported or not.
+  /** A flag that indicates whether template models should be exported or not. The default is `true`.
    * @note If only exporting *instances* then template models can be skipped since they are just definitions that are cloned to create new instances.
    * @see [Model.isTemplate]($backend)
    */
