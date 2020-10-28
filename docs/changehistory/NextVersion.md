@@ -3,6 +3,30 @@ ignore: true
 ---
 # NextVersion
 
+## ViewCreator APIs
+
+Two new APIs for creating views:
+
+1) [ViewCreator3d](../../core/frontend/src/ViewCreator3d.ts): provides a convenient way to create a default view (ViewState3d) for any given iModel. This can then be passed into the Viewport to render all 3D models.
+
+2) [ViewCreator2d](../../core/frontend/src/ViewCreator2d.ts): does the same for any given 2D model (drawing or sheet).
+
+Examples:
+
+```ts
+// ViewCreator3D
+ const viewCreator = new ViewCreator3d(imodel);
+ const defaultView = await viewCreator.createDefaultView({skyboxOn: true});
+```
+
+```ts
+// ViewCreator2D
+const viewCreator = new ViewCreator2d(imodel);
+const models = await imodel.models.queryProps({ from: "BisCore.GeometricModel2d" });
+if (models.length > 0)
+  const view = await viewCreator.createViewForModel(models[0].id!, models[0].classFullName);
+  ```
+
 ## Map Layers
 
 Map layers such as BingMaps and MapBox require keys so that they may be accessed. These keys were previously hardcoded in multiple locations. These keys have been moved and added as default [MapLayerOptions]($frontend). Keys should now be passed through [IModelApp.startup]($frontend), as an IModelAppOption like:

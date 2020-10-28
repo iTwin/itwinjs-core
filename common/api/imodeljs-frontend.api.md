@@ -10308,6 +10308,36 @@ export class ViewClipTool extends PrimitiveTool {
     protected showPrompt(): void;
 }
 
+// @beta
+export class ViewCreator2d {
+    constructor(_imodel: IModelConnection);
+    createViewForModel(modelId: Id64String, modelType: string, options?: ViewCreator2dOptions): Promise<ViewState>;
+    static isDrawingModelClass(modelType: string): boolean;
+    static isSheetModelClass(modelType: string): boolean;
+    }
+
+// @beta
+export interface ViewCreator2dOptions {
+    bgColor?: ColorDef;
+    useSeedView?: boolean;
+    vpAspect?: number;
+}
+
+// @beta
+export class ViewCreator3d {
+    constructor(_imodel: IModelConnection);
+    createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
+    }
+
+// @beta
+export interface ViewCreator3dOptions {
+    cameraOn?: boolean;
+    skyboxOn?: boolean;
+    standardViewId?: StandardViewId;
+    useSeedView?: boolean;
+    vpAspect?: number;
+}
+
 // @internal (undocumented)
 export function viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number;
 
