@@ -496,14 +496,12 @@ export abstract class GltfReader {
     if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
       return undefined;
     if (primitive.extensions && primitive.extensions.KHR_draco_mesh_compression) {
-      // return undefined;     // Defer Draco support until moved to web worker.
-
       const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
       const bufferView = this._bufferViews[dracoExtension.bufferView];
       if (undefined === bufferView) return undefined;
       const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
 
-      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData);
+      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData, dracoExtension.attributes);
     }
     if (!this.readVertices(mesh.points, primitive, pseudoRtcBias))
       return undefined;

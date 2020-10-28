@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Cartographic, IModelError } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -23,7 +23,7 @@ import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
-  TileTreeReference, TileTreeSet, TileTreeSupplier,
+  TileTreeReference, TileTreeSet, TileTreeSupplier
 } from "./internal";
 
 function getUrl(content: any) {
@@ -118,9 +118,14 @@ export class RealityModelTileUtils {
       const radius = sphere[3];
       return Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
     } else if (Array.isArray(boundingVolume.region)) {
-      const ecefLow = (new Cartographic(boundingVolume.region[0], boundingVolume.region[1], boundingVolume.region[4])).toEcef();
-      const ecefHigh = (new Cartographic(boundingVolume.region[2], boundingVolume.region[3], boundingVolume.region[5])).toEcef();
-      return Range3d.create(ecefLow, ecefHigh);
+      const minEq = Constant.earthRadiusWGS84.equator + boundingVolume.region[4], maxEq = Constant.earthRadiusWGS84.equator + boundingVolume.region[5];
+      const minLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(boundingVolume.region[1]);
+      const maxLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(boundingVolume.region[3]);
+      const minEllipsoid = Ellipsoid.createCenterMatrixRadii(Point3d.createZero(), undefined, minEq, minEq, Constant.earthRadiusWGS84.polar + boundingVolume.region[4]);
+      const maxEllipsoid = Ellipsoid.createCenterMatrixRadii(Point3d.createZero(), undefined, maxEq, maxEq, Constant.earthRadiusWGS84.polar + boundingVolume.region[5]);
+      const range = minEllipsoid.patchRangeStartEndRadians(boundingVolume.region[0], boundingVolume.region[2], minLatitude, maxLatitude);
+      range.extendRange(maxEllipsoid.patchRangeStartEndRadians(boundingVolume.region[0], boundingVolume.region[2], minLatitude, maxLatitude));
+      return range;
     } else return undefined;
 
   }
@@ -243,13 +248,8 @@ class RealityModelTileLoader extends RealityTileLoader {
       return undefined;
 
     const children = [];
-    const parentRange = (tile.hasContentRange || undefined !== tile.tree.contentRange) ? undefined : new Range3d();
-    for (const prop of props) {
-      const child = tile.realityRoot.createTile(prop);
-      children.push(child);
-      if (undefined !== parentRange && !child.isEmpty)
-        parentRange.extendRange(child.contentRange);
-    }
+    for (const prop of props)
+      children.push(tile.realityRoot.createTile(prop));
 
     return children;
   }
@@ -258,11 +258,11 @@ class RealityModelTileLoader extends RealityTileLoader {
     const props: RealityModelTileProps[] = [];
     const thisId = parent.contentId;
     const prefix = thisId.length ? `${thisId}_` : "";
-    const findResult = await this.findTileInJson(this.tree.tilesetJson, thisId, "", undefined, true);
+    const findResult = await this.findTileInJson(this.tree.tilesetJson, thisId, "", undefined);
     if (undefined !== findResult && Array.isArray(findResult.json.children)) {
       for (let i = 0; i < findResult.json.children.length; i++) {
         const childId = prefix + i;
-        const foundChild = await this.findTileInJson(this.tree.tilesetJson, childId, "", undefined, true);
+        const foundChild = await this.findTileInJson(this.tree.tilesetJson, childId, "", undefined);
         if (undefined !== foundChild)
           props.push(new RealityModelTileProps(foundChild.json, parent, foundChild.id, foundChild.transformToRoot));
       }
@@ -290,12 +290,7 @@ class RealityModelTileLoader extends RealityTileLoader {
         this.addUrlPrefix(child, prefix);
   }
 
-  private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform, isRoot: boolean = false): Promise<FindChildResult | undefined> {
-    if (!isRoot && tilesetJson.transform) {   // Child tiles may have their own transform.
-      const thisTransform = RealityModelTileUtils.transformFromJson(tilesetJson.transform);
-      transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(thisTransform) : thisTransform;
-    }
-
+  private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform): Promise<FindChildResult | undefined> {
     if (id.length === 0)
       return new FindChildResult(id, tilesetJson, transformToRoot);    // Root.
 
@@ -403,7 +398,8 @@ export namespace RealityModelTileTree {
         // If the reality model is located in the same region and height and their is significant misalignment in their orientation,
         //  then align the cartesian systems as otherwise different origins
         // can result in a misalignment from the curvature of the earth. (EWR - large point cloud)
-        if (undefined !== ypr && undefined !== carto && Math.abs(ypr.roll.degrees) > 1.0E-6 && carto.height < 300.0) {  // Don't test yaw- it may be present from eccentricity fix.
+        const doPitchFix = false;
+        if (doPitchFix && undefined !== ypr && undefined !== carto && Math.abs(ypr.roll.degrees) > 1.0E-6 && carto.height < 300.0) {  // Don't test yaw- it may be present from eccentricity fix.
           ypr.pitch.setRadians(0);
           ypr.roll.setRadians(0);
           ypr.toMatrix3d(rootTransform.matrix);
@@ -671,7 +667,7 @@ export class RealityModelTileClient {
    */
   public async getTileJson(url: string): Promise<any> {
     const useRds = this.rdsProps !== undefined && this._token !== undefined;
-    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!) : new FrontendRequestContext();
+    const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!) : new FrontendRequestContext("");
     requestContext.enter();
 
     if (this.rdsProps && this._token) {
