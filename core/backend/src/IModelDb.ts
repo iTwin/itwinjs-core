@@ -742,7 +742,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb() && this.isPushEnabled) {
-      await this.concurrencyControl.lockSchema(requestContext);
+      await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
 
@@ -794,7 +794,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb() && this.isPushEnabled) {
-      await this.concurrencyControl.lockSchema(requestContext);
+      await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
 
