@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./IModelHostSetup";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -16,7 +15,7 @@ import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("Presentation", () => {
 
-  afterEach(() => {
+  afterEach(async () => {
     Presentation.terminate();
   });
 
@@ -35,6 +34,7 @@ describe("Presentation", () => {
     });
 
     it("can be safely shutdown via IModelHost shutdown listener", async () => {
+      await IModelHost.startup();
       Presentation.initialize();
       await IModelHost.shutdown();
       expect(() => Presentation.getManager()).to.throw(PresentationError);

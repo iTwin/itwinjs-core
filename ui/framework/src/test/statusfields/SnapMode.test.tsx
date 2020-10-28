@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import { Provider } from "react-redux";
 import * as sinon from "sinon";
@@ -14,7 +13,7 @@ import {
   ConfigurableCreateInfo, ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework,
   WidgetDef,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("SnapModeField", () => {
 
@@ -85,8 +84,6 @@ describe("SnapModeField", () => {
 
     wrapper.find(".nz-footer-snapMode-indicator .nz-indicator").simulate("click"); // Closes popup
     wrapper.update();
-
-    wrapper.unmount();
   });
 
   it("Validate multiple snaps mode", () => {
@@ -102,8 +99,6 @@ describe("SnapModeField", () => {
     // the indicator field should contain the multi-snap icon.
     const itemId = ".icon-snaps-multione";
     expect(wrapper.find(itemId).length).to.eq(1);
-
-    wrapper.unmount();
   });
 
   it("should close on outside click", () => {

@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
-// import * as sinon from "sinon";
 import { Provider } from "react-redux";
 import { MockRender } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
@@ -15,7 +13,7 @@ import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
 import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
 import { ViewAttributesStatusField } from "../../ui-framework/statusfields/ViewAttributes";
 import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ViewAttributes", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -53,11 +51,9 @@ describe("ViewAttributes", () => {
   });
 
   it("should render", () => {
-    const wrapper = mount(<Provider store={TestUtils.store}>
+    mount(<Provider store={TestUtils.store}>
       <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
     </Provider>);
-
-    wrapper.unmount();
   });
 
   it("should open/close on click", () => {
@@ -73,8 +69,6 @@ describe("ViewAttributes", () => {
 
     wrapper.find("div.uifw-indicator-icon").simulate("click"); // Closes it
     wrapper.update();
-
-    wrapper.unmount();
   });
 
   it("should process Checkbox clicks", () => {
@@ -101,8 +95,6 @@ describe("ViewAttributes", () => {
 
     wrapper.find("div.uifw-indicator-icon").simulate("click"); // Closes it
     wrapper.update();
-
-    wrapper.unmount();
   });
 
 });

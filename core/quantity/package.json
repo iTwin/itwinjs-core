@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "2.8.0-dev.2",
+  "version": "2.9.0-dev.4",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
@@ -11,10 +11,11 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/quantity"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=imodeljs-quantity",
-    "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "betools test-tsnode --testDir=./test/",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson",
     "cover": "nyc npm test",
@@ -30,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.8.0-dev.2",
-    "@bentley/build-tools": "2.8.0-dev.2",
-    "@bentley/eslint-plugin": "2.8.0-dev.2",
+    "@bentley/bentleyjs-core": "2.9.0-dev.4",
+    "@bentley/build-tools": "2.9.0-dev.4",
+    "@bentley/eslint-plugin": "2.9.0-dev.4",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -51,7 +52,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.8.0-dev.2"
+    "@bentley/bentleyjs-core": "^2.9.0-dev.4"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

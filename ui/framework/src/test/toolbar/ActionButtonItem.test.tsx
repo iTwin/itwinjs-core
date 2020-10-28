@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { ActionButtonItem, CommandItemDef, KeyboardShortcutManager, ToolbarHelper } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ActionButtonItem", () => {
 
@@ -57,7 +57,6 @@ describe("ActionButtonItem", () => {
     const wrapper = mount(<ActionButtonItem item={spyCommand} />);
     wrapper.find(".nz-toolbar-item-item").simulate("click");
     spyMethod.should.have.been.called;
-    wrapper.unmount();
   });
 
   it("should call onItemExecuted function", () => {
@@ -66,7 +65,6 @@ describe("ActionButtonItem", () => {
     const wrapper = mount(<ActionButtonItem item={spyCommand} onItemExecuted={spyMethod} />);
     wrapper.find(".nz-toolbar-item-item").simulate("click");
     spyMethod.should.have.been.called;
-    wrapper.unmount();
   });
 
   it("should set focus to home on Esc", () => {
@@ -76,7 +74,6 @@ describe("ActionButtonItem", () => {
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
-    wrapper.unmount();
   });
 
   it("should render with badgeType", () => {
@@ -86,6 +83,5 @@ describe("ActionButtonItem", () => {
     badge.length.should.eq(1);
     const newBadge = wrapper.find("div.core-new-badge");
     newBadge.length.should.eq(1);
-    wrapper.unmount();
   });
 });

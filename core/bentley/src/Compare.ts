@@ -65,3 +65,6 @@ export function compareStringsOrUndefined(lhs?: string, rhs?: string): number { 
 
 /** @public */
 export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number { return comparePossiblyUndefined(compareNumbers, lhs, rhs); }
+
+/** @public */
+export function compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number { return comparePossiblyUndefined(compareBooleans, lhs, rhs); }

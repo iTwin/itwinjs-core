@@ -81,8 +81,9 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   /** use the integrated function to return an angle at fractional position. */
 
   public globalFractionToBearingRadians(fraction: number): number {
-    const f = this._evaluator.fractionToArea(fraction);
-    return this.bearing01.startRadians + this._arcLength01 * this._curvature01.fractionToPoint(f);
+    const areaFraction = this._evaluator.fractionToArea(fraction);
+    const dx = this._arcLength01;
+    return this.bearing01.startRadians + areaFraction * dx * this._curvature01.signedDelta() + fraction * this._curvature01.x0 * dx;
   }
   /** use the integrated function to return an angle at fractional position. */
   public globalFractionToCurvature(fraction: number): number {
@@ -368,7 +369,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const radians = this.globalFractionToBearingRadians(globalFraction);
     const c = Math.cos(radians);
     const s = Math.sin(radians);
-    result.matrix.applyGivensColumnOp(0, 1, c, -s);
+    result.matrix.applyGivensColumnOp(0, 1, c, s);
     return result;
   }
   /** Return a plane with

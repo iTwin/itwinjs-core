@@ -175,6 +175,8 @@ export class IModelExporter {
   private _excludedElementClasses = new Set<typeof Element>();
   /** The set of classes of ElementAspects that will be excluded (polymorphically) from transformation to the target iModel. */
   private _excludedElementAspectClasses = new Set<typeof ElementAspect>();
+  /** The set of classFullNames for ElementAspects that will be excluded from transformation to the target iModel. */
+  private _excludedElementAspectClassFullNames = new Set<string>();
   /** The set of classes of Relationships that will be excluded (polymorphically) from transformation to the target iModel. */
   private _excludedRelationshipClasses = new Set<typeof Relationship>();
 
@@ -213,7 +215,8 @@ export class IModelExporter {
 
   /** Add a rule to exclude all ElementAspects of a specified class. */
   public excludeElementAspectClass(classFullName: string): void {
-    this._excludedElementAspectClasses.add(this.sourceDb.getJsClass<typeof ElementAspect>(classFullName));
+    this._excludedElementAspectClassFullNames.add(classFullName); // allows non-polymorphic exclusion before query
+    this._excludedElementAspectClasses.add(this.sourceDb.getJsClass<typeof ElementAspect>(classFullName)); // allows polymorphic exclusion after query/load
   }
 
   /** Add a rule to exclude all Relationships of a specified class. */
@@ -407,8 +410,10 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportModel()`);
     if (this.shouldExportElement(modeledElement)) {
       this.exportModelContainer(model);
-      this.exportModelContents(modeledElementId);
-      this.exportSubModels(modeledElementId);
+      if (this.visitElements) {
+        this.exportModelContents(modeledElementId);
+        this.exportSubModels(modeledElementId);
+      }
     }
   }
 
@@ -522,7 +527,7 @@ export class IModelExporter {
       }
     }
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
-    Logger.logTrace(loggerCategory, `exportElement("${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
+    Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);
       this.exportElementAspects(elementId);
@@ -562,7 +567,7 @@ export class IModelExporter {
     });
   }
 
-  /** Returns true if the specified ElementAspect should be excluded from the export. */
+  /** Returns `true` if the specified ElementAspect should be exported or `false` if if should be excluded. */
   private shouldExportElementAspect(aspect: ElementAspect): boolean {
     for (const excludedElementAspectClass of this._excludedElementAspectClasses) {
       if (aspect instanceof excludedElementAspectClass) {
@@ -576,12 +581,10 @@ export class IModelExporter {
 
   /** Export ElementAspects from the specified element from the source iModel. */
   private exportElementAspects(elementId: Id64String): void {
-    const aspects: ElementUniqueAspect[] = this.sourceDb.elements.getAspects(elementId);
-    if (aspects.length > 0) {
-      // ElementUniqueAspects
-      const uniqueAspects: ElementUniqueAspect[] = aspects.filter((aspect) => {
-        return aspect instanceof ElementUniqueAspect && this.shouldExportElementAspect(aspect);
-      });
+    // ElementUniqueAspects
+    let uniqueAspects: ElementUniqueAspect[] = this.sourceDb.elements._queryAspects(elementId, ElementUniqueAspect.classFullName, this._excludedElementAspectClassFullNames);
+    if (uniqueAspects.length > 0) {
+      uniqueAspects = uniqueAspects.filter((a) => this.shouldExportElementAspect(a));
       if (uniqueAspects.length > 0) {
         uniqueAspects.forEach((uniqueAspect: ElementUniqueAspect) => {
           if (undefined !== this._sourceDbChanges) { // is changeSet information available?
@@ -597,10 +600,11 @@ export class IModelExporter {
           }
         });
       }
-      // ElementMultiAspects
-      const multiAspects: ElementMultiAspect[] = aspects.filter((aspect) => {
-        return aspect instanceof ElementMultiAspect && this.shouldExportElementAspect(aspect);
-      });
+    }
+    // ElementMultiAspects
+    let multiAspects: ElementMultiAspect[] = this.sourceDb.elements._queryAspects(elementId, ElementMultiAspect.classFullName, this._excludedElementAspectClassFullNames);
+    if (multiAspects.length > 0) {
+      multiAspects = multiAspects.filter((a) => this.shouldExportElementAspect(a));
       if (multiAspects.length > 0) {
         this.handler.callProtected.onExportElementMultiAspects(multiAspects);
       }

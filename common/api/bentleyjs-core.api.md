@@ -238,6 +238,9 @@ export type CloneFunction<T> = (value: T) => T;
 export function compareBooleans(a: boolean, b: boolean): number;
 
 // @public (undocumented)
+export function compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number;
+
+// @public (undocumented)
 export function compareNumbers(a: number, b: number): number;
 
 // @public (undocumented)

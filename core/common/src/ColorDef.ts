@@ -11,7 +11,7 @@ import { ColorByName } from "./ColorByName";
 import { HSLColor } from "./HSLColor";
 import { HSVColor, HSVConstants } from "./HSVColor";
 
-// cspell: ignore ttbbggrr bbggrr rrggbb aabbggrr abgr rrbbgg hsla lerp torgb dhue dsaturation dvalue intpart fractpart cyanish
+// cspell: ignore ttbbggrr bbggrr rrggbb aabbggrr abgr rrggbb hsla lerp torgb dhue dsaturation dvalue intpart fractpart cyanish
 
 // portions adapted from Three.js Copyright © 2010-2017 three.js authors
 
@@ -61,7 +61,7 @@ export class ColorDef {
    * *"rgba(255,0,0,.2)"*
    * *"rgb(100%,0%,0%)"*
    * *"hsl(120,50%,50%)"*
-   * *"#rrbbgg"*
+   * *"#rrggbb"*
    * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case insensitive.
    */
   public static create(val?: string | ColorDefProps) {

@@ -4,3 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./RunTests";
+export * from "./imodelhub/IModelBankCloudEnv";

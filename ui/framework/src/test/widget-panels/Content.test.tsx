@@ -4,19 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@bentley/ui-ninezone";
 import { render } from "@testing-library/react";
-import { FrontstageDef, FrontstageManager, WidgetContent } from "../../ui-framework";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@bentley/ui-ninezone";
 import { Rectangle } from "@bentley/ui-core";
+import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../ui-framework";
 
 describe("WidgetContent", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
@@ -24,9 +17,9 @@ describe("WidgetContent", () => {
     const widget = new WidgetDef({
       id: "w1",
     });
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
-    sandbox.stub(frontstage, "findWidgetDef").returns(widget);
-    sandbox.stub(widget, "reactNode").get(() => <>Content</>);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
+    sinon.stub(frontstage, "findWidgetDef").returns(widget);
+    sinon.stub(widget, "reactNode").get(() => <>Content</>);
     const { container } = render(
       <NineZoneProvider
         dispatch={sinon.stub()}
@@ -44,7 +37,7 @@ describe("WidgetContent", () => {
   it("should render w/o frontstage", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
     const { container } = render(
       <NineZoneProvider
         dispatch={sinon.stub()}
@@ -63,8 +56,8 @@ describe("WidgetContent", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
     const frontstage = new FrontstageDef();
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
-    sandbox.stub(frontstage, "findWidgetDef").returns(undefined);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
+    sinon.stub(frontstage, "findWidgetDef").returns(undefined);
     const { container } = render(
       <NineZoneProvider
         dispatch={sinon.stub()}

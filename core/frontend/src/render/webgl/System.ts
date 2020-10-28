@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture } from "@bentley/imodeljs-common";
 import { Capabilities, DepthType } from "@bentley/webgl-compatibility";
@@ -200,7 +200,7 @@ export class IdMap implements WebGLDisposable {
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
   public getMaterial(params: RenderMaterial.Params): RenderMaterial {
-    if (!params.key)
+    if (!params.key || !Id64.isValidId64(params.key))   // Only cache persistent materials.
       return new Material(params);
 
     let material = this.materials.get(params.key);
@@ -335,6 +335,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
   public get isWebGL2(): boolean { return this.capabilities.isWebGL2; }
+  public get isMobile(): boolean { return this.capabilities.isMobile; }
 
   public setDrawBuffers(attachments: GLenum[]): void { this._extensions.setDrawBuffers(attachments); }
 

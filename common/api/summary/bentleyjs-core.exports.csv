@@ -24,6 +24,7 @@ public;ClientRequestContext
 public;ClientRequestContextProps
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
+public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
 public;compareNumbers(a: number, b: number): number
 public;compareNumbersOrUndefined(lhs?: number, rhs?: number): number
 public;comparePossiblyUndefined

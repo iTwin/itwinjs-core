@@ -51,7 +51,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   private _localizedKeyinPreference: KeyinFieldLocalization = KeyinFieldLocalization.NonLocalized;
 
   public get localizedKeyinPreference(): KeyinFieldLocalization { return this._localizedKeyinPreference; }
-  public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference=preference; }
+  public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference = preference; }
 
   /** @internal */
   public onInitialized() { }
@@ -112,7 +112,7 @@ export class FrameworkUiAdmin extends UiAdmin {
           // istanbul ignore else
           if (tool.keyin === tool.englishKeyin)
             break;
-          // istanbul ignore next
+        // istanbul ignore next
         default: // eslint-disable-line no-fallthrough
         case KeyinFieldLocalization.NonLocalized:
           // istanbul ignore next
@@ -201,9 +201,9 @@ export class FrameworkUiAdmin extends UiAdmin {
   }
 
   /** Show a calculator at a particular location.
-   * @param location Location of the calculator, relative to the origin of htmlElement or the window.
    * @param initialValue Value initially displayed in the calculator.
    * @param resultIcon Icon displayed to the left of the value.
+   * @param location Location of the calculator, relative to the origin of htmlElement or the window.
    * @param onOk Function called when the OK button or the Enter key is pressed.
    * @param onCancel Function called when the Cancel button or the Escape key  is pressed.
    * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
@@ -331,6 +331,32 @@ export class FrameworkUiAdmin extends UiAdmin {
       relativePosition = RelativePosition.TopRight;
 
     return PopupManager.showCard(content, title, toolbarProps, el, position, offset, onItemExecuted, onCancel, relativePosition);
+  }
+
+  /** Show a Card containing React-based content, a title and a toolbar at a particular location.
+   * @param content The React node of the content to display
+   * @param title Title to display at the top of the card.
+   * @param toolbarProps Properties of the Toolbar to display.
+   * @param location Location of the Card, relative to the origin of htmlElement or the window.
+   * @param offset Offset of the Card from the location.
+   * @param onItemExecuted Function invoked after a Toolbar item is executed
+   * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the Card
+   * @param relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param anchorElement The HTMLElement that anchors the Card. If undefined, the location is relative to the overall window.
+   * @return true if the Card was displayed, false if the Card could not be displayed.
+   */
+  public showReactCard(
+    content: React.ReactNode, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
+    location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc,
+    relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, anchorElement);
+    const reactContent = { reactNode: content };
+
+    // istanbul ignore if
+    if (relativePosition === undefined)
+      relativePosition = RelativePosition.TopRight;
+
+    return PopupManager.showCard(reactContent, title, toolbarProps, el, position, offset, onItemExecuted, onCancel, relativePosition);
   }
 
   /** Hides the Card. */

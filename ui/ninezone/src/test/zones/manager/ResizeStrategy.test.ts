@@ -5,26 +5,17 @@
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
 import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { ZonesManager, ZonesManagerProps } from "../../../ui-ninezone";
-import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
-import { BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
 import {
-  GrowBottom, GrowLeft, GrowRight, GrowStrategy, GrowTop, ResizeStrategy, ShrinkBottom, ShrinkHorizontalStrategy, ShrinkLeft, ShrinkRight,
-  ShrinkStrategy, ShrinkTop, ShrinkVerticalStrategy, UpdateWindowResizeSettings,
-} from "../../../ui-ninezone/zones/manager/ResizeStrategy";
-import { WidgetZoneId } from "../../../ui-ninezone/zones/manager/Zones";
+  GrowBottom, GrowLeft, GrowRight, GrowStrategy, GrowTop, HorizontalAnchor, ResizeStrategy, ShrinkBottom, ShrinkHorizontalStrategy, ShrinkLeft, ShrinkRight,
+  ShrinkStrategy, ShrinkTop, ShrinkVerticalStrategy, UpdateWindowResizeSettings, WidgetZoneId, ZonesManager, ZonesManagerProps,
+} from "../../../ui-ninezone";
+import { BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
 import TestProps from "./TestProps";
 
 const zonesManagerMock = Moq.Mock.ofType<ZonesManager>();
 const zonesManagerPropsMock = Moq.Mock.ofType<ZonesManagerProps>();
 const zonesMock = Moq.Mock.ofType<ZonesManagerProps["zones"]>();
 const widgetsMock = Moq.Mock.ofType<ZonesManagerProps["widgets"]>();
-
-const sandbox = sinon.createSandbox();
-
-afterEach(() => {
-  sandbox.restore();
-});
 
 beforeEach(() => {
   zonesManagerMock.reset();
@@ -337,7 +328,7 @@ describe("GrowLeft", () => {
     zone.setup((x) => x.floating).returns(() => undefined);
     zone.setup((x) => x.bounds).returns(() => new Rectangle(80));
     widget.setup((x) => x.horizontalAnchor).returns(() => HorizontalAnchor.Right);
-    sandbox.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
+    sinon.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
     zonesManagerMock.setup((x) => x.getInitialBounds(6, Moq.It.isAny())).returns(() => new Rectangle(50));
 
     const sut = new GrowLeft(zonesManagerMock.object);
@@ -346,7 +337,7 @@ describe("GrowLeft", () => {
   });
 
   it("should resize zone over initial bounds", () => {
-    sandbox.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
+    sinon.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
     const sut = new GrowLeft(zonesManagerMock.object);
     const maxResize = sut.getMaxResize(6, zonesManagerPropsMock.object);
     maxResize.should.eq(50);
@@ -406,7 +397,7 @@ describe("GrowRight", () => {
     zone.setup((x) => x.floating).returns(() => undefined);
     zone.setup((x) => x.bounds).returns(() => new Rectangle(0, 0, 20));
     widget.setup((x) => x.horizontalAnchor).returns(() => HorizontalAnchor.Left);
-    sandbox.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
+    sinon.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
     zonesManagerMock.setup((x) => x.getInitialBounds(4, Moq.It.isAny())).returns(() => new Rectangle(0, 0, 50));
 
     const sut = new GrowRight(zonesManagerMock.object);
@@ -415,7 +406,7 @@ describe("GrowRight", () => {
   });
 
   it("should resize zone over initial bounds", () => {
-    sandbox.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
+    sinon.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
     const sut = new GrowRight(zonesManagerMock.object);
     const maxResize = sut.getMaxResize(4, zonesManagerPropsMock.object);
     maxResize.should.eq(50);

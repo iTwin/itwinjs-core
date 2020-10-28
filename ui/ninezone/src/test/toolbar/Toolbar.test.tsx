@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Direction, PanelsProvider, Toolbar, ToolbarItem, ToolbarItemProps, ToolbarPanelAlignment } from "../../ui-ninezone";
-import { getToolbarItemProps } from "../../ui-ninezone/toolbar/Toolbar";
+import { Direction, getToolbarItemProps, PanelsProvider, Toolbar, ToolbarItem, ToolbarItemProps, ToolbarPanelAlignment } from "../../ui-ninezone";
+import { mount } from "../Utils";
 
 class Item extends React.Component implements ToolbarItem {
   public panel = document.createElement("div");

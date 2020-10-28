@@ -1,15 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { should } from "chai";
 import { castDraft, produce } from "immer";
 import { Point, Rectangle } from "@bentley/ui-core";
 import {
-  addFloatingWidget, addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createVerticalPanelState,
-  isHorizontalPanelState, NineZoneStateReducer,
+  addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createFloatingWidgetState, createHorizontalPanelState, createNineZoneState,
+  createTabState, createVerticalPanelState, createWidgetState, findTab, isHorizontalPanelState, NineZoneStateReducer, removeTab, toolSettingsTabId,
 } from "../../ui-ninezone";
-import { createDraggedTabState, createFloatingWidgetState, createTabState, createWidgetState, findTab, removeTab, toolSettingsTabId } from "../../ui-ninezone/base/NineZoneState";
 
 describe("isHorizontalPanelState", () => {
   it("returns true based on side property", () => {

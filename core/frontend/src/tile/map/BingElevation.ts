@@ -11,6 +11,7 @@ import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@ben
 import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@bentley/imodeljs-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";
+import { IModelApp } from "../../imodeljs-frontend";
 import { Mesh, MeshArgs } from "../../render-primitives";
 import { DisplayParams } from "../../render/primitives/DisplayParams";
 import { Triangle } from "../../render/primitives/Primitives";
@@ -37,7 +38,10 @@ export class BingElevationProvider {
   protected _requestContext = new ClientRequestContext("");
 
   constructor() {
-    const bingKey = "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt";
+    let bingKey = "";
+    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) {
+      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+    }
     this._heightRangeRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
     this._seaLevelOffsetRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
     this._heightListRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);

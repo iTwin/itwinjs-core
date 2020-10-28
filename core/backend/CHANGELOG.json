@@ -2,6 +2,102 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.7.5",
+      "tag": "@bentley/imodeljs-backend_v2.7.5",
+      "date": "Fri, 23 Oct 2020 16:23:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.4",
+      "tag": "@bentley/imodeljs-backend_v2.7.4",
+      "date": "Mon, 19 Oct 2020 17:57:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.7.8"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.3",
+      "tag": "@bentley/imodeljs-backend_v2.7.3",
+      "date": "Wed, 14 Oct 2020 17:00:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.2",
+      "tag": "@bentley/imodeljs-backend_v2.7.2",
+      "date": "Tue, 13 Oct 2020 18:20:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.7.6"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.1",
+      "tag": "@bentley/imodeljs-backend_v2.7.1",
+      "date": "Thu, 08 Oct 2020 13:04:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.7.5"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.0",
+      "tag": "@bentley/imodeljs-backend_v2.7.0",
+      "date": "Fri, 02 Oct 2020 18:03:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.7.4"
+          },
+          {
+            "comment": "Fixes to front end methods to pull, merge and push. "
+          },
+          {
+            "comment": "Setup IModelHost.startup() to use proxy servers if configured/available - this is valuable for debugging agents, backends and electron applications. "
+          },
+          {
+            "comment": "On iOS download in background"
+          },
+          {
+            "comment": "Fix ios hang issue"
+          },
+          {
+            "comment": "Modify queryModelRanges to handle non geometric model errors"
+          },
+          {
+            "comment": "Introduce NoContentError (transmitted via 204)"
+          },
+          {
+            "comment": "Tile gen performance script in package.json"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.6.5",
+      "tag": "@bentley/imodeljs-backend_v2.6.5",
+      "date": "Sat, 26 Sep 2020 16:06:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "changed elements properties for version compare"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.6.4"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.6.4",
       "tag": "@bentley/imodeljs-backend_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",

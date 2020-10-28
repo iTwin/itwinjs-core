@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Point, Rectangle } from "@bentley/ui-core";
-import { ResizeGrip, SafeAreaInsets, StagePanel, StagePanelType } from "../../ui-ninezone";
-import { StagePanelTypeHelpers } from "../../ui-ninezone/stage-panels/StagePanel";
+import { ResizeGrip, SafeAreaInsets, StagePanel, StagePanelType, StagePanelTypeHelpers } from "../../ui-ninezone";
+import { mount } from "../Utils";
 
 describe("<StagePanel />", () => {
   it("should render", () => {

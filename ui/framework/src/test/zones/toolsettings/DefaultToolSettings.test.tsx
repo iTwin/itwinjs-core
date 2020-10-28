@@ -7,7 +7,7 @@ import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
 } from "@bentley/ui-abstract";
 
-
+/** @internal */
 export enum SelectOptions {
   Method_Pick,
   Method_Line,

@@ -8,8 +8,8 @@ import * as React from "react";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
-import { cleanup, render } from "@testing-library/react";
+import { HierarchyBuilder, HierarchyCacheMode, initialize, terminate } from "@bentley/presentation-testing";
+import { render } from "@testing-library/react";
 import { ConfigurableUiControlType, ModelSelectorWidget, ModelSelectorWidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
 import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions";
 import TestUtils from "../TestUtils";
@@ -24,7 +24,7 @@ describe("ModelSelector", () => {
     await TestUtils.initializeUiFramework();
     await initialize({
       backendProps: {
-        cacheDirectory: path.join("lib", "test", "cache"),
+        cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join("lib", "test", "cache") },
       },
     });
     imodel = await SnapshotConnection.openFile(testIModelPath);
@@ -81,8 +81,6 @@ describe("ModelSelector", () => {
   });
 
   describe("ModelSelectorWidget", () => {
-    afterEach(cleanup);
-
     it("should render", async () => {
       const component = render(<ModelSelectorWidget iModelConnection={imodel} />); // eslint-disable-line deprecation/deprecation
       const widget = component.getByTestId("model-selector-widget");
@@ -111,14 +109,9 @@ describe("ModelSelector", () => {
       expect(dataProvider.rulesetId).to.eq(rulesetId);
       expect(dataProvider.imodel).to.eq(imodel);
 
-      // const paths =
       await dataProvider.getFilteredNodePaths("");
-      // console.log("Paths: " + paths); // eslint-disable-line no-console
-      // console.log("======="); // eslint-disable-line no-console
 
-      // const nodes =
       await dataProvider.getNodes();
-      // console.log("Nodes: " + nodes); // eslint-disable-line no-console
     });
   });
 

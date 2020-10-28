@@ -14,6 +14,10 @@ import { desync, sync } from "./Sync";
 import { Target } from "./Target";
 import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
+import { OvrFlags } from "./RenderFlags";
+
+const scratchRgb = new Float32Array(3);
+const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
 
 /** Maintains uniform variable state associated with the Batch currently being drawn by a Target.
  * @internal
@@ -110,5 +114,24 @@ export class BatchUniforms {
   public bindBatchId(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform4fv(this._batchId);
+  }
+
+  public bindUniformColorOverride(uniform: UniformHandle): void {
+    if (sync(this, uniform))
+      return;
+
+    if (undefined !== this._overrides) {
+      const uo = this._overrides.getUniformOverrides();
+      if (uo[0] & OvrFlags.Rgb) {
+        scratchRgb[0] = uo[4] / 255.0;
+        scratchRgb[1] = uo[5] / 255.0;
+        scratchRgb[2] = uo[6] / 255.0;
+        uniform.setUniform3fv(scratchRgb);
+      } else {
+        uniform.setUniform3fv(noOverrideRgb);
+      }
+    } else {
+      uniform.setUniform3fv(noOverrideRgb);
+    }
   }
 }

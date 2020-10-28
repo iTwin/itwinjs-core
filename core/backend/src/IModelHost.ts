@@ -41,6 +41,7 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient, RequestHost } from "@bentley/backend-itwin-client";
 import { MobileFileHandler } from "./MobileFileHandler";
+import { EventSink } from "./EventSink";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -78,14 +79,6 @@ export interface CrashReportingConfig {
   /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
   uploadToBentley?: boolean;
 }
-/** Configuration for event sink
- * @internal
- */
-export interface EventSinkOptions {
-  maxQueueSize: number;
-  maxNamespace: number;
-}
-
 /**
  * Type of the backend application
  * @alpha
@@ -184,10 +177,7 @@ export class IModelHostConfiguration {
    * @alpha
    */
   public crashReportingConfig?: CrashReportingConfig;
-  /** Configuration for event sink
-   * @internal
-   */
-  public eventSinkOptions: EventSinkOptions = { maxQueueSize: 5000, maxNamespace: 255 };
+
   public concurrentQuery: ConcurrentQueryConfig = {
     concurrent: os.cpus().length,
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
@@ -224,6 +214,7 @@ export class IModelHost {
   public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
   public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
+  private static _imodelClient?: IModelClient;
   private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
   /** @alpha */
   public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
@@ -373,7 +364,10 @@ export class IModelHost {
     if (!IModelHost.configuration) {
       throw new IModelError(BentleyStatus.ERROR, "startup must be called first");
     }
-    return IModelHost.configuration.imodelClient || new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new MobileFileHandler() : new AzureFileHandler());
+    if (!IModelHost._imodelClient) {
+      IModelHost._imodelClient = new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new MobileFileHandler() : new AzureFileHandler());
+    }
+    return IModelHost._imodelClient;
   }
   public static get isUsingIModelBankClient(): boolean {
     return IModelHost.iModelClient instanceof IModelBankClient;
@@ -409,12 +403,11 @@ export class IModelHost {
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 
+    const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!this._isNativePlatformLoaded) {
-      const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
       try {
         if (configuration.nativePlatform !== undefined) {
           this.registerPlatform(configuration.nativePlatform);
-          this.initializeUsageLogging(configuration.nativePlatform, region, configuration.applicationType, configuration.imodelClient);
         } else {
           this.loadNative(region, configuration.applicationType, configuration.imodelClient);
         }
@@ -423,8 +416,7 @@ export class IModelHost {
         throw error;
       }
     }
-
-    this._platform!.setNopBriefcaseManager(); // Tell native code that requests for locks and codes are managed in JS.
+    this.initializeUsageLogging(IModelHost.platform, region, configuration.applicationType, configuration.imodelClient);
 
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
@@ -451,6 +443,7 @@ export class IModelHost {
     }
 
     this.setupCacheDirs(configuration);
+    this._imodelClient = configuration.imodelClient;
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     IModelHost.setupRpcRequestContext();
@@ -537,6 +530,8 @@ export class IModelHost {
     if (!IModelHost.configuration)
       return;
     IModelHost.onBeforeShutdown.raiseEvent();
+    EventSink.clearGlobal();
+    IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
     IModelHost._nativeAppBackend = false;
   }

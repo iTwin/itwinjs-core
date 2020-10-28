@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
@@ -38,6 +38,7 @@ describe("WidgetPanelExpanders", () => {
 
 describe("WidgetPanelExpander", () => {
   it("should dispatch `PANEL_SET_COLLAPSED`", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
       <NineZoneProvider
@@ -48,6 +49,77 @@ describe("WidgetPanelExpander", () => {
     );
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);
+    fakeTimers.tick(300);
+
+    sinon.assert.calledOnceWithExactly(dispatch, {
+      type: "PANEL_SET_COLLAPSED",
+      side: "left",
+      collapsed: false,
+    });
+  });
+
+  it("should not dispatch `PANEL_SET_COLLAPSED` if mouse moves out", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    const { container } = render(
+      <NineZoneProvider
+        dispatch={dispatch}
+      >
+        <WidgetPanelExpander side="left" />
+      </NineZoneProvider>,
+    );
+    const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
+    fireEvent.mouseOver(expander);
+    fireEvent.mouseOut(expander);
+    fakeTimers.tick(300);
+
+    sinon.assert.notCalled(dispatch);
+  });
+
+  it("should reset timer if mouse moves", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    const { container } = render(
+      <NineZoneProvider
+        dispatch={dispatch}
+      >
+        <WidgetPanelExpander side="left" />
+      </NineZoneProvider>,
+    );
+    const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
+    fireEvent.mouseOver(expander);
+    fakeTimers.tick(150);
+
+    fireEvent.mouseMove(expander, { clientX: 20 });
+
+    fakeTimers.tick(150);
+    sinon.assert.notCalled(dispatch);
+
+    fakeTimers.tick(100);
+    sinon.assert.calledOnceWithExactly(dispatch, {
+      type: "PANEL_SET_COLLAPSED",
+      side: "left",
+      collapsed: false,
+    });
+  });
+
+  it("should not reset timer if mouse move threshold is not exceeded", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    const { container } = render(
+      <NineZoneProvider
+        dispatch={dispatch}
+      >
+        <WidgetPanelExpander side="left" />
+      </NineZoneProvider>,
+    );
+    const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
+    fireEvent.mouseOver(expander);
+    fakeTimers.tick(150);
+
+    fireEvent.mouseMove(expander, { clientX: 4 });
+
+    fakeTimers.tick(100);
 
     sinon.assert.calledOnceWithExactly(dispatch, {
       type: "PANEL_SET_COLLAPSED",

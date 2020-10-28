@@ -45,6 +45,7 @@ export * from "./render/webgl/Sync";
 export * from "./render/webgl/System";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
+export * from "./render/webgl/TargetGraphics";
 export * from "./render/webgl/TargetUniforms";
 export * from "./render/webgl/Technique";
 export * from "./render/webgl/TechniqueFlags";

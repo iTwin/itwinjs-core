@@ -564,7 +564,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
   /**
    * Set item and node state after input change
-   * @param treeItem Item to set state on
+   * @param treeItemIds Ids of items to set state on
    * @param enable Flag to enable or disable item, determined by checkBoxState if not specified
    */
   private async _setItemStates(treeItemIds: string[], enable: boolean) {
@@ -578,7 +578,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
 
   /**
    * Set display flag on an item based on toggled node.
-   * @param treeItem  Node related to toggled display item.
+   * @param treeNodeIds  Ids of Nodes related to toggled display item.
    */
   private _setEnableItems(treeNodeIds: string[], enable: boolean) {
     treeNodeIds.forEach((treeNodeId: string) => {

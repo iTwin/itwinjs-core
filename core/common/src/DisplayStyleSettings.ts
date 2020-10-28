@@ -73,6 +73,8 @@ export interface ContextRealityModelProps {
   tilesetUrl: string;
   /** @alpha */
   orbitGtBlob?: OrbitGtBlobProps;
+  /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
+  realityDataId?: string;
   name?: string;
   description?: string;
   /** @beta */
@@ -123,6 +125,8 @@ export interface DisplayStyleSettingsProps {
    */
   analysisFraction?: number;
   /** Schedule script
+   * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
+   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory - they are not needed for display on the frontend.
    * @beta
    */
   scheduleScript?: RenderSchedule.ModelTimelineProps[];

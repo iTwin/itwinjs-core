@@ -68,7 +68,7 @@ describe("UpdatesTracker", () => {
     });
 
     it("doesn't emit events if there are no updates", () => {
-      nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => undefined);
+      nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => ({ result: undefined }));
       clock.tick(1);
       nativePlatformMock.verify((x) => x.getUpdateInfo(), moq.Times.once());
       eventSinkMock.verify((x) => x.emit(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -80,7 +80,7 @@ describe("UpdatesTracker", () => {
         "b-ruleset": { hierarchy: "FULL" },
         "c-ruleset": { content: "FULL" },
       };
-      nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => updates);
+      nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => ({ result: updates }));
       clock.tick(1);
       nativePlatformMock.verify((x) => x.getUpdateInfo(), moq.Times.once());
       eventSinkMock.verify((x) => x.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, updates), moq.Times.once());

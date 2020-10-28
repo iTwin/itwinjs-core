@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BackTarget, MergeTarget, WidgetZoneId, ZoneTargetType } from "@bentley/ui-ninezone";
 import { ZoneTargets } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ZoneTargets", () => {
   const spyMethod = sinon.spy();
@@ -43,7 +43,6 @@ describe("ZoneTargets", () => {
       expect(spyMethod.calledOnce).to.be.true;
       target.prop("onTargetChanged")!(false);
       expect(spyMethod.calledTwice).to.be.true;
-      wrapper.unmount();
     });
   });
 
@@ -64,7 +63,6 @@ describe("ZoneTargets", () => {
       expect(spyMethod.calledOnce).to.be.true;
       target.prop("onTargetChanged")!(false);
       expect(spyMethod.calledTwice).to.be.true;
-      wrapper.unmount();
     });
   });
 

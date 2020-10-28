@@ -12,25 +12,29 @@ import {
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@bentley/geometry-core";
+import { Checkpoint } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
-  GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, ModelProps,
+  GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { BlobDaemon } from "@bentley/imodeljs-native";
+import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
-  ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
-  DisplayStyle3d, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements,
-  Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs,
-  InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement,
-  SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue,
+  BriefcaseManager, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
+  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
+  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalModel,
+  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
+  SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
+import sinon = require("sinon");
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
 
@@ -45,7 +49,7 @@ async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | und
   }
 }
 
-function expectIModelError(expectedErrorNumber: IModelStatus, error: IModelError | undefined): void {
+function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: IModelError | undefined): void {
   expect(error).not.to.be.undefined;
   expect(error).instanceof(IModelError);
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
@@ -65,9 +69,11 @@ describe("iModel", () => {
   let imodel3: SnapshotDb;
   let imodel4: SnapshotDb;
   let imodel5: SnapshotDb;
+  let originalEnv: any;
   const requestContext = new BackendRequestContext();
 
   before(async () => {
+    originalEnv = { ...process.env };
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
@@ -80,11 +86,16 @@ describe("iModel", () => {
   });
 
   after(() => {
+    process.env = originalEnv;
     imodel1.close();
     imodel2.close();
     imodel3.close();
     imodel4.close();
     imodel5.close();
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   /** Roundtrip the entity through a json string and back to a new entity. */
@@ -577,6 +588,71 @@ describe("iModel", () => {
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
     expect(style.settings.backgroundColor.equals(ColorDef.red)).to.be.true;
     expect(style.settings.monochromeColor.equals(ColorDef.green)).to.be.true;
+  });
+
+  it("should create display styles", () => {
+    const defaultViewFlags = new ViewFlags().toJSON();
+
+    const viewFlags = new ViewFlags();
+    viewFlags.patterns = false;
+    viewFlags.visibleEdges = true;
+
+    const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
+
+    const mapImagery: MapImageryProps = {
+      backgroundBase: ColorDef.red.tbgr,
+      backgroundLayers: [{ transparency: 0.5, userName: "blah" }],
+    };
+
+    const props: DisplayStyleSettingsProps = {
+      mapImagery,
+      excludedElements: ["0x123", "0xfed"],
+      timePoint: 42,
+      backgroundColor: ColorDef.green.tbgr,
+    };
+
+    type TestCase = [DisplayStyleCreationOptions | undefined, ViewFlagProps, boolean];
+    const testCases: TestCase[] = [
+      [undefined, defaultViewFlags, false],
+      [{ viewFlags }, viewFlags.toJSON(), false],
+      [{ viewflags }, viewflags, false],
+      [{ viewflags, viewFlags }, viewFlags.toJSON(), false],
+      [props, defaultViewFlags, false],
+      [{ ...props, viewflags }, viewflags, false],
+      [{ backgroundColor: ColorDef.blue }, defaultViewFlags, false],
+      [{ backgroundColor: ColorDef.from(1, 2, 3, 4) }, defaultViewFlags, false],
+      [{ backgroundColor: ColorDef.blue.tbgr }, defaultViewFlags, false],
+      [{ backgroundColor: ColorDef.from(1, 2, 3, 4).tbgr }, defaultViewFlags, false],
+      [{ scheduleScript: { someRandomProperty: "Not a valid schedule script" } }, defaultViewFlags, false],
+      [{ scheduleScript: [{ modelId: "0xabc", elementTimelines: [] }] }, defaultViewFlags, true],
+      [{ scheduleScript: [{ someRandomProperty: "but still an array" }] }, defaultViewFlags, true],
+    ];
+
+    let suffix = 123;
+    for (const test of testCases) {
+      const expected = test[0] ?? {};
+      const styleId = DisplayStyle3d.insert(imodel2, IModel.dictionaryId, `TestStyle${suffix++}`, expected);
+      const style = imodel2.elements.getElement<DisplayStyle3d>(styleId).toJSON();
+      expect(style.jsonProperties.styles!).not.to.be.undefined;
+
+      expect(style.jsonProperties).not.to.be.undefined;
+      expect(style.jsonProperties.styles).not.to.be.undefined;
+      const actual = style.jsonProperties.styles!;
+
+      expect(actual.viewflags).not.to.be.undefined;
+      const expectedVf = ViewFlags.fromJSON(test[1]);
+      const actualVf = ViewFlags.fromJSON(actual.viewflags);
+      expect(actualVf.toJSON()).to.deep.equal(expectedVf.toJSON());
+
+      expect(undefined !== actual.scheduleScript).to.equal(test[2]);
+
+      const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
+      expect(actual.backgroundColor).to.equal(expectedBGColor);
+
+      expect(actual.mapImagery).to.deep.equal(expected.mapImagery);
+      expect(actual.excludedElements).to.deep.equal(expected.excludedElements);
+      expect(actual.timePoint).to.deep.equal(expected.timePoint);
+    }
   });
 
   it("should have a valid root subject element", () => {
@@ -1596,6 +1672,86 @@ describe("iModel", () => {
     iModel.close();
   });
 
+  it("should be able to open checkpoints", async () => {
+    // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+    const imodelId = snapshot.getGuid();
+    const contextId = Guid.createValue();
+    const changeSetId = Guid.createValue();
+    snapshot.close();
+
+    // Mock iModelHub
+    const mockCheckpoint: Checkpoint = {
+      wsgId: "INVALID",
+      ecId: "INVALID",
+      mergedChangeSetId: changeSetId,
+      bcvAccessKeyAccount: "testAccount",
+      bcvAccessKeyContainer: `imodelblocks-${imodelId}`,
+      bcvAccessKeySAS: "testSAS",
+      bcvAccessKeyDbName: "testDb",
+    };
+    const checkpointsHandler = BriefcaseManager.imodelClient.checkpoints;
+    sinon.stub(checkpointsHandler, "get").callsFake(async () => [mockCheckpoint]);
+    sinon.stub(BriefcaseManager.imodelClient, "checkpoints").get(() => checkpointsHandler);
+
+    // Mock blockcacheVFS daemon
+    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
+    const daemonErrorResult = { result: DbResult.BE_SQLITE_ERROR, errMsg: "NOT GOOD" };
+    const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+
+    process.env.BLOCKCACHE_DIR = "/foo/";
+    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const checkpoint = await SnapshotDb.openCheckpoint(ctx, contextId, imodelId, changeSetId);
+    const props = checkpoint.getRpcProps();
+    assert.equal(props.openMode, OpenMode.Readonly);
+    assert.equal(props.iModelId, imodelId);
+    assert.equal(props.contextId, contextId);
+    assert.equal(props.changeSetId, changeSetId);
+    assert.equal(commandStub.callCount, 1);
+    assert.equal(commandStub.firstCall.firstArg, "attach");
+
+    await checkpoint.reattachDaemon(ctx);
+    assert.equal(commandStub.callCount, 2);
+    assert.equal(commandStub.secondCall.firstArg, "attach");
+
+    commandStub.callsFake(async () => daemonErrorResult);
+    const error = await getIModelError(checkpoint.reattachDaemon(ctx));
+    expectIModelError(DbResult.BE_SQLITE_ERROR, error);
+
+    checkpoint.close();
+  });
+
+  it("should throw when opening checkpoint without blockcache dir env", async () => {
+    process.env.BLOCKCACHE_DIR = "";
+    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    expectIModelError(IModelStatus.BadRequest, error);
+  });
+
+  it("should throw for missing/invalid checkpoint in hub", async () => {
+    process.env.BLOCKCACHE_DIR = "/foo/";
+    const checkpointsHandler = BriefcaseManager.imodelClient.checkpoints;
+    const hubMock = sinon.stub(checkpointsHandler, "get").callsFake(async () => []);
+    sinon.stub(BriefcaseManager.imodelClient, "checkpoints").get(() => checkpointsHandler);
+
+    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    let error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    expectIModelError(IModelStatus.NotFound, error);
+
+    hubMock.callsFake(async () => [{} as any]);
+    error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    expectIModelError(IModelStatus.BadRequest, error);
+  });
+
+  it("should throw when attempting to re-attach a non-checkpoint snapshot", async () => {
+    process.env.BLOCKCACHE_DIR = "/foo/";
+    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const error = await getIModelError(imodel1.reattachDaemon(ctx));
+    expectIModelError(IModelStatus.WrongIModel, error);
+  });
+
   it("The same promise can have two subscribers, and it will notify both.", async () => {
     const testPromise = new Promise((resolve, _reject) => {
       setTimeout(() => resolve("Success!"), 250);
@@ -1780,7 +1936,7 @@ describe("iModel", () => {
     const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
-    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    let snapshotDb1: SnapshotDb | StandaloneDb = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { createClassViews: true });
     assert.isTrue(snapshotDb1.isSnapshotDb());

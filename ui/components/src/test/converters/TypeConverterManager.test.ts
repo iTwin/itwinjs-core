@@ -6,8 +6,13 @@ import { expect } from "chai";
 import { StringTypeConverter, TypeConverter, TypeConverterManager } from "../../ui-components";
 
 describe("TypeConverterManager", () => {
-
   class TestTypeConverter extends TypeConverter {
+    public sortCompare({ }, { }, _ignoreCase?: boolean | undefined): number {
+      throw new Error("Method not implemented.");
+    }
+  }
+
+  class CustomTypeConverter extends TypeConverter {
     public sortCompare({ }, { }, _ignoreCase?: boolean | undefined): number {
       throw new Error("Method not implemented.");
     }
@@ -26,6 +31,12 @@ describe("TypeConverterManager", () => {
     TypeConverterManager.registerConverter("testtype", TestTypeConverter);
     const converter = TypeConverterManager.getConverter("testtype");
     expect(converter).to.be.instanceof(TestTypeConverter);
+  });
+
+  it("registerConverter registers and getConverter returns the same Custom Converter", async () => {
+    TypeConverterManager.registerConverter("testtype", CustomTypeConverter, "custom");
+    const converter = TypeConverterManager.getConverter("testtype", "custom");
+    expect(converter).to.be.instanceof(CustomTypeConverter);
   });
 
 });

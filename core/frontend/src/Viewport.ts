@@ -15,7 +15,7 @@ import {
   Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing, EasingFunction,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
   Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -1244,6 +1244,27 @@ export abstract class Viewport implements IDisposable {
   public dropModelAppearanceOverride(id: Id64String): void {
     this.view.displayStyle.dropModelAppearanceOverride(id);
     this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
+  /**
+   * Detach a context reality model from its index.
+   * @see [[ContextRealityModelProps]].
+   * @param index The reality model index or -1 to detach all models.
+   * @beta
+   */
+  public detachRealityModelByIndex(index: number): void {
+    this.view.displayStyle.detachRealityModelByIndex(index);
+    this.invalidateRenderPlan();
+  }
+
+  /**
+  * Attach a context reality model
+  * @see [[ContextRealityModelProps]].
+  * @beta
+  */
+  public attachRealityModel(props: ContextRealityModelProps): void {
+    this.view.displayStyle.attachRealityModel(props);
     this.invalidateRenderPlan();
   }
 
@@ -2625,9 +2646,12 @@ export abstract class Viewport implements IDisposable {
       this._timePointValid = true;
       const scheduleScript = view.displayStyle.scheduleScript;
       if (scheduleScript) {
-        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.computeDuration().low);
+        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.getCachedDuration().low);
         if (scheduleScript.containsFeatureOverrides)
           overridesNeeded = true;
+
+        if (scheduleScript.containsTransform && !this._freezeScene)
+          this.invalidateScene();
       }
     }
 

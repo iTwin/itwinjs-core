@@ -140,6 +140,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt attach cesium asset ` - Attach a "context" reality model from Cesium ion.
   * the asset ID.
   * the authorization token.
+* `fdt detach reality model` - Detach a (contextual) reality model.  First argument if supplied is the reality model index, if not supplied then the tool detaches all reality models.
 * `fdt set reality model transparency` - Set the transparency for a (contextual) reality model.  The first argument is transparency in [0..1]. Second argument if supplied is the reality model index, if not supplied then the the tool applies to all reality models.
 * `fdt set reality model locatable` - Set the whether a (contextual) reality model can be located.  The first argument must be `true`, `false`, `on` or `off`. Second argument if supplied is the reality model index, if not supplied then the the tool applies to all reality models.
 * `fdt set reality model emphasized` - Set the whether a (contextual) reality model is emphasized. The first argument must be `true`, `false`, `on` or `off`. Second argument if supplied is the reality model index, if not supplied then the the tool applies to all reality models.

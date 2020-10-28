@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
+import * as sinon from "sinon";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, CustomButtonDefinition, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { cleanup, render, waitForElement } from "@testing-library/react";
+import { render, waitForElement } from "@testing-library/react";
 import {
   CommandItemDef, CustomItemDef, FrameworkVersion, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, GroupItemDef,
   SyncUiEventDispatcher, ToolbarComposer, ToolbarHelper, ToolItemDef,
@@ -141,8 +142,6 @@ describe("<ToolbarComposer  />", async () => {
     TestUtils.terminateUiFramework();
   });
 
-  afterEach(cleanup);
-
   it("should render", async () => {
     const renderedComponent = render(
       <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
@@ -228,6 +227,7 @@ describe("<ToolbarComposer  />", async () => {
   });
 
   it("should add tools from UiItemsManager", async () => {
+    const fakeTimers = sinon.useFakeTimers();
     const renderedComponent = render(
       <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
         orientation={ToolbarOrientation.Horizontal}
@@ -236,7 +236,8 @@ describe("<ToolbarComposer  />", async () => {
 
     const testUiProvider = new TestUiProvider();
     UiItemsManager.register(testUiProvider);
-    await TestUtils.tick(500);
+    fakeTimers.tick(500);
+    fakeTimers.restore();
 
     expect(await waitForElement(() => renderedComponent.queryByTitle("addon-tool-1"))).to.exist;
     expect(await waitForElement(() => renderedComponent.queryByTitle("addon-tool-2"))).to.exist;
@@ -278,11 +279,11 @@ describe("<ToolbarComposer  />", async () => {
     expect(buttonElement!.classList.contains("nz-active")).to.be.true;
 
     FrontstageManager.onToolActivatedEvent.emit({ toolId: "tool-added-to-group" });
-    // renderedComponent.debug();
     // expect(renderedComponent.queryByTitle("tool-added-to-group")).not.to.be.null;
   });
 
-  it("should update items from an external provider's visibility properly", async () => {
+  it("should update items from an external provider's visibility properly", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const testUiProvider = new TestUiProvider();
     UiItemsManager.register(testUiProvider);
 
@@ -295,8 +296,10 @@ describe("<ToolbarComposer  />", async () => {
 
     testUiProvider.hidden = true;
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testUiProvider.syncEventId);
-    await TestUtils.tick(500);
+    fakeTimers.tick(500);
+    fakeTimers.restore();
 
     expect(renderedComponent.queryByTitle("visibility-test-tool")).to.be.null;
+    UiItemsManager.unregister(testUiProvider.id);
   });
 });

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module UiItemsProvider
@@ -84,7 +84,7 @@ export class UiItemsManager {
 
   /**
    * Retrieves a previously loaded UiItemsProvider.
-   * @param providerId
+   * @param providerId id of the UiItemsProvider to get
    */
   public static getUiItemsProvider(providerId: string): UiItemsProvider | undefined {
     return UiItemsManager._registeredUiItemsProviders.get(providerId);
@@ -123,8 +123,10 @@ export class UiItemsManager {
 
   /** Called when the application is populating a toolbar so that any registered UiItemsProvider can add tool buttons that either either execute
    * an action or specify a registered ToolId into toolbar.
-   * @param toolBarId a string identifier that describes the toolbar being populated.
-   * @param itemIds provides hierarchy of item Ids of the items that comprise the 'base' toolbar. This allows the caller to determine a relative position for buttons the provider provides.
+   * @param stageId a string identifier the active stage.
+   * @param stageUsage the StageUsage of the active stage.
+   * @param toolbarUsage usage of the toolbar
+   * @param toolbarOrientation orientation of the toolbar
    * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
    */
   public static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {

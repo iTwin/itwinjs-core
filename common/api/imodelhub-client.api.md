@@ -383,6 +383,9 @@ export class ConflictingLocksError extends IModelHubError {
 }
 
 // @internal
+export function constructorFromEventType(type: IModelHubEventType): EventConstructor;
+
+// @internal
 export interface ContextManagerClient {
     // (undocumented)
     queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset>;
@@ -1099,6 +1102,7 @@ export class Version extends WsgInstance {
     changeSetId?: GuidString;
     createdDate?: string;
     description?: string;
+    hidden?: boolean;
     // (undocumented)
     id?: GuidString;
     largeThumbnailId?: GuidString;
@@ -1129,6 +1133,7 @@ export class VersionHandler {
 export class VersionQuery extends InstanceIdQuery {
     byChangeSet(changeSetId: string): this;
     byName(name: string): this;
+    notHidden(): this;
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
 }
 

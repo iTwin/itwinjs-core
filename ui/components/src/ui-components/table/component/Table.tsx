@@ -914,7 +914,7 @@ export class Table extends React.Component<TableProps, TableState> {
       return "";
 
     const displayValue = await TypeConverterManager
-      .getConverter(cellItem.record.property.typename)
+      .getConverter(cellItem.record.property.typename, cellItem.record.property.converter?.name)
       .convertPropertyToString(cellItem.record.property, value);
 
     return displayValue ? displayValue : "";

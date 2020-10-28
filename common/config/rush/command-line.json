@@ -19,6 +19,16 @@
       "ignoreDependencyOrder": true
     },
     {
+      "name": "compile",
+      "commandKind": "bulk",
+      "summary": "Run compile script for each package",
+      "description": "Runs the 'compile' script for each package in the monorepo. For most packages, 'compile' is equivalent to 'build'. For react apps, it skips webpacking etc.",
+      "enableParallelism": true,
+      "ignoreMissingScript": false,
+      "ignoreDependencyOrder": false,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "cover",
       "commandKind": "bulk",
       "summary": "Run cover script for each package",

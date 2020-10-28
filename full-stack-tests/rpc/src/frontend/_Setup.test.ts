@@ -3,18 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, ElectronRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, ElectronRpcManager, MobileRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 
 RpcConfiguration.disableRoutingValidation = true;
 
 function initializeCloud(protocol: string) {
+  const port = Number(window.location.port) + 2000;
+
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
-  config.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${Number(window.location.port) + 2000}`;
+  config.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${port}`;
 
   initializeMultipleClientsTest(config.protocol.pathPrefix);
   initializeAttachedInterfacesTest(config);
+  setupMockMobileFrontend(port + 1);
+}
+
+function setupMockMobileFrontend(port: number) {
+  window.location.hash = `port=${port}`;
+  MobileRpcManager.initializeClient([]);
 }
 
 function initializeMultipleClientsTest(path: string) {

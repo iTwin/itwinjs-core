@@ -7,12 +7,12 @@
  */
 
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
-import { EventSource, EventSourceManager, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
   HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
-  isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, KeySet, LabelDefinition,
+  isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
   PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
   RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
@@ -20,6 +20,7 @@ import {
 import { LocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 
 /**
  * Properties used to configure [[PresentationManager]]
@@ -64,12 +65,11 @@ export interface PresentationManagerProps {
  * @public
  */
 export class PresentationManager implements IDisposable {
-
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
   private _localizationHelper: LocalizationHelper;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
-  private _eventSource: EventSource;
+  private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
 
   /**
@@ -97,7 +97,6 @@ export class PresentationManager implements IDisposable {
     }
 
     this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
-    this._eventSource = props?.eventSource ?? EventSourceManager.global;
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new LocalizationHelper();
@@ -106,14 +105,17 @@ export class PresentationManager implements IDisposable {
     if (IModelApp.isNativeApp) {
       // EventSource only works in native apps, so the `onUpdate` callback will only be called there. Adding
       // under the condition just to avoid an error message being logged.
-      this._eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+      const eventSource = props?.eventSource ?? EventSource.global;
+      this._clearEventListener = eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
     }
   }
 
   public dispose() {
     this._requestsHandler.dispose();
-    if (IModelApp.isNativeApp)
-      this._eventSource.off(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+    if (this._clearEventListener) {
+      this._clearEventListener();
+      this._clearEventListener = undefined;
+    }
   }
 
   private async onConnection(imodel: IModelConnection) {
@@ -339,19 +341,15 @@ export class PresentationManager implements IDisposable {
   /** @beta */
   public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet>): Promise<Descriptor | undefined>;
   public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection> | ContentDescriptorRequestOptions<IModelConnection, KeySet>, displayType?: string, keys?: KeySet, selection?: SelectionInfo): Promise<Descriptor | undefined> {
+    if (!isContentDescriptorRequestOptions(requestOptions))
+      return this.getContentDescriptor({ ...requestOptions, displayType: displayType!, keys: keys!, selection });
+
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = isContentDescriptorRequestOptions(options)
-      ? this.toRpcTokenOptions({
-        ...options,
-        keys: options.keys.toJSON(),
-      })
-      : this.toRpcTokenOptions({
-        ...options,
-        displayType: displayType!,
-        keys: keys!.toJSON(),
-        selection,
-      });
+    const rpcOptions = this.toRpcTokenOptions({
+      ...options,
+      keys: stripTransientElementKeys(options.keys).toJSON(),
+    });
     const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
     return Descriptor.fromJSON(result);
   }
@@ -364,12 +362,15 @@ export class PresentationManager implements IDisposable {
   /** @beta */
   public async getContentSetSize(requestOptions: ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<number>;
   public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>, descriptorOrOverrides?: Descriptor | DescriptorOverrides, keys?: KeySet): Promise<number> {
+    if (!isExtendedContentRequestOptions(requestOptions))
+      return this.getContentSetSize({ ...requestOptions, descriptor: descriptorOrOverrides!, keys: keys! });
+
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
-      descriptor: getDescriptorOverrides(isExtendedContentRequestOptions(requestOptions) ? requestOptions.descriptor : descriptorOrOverrides!),
-      keys: (isExtendedContentRequestOptions(requestOptions) ? requestOptions.keys : keys!).toJSON(),
+      descriptor: getDescriptorOverrides(requestOptions.descriptor),
+      keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
     });
     return this._requestsHandler.getContentSetSize(rpcOptions);
   }
@@ -382,10 +383,9 @@ export class PresentationManager implements IDisposable {
   /** @beta */
   public async getContent(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<Content | undefined>;
   public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>, argsDescriptor?: Descriptor | DescriptorOverrides, argsKeys?: KeySet): Promise<Content | undefined> {
-    return (await (isExtendedContentRequestOptions(requestOptions)
-      ? this.getContentAndSize(requestOptions)
-      : this.getContentAndSize(requestOptions, argsDescriptor!, argsKeys!)) // eslint-disable-line deprecation/deprecation
-    )?.content;
+    if (!isExtendedContentRequestOptions(requestOptions))
+      return this.getContent({ ...requestOptions, descriptor: argsDescriptor!, keys: argsKeys! });
+    return (await this.getContentAndSize(requestOptions))?.content;
   }
 
   /**
@@ -396,16 +396,17 @@ export class PresentationManager implements IDisposable {
   /** @beta */
   public async getContentAndSize(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<{ content: Content, size: number } | undefined>;
   public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>, argsDescriptor?: Descriptor | DescriptorOverrides, argsKeys?: KeySet): Promise<{ content: Content, size: number } | undefined> {
+    if (!isExtendedContentRequestOptions(requestOptions))
+      return this.getContentAndSize({ ...requestOptions, descriptor: argsDescriptor!, keys: argsKeys! });
+
     await this.onConnection(requestOptions.imodel);
-    const descriptorOrOverrides = isExtendedContentRequestOptions(requestOptions) ? requestOptions.descriptor : argsDescriptor!;
-    const keys = isExtendedContentRequestOptions(requestOptions) ? requestOptions.keys : argsKeys!;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
-      descriptor: getDescriptorOverrides(descriptorOrOverrides),
-      keys: keys.toJSON(),
+      descriptor: getDescriptorOverrides(requestOptions.descriptor),
+      keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
     });
-    let descriptor = (descriptorOrOverrides instanceof Descriptor) ? descriptorOrOverrides : undefined;
+    let descriptor = (requestOptions.descriptor instanceof Descriptor) ? requestOptions.descriptor : undefined;
     const result = await buildPagedResponse(options.paging, async (partialPageOptions, requestIndex) => {
       if (0 === requestIndex && !descriptor) {
         const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging: partialPageOptions });
@@ -439,7 +440,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     return this._requestsHandler.getDistinctValues(this.toRpcTokenOptions(options),
-      getDescriptorOverrides(descriptorOrOverrides), keys.toJSON(), fieldName, maximumValueCount);
+      getDescriptorOverrides(descriptorOrOverrides), stripTransientElementKeys(keys).toJSON(), fieldName, maximumValueCount);
   }
 
   /**
@@ -453,7 +454,7 @@ export class PresentationManager implements IDisposable {
     const rpcOptions = {
       ...this.toRpcTokenOptions(options),
       descriptor: getDescriptorOverrides(options.descriptor),
-      keys: options.keys.toJSON(),
+      keys: stripTransientElementKeys(options.keys).toJSON(),
     };
     const result = await buildPagedResponse(requestOptions.paging, async (partialPageOptions) => this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }));
     return {
@@ -522,4 +523,20 @@ export const buildPagedResponse = async <TItem>(requestedPage: PageOptions | und
     pageStart += partialResult.items.length;
   }
   return { total: totalCount, items };
+};
+
+const stripTransientElementKeys = (keys: KeySet) => {
+  if (!keys.some((key) => Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME))
+    return keys;
+
+  const copy = new KeySet();
+  copy.add(keys, (key) => {
+    // the callback is not going to be called with EntityProps as KeySet converts them
+    // to InstanceKeys, but we want to keep the EntityProps case for correctness
+    // istanbul ignore next
+    const isTransient = Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME
+      || Key.isEntityProps(key) && key.classFullName === TRANSIENT_ELEMENT_CLASSNAME;
+    return !isTransient;
+  });
+  return copy;
 };

@@ -11,8 +11,8 @@
 import React from "react";
 import { AutoCompleteFilter, AutoCompleteFilterProps } from "./AutoCompleteFilter";
 
-/** @internal */
 /* istanbul ignore next */
+/** @internal */
 export function SingleSelectFilter(props: AutoCompleteFilterProps) {
   return <AutoCompleteFilter {...props} multiSelection={false} />;
 }

@@ -117,7 +117,7 @@ export class BackgroundMapDrape extends TextureDrape {
 
   public draw(target: Target) {
     if (undefined !== this._debugFrustumGraphic)
-      target.scene.push(this._debugFrustumGraphic);
+      target.graphics.foreground.push(this._debugFrustumGraphic);
 
     if (undefined === this._frustum || this._graphics.length === 0)
       return;

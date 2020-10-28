@@ -95,8 +95,11 @@ class TestUiProvider implements UiItemsProvider {
 
 ## UiItemsManager Class
 
-The
-[UiItemsManager]($ui-abstract) class is used to register UiItemsProviders. It also informs listeners that the list of registered UiItemsProviders has changed when a provider is registered or unregistered. This class also provides methods to retrieve item definitions from all registered UiItemProviders.
+The [UiItemsManager]($ui-abstract) class has a few responsibilities,
+
+1. Used to register UiItemsProviders
+2. Informs listeners that the list of registered UiItemsProviders has changed when a provider is registered or unregistered.
+3. Provides a set of methods to retrieve item definitions from all registered UiItemProviders.
 
 Below is an example of registering the TestUiProvider defined above.
 

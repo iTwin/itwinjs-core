@@ -77,6 +77,7 @@ describe("<SolarTimeline />", () => {
   });
 
   it("should render", async () => {
+    const fakeTimers = sinon.useFakeTimers();
     const dataProvider = new TestSolarDataProvider();
 
     const renderedComponent = render(<SolarTimeline dataProvider={dataProvider} />);
@@ -91,7 +92,8 @@ describe("<SolarTimeline />", () => {
     fireEvent.click(playButton);
     try {
       // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-      await TestUtils.tick(500);
+      fakeTimers.tick(500);
+      fakeTimers.restore();
       // the following sets up a MutationObserver which triggers when the DOM is updated
       const update1Button = await waitForElement(() => renderedComponent.getByTestId("play-button"));
       if (update1Button) {

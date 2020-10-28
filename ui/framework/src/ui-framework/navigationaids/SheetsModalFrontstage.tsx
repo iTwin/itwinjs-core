@@ -83,6 +83,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
   }
 
   /** Updates stage based on search value */
+  // istanbul ignore next
   private _handleSearchValueChanged = (value: string): void => {
     this._searchValue = value;
     FrontstageManager.updateModalFrontstage();

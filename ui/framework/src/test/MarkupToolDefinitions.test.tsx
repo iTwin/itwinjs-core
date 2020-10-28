@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { ActionItemButton, MarkupTools, ToolWidget } from "../ui-framework";
-import TestUtils from "./TestUtils";
+import TestUtils, { mount } from "./TestUtils";
 
 describe("MarkupToolDefinitions", () => {
 
@@ -44,12 +44,11 @@ describe("MarkupToolDefinitions", () => {
   });
 
   it("ToolWidget should render with Markup Tool Definitions", () => {
-    const wrapper = mount(
+    mount(
       <ToolWidget // eslint-disable-line deprecation/deprecation
         horizontalToolbar={horizontalToolbar}
       />,
     );
-    wrapper.unmount();
   });
 
   it("ToolWidget should render correctly with Markup Tool Definitions", () => {

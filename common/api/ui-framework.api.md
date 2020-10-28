@@ -1753,7 +1753,7 @@ export const expandWidget: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -1769,7 +1769,7 @@ export const expandWidget: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -1836,7 +1836,7 @@ export const expandWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -1984,6 +1984,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showKeyinPalette(htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
+    showReactCard(content: React_2.ReactNode, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
@@ -2920,6 +2921,9 @@ export function isNoSelectionActive(): boolean;
 
 // @internal (undocumented)
 export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined>, panelStates: ReadonlyArray<StagePanelState | undefined>): boolean;
+
+// @internal
+export const isReactContent: (content: PopupContentType) => content is ReactContent;
 
 // @internal
 export const isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails;
@@ -3877,6 +3881,9 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
 }
 
 // @alpha
+export type PopupContentType = HTMLElement | ReactContent;
+
+// @alpha
 export interface PopupInfo {
     // (undocumented)
     component: React.ReactNode;
@@ -3921,7 +3928,7 @@ export class PopupManager {
     // (undocumented)
     static removePopup(id: string): boolean;
     // (undocumented)
-    static showCard(content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
+    static showCard(content: PopupContentType, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
@@ -4038,6 +4045,12 @@ export class PropsHelper {
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
+}
+
+// @alpha
+export interface ReactContent {
+    // (undocumented)
+    reactNode: React.ReactNode;
 }
 
 // @public @deprecated
@@ -4374,7 +4387,7 @@ export const setPanelSize: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4390,7 +4403,7 @@ export const setPanelSize: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4457,7 +4470,7 @@ export const setPanelSize: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4477,7 +4490,7 @@ export const setPanelSize: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, side: "bottom" | "left" | "top" | "right", size: number | undefined) => Base;
+}>(base: Base, side: PanelSide, size: number | undefined) => Base;
 
 // @internal (undocumented)
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
@@ -4493,7 +4506,7 @@ export const setWidgetLabel: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4509,7 +4522,7 @@ export const setWidgetLabel: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4576,7 +4589,7 @@ export const setWidgetLabel: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4609,7 +4622,7 @@ export const setWidgetState: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4625,7 +4638,7 @@ export const setWidgetState: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4692,7 +4705,7 @@ export const setWidgetState: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4712,7 +4725,7 @@ export const setWidgetState: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string, state: WidgetState_2) => Base;
+}>(base: Base, widgetDef: WidgetDef, state: WidgetState_2) => Base;
 
 // @alpha
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
@@ -4789,7 +4802,7 @@ export const showWidget: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "top" | "right";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4805,7 +4818,7 @@ export const showWidget: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "top" | "right";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4872,7 +4885,7 @@ export const showWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "top" | "right")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -5447,6 +5460,18 @@ export enum SyncUiEventId {
 
 // @public
 export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
+
+// @internal (undocumented)
+export interface TabLocation {
+    // (undocumented)
+    side: PanelSide;
+    // (undocumented)
+    tabIndex: number;
+    // (undocumented)
+    widgetId: string;
+    // (undocumented)
+    widgetIndex: number;
+}
 
 // @public
 export interface TargetChangeHandler {
@@ -6633,6 +6658,9 @@ export class WidgetDef {
     get stateFunc(): WidgetStateFunc | undefined;
     // (undocumented)
     get syncEventIds(): string[];
+    // @internal (undocumented)
+    get tabLocation(): TabLocation;
+    set tabLocation(tabLocation: TabLocation);
     get tooltip(): string;
     // (undocumented)
     get widgetControl(): WidgetControl | undefined;

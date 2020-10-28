@@ -158,6 +158,16 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       nominalL1, nominalR1,
       activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
   }
+  /**
+   * Create an Japanese spiral clothoid approximation
+   *   * X is 1 terms of the clothoid series as a function of nominal distance along.
+   *   * Y is 1 terms f the clothoid series as a function of nominal distance along.
+   *   * Remark: This is identical to the ChineseCubic
+   * @param localToWorld axes with inflection at origin, tangent along x axis
+   * @param nominalL1 nominal length as used in series LR terms.
+   * @param nominalR1 nominal final radius as used in series LR terms
+   * @param activeInterval fractional interval with (0, nominalL1) range for nominal distance along
+   */
   public static createJapaneseCubic(
     localToWorld: Transform,
     nominalL1: number,
@@ -194,7 +204,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
   }
   /**
-   * Create a czech cubic.
+   * Create an AustralianRailCorp spiral
    * This is y= m*x^3 with
    * * x any point on the x axis
    * * `fraction` along the spiral goes to `x = fraction * L`
@@ -230,6 +240,16 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     return new this(localToWorld, "HalfCosine", undefined, nominalL1, nominalR1, activeInterval,
       new DirectHalfCosineSpiralEvaluator(nominalL1, nominalR1));
   }
+  /**
+   * Create an Arema spiral clothoid approximation
+   *   * X is 2 terms of the clothoid series as a function of nominal distance along
+   *   * Y is 2 terms f the clothoid series as a function of nominal distance along
+   *   * Remark: This is identical to the ChineseCubic
+   * @param localToWorld axes with inflection at origin, tangent along x axis
+   * @param nominalL1 nominal length as used in series LR terms.
+   * @param nominalR1 nominal final radius as used in series LR terms
+   * @param activeInterval fractional interval with (0, nominalL1) range for nominal distance along
+   */
   public static createArema(
     localToWorld: Transform,
     nominalL1: number,
@@ -237,12 +257,39 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     activeInterval?: Segment1d): DirectSpiral3d | undefined {
     return this.createTruncatedClothoid("Arema", localToWorld, 2, 2, undefined, nominalL1, nominalR1, activeInterval);
   }
+
+  /**
+   * Create a Chinese clothoid approximation
+   *   * X is 2 terms of the clothoid series as a function of nominal distance along
+   *   * Y is 2 terms f the clothoid series as a function of nominal distance along
+   *   * Remark: This is identical to the Arema spiral
+   * @param localToWorld axes with inflection at origin, tangent along x axis
+   * @param nominalL1 nominal length as used in series LR terms.
+   * @param nominalR1 nominal final radius as used in series LR terms
+   * @param activeInterval fractional interval with (0, nominalL1) range for nominal distance along
+   */
   public static createChineseCubic(
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
     activeInterval?: Segment1d): DirectSpiral3d | undefined {
     return this.createTruncatedClothoid("ChineseCubic", localToWorld, 2, 2, undefined, nominalL1, nominalR1, activeInterval);
+  }
+  /**
+   * Create a Western Australian direct spiral.
+   *   * X is 2 terms of the clothoid series as a function of distance along
+   *   * Y is 1 term (cubic in nominal distance along)
+   * @param localToWorld axes with inflection at origin, tangent along x axis
+   * @param nominalL1 nominal length as used in series LR terms.
+   * @param nominalR1 nominal final radius as used in series LR terms
+   * @param activeInterval fractional interval with (0, nominalL1) range for nominal distance along
+   */
+  public static createWesternAustralian(
+    localToWorld: Transform,
+    nominalL1: number,
+    nominalR1: number,
+    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    return this.createTruncatedClothoid("WesternAustralian", localToWorld, 2, 1, undefined, nominalL1, nominalR1, activeInterval);
   }
   /**
    * Create (if possible) a DirectSpiral3d, applying various strict conditions appropriate to the spiral type.

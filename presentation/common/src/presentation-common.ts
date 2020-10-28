@@ -9,6 +9,7 @@
  * Common types used all across Presentation packages.
  */
 export * from "./presentation-common/AsyncTasks";
+export * from "./presentation-common/Diagnostics";
 export * from "./presentation-common/EC";
 export * from "./presentation-common/Error";
 export * from "./presentation-common/KeySet";

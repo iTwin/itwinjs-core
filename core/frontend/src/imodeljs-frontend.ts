@@ -192,3 +192,7 @@ export * from "./BackgroundMapGeometry";
  * @docs-group-description MapLayerSettingsService
  * Class for managing the storing and retrieval of map layers added by a user on the frontend
  */
+/**
+ * @docs-group-description MapLayerFormatRegistry
+ * Class for working with supported map layer formats.
+ */

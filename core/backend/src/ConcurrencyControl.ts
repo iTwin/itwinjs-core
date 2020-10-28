@@ -116,7 +116,7 @@ export class ConcurrencyControl {
     this.applyTransactionOptions();
     this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
     const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
-    this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
+    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
   }
 
   /** @internal */
@@ -337,7 +337,16 @@ export class ConcurrencyControl {
     return this.requestResourcesForOpcode(ctx, DbOpcode.Insert, elements, models, relationships);
   }
 
-  /** @internal */
+  /**
+   * Preemptively request exclusive locks on one or more elements and/or models.
+   * @param requestContext The client request context
+   * @param elements The elements to lock
+   * @param models The models to lock
+   * @throws [[IModelHubError]] if some or all of the request could not be fulfilled by iModelHub.
+   * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
+   * See [CodeHandler]($imodelhub-client) and [LockHandler]($imodelhub-client) for details on what errors may be thrown.
+   * @alpha
+   */
   public async requestResourcesForUpdate(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void> {
     return this.requestResourcesForOpcode(ctx, DbOpcode.Update, elements, models, relationships);
   }
@@ -451,7 +460,7 @@ export class ConcurrencyControl {
     requestContext.enter();
 
     const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
-    this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
+    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
 
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
   }
@@ -459,7 +468,7 @@ export class ConcurrencyControl {
   /** @internal */
   private emitOnSavedChangesEvent() {
     const data = { hasPendingTxns: this.iModel.txns.hasPendingTxns, time: Date.now() }; // Note that not all calls to saveChanges create a txn. For example, an update to be_local does not.
-    this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onSavedChanges", data);
+    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onSavedChanges", data);
   }
 
   /** @internal */
@@ -603,7 +612,7 @@ export class ConcurrencyControl {
     return lockStates;
   }
 
-  /** Reserve the specified codes. See [CodeHandler]($imodelhub-client) for details on what errors may be thrown. */
+  /** @internal Apps should use ConcurrencyControl.codes.request */
   public async reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]> {
     requestContext.enter();
 
@@ -623,7 +632,7 @@ export class ConcurrencyControl {
     return codeStates;
   }
 
-  // Query the state of the Codes for the specified CodeSpec and scope. See [CodeHandler]($imodelhub-client) for details on what errors may be thrown.
+  /** @internal - use ConcurrencyControl.codes.query or ConcurrencyControl.hasReservedCode */
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
     requestContext.enter();
     if (!this._iModel.isOpen)

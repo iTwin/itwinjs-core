@@ -65,19 +65,29 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor, 
     return value.toString();
   }
 
+  /** Default implementation just calls convertToString with no options */
+  public convertToStringWithOptions(value?: Primitives.Value, _options?: { [key: string]: any }): string | Promise<string> {
+    return this.convertToString(value);
+  }
+
   /** Converts a string to a primitive value */
   public convertFromString(_value: string): ConvertedPrimitives.Value | undefined | Promise<ConvertedPrimitives.Value | undefined> {
     return undefined;
   }
 
+  /** Default implementation just calls convertFromString with no options */
+  public convertFromStringWithOptions(value: string, _options?: { [key: string]: any }): ConvertedPrimitives.Value | undefined | Promise<ConvertedPrimitives.Value | undefined> {
+    return this.convertFromString (value);
+  }
+
   /** Converts a value associated with a property description to a string */
-  public convertPropertyToString(_propertyDescription: PropertyDescription, value?: Primitives.Value): string | Promise<string> {
-    return this.convertToString(value);
+  public convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Value): string | Promise<string> {
+    return this.convertToStringWithOptions(value, propertyDescription.converter?.options);
   }
 
   /** Converts a string with a property record to a property value */
-  public async convertFromStringToPropertyValue(value: string, _propertyRecord?: PropertyRecord): Promise<PropertyValue> {
-    const stringValue = await this.convertFromString(value);
+  public async convertFromStringToPropertyValue(value: string, propertyRecord?: PropertyRecord): Promise<PropertyValue> {
+    const stringValue = await this.convertFromStringWithOptions(value, propertyRecord?.property.converter?.options);
     const propertyValue: PrimitiveValue = {
       valueFormat: PropertyValueFormat.Primitive,
       value: stringValue ? stringValue : "",

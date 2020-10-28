@@ -13,14 +13,11 @@ import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core
 
 import {
   ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
-  FrameworkState, UiFramework,
+  FrameworkState, SyncUiEventDispatcher, ToolUiManager, UiFramework,
 } from "../ui-framework";
-import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
-import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
-
-export interface SampleAppState {
+interface SampleAppState {
   placeHolder?: boolean;
 }
 
@@ -28,6 +25,7 @@ const initialState: SampleAppState = {
   placeHolder: false,
 };
 
+/** @internal */
 export interface RootState {
   sampleAppState: SampleAppState;
   testDifferentFrameworkKey?: FrameworkState;
@@ -38,6 +36,7 @@ export const SampleAppActions = {
   example: () => createAction("SampleApp:EXAMPLE"),
 };
 
+/** @internal */
 export type SampleAppActionsUnion = ActionsUnion<typeof SampleAppActions>;
 
 function SampleAppReducer(state: SampleAppState = initialState, action: SampleAppActionsUnion): DeepReadonly<SampleAppState> {
@@ -50,6 +49,7 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
   return state;
 }
 
+/** @internal */
 export class TestUtils {
   private static _i18n?: I18N;
   private static _uiFrameworkInitialized = false;
@@ -59,7 +59,6 @@ export class TestUtils {
 
   public static get i18n(): I18N {
     if (!TestUtils._i18n) {
-      // const port = process.debugPort;
       TestUtils._i18n = new I18N();
     }
     return TestUtils._i18n;
@@ -175,22 +174,6 @@ export class TestUtils {
     return new Promise((resolve) => setTimeout(resolve));
   }
 
-  /** Sleeps a specified number of milliseconds */
-  public static sleep(milliseconds: number) {
-    const start = new Date().getTime();
-    for (let i = 0; i < 1e7; i++) {
-      if ((new Date().getTime() - start) > milliseconds) {
-        break;
-      }
-    }
-  }
-
-  /** Sleeps a specified number of milliseconds then flushes async operations */
-  public static async tick(milliseconds: number) {
-    TestUtils.sleep(milliseconds);
-    await TestUtils.flushAsyncOperations();
-  }
-
   public static createBubbledEvent(type: string, props = {}) {
     const event = new Event(type, { bubbles: true });
     Object.assign(event, props);
@@ -222,6 +205,7 @@ export class TestUtils {
 
 // cSpell:ignore testuser mailinator saml
 
+/** @internal */
 export const mockUserInfo = (): UserInfo => {
   const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
   const email = { id: "testuser001@mailinator.com" };
@@ -231,6 +215,7 @@ export const mockUserInfo = (): UserInfo => {
   return new UserInfo(id, email, profile, organization, featureTracking);
 };
 
+/** @internal */
 export const storageMock = () => {
   const storage: { [key: string]: any } = {};
   return {
@@ -253,6 +238,7 @@ export const storageMock = () => {
   };
 };
 
+/** @internal */
 export class UiSettingsStub implements UiSettings {
   public async deleteSetting(): Promise<UiSettingsResult> {
     return {
@@ -276,6 +262,7 @@ export class UiSettingsStub implements UiSettings {
   }
 }
 
+/** @internal */
 export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
 
 declare module "sinon" {
@@ -284,5 +271,8 @@ declare module "sinon" {
     <T extends (...args: any) => any>(): sinon.SinonStub<Parameters<T>, ReturnType<T>>;
   }
 }
+
+/** Enzyme mount with automatic unmount after the test. */
+export const mount: typeof enzyme.mount = (global as any).enzymeMount;
 
 export default TestUtils;   // eslint-disable-line: no-default-export

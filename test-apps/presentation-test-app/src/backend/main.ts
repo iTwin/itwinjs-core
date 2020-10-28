@@ -10,6 +10,7 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
+import { RequestPriority } from "@bentley/presentation-common";
 import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
 import rpcs from "../common/Rpcs";
 // __PUBLISH_EXTRACT_END__
@@ -34,6 +35,9 @@ import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCateg
     rulesetDirectories: [path.join("assets", "presentation_rules")],
     localeDirectories: [path.join("assets", "locales")],
     mode: PresentationManagerMode.ReadOnly,
+    taskAllocationsMap: {
+      [RequestPriority.Max]: 1,
+    },
   });
   // __PUBLISH_EXTRACT_END__
 

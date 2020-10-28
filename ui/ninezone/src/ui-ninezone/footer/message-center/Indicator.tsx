@@ -39,8 +39,7 @@ export class MessageCenter extends React.PureComponent<MessageCenterProps> {
         className={classnames("nz-footer-messageCenter-indicator", this.props.className)}
         {...props}
       >
-        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-        <div
+        <div // eslint-disable-line jsx-a11y/click-events-have-key-events
           className="nz-indicator"
           onClick={onClick}
           ref={indicatorRef}

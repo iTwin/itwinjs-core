@@ -19,6 +19,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
+import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
@@ -400,6 +401,11 @@ export enum BatchType {
 
 // @public
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
+    static readonly accessControl: {
+        allowOrigin: string;
+        allowMethods: string;
+        allowHeaders: string;
+    };
     abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
@@ -762,6 +768,8 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 export interface ClassifierTileTreeId {
     // (undocumented)
     animationId?: Id64String;
+    // (undocumented)
+    animationTransformNodeId?: number;
     // (undocumented)
     expansion: number;
     // (undocumented)
@@ -1394,6 +1402,7 @@ export interface ContextRealityModelProps {
     name?: string;
     // @alpha (undocumented)
     orbitGtBlob?: OrbitGtBlobProps;
+    realityDataId?: string;
     // (undocumented)
     tilesetUrl: string;
 }
@@ -1430,8 +1439,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 917504,
-    Major = 14,
+    Combined = 1048576,
+    Major = 16,
     Minor = 0
 }
 
@@ -1936,6 +1945,8 @@ export abstract class ElectronRpcConfiguration extends RpcConfiguration {
     // (undocumented)
     static readonly isElectron: boolean;
     abstract protocol: ElectronRpcProtocol;
+    // (undocumented)
+    static targetWindowId?: number;
 }
 
 // @beta
@@ -2007,6 +2018,10 @@ export interface ElementGeometryChange {
 export interface ElementLoadProps {
     // (undocumented)
     code?: CodeProps;
+    // @internal
+    displayStyle?: {
+        omitScheduleScriptElementIds?: boolean;
+    };
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)
@@ -3377,6 +3392,7 @@ export enum ImageSourceFormat {
 // @internal
 export enum ImdlFlags {
     ContainsCurves = 1,
+    DisallowMagnification = 8,
     Incomplete = 4,
     None = 0
 }
@@ -3422,6 +3438,8 @@ export abstract class IModel implements IModelProps {
     getConnectionProps(): IModelConnectionProps;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
+    // @internal (undocumented)
+    protected abstract getEventSourceProps(): IModelEventSourceProps;
     getRpcProps(): IModelRpcProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
@@ -3448,7 +3466,7 @@ export abstract class IModel implements IModelProps {
 }
 
 // @internal (undocumented)
-export type IModelConnectionProps = IModelProps & IModelRpcProps;
+export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
 
 // @beta
 export interface IModelCoordinatesRequestProps {
@@ -3494,6 +3512,12 @@ export interface IModelEncryptionProps {
 // @public
 export class IModelError extends BentleyError {
     constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
+
+// @internal
+export interface IModelEventSourceProps {
+    // (undocumented)
+    eventSourceName: string;
 }
 
 // @public
@@ -3586,6 +3610,8 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
+    // @internal (undocumented)
+    queryVersionInfo(): Promise<TileVersionInfo>;
     // @internal (undocumented)
     requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
@@ -3870,8 +3896,17 @@ export class MapImagerySettings {
     toJSON(): MapImageryProps;
 }
 
+// @beta
+export interface MapLayerKey {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    value: string;
+}
+
 // @alpha
 export interface MapLayerProps {
+    accessKey?: MapLayerKey;
     formatId?: string;
     isBase?: boolean;
     maxZoom?: number;
@@ -3887,6 +3922,8 @@ export interface MapLayerProps {
 
 // @alpha
 export class MapLayerSettings {
+    // (undocumented)
+    readonly accessKey?: MapLayerKey;
     get allSubLayersInvisible(): boolean;
     clone(changedProps: MapLayerProps): MapLayerSettings;
     // @internal (undocumented)
@@ -3949,6 +3986,7 @@ export class MapSubLayerSettings {
     get idString(): string;
     get isLeaf(): boolean;
     get isNamed(): boolean;
+    get isUnnamedGroup(): boolean;
     readonly name: string;
     readonly parent?: SubLayerId;
     readonly title?: string;
@@ -4084,10 +4122,17 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
     static get platform(): RpcMobilePlatform;
     // (undocumented)
     abstract protocol: MobileRpcProtocol;
+    // @internal (undocumented)
+    static setup: {
+        obtainPort: () => number;
+        checkPlatform: () => boolean;
+    };
 }
 
 // @beta (undocumented)
 export interface MobileRpcGateway {
+    // (undocumented)
+    connectionId: number;
     // (undocumented)
     handler: (payload: ArrayBuffer | string, connectionId: number) => void;
     // (undocumented)
@@ -4102,13 +4147,17 @@ export interface MobileRpcGateway {
 export class MobileRpcManager {
     static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
     static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
-    }
+    // @internal (undocumented)
+    static ready(): Promise<void>;
+}
 
 // @beta
 export class MobileRpcProtocol extends RpcProtocol {
     constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
     // (undocumented)
     static encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks>;
+    // (undocumented)
+    static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks;
     // (undocumented)
     static obtainInterop(): MobileRpcGateway;
     // (undocumented)
@@ -4117,6 +4166,8 @@ export class MobileRpcProtocol extends RpcProtocol {
     readonly requestType: typeof MobileRpcRequest;
     // (undocumented)
     sendToBackend(message: MobileRpcChunks): void;
+    // (undocumented)
+    sendToFrontend(message: MobileRpcChunks, connection?: number): void;
     // (undocumented)
     socket: WebSocket;
     }
@@ -4222,14 +4273,13 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     closeBriefcase(_key: BriefcaseKey): Promise<void>;
     deleteBriefcase(_key: BriefcaseKey): Promise<void>;
     downloadRequestCompleted(_key: BriefcaseKey): Promise<void>;
-    fetchEvents(_iModelToken: IModelRpcProps, _maxToFetch: number): Promise<QueuedEvent[]>;
     getBriefcases(): Promise<BriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
     getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
     static interfaceVersion: string;
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
-    openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelProps>;
+    openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
     requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean>;
     requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps>;
@@ -4782,6 +4832,8 @@ export interface PrimaryTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
+    animationTransformNodeId?: number;
+    // (undocumented)
     edgesRequired: boolean;
     // (undocumented)
     enforceDisplayPriority?: boolean;
@@ -5093,13 +5145,9 @@ export enum QueryResponseStatus {
 
 // @internal
 export interface QueuedEvent {
-    // (undocumented)
     data: any;
-    // (undocumented)
     eventId: number;
-    // (undocumented)
     eventName: string;
-    // (undocumented)
     namespace: string;
 }
 
@@ -5241,8 +5289,7 @@ export namespace RenderSchedule {
     export interface ElementTimelineProps extends TimelineProps {
         // (undocumented)
         batchId: number;
-        // (undocumented)
-        elementIds: Id64String[];
+        elementIds: Id64String[] | CompressedId64Set;
     }
     export interface ModelTimelineProps extends TimelineProps {
         // (undocumented)
@@ -5756,6 +5803,70 @@ export enum RpcProtocolEvent {
 // @public
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void;
 
+// @alpha
+export class RpcPushChannel<T> {
+    static create<T>(name: string, service?: RpcPushService): RpcPushChannel<T>;
+    // (undocumented)
+    dispose(): void;
+    // @internal (undocumented)
+    static enabled: boolean;
+    // (undocumented)
+    get enabled(): boolean;
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    get isDisposed(): boolean;
+    // (undocumented)
+    readonly name: string;
+    static obtain<T>(name: string, service?: RpcPushService): RpcPushChannel<T>;
+    // (undocumented)
+    readonly service: RpcPushService;
+    // (undocumented)
+    static setup(transport: RpcPushTransport): void;
+    // (undocumented)
+    subscribe(): RpcPushSubscription<T>;
+    }
+
+// @alpha
+export abstract class RpcPushConnection<T> {
+    protected constructor(channel: RpcPushChannel<T>, client: unknown);
+    // (undocumented)
+    readonly channel: RpcPushChannel<T>;
+    // (undocumented)
+    readonly client: unknown;
+    // (undocumented)
+    static for<T>(_channel: RpcPushChannel<T>, _client?: unknown): RpcPushConnection<T>;
+    // (undocumented)
+    abstract send(messageData: T): Promise<void>;
+}
+
+// @alpha (undocumented)
+export type RpcPushMessageListener<T> = (message: T) => void;
+
+// @alpha
+export class RpcPushService {
+    constructor(name: string);
+    static dedicated: RpcPushService;
+    // (undocumented)
+    readonly name: string;
+}
+
+// @alpha
+export class RpcPushSubscription<T> {
+    // @internal
+    constructor(channel: RpcPushChannel<T>);
+    // (undocumented)
+    readonly channel: RpcPushChannel<T>;
+    // (undocumented)
+    readonly onMessage: BeEvent<RpcPushMessageListener<T>>;
+}
+
+// @alpha
+export abstract class RpcPushTransport {
+    // (undocumented)
+    onMessage?: (channelId: string, messageData: any) => void;
+}
+
 // @internal (undocumented)
 export class RpcRegistry {
     // (undocumented)
@@ -5842,6 +5953,8 @@ export abstract class RpcRequest<TResponse = any> {
     retryInterval: number;
     protected abstract send(): Promise<number>;
     protected abstract setHeader(name: string, value: string): void;
+    // (undocumented)
+    protected setHeaders(): Promise<void>;
     protected setLastUpdatedTime(): void;
     get status(): RpcRequestStatus;
     // (undocumented)
@@ -6710,6 +6823,7 @@ export enum ThematicGradientMode {
 // @beta
 export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
+    readonly colorMix: number;
     readonly colorScheme: ThematicGradientColorScheme;
     // (undocumented)
     static get contentMax(): number;
@@ -6733,6 +6847,7 @@ export class ThematicGradientSettings {
 
 // @beta (undocumented)
 export interface ThematicGradientSettingsProps {
+    colorMix?: number;
     colorScheme?: ThematicGradientColorScheme;
     customKeys?: Gradient.KeyColorProps[];
     marginColor?: ColorDefProps;
@@ -6913,6 +7028,11 @@ export interface TileTreeProps {
     maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
+}
+
+// @alpha
+export interface TileVersionInfo {
+    formatVersion: number;
 }
 
 // @beta

@@ -8,20 +8,14 @@ import * as sinon from "sinon";
 import { FrontstageDef, FrontstageManager, WidgetDef, WidgetPanelsStatusBar, ZoneDef } from "../../ui-framework";
 
 describe("WidgetPanelsStatusBar", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     const widget = new WidgetDef({});
     const bottomCenter = new ZoneDef();
     const frontstageDef = new FrontstageDef();
-    sandbox.stub(frontstageDef, "bottomCenter").get(() => bottomCenter);
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
-    sandbox.stub(bottomCenter, "getSingleWidgetDef").returns(widget);
-    sandbox.stub(bottomCenter, "isStatusBar").get(() => true);
+    sinon.stub(frontstageDef, "bottomCenter").get(() => bottomCenter);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(bottomCenter, "getSingleWidgetDef").returns(widget);
+    sinon.stub(bottomCenter, "isStatusBar").get(() => true);
     const sut = shallow(<WidgetPanelsStatusBar />);
     sut.should.matchSnapshot();
   });
@@ -29,16 +23,16 @@ describe("WidgetPanelsStatusBar", () => {
   it("should not render widget control", () => {
     const bottomCenter = new ZoneDef();
     const frontstageDef = new FrontstageDef();
-    sandbox.stub(frontstageDef, "bottomCenter").get(() => bottomCenter);
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
-    sandbox.stub(bottomCenter, "getSingleWidgetDef").returns(undefined);
-    sandbox.stub(bottomCenter, "isStatusBar").get(() => true);
+    sinon.stub(frontstageDef, "bottomCenter").get(() => bottomCenter);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(bottomCenter, "getSingleWidgetDef").returns(undefined);
+    sinon.stub(bottomCenter, "isStatusBar").get(() => true);
     const sut = shallow(<WidgetPanelsStatusBar />);
     sut.should.matchSnapshot();
   });
 
   it("should not render", () => {
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
     const sut = shallow(<WidgetPanelsStatusBar />);
     sut.should.matchSnapshot();
   });

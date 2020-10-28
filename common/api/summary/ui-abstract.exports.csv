@@ -10,6 +10,7 @@ beta;AbstractStatusBarLabelItem
 beta;AbstractToolbarProps
 beta;AbstractWidgetProps 
 beta;ActionButton 
+beta;AlternateDateFormats
 beta;ArrayValue 
 beta;BackstageActionItem 
 beta;BackstageItem = BackstageActionItem | BackstageStageLauncher
@@ -37,6 +38,7 @@ internal;convertSimple2RegExpPattern(pattern: string): string
 internal;createMatches(score: undefined | FuzzyScore): IMatch[]
 beta;CustomButtonDefinition 
 beta;CustomFormattedNumberParams 
+beta;DateFormatter
 beta;DialogItem 
 beta;DialogItemsChangedArgs
 beta;DialogItemsManager
@@ -103,6 +105,7 @@ beta;Primitives
 beta;PrimitiveValue 
 beta;PropertyChangeResult
 beta;PropertyChangeStatus
+beta;PropertyConverterInfo
 beta;PropertyDescription
 beta;PropertyEditorInfo
 beta;PropertyEditorParams = BasePropertyEditorParams
@@ -132,6 +135,7 @@ beta;StructValue
 beta;SuppressLabelEditorParams 
 beta;SyncPropertiesChangeEvent 
 beta;SyncPropertiesChangeEventArgs
+beta;TimeDisplay
 beta;ToolbarItem 
 beta;ToolbarItemId = CommonToolbarItem["id"]
 internal;ToolbarItemsChangedArgs

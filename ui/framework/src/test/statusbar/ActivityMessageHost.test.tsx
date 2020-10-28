@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as sinon from "sinon";
 import * as React from "react";
 import { ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
 import { Message, MessageButton, MessageHyperlink, MessageProgress } from "@bentley/ui-ninezone";
 import { ActivityMessage, ActivityMessagePopup, AppNotificationManager, MessageManager } from "../../ui-framework";
-import { TestUtils } from "../TestUtils";
+import { mount, TestUtils } from "../TestUtils";
 
 describe("ActivityMessagePopup", () => {
 
@@ -41,8 +40,6 @@ describe("ActivityMessagePopup", () => {
     wrapper.update();
     expect(wrapper.find(ActivityMessage).length).to.eq(0);
     expect(wrapper.find(Message).length).to.eq(0);
-
-    wrapper.unmount();
   });
 
   it("Activity message should be canceled", () => {
@@ -63,8 +60,6 @@ describe("ActivityMessagePopup", () => {
     expect(wrapper.find(ActivityMessage).length).to.eq(0);
     expect(wrapper.find(Message).length).to.eq(0);
     spy.calledOnce.should.true;
-
-    wrapper.unmount();
   });
 
   it("Activity message should be dismissed & restored", () => {
@@ -92,8 +87,6 @@ describe("ActivityMessagePopup", () => {
     wrapper.update();
     expect(wrapper.find(ActivityMessage).length).to.eq(1);
     expect(wrapper.find(Message).length).to.eq(1);
-
-    wrapper.unmount();
   });
 
 });

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
 import { render } from "@testing-library/react";
 import { StandardMessageBox } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("StandardMessageBox", () => {
 
@@ -37,8 +37,6 @@ describe("StandardMessageBox", () => {
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
 
-    wrapper.unmount();
-
     shallow(reactNode).should.matchSnapshot();
   });
 
@@ -57,8 +55,6 @@ describe("StandardMessageBox", () => {
     const buttonWrapper = wrapper.find("button.dialog-button-ok");
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
-
-    wrapper.unmount();
 
     shallow(reactNode).should.matchSnapshot();
   });
@@ -79,8 +75,6 @@ describe("StandardMessageBox", () => {
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
 
-    wrapper.unmount();
-
     shallow(reactNode).should.matchSnapshot();
   });
 
@@ -97,8 +91,6 @@ describe("StandardMessageBox", () => {
     const buttonWrapper = wrapper.find("button.dialog-button-cancel");
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
-
-    wrapper.unmount();
 
     shallow(reactNode).should.matchSnapshot();
   });
@@ -118,8 +110,6 @@ describe("StandardMessageBox", () => {
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
 
-    wrapper.unmount();
-
     shallow(reactNode).should.matchSnapshot();
   });
 
@@ -137,8 +127,6 @@ describe("StandardMessageBox", () => {
     const buttonWrapper = wrapper.find("button.dialog-button-cancel");
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
-
-    wrapper.unmount();
 
     shallow(reactNode).should.matchSnapshot();
   });

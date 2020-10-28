@@ -40,13 +40,7 @@ describe("DragManager", () => {
 });
 
 describe("useTabTarget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("should clear target", () => {
+  it("should clear target when target changes", () => {
     const dragManager = new DragManager();
     const spy = sinon.spy(dragManager, "handleTargetChanged");
     const { result } = renderHook(() => useTabTarget({
@@ -57,28 +51,50 @@ describe("useTabTarget", () => {
     });
 
     const element = document.createElement("div");
-    sandbox.stub(document, "elementFromPoint").returns(element);
+    const elementFromPointStub = sinon.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
 
     dragManager.handleDragStart(createDragStartArgs());
     dragManager.handleDrag(10, 20);
+    result.current[1].should.true;
 
     spy.resetHistory();
-
-    setRefValue(result.current[0], document.createElement("div"));
+    elementFromPointStub.restore();
+    sinon.stub(document, "elementFromPoint").returns(document.createElement("div"));
     dragManager.handleDrag(10, 20);
 
     spy.calledOnceWithExactly(undefined).should.true;
+    result.current[1].should.false;
+  });
+
+  it("should clear target when drag interaction ends", () => {
+    const dragManager = new DragManager();
+    const spy = sinon.spy(dragManager, "handleTargetChanged");
+    const { result } = renderHook(() => useTabTarget({
+      tabIndex: 0,
+      widgetId: "w1",
+    }), {
+      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
+    });
+
+    const element = document.createElement("div");
+    const elementFromPointStub = sinon.stub(document, "elementFromPoint").returns(element);
+    setRefValue(result.current[0], element);
+
+    dragManager.handleDragStart(createDragStartArgs());
+    dragManager.handleDrag(10, 20);
+    result.current[1].should.true;
+
+    spy.resetHistory();
+    elementFromPointStub.restore();
+    dragManager.handleDragEnd();
+
+    spy.calledOnceWithExactly(undefined).should.true;
+    result.current[1].should.false;
   });
 });
 
 describe("usePanelTarget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should clear target", () => {
     const dragManager = new DragManager();
     const spy = sinon.spy(dragManager, "handleTargetChanged");
@@ -89,7 +105,7 @@ describe("usePanelTarget", () => {
     });
 
     const element = document.createElement("div");
-    sandbox.stub(document, "elementFromPoint").returns(element);
+    sinon.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
 
     dragManager.handleDragStart(createDragStartArgs());
@@ -105,12 +121,6 @@ describe("usePanelTarget", () => {
 });
 
 describe("useWidgetTarget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should clear target", () => {
     const dragManager = new DragManager();
     const spy = sinon.spy(dragManager, "handleTargetChanged");
@@ -122,7 +132,7 @@ describe("useWidgetTarget", () => {
     });
 
     const element = document.createElement("div");
-    sandbox.stub(document, "elementFromPoint").returns(element);
+    sinon.stub(document, "elementFromPoint").returns(element);
     setRefValue(result.current[0], element);
 
     dragManager.handleDragStart(createDragStartArgs());

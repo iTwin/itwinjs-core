@@ -3,8 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
+import * as enzyme from "enzyme";
 
+before(() => {
+  window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+    return window.setTimeout(cb, 1);
+  };
+});
 
+/** @internal */
 export const createRect = (left: number, top: number, right: number, bottom: number): ClientRect => ({
   left,
   top,
@@ -14,6 +21,7 @@ export const createRect = (left: number, top: number, right: number, bottom: num
   height: bottom - top,
 });
 
+/** @internal */
 export const createBoundingClientRect = (left: number, top: number, right: number, bottom: number): DOMRect => ({
   left,
   top,
@@ -26,6 +34,7 @@ export const createBoundingClientRect = (left: number, top: number, right: numbe
   toJSON: () => "",
 });
 
+/** @internal */
 export const createSizedRect = (args?: { width?: number, height?: number }): ClientRect => {
   const left = 0;
   const width = args && args.width ? args.width : 0;
@@ -36,6 +45,7 @@ export const createSizedRect = (args?: { width?: number, height?: number }): Cli
   return createRect(left, top, right, bottom);
 };
 
+/** @internal */
 export const createPointerEvent = (props?: Partial<PointerEvent>): PointerEvent => ({
   clientX: 0,
   clientY: 0,
@@ -43,6 +53,7 @@ export const createPointerEvent = (props?: Partial<PointerEvent>): PointerEvent 
   ...props,
 } as PointerEvent);
 
+/** @internal */
 export const createDOMRect = (args?: { width?: number, height?: number }): DOMRect => {
   const rect = createSizedRect(args);
   return {
@@ -53,7 +64,7 @@ export const createDOMRect = (args?: { width?: number, height?: number }): DOMRe
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+/** @internal */
 export class ResizeObserverMock implements ResizeObserver {
   public constructor(public readonly callback: ResizeObserverCallback) {
   }
@@ -75,5 +86,10 @@ declare module "sinon" {
   }
 }
 
+/** @internal */
 export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
+/** @internal */
 export type SinonStub<T extends (...args: any) => any> = sinon.SinonStub<Parameters<T>, ReturnType<T>>;
+
+/** Enzyme mount with automatic unmount after the test. */
+export const mount: typeof enzyme.mount = (global as any).enzymeMount;

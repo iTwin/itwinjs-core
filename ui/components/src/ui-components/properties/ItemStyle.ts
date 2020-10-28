@@ -75,7 +75,6 @@ function getForegroundColor(isSelected: boolean, colorOverrides?: ItemColorOverr
 export const ItemStyleProvider = {
   /**
    * Create CSS style from [[ItemStyle]]
-   * @param isSelected Is item currently selected
    */
   createStyle: ({ colorOverrides, isBold, isItalic }: ItemStyle, isSelected?: boolean): CSSProperties => ({
     color: getForegroundColor(!!isSelected, colorOverrides),

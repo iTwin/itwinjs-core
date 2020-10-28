@@ -11,6 +11,7 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -23,6 +24,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { UVSurfaceOps } from "../../geometry3d/UVSurfaceOps";
 import { Point4d } from "../../geometry4d/Point4d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -901,6 +903,8 @@ describe("Ellipsoid", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "ArcClip");
+    expect(ck.getNumErrors()).equals(0);
+
   });
   it("EarthClip", () => {
     const ck = new Checker();
@@ -930,8 +934,68 @@ describe("Ellipsoid", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthClip");
+    expect(ck.getNumErrors()).equals(0);
   });
 
+  it("EarthPatchOffsetRange", () => {
+    const ck = new Checker();
+    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix())!;
+    // this shares the ellipsoid ... should work fine ...
+    for (const patch of [
+      EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(10, 62), AngleSweep.createStartEndDegrees(-20, 20)),
+      EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(220, 340), AngleSweep.createStartEndDegrees(-80, -20)),
+      EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(-180, 180), AngleSweep.createStartEndDegrees(-90, 90)),
+    ]) {
+      const range = patch.range();
+      range.expandInPlace(1.0e-8);
+      const range20 = UVSurfaceOps.sampledRangeOfOffsetPatch(patch, 0.0, 80, 40);
+      ck.testTrue(range.containsRange(range20), "Sampled range must be smaller than true range");
+      const a = 1.05;
+      ck.testTrue(range.xLength() < a * range20.xLength(), "x range");
+      ck.testTrue(range.yLength() < a * range20.yLength(), "y range");
+      ck.testTrue(range.zLength() < a * range20.zLength(), "z range");
+    }
+    // GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthPatchOffsetRange");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("SphereOffsetPatchRange", () => {
+    const ck = new Checker();
+    // Work with spheres of various radii -- they have precise ranges to compare to offsets of each other.
+    const a = 1.0;
+    const options4 = StrokeOptions.createForCurves();
+    const options10 = StrokeOptions.createForCurves();
+    options4.angleTol = Angle.createDegrees(4);
+    options10.angleTol = Angle.createDegrees(10);
+    const sphereA = Ellipsoid.create(Matrix3d.createScale(a, a, a));
+    let maxDiff4 = 0;
+    let maxDiff10 = 0;
+    for (const offsetDistance of [0.2, 0.0, -0.3]) {
+      const b = a + offsetDistance;
+      const sphereB = Ellipsoid.create(Matrix3d.createScale(b, b, b));
+      // patchB is offset.  It's range can be directly computed.
+      // offset of patchA is sampled.
+      for (const patchB of [
+        EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(10, 62), AngleSweep.createStartEndDegrees(-20, 20)),
+        EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(220, 340), AngleSweep.createStartEndDegrees(-80, -20)),
+        EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(-180, 180), AngleSweep.createStartEndDegrees(-90, 90)),
+      ]) {
+        const patchA = EllipsoidPatch.createCapture(sphereA, patchB.longitudeSweep, patchB.latitudeSweep);
+        const rangeB = patchB.range();
+        const rangeA4 = UVSurfaceOps.sampledRangeOfOffsetEllipsoidPatch(patchA, offsetDistance, options4);
+        const rangeA10 = UVSurfaceOps.sampledRangeOfOffsetEllipsoidPatch(patchA, offsetDistance, options10);
+        const diff4 = rangeA4.low.distance(rangeB.low) + rangeA4.high.distance(rangeB.high);
+        const diff10 = rangeA10.low.distance(rangeB.low) + rangeA10.high.distance(rangeB.high);
+        maxDiff4 = Math.max(diff4, maxDiff4);
+        maxDiff10 = Math.max(diff10, maxDiff10);
+        console.log({ offset: offsetDistance, diffs: [diff4, diff10] });
+        ck.testLE(diff4, 0.005, "approximate range error");
+      }
+      console.log({ offset: offsetDistance, finalMaxDiffs: [maxDiff4, maxDiff10] });
+    }
+    // GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthPatchOffsetRange");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 function tippedEarthEllipsoidMatrix(): Matrix3d {

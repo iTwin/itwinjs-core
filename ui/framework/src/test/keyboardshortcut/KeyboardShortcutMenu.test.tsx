@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 import { FunctionKey, SpecialKey } from "@bentley/ui-abstract";
 
 describe("KeyboardShortcutMenu", () => {
@@ -61,7 +60,7 @@ describe("KeyboardShortcutMenu", () => {
   it("Should render shortcuts and close on Escape", () => {
     KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
 
-    const wrapper = enzyme.mount(
+    const wrapper = mount(
       <KeyboardShortcutMenu />,
     );
 
@@ -74,13 +73,12 @@ describe("KeyboardShortcutMenu", () => {
     wrapper.update();
 
     expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);
-    wrapper.unmount();
   });
 
   it("Should render shortcuts and execute item on click", async () => {
     KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
 
-    const wrapper = enzyme.mount(
+    const wrapper = mount(
       <KeyboardShortcutMenu />,
     );
 
@@ -96,6 +94,5 @@ describe("KeyboardShortcutMenu", () => {
 
     await TestUtils.flushAsyncOperations();
     expect(testSpyMethod.calledOnce).to.be.true;
-    wrapper.unmount();
   });
 });

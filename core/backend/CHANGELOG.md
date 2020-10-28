@@ -1,6 +1,59 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 22 Sep 2020 17:40:07 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Oct 2020 13:05:26 GMT and should not be manually modified.
+
+## 2.7.5
+Fri, 23 Oct 2020 16:23:50 GMT
+
+_Version update only_
+
+## 2.7.4
+Mon, 19 Oct 2020 17:57:01 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.7.8
+
+## 2.7.3
+Wed, 14 Oct 2020 17:00:59 GMT
+
+_Version update only_
+
+## 2.7.2
+Tue, 13 Oct 2020 18:20:38 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.7.6
+
+## 2.7.1
+Thu, 08 Oct 2020 13:04:35 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.7.5
+
+## 2.7.0
+Fri, 02 Oct 2020 18:03:32 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.7.4
+- Fixes to front end methods to pull, merge and push. 
+- Setup IModelHost.startup() to use proxy servers if configured/available - this is valuable for debugging agents, backends and electron applications. 
+- On iOS download in background
+- Fix ios hang issue
+- Modify queryModelRanges to handle non geometric model errors
+- Introduce NoContentError (transmitted via 204)
+- Tile gen performance script in package.json
+
+## 2.6.5
+Sat, 26 Sep 2020 16:06:34 GMT
+
+### Updates
+
+- changed elements properties for version compare
+- Update to @bentley/imodeljs-native@2.6.4
 
 ## 2.6.4
 Tue, 22 Sep 2020 17:40:07 GMT
@@ -12,12 +65,12 @@ Tue, 22 Sep 2020 17:40:07 GMT
 ## 2.6.3
 Mon, 21 Sep 2020 14:47:09 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.6.2
 Mon, 21 Sep 2020 13:07:44 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.6.1
 Fri, 18 Sep 2020 13:15:09 GMT
@@ -44,7 +97,7 @@ Thu, 17 Sep 2020 13:16:12 GMT
 ## 2.5.5
 Wed, 02 Sep 2020 17:42:23 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.4
 Fri, 28 Aug 2020 15:34:15 GMT
@@ -56,7 +109,7 @@ Fri, 28 Aug 2020 15:34:15 GMT
 ## 2.5.3
 Wed, 26 Aug 2020 11:46:00 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.2
 Tue, 25 Aug 2020 22:09:08 GMT
@@ -117,17 +170,17 @@ Tue, 28 Jul 2020 16:26:24 GMT
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.2
 Tue, 14 Jul 2020 23:50:36 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.1
 Mon, 13 Jul 2020 18:50:14 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.0
 Fri, 10 Jul 2020 17:23:14 GMT
@@ -313,7 +366,7 @@ Tue, 31 Mar 2020 15:44:19 GMT
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
 
-*Version update only*
+_Version update only_
 
 ## 1.12.0
 Wed, 12 Feb 2020 17:45:50 GMT
@@ -655,7 +708,7 @@ Wed, 16 Jan 2019 16:36:09 GMT
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.186.0
 Mon, 14 Jan 2019 23:09:10 GMT
@@ -670,7 +723,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.184.0
 Thu, 10 Jan 2019 22:46:17 GMT
@@ -705,7 +758,7 @@ Fri, 04 Jan 2019 13:02:40 GMT
 ## 0.180.0
 Wed, 02 Jan 2019 15:18:23 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.179.0
 Wed, 19 Dec 2018 18:26:14 GMT
@@ -725,7 +778,7 @@ Thu, 13 Dec 2018 22:06:10 GMT
 ## 0.177.0
 Wed, 12 Dec 2018 17:21:31 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.176.0
 Mon, 10 Dec 2018 21:19:45 GMT
@@ -738,7 +791,7 @@ Mon, 10 Dec 2018 21:19:45 GMT
 ## 0.175.0
 Mon, 10 Dec 2018 17:08:55 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.174.0
 Mon, 10 Dec 2018 13:24:09 GMT
@@ -792,12 +845,12 @@ Mon, 26 Nov 2018 19:38:42 GMT
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.168.0
 Sat, 17 Nov 2018 14:20:11 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.167.0
 Fri, 16 Nov 2018 21:45:44 GMT
@@ -891,7 +944,7 @@ Tue, 16 Oct 2018 14:09:09 GMT
 ## 0.158.0
 Mon, 15 Oct 2018 19:36:09 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.157.0
 Sun, 14 Oct 2018 17:20:06 GMT

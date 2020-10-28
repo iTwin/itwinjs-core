@@ -15,7 +15,7 @@ import * as React from "react";
 import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
 import ReactResizeDetector from "react-resize-detector";
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import { BodyText, CommonProps, Popup, Tooltip } from "@bentley/ui-core";
 import { UiComponents } from "../../ui-components/UiComponents";
 import { HueSlider } from "../color/HueSlider";
@@ -700,7 +700,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
               <DatePicker selected={this.props.dataProvider.day} onDateChange={this._onDayClick} showFocusOutline={false} />
               <div className="time-container">
                 <BodyText className="time-label">{this._timeLabel}</BodyText>
-                <TimeField time={{hours:currentDate.getUTCHours(), minutes:currentDate.getUTCMinutes(), seconds:0}} timeDisplay={"hh:mm aa"} onTimeChange={this._onTimeChanged} />
+                <TimeField time={{hours:currentDate.getUTCHours(), minutes:currentDate.getUTCMinutes(), seconds:0}} timeDisplay={TimeDisplay.H12MC} onTimeChange={this._onTimeChanged} />
               </div>
             </div>
           </Popup>

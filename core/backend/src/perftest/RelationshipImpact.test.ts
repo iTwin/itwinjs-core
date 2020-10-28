@@ -13,6 +13,7 @@ import {
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
+import { PerfTestUtility } from "./PerfTestUtils";
 
 describe("SchemaDesignPerf Relationship Comparison", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "RelationshipPerformance");
@@ -249,12 +250,13 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const testFileName = IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship_Read.bim");
 
     const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    let stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestRelationSchema:ChildD")[0];
+    let minId: number = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildD")
+
     const elementIdIncrement = 4; // we add 4 elements each time
     const startTime = new Date().getTime();
     for (let i = 0; i < opCount; ++i) {
       try {
-        const tId: Id64String = Id64.fromLocalAndBriefcaseIds((stat.minId + elementIdIncrement * i), 0);
+        const tId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
         const query = IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.CIsRelatedToD WHERE TargetECInstanceId=${tId}`)[0];
         assert.isTrue(Id64.isValidId64(query.sourceId));
       } catch (err) {
@@ -265,11 +267,11 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const elapsedTimeLink = (endTime - startTime) / 1000.0;
 
     // NavProp element
-    stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestRelationSchema:ChildB")[0];
+    minId = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildB");
     const startTime1 = new Date().getTime();
     for (let i = 0; i < opCount; ++i) {
       try {
-        const tId: Id64String = Id64.fromLocalAndBriefcaseIds((stat.minId + elementIdIncrement * i), 0);
+        const tId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
         const query = IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.ADrivesB WHERE TargetECInstanceId=${tId}`)[0];
         assert.isTrue(Id64.isValidId64(query.sourceId));
       } catch (err) {
@@ -292,14 +294,14 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
 
     const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-    let stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestRelationSchema:ChildC")[0];
+    let minId: number = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildC");
     const elementIdIncrement = 4; // we add 4 elements each time
     const startTime = new Date().getTime();
     for (let i = 0; i < opCount; ++i) {
       try {
-        const sId: Id64String = Id64.fromLocalAndBriefcaseIds((stat.minId + elementIdIncrement * i), 0);
+        const sId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
         // Need improvement. Currently assuming that they were added one after another so have next Id.
-        const tId: Id64String = Id64.fromLocalAndBriefcaseIds(((stat.minId + elementIdIncrement * i) + 1), 0);
+        const tId: Id64String = Id64.fromLocalAndBriefcaseIds(((minId + elementIdIncrement * i) + 1), 0);
         const rel = perfimodel.relationships.getInstance("TestRelationSchema:CIsRelatedToD", { sourceId: sId, targetId: tId });
         rel.delete();
       } catch (err) {
@@ -311,11 +313,11 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     assert.equal(getCount(perfimodel, "TestRelationSchema:CIsRelatedToD"), seedCount - opCount);
 
     // NavProp element. Set NavProp to null and update.
-    stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestRelationSchema:ChildA")[0];
+    minId = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildA");
     const startTime1 = new Date().getTime();
     for (let i = 0; i < opCount; ++i) {
       try {
-        const elId: Id64String = Id64.fromLocalAndBriefcaseIds((stat.minId + elementIdIncrement * i), 0);
+        const elId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
         const editElem: any = perfimodel.elements.getElement(elId);
         editElem.childB = null;
         perfimodel.elements.updateElement(editElem);

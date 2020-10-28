@@ -12,14 +12,14 @@ import classnames from "classnames";
 import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, PropertyRecord, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, LeadingText, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
+import { isReactContent, PopupContentType, PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";
 import { MessageDiv } from "../messages/MessageSpan";
 import { Direction, PropertyValueRendererManager, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflow } from "@bentley/ui-components";
 
 /** @alpha */
 export interface CardPopupProps extends PopupPropsBase {
-  content: HTMLElement;
+  content: PopupContentType;
   title: string | PropertyRecord | undefined;
   items: CommonToolbarItem[] | undefined;
   relativePosition: RelativePosition;
@@ -87,7 +87,7 @@ export class CardPopup extends React.PureComponent<CardPopupProps, CardPopupStat
 
 /** @alpha */
 export interface CardProps {
-  content: HTMLElement;
+  content: PopupContentType;
   title: string | PropertyRecord | undefined;
   items: CommonToolbarItem[] | undefined;
   onItemExecuted: OnItemExecutedFunc;
@@ -107,6 +107,8 @@ export function Card(props: CardProps) {
     }
   }
 
+  const content = isReactContent(props.content) ? props.content.reactNode : <MessageDiv message={props.content} />;
+
   return (
     <>
       <div className="uifw-card-content">
@@ -116,7 +118,7 @@ export function Card(props: CardProps) {
             <div className="uifw-card-gap" />
           </>
         }
-        <MessageDiv message={props.content} />
+        {content}
       </div>
       {props.items &&
         <>

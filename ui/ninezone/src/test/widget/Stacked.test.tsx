@@ -2,23 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Point, Rectangle } from "@bentley/ui-core";
-import { HorizontalAnchor, Stacked } from "../../ui-ninezone";
-import { DisabledResizeHandles } from "../../ui-ninezone/utilities/DisabledResizeHandles";
-import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
-import { ResizeHandle, VerticalAnchor, VerticalAnchorHelpers } from "../../ui-ninezone/widget/Stacked";
-import { createBoundingClientRect } from "../Utils";
+import { DisabledResizeHandles, HorizontalAnchor, ResizeGrip, ResizeHandle, Stacked, VerticalAnchor, VerticalAnchorHelpers } from "../../ui-ninezone";
+import { createBoundingClientRect, mount } from "../Utils";
 
 describe("<Stacked />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<Stacked
       horizontalAnchor={HorizontalAnchor.Right}
@@ -411,7 +402,7 @@ describe("<Stacked />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<Stacked
@@ -457,7 +448,7 @@ describe("<Stacked />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
     const sut = mount<Stacked>(<Stacked
       horizontalAnchor={HorizontalAnchor.Right}
       verticalAnchor={VerticalAnchor.Middle}

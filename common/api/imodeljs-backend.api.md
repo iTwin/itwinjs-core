@@ -5,7 +5,6 @@
 ```ts
 
 import { AccessToken } from '@bentley/itwin-client';
-import { AnalysisStyleProps } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
@@ -13,7 +12,6 @@ import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
-import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseKey } from '@bentley/imodeljs-common';
@@ -43,7 +41,6 @@ import { CodeScopeSpec } from '@bentley/imodeljs-common';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { ConflictingCodesError } from '@bentley/imodelhub-client';
-import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ContextRegistryClient } from '@bentley/context-registry-client';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateEmptyStandaloneIModelProps } from '@bentley/imodeljs-common';
@@ -55,6 +52,7 @@ import { DefinitionElementProps } from '@bentley/imodeljs-common';
 import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
+import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
@@ -98,6 +96,7 @@ import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
+import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
@@ -115,6 +114,7 @@ import { LockLevel } from '@bentley/imodelhub-client';
 import { LockType } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
+import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
@@ -142,13 +142,13 @@ import { QueryLimit } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
 import { QueryResponse } from '@bentley/imodeljs-common';
-import { QueuedEvent } from '@bentley/imodeljs-common';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
 import { Readable } from 'stream';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
+import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
@@ -418,8 +418,6 @@ export class BriefcaseDb extends IModelDb {
     // @beta
     get concurrencyControl(): ConcurrencyControl;
     get contextId(): GuidString;
-    // @internal
-    get eventSink(): EventSink | undefined;
     // @internal
     static findByKey(key: string): BriefcaseDb;
     // @internal
@@ -888,7 +886,7 @@ export class ConcurrencyControl {
     openOrCreateCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     get pendingRequest(): ConcurrencyControl.Request;
-    // (undocumented)
+    // @internal
     queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
     request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void>;
     requestResources(ctx: AuthorizedClientRequestContext, elements: ConcurrencyControl.ElementAndOpcode[], models?: ConcurrencyControl.ModelAndOpcode[], relationships?: ConcurrencyControl.RelationshipAndOpcode[]): Promise<void>;
@@ -898,8 +896,9 @@ export class ConcurrencyControl {
     requestResourcesForInsert(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
     // @internal (undocumented)
     requestResourcesForOpcode(ctx: AuthorizedClientRequestContext, opcode: DbOpcode, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
-    // @internal (undocumented)
+    // @alpha
     requestResourcesForUpdate(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
+    // @internal
     reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]>;
     setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void;
     // @internal (undocumented)
@@ -1283,18 +1282,12 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     }
 
 // @public
-export interface DisplayStyleCreationOptions {
+export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
     // (undocumented)
-    analysisStyle?: AnalysisStyleProps;
+    backgroundColor?: ColorDef | number;
     // (undocumented)
-    backgroundColor?: ColorDef;
-    // (undocumented)
-    backgroundMap?: BackgroundMapProps;
-    // (undocumented)
-    contextRealityModels?: ContextRealityModelProps[];
-    // (undocumented)
-    scheduleScript?: object;
-    // (undocumented)
+    mapImagery?: MapImageryProps;
+    scheduleScript?: object | RenderSchedule.ModelTimelineProps[];
     viewFlags?: ViewFlags;
 }
 
@@ -1819,41 +1812,16 @@ export class Entity implements EntityProps {
 }
 
 // @internal
-export class EventSink {
+export class EventSink implements IDisposable {
     constructor(id: string);
-    // (undocumented)
+    static clearGlobal(): void;
+    dispose(): void;
     emit(namespace: string, eventName: string, data: any, options?: EmitOptions): void;
-    // (undocumented)
-    fetch(limit: number): QueuedEvent[];
-    // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    purge(namespace: string): void;
-}
-
-// @internal
-export class EventSinkManager {
-    // (undocumented)
-    static clear(): void;
-    // (undocumented)
-    static delete(id: string): void;
-    // (undocumented)
-    static get(id: string): EventSink;
-    // (undocumented)
-    static readonly GLOBAL = "__globalEvents__";
-    // (undocumented)
     static get global(): EventSink;
     // (undocumented)
-    static has(id: string): boolean;
+    readonly id: string;
+    get isDisposed(): boolean;
     }
-
-// @internal
-export interface EventSinkOptions {
-    // (undocumented)
-    maxNamespace: number;
-    // (undocumented)
-    maxQueueSize: number;
-}
 
 // @public
 export namespace ExportGraphics {
@@ -2371,17 +2339,20 @@ export class GroupModel extends GroupInformationModel {
 export class IModelCloneContext {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
-    cloneElement(sourceElement: Element): ElementProps;
+    cloneElement(sourceElement: Element, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
     dispose(): void;
     // @internal
     dump(outputFileName: string): void;
+    filterSubCategory(sourceSubCategoryId: Id64String): void;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
+    get hasSubCategoryFilter(): boolean;
     // @internal
     importCodeSpec(sourceCodeSpecId: Id64String): void;
     // @internal
     importFont(sourceFontNumber: number): void;
     get isBetweenIModels(): boolean;
+    isSubCategoryFiltered(subCategoryId: Id64String): boolean;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
@@ -2423,6 +2394,8 @@ export abstract class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
+    // @internal
+    get eventSink(): EventSink;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static findByKey(key: string): IModelDb;
@@ -2432,6 +2405,8 @@ export abstract class IModelDb extends IModel {
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     getBriefcaseId(): BriefcaseId;
+    // @internal (undocumented)
+    protected getEventSourceProps(): IModelEventSourceProps;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta
     getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
@@ -2520,6 +2495,8 @@ export namespace IModelDb {
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): void;
         insertElement(elProps: ElementProps): Id64String;
+        // @internal
+        _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal
@@ -2717,8 +2694,6 @@ export class IModelHostConfiguration {
     static defaultLogTileSizeThreshold: number;
     // @internal
     static defaultTileRequestTimeout: number;
-    // @internal
-    eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
     // @internal
     logTileLoadTimeThreshold: number;
@@ -2738,7 +2713,7 @@ export class IModelHostConfiguration {
 // @beta
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    readonly autoExtendProjectExtents: boolean;
+    autoExtendProjectExtents: boolean;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
@@ -2758,6 +2733,7 @@ export class IModelImporter {
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
     protected onUpdateModel(modelProps: ModelProps): void;
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
+    simplifyElementGeometry: boolean;
     readonly targetDb: IModelDb;
 }
 
@@ -2869,6 +2845,7 @@ export class IModelTransformer extends IModelExportHandler {
 
 // @beta
 export interface IModelTransformOptions {
+    cloneUsingBinaryGeometry?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
@@ -3633,7 +3610,11 @@ export class SnapshotDb extends IModelDb {
     static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb;
     get filePath(): string;
+    // @internal
+    static openCheckpoint(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<SnapshotDb>;
     static openFile(filePath: string, props?: SnapshotOpenOptions): SnapshotDb;
+    // @internal
+    reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }

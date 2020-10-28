@@ -305,7 +305,7 @@ const checkVertexHiliteDiscard = "return 0.0 == v_feature_hilited;";
 const computeHiliteColor = `
   float flags = floor(v_feature_hilited + 0.5);
   float hilited = extractNthBit(flags, kEmphBit_Hilite);
-  float emphasized = (1.0 - hilited) * extractNthBit(flags, kEmphBit_Emphasize);
+  float emphasized = extractNthBit(flags, kEmphBit_Emphasize);
   return vec4(hilited, emphasized, 0.0, 0.0);
 `;
 
@@ -732,11 +732,11 @@ export function addUniformHiliter(builder: ProgramBuilder): void {
  *  - Visibility - implcitly, because if the feature is invisible its geometry will never be drawn.
  *  - Flash
  *  - Hilite
- * In future we may find a reason to support color and/or transparency.
- * This shader could be simplified, but want to share code with the non-uniform versions...hence uniforms/globals with "v_" prefix typically used for varyings...
+ *  - Color - only for point clouds currently which set addFetureColor to true.
+ * This shader could be simplified, but want to share code with the non-uniform versions...hence uniforms/globals with "v_" prefix typically used for varyings on no prefix...
  * @internal
  */
-export function addUniformFeatureSymbology(builder: ProgramBuilder): void {
+export function addUniformFeatureSymbology(builder: ProgramBuilder, addFeatureColor: boolean): void {
   builder.vert.addGlobal("g_featureIndex", VariableType.Vec3, "vec3(0.0)", true);
 
   builder.frag.addUniform("v_feature_emphasis", VariableType.Float, (prog) => {
@@ -744,6 +744,23 @@ export function addUniformFeatureSymbology(builder: ProgramBuilder): void {
       params.target.uniforms.batch.bindUniformSymbologyFlags(uniform);
     });
   });
+
+  if (addFeatureColor) {
+    builder.vert.addUniform("feature_rgb", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("feature_rgb", (uniform, params) => {
+        params.target.uniforms.batch.bindUniformColorOverride(uniform);
+      });
+    });
+
+    builder.vert.addUniform("feature_alpha", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("feature_alpha", (uniform, _params) => {
+        // For now just hard-code alpha so it doesn't get overridden. Need to do more than setting this to make it work.
+        uniform.setUniform1f(-1.0);
+      });
+    });
+
+    builder.vert.set(VertexShaderComponent.ApplyFeatureColor, applyFeatureColor);
+  }
 
   addApplyFlash(builder.frag);
 }

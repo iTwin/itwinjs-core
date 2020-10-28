@@ -15,7 +15,8 @@ import {
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
-  ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, RecordingIModelImporter, TestIModelTransformer,
+  ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, PhysicalModelConsolidator, RecordingIModelImporter,
+  TestIModelTransformer,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -247,6 +248,8 @@ describe("IModelTransformer", () => {
       code: Code.createEmpty(),
       userLabel: "PhysicalObject-M1-E1",
       category: sourceCategoryId,
+      geom: IModelTransformerUtils.createBox(new Point3d(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 1, y: 1 }, angles: {} }),
     };
     const sourceElementId11 = sourceDb.elements.insertElement(elementProps11);
     const elementProps21: PhysicalElementProps = {
@@ -255,6 +258,8 @@ describe("IModelTransformer", () => {
       code: Code.createEmpty(),
       userLabel: "PhysicalObject-M2-E1",
       category: sourceCategoryId,
+      geom: IModelTransformerUtils.createBox(new Point3d(2, 2, 2)),
+      placement: Placement3d.fromJSON({ origin: { x: 2, y: 2 }, angles: {} }),
     };
     const sourceElementId21 = sourceDb.elements.insertElement(elementProps21);
     sourceDb.saveChanges();
@@ -426,6 +431,62 @@ describe("IModelTransformer", () => {
     assert.deepEqual(targetModelExtents, transform3d.multiplyRange(sourceModelExtents));
     // clean up
     transformer.dispose();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("should consolidate PhysicalModels", async () => {
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "MultiplePhysicalModels.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "Multiple PhysicalModels" } });
+    const categoryId: Id64String = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    for (let i = 0; i < 5; i++) {
+      const sourceModelId: Id64String = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, `PhysicalModel${i}`);
+      const xArray: number[] = [20 * i + 1, 20 * i + 3, 20 * i + 5, 20 * i + 7, 20 * i + 9];
+      const yArray: number[] = [0, 2, 4, 6, 8];
+      for (const x of xArray) {
+        for (const y of yArray) {
+          const physicalObjectProps1: PhysicalElementProps = {
+            classFullName: PhysicalObject.classFullName,
+            model: sourceModelId,
+            category: categoryId,
+            code: Code.createEmpty(),
+            userLabel: `M${i}-PhysicalObject(${x},${y})`,
+            geom: IModelTransformerUtils.createBox(Point3d.create(1, 1, 1)),
+            placement: Placement3d.fromJSON({ origin: { x, y }, angles: {} }),
+          };
+          sourceDb.elements.insertElement(physicalObjectProps1);
+        }
+      }
+    }
+    sourceDb.saveChanges();
+    assert.equal(5, count(sourceDb, PhysicalModel.classFullName));
+    assert.equal(125, count(sourceDb, PhysicalObject.classFullName));
+
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "OnePhysicalModel.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "One PhysicalModel" }, createClassViews: true });
+    const targetModelId: Id64String = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "PhysicalModel");
+    assert.isTrue(Id64.isValidId64(targetModelId));
+    targetDb.saveChanges();
+    const consolidator = new PhysicalModelConsolidator(sourceDb, targetDb, targetModelId);
+    consolidator.processAll();
+    consolidator.dispose();
+    assert.equal(1, count(targetDb, PhysicalModel.classFullName));
+    const targetPartition = targetDb.elements.getElement<PhysicalPartition>(targetModelId);
+    assert.equal(targetPartition.code.getValue(), "PhysicalModel", "Target PhysicalModel name should not be overwritten during consolidation");
+    assert.equal(125, count(targetDb, PhysicalObject.classFullName));
+    const aspects = targetDb.elements.getAspects(targetPartition.id, ExternalSourceAspect.classFullName);
+    assert.isAtLeast(aspects.length, 5, "Provenance should be recorded for each source PhysicalModel");
+
+    const sql = `SELECT ECInstanceId FROM ${PhysicalObject.classFullName}`;
+    targetDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const targetElementId = statement.getValue(0).getId();
+        const targetElement = targetDb.elements.getElement<PhysicalObject>({ id: targetElementId, wantGeometry: true });
+        assert.exists(targetElement.geom);
+        assert.isFalse(targetElement.calculateRange3d().isNull);
+      }
+    });
+
     sourceDb.close();
     targetDb.close();
   });

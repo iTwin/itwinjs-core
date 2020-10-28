@@ -7,7 +7,7 @@
  */
 
 import "./FavoritePropertyList.scss";
-import React from "react";
+import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
 import { PropertyList } from "../propertygrid/component/PropertyList";
@@ -25,7 +25,8 @@ export interface FavoritePropertyListProps {
 /** Favorite Property List React component
  * @alpha
  */
-export class FavoritePropertyList extends React.Component<FavoritePropertyListProps> {
+export class FavoritePropertyList extends React.PureComponent<FavoritePropertyListProps> {
+  /** @internal */
   public render() {
     if (this.props.propertyData.records.Favorite !== undefined) {
       const propertyValueRendererManager = this.props.propertyValueRendererManager ?? PropertyValueRendererManager.defaultManager;
