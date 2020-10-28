@@ -407,7 +407,7 @@ export class IModelExporter {
       return;
     }
     const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry });
-    Logger.logTrace(loggerCategory, `exportModel()`);
+    Logger.logTrace(loggerCategory, `exportModel(${modeledElementId})`);
     if (this.shouldExportElement(modeledElement)) {
       this.exportModelContainer(model);
       if (this.visitElements) {
@@ -437,7 +437,7 @@ export class IModelExporter {
    */
   public exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): void {
     if (!this.visitElements) {
-      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportModelContents()`);
+      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportModelContents(${modelId})`);
       return;
     }
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
@@ -445,7 +445,7 @@ export class IModelExporter {
         return; // this optimization assumes that the Model changes (LastMod) any time an Element in the Model changes
       }
     }
-    Logger.logTrace(loggerCategory, `exportModelContents()`);
+    Logger.logTrace(loggerCategory, `exportModelContents(${modelId})`);
     const sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("modelId", modelId);
@@ -483,22 +483,22 @@ export class IModelExporter {
   /** Returns true if the specified element should be exported. */
   private shouldExportElement(element: Element): boolean {
     if (this._excludedElementIds.has(element.id)) {
-      Logger.logInfo(loggerCategory, `Excluded element by Id`);
+      Logger.logInfo(loggerCategory, `Excluded element ${element.id} by Id`);
       return false;
     }
     if (element instanceof GeometricElement) {
       if (this._excludedElementCategoryIds.has(element.category)) {
-        Logger.logInfo(loggerCategory, `Excluded element by Category`);
+        Logger.logInfo(loggerCategory, `Excluded element ${element.id} by Category`);
         return false;
       }
     }
     if (!this.wantTemplateModels && (element instanceof RecipeDefinitionElement)) {
-      Logger.logInfo(loggerCategory, `Excluded recipe because wantTemplate=false`);
+      Logger.logInfo(loggerCategory, `Excluded RecipeDefinitionElement ${element.id} because wantTemplate=false`);
       return false;
     }
     for (const excludedElementClass of this._excludedElementClasses) {
       if (element instanceof excludedElementClass) {
-        Logger.logInfo(loggerCategory, `Excluded element by class: ${excludedElementClass.classFullName}`);
+        Logger.logInfo(loggerCategory, `Excluded element ${element.id} by class: ${excludedElementClass.classFullName}`);
         return false;
       }
     }
