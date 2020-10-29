@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelAppOptions, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
 import {
   AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem,
   DialogPropertySyncItem,
@@ -22,13 +22,21 @@ import TestUtils, { mount, storageMock } from "../TestUtils";
 import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import { fireEvent, render } from "@testing-library/react";
 const myLocalStorage = storageMock();
+function requestNextAnimation() { }
 
 describe("PopupManager", () => {
   const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+  const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
 
   before(async () => {
     Object.defineProperty(window, "localStorage", {
       get: () => myLocalStorage,
+    });
+
+    // Avoid requestAnimationFrame exception during test by temporarily replacing function that calls it. Tried replacing window.requestAnimationFrame first
+    // but that did not work.
+    Object.defineProperty(IModelApp, "requestNextAnimation", {
+      get: () => requestNextAnimation,
     });
 
     await TestUtils.initializeUiFramework();
@@ -41,9 +49,10 @@ describe("PopupManager", () => {
     await MockRender.App.shutdown();
     // restore the overriden property getter
     Object.defineProperty(window, "localStorage", propertyDescriptorToRestore);
+    Object.defineProperty(IModelApp, "requestNextAnimation", rnaDescriptorToRestore);
+
     TestUtils.terminateUiFramework();
   });
-
 
   beforeEach(() => {
     PopupManager.clearPopups();
@@ -248,7 +257,7 @@ describe("PopupManager", () => {
       let inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
 
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter", code: "Enter" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
       await TestUtils.flushAsyncOperations();
       expect(spyCommit.calledOnce).to.be.true;
 
@@ -256,7 +265,7 @@ describe("PopupManager", () => {
       inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
 
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape", code: "Escape" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.called).to.be.true;
     });
@@ -280,7 +289,7 @@ describe("PopupManager", () => {
       const buttonNodes = wrapper.container.querySelectorAll("button");
       expect(buttonNodes.length).to.eq(2);
 
-      fireEvent.keyDown(buttonNodes[0] as HTMLElement, { key: "Escape", code: "Escape" })
+      fireEvent.keyDown(buttonNodes[0] as HTMLElement, { key: "Escape" })
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
     });
@@ -324,7 +333,7 @@ describe("PopupManager", () => {
       const buttonNodes = wrapper.container.querySelectorAll("button");
       expect(buttonNodes).not.to.be.null;
 
-      fireEvent.keyDown(buttonNodes[0] as HTMLElement, { key: "Escape", code: "Escape" })
+      fireEvent.keyDown(buttonNodes[0] as HTMLElement, { key: "Escape" })
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.called).to.be.true;
       PopupManager.hideCard();
@@ -345,7 +354,7 @@ describe("PopupManager", () => {
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
       PopupManager.hideCard();
-});
+    });
 
     it("PopupRenderer should render Tool Settings", async () => {
       const wrapper = render(<PopupRenderer />);
@@ -407,7 +416,7 @@ describe("PopupManager", () => {
       let inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
 
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter", code: "Enter" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
       await TestUtils.flushAsyncOperations();
       expect(spyChange.calledOnce).to.be.true;
 
@@ -417,7 +426,7 @@ describe("PopupManager", () => {
       inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
       fireEvent.click(inputNode as HTMLElement);
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape", code: "Escape" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
     });
@@ -434,7 +443,7 @@ describe("PopupManager", () => {
       expect(wrapper.container.querySelectorAll("div.uifw-command-palette-panel").length).to.eq(1);
       const inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.null;
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape", code: "Escape" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
     });

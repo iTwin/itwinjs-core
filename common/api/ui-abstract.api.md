@@ -1863,7 +1863,7 @@ export abstract class UiDataProvider {
     onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
     processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult;
     supplyAvailableProperties(): DialogPropertyItem[];
-    syncProperties(_syncProperties: DialogPropertySyncItem[]): void;
+    syncProperties(syncProperties: DialogPropertySyncItem[]): void;
     validateProperty(_item: DialogPropertyItem): PropertyChangeResult;
 }
 

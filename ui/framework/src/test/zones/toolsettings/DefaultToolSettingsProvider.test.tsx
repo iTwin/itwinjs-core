@@ -11,7 +11,7 @@ import {
 import { render } from "@testing-library/react";
 import {
   ConfigurableUiManager, CoreTools, DefaultToolSettingsProvider, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
-  SyncToolSettingsPropertiesEventArgs, ToolUiManager, Widget, Zone,
+  SyncToolSettingsPropertiesEventArgs, ToolSettingsManager, Widget, Zone,
 } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 
@@ -161,7 +161,7 @@ describe("DefaultToolUiSettingsProvider", () => {
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
-    ToolUiManager.useDefaultToolSettingsProvider = false;
+    ToolSettingsManager.useDefaultToolSettingsProvider = false;
   });
 
   after(() => {
@@ -178,7 +178,7 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       // If a tool does not define toolSettingsProperties then useDefaultToolSettingsProvider should be false, but make sure we can gracefully handle
       // case where useDefaultToolSettingsProvider is true but toolSettingsProperties are not defined.
-      ToolUiManager.useDefaultToolSettingsProvider = true;
+      ToolSettingsManager.useDefaultToolSettingsProvider = true;
 
       FrontstageManager.setActiveToolId(firstToolId);
       expect(FrontstageManager.activeToolId).to.eq(firstToolId);
@@ -214,16 +214,16 @@ describe("DefaultToolUiSettingsProvider", () => {
       toolSettingsProperties.push({ value: methodsValue, property: methodsDescription, editorPosition: { rowPriority: 2, columnIndex: 1 } });
       toolSettingsProperties.push({ value: groupOneValue, property: testEnumDescription1, editorPosition: { rowPriority: 3, columnIndex: 1 } });
       toolSettingsProperties.push({ value: groupTwoValue, property: testEnumDescription2, editorPosition: { rowPriority: 3, columnIndex: 2 }, isDisabled: true });
-      ToolUiManager.initializeToolSettingsData(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
+      ToolSettingsManager.initializeToolSettingsData(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
 
       // override the property getter to return the properties needed for the test
-      const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(ToolUiManager, "toolSettingsProperties")!;
-      Object.defineProperty(ToolUiManager, "toolSettingsProperties", {
+      const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(ToolSettingsManager, "toolSettingsProperties")!;
+      Object.defineProperty(ToolSettingsManager, "toolSettingsProperties", {
         get: () => toolSettingsProperties,
       });
 
-      expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.true;
-      expect(ToolUiManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
+      expect(ToolSettingsManager.useDefaultToolSettingsProvider).to.be.true;
+      expect(ToolSettingsManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
       FrontstageManager.ensureToolInformationIsSet(testToolId);
       FrontstageManager.setActiveToolId(testToolId);
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
@@ -277,12 +277,12 @@ describe("DefaultToolUiSettingsProvider", () => {
       const newUseLengthValue: DialogItemValue = { value: false };
       const syncItem: DialogPropertySyncItem = { value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
-      // ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
+      // ToolSettingsManager.onSyncToolSettingsProperties.emit(syncArgs);
       FrontstageManager.activeToolSettingsProvider?.syncToolSettingsProperties(syncArgs);
       FrontstageManager.activeToolSettingsProvider?.reloadPropertiesFromTool();
-      FrontstageManager.onToolSettingsReloadEvent.emit ();
+      FrontstageManager.onToolSettingsReloadEvent.emit();
       // restore the overriden property getter
-      Object.defineProperty(ToolUiManager, "toolSettingsProperties", propertyDescriptorToRestore);
+      Object.defineProperty(ToolSettingsManager, "toolSettingsProperties", propertyDescriptorToRestore);
     }
   });
 
@@ -299,16 +299,16 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       const lockToggle: DialogItem = { value: useLengthValue, property: useLengthDescription, editorPosition: { rowPriority: 0, columnIndex: 1 } };
       toolSettingsProperties.push({ value: lengthValue, property: lengthDescription, editorPosition: { rowPriority: 0, columnIndex: 3 }, isDisabled: false, lockProperty: lockToggle });
-      ToolUiManager.initializeToolSettingsData(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
+      ToolSettingsManager.initializeToolSettingsData(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
 
       // override the property getter to return the properties needed for the test
-      const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(ToolUiManager, "toolSettingsProperties")!;
-      Object.defineProperty(ToolUiManager, "toolSettingsProperties", {
+      const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(ToolSettingsManager, "toolSettingsProperties")!;
+      Object.defineProperty(ToolSettingsManager, "toolSettingsProperties", {
         get: () => toolSettingsProperties,
       });
 
-      expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.true;
-      expect(ToolUiManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
+      expect(ToolSettingsManager.useDefaultToolSettingsProvider).to.be.true;
+      expect(ToolSettingsManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
       FrontstageManager.ensureToolInformationIsSet(testToolId);
       FrontstageManager.setActiveToolId(testToolId);
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
@@ -330,8 +330,8 @@ describe("DefaultToolUiSettingsProvider", () => {
           const useLengthSyncItem: DialogPropertySyncItem = { value: newUselengthValue, propertyName: useLengthDescription.name };
           const defaultProvider = toolUiProvider as DefaultToolSettingsProvider;
           if (defaultProvider) {
-            defaultProvider.uiDataProvider.applyUiPropertyChange (lengthSyncItem);
-            defaultProvider.uiDataProvider.applyUiPropertyChange (useLengthSyncItem);
+            defaultProvider.uiDataProvider.applyUiPropertyChange(lengthSyncItem);
+            defaultProvider.uiDataProvider.applyUiPropertyChange(useLengthSyncItem);
           }
         }
       }
@@ -359,10 +359,10 @@ describe("DefaultToolUiSettingsProvider", () => {
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
       FrontstageManager.activeToolSettingsProvider?.syncToolSettingsProperties(syncArgs);
       FrontstageManager.activeToolSettingsProvider?.reloadPropertiesFromTool();
-      FrontstageManager.onToolSettingsReloadEvent.emit ();
+      FrontstageManager.onToolSettingsReloadEvent.emit();
 
       // restore the overriden property getter
-      Object.defineProperty(ToolUiManager, "toolSettingsProperties", propertyDescriptorToRestore);
+      Object.defineProperty(ToolSettingsManager, "toolSettingsProperties", propertyDescriptorToRestore);
     }
   });
 

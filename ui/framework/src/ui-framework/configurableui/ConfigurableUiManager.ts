@@ -23,7 +23,7 @@ import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { TaskManager, TaskPropsList } from "../workflow/Task";
 import { WorkflowManager, WorkflowProps, WorkflowPropsList } from "../workflow/Workflow";
-import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiElement } from "./ConfigurableUiControl";
 import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
@@ -33,14 +33,14 @@ import { ActivityTracker } from "./ActivityTracker";
 
 /** Ui Activity Event Args interface.
  * @internal
- */
+ */
 export interface UiActivityEventArgs {
   event: Event;
 }
 
 /** Ui Activity Event class.
  * @internal
- */
+ */
 export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> { }
 
 /** Ui Interval Event Args interface
@@ -52,12 +52,12 @@ export interface UiIntervalEventArgs {
 
 /** Ui Interval Event class.
  * @internal
- */
+ */
 export class UiIntervalEvent extends BeUiEvent<UiIntervalEventArgs> { }
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
  * @public
- */
+ */
 export class ConfigurableUiManager {
   private static _registeredControls = new Map<string, ConfigurableUiControlConstructor>();
   private static _initialized = false;
@@ -86,8 +86,8 @@ export class ConfigurableUiManager {
     // Initialize the FrontstageManager
     FrontstageManager.initialize();
 
-    // Initialize the ToolUiManager that manages Tool Settings properties.
-    ToolUiManager.initialize();
+    // Initialize the ToolSettingsManager that manages Tool Settings properties.
+    ToolSettingsManager.initialize();
 
     // Initialize the modeless dialog manager.
     ModelessDialogManager.initialize();

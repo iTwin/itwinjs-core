@@ -29,13 +29,13 @@ export interface SyncToolSettingsPropertiesEventArgs {
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> { }
 
 // -----------------------------------------------------------------------------
-// ToolUiManager class
+// ToolSettingsManager class
 // -----------------------------------------------------------------------------
 
 /** Tool UI Manager class. Used to generate UI components for Tool Settings.
  * @internal
  */
-export class ToolUiManager {
+export class ToolSettingsManager {
   private static _useDefaultToolSettingsProvider = false;
   private static _toolIdForToolSettings: string = "";
   private static _activeToolLabel: string = "";
@@ -43,12 +43,12 @@ export class ToolUiManager {
 
   // istanbul ignore next
   private static syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void {
-    ToolUiManager.onSyncToolSettingsProperties.emit({ toolId, syncProperties });
+    ToolSettingsManager.onSyncToolSettingsProperties.emit({ toolId, syncProperties });
   }
 
   // istanbul ignore next
-  private static reloadToolSettingsProperties(): void {  // TODO - should we pass in DialogItem[] or just have call back get it from active tool
-    ToolUiManager.onReloadToolSettingsProperties.emit();
+  private static reloadToolSettingsProperties(): void {
+    ToolSettingsManager.onReloadToolSettingsProperties.emit();
   }
 
   private static dispatchSyncUiEvent(syncEventId: string, useImmediateDispatch?: boolean): void {
@@ -58,42 +58,42 @@ export class ToolUiManager {
       SyncUiEventDispatcher.dispatchSyncUiEvent(syncEventId);
   }
 
-  /** Initializes the ToolUiManager */
+  /** Initializes the ToolSettingsManager */
   public static initialize() {
     // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
-      IModelApp.toolAdmin.toolSettingsChangeHandler = ToolUiManager.syncToolSettingsProperties;
-      IModelApp.toolAdmin.reloadToolSettingsHandler = ToolUiManager.reloadToolSettingsProperties;
-      IModelApp.toolAdmin.toolSyncUiEventDispatcher = ToolUiManager.dispatchSyncUiEvent;
+      IModelApp.toolAdmin.toolSettingsChangeHandler = ToolSettingsManager.syncToolSettingsProperties;
+      IModelApp.toolAdmin.reloadToolSettingsHandler = ToolSettingsManager.reloadToolSettingsProperties;
+      IModelApp.toolAdmin.toolSyncUiEventDispatcher = ToolSettingsManager.dispatchSyncUiEvent;
     }
   }
 
   /** clear cached Tool Settings properties. */
   public static clearToolSettingsData() {
-    ToolUiManager.useDefaultToolSettingsProvider = false;
-    ToolUiManager._activeToolLabel = "";
-    ToolUiManager._activeToolDescription = "";
-    ToolUiManager._toolIdForToolSettings = "";
+    ToolSettingsManager.useDefaultToolSettingsProvider = false;
+    ToolSettingsManager._activeToolLabel = "";
+    ToolSettingsManager._activeToolDescription = "";
+    ToolSettingsManager._toolIdForToolSettings = "";
   }
 
   /** Cache Tool Settings properties */
   public static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
-    ToolUiManager.clearToolSettingsData();
+    ToolSettingsManager.clearToolSettingsData();
     // istanbul ignore else
     if (toolLabel)
-      ToolUiManager._activeToolLabel = toolLabel;
+      ToolSettingsManager._activeToolLabel = toolLabel;
 
     // istanbul ignore else
     if (toolDescription)
-      ToolUiManager._activeToolDescription = toolDescription;
+      ToolSettingsManager._activeToolDescription = toolDescription;
 
     /* istanbul ignore else */
     if (toolSettingsProperties && toolSettingsProperties.length > 0) {
       // istanbul ignore else
       if (toolId)
-        ToolUiManager._toolIdForToolSettings = toolId;
+        ToolSettingsManager._toolIdForToolSettings = toolId;
 
-      ToolUiManager._useDefaultToolSettingsProvider = true;
+      ToolSettingsManager._useDefaultToolSettingsProvider = true;
       return true;
     }
     return false;
@@ -102,12 +102,12 @@ export class ToolUiManager {
   /** Set of data used in Tool Settings for the specified tool. The tool specified should be the "active" tool.
    */
   public static initializeDataForTool(tool: InteractiveTool) {
-    ToolUiManager.initializeToolSettingsData(tool.supplyToolSettingsProperties(), tool.toolId, tool.flyover, tool.description);
+    ToolSettingsManager.initializeToolSettingsData(tool.supplyToolSettingsProperties(), tool.toolId, tool.flyover, tool.description);
   }
 
   /** Returns the toolSettings properties that can be used to populate the tool settings widget. */
   public static get toolSettingsProperties(): DialogItem[] {
-    if (IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.toolId === ToolUiManager._toolIdForToolSettings) {
+    if (IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.toolId === ToolSettingsManager._toolIdForToolSettings) {
       const properties = IModelApp.toolAdmin.activeTool.supplyToolSettingsProperties();
       // istanbul ignore else
       if (properties)
@@ -120,15 +120,15 @@ export class ToolUiManager {
   /** Returns true if the Tool Settings are to be auto populated from the toolSettingsProperties.
    * The setter is chiefly for testing.
    */
-  public static get useDefaultToolSettingsProvider(): boolean { return ToolUiManager._useDefaultToolSettingsProvider; }
-  public static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean) { ToolUiManager._useDefaultToolSettingsProvider = useDefaultToolSettings; }
+  public static get useDefaultToolSettingsProvider(): boolean { return ToolSettingsManager._useDefaultToolSettingsProvider; }
+  public static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean) { ToolSettingsManager._useDefaultToolSettingsProvider = useDefaultToolSettings; }
 
   /** The name of the active tool. This is typically the flyover text specified for the tool. */
-  public static get activeToolLabel(): string { return ToolUiManager._activeToolLabel; }
-  public static set activeToolLabel(label: string) { ToolUiManager._activeToolLabel = label; }
+  public static get activeToolLabel(): string { return ToolSettingsManager._activeToolLabel; }
+  public static set activeToolLabel(label: string) { ToolSettingsManager._activeToolLabel = label; }
 
   /** Returns the description of the active tool. */
-  public static get activeToolDescription(): string { return ToolUiManager._activeToolDescription; }
+  public static get activeToolDescription(): string { return ToolSettingsManager._activeToolDescription; }
 
   /** Get ToolSettings Properties sync event. */
   public static readonly onSyncToolSettingsProperties = new SyncToolSettingsPropertiesEvent();
@@ -138,7 +138,7 @@ export class ToolUiManager {
    * @return  Id of the active tool, or blank if one is not active.
    */
   public static get toolIdForToolSettings(): string {
-    return ToolUiManager._toolIdForToolSettings;
+    return ToolSettingsManager._toolIdForToolSettings;
   }
 
 }
