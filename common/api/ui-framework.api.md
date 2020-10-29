@@ -5862,6 +5862,24 @@ export interface ToolSettingsGridProps {
     settings?: ToolSettingsEntry[];
 }
 
+// @internal
+export class ToolSettingsManager {
+    static get activeToolDescription(): string;
+    static get activeToolLabel(): string;
+    static set activeToolLabel(label: string);
+    static clearToolSettingsData(): void;
+    static initialize(): void;
+    static initializeDataForTool(tool: InteractiveTool): void;
+    static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
+    // (undocumented)
+    static readonly onReloadToolSettingsProperties: UiEvent<void>;
+    static readonly onSyncToolSettingsProperties: SyncToolSettingsPropertiesEvent;
+    static get toolIdForToolSettings(): string;
+    static get toolSettingsProperties(): DialogItem[];
+    static get useDefaultToolSettingsProvider(): boolean;
+    static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean);
+    }
+
 // @internal (undocumented)
 export function ToolSettingsWidgetContent(): JSX.Element;
 
@@ -5899,24 +5917,6 @@ export interface ToolSettingsZoneProps extends CommonProps {
     // (undocumented)
     zone: ZoneManagerProps;
 }
-
-// @internal
-export class ToolUiManager {
-    static get activeToolDescription(): string;
-    static get activeToolLabel(): string;
-    static set activeToolLabel(label: string);
-    static clearToolSettingsData(): void;
-    static initialize(): void;
-    static initializeDataForTool(tool: InteractiveTool): void;
-    static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
-    // (undocumented)
-    static readonly onReloadToolSettingsProperties: UiEvent<void>;
-    static readonly onSyncToolSettingsProperties: SyncToolSettingsPropertiesEvent;
-    static get toolIdForToolSettings(): string;
-    static get toolSettingsProperties(): DialogItem[];
-    static get useDefaultToolSettingsProvider(): boolean;
-    static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean);
-    }
 
 // @public
 export class ToolUiProvider extends ConfigurableUiControl {

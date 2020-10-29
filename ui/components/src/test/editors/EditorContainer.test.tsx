@@ -49,11 +49,11 @@ describe("<EditorContainer />", () => {
     function handleCommit(_commit: PropertyUpdatedArgs): void {
       spyOnCommit();
     }
-    const wrapper = render (<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
-    const inputNode = wrapper.container.querySelector ("input");
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown (inputNode as HTMLElement, { key: "Enter", code: "Enter"})
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -61,11 +61,11 @@ describe("<EditorContainer />", () => {
   it("calls onCancel for Escape", async () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const spyOnCancel = sinon.spy();
-    const wrapper = render (<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyOnCancel} />);
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyOnCancel} />);
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown (inputNode as HTMLElement, { key: "Escape", code: "Escape"})
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
     expect(spyOnCancel.calledOnce).to.be.true;
   });
 
@@ -97,7 +97,7 @@ describe("<EditorContainer />", () => {
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown (inputNode as HTMLElement, { key: "Tab", code: "Tab"})
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Tab" })
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -118,7 +118,7 @@ describe("<EditorContainer />", () => {
 
     const renderedWrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     const renderedInputNode = renderedWrapper.container.querySelector("input");
-    fireEvent.keyDown (renderedInputNode as HTMLElement, { key: "ArrowLeft", code: "ArrowLeft"});
+    fireEvent.keyDown(renderedInputNode as HTMLElement, { key: "ArrowLeft" });
   });
 
 });

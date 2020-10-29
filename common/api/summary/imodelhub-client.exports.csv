@@ -24,6 +24,7 @@ beta;ChangeSetPrePushEvent
 beta;ChangeSetQuery 
 beta;ChangesType
 alpha;Checkpoint 
+beta;CheckpointCreatedEvent 
 alpha;CheckpointHandler
 alpha;CheckpointQuery 
 beta;CloneIModelTemplate
@@ -48,8 +49,9 @@ beta;EventHandler
 beta;EventSAS 
 beta;EventSubscription 
 beta;EventSubscriptionHandler
-beta;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent"
+beta;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent"
 internal;GetEventOperationType
+internal;GlobalCheckpointCreatedEvent 
 internal;GlobalEventHandler 
 internal;GlobalEventSAS 
 internal;GlobalEventSubscription 

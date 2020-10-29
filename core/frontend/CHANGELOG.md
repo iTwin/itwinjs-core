@@ -1,6 +1,30 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 26 Oct 2020 13:05:26 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Ensure transform animations in schedule scripts are applied correctly to tile graphics.
+- #460803 Improve clip arrow control visibility.
+- handle undefined _lut in FeatureOverrides when webgl context is lost, which obscured the actual context loss
+- link to webgl compatibility checker in context loss error message
+- Restore reality model and schedule script init - inadvertently removed.
+- fixed hilite/emphasis interaction for for non-default options
+- fixed hilite/emphasize interaction
+- Root WMS sublayer is now included is the list of Sublayers.  First level of children is visible by default, unless too many layers are found (in that case we make the root sublayer visible only).  Made sure prefixed sublayers groups are correctly linked to root sublayer.  Also removed prefix from title for prefixed sublayers.
+- Added optional wms authentication
+- #468491 Stop touch viewing operations from affect last dynamics point.
+- IModelConnection.onOpen is not raised when opening iModel with NativeApp.openBriefcase
+- Support down-sampling very large textures in tiles.
+- Reduce threshold for ecef validation.
+- Remove deprecated SpatialModelTileTrees.
+- Add methods on viewport for attach/detach reality models.  Support -1 for detach.
+- Add support for OPC point clouds in Reality Data widget.
+- Added color mix to thematic display for background map terrain and point clouds
+- added IModelApp.translateErrorNumber
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT

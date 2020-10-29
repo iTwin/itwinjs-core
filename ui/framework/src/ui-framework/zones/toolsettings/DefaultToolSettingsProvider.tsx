@@ -14,7 +14,7 @@ import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiContr
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
-import { SyncToolSettingsPropertiesEventArgs, ToolUiManager } from "../toolsettings/ToolUiManager";
+import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "./ToolSettingsManager";
 import { ToolUiProvider } from "./ToolUiProvider";
 
 /** @internal */
@@ -27,7 +27,7 @@ class ToolSettingsUiDataProvider extends UiLayoutDataProvider {
   }
 
   public supplyDialogItems(): DialogItem[] | undefined {
-    return ToolUiManager.toolSettingsProperties;
+    return ToolSettingsManager.toolSettingsProperties;
   }
 
   // send property changes from UI back to tool
@@ -75,7 +75,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     this.reloadPropertiesFromTool();
   }
 
-  // called to process ToolUiManager.onSyncToolSettingsProperties event
+  // called to process ToolSettingsManager.onSyncToolSettingsProperties event
   public syncToolSettingsProperties(args: SyncToolSettingsPropertiesEventArgs): void {
     const syncArgs: SyncPropertiesChangeEventArgs = { properties: args.syncProperties };
     this.uiDataProvider.onSyncPropertiesChangeEvent.emit(syncArgs);

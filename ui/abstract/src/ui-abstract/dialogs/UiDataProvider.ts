@@ -35,7 +35,9 @@ export abstract class UiDataProvider {
   }
 
   /** Called to sync properties synchronously if a UiDataProvider is active for the UI */
-  public syncProperties(_syncProperties: DialogPropertySyncItem[]) { }
+  public syncProperties(syncProperties: DialogPropertySyncItem[]) {
+    this.fireSyncPropertiesEvent(syncProperties);
+  }
 
   /** Called to inform listener that the UiDataProvider has updated values for the UI */
   public fireSyncPropertiesEvent(syncProperties: DialogPropertySyncItem[]) {

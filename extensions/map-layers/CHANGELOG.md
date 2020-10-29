@@ -1,6 +1,14 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Mon, 26 Oct 2020 13:05:26 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Introduced the concept of named/unamed groups and made sure the SubLayers tree view remained consistent with the display (i.e disabling children of non-visible unnamed groups)
+- Added optional wms autentication
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT

@@ -10,7 +10,7 @@ import * as React from "react";
 import { UiDataProvider } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolSettingsEntry } from "../../widget-panels/ToolSettings";
-import { SyncToolSettingsPropertiesEventArgs } from "./ToolUiManager";
+import { SyncToolSettingsPropertiesEventArgs } from "./ToolSettingsManager";
 
 /**
  * ToolUiProvider provides the Tool Settings and/or Tool Assistance UI for a tool.

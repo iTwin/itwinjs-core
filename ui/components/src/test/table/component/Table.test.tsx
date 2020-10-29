@@ -1306,7 +1306,7 @@ describe("Table", () => {
 
       fireEvent.click(inputNode);
       fireEvent.change(inputNode, { target: { value: newPropertyValue } });
-      fireEvent.keyDown(inputNode, { key: "Enter", code: "Enter" })
+      fireEvent.keyDown(inputNode, { key: "Enter" })
 
       await TestUtils.flushAsyncOperations();
       expect(onPropertyUpdated.calledOnce).to.be.true;

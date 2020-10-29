@@ -2,6 +2,21 @@
   "name": "@bentley/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add tests for deprecated PresentationRpcInterface endpoints and new IModelReadRpcInterface.getGeometryContainment method"
+          },
+          {
+            "comment": "Remove the unused variables from the template.env"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.5",
       "tag": "@bentley/rpcinterface-full-stack-tests_v2.7.5",
       "date": "Fri, 23 Oct 2020 16:23:50 GMT",

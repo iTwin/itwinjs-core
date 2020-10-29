@@ -21,7 +21,7 @@ import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
-import { SyncToolSettingsPropertiesEventArgs, ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
 import { FrontstageProvider } from "./FrontstageProvider";
@@ -204,17 +204,17 @@ export class FrontstageManager {
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
         // make sure tool settings properties are cached before creating ToolInformation
-        ToolUiManager.clearToolSettingsData();
+        ToolSettingsManager.clearToolSettingsData();
         // istanbul ignore else
         if (tool instanceof InteractiveTool)
-          ToolUiManager.initializeDataForTool(tool);
+          ToolSettingsManager.initializeDataForTool(tool);
 
         // if the tool data is not already cached then see if there is data to cache
         FrontstageManager.ensureToolInformationIsSet(tool.toolId);
         FrontstageManager.setActiveTool(tool);
       });
-      ToolUiManager.onSyncToolSettingsProperties.addListener(FrontstageManager.handleSyncToolSettingsPropertiesEvent);
-      ToolUiManager.onReloadToolSettingsProperties.addListener(FrontstageManager.handleReloadToolSettingsEvent);
+      ToolSettingsManager.onSyncToolSettingsProperties.addListener(FrontstageManager.handleSyncToolSettingsPropertiesEvent);
+      ToolSettingsManager.onReloadToolSettingsProperties.addListener(FrontstageManager.handleReloadToolSettingsEvent);
     }
 
     // istanbul ignore else

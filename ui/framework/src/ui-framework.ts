@@ -256,7 +256,7 @@ export * from "./ui-framework/zones/FrameworkZone";
 export * from "./ui-framework/zones/StatusBarZone";
 export * from "./ui-framework/zones/toolsettings/ToolSettingsZone";
 export * from "./ui-framework/zones/toolsettings/ToolInformation";
-export * from "./ui-framework/zones/toolsettings/ToolUiManager";
+export * from "./ui-framework/zones/toolsettings/ToolSettingsManager";
 export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
 export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 export * from "./ui-framework/zones/Zone";
