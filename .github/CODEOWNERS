@@ -73,7 +73,7 @@ rush.json @calebmshafer @scsewall
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
 /core/backend                   @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
-/core/backend-itwin-client
+/core/backend-itwin-client      @calebmshafer @ramanujam-raman
 /core/bentley                   @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
 /core/common                    @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
@@ -127,7 +127,7 @@ rush.json @calebmshafer @scsewall
 /test-apps/display-test-app                 @kabentley @mgooding @pmconne
 /test-apps/export-gltf                      @mgooding
 /test-apps/export-obj                       @mgooding
-# /test-apps/imjs-importer                    @EarlinLutz
+/test-apps/imjs-importer                    @EarlinLutz
 /test-apps/imodel-from-geojson              @mgooding
 # /test-apps/imodel-from-orbitgt              @RBBentley
 # /test-apps/imodel-from-reality-model        @RBBentley
@@ -154,6 +154,6 @@ rush.json @calebmshafer @scsewall
 /ui/components/src/ui-components/properties   @bsteinbk @DanEastBentley @grigasp @saskliutas
 /ui/components/src/ui-components/propertygrid @bsteinbk @DanEastBentley @grigasp @saskliutas
 /ui/components/src/ui-components/tree         @bsteinbk @DanEastBentley @grigasp @saskliutas
-/ui/components/src/ui-components/properties   @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
-/ui/components/src/ui-components/propertygrid @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
-/ui/components/src/ui-components/tree         @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
+# /ui/components/src/ui-components/properties   @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
+# /ui/components/src/ui-components/propertygrid @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
+# /ui/components/src/ui-components/tree         @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
