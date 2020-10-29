@@ -12,7 +12,7 @@
 *  @kabentley @scsewall @ramanujam-raman @pmconne @calebmshafer @swwilson-bsi
 
 # No one specific needs to review changelogs. That will be left up to the reviewers specified in other places
-!/common/changes
+# !/common/changes
 
 .gitattributes @calebmshafer @scsewall
 .gitignore @calebmshafer @scsewall
