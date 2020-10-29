@@ -9,7 +9,8 @@
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
 
-*  @kabentley @scsewall @ramanujam-raman @pmconne @calebmshafer @swwilson-bsi
+# *  @kabentley @scsewall @ramanujam-raman @pmconne @calebmshafer @swwilson-bsi
+*  @kabentley @scsewall @ramanujam-raman @pmconne @calebmshafer
 
 # No one specific needs to review changelogs. That will be left up to the reviewers specified in other places
 # !/common/changes
@@ -19,7 +20,7 @@
 rush.json @calebmshafer @scsewall
 
 /clients              @calebmshafer @ramanujam-raman
-/clients/imodelhub    @amikoliunas @Animagne
+# /clients/imodelhub    @amikoliunas @Animagne
 
 # /common/api/analytical-backend.api.md              @diegoalexdiaz @scsewall
 /common/api/analytical-backend.api.md               @scsewall
@@ -38,10 +39,13 @@ rush.json @calebmshafer @scsewall
 /common/api/frontend-application-insights-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-authorization-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-devtools.api.md                @pmconne @mgooding
-/common/api/geometry-core.api.md                    @mgooding @RBBentley @bbastings @EarlinLutz
-/common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
-/common/api/imodel-bridge.api.md                    @abeesh @c-macdonald @swwilson-bsi
-/common/api/imodelhub-client.api.md                 @amikoliunas @Animagne
+# /common/api/geometry-core.api.md                   @EarlinLutz @mgooding @RBBentley @bbastings
+/common/api/geometry-core.api.md                    @EarlinLutz @mgooding
+# /common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
+/common/api/hypermodeling-frontend.api.md           @pmconne
+# /common/api/imodel-bridge.api.md                    @abeesh @c-macdonald @swwilson-bsi
+/common/api/imodel-bridge.api.md                    @abeesh @swwilson-bsi
+# /common/api/imodelhub-client.api.md                 @amikoliunas @Animagne
 /common/api/imodeljs-backend.api.md                 @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
 /common/api/imodeljs-common.api.md                  @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
 /common/api/imodeljs-frontend.api.md                @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
@@ -54,7 +58,7 @@ rush.json @calebmshafer @scsewall
 /common/api/linear-referencing-backend.api.md       @scsewall
 /common/api/linear-referencing-common.api.md        @scsewall
 /common/api/logger-config.api.md                    @swwilson-bsi @scsewall
-/common/api/oauth-introspection-client.api.model    @calebmshafer @ramanujam-raman
+/common/api/oauth-introspection-client.api.md       @calebmshafer @ramanujam-raman
 # /common/api/orbitgt-core.api.md                     @pmconne @RBBentley
 /common/api/orbitgt-core.api.md                     @pmconne
 /common/api/perf-tools.api.md                       @calebmshafer @wgoehrig
@@ -66,7 +70,7 @@ rush.json @calebmshafer @scsewall
 /common/api/rbac-client.api.md                      @calebmshafer @ramanujam-raman
 /common/api/reality-data-client.api.md              @calebmshafer @ramanujam-raman
 /common/api/telemetry-client.api.md                 @calebmshafer @ramanujam-raman
-/common/api/ui-*.api.md                             @bsteinbk @DanEastBentley @GerardasB @grigasp
+ /common/api/ui-*.api.md                             @bsteinbk @DanEastBentley @GerardasB @grigasp
 /common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
 /common/api/webgl-compatibility.api.md              @pmconne
 
@@ -119,20 +123,21 @@ rush.json @calebmshafer @scsewall
 
 # /presentation                   @grigasp @roluk @saskliutas
 /presentation                   @grigasp @saskliutas
-/presentation/common/src/PresentationRpcInterface.ts  @grigasp
+/presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
 # /test-apps/analysis-importer                @RBBentley
 /test-apps/display-performance-test-app     @hnn0003 @pmconne
-/test-apps/display-test-app                 @kabentley @mgooding @pmconne @RBBentley
+# /test-apps/display-test-app                 @kabentley @mgooding @pmconne @RBBentley
 /test-apps/display-test-app                 @kabentley @mgooding @pmconne
 /test-apps/export-gltf                      @mgooding
 /test-apps/export-obj                       @mgooding
-/test-apps/imjs-importer                    @EarlinLutz
+# /test-apps/imjs-importer                    @EarlinLutz
 /test-apps/imodel-from-geojson              @mgooding
 # /test-apps/imodel-from-orbitgt              @RBBentley
 # /test-apps/imodel-from-reality-model        @RBBentley
 /test-apps/ninezone-test-app                @bsteinbk @DanEastBentley @GerardasB
-/test-apps/presentation-test-app            @grigasp @saskliutas @roluk
+# /test-apps/presentation-test-app            @grigasp @saskliutas @roluk
+/test-apps/presentation-test-app            @grigasp @saskliutas
 # /test-apps/synchro-schedule-importer        @RBBentley
 /test-apps/ui-test-app                      @bsteinbk @DanEastBentley @GerardasB @grigasp
 /test-apps/ui-test-extension                @bsteinbk @DanEastBentley @GerardasB
