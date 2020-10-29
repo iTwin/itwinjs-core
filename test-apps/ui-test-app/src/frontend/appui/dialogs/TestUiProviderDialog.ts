@@ -6,7 +6,7 @@ import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
   ColorEditorParams, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription,
-  PropertyEditorParamTypes, SuppressLabelEditorParams, SyncPropertiesChangeEventArgs,
+  PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "@bentley/ui-abstract";
 
 enum ColorOptions {
@@ -263,8 +263,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
 
   private syncLengthState() {
     const syncItem: DialogPropertySyncItem = { value: this._lengthValue, propertyName: TestUiProvider._lengthName, isDisabled: !this.useLength };
-    const synchEventArgs: SyncPropertiesChangeEventArgs = { properties: [syncItem] };
-    this.onSyncPropertiesChangeEvent.emit(synchEventArgs);
+    this.fireSyncPropertiesEvent([syncItem]);
   }
 
   /** Used to send changes from UI */

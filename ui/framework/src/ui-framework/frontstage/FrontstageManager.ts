@@ -191,7 +191,6 @@ export class FrontstageManager {
     // istanbul ignore else
     if (FrontstageManager.activeToolSettingsProvider) {
       FrontstageManager.activeToolSettingsProvider.reloadPropertiesFromTool();
-      FrontstageManager.onToolSettingsReloadEvent.emit();
     }
   }
 

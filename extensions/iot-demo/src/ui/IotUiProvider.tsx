@@ -116,7 +116,7 @@ export class IotUiProvider extends UiDataProvider implements UiItemsProvider {
       { value: { value: this.monitorTime }, propertyName: this.monitorTimePropertyName },
     ];
 
-    this.onSyncPropertiesChangeEvent.emit({ properties });
+    this.fireSyncPropertiesEvent(properties);
   }
 
   public syncAlarmUi(monitorTime: Date, alarmText?: string): void {
@@ -128,7 +128,7 @@ export class IotUiProvider extends UiDataProvider implements UiItemsProvider {
       properties.push({ value: { value: this.alarmText }, propertyName: this.alarmTextPropertyName });
     }
 
-    this.onSyncPropertiesChangeEvent.emit({ properties });
+    this.fireSyncPropertiesEvent(properties);
   }
 
   /** Called by UI to inform data provider of changes */
