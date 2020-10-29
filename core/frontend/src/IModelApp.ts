@@ -353,9 +353,6 @@ export class IModelApp {
     this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
     this.authorizationClient = opts.authorizationClient;
 
-    const featureUsageClient = new FrontendFeatureUsageTelemetryClient();
-    this.telemetry.addClient(featureUsageClient);
-
     this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
     if (this._securityOptions.csrfProtection?.enabled) {
       this._imodelClient.use(
@@ -363,6 +360,11 @@ export class IModelApp {
           this._securityOptions.csrfProtection.headerName,
           this._securityOptions.csrfProtection.cookieName,
         ));
+    }
+
+    if (this._imodelClient instanceof IModelHubClient) {
+      const featureUsageClient = new FrontendFeatureUsageTelemetryClient();
+      this.telemetry.addClient(featureUsageClient);
     }
 
     this._setupRpcRequestContext();

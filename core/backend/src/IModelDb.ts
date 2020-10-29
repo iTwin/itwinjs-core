@@ -2236,7 +2236,7 @@ export class BriefcaseDb extends IModelDb {
 
       const alreadyOpenEndTime = new Date();
       Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-      await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime);
+      briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime);
       return briefcaseDb;
     }
 
@@ -2276,14 +2276,14 @@ export class BriefcaseDb extends IModelDb {
 
     const endTime = new Date();
     Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-    await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime);
+    briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime);
 
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
   }
 
   /** Log usage when opening the iModel */
-  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string, startTime: Date, endTime: Date) {
+  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string, startTime: Date, endTime: Date): Promise<void> {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.briefcase.getDebugInfo());
@@ -2303,15 +2303,14 @@ export class BriefcaseDb extends IModelDb {
       },
     );
     Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage/telemetry", () => this.briefcase.getDebugInfo());
-    await IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent);
+    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent);
 
-    try {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
-      await UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
-    } catch (err) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
-    }
+    Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
+    UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
+      .catch((err) => {
+        requestContext.enter();
+        Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
+      });
   }
 
   /** Close this IModel, if it is currently open.
