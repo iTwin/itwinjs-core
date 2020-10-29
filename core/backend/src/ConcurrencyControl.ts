@@ -560,17 +560,26 @@ export class ConcurrencyControl {
     return res;
   }
 
-  /** @deprecated Use concurrencyControl.locks.hasSchemaLock */
+  /**
+   * @internal
+   * @deprecated Use concurrencyControl.locks.hasSchemaLock
+   */
   public get hasSchemaLock(): boolean {
     return this.locks.hasSchemaLock;
   }
 
-  /** @deprecated Use concurrencyControl.locks.hasCodeSpecsLock */
+  /**
+   * @internal
+   * @deprecated Use concurrencyControl.locks.hasCodeSpecsLock
+   */
   public get hasCodeSpecsLock(): boolean {
     return this.locks.hasCodeSpecsLock;
   }
 
-  /** @deprecated Use concurrencyControl.locks.holdsLock */
+  /**
+   * @internal
+   * @deprecated Use concurrencyControl.locks.holdsLock
+   */
   public holdsLock(lock: ConcurrencyControl.LockProps): boolean {
     return this.locks.holdsLock(lock);
   }
@@ -580,7 +589,10 @@ export class ConcurrencyControl {
     return this._cache.isLockHeld(lock);
   }
 
-  /** @deprecated concurrencyControl.codes.isReserved */
+  /**
+   * @internal
+   * @deprecated concurrencyControl.codes.isReserved
+   */
   public hasReservedCode(code: CodeProps): boolean {
     return this.codes.isReserved(code);
   }
@@ -616,7 +628,10 @@ export class ConcurrencyControl {
     return res;
   }
 
-  /** @deprecated */
+  /**
+   * @internal
+   * @deprecated
+   */
   public getHeldLock(type: LockType, objectId: Id64String): LockLevel {
     return this.locks.getHeldLock(type, objectId);
   }
@@ -626,12 +641,18 @@ export class ConcurrencyControl {
     return this._cache.getHeldLock(type, objectId);
   }
 
-  /** @deprecated */
+  /**
+   * @internal
+   * @deprecated
+   */
   public getHeldModelLock(modelId: Id64String): LockLevel {
     return this.locks.getHeldLock(LockType.Model, modelId);
   }
 
-  /** @deprecated */
+  /**
+   * @internal
+   * @deprecated
+   */
   public getHeldElementLock(elementId: Id64String): LockLevel {
     return this.locks.getHeldLock(LockType.Element, elementId);
   }
@@ -666,7 +687,10 @@ export class ConcurrencyControl {
     return lockStates;
   }
 
-  /** @deprecated Apps should use ConcurrencyControl.codes.request */
+  /**
+   * @internal
+   * @deprecated Use ConcurrencyControl.codes.request
+   */
   public async reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]> {
     return this.reserveCodes0(requestContext, codes);
   }
@@ -691,12 +715,18 @@ export class ConcurrencyControl {
   }
 
 
-  /** @deprecated Apps should use ConcurrencyControl.codes.query or ConcurrencyControl.codes.isReserved */
+  /**
+   * @internal
+   * @deprecated Use ConcurrencyControl.codes.query or ConcurrencyControl.codes.isReserved
+   */
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
     return this.codes.query(requestContext, specId, scopeId, value);
   }
 
-  /** @deprecated concurrencyControl.codes.areAvailable */
+  /**
+   * @internal
+   * @deprecated concurrencyControl.codes.areAvailable
+   */
   public async areCodesAvailable2(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<boolean> {
     return this.codes.areAvailable(requestContext, codes);
   }
@@ -707,7 +737,10 @@ export class ConcurrencyControl {
     this._cache.deleteLocksForTxn(this.iModel.txns.getCurrentTxnId());
   }
 
-  /** @deprecated concurrencyControl.codes.areAvailable */
+  /**
+   * @internal
+   * @deprecated concurrencyControl.codes.areAvailable
+   */
   public async areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     return this.areCodesAvailable0(requestContext, req);
   }
