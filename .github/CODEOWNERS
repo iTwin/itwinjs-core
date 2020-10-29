@@ -14,7 +14,9 @@
 # No one specific needs to review changelogs. That will be left up to the reviewers specified in other places
 !/common/changes
 
-.gitattributes .gitignore rush.json @calebmshafer @scsewall
+.gitattributes @calebmshafer @scsewall
+.gitignore @calebmshafer @scsewall
+rush.json @calebmshafer @scsewall
 
 /clients              @calebmshafer @ramanujam-raman
 /clients/imodelhub    @amikoliunas @Animagne
@@ -86,7 +88,8 @@
 /core/quantity                  @bsteinbk @calebmshafer
 /core/webgl-compatibility       @pmconne @mgooding
 
-/docs/getting-started /docs/config @calebmshafer @williamkbentley
+/docs/getting-started @calebmshafer @williamkbentley
+/docs/config @calebmshafer @williamkbentley
 
 # These domains should be split up a bit more
 /domains      @scsewall
@@ -122,11 +125,19 @@
 /test-apps/ui-test-app                      @bsteinbk @Dan-East @GerardasB @grigasp
 /test-apps/ui-test-extension                @bsteinbk @Dan-East @GerardasB
 
-/tools/backend-webpack /tools/build /tools/certa /tools/config-loader /tools/extension-webpack /tools/oidc-signin-tool /tools/webpack-core @calebmshafer @wgoehrig
+/tools/backend-webpack @calebmshafer @wgoehrig
+/tools/build @calebmshafer @wgoehrig
+/tools/certa @calebmshafer @wgoehrig
+/tools/config-loader @calebmshafer @wgoehrig
+/tools/extension-webpack @calebmshafer @wgoehrig
+/tools/oidc-signin-tool @calebmshafer @wgoehrig
+/tools/webpack-core @calebmshafer @wgoehrig
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
 /tools/eslint-plugin /tools/extension-cli @calebmshafer @pauliunas
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
 /ui @bsteinbk @Dan-East @GerardasB @grigasp
-/ui/components/src/ui-components/properties /ui/components/src/ui-components/propertygrid /ui/components/src/ui-components/tree   @bsteinbk @Dan-East @grigasp @saskliutas @roluk
+/ui/components/src/ui-components/properties   @bsteinbk @Dan-East @grigasp @saskliutas @roluk
+/ui/components/src/ui-components/propertygrid @bsteinbk @Dan-East @grigasp @saskliutas @roluk
+/ui/components/src/ui-components/tree         @bsteinbk @Dan-East @grigasp @saskliutas @roluk
