@@ -29,7 +29,8 @@ describe("<EditorContainer />", () => {
 
   it("should render", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
-    mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    const sut = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    sut.unmount();
   });
 
   it("renders correctly", () => {
@@ -41,6 +42,7 @@ describe("<EditorContainer />", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(wrapper.find("input.components-text-editor").length).to.eq(1);
+    wrapper.unmount();
   });
 
   it("calls onCommit for Enter", async () => {
@@ -55,7 +57,7 @@ describe("<EditorContainer />", () => {
 
     fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
     await TestUtils.flushAsyncOperations();
-    // expect(spyOnCommit.calledOnce).to.be.true; TODO investigate - likely due to change to use native event listeners
+    expect(spyOnCommit.calledOnce).to.be.true;
   });
 
   it("calls onCancel for Escape", async () => {
@@ -66,7 +68,8 @@ describe("<EditorContainer />", () => {
     expect(inputNode).not.to.be.null;
 
     fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
-    // expect(spyOnCommit.calledOnce).to.be.true; TODO investigate - likely due to change to use native event listeners
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCancel.calledOnce).to.be.true;
   });
 
   it("calls onCancel for Cancel button in popup", async () => {
@@ -84,7 +87,8 @@ describe("<EditorContainer />", () => {
     okButton.first().simulate("click");
     await TestUtils.flushAsyncOperations();
 
-    // expect(spyOnCancel.calledOnce).to.be.true; TODO investigate - likely due to change to use native event listeners
+    expect(spyOnCancel.calledOnce).to.be.true;
+    wrapper.unmount();
   });
 
   it("calls onCommit for Tab", async () => {
@@ -99,7 +103,7 @@ describe("<EditorContainer />", () => {
 
     fireEvent.keyDown(inputNode as HTMLElement, { key: "Tab" })
     await TestUtils.flushAsyncOperations();
-    // expect(spyOnCommit.calledOnce).to.be.true; TODO investigate - likely due to change to use native event listeners
+    expect(spyOnCommit.calledOnce).to.be.true;
   });
 
   it("processes other input node events", () => {
@@ -119,6 +123,7 @@ describe("<EditorContainer />", () => {
     const renderedWrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     const renderedInputNode = renderedWrapper.container.querySelector("input");
     fireEvent.keyDown(renderedInputNode as HTMLElement, { key: "ArrowLeft" });
+    wrapper.unmount();
   });
 
 });
