@@ -18,6 +18,7 @@ export enum TileFormat {
   Gltf = 0x46546c67, // "glTF"
   Pnts = 0x73746e70,  // "pnts"
   IModel = 0x6c644d69, // "iMdl"
+  IModelGraphics = 0x66674469, // "iMgf"
   Cmpt = 0x74706d63,  // cmpt
   I3dm = 0x6d643369,  // i3dm
   A3x = 0x583341, // A3X0 (numeric 0 not char '0')
@@ -32,6 +33,7 @@ export function isKnownTileFormat(format: number) {
     case TileFormat.B3dm:
     case TileFormat.Gltf:
     case TileFormat.IModel:
+    case TileFormat.IModelGraphics:
     case TileFormat.Pnts:
     case TileFormat.Cmpt:
     case TileFormat.I3dm:
