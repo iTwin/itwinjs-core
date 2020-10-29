@@ -469,6 +469,22 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
     rwIModel.saveChanges("inserted generic objects");
 
+    // While we're here, do a quick test of lock management
+    const bcId = rwIModel.concurrencyControl.iModel.briefcase.briefcaseId;
+    const iModelId = rwIModel.concurrencyControl.iModel.iModelId;
+
+    var heldLocks = await BriefcaseManager.imodelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    assert.isTrue(heldLocks.length !== 0);
+
+    await expect(rwIModel.concurrencyControl.abandonResources(adminRequestContext)).to.be.rejectedWith(IModelError, "");
+
+    await rwIModel.pushChanges(adminRequestContext, "");
+
+    heldLocks = await BriefcaseManager.imodelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    assert.isTrue(heldLocks.length === 0);
+
+    await rwIModel.concurrencyControl.abandonResources(adminRequestContext); // should do nothing and be harmless
+
   });
 
   it("should handle undo/redo (#integration)", async () => {

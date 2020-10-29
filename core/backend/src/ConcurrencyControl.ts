@@ -31,8 +31,8 @@ const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
  */
 export class ConcurrencyControl {
   private _pendingRequest = new ConcurrencyControl.Request();
-  private _codes?: ConcurrencyControl.Codes;
-  private _locks?: ConcurrencyControl.Locks;
+  private _codes?: ConcurrencyControl.CodesManager;
+  private _locks?: ConcurrencyControl.LocksManager;
   private _policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
   private _bulkMode: boolean = false;
   private _cache: ConcurrencyControl.StateCache;
@@ -410,10 +410,12 @@ export class ConcurrencyControl {
    * Try to acquire locks and/or reserve codes from iModelHub.
    * This function may fulfill some requests and fail to fulfill others. This function returns a rejection of type IModelHubError if some or all requests could not be fulfilled.
    * The error object will identify the locks and/or codes that are unavailable.
-   * <p><em>Example:</em>
+   * <p><em>Example:</em></p>
+   *
    * ``` ts
    * [[include:ConcurrencyControl.request]]
    * ```
+   *
    * Note that this function will request resources even in bulk mode.
    * @param requestContext The client request context
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
@@ -461,13 +463,19 @@ export class ConcurrencyControl {
 
   /**
    * Abandons any locks that are held, any Codes that are reserved, and any pending requests.
-   * You should call this when you call IModelDb.abandonChanges.
-   * This is called automatically by BriefcaseDb.cancelChanges and by BriefcaseDb.pushChanges in the event that there are
+   * You can call this after calling IModelDb.abandonChanges, but only if you have no local txn to push.
+   * This is called automatically by BriefcaseDb.pushChanges in the event that there are
    * no changes to push.
+   * @throws [[IModelError]] if there are any pending txns that are waiting to be pushed to the iModel server.
    * @beta
    */
   public async abandonResources(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
+
+    if (this._iModel.txns.hasPendingTxns) {
+      throw new IModelError(RepositoryStatus.PendingTransactions, "");
+    }
+
     this.abandonRequest();
     this._cache.deleteFile();
     await Promise.all([
@@ -535,7 +543,7 @@ export class ConcurrencyControl {
     this.addToPendingRequestIfNotHeld(req);
   }
 
-  /** @deprecated Use concurrencyControl.locks.lockSchema */
+  /** @internal @deprecated Use concurrencyControl.locks.lockSchema */
   public async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
     return this.locks.lockSchema(requestContext);
   }
@@ -560,26 +568,17 @@ export class ConcurrencyControl {
     return res;
   }
 
-  /**
-   * @internal
-   * @deprecated Use concurrencyControl.locks.hasSchemaLock
-   */
+  /** @internal @deprecated Use concurrencyControl.locks.hasSchemaLock */
   public get hasSchemaLock(): boolean {
     return this.locks.hasSchemaLock;
   }
 
-  /**
-   * @internal
-   * @deprecated Use concurrencyControl.locks.hasCodeSpecsLock
-   */
+  /** @internal @deprecated Use concurrencyControl.locks.hasCodeSpecsLock */
   public get hasCodeSpecsLock(): boolean {
     return this.locks.hasCodeSpecsLock;
   }
 
-  /**
-   * @internal
-   * @deprecated Use concurrencyControl.locks.holdsLock
-   */
+  /** @internal @deprecated Use concurrencyControl.locks.holdsLock */
   public holdsLock(lock: ConcurrencyControl.LockProps): boolean {
     return this.locks.holdsLock(lock);
   }
@@ -589,10 +588,7 @@ export class ConcurrencyControl {
     return this._cache.isLockHeld(lock);
   }
 
-  /**
-   * @internal
-   * @deprecated concurrencyControl.codes.isReserved
-   */
+  /** @internal @deprecated concurrencyControl.codes.isReserved*/
   public hasReservedCode(code: CodeProps): boolean {
     return this.codes.isReserved(code);
   }
@@ -602,7 +598,7 @@ export class ConcurrencyControl {
   }
 
 
-  /** @deprecated Use ConcurrencyControl.Locks.lockCodeSpecs */
+  /** @internal @deprecated Use concurrencyControl.locks.lockCodeSpecs */
   public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
     return this.lockCodeSpecs0(requestContext);
   }
@@ -628,10 +624,7 @@ export class ConcurrencyControl {
     return res;
   }
 
-  /**
-   * @internal
-   * @deprecated
-   */
+  /** @internal @deprecated Use concurrencyControl.locks.getHeldLock */
   public getHeldLock(type: LockType, objectId: Id64String): LockLevel {
     return this.locks.getHeldLock(type, objectId);
   }
@@ -641,20 +634,14 @@ export class ConcurrencyControl {
     return this._cache.getHeldLock(type, objectId);
   }
 
-  /**
-   * @internal
-   * @deprecated
-   */
+  /** @internal @deprecated Use concurrencyControl.locks.getHeldModelLock */
   public getHeldModelLock(modelId: Id64String): LockLevel {
-    return this.locks.getHeldLock(LockType.Model, modelId);
+    return this.locks.getHeldModelLock(modelId);
   }
 
-  /**
-   * @internal
-   * @deprecated
-   */
+  /** @internal @deprecated Use concurrencyControl.locks.getHeldElementLock */
   public getHeldElementLock(elementId: Id64String): LockLevel {
-    return this.locks.getHeldLock(LockType.Element, elementId);
+    return this.locks.getHeldElementLock(elementId);
   }
 
   private checkLockRestrictions(locks: ConcurrencyControl.LockProps[]) {
@@ -687,10 +674,7 @@ export class ConcurrencyControl {
     return lockStates;
   }
 
-  /**
-   * @internal
-   * @deprecated Use ConcurrencyControl.codes.request
-   */
+  /** @internal @deprecated Use ConcurrencyControl.codes.request */
   public async reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]> {
     return this.reserveCodes0(requestContext, codes);
   }
@@ -715,32 +699,25 @@ export class ConcurrencyControl {
   }
 
 
-  /**
-   * @internal
-   * @deprecated Use ConcurrencyControl.codes.query or ConcurrencyControl.codes.isReserved
-   */
+  /** @internal @deprecated Use ConcurrencyControl.codes.query or ConcurrencyControl.codes.isReserved */
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
     return this.codes.query(requestContext, specId, scopeId, value);
   }
 
-  /**
-   * @internal
-   * @deprecated concurrencyControl.codes.areAvailable
-   */
+  /** @internal @deprecated Use concurrencyControl.codes.areAvailable */
   public async areCodesAvailable2(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<boolean> {
     return this.codes.areAvailable(requestContext, codes);
   }
 
-  /** Abandon any pending requests for locks or codes. */
+  /** Abandon any *pending* requests for locks or codes.
+   * This is called automatically by BriefcaseDb.abandonChanges.
+  */
   public abandonRequest() {
     this._pendingRequest.clear();
     this._cache.deleteLocksForTxn(this.iModel.txns.getCurrentTxnId());
   }
 
-  /**
-   * @internal
-   * @deprecated concurrencyControl.codes.areAvailable
-   */
+  /** @internal @deprecated Use concurrencyControl.codes.areAvailable */
   public async areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     return this.areCodesAvailable0(requestContext, req);
   }
@@ -856,10 +833,11 @@ export class ConcurrencyControl {
    * Before changing from optimistic to pessimistic, all local changes must be saved and uploaded to iModelHub.
    * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the BriefcaseDb.
    * Here is an example of setting an optimistic policy:
-   * <p><em>Example:</em>
+   *
    * ``` ts
    * [[include:ConcurrencyControl.setPolicy]]
    * ```
+   *
    * @param policy The policy to used
    * @throws [[IModelError]] if the policy cannot be set.
    */
@@ -881,16 +859,16 @@ export class ConcurrencyControl {
   }
 
   /** API to reserve Codes and to query the status of Codes */
-  public get codes(): ConcurrencyControl.Codes {
+  public get codes(): ConcurrencyControl.CodesManager {
     if (this._codes === undefined)
-      this._codes = new ConcurrencyControl.Codes(this._iModel);
+      this._codes = new ConcurrencyControl.CodesManager(this._iModel);
     return this._codes;
   }
 
   /** API to acquire locks preemtively and to query the status of locks */
-  public get locks(): ConcurrencyControl.Locks {
+  public get locks(): ConcurrencyControl.LocksManager {
     if (this._locks === undefined)
-      this._locks = new ConcurrencyControl.Locks(this._iModel);
+      this._locks = new ConcurrencyControl.LocksManager(this._iModel);
     return this._locks;
   }
 }
@@ -1390,18 +1368,24 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
   export class PessimisticPolicy {
   }
 
-  /** Code manager */
-  export class Codes {
+  /** Code manager. This class can be used to reserve Codes ahead of time and to query the status of Codes.
+   * See ConcurrencyControl.requestResources for how to reserve Codes as they are used.
+   * @beta
+   */
+  export class CodesManager {
+    /** @internal */
     constructor(private _iModel: BriefcaseDb) { }
 
     /**
      * Reserve Codes.
      * This function may only be able to reserve some of the requested Codes. In that case, this function will return a rejection of type RequestError.
      * The error object will identify the codes that are unavailable.
-     * <p><em>Example:</em>
+     * <p><em>Example:</em></p>
+     *
      * ``` ts
      * [[include:ConcurrencyControl_Codes.reserve]]
      * ```
+     *
      * @param requestContext The client request context
      * @param codes The Codes to reserve. If not specified, then all pending code-reservation requests will be processed.
      * @throws [[IModelHubError]]
@@ -1465,8 +1449,13 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
   }
 
-  /** Locks manager */
-  export class Locks {
+  /** Locks manager
+   * This class is used to acquire certain kinds of locks preemptively. It can also be used to query what locks are held.
+   * See ConcurrencyControl.requestResources for how to acquire locks as they are needed.
+   * @beta
+   */
+  export class LocksManager {
+    /** @internal */
     constructor(private _iModel: BriefcaseDb) { }
 
     /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. See [LockHandler]($imodelhub-client) for details on what errors may be thrown. */
@@ -1481,7 +1470,6 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     /** Returns `true` if the schema lock is held.
      * @param requestContext The client request context
-     * @alpha Need to determine if we want this method
      */
     public get hasSchemaLock(): boolean {
       return this.holdsLock(ConcurrencyControl.Request.schemaLock);
@@ -1489,7 +1477,6 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     /** Returns `true` if the CodeSpecs lock is held.
      * @param requestContext The client request context
-     * @alpha Need to determine if we want this method
      */
     public get hasCodeSpecsLock(): boolean {
       return this.holdsLock(ConcurrencyControl.Request.codeSpecsLock);
@@ -1497,7 +1484,6 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     /** Returns `true` if the specified lock is held.
      * @param lock The lock to check
-     * @alpha
      */
     public holdsLock(lock: ConcurrencyControl.LockProps): boolean {
       return this._iModel.concurrencyControl.holdsLock0(lock);
