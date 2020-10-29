@@ -2,6 +2,7 @@ name: "Codeowners Validator"
 
 on:
   workflow_dispatch:
+  push:
   schedule:
     # Runs at 08:00 UTC every day
     - cron:  '0 8 * * *'
