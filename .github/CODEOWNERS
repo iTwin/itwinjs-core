@@ -61,7 +61,7 @@ rush.json @calebmshafer @scsewall
 /common/api/rbac-client.api.md                      @calebmshafer @ramanujam-raman
 /common/api/reality-data-client.api.md              @calebmshafer @ramanujam-raman
 /common/api/telemetry-client.api.md                 @calebmshafer @ramanujam-raman
-/common/api/ui-*.api.md                             @bsteinbk @Dan-East @GerardasB @grigasp
+/common/api/ui-*.api.md                             @bsteinbk @DanEastBentley @GerardasB @grigasp
 /common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
 /common/api/webgl-compatibility.api.md              @pmconne
 
@@ -119,11 +119,11 @@ rush.json @calebmshafer @scsewall
 /test-apps/imodel-from-geojson              @mgooding
 /test-apps/imodel-from-orbitgt              @RBBentley
 /test-apps/imodel-from-reality-model        @RBBentley
-/test-apps/ninezone-test-app                @bsteinbk @Dan-East @GerardasB
+/test-apps/ninezone-test-app                @bsteinbk @DanEastBentley @GerardasB
 /test-apps/presentation-test-app            @grigasp @saskliutas @roluk
 /test-apps/synchro-schedule-importer        @RBBentley
-/test-apps/ui-test-app                      @bsteinbk @Dan-East @GerardasB @grigasp
-/test-apps/ui-test-extension                @bsteinbk @Dan-East @GerardasB
+/test-apps/ui-test-app                      @bsteinbk @DanEastBentley @GerardasB @grigasp
+/test-apps/ui-test-extension                @bsteinbk @DanEastBentley @GerardasB
 
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
@@ -137,7 +137,7 @@ rush.json @calebmshafer @scsewall
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
-/ui @bsteinbk @Dan-East @GerardasB @grigasp
-/ui/components/src/ui-components/properties   @bsteinbk @Dan-East @grigasp @saskliutas @roluk
-/ui/components/src/ui-components/propertygrid @bsteinbk @Dan-East @grigasp @saskliutas @roluk
-/ui/components/src/ui-components/tree         @bsteinbk @Dan-East @grigasp @saskliutas @roluk
+/ui @bsteinbk @DanEastBentley @GerardasB @grigasp
+/ui/components/src/ui-components/properties   @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
+/ui/components/src/ui-components/propertygrid @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
+/ui/components/src/ui-components/tree         @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
