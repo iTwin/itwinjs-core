@@ -11,6 +11,9 @@
 
 *  @kabentley @scsewall @ramanujam-raman @pmconne @calebmshafer @swwilson-bsi
 
+# No one specific needs to review changelogs. That will be left up to the reviewers specified in other places
+!/common/changes
+
 .gitattributes .gitignore rush.json @calebmshafer @scsewall
 
 /clients              @calebmshafer @ramanujam-raman
@@ -43,14 +46,14 @@
 /common/api/imodeljs-markup.api.md                  @kabentley @pmconne
 /common/api/imodeljs-quantity.api.md                @bsteinbk @calebmshafer
 /common/api/itwin-client.api.md                     @calebmshafer @ramanujam-raman
-/common/api/linear-referencing-backend.api.md       @scsewall @diegoalexdiaz
-/common/api/linear-referencing-common.api.md        @scsewall @diegoalexdiaz
+/common/api/linear-referencing-backend.api.md       @diegoalexdiaz @scsewall
+/common/api/linear-referencing-common.api.md        @diegoalexdiaz @scsewall
 /common/api/logger-config.api.md                    @swwilson-bsi @scsewall
 /common/api/oauth-introspection-client.api.model    @calebmshafer @ramanujam-raman
-/common/api/orbitgt-core.api.md                     @RBBentley @pmconne
+/common/api/orbitgt-core.api.md                     @pmconne @RBBentley
 /common/api/perf-tools.api.md                       @calebmshafer @wgoehrig
 /common/api/physical-material-backend.api.md        @scsewall
-/common/api/presentation-*.api.md                   @grigasp @saskliutas @roluk
+/common/api/presentation-*.api.md                   @grigasp @roluk @saskliutas
 /common/api/product-settings-client.api.md          @calebmshafer @ramanujam-raman
 /common/api/projectshare-client.api.md              @calebmshafer @ramanujam-raman
 /common/api/rbac-client.api.md                      @calebmshafer @ramanujam-raman
@@ -58,7 +61,7 @@
 /common/api/telemetry-client.api.md                 @calebmshafer @ramanujam-raman
 /common/api/ui-*.api.md                             @bsteinbk @Dan-East @GerardasB @grigasp
 /common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
-/common/api/webgl-compatibility.api.md
+/common/api/webgl-compatibility.api.md              @pmconne
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
@@ -66,14 +69,14 @@
 /core/backend-itwin-client
 /core/bentley                   @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
 /core/common                    @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
-/core/common/src/rpc/IModelTileRpcInterface.ts            @pmconne
-/core/ecschema-locaters         @calebmshafer @wgoehrig @ColinKerr
-/core/ecschema-metadata         @calebmshafer @wgoehrig @ColinKerr
+/core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
+/core/ecschema-locaters         @calebmshafer @ColinKerr @wgoehrig
+/core/ecschema-metadata         @calebmshafer @ColinKerr @wgoehrig
 /core/electron-manager          @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
 /core/frontend                  @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
 /core/frontend-devtools         @pmconne @mgooding
-/core/geometry                  @mgooding @RBBentley @bbastings @EarlinLutz
+/core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
 /core/hypermodeling             @pmconne @bbastings
 /core/i18n                      @wgoehrig @calebmshafer
 /core/imodel-bridge             @abeesh @c-macdonald @swwilson-bsi
@@ -83,31 +86,30 @@
 /core/quantity                  @bsteinbk @calebmshafer
 /core/webgl-compatibility       @pmconne @mgooding
 
-/docs/getting-started/ /docs/config   @calebmshafer @williamkbentley
+/docs/getting-started /docs/config @calebmshafer @williamkbentley
 
-# These domains should most likely be split up
+# These domains should be split up a bit more
 /domains      @scsewall
 /domains/analytical @diegoalexdiaz @scsewall
 /domains/linear-referencing @diegoalexdiaz @scsewall
-
 
 /example-code                         @scsewall @swwilson-bsi
 
 /extensions                           @bsteinbk @calebmshafer
 
-/full-stack-tests/core                @pmconne @kabentley @scsewall @ramanujam-raman
+/full-stack-tests/core                @kabentley @pmconne @scsewall @ramanujam-raman
 /full-stack-tests/imodelhub-client    @amikoliunas @Animagne
 /full-stack-tests/native-app    @calebmshafer @khanaffan @ramanujam-raman
-/full-stack-tests/presentation  @grigasp @saskliutas @roluk
+/full-stack-tests/presentation  @grigasp @roluk @saskliutas
 /full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
 /full-stack-tests/rpc-interface @calebmshafer @wgoehrig
 
-/presentation                   @grigasp @saskliutas @roluk
+/presentation                   @grigasp @roluk @saskliutas
 /presentation/common/src/PresentationRpcInterface.ts  @grigasp
 
 /test-apps/analysis-importer                @RBBentley
 /test-apps/display-performance-test-app     @hnn0003 @pmconne
-/test-apps/display-test-app                 @mgooding @pmconne @RBBentley @kabentley
+/test-apps/display-test-app                 @kabentley @mgooding @pmconne @RBBentley
 /test-apps/export-gltf                      @mgooding
 /test-apps/export-obj                       @mgooding
 /test-apps/imjs-importer                    @EarlinLutz
@@ -120,11 +122,11 @@
 /test-apps/ui-test-app                      @bsteinbk @Dan-East @GerardasB @grigasp
 /test-apps/ui-test-extension                @bsteinbk @Dan-East @GerardasB
 
-/tools/backend-webpack /tools/build /tools/certa /tools/config-loader /tools/extension-webpack /tools/oidc-signin-tool /tools/webpack-core   @wgoehrig @calebmshafer
-/tools/ecschema2ts @calebmshafer @wgoehrig @ColinKerr
+/tools/backend-webpack /tools/build /tools/certa /tools/config-loader /tools/extension-webpack /tools/oidc-signin-tool /tools/webpack-core @calebmshafer @wgoehrig
+/tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
 /tools/eslint-plugin /tools/extension-cli @calebmshafer @pauliunas
-/tools/internal @calebmshafer
-/tools/perf-tools @calebmshafer
+/tools/internal @calebmshafer @wgoehrig
+/tools/perf-tools @calebmshafer @wgoehrig
 
 /ui @bsteinbk @Dan-East @GerardasB @grigasp
 /ui/components/src/ui-components/properties /ui/components/src/ui-components/propertygrid /ui/components/src/ui-components/tree   @bsteinbk @Dan-East @grigasp @saskliutas @roluk
