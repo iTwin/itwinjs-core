@@ -3,6 +3,13 @@ name: "Codeowners Validator"
 on:
   workflow_dispatch:
   push:
+    paths:
+    - '.github/CODEOWNERS'
+    - '.github/workflows/sanity.yaml'
+  pull_request:
+    paths:
+    - '.github/CODEOWNERS'
+    - '.github/workflows/sanity.yaml'
   schedule:
     # Runs at 08:00 UTC every day
     - cron:  '0 8 * * *'
