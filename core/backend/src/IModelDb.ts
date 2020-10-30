@@ -2236,7 +2236,7 @@ export class BriefcaseDb extends IModelDb {
 
       const alreadyOpenEndTime = new Date();
       Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-      briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime);
+      briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime); // eslint-disable-line @typescript-eslint/no-floating-promises
       return briefcaseDb;
     }
 
@@ -2276,7 +2276,7 @@ export class BriefcaseDb extends IModelDb {
 
     const endTime = new Date();
     Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-    briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime);
+    briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
@@ -2303,7 +2303,7 @@ export class BriefcaseDb extends IModelDb {
       },
     );
     Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage/telemetry", () => this.briefcase.getDebugInfo());
-    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent);
+    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
     UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
