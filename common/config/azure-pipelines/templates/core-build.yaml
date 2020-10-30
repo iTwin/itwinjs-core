@@ -31,7 +31,7 @@ steps:
         print ("Current branch: " + srcBranch)
         print ("Target branch: " + targetBranch)
 
-        if targetBranch.find("refs/heads/release") != -1 or targetBranch.find("refs/heads/hotfix") != -1:
+        if targetBranch.find("refs/heads/release") != -1 or targetBranch.find("refs/heads/release") != -1:
             # Need to get the current branch with reference to the remote.
             srcBranch = targetBranch.replace("refs/heads/", "origin/")
 
