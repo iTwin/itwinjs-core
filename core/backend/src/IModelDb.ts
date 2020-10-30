@@ -21,7 +21,7 @@ import {
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
   SyncMode, ThumbnailProps, TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -1164,9 +1164,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the model is not found or cannot be loaded.
      * @see tryGetModelProps
      */
-    public getModelProps<T extends ModelProps>(modelId: Id64String): T {
-      const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
-      return JSON.parse(json) as T;
+    public getModelProps<T extends ModelProps>(id: Id64String): T {
+      return this.getModelJson<T>({ id });
     }
 
     /** Get the ModelProps with the specified identifier.
@@ -1176,9 +1175,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModelProps
      */
-    public tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined {
-      const json: string | undefined = this.tryGetModelJson(JSON.stringify({ id: modelId.toString() }));
-      return undefined !== json ? JSON.parse(json) as T : undefined;
+    public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
+      return this.tryGetModelJson({ id });
     }
 
     /** Query for the last modified time of the specified Model.
@@ -1212,7 +1210,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getModel
      */
     public tryGetModel<T extends Model>(modelId: Id64String): T | undefined {
-      const modelProps: ModelProps | undefined = this.tryGetModelProps(modelId);
+      const modelProps = this.tryGetModelProps(modelId);
       return undefined !== modelProps ? this._iModel.constructEntity<T>(modelProps) : undefined;
     }
 
@@ -1223,8 +1221,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetModelJson
      * @internal
      */
-    public getModelJson(modelIdArg: string): string {
-      const modelJson: string | undefined = this.tryGetModelJson(modelIdArg);
+    public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
+      const modelJson = this.tryGetModelJson<T>(modelIdArg);
       if (undefined === modelJson) {
         throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`);
       }
@@ -1237,15 +1235,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the model exists, but cannot be loaded.
      * @see getModelJson
      */
-    private tryGetModelJson(modelIdArg: string): string | undefined {
-      const val: IModelJsNative.ErrorStatusOrResult<any, string> = this._iModel.nativeDb.getModel(modelIdArg);
+    private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
+      const val = this._iModel.nativeDb.getModel(modelIdArg);
       if (undefined !== val.error) {
         if (IModelStatus.NotFound === val.error.status) {
           return undefined;
         }
         throw new IModelError(val.error.status, `Model=${modelIdArg}`);
       }
-      return val.result!;
+      return val.result as T;
     }
 
     /** Get the sub-model of the specified Element.
@@ -1255,7 +1253,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetSubModel
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T {
-      const modeledElementProps: ElementProps = this._iModel.elements.getElementProps(modeledElementId);
+      const modeledElementProps = this._iModel.elements.getElementProps(modeledElementId);
       if (modeledElementProps.id === IModel.rootSubjectId) {
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggerCategory);
       }
@@ -1269,7 +1267,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getSubModel
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined {
-      const modeledElementProps: ElementProps | undefined = this._iModel.elements.tryGetElementProps(modeledElementId);
+      const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
       if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id)) {
         return undefined;
       }
@@ -1352,10 +1350,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetElementJson
      * @internal
      */
-    public getElementJson<T extends ElementProps>(elementIdArg: string): T {
-      const elementProps: T | undefined = this.tryGetElementJson(elementIdArg);
+    public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
+      const elementProps: T | undefined = this.tryGetElementJson(elementId);
       if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementIdArg}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
       return elementProps;
     }
@@ -1366,15 +1364,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @see getElementJson
      */
-    private tryGetElementJson<T extends ElementProps>(elementIdArg: string): T | undefined {
-      const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(elementIdArg);
+    private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
+      const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(loadProps);
       if (undefined !== val.error) {
         if (IModelStatus.NotFound === val.error.status) {
           return undefined;
         }
-        throw new IModelError(val.error.status, `reading element=${elementIdArg}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${loadProps}`, Logger.logWarning, loggerCategory);
       }
-      return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
+      return val.result as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1382,7 +1380,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      const elementProps: T | undefined = this.tryGetElementProps(elementId);
+      const elementProps = this.tryGetElementProps<T>(elementId);
       if (undefined === elementProps) {
         throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
@@ -1401,7 +1399,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (elementId instanceof Code) {
         elementId = { code: elementId };
       }
-      return this.tryGetElementJson<T>(JSON.stringify(elementId));
+      return this.tryGetElementJson<T>(elementId);
     }
 
     /** Get an element by Id, FederationGuid, or Code
@@ -1430,7 +1428,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (elementId instanceof Code) {
         elementId = { code: elementId };
       }
-      const elementProps: T | undefined = this.tryGetElementJson(JSON.stringify(elementId));
+      const elementProps: T | undefined = this.tryGetElementJson(elementId);
       return undefined !== elementProps ? this._iModel.constructEntity<T>(elementProps) : undefined;
     }
 
@@ -1492,12 +1490,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const iModel = this._iModel;
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(elProps, iModel);
-      const valJson = JSON.stringify(elProps, BinaryPropertyTypeConverter.createReplacerCallback(false));
-      const val = iModel.nativeDb.insertElement(valJson);
+      const val = iModel.nativeDb.insertElement(elProps);
       if (val.error)
         throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
 
-      elProps.id = Id64.fromJSON(JSON.parse(val.result!).id);
+      elProps.id = Id64.fromJSON(val.result!.id);
       jsClass.onInserted(elProps, iModel);
       return elProps.id;
     }

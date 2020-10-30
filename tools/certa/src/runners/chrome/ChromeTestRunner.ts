@@ -23,12 +23,6 @@ let browser: puppeteer.Browser;
 export class ChromeTestRunner {
   public static readonly supportsCoverage = true;
   public static async initialize(config: CertaConfig): Promise<void> {
-    const openPort = await detect(config.ports.frontend);
-    if (openPort !== config.ports.frontend)
-      console.warn(`CERTA: Port ${config.ports.frontend} is already in use, so serving test resources on port ${openPort}`);
-
-    process.env.CERTA_PORT = String(openPort);
-
     // Go ahead and launch puppeteer now - the VS Code debugger gets confused if it can't at least see the chrome instance right away.
     const options = {
       ignoreHTTPSErrors: true,
@@ -40,6 +34,12 @@ export class ChromeTestRunner {
       options.args.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
 
     browser = await puppeteer.launch(options);
+
+    const openPort = await detect(config.ports.frontend);
+    if (openPort !== config.ports.frontend)
+      console.warn(`CERTA: Port ${config.ports.frontend} is already in use, so serving test resources on port ${openPort}`);
+
+    process.env.CERTA_PORT = String(openPort);
   }
 
   public static async runTests(config: CertaConfig): Promise<void> {
@@ -51,7 +51,9 @@ export class ChromeTestRunner {
     const webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv, true);
 
     // Don't start puppeteer until the webserver is started and listening.
-    await new Promise((resolve) => webserverProcess.once("message", resolve));
+    const webserverExited = new Promise((_resolve, reject) => webserverProcess.once("exit", () => reject("Webserver exited!")));
+    const webserverStarted = new Promise((resolve) => webserverProcess.once("message", resolve));
+    await Promise.race([webserverExited, webserverStarted]);
 
     // FIXME: Do we really want to always enforce this behavior?
     if (process.env.CI || process.env.TF_BUILD)

@@ -1,101 +1,116 @@
-# 2.7.0 Change Notes
+# 2.8.0 Change Notes
 
-## Lighting for decoration graphics
+## Color mix property added to thematic gradient settings
 
-Most types of decorations can receive lighting in 3d views (see [GraphicType]($frontend) for details about how lighting applies to each type). But lighting requires normals, and until now a [GraphicBuilder[($frontend) would never generate normals; therefore, decorations were always unlit.
+Thematic display gradient properties now supports a colorMix value for mixing the color of background map terrain or point clouds in with the thematic gradient color.  The `colorMix` property of [ThematicGradientSettings]($common) is a value between 0.0 and 1.0, defaulting to 0.0, which determines the percentage of the original color to blend in with the thematic gradient color (so 0.0 will be only the thematic gradient color, and 1.0 will be only the original terrain map or point cloud color).
 
-Now, [GraphicBuilder.wantNormals]($frontend) can be used to indicate that normals should be generated. This property defaults to `false` to preserve the previous behavior. Meshes produced for any geometry added while the property is set to `true` will result in graphics with normals. For example:
-```ts
-  // Create a GraphicBuilder for a "scene" graphic, which can be affected by the view's light settings.
-  const builder = decorateContext.createSceneGraphicBuilder();
-  // Add a shape (with normals) that will receive lighting as configured in the view.
-  builder.wantNormals = true;
-  builder.addShape(shapePoints);
-  // Add a planar region (without normals) that will not receive lighting.
-  builder.wantNormals = false;
-  builder.addLoop(loop);
-```
-
-Caveat: currently, no API exists for generating normals for a [Polyface]($geometry-core). So for now, if you want a lit polyface, you must both set `GraphicBuilder.wantNormals` **and** ensure the `Polyface` you supply to [GraphicBuilder.addPolyface]($frontend) has predefined normals. (If the `Polyface` has predefined normals but `GraphicBuilder.wantNormals` is `false`, the normals will be ignored). This behavior will change once an API for generating normals becomes available - then, the normals will be generated if the `Polyface` lacks them and `wantNormals` is `true`.
-
-## Thematic display of point clouds and background terrain
-
-Thematic display now supports point clouds and background terrain. If thematic display is enabled, point clouds and background terrain will be colorized using the corresponding thematic settings.
-
-Note: Values of `ThematicDisplayMode.Slope` or `ThematicDisplayMode.HillShade` for the `displayMode` property of [ThematicDisplay]($common) do not affect point clouds or background terrain. If these thematic display modes are selected, they will be colorized normally without any of the thematic settings applied. In this case, surfaces in the scene will still be colorized using the thematic settings.
-
-![thematic rendering applied to a point cloud](./assets/thematic_pointclouds.png)
-<p align="center">Thematic rendering applied to a point cloud</p>
-
-![thematic rendering applied to background terrain](./assets/thematicTerrain.png)
-<p align="center">Thematic rendering applied to background terrain</p>
+![thematic rendering of background map terrain with colorMix set to 0.0, 0.33, and 0.67](./assets/thematicTerrainColorMix.png)
+<p align="center">Thematic rendering of background map terrain with colorMix set to 0.0, 0.33, and 0.67</p>
 
 ## Presentation
 
-### A new rule to override default property category
+### `hideNodesInHierarchy` and grouping
 
-By default, all properties that don't have a defined category, fall under the default one, labeled "Selected Item(s)". In
-some cases there is a need for that category to be labeled differently, and for that purpose there's now a new presentation
-rule - `DefaultPropertyCategoryOverride`. Example:
+Behavior of `hideNodesInHierarchy` attribute was changed when used in combination with grouping.
 
-```JSON
-{
-  "ruleType": "DefaultPropertyCategoryOverride",
-  "specification": [{
-    "id": "default",
-    "label": "My Custom Default Property Category",
-  }],
-}
+Previously the attribute meant that all nodes produced by the specification it was used on would be hidden, including grouping nodes. That made the combination useless, because grouping had absolutely no effect when used with `hideNodesInHierarchy`.
+
+Now, only the instance nodes are hidden, but their grouping nodes (if any) are displayed. This makes it possible to create hierarchies like the following:
+
+**Schema:**
+
+```xml
+<ECEntityClass typeName="A" />
+<ECEntityClass typeName="A1">
+  <BaseClass>A</BaseClass>
+</ECEntityClass>
+<ECEntityClass typeName="A2">
+  <BaseClass>A</BaseClass>
+</ECEntityClass>
+<ECEntityClass typeName="B" />
+<ECRelationshipClass typeName="A_B" strength="referencing" modifier="None" description="">
+    <Source multiplicity="(0..*)" roleLabel="contains" polymorphic="true">
+        <Class class="A"/>
+    </Source>
+    <Target multiplicity="(0..*)" roleLabel="is contained by" polymorphic="true">
+        <Class class="B" />
+    </Target>
+</ECRelationshipClass>
 ```
 
-## ui-components
+**Instances:**
 
-Add components [DatePickerPopupButton]($ui-components) and [DatePicker]($ui-components) for showing and selecting a date and optionally a time.
-
-## ui-framework
-
-Add support for [KeyinPalettePopup] component that opens using the Ctrl+F2 key combination. opening a popup that provides a list of key-ins supported by registered tools and allows a user to select and run a key-in. iModel.js applications must enable the use by enabling the feature flag as shown below.
-
-```ts
-    IModelApp.uiAdmin.updateFeatureFlags({ allowKeyinPalette: true });
+```
+Classes:                                  Relationship "A_B"
++-------+-------------+-------+           +-----------+-----------+
+| Class | Instance ID | Label |           | Source ID | Target ID |
++-------+-------------+-------+           +-----------+-----------+
+| A1    |           1 | One   |           |         1 |         3 |
+| A2    |           2 | Two   |           |         2 |         3 |
+| B     |           3 | Three |
 ```
 
-An application can also provide a tool button to popup the Key-in Popup using the newly provided item definition `CoreTools.keyinPaletteButtonItemDef`.
+**Presentation rules:**
 
-## Changes to frontend API to pull, merge and push change sets
-
-The method to pull, merge and push change sets at the *frontend* has been split and moved to a new location. These frontend API continue to be work in progress, and are marked with the appropriate @alpha release tag. The corresponding backend API remains unchanged.
-
-Before:
-```ts
-  const changeSetId = await iModelConnection.editing.concurrencyControl.pullMergePush("", false /*=doPush*/);
+```json
+rules: [{
+  "ruleType": "RootNodes",
+  "specifications": [{
+    "specType": "InstanceNodesOfSpecificClasses",
+    "classes": { "schemaName": "MySchema", "classNames": ["A"] },
+    "groupByClass": true,
+    "groupByLabel": false,
+    "hideNodesInHierarchy": true
+  }]
+}, {
+  "ruleType": "ChildNodes",
+  "condition": "ParentNode.ClassName = \"A\"",
+  "specifications": [{
+    "specType": "RelatedInstanceNodes",
+    "relationshipPaths": [{
+        "relationship": { "schemaName": "MySchema", "className": "A_B" },
+        "direction": "Forward"
+    }],
+    "groupByClass": false,
+    "groupByLabel": false
+  }]
+}, {
+  "ruleType": "ChildNodes",
+  "condition": "ParentNode.ClassName = \"B\"",
+  "specifications": [{
+    "specType": "RelatedInstanceNodes",
+    "relationshipPaths": [{
+        "relationship": { "schemaName": "MySchema", "className": "A_B" },
+        "direction": "Backward"
+    }],
+    "groupByClass": false,
+    "groupByLabel": false
+  }]
+}]
 ```
 
-After:
-```ts
-  await iModelConnection.pullAndMergeChanges();
-  const changeSetId = iModelConnection.changeSetId;
+**Result:**
+
+```
++ A1          (class "A" grouping node)
++-+ Three     (instance node of class "B", ECInstanceId = 3)
+| +-+ One     (instance node of class "A", ECInstanceId = 1)
++ A2          (class "A" grouping node)
++-+ Three     (instance node of class "B", ECInstanceId = 3)
+  +-+ Two     (instance node of class "A", ECInstanceId = 2)
 ```
 
-Before:
-```ts
-  const changeSetId = await iModelConnection.editing.concurrencyControl.pullMergePush("Push message", true /*=doPush*/);
-```
+### Nodes' duplication when using `RelatedInstanceNodes` specification
 
-After:
-```ts
-  await iModelConnection.pushChanges("Push message");
-  const changeSetId = iModelConnection.changeSetId;
-```
+Behavior of `RelatedInstanceNodes` specification when used with many-to-x relationships was changed.
 
-The method to get the parent change set id from the IModelConnection has been removed. It's available as a property that's kept up to date as change sets are pulled/pushed:
+Previously, when traversing from a parent node, that is based on multiple instances on the "many" side of the relationship where the other side of the relationship points to the same other instance, we would see duplication.
 
-Before:
-```ts
-  const changeSetId = await iModelConnection.editing.getParentChangeSetId();
-```
+Now, in the situation described above, there will be no more duplication.
 
-After:
-```ts
-  const changeSetId =  iModelConnection.changeSetId;
-```
+## Hilite/Emphasis interaction modified.
+
+The visual interaction between hilited and emphasized geometry has been modified to look better.  Hilited geometry now always shows through emphasized geometry and visa versa.  Geometry which is both hilited and emphasized now shows the outline for both (provided they are of different widths).
+
+![Cylinder is hilited, Torus is emphasized, and Block is both hilited and emphasized](./assets/HiliteEmphasisInteraction.png)
+<p align="center">Cylinder is hilited, Torus is emphasized, and Block is both hilited and emphasized.</p>

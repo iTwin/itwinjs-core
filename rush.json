@@ -20,6 +20,12 @@
       "@types"
     ]
   },
+  "gitPolicy": {
+    "allowedEmailRegExps": [
+      "[^@]+@users\\.noreply\\.github\\.com",
+    ],
+    "sampleEmail": "mrexample@users.noreply.github.com"
+  },
   "projects": [
     {
       "packageName": "@bentley/backend-application-insights-client",

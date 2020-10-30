@@ -36,6 +36,11 @@ jobs:
       versionSpec: '$(Node_Version)'
       checkLatest: true
 
+  - script: 'git config --local user.email imodeljs-admin@users.noreply.github.com'
+    displayName: 'git config email'
+  - script: 'git config --local user.name imodeljs-admin'
+    displayName: 'git config name'
+
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 

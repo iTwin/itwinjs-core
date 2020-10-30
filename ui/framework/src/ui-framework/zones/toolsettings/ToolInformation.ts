@@ -10,7 +10,7 @@ import { UiError } from "@bentley/ui-abstract";
 import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../../UiFramework";
-import { ToolUiManager } from "./ToolUiManager";
+import { ToolSettingsManager } from "./ToolSettingsManager";
 import { ToolUiProvider } from "./ToolUiProvider";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider.
@@ -30,7 +30,7 @@ export class ToolInformation {
       if (ConfigurableUiManager.isControlRegistered(this.toolId)) {
         provider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
       } else {
-        if (ToolUiManager.useDefaultToolSettingsProvider && this.toolId === ToolUiManager.toolIdForToolSettings)
+        if (ToolSettingsManager.useDefaultToolSettingsProvider && this.toolId === ToolSettingsManager.toolIdForToolSettings)
           provider = ConfigurableUiManager.createControl("DefaultToolSettings", this.toolId) as ToolUiProvider;
       }
       // istanbul ignore else

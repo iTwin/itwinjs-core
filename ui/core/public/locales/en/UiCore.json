@@ -14,7 +14,9 @@
     "yes": "Yes",
     "no": "No",
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous"
   },
   "reactselect": {
     "noSelectOption": "Option not found"

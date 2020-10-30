@@ -686,8 +686,80 @@ describe("Schema comparison tests", () => {
   });
 
   describe("Property delta tests", () => {
+    it("Property B not found, undefined Property A properties not reported", async () => {
+      const aItems = {
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },
+          ],
+        },
+      };
+      const bItems = {
+        TestClassA: {
+          schemaItemType: "EntityClass",
+        },
+      };
+      const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+      const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(bJson, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      await schemaA.getItem("TestClassA") as ECClass;
+      const itemA = await schemaA.getItem("TestClassA") as ECClass;
+      const itemAProp = await itemA.getProperty("PropertyA") as AnyProperty;
+
+      expect(reporter.diagnostics.length).to.equal(5, "Expected 5 differences.");
+      expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.PropertyMissing ? true : false)).to.not.be.undefined;
+
+      const propChanges = reporter.changes[0].classChanges.get("TestClassA")!.propertyChanges.get("PropertyA");
+      let propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "isReadOnly" ? true : false);
+      expect(propChange?.toString()).to.equal("IsReadOnly: false -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "type" ? true : false);
+      expect(propChange?.toString()).to.equal("Type: PrimitiveProperty -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "primitiveType" ? true : false);
+      expect(propChange?.toString()).to.equal("PrimitiveType: string -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "priority" ? true : false);
+      expect(propChange?.toString()).to.equal("Priority: 0 -> undefined");
+    });
+
     it("Property B not found, PrimitiveArray property, all diagnostics reported", async () => {
       const aItems = {
+        TestUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        TestPhenom: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+        },
+        TestUnit: {
+          schemaItemType: "Unit",
+          label: "test",
+          phenomenon: "SchemaA.TestPhenom",
+          unitSystem: "SchemaA.TestUnitSystem",
+          definition: "Test",
+        },
+        DefaultReal: {
+          schemaItemType: "Format",
+          type: "decimal",
+          precision: 6,
+        },
+        TestKindOfQuantity: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
         CategoryA: {
           schemaItemType: "PropertyCategory",
           type: "string",
@@ -708,11 +780,40 @@ describe("Schema comparison tests", () => {
               isReadOnly: false,
               priority: 1,
               category: "SchemaA.CategoryA",
+              kindOfQuantity: "SchemaA.TestKindOfQuantity"
             },
           ],
         },
       };
       const bItems = {
+        TestUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        TestPhenom: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+        },
+        TestUnit: {
+          schemaItemType: "Unit",
+          label: "test",
+          phenomenon: "SchemaA.TestPhenom",
+          unitSystem: "SchemaA.TestUnitSystem",
+          definition: "Test",
+        },
+        TestKindOfQuantity: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        DefaultReal: {
+          schemaItemType: "Format",
+          type: "decimal",
+          precision: 6,
+        },
         CategoryA: {
           schemaItemType: "PropertyCategory",
           type: "string",
@@ -735,7 +836,7 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestClassA") as ECClass;
       const itemAProp = await itemA.getProperty("PropertyA") as AnyProperty;
 
-      expect(reporter.diagnostics.length).to.equal(10, "Expected 10 differences.");
+      expect(reporter.diagnostics.length).to.equal(11, "Expected 11 differences.");
       expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.PropertyMissing ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "label" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "description" ? true : false)).to.not.be.undefined;
@@ -746,6 +847,7 @@ describe("Schema comparison tests", () => {
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "minOccurs" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "maxOccurs" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "primitiveType" ? true : false)).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "kindOfQuantity" ? true : false)).to.not.be.undefined;
 
       const propChanges = reporter.changes[0].classChanges.get("TestClassA")!.propertyChanges.get("PropertyA");
 
@@ -759,6 +861,8 @@ describe("Schema comparison tests", () => {
       expect(propChange?.toString()).to.equal("Priority: 1 -> undefined");
       propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "category" ? true : false);
       expect(propChange?.toString()).to.equal("Category: SchemaA.CategoryA -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "kindOfQuantity" ? true : false);
+      expect(propChange?.toString()).to.equal("KindOfQuantity: SchemaA.TestKindOfQuantity -> undefined");
     });
 
     it("Property B not found , Enumeration property, all diagnostics reported", async () => {
@@ -828,15 +932,24 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(8, "Expected 8 differences.");
+      expect(reporter.diagnostics.length).to.equal(5, "Expected 5 differences.");
       expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.PropertyMissing ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "label" ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "description" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "isReadOnly" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "priority" ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "category" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "type" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "enumeration" ? true : false)).to.not.be.undefined;
+
+      const propChanges = reporter.changes[0].classChanges.get("TestClassA")!.propertyChanges.get("PropertyA");
+
+      let propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "label" ? true : false);
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "type" ? true : false);
+      expect(propChange?.toString()).to.equal("Type: PrimitiveProperty -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "isReadOnly" ? true : false);
+      expect(propChange?.toString()).to.equal("IsReadOnly: false -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "priority" ? true : false);
+      expect(propChange?.toString()).to.equal("Priority: 0 -> undefined");
+      propChange = propChanges!.propertyValueChanges.find((p) => p.diagnostic && p.diagnostic.messageArgs && p.diagnostic.messageArgs[0] === "enumeration" ? true : false);
+      expect(propChange?.toString()).to.equal("Enumeration: SchemaA.EnumA -> undefined");
     });
 
     it("Property B not found, Navigation property, all diagnostics reported", async () => {
@@ -955,13 +1068,10 @@ describe("Schema comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      expect(reporter.diagnostics.length).to.equal(9, "Expected 9 differences.");
+      expect(reporter.diagnostics.length).to.equal(6, "Expected 6 differences.");
       expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.PropertyMissing ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "label" ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "description" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "isReadOnly" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "priority" ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "category" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "type" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "direction" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.messageArgs && d.messageArgs[0] === "relationshipClass" ? true : false)).to.not.be.undefined;
@@ -1343,6 +1453,316 @@ describe("Schema comparison tests", () => {
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
       validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["category", "SchemaA.CategoryA", undefined], itemA.schema);
+    });
+
+    it("Different kindOfQuantity, diagnostic reported", async () => {
+      const aItems = {
+        TestUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        TestPhenom: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+        },
+        TestUnit: {
+          schemaItemType: "Unit",
+          label: "test",
+          phenomenon: "SchemaA.TestPhenom",
+          unitSystem: "SchemaA.TestUnitSystem",
+          definition: "Test",
+        },
+        KindOfQuantityA: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        KindOfQuantityB: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        DefaultReal: {
+          schemaItemType: "Format",
+          type: "decimal",
+          precision: 6,
+        },
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "SchemaA.KindOfQuantityA",
+            },
+          ],
+        },
+      };
+      const bItems = {
+        TestUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        TestPhenom: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+        },
+        TestUnit: {
+          schemaItemType: "Unit",
+          label: "test",
+          phenomenon: "SchemaA.TestPhenom",
+          unitSystem: "SchemaA.TestUnitSystem",
+          definition: "Test",
+        },
+        KindOfQuantityA: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        KindOfQuantityB: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        DefaultReal: {
+          schemaItemType: "Format",
+          type: "decimal",
+          precision: 6,
+        },
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "SchemaA.KindOfQuantityB",
+            },
+          ],
+        },
+      };
+      const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+      const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(bJson, contextB);
+      await schemaA.getItem("TestClassA") as ECClass;
+      const itemA = await schemaA.getItem("TestClassA") as ECClass;
+      const itemAProp = await itemA.getProperty("PropertyA") as AnyProperty;
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["kindOfQuantity", "SchemaA.KindOfQuantityA", "SchemaA.KindOfQuantityB"], itemA.schema);
+    });
+
+    it("Schema A kindOfQuantity undefined, diagnostic reported", async () => {
+      const aItems = {
+        TestUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        TestPhenom: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+        },
+        TestUnit: {
+          schemaItemType: "Unit",
+          label: "test",
+          phenomenon: "SchemaA.TestPhenom",
+          unitSystem: "SchemaA.TestUnitSystem",
+          definition: "Test",
+        },
+        KindOfQuantityA: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        DefaultReal: {
+          schemaItemType: "Format",
+          type: "decimal",
+          precision: 6,
+        },
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },
+          ],
+        },
+      };
+      const bItems = {
+        TestUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        TestPhenom: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+        },
+        TestUnit: {
+          schemaItemType: "Unit",
+          label: "test",
+          phenomenon: "SchemaA.TestPhenom",
+          unitSystem: "SchemaA.TestUnitSystem",
+          definition: "Test",
+        },
+        KindOfQuantityA: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        DefaultReal: {
+          schemaItemType: "Format",
+          type: "decimal",
+          precision: 6,
+        },
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "SchemaA.KindOfQuantityA",
+            },
+          ],
+        },
+      };
+      const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+      const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(bJson, contextB);
+      await schemaA.getItem("TestClassA") as ECClass;
+      const itemA = await schemaA.getItem("TestClassA") as ECClass;
+      const itemAProp = await itemA.getProperty("PropertyA") as AnyProperty;
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["kindOfQuantity", undefined, "SchemaA.KindOfQuantityA"], itemA.schema);
+    });
+
+    it("Schema B kindOfQuantity undefined, diagnostic reported", async () => {
+      const aItems = {
+        TestUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        TestPhenom: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+        },
+        TestUnit: {
+          schemaItemType: "Unit",
+          label: "test",
+          phenomenon: "SchemaA.TestPhenom",
+          unitSystem: "SchemaA.TestUnitSystem",
+          definition: "Test",
+        },
+        KindOfQuantityA: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        DefaultReal: {
+          schemaItemType: "Format",
+          type: "decimal",
+          precision: 6,
+        },
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "SchemaA.KindOfQuantityA",
+            },
+          ],
+        },
+      };
+      const bItems = {
+        TestUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        TestPhenom: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+        },
+        TestUnit: {
+          schemaItemType: "Unit",
+          label: "test",
+          phenomenon: "SchemaA.TestPhenom",
+          unitSystem: "SchemaA.TestUnitSystem",
+          definition: "Test",
+        },
+        KindOfQuantityA: {
+          schemaItemType: "KindOfQuantity",
+          label: "SomeDisplayLabel",
+          relativeError: 1.234,
+          persistenceUnit: "SchemaA.TestUnit",
+          presentationUnits: [
+            "SchemaA.DefaultReal",
+          ],
+        },
+        DefaultReal: {
+          schemaItemType: "Format",
+          type: "decimal",
+          precision: 6,
+        },
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },
+          ],
+        },
+      };
+      const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+      const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(bJson, contextB);
+      await schemaA.getItem("TestClassA") as ECClass;
+      const itemA = await schemaA.getItem("TestClassA") as ECClass;
+      const itemAProp = await itemA.getProperty("PropertyA") as AnyProperty;
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["kindOfQuantity", "SchemaA.KindOfQuantityA", undefined], itemA.schema);
     });
 
     it("Different propertyType, diagnostic reported", async () => {

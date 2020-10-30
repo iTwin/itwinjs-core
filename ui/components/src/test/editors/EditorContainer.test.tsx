@@ -9,12 +9,28 @@ import * as React from "react";
 import sinon from "sinon";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
+import { StandardEditorNames } from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 
 describe("<EditorContainer />", () => {
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  beforeEach(() => {
+    sinon.restore();
+  });
+
+  afterEach(cleanup);
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
+
   it("should render", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
-    mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    const sut = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    sut.unmount();
   });
 
   it("renders correctly", () => {
@@ -26,6 +42,7 @@ describe("<EditorContainer />", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(wrapper.find("input.components-text-editor").length).to.eq(1);
+    wrapper.unmount();
   });
 
   it("calls onCommit for Enter", async () => {
@@ -34,11 +51,11 @@ describe("<EditorContainer />", () => {
     function handleCommit(_commit: PropertyUpdatedArgs): void {
       spyOnCommit();
     }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
-    const inputNode = wrapper.find("input");
-    expect(inputNode.length).to.eq(1);
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const inputNode = wrapper.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Enter" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -46,11 +63,12 @@ describe("<EditorContainer />", () => {
   it("calls onCancel for Escape", async () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const spyOnCancel = sinon.spy();
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyOnCancel} />);
-    const inputNode = wrapper.find("input");
-    expect(inputNode.length).to.eq(1);
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyOnCancel} />);
+    const inputNode = wrapper.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Escape" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
+    await TestUtils.flushAsyncOperations();
     expect(spyOnCancel.calledOnce).to.be.true;
   });
 
@@ -70,6 +88,7 @@ describe("<EditorContainer />", () => {
     await TestUtils.flushAsyncOperations();
 
     expect(spyOnCancel.calledOnce).to.be.true;
+    wrapper.unmount();
   });
 
   it("calls onCommit for Tab", async () => {
@@ -78,11 +97,11 @@ describe("<EditorContainer />", () => {
     function handleCommit(_commit: PropertyUpdatedArgs): void {
       spyOnCommit();
     }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
-    const inputNode = wrapper.find("input");
-    expect(inputNode.length).to.eq(1);
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const inputNode = wrapper.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Tab" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Tab" })
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -98,9 +117,13 @@ describe("<EditorContainer />", () => {
     expect(inputNode.length).to.eq(1);
 
     inputNode.simulate("blur");
-    inputNode.simulate("keyDown", { key: SpecialKey.ArrowLeft }); // left arrow key
     inputNode.simulate("click");
     inputNode.simulate("contextMenu");
+
+    const renderedWrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const renderedInputNode = renderedWrapper.container.querySelector("input");
+    fireEvent.keyDown(renderedInputNode as HTMLElement, { key: "ArrowLeft" });
+    wrapper.unmount();
   });
 
 });

@@ -3896,8 +3896,17 @@ export class MapImagerySettings {
     toJSON(): MapImageryProps;
 }
 
+// @beta
+export interface MapLayerKey {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    value: string;
+}
+
 // @alpha
 export interface MapLayerProps {
+    accessKey?: MapLayerKey;
     formatId?: string;
     isBase?: boolean;
     maxZoom?: number;
@@ -3913,6 +3922,8 @@ export interface MapLayerProps {
 
 // @alpha
 export class MapLayerSettings {
+    // (undocumented)
+    readonly accessKey?: MapLayerKey;
     get allSubLayersInvisible(): boolean;
     clone(changedProps: MapLayerProps): MapLayerSettings;
     // @internal (undocumented)

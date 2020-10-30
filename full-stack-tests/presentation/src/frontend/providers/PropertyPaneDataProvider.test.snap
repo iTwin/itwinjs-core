@@ -1610,7 +1610,7 @@ Object {
   "categories": Array [
     Object {
       "expand": true,
-      "label": "Favorite",
+      "label": "Fàvórîtë",
       "name": "Favorite",
     },
     Object {
@@ -3434,7 +3434,7 @@ Object {
         },
       ],
       "expand": true,
-      "label": "Favorite",
+      "label": "Fàvórîtë",
       "name": "Favorite",
       "parentCategory": undefined,
     },

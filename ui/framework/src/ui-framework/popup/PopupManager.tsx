@@ -10,8 +10,8 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription, PropertyRecord,
-  PropertyValueFormat, RelativePosition, UiDataProvider,
+  AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription,
+  PropertyRecord, PropertyValueFormat, RelativePosition,
 } from "@bentley/ui-abstract";
 import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
@@ -42,7 +42,7 @@ export interface PopupsChangedEventArgs {
 
 /** Popups Changed Event class.
  * @alpha
- */
+ */
 export class PopupsChangedEvent extends UiEvent<PopupsChangedEventArgs> { }
 
 /** Props for each popup managed by the PopupManager
@@ -280,7 +280,7 @@ export class PopupManager {
   }
 
   public static openToolSettings(
-    dataProvider: UiDataProvider, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition,
+    dataProvider: DialogLayoutDataProvider, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition,
   ): boolean {
 
     const id = PopupManager._toolSettingsId;

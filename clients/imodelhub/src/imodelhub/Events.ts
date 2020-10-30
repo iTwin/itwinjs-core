@@ -52,12 +52,14 @@ export enum IModelHubEventType {
   iModelDeletedEvent = "iModelDeletedEvent",
   /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
   VersionEvent = "VersionEvent",
+  /** Sent when a new [[Checkpoint]] is generated. See [[CheckpointCreatedEvent]]. */
+  CheckpointCreatedEvent = "CheckpointCreatedEvent",
 }
 
 /* eslint-enable no-shadow */
 
 /** @beta @deprecated Use [[IModelHubEventType]] instead */
-export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent";
+export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent";
 
 /** Base type for all iModelHub events.
  * @beta
@@ -218,6 +220,29 @@ export class VersionEvent extends IModelHubEvent {
   }
 }
 
+/** Sent when a new [[Checkpoint]] is generated. [[Checkpoint]]s can be generated daily when there are new [[ChangeSet]]s pushed or when a new [[Version]] is created.
+ * @beta
+ */
+export class CheckpointCreatedEvent extends IModelHubEvent {
+  /** Index of the [[ChangeSet]] this [[Checkpoint]] was created for.  */
+  public changeSetIndex: string;
+  /** Id of the [[ChangeSet]] this [[Checkpoint]] was created for.  */
+  public changeSetId: string;
+  /** Id of the [[Version]] this [[Checkpoint]] was created for. */
+  public versionId?: GuidString;
+
+  /** Construct this event from object instance.
+   * @param obj Object instance.
+   * @internal
+   */
+  public fromJson(obj: any) {
+    super.fromJson(obj);
+    this.changeSetIndex = obj.ChangeSetIndex;
+    this.changeSetId = obj.ChangeSetId;
+    this.versionId = obj.VersionId;
+  }
+}
+
 /** Get EventConstructor which can be used to construct IModelHubEvent
  * @internal
  */
@@ -246,6 +271,8 @@ export function constructorFromEventType(type: IModelHubEventType): EventConstru
       return IModelDeletedEvent;
     case IModelHubEventType.VersionEvent:
       return VersionEvent;
+    case IModelHubEventType.CheckpointCreatedEvent:
+      return CheckpointCreatedEvent;
   }
 }
 

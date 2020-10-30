@@ -55,6 +55,7 @@ describe("ToolSettingsDockedContent", () => {
       </DragManagerContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
+    FrontstageManager.onToolSettingsReloadEvent.emit();
   });
 });
 
@@ -106,6 +107,16 @@ describe("useHorizontalToolSettingNodes", () => {
     removeListenerSpy.calledOnce.should.true;
   });
 
+  it("should add tool settings reload event listener", () => {
+    const addListenerSpy = sinon.spy(FrontstageManager.onToolSettingsReloadEvent, "addListener");
+    const removeListenerSpy = sinon.spy(FrontstageManager.onToolSettingsReloadEvent, "removeListener");
+    const sut = renderHook(() => useHorizontalToolSettingNodes());
+    FrontstageManager.onToolSettingsReloadEvent.emit();
+    sut.unmount();
+    addListenerSpy.calledOnce.should.true;
+    removeListenerSpy.calledOnce.should.true;
+  });
+
   it("should return undefined if activeToolSettingsProvider is unset", () => {
     const { result } = renderHook(() => useHorizontalToolSettingNodes());
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -138,6 +149,7 @@ describe("useHorizontalToolSettingNodes", () => {
       FrontstageManager.onToolActivatedEvent.emit({
         toolId: "",
       });
+      FrontstageManager.onToolSettingsReloadEvent.emit();
     });
 
     sut.result.current!.should.eq(entries);
@@ -160,6 +172,16 @@ describe("useToolSettingsNode", () => {
     removeListenerSpy.calledOnce.should.true;
   });
 
+  it("should add/remove tool settings reload event listener", () => {
+    const addListenerSpy = sinon.spy(FrontstageManager.onToolSettingsReloadEvent, "addListener");
+    const removeListenerSpy = sinon.spy(FrontstageManager.onToolSettingsReloadEvent, "removeListener");
+    const sut = renderHook(() => useToolSettingsNode());
+    FrontstageManager.onToolSettingsReloadEvent.emit();
+    sut.unmount();
+    addListenerSpy.calledOnce.should.true;
+    removeListenerSpy.calledOnce.should.true;
+  });
+
   it("should update toolSettingsNode", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
     sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
@@ -171,6 +193,7 @@ describe("useToolSettingsNode", () => {
       FrontstageManager.onToolActivatedEvent.emit({
         toolId: "",
       });
+      FrontstageManager.onToolSettingsReloadEvent.emit();
     });
 
     sut.result.current!.should.eq(node);

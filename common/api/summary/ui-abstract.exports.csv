@@ -39,13 +39,15 @@ internal;createMatches(score: undefined | FuzzyScore): IMatch[]
 beta;CustomButtonDefinition 
 beta;CustomFormattedNumberParams 
 beta;DateFormatter
+public;DialogButtonDef
+public;DialogButtonStyle
+public;DialogButtonType
 beta;DialogItem 
-beta;DialogItemsChangedArgs
-beta;DialogItemsManager
-beta;DialogItemSyncArgs
 beta;DialogItemValue
+beta;class DialogLayoutDataProvider 
 beta;DialogPropertyItem
 beta;DialogPropertySyncItem 
+beta;DialogProps
 beta;DialogRow
 beta;EditorPosition
 beta;EnumerationChoice
@@ -154,4 +156,5 @@ beta;UiItemsApplicationAction
 beta;UiItemsArbiter
 beta;UiItemsManager
 beta;UiItemsProvider
+beta;class UiLayoutDataProvider 
 beta;WidgetState

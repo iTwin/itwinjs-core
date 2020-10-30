@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/ui-components"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Affan.Khan@Bentley.com"
+}

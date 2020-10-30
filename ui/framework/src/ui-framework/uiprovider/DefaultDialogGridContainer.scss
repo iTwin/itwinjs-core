@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
@@ -69,9 +69,14 @@ div.uifw-default-inline-editor-group .uifw-default-editor {
 
 div.uifw-default-lock-and-label {
   align-content: flex-start;
+  align-items: center;
   flex-direction: row;
   display: inline-flex;
   margin-bottom: 6px;
+
+  .uifw-default-property-lock {
+    padding: 0 4px 0 0;
+  }
 
   &:last-child {
     margin-bottom: 3px;
@@ -102,6 +107,8 @@ div.uifw-default-lock-and-label {
 
 .uifw-default-editor {
   margin-bottom: 6px;
+  display: flex;
+  align-items: center;
 
   &:last-child {
     margin-bottom: 3px;
