@@ -8,7 +8,7 @@
 
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, IModelRpcProps, IModelTileRpcInterface, RpcInterface,
+  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, IModelGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, RpcInterface,
   RpcInvocation, RpcManager, RpcPendingResponse, TileTreeContentIds, TileTreeProps, TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -203,6 +203,18 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
     return IModelHost.platform.getTileVersionInfo();
+  }
+
+  /** @internal */
+  public async requestElementGraphics(_rpcProps: IModelRpcProps, _request: IModelGraphicsRequestProps): Promise<Uint8Array> {
+    // ###TODO
+    return Promise.resolve(new Uint8Array(1));
+  }
+
+  /** @internal */
+  public async cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void> {
+    // ###TODO
+    return Promise.resolve();
   }
 }
 

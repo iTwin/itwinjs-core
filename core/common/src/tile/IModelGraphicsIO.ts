@@ -6,33 +6,8 @@
  * @module Tile
  */
 
-import { ByteStream, Id64String } from "@bentley/bentleyjs-core";
-import { TransformProps } from "@bentley/geometry-core";
-import { ContentFlags, TreeFlags } from "./TileMetadata";
+import { ByteStream } from "@bentley/bentleyjs-core";
 import { TileFormat, TileHeader } from "./TileIO";
-
-
-/** Wire format describing a request to produce graphics in [[TileFormat.IModelGraphics]] format for a single element.
- * @internal
- */
-export interface IModelGraphicsRequestProps {
-  /** Uniquely identifies this request among all requests for a given [[IModel]]. */
-  readonly id: string;
-  /** The element for which graphics are requested. */
-  readonly elementId: Id64String;
-  /** Log10 of the chord tolerance with which to stroke the element's geometry. e.g., for a chord tolerance of 0.01 (10^-2) meters, supply -2. */
-  readonly toleranceLog10: number;
-  /** The major version of the [[TileFormat.IModelGraphics]] format to use when producing the iMdl representation of the element's geometry. */
-  readonly formatVersion: number;
-  /** Optional flags. [[TreeFlags.UseProjectExtents]] has no effect. [[TreeFlags.EnforceDisplayPriority]] is not yet implemented. */
-  readonly treeFlags?: TreeFlags;
-  /** Optional flags. [[ContentFlags.ImprovedElision]] has no effect. */
-  readonly contentFlags?: ContentFlags;
-  /** Transform from element graphics to world coordinates. Defaults to identity. */
-  readonly location?: TransformProps;
-  /** If true, surface edges will be omitted from the graphics. */
-  readonly omitEdges?: boolean;
-}
 
 /** Binary header preceding tile data in [[TileFormat.IModelGraphics]] format.
  * The binary data consists of a JSON string followed by tile data in [[TileFormat.IModel]] format.

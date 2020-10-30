@@ -6,13 +6,37 @@
  * @module RpcInterface
  */
 
-import { AbandonedError, Id64Array } from "@bentley/bentleyjs-core";
+import { AbandonedError, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { TransformProps } from "@bentley/geometry-core";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
 import { CloudStorageTileCache } from "../CloudStorageTileCache";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { TileTreeProps, TileVersionInfo } from "../TileProps";
+import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
+
+/** Wire format describing a request to produce graphics in [[TileFormat.IModelGraphics]] format for a single element.
+ * @internal
+ */
+export interface IModelGraphicsRequestProps {
+  /** Uniquely identifies this request among all requests for a given [[IModel]]. */
+  readonly id: string;
+  /** The element for which graphics are requested. */
+  readonly elementId: Id64String;
+  /** Log10 of the chord tolerance with which to stroke the element's geometry. e.g., for a chord tolerance of 0.01 (10^-2) meters, supply -2. */
+  readonly toleranceLog10: number;
+  /** The major version of the [[TileFormat.IModelGraphics]] format to use when producing the iMdl representation of the element's geometry. */
+  readonly formatVersion: number;
+  /** Optional flags. [[TreeFlags.UseProjectExtents]] has no effect. [[TreeFlags.EnforceDisplayPriority]] is not yet implemented. */
+  readonly treeFlags?: TreeFlags;
+  /** Optional flags. [[ContentFlags.ImprovedElision]] has no effect. */
+  readonly contentFlags?: ContentFlags;
+  /** Transform from element graphics to world coordinates. Defaults to identity. */
+  readonly location?: TransformProps;
+  /** If true, surface edges will be omitted from the graphics. */
+  readonly omitEdges?: boolean;
+}
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface {
@@ -22,7 +46,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelTileRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.1.0";
+  public static interfaceVersion = "2.2.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -60,5 +84,15 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
 
   private static async checkCache(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array | undefined> {
     return CloudStorageTileCache.getCache().retrieve({ tokenProps, treeId, contentId, guid });
+  }
+
+  /** @internal */
+  public async requestElementGraphics(_rpcProps: IModelRpcProps, _request: IModelGraphicsRequestProps): Promise<Uint8Array> {
+    return this.forward(arguments);
+  }
+
+  /** @internal */
+  public async cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void> {
+    return this.forward(arguments);
   }
 }
