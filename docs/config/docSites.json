@@ -21,10 +21,10 @@
   },
   "metadata": {
     "home": "learning",
-    "logo": "assets/imodeljs-logo.svg",
-    "smallLogo": "assets/imodeljs-icon.svg",
+    "logo": "assets/iTwinJsSmall.png",
+    "smallLogo": "assets/iTwinJsLogoOnly.png",
     "sponsoredByLogo": "assets/bentley.svg",
-    "favicon": "assets/imodeljs_favicon_16.png",
+    "favicon": "assets/iTwinJs.ico",
     "docSiteOrder": [
       "getting-started",
       "learning",
