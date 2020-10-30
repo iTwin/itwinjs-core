@@ -1515,7 +1515,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
      * @param models the models to lock
      * See [LockHandler]($imodelhub-client) for details on what errors may be thrown.
      */
-    public lockModels(requestContext: AuthorizedClientRequestContext, models: ModelProps[]): Promise<void> {
+    public async lockModels(requestContext: AuthorizedClientRequestContext, models: ModelProps[]): Promise<void> {
       return this._iModel.concurrencyControl.requestResourcesForUpdate(requestContext, [], models);
     }
   }

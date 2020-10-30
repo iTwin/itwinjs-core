@@ -473,7 +473,7 @@ describe("IModelWriteTest (#integration)", () => {
     const bcId = rwIModel.concurrencyControl.iModel.briefcase.briefcaseId;
     const iModelId = rwIModel.concurrencyControl.iModel.iModelId;
 
-    var heldLocks = await BriefcaseManager.imodelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    let heldLocks = await BriefcaseManager.imodelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
     assert.isTrue(heldLocks.length !== 0);
 
     await expect(rwIModel.concurrencyControl.abandonResources(adminRequestContext)).to.be.rejectedWith(IModelError, "");
