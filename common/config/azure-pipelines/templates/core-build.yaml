@@ -31,9 +31,9 @@ steps:
         print ("Current branch: " + srcBranch)
         print ("Target branch: " + targetBranch)
 
-        if targetBranch.find("refs/heads/release") != -1 or targetBranch.find("release") != -1:
+        if targetBranch.find("release") != -1:
             # Need to get the current branch with reference to the remote.
-            srcBranch = targetBranch.replace("refs/heads/", "origin/")
+            srcBranch = "origin/" + targetBranch
 
             # Retarget the rush change command to look at the state of the changelog files from the released branch instead of the default of master.
             command = "node common/scripts/install-run-rush.js change -v -b " + srcBranch
