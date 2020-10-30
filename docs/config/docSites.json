@@ -21,8 +21,8 @@
   },
   "metadata": {
     "home": "learning",
-    "logo": "assets/iTwinJsSmall.png",
-    "smallLogo": "assets/iTwinJsLogoOnly.png",
+    "logo": "assets/itwinjs-logo.svg",
+    "smallLogo": "assets/itwinjs-logo-small.svg",
     "sponsoredByLogo": "assets/bentley.svg",
     "favicon": "assets/iTwinJs.ico",
     "docSiteOrder": [
