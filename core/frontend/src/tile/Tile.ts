@@ -193,7 +193,7 @@ export abstract class Tile {
   }
 
   /** True if this tile has graphics ready to draw. */
-  protected get hasGraphics(): boolean { return undefined !== this._graphic; }
+  public get hasGraphics(): boolean { return undefined !== this._graphic; }
   /** True if this tile has a known volume tightly encompassing its graphics. */
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents. Used for more accurate culling. */

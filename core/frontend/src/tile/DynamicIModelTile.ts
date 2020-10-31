@@ -16,7 +16,7 @@ import {
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import {
-  RootIModelTile, Tile, TileContent, TileParams, TileRequest, TileTree,
+  RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileTree,
 } from "./internal";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
@@ -41,6 +41,9 @@ export abstract class DynamicIModelTile extends Tile {
 
   /** Exposed strictly for tests. */
   public abstract get hiddenElements(): Id64Array;
+
+  /** Select tiles for display, requesting content for tiles as necessary. */
+  public abstract selectTiles(selected: Tile[], args: TileDrawArgs): void;
 }
 
 /** The root tile. Each of its children represent a newly-inserted or modified element. */
@@ -50,6 +53,11 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   private readonly _elements: SortedArray<ElementTile>;
 
   private get _imodelRoot() { return this.parent as RootIModelTile; }
+
+  private get elementChildren(): ElementTile[] {
+    assert(undefined !== this.children);
+    return this.children as ElementTile[];
+  }
 
   public constructor(parent: RootIModelTile, elements: Iterable<ElementGeometryChange>) {
     const range = Range3d.createNull();
@@ -137,6 +145,11 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
     throw new Error("Root dynamic tile has no content");
   }
+
+  public selectTiles(selected: Tile[], args: TileDrawArgs): void {
+    for (const child of this.elementChildren)
+      child.selectTiles(selected, args);
+  }
 }
 
 /** Represents a single element that has been inserted or had its geometric properties modified during the current [[InteractiveEditingSession]].
@@ -169,6 +182,63 @@ class ElementTile extends Tile {
 
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
     throw new Error("ElementTile has no content");
+  }
+
+  public selectTiles(selected: Tile[], args: TileDrawArgs): void {
+    if (this.isEmpty || this.isRegionCulled(args))
+      return;
+
+    args.markUsed(this);
+    args.markUsed(this.parent!);
+
+    // ###TODO: Test content range culled.
+
+    // Compute the ideal chord tolerance.
+    const pixelSize = args.getPixelSize(this);
+    assert(pixelSize > 0);
+
+    // Round down to the nearest power of ten.
+    const toleranceLog10 = Math.floor(Math.log10(pixelSize));
+
+    // Find (or create) a child tile of desired tolerance. Also find a child tile that can be substituted for the desired tile if that tile's content is not yet loaded.
+    // NB: Children are sorted in descending order by log10(tolerance)
+    assert(undefined !== this.children);
+    const children = this.children as GraphicsTile[];
+    let closestMatch: GraphicsTile | undefined;
+    let exactMatch: GraphicsTile | undefined;
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const tol = child.toleranceLog10;
+      if (tol > toleranceLog10) {
+        assert(undefined === exactMatch);
+        if (child.hasGraphics)
+          closestMatch = child;
+      } else if (tol === toleranceLog10) {
+        exactMatch = child;
+      } else if (tol < toleranceLog10) {
+        if (!exactMatch)
+          children.splice(i++, 0, exactMatch = new GraphicsTile(this, toleranceLog10));
+
+        if (child.hasGraphics && (!closestMatch || closestMatch.toleranceLog10 > toleranceLog10))
+          closestMatch = child;
+      }
+    }
+
+    if (!exactMatch) {
+      assert(children.length === 0 || children[children.length - 1].toleranceLog10 > toleranceLog10);
+      children.push(exactMatch = new GraphicsTile(this, toleranceLog10));
+    }
+
+    if (!exactMatch.isReady) {
+      args.insertMissing(exactMatch);
+      if (closestMatch) {
+        selected.push(closestMatch);
+        args.markUsed(closestMatch);
+      }
+    } else if (exactMatch.hasGraphics) {
+      selected.push(exactMatch);
+      args.markUsed(exactMatch);
+    }
   }
 }
 

@@ -352,7 +352,8 @@ export class IModelTileTree extends TileTree {
     this._rootTile.staticBranch.selectTiles(tiles, args, 0);
     this._numStaticTilesSelected = tiles.length;
 
-    // ###TODO select dynamic tiles.
+    if (this._rootTile.tileState.type === "dynamic")
+      this._rootTile.tileState.rootTile.selectTiles(tiles, args);
 
     return tiles;
   }

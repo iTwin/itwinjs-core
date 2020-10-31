@@ -78,7 +78,7 @@ export class TileDrawArgs {
   /**  Symbology overrides */
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
 
-  /** Compute the size of this tile on screen in pixels. */
+  /** Compute the size in meters of a single pixel at the point on the tile's bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = this.getTileCenter(tile);
