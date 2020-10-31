@@ -34,7 +34,7 @@ steps:
         if targetBranch.find("release") != -1:
             # ADOps uses the branch name (i.e. 'release/2.8.0') for GH PR branch names instead of full refs.
             branchCmd = " -b origin/" + targetBranch
-        elif targetBranch.find("refs/heads/release") != -1
+        elif targetBranch.find("refs/heads/release") != -1:
             branchCmd = " -b " + targetBranch.replace("refs/heads/", "origin/")
         else:
             # Uses default head ("origin/master"), if not defined
