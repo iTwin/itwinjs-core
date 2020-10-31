@@ -14,6 +14,7 @@ import {
   BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass,
 } from "@bentley/imodeljs-common";
 import { RenderSystem } from "../render/RenderSystem";
+import { Viewport } from "../Viewport";
 import {
   RootIModelTile, Tile, TileContent, TileParams, TileRequest, TileTree,
 } from "./internal";
@@ -162,12 +163,50 @@ class ElementTile extends Tile {
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+    assert(false, "ElementTile has no content");
+    return undefined;
+  }
+
+  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
+    throw new Error("ElementTile has no content");
+  }
+}
+
+/** Supplies graphics of a specific LOD for a single element. */
+class GraphicsTile extends Tile {
+  public readonly toleranceLog10: number;
+  public readonly tolerance: number;
+
+  public constructor(parent: ElementTile, toleranceLog10: number) {
+    assert(Math.round(toleranceLog10) === toleranceLog10);
+    super({
+      parent,
+      isLeaf: true,
+      contentId: `${parent.contentId}_${toleranceLog10}`,
+      range: parent.range,
+      maximumSize: parent.maximumSize,
+    }, parent.tree);
+
+    this.toleranceLog10 = toleranceLog10;
+    this.tolerance = 10 ** toleranceLog10;
+  }
+
+  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+    // We want the element's graphics to be updated as soon as possible
+    return 0;
+  }
+
+  public _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+    resolve(undefined);
+  }
+
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
     // ###TODO
     return undefined;
   }
 
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
     // ###TODO
-    throw new Error("unimplemented");
+    throw new Error("TODO");
   }
 }

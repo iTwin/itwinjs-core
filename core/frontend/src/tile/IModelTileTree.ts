@@ -341,6 +341,11 @@ export class IModelTileTree extends TileTree {
   public get batchType(): BatchType { return this._options.batchType; }
   public get hasEdges(): boolean { return this._options.edgesRequired; }
 
+  public get loadPriority(): TileLoadPriority {
+    // If the model has been modified, we want to prioritize keeping its graphics up to date.
+    return this.tileState === "dynamic" ? TileLoadPriority.Dynamic : super.loadPriority;
+  }
+
   protected _selectTiles(args: TileDrawArgs): Tile[] {
     args.markUsed(this._rootTile);
     const tiles: Tile[] = [];

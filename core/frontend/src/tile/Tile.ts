@@ -516,6 +516,8 @@ export enum TileVisibility {
  * @beta
  */
 export enum TileLoadPriority {
+  /** Contents of geometric models that are being interactively edited. */
+  Dynamic = 5,
   /** Background map tiles. */
   Map = 15,
   /** Typically, tiles generated from the contents of geometric models. */
