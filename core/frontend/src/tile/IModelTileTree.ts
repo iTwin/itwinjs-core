@@ -258,7 +258,8 @@ class RootTile extends Tile {
 
   public prune(olderThan: BeTimePoint): void {
     this.staticBranch.pruneChildren(olderThan);
-    // ###TODO prune dynamic tiles
+    if ("dynamic" === this._tileState.type)
+      this._tileState.rootTile.pruneChildren(olderThan);
   }
 
   public transition(newState: RootTileState): void {
@@ -365,6 +366,7 @@ export class IModelTileTree extends TileTree {
 
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
+    this._rootTile.prune(olderThan);
   }
 
   public forcePrune(): void {

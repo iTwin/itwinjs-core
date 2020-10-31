@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, compareStrings, DbOpcode, Id64, Id64Array, Id64String, SortedArray,
+  assert, BeTimePoint, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
 } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
@@ -44,6 +44,9 @@ export abstract class DynamicIModelTile extends Tile {
 
   /** Select tiles for display, requesting content for tiles as necessary. */
   public abstract selectTiles(selected: Tile[], args: TileDrawArgs): void;
+
+  /** Discard tiles that have not been used since the specified time point. */
+  public abstract pruneChildren(olderThan: BeTimePoint): void;
 }
 
 /** The root tile. Each of its children represent a newly-inserted or modified element. */
@@ -150,6 +153,19 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     for (const child of this.elementChildren)
       child.selectTiles(selected, args);
   }
+
+  public pruneChildren(olderThan: BeTimePoint): void {
+    const children = this.elementChildren;
+    const partitionIndex = partitionArray(children, (child) => !child.usageMarker.isExpired(olderThan));
+
+    // Remove expired children.
+    if (partitionIndex < children.length)
+      children.splice(partitionIndex);
+
+    // Prune grandchildren.
+    for (const child of this.elementChildren)
+      child.pruneChildren(olderThan);
+  }
 }
 
 /** Represents a single element that has been inserted or had its geometric properties modified during the current [[InteractiveEditingSession]].
@@ -184,12 +200,25 @@ class ElementTile extends Tile {
     throw new Error("ElementTile has no content");
   }
 
+  public pruneChildren(olderThan: BeTimePoint): void {
+    const children = this.children as GraphicsTile[];
+    assert(undefined !== children);
+
+    const partitionIndex = partitionArray(children, (child) => !child.usageMarker.isExpired(olderThan));
+
+    // Remove expired children.
+    if (partitionIndex < children.length)
+      children.splice(partitionIndex);
+
+    // Restore ordering.
+    children.sort((x, y) => y.toleranceLog10 - x.toleranceLog10);
+  }
+
   public selectTiles(selected: Tile[], args: TileDrawArgs): void {
     if (this.isEmpty || this.isRegionCulled(args))
       return;
 
     args.markUsed(this);
-    args.markUsed(this.parent!);
 
     // ###TODO: Test content range culled.
 
