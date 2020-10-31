@@ -1508,7 +1508,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(elProps, iModel);
 
-      const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+      const stat = iModel.nativeDb.updateElement(elProps);
       if (stat !== IModelStatus.Success)
         throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
 
