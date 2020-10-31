@@ -14,8 +14,8 @@ import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
   await IModelHost.startup();
   if (true) {
     const sourceDirectoryName = "D:/data/bim/snapshots";
-    const sourceBaseName = "fmg";
-    // const sourceBaseName = "shell4";
+    // const sourceBaseName = "fmg";
+    const sourceBaseName = "shell4";
     // const sourceBaseName = "shell-full-1015";
     // const sourceBaseName = "shell-full-1018";
     // const sourceBaseName = "cassia-05";
@@ -35,21 +35,22 @@ import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
   await IModelHost.shutdown();
 })();
 
-function initializeLogging(logFileName: string): void {
+function initializeLogging(_logFileName: string): void {
   // initialize logging
-  if (IModelJsFs.existsSync(logFileName)) {
-    IModelJsFs.removeSync(logFileName);
-  }
-  Logger.initialize(
-    (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Error   |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
-    (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Warning |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
-    (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Info    |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
-    (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Trace   |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
-  );
+  // if (IModelJsFs.existsSync(logFileName)) {
+  //   IModelJsFs.removeSync(logFileName);
+  // }
+  // Logger.initialize(
+  //   (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Error   |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
+  //   (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Warning |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
+  //   (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Info    |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
+  //   (category: string, message: string, getMetaData?: GetMetaDataFunction): void => IModelJsFs.appendFileSync(logFileName, `Trace   |${category}| ${message}${getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : ""}${EOL}`),
+  // );
+  Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
   Logger.setLevel("Progress", LogLevel.Info);
   Logger.setLevel("Memory", LogLevel.Info);
-  if (true) {
+  if (false) {
     Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
     Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
     Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
