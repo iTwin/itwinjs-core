@@ -8,7 +8,7 @@
 
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, IModelGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, RpcInterface,
+  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, RpcInterface,
   RpcInvocation, RpcManager, RpcPendingResponse, TileTreeContentIds, TileTreeProps, TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -206,15 +206,15 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   /** @internal */
-  public async requestElementGraphics(_rpcProps: IModelRpcProps, _request: IModelGraphicsRequestProps): Promise<Uint8Array> {
-    // ###TODO
-    return Promise.resolve(new Uint8Array(1));
+  public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array> {
+    const iModel = IModelDb.findByKey(rpcProps.key);
+    return iModel.nativeDb.generateElementGraphics(request);
   }
 
   /** @internal */
-  public async cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void> {
-    // ###TODO
-    return Promise.resolve();
+  public async cancelElementGraphicsRequests(rpcProps: IModelRpcProps, requestIds: string[]): Promise<void> {
+    const iModel = IModelDb.findByKey(rpcProps.key);
+    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
   }
 }
 

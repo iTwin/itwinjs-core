@@ -19,7 +19,7 @@ import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
 /** Wire format describing a request to produce graphics in [[TileFormat.IModelGraphics]] format for a single element.
  * @internal
  */
-export interface IModelGraphicsRequestProps {
+export interface ElementGraphicsRequestProps {
   /** Uniquely identifies this request among all requests for a given [[IModel]]. */
   readonly id: string;
   /** The element for which graphics are requested. */
@@ -87,7 +87,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   }
 
   /** @internal */
-  public async requestElementGraphics(_rpcProps: IModelRpcProps, _request: IModelGraphicsRequestProps): Promise<Uint8Array> {
+  public async requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array> {
     return this.forward(arguments);
   }
 
