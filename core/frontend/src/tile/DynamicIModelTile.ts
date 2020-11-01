@@ -50,29 +50,14 @@ export abstract class DynamicIModelTile extends Tile {
   public abstract pruneChildren(olderThan: BeTimePoint): void;
 }
 
-/** Sorts a list of inserted or modified elements by Id, and keeps in sync with the RootTile's list of child tiles.
- * ###TODO: Maintain a single list instead of two.
- */
+/** The child tiles of the root tile, representing inserted or modified elements and sorted by element Id. */
 class ElementTiles extends SortedArray<ElementTile> {
-  private readonly _tiles: Tile[];
-
-  public constructor(tiles: Tile[]) {
+  public constructor() {
     super((lhs, rhs) => compareStrings(lhs.contentId, rhs.contentId));
-    this._tiles = tiles;
   }
 
-  public remove(tile: ElementTile): number {
-    const result = super.remove(tile);
-    const index = this._tiles.indexOf(tile);
-    assert(-1 !== index);
-    this._tiles.splice(index, 1);
-    return result;
-  }
-
-  public insert(tile: ElementTile): number {
-    const result = super.insert(tile);
-    this._tiles.push(tile);
-    return result;
+  public get array(): ElementTile[] {
+    return this._array;
   }
 }
 
@@ -86,7 +71,8 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
 
   private get elementChildren(): ElementTile[] {
     assert(undefined !== this.children);
-    return this.children as ElementTile[];
+    assert(this.children === this._elements.array);
+    return this._elements.array;
   }
 
   public constructor(parent: RootIModelTile, elements: Iterable<ElementGeometryChange>) {
@@ -107,9 +93,9 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     assert(undefined !== inverseTransform);
     this.transformToTree = inverseTransform;
 
+    this._elements = new ElementTiles();
     this.loadChildren(); // initially empty.
     assert(undefined !== this.children);
-    this._elements = new ElementTiles(this.children);
 
     this.setIsReady();
     this.handleGeometryChanges(elements);
@@ -162,7 +148,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (errpr: Error) => void): void {
     // This is invoked from constructor. We will add a child per element later - for now just mark the children as having been loaded.
-    resolve([]);
+    resolve(this._elements.array);
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
@@ -238,7 +224,7 @@ class ElementTile extends Tile {
 
   public selectTiles(selected: Tile[], args: TileDrawArgs): void {
     assert(undefined !== this.children);
-    if (this.isRegionCulled(args) || 0 === this.children.length)
+    if (this.isRegionCulled(args))
       return;
 
     args.markUsed(this);
@@ -246,7 +232,7 @@ class ElementTile extends Tile {
     // ###TODO: Test content range culled.
 
     // Compute the ideal chord tolerance.
-    const pixelSize = args.getPixelSize(this);
+    const pixelSize = 0.001; // ###TODO args.getPixelSize(this);
     assert(pixelSize > 0);
 
     // Round down to the nearest power of ten.
