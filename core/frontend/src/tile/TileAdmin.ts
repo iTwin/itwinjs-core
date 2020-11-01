@@ -8,7 +8,7 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, ModelGeometryChanges, NativeAppRpcInterface, RpcOperation, RpcRegistry,
+  defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, ModelGeometryChanges, NativeAppRpcInterface, RpcOperation, RpcRegistry,
   RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -220,6 +220,9 @@ export abstract class TileAdmin {
 
   /** @internal */
   public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
+
+  /** @internal */
+  public abstract requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -1174,6 +1177,12 @@ class Admin extends TileAdmin {
 
     const intfc = IModelTileRpcInterface.getClient();
     return intfc.requestTileContent(iModelRpcProps, treeId, contentId, isCanceled, guid);
+  }
+
+  public requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array> {
+    this.initializeRpc();
+    const intfc = IModelTileRpcInterface.getClient();
+    return intfc.requestElementGraphics(iModel.getRpcProps(), requestProps);
   }
 
   private initializeRpc(): void {

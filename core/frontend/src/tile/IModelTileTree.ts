@@ -234,6 +234,9 @@ class RootTile extends Tile {
       tiles[i].drawGraphics(args);
 
     if ("dynamic" !== this._tileState.type || numStaticTiles == tiles.length) {
+      if ("dynamic" === this._tileState.type)
+        args.appearanceProvider = this._tileState.rootTile.appearanceProvider;
+
       args.drawGraphics();
       return;
     }
@@ -265,6 +268,15 @@ class RootTile extends Tile {
   public transition(newState: RootTileState): void {
     assert(newState.type !== this._tileState.type);
     const resetRange = "dynamic" === this._tileState.type;
+
+    assert(undefined !== this.children);
+    if ("dynamic" === this._tileState.type) {
+      assert(2 === this.children.length);
+      this.children.pop();
+    } else if ("dynamic" === newState.type) {
+      assert(1 === this.children.length);
+      this.children.push(newState.rootTile);
+    }
 
     this._tileState.dispose();
     this._tileState = newState;

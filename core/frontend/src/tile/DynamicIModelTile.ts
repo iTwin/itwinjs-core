@@ -7,16 +7,17 @@
  */
 
 import {
-  assert, BeTimePoint, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
+  assert, BeTimePoint, ByteStream, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
 } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass,
+  BatchType, CurrentImdlVersion, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass, TileFormat,
 } from "@bentley/imodeljs-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
+import { IModelApp } from "../IModelApp";
 import {
-  RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileTree,
+  ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileTree,
 } from "./internal";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
@@ -49,11 +50,37 @@ export abstract class DynamicIModelTile extends Tile {
   public abstract pruneChildren(olderThan: BeTimePoint): void;
 }
 
+/** Sorts a list of inserted or modified elements by Id, and keeps in sync with the RootTile's list of child tiles.
+ * ###TODO: Maintain a single list instead of two.
+ */
+class ElementTiles extends SortedArray<ElementTile> {
+  private readonly _tiles: Tile[];
+
+  public constructor(tiles: Tile[]) {
+    super((lhs, rhs) => compareStrings(lhs.contentId, rhs.contentId));
+    this._tiles = tiles;
+  }
+
+  public remove(tile: ElementTile): number {
+    const result = super.remove(tile);
+    const index = this._tiles.indexOf(tile);
+    assert(-1 !== index);
+    this._tiles.splice(index, 1);
+    return result;
+  }
+
+  public insert(tile: ElementTile): number {
+    const result = super.insert(tile);
+    this._tiles.push(tile);
+    return result;
+  }
+}
+
 /** The root tile. Each of its children represent a newly-inserted or modified element. */
 class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   private readonly _hiddenElements: Id64.Uint32Set;
   public readonly transformToTree: Transform;
-  private readonly _elements: SortedArray<ElementTile>;
+  private readonly _elements: ElementTiles;
 
   private get _imodelRoot() { return this.parent as RootIModelTile; }
 
@@ -75,13 +102,15 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     super(params, parent.tree);
 
     this._hiddenElements = new Id64.Uint32Set();
-    this._elements = new SortedArray<ElementTile>((lhs, rhs) => compareStrings(lhs.contentId, rhs.contentId));
 
     const inverseTransform = parent.tree.iModelTransform.inverse();
     assert(undefined !== inverseTransform);
     this.transformToTree = inverseTransform;
 
     this.loadChildren(); // initially empty.
+    assert(undefined !== this.children);
+    this._elements = new ElementTiles(this.children);
+
     this.setIsReady();
     this.handleGeometryChanges(elements);
   }
@@ -111,19 +140,15 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
       let tile = this._elements.findEquivalent((tile: ElementTile) => compareStrings(tile.contentId, change.id));
       if (change.type === DbOpcode.Delete) {
         if (tile) {
+          tile.dispose();
           this._elements.remove(tile);
-          const childIndex = this.children.indexOf(tile);
-          assert(-1 !== childIndex);
-          this.children.splice(childIndex, 1);
         }
       } else {
         const range = change.range.isNull ? change.range.clone() : this.transformToTree.multiplyRange(change.range);
-        if (tile) {
-          range.clone(tile.range);
-        } else {
+        if (tile)
+          tile.update(range);
+        else
           this._elements.insert(tile = new ElementTile(this, change.id, range));
-          this.children.push(tile);
-        }
       }
     }
 
@@ -155,14 +180,8 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   }
 
   public pruneChildren(olderThan: BeTimePoint): void {
+    // Never discard ElementTiles - do discard not-recently-used graphics.
     const children = this.elementChildren;
-    const partitionIndex = partitionArray(children, (child) => !child.usageMarker.isExpired(olderThan));
-
-    // Remove expired children.
-    if (partitionIndex < children.length)
-      children.splice(partitionIndex);
-
-    // Prune grandchildren.
     for (const child of this.elementChildren)
       child.pruneChildren(olderThan);
   }
@@ -207,15 +226,19 @@ class ElementTile extends Tile {
     const partitionIndex = partitionArray(children, (child) => !child.usageMarker.isExpired(olderThan));
 
     // Remove expired children.
-    if (partitionIndex < children.length)
-      children.splice(partitionIndex);
+    if (partitionIndex < children.length) {
+      const expired = children.splice(partitionIndex);
+      for (const child of expired)
+        child.dispose();
+    }
 
     // Restore ordering.
     children.sort((x, y) => y.toleranceLog10 - x.toleranceLog10);
   }
 
   public selectTiles(selected: Tile[], args: TileDrawArgs): void {
-    if (this.isEmpty || this.isRegionCulled(args))
+    assert(undefined !== this.children);
+    if (this.isRegionCulled(args) || 0 === this.children.length)
       return;
 
     args.markUsed(this);
@@ -231,7 +254,6 @@ class ElementTile extends Tile {
 
     // Find (or create) a child tile of desired tolerance. Also find a child tile that can be substituted for the desired tile if that tile's content is not yet loaded.
     // NB: Children are sorted in descending order by log10(tolerance)
-    assert(undefined !== this.children);
     const children = this.children as GraphicsTile[];
     let closestMatch: GraphicsTile | undefined;
     let exactMatch: GraphicsTile | undefined;
@@ -269,7 +291,30 @@ class ElementTile extends Tile {
       args.markUsed(exactMatch);
     }
   }
+
+  public update(range: Range3d): void {
+    range.clone(this.range);
+
+    // Discard out-dated graphics.
+    assert(undefined !== this.children);
+    for (const child of this.children)
+      child.dispose();
+
+    this.children.length = 0;
+  }
 }
+
+function * makeIdSequence() {
+  let current = 0;
+  while (true) {
+    if (current >= Number.MAX_SAFE_INTEGER)
+      current = 0;
+
+    yield ++current;
+  }
+}
+
+const requestIdSequence = makeIdSequence();
 
 /** Supplies graphics of a specific LOD for a single element. */
 class GraphicsTile extends Tile {
@@ -300,12 +345,50 @@ class GraphicsTile extends Tile {
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
-    // ###TODO
-    return undefined;
+    // ###TODO: tree flags, content flags, max format version.
+    assert(undefined !== this.parent);
+
+    const requestId = requestIdSequence.next();
+    assert(!requestId.done);
+
+    const props = {
+      id: requestId.value.toString(16),
+      elementId: this.parent.contentId,
+      toleranceLog10: this.toleranceLog10,
+      formatVersion: CurrentImdlVersion.Major,
+      location: this.tree.iModelTransform,
+    };
+
+    return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);
   }
 
-  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
-    // ###TODO
-    throw new Error("TODO");
+  public async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled: () => boolean): Promise<TileContent> {
+    if (undefined === isCanceled)
+      isCanceled = () => !this.isLoading;
+
+    assert(data instanceof Uint8Array);
+    const stream = new ByteStream(data.buffer);
+
+    const position = stream.curPos;
+    const format = stream.nextUint32;
+    stream.curPos = position;
+
+    // ###TODO: IModelGraphics format wraps IModel format.
+    assert(TileFormat.IModel === format);
+
+    const tree = this.tree;
+    assert(tree instanceof IModelTileTree);
+    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, this.contentId);
+
+    let content: TileContent = { isLeaf: true };
+    if (reader) {
+      try {
+        content = await reader.read();
+      } catch (_) {
+        //
+      }
+    }
+
+    return content;
   }
 }
