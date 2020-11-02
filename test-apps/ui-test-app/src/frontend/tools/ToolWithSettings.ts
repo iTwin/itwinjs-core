@@ -13,9 +13,9 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import {
-  ColorEditorParams, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, ImageCheckBoxParams,
-  InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, PropertyEditorParamTypes, RelativePosition,
-  SuppressLabelEditorParams, SyncPropertiesChangeEvent,
+  DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
+  InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus, PropertyDescriptionHelper,
+  PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
 } from "@bentley/ui-abstract";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
@@ -40,19 +40,9 @@ enum ToolOptionNames {
 }
 
 class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
-  // ------------- Weight ---------------
-  private static _weightName = "weight";
-  private static _getWeightDescription(): PropertyDescription {
-    return {
-      name: this._weightName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight"),
-      typename: "number",
-      editor: {
-        name: "weight-picker",
-      },
-    };
-  }
+  private _weightDescription = PropertyDescriptionHelper.buildWeightPickerDescription("weight", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight"));
 
+  // ------------- Weight ---------------
   private _weightValue: DialogItemValue = { value: 3 };
 
   public get weight(): number {
@@ -67,7 +57,7 @@ class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
   public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
-        if (prop.propertyName === PointOnePopupSettingsProvider._weightName) {
+        if (prop.propertyName === this._weightDescription.name) {
           this.weight = prop.value.value! as number;
           const msg = `Set Weight = ${this.weight}`;
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
@@ -81,7 +71,7 @@ class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
   /** Called by UI to request available properties when UI is manually created. */
   public supplyDialogItems(): DialogItem[] | undefined {
     return [
-      { value: this._weightValue, property: PointOnePopupSettingsProvider._getWeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 1 } },
+      { value: this._weightValue, property: this._weightDescription, editorPosition: { rowPriority: 2, columnIndex: 1 } },
     ];
   }
 
@@ -100,17 +90,8 @@ class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
 }
 
 class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
-
   // ------------- text based edit field ---------------
-  private static _sourcePropertyName = "source";
-  private static _getSourceDescription = (): PropertyDescription => {
-    return {
-      name: PointTwoPopupSettingsProvider._sourcePropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Source"),
-      typename: "string",
-    };
-  }
-
+  private _sourceDescription = PropertyDescriptionHelper.buildTextEditorDescription("source", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Source"));
   private _sourceValue: DialogItemValue = { value: "unknown" };
 
   public get source(): string {
@@ -125,7 +106,7 @@ class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
   public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
-        if (prop.propertyName === PointTwoPopupSettingsProvider._sourcePropertyName) {
+        if (prop.propertyName === this._sourceDescription.name) {
           this.source = prop.value.value ? prop.value.value as string : "";
           const msg = `Set Source = ${this.source}`;
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
@@ -139,7 +120,7 @@ class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
   /** Called by UI to request available properties when UI is manually created. */
   public supplyDialogItems(): DialogItem[] | undefined {
     return [
-      { value: this._sourceValue, property: PointTwoPopupSettingsProvider._getSourceDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } },
+      { value: this._sourceValue, property: this._sourceDescription, editorPosition: { rowPriority: 1, columnIndex: 1 } },
     ];
   }
 
@@ -165,17 +146,18 @@ export class ToolWithSettings extends PrimitiveTool {
   private _showCoordinatesOnPointerMove = false;
   private _stationFormatterSpec?: FormatterSpec;
   private _lengthDescription = new LengthDescription();
-  private _surveyLengthDescription = new SurveyLengthDescription(ToolWithSettings._surveyLengthName, "Survey");
+  private _surveyLengthDescription = new SurveyLengthDescription("surveyLength", "Survey");
+  private _angleDescription = new AngleDescription();
+  private _isUseLengthCheckboxDisabled = false;
 
   private toggleCoordinateUpdate() {
     this._showCoordinatesOnPointerMove = !this._showCoordinatesOnPointerMove;
   }
 
-  // ------------- Color List ---------------
-  private static _colorOptionPropertyName = "colorOption";
-  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
-  private static getEnumAsPicklistDescription(showExtendedSet: boolean): PropertyDescription {
-    const colorChoices = showExtendedSet ? [
+  // ------------- Color Enum ---------------
+  private enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
+  private getColorChoices = () => {
+    return this._isUseLengthCheckboxDisabled ? [
       { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
       { label: this.enumAsPicklistMessage(ToolOptionNames.White), value: ToolOptions.White },
       { label: this.enumAsPicklistMessage(ToolOptionNames.Blue), value: ToolOptions.Blue },
@@ -190,16 +172,10 @@ export class ToolWithSettings extends PrimitiveTool {
         { label: this.enumAsPicklistMessage(ToolOptionNames.Blue), value: ToolOptions.Blue },
         { label: this.enumAsPicklistMessage(ToolOptionNames.Yellow), value: ToolOptions.Yellow },
       ];
-
-    return {
-      name: this._colorOptionPropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
-      typename: "enum",
-      enum: {
-        choices: colorChoices,
-      },
-    };
   }
+
+  private _colorEnumDescription = PropertyDescriptionHelper.buildEnumPicklistEditorDescription("colorOption", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+    this.getColorChoices());
 
   private _colorOptionValue: DialogItemValue = { value: ToolOptions.Blue };
 
@@ -211,33 +187,10 @@ export class ToolWithSettings extends PrimitiveTool {
     this._colorOptionValue.value = option;
   }
 
-  // ------------- Color ---------------
-  private static _colorName = "color";
-  private static _getColorDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._colorName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
-      typename: "number",
-      editor: {
-        name: "color-picker",
-        params: [{
-          type: PropertyEditorParamTypes.ColorData,
-          colorValues: [
-            ColorByName.blue as number,
-            ColorByName.red as number,
-            ColorByName.green as number,
-            ColorByName.yellow as number,
-            ColorByName.black as number,
-            ColorByName.gray as number,
-            ColorByName.purple as number,
-            ColorByName.pink as number,
-          ],
-          numColumns: 2,
-        } as ColorEditorParams,
-        ],
-      },
-    };
-  }
+  // ------------- Color Picker ---------------
+  private _colorPickerDescription = PropertyDescriptionHelper.buildColorPickerDescription("color", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+    [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.black, ColorByName.gray, ColorByName.purple, ColorByName.pink],
+    2);
 
   private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
 
@@ -258,16 +211,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- boolean based toggle button ---------------
-  private static _lockToggleName = "lockToggle";
-  private static _getLockToggleDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._lockToggleName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Lock"),
-      typename: "boolean",
-      editor: { name: "toggle" },
-    };
-  }
-
+  private _lockToggleDescription = PropertyDescriptionHelper.buildToggleDescription("lockToggle", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Lock"));
   private _lockToggleDisabled = false;
   private _lockValue: DialogItemValue = { value: true };
 
@@ -280,29 +224,12 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- boolean based toggle button ---------------
-  private static _imageCheckBoxName = "imageCheckBox";
-  private static _getImageCheckBoxDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._imageCheckBoxName,
-      displayLabel: "",
-      typename: "boolean",
-      editor: {
-        name: "image-check-box",
-        params: [{
-          type: PropertyEditorParamTypes.CheckBoxImages,
-          imageOff: "icon-clear-night",
-          imageOn: "icon-clear-day",
-        } as ImageCheckBoxParams, {
-          type: PropertyEditorParamTypes.SuppressEditorLabel,
-          suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-        ],
-      },
-    };
-  }
+  private _imageCheckBoxDescription = PropertyDescriptionHelper.buildImageCheckBoxDescription("imageCheckBox", "", "icon-clear-night", "icon-clear-day", [{
+    type: PropertyEditorParamTypes.SuppressEditorLabel,
+    suppressLabelPlaceholder: true,
+  } as SuppressLabelEditorParams]);
 
   private _imageCheckboxDisabled = false;
-
   private _imageCheckBoxValue: DialogItemValue = { value: true };
 
   public get imageCheckBoxValue(): boolean {
@@ -314,15 +241,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- text based edit field ---------------
-  private static _cityName = "city";
-  private static _getCityDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._cityName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.City"),
-      typename: "string",
-    };
-  }
-
+  private _cityDescription = PropertyDescriptionHelper.buildTextEditorDescription("city", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.City"));
   private _cityValue: DialogItemValue = { value: "Exton" };
 
   public get city(): string {
@@ -334,22 +253,14 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- text based edit field ---------------
-  private static _stateName = "state";
-  private static _getStateDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._stateName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
-      typename: "string",
-      editor: {
-        params: [{
-          type: PropertyEditorParamTypes.InputEditorSize,
-          size: 4,
-          /* maxLength: 60,*/
-        } as InputEditorSizeParams,
-        ],
-      },
-    };
-  }
+  private _stateDescription = PropertyDescriptionHelper.buildTextEditorDescription("state", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
+    [
+      {
+        type: PropertyEditorParamTypes.InputEditorSize,
+        size: 4,
+      } as InputEditorSizeParams,
+    ]
+  );
 
   private _stateValue: DialogItemValue = { value: "PA" };
 
@@ -362,15 +273,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- text based edit field ---------------
-  private static _coordinateName = "coordinate";
-  private static _getCoordinateDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._coordinateName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate"),
-      typename: "string",
-    };
-  }
-
+  private _coordinateDescription = PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate"));
   private _coordinateValue: DialogItemValue = { value: "0.0, 0.0, 0.0" };
 
   public get coordinate(): string {
@@ -396,15 +299,7 @@ export class ToolWithSettings extends PrimitiveTool {
     return undefined;
   }
 
-  private static _stationName = "station";
-  private static _getStationDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._stationName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station"),
-      typename: "string",
-    };
-  }
-
+  private _stationDescription = PropertyDescriptionHelper.buildTextEditorDescription("station", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station"));
   private formatStation(numberValue: number): string {
     if (this.stationFormatterSpec) {
       return IModelApp.quantityFormatter.formatQuantity(numberValue, this.stationFormatterSpec);
@@ -423,23 +318,14 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- use length toggle  ---------------
-  private static _useLengthName = "useLength";
-  private static _getUseLengthDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._useLengthName,
-      displayLabel: "",
-      typename: "boolean",
-      editor: {
-        params: [{
-          type: PropertyEditorParamTypes.SuppressEditorLabel,
-          suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-        ],
-      },
-    };
-  }
-
-  private _isUseLengthCheckboxDisabled = false;
+  private _useLengthDescription = PropertyDescriptionHelper.buildCheckboxDescription("useLength", "",
+    [
+      {
+        type: PropertyEditorParamTypes.SuppressEditorLabel,
+        suppressLabelPlaceholder: true,
+      } as SuppressLabelEditorParams,
+    ]
+  );
   private _useLengthValue: DialogItemValue = { value: true };
 
   public get useLength(): boolean {
@@ -451,8 +337,6 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- Length ---------------
-  private static _lengthName = "length";
-
   // if _lengthValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
   private _lengthValue: DialogItemValue = { value: 1.5 };  // value in meters
 
@@ -465,8 +349,6 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- Survey Length ---------------
-  private static _surveyLengthName = "surveyLength";
-
   // if _surveyLengthValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
   private _surveyLengthValue: DialogItemValue = { value: 51.25 };  // value in meters
 
@@ -582,12 +464,12 @@ export class ToolWithSettings extends PrimitiveTool {
   private syncCoordinateValue(coordinate: string, station: string, distance: number): void {
     const coordinateValue: DialogItemValue = { value: coordinate };
     // clone coordinateValue if storing value within tool - in this case we are not
-    const syncItem: DialogPropertySyncItem = { value: coordinateValue, propertyName: ToolWithSettings._coordinateName, isDisabled: true };
+    const syncItem: DialogPropertySyncItem = { value: coordinateValue, propertyName: this._coordinateDescription.name, isDisabled: true };
     const stationValue: DialogItemValue = { value: station };
-    const stationSyncItem: DialogPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName, isDisabled: false };
+    const stationSyncItem: DialogPropertySyncItem = { value: stationValue, propertyName: this._stationDescription.name, isDisabled: false };
 
     const surveyLengthValue: DialogItemValue = { value: distance, displayValue: this._surveyLengthDescription.format(distance) };
-    const surveySyncItem: DialogPropertySyncItem = { value: surveyLengthValue, propertyName: ToolWithSettings._surveyLengthName, isDisabled: true };
+    const surveySyncItem: DialogPropertySyncItem = { value: surveyLengthValue, propertyName: this._surveyLengthDescription.name, isDisabled: true };
     this.syncToolSettingsProperties([syncItem, stationSyncItem, surveySyncItem]);
   }
 
@@ -595,11 +477,12 @@ export class ToolWithSettings extends PrimitiveTool {
     if (wentDown && keyEvent.key === "1") {
       this._isUseLengthCheckboxDisabled = !this._isUseLengthCheckboxDisabled;
 
-      const syncItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._useLengthName, value: this._useLengthValue, isDisabled: this._isUseLengthCheckboxDisabled };
+      const syncItem: DialogPropertySyncItem = { propertyName: this._useLengthDescription.name, value: this._useLengthValue, isDisabled: this._isUseLengthCheckboxDisabled };
       // test updating color option and available colors by providing a new enum list
       this.colorOption = this._isUseLengthCheckboxDisabled ? ToolOptions.Pink : ToolOptions.Red;
-      const updatedColorListProperty = ToolWithSettings.getEnumAsPicklistDescription(this._isUseLengthCheckboxDisabled);
-      const syncColorItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._colorOptionPropertyName, value: this._colorOptionValue, property: updatedColorListProperty };
+      this._colorEnumDescription = PropertyDescriptionHelper.buildEnumPicklistEditorDescription("colorOption", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+        this.getColorChoices());
+      const syncColorItem: DialogPropertySyncItem = { propertyName: this._colorEnumDescription.name, value: this._colorOptionValue, property: this._colorEnumDescription };
       this.syncToolSettingsProperties([syncItem, syncColorItem]);
 
       const isDisabledStr = this._isUseLengthCheckboxDisabled ? "disabled" : "enabled";
@@ -608,7 +491,7 @@ export class ToolWithSettings extends PrimitiveTool {
       return EventHandled.Yes;
     } else if (wentDown && keyEvent.key === "2") {
       this._imageCheckboxDisabled = !this._imageCheckboxDisabled;
-      const syncItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._imageCheckBoxName, value: this._imageCheckBoxValue, isDisabled: this._imageCheckboxDisabled };
+      const syncItem: DialogPropertySyncItem = { propertyName: this._imageCheckBoxDescription.name, value: this._imageCheckBoxValue, isDisabled: this._imageCheckboxDisabled };
       this.syncToolSettingsProperties([syncItem]);
 
       const isDisabledStr = this._imageCheckboxDisabled ? "disabled" : "enabled";
@@ -617,7 +500,7 @@ export class ToolWithSettings extends PrimitiveTool {
       return EventHandled.Yes;
     } else if (wentDown && keyEvent.key === "3") {
       this._lockToggleDisabled = !this._lockToggleDisabled;
-      const syncItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._lockToggleName, value: this._lockValue, isDisabled: this._lockToggleDisabled };
+      const syncItem: DialogPropertySyncItem = { propertyName: this._lockToggleDescription.name, value: this._lockValue, isDisabled: this._lockToggleDisabled };
       this.syncToolSettingsProperties([syncItem]);
 
       const isDisabledStr = this._lockToggleDisabled ? "disabled" : "enabled";
@@ -651,18 +534,18 @@ export class ToolWithSettings extends PrimitiveTool {
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
     const readonly = false;
     const toolSettings = new Array<DialogItem>();
-    toolSettings.push({ value: this._colorOptionValue, property: ToolWithSettings.getEnumAsPicklistDescription(this._isUseLengthCheckboxDisabled), editorPosition: { rowPriority: 1, columnIndex: 1 } });
-    toolSettings.push({ value: this._colorValue, property: ToolWithSettings._getColorDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 } });
-    toolSettings.push({ value: this._lockValue, property: ToolWithSettings._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });
-    toolSettings.push({ value: this._cityValue, property: ToolWithSettings._getCityDescription(), editorPosition: { rowPriority: 10, columnIndex: 2 } });
-    toolSettings.push({ value: this._stateValue, property: ToolWithSettings._getStateDescription(), editorPosition: { rowPriority: 10, columnIndex: 4 } });
-    toolSettings.push({ value: this._coordinateValue, property: ToolWithSettings._getCoordinateDescription(), editorPosition: { rowPriority: 15, columnIndex: 2 }, isDisabled: readonly });
-    toolSettings.push({ value: this._stationValue, property: ToolWithSettings._getStationDescription(), editorPosition: { rowPriority: 16, columnIndex: 2 }, isDisabled: readonly });
-    const lengthLock = { value: this._useLengthValue, property: ToolWithSettings._getUseLengthDescription(), editorPosition: { rowPriority: 20, columnIndex: 0 }, isDisabled: this._isUseLengthCheckboxDisabled };
+    toolSettings.push({ value: this._colorOptionValue, property: this._colorEnumDescription, editorPosition: { rowPriority: 1, columnIndex: 1 } });
+    toolSettings.push({ value: this._colorValue, property: this._colorPickerDescription, editorPosition: { rowPriority: 2, columnIndex: 2 } });
+    toolSettings.push({ value: this._lockValue, property: this._lockToggleDescription, editorPosition: { rowPriority: 5, columnIndex: 2 } });
+    toolSettings.push({ value: this._cityValue, property: this._cityDescription, editorPosition: { rowPriority: 10, columnIndex: 2 } });
+    toolSettings.push({ value: this._stateValue, property: this._stateDescription, editorPosition: { rowPriority: 10, columnIndex: 4 } });
+    toolSettings.push({ value: this._coordinateValue, property: this._coordinateDescription, editorPosition: { rowPriority: 15, columnIndex: 2 }, isDisabled: readonly });
+    toolSettings.push({ value: this._stationValue, property: this._stationDescription, editorPosition: { rowPriority: 16, columnIndex: 2 }, isDisabled: readonly });
+    const lengthLock = { value: this._useLengthValue, property: this._useLengthDescription, editorPosition: { rowPriority: 20, columnIndex: 0 }, isDisabled: this._isUseLengthCheckboxDisabled };
     toolSettings.push({ value: this._lengthValue, property: this._lengthDescription, editorPosition: { rowPriority: 20, columnIndex: 2 }, isDisabled: false, lockProperty: lengthLock });
     toolSettings.push({ value: this._surveyLengthValue, property: this._surveyLengthDescription, editorPosition: { rowPriority: 21, columnIndex: 2 }, isDisabled: readonly });
-    toolSettings.push({ value: this._angleValue, property: new AngleDescription(), editorPosition: { rowPriority: 25, columnIndex: 2 } });
-    toolSettings.push({ value: this._imageCheckBoxValue, property: ToolWithSettings._getImageCheckBoxDescription(), editorPosition: { rowPriority: 30, columnIndex: 2 } });
+    toolSettings.push({ value: this._angleValue, property: this._angleDescription, editorPosition: { rowPriority: 25, columnIndex: 2 } });
+    toolSettings.push({ value: this._imageCheckBoxValue, property: this._imageCheckBoxDescription, editorPosition: { rowPriority: 30, columnIndex: 2 } });
     return toolSettings;
   }
 
@@ -678,35 +561,35 @@ export class ToolWithSettings extends PrimitiveTool {
 
   private syncLengthState(): void {
     const lengthValue: DialogItemValue = { value: this.length, displayValue: this._lengthDescription.format(this.length) };
-    const syncItem: DialogPropertySyncItem = { value: lengthValue, propertyName: ToolWithSettings._lengthName, isDisabled: !this.useLength };
+    const syncItem: DialogPropertySyncItem = { value: lengthValue, propertyName: this._lengthDescription.name, isDisabled: !this.useLength };
     this.syncToolSettingsProperties([syncItem]);
   }
 
   /** Used to send changes from UI back to Tool */
   public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
-    if (updatedValue.propertyName === ToolWithSettings._lockToggleName) {
+    if (updatedValue.propertyName === this._lockToggleDescription.name) {
       this.lock = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === ToolWithSettings._imageCheckBoxName) {
+    } else if (updatedValue.propertyName === this._imageCheckBoxDescription.name) {
       this.imageCheckBoxValue = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === ToolWithSettings._cityName) {
+    } else if (updatedValue.propertyName === this._cityDescription.name) {
       this.city = updatedValue.value.value as string;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === ToolWithSettings._stateName) {
+    } else if (updatedValue.propertyName === this._stateDescription.name) {
       this.state = updatedValue.value.value as string;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === ToolWithSettings._useLengthName) {
+    } else if (updatedValue.propertyName === this._useLengthDescription.name) {
       this.useLength = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);
       this.syncLengthState();
-    } else if (updatedValue.propertyName === ToolWithSettings._lengthName) {
+    } else if (updatedValue.propertyName === this._lengthDescription.name) {
       this.length = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === ToolWithSettings._surveyLengthName) {
+    } else if (updatedValue.propertyName === this._surveyLengthDescription.name) {
       this.surveyLength = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === ToolWithSettings._colorName) {
+    } else if (updatedValue.propertyName === this._colorPickerDescription.name) {
       this.colorValue = updatedValue.value.value as number;
       this.showColorInfoFromUi(updatedValue);
     }

@@ -1343,6 +1343,24 @@ export interface PropertyDescription {
     typename: string;
 }
 
+// @alpha
+export class PropertyDescriptionHelper {
+    // (undocumented)
+    static buildCheckboxDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildEnumPicklistEditorDescription(name: string, label: string, choices: Promise<EnumerationChoice[]> | EnumerationChoice[], additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildTextEditorDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildToggleDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildWeightPickerDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+}
+
 // @beta
 export interface PropertyEditorInfo {
     name?: string;
