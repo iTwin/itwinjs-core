@@ -307,7 +307,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
     ck.testExactNumber(1, singlePointPathB.children.length, "Single point path consolidates to stub");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("ClosestPointInCollection", () => {
+  it("ClosestPointInCollection", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const loops = Sample.createSimpleLoops();
