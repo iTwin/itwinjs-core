@@ -117,6 +117,12 @@
     },
     "PlaceLineString": {
       "keyin": "dta place line string"
+    },
+    "DtaUndo": {
+      "keyin": "dta undo"
+    },
+    "DtaRedo": {
+      "keyin": "dta redo"
     }
   }
 }

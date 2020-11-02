@@ -47,6 +47,28 @@ export class EditingSessionTool extends Tool {
   }
 }
 
+export abstract class UndoRedoTool extends Tool {
+  protected abstract get isUndo(): boolean;
+
+  public run(): boolean {
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (imodel)
+      IModelWriteRpcInterface.getClient().undoRedo(imodel.getRpcProps(), this.isUndo);
+
+    return true;
+  }
+}
+
+export class UndoTool extends UndoRedoTool {
+  public static toolId = "DtaUndo";
+  protected get isUndo() { return true; }
+}
+
+export class RedoTool extends UndoRedoTool {
+  public static toolId = "DtaRedo";
+  protected get isUndo() { return false; }
+}
+
 /** Delete all elements currently in the selection set. */
 export class DeleteElementsTool extends Tool {
   public static toolId = "DeleteElements";
