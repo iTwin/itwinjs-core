@@ -45,7 +45,7 @@
     "@bentley/eslint-plugin": "2.9.0-dev.7",
     "@bentley/certa": "2.9.0-dev.7",
     "@bentley/config-loader": "2.9.0-dev.7",
-    "@bentley/context-registry-client": "2.8.0-dev.7",
+    "@bentley/context-registry-client": "2.9.0-dev.7",
     "@bentley/itwin-client": "2.9.0-dev.7",
     "@bentley/oidc-signin-tool": "2.9.0-dev.7",
     "@types/chai": "^4.1.4",
