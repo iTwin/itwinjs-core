@@ -341,11 +341,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     assert(this._imodel instanceof BriefcaseDb);
     assert(!this._imodel.concurrencyControl.hasPendingRequests);
     assert(this._imodel.concurrencyControl.isBulkMode);
-    assert(!this._imodel.concurrencyControl.hasSchemaLock, "bridgeRunner must release all locks before switching channels");
-    assert(!this._imodel.concurrencyControl.hasCodeSpecsLock, "bridgeRunner must release all locks before switching channels");
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock, "bridgeRunner must release all locks before switching channels");
+    assert(!this._imodel.concurrencyControl.locks.hasCodeSpecsLock, "bridgeRunner must release all locks before switching channels");
     const currentRoot = this._imodel.concurrencyControl.channel.channelRoot;
     if (currentRoot !== undefined)
-      assert(!this._imodel.concurrencyControl.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockLevel.Exclusive)), "bridgeRunner must release channel locks before switching channels");
+      assert(!this._imodel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockLevel.Exclusive)), "bridgeRunner must release channel locks before switching channels");
   }
 
   protected async _enterChannel(channelRootId: Id64String, lockRoot: boolean = true) {
@@ -385,7 +385,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       await this.enterRepositoryChannel();
     }
 
-    assert(this._imodel.concurrencyControl.hasSchemaLock);
+    assert(this._imodel.concurrencyControl.locks.hasSchemaLock);
     assert(briefcaseDb.concurrencyControl.isBulkMode);
 
     await this._bridge.importDefinitions();
@@ -396,7 +396,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
   protected async _initDomainSchema() {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
-    assert(!this._imodel.concurrencyControl.hasSchemaLock);
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock);
     assert(this._imodel.concurrencyControl.isBulkMode);
 
     await this._saveAndPushChanges("Initialization", ChangesType.Definition); // in case openSourceData or any other preliminary step wrote anything
@@ -415,7 +415,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
   protected async _updateExistingData(): Promise<void> {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
-    assert(!this._imodel.concurrencyControl.hasSchemaLock);
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock);
     assert(this._imodel.concurrencyControl.isBulkMode);
 
     await this.enterBridgeChannel();

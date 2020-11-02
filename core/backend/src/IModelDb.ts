@@ -709,7 +709,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Abandon pending changes in this iModel - also be sure to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase. */
+  /** Abandon pending changes in this iModel. You might also want to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase and you want to relinquish locks or codes that you acquired preemptively. */
   public abandonChanges(): void {
     if (this.isBriefcaseDb() && this.isPushEnabled) {
       this.concurrencyControl.abandonRequest();
@@ -742,7 +742,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb() && this.isPushEnabled) {
-      await this.concurrencyControl.lockSchema(requestContext);
+      await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
 
@@ -794,7 +794,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb() && this.isPushEnabled) {
-      await this.concurrencyControl.lockSchema(requestContext);
+      await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
 

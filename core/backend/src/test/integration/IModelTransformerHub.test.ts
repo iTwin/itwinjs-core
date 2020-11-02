@@ -268,9 +268,9 @@ describe("IModelTransformerHub (#integration)", () => {
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
-      assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
+      assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
-      assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
+      assert.isTrue(sourceDb.concurrencyControl.locks.hasSchemaLock);
       const updatedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(updatedBisCoreVersion, ">= 1.0.10"));
       assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
@@ -281,17 +281,17 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.equal(sourceDb.nativeDb.hasPendingTxns(), expectedHasPendingTxns, "Expect importSchemas to have saved changes");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
       await sourceDb.pushChanges(requestContext, "Import schemas to upgrade BisCore"); // may push schema changes
-      assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
+      assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
 
       // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
-      assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
-      assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
+      assert.isTrue(sourceDb.concurrencyControl.locks.hasSchemaLock);
+      assert.isTrue(sourceDb.concurrencyControl.locks.hasSchemaLock);
       assert.isFalse(sourceDb.nativeDb.hasPendingTxns(), "Expect importSchemas to be a no-op");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
       sourceDb.saveChanges(); // will be no changes to save in this case
       await sourceDb.pushChanges(requestContext, "Import schemas again"); // will be no changes to push in this case
-      assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
+      assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
 
       // populate sourceDb
       IModelTransformerUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
@@ -299,7 +299,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, "Populate Source");
-      assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
+      assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
 
       // open/upgrade targetDb
       const targetDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, targetIModelId, SyncMode.PullAndPush, IModelVersion.latest());
