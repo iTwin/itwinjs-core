@@ -453,7 +453,10 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, loggerCategory);
     }
     assert(this._serverArgs.contextId !== undefined);
-    await UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
+    UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
+      .catch((err) => {
+        Logger.logError(loggerCategory, `Could not log user usage for bridge`, () => ({ errorStatus: err.status, errorMessage: err.message }));
+      });
   }
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */
