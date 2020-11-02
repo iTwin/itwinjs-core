@@ -44,6 +44,7 @@
     "@bentley/eslint-plugin": "2.8.0-dev.4",
     "@bentley/certa": "2.8.0-dev.4",
     "@bentley/config-loader": "2.8.0-dev.4",
+    "@bentley/context-registry-client": "2.8.0-dev.4",
     "@bentley/itwin-client": "2.8.0-dev.4",
     "@bentley/oidc-signin-tool": "2.8.0-dev.4",
     "@types/chai": "^4.1.4",

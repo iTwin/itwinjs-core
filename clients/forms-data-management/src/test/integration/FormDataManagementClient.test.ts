@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   FormDataManagementClient,
@@ -18,13 +19,21 @@ chai.should();
 describe("FormDataManagementClient", () => {
   let requestContext: AuthorizedClientRequestContext;
   const formDataManagementClient: FormDataManagementClient = new FormDataManagementClient();
-  const projectId: string = "0f4cf9a5-5b69-4189-b7a9-60f6a5a369a7";
+  let projectId: string;
 
   before(async function () {
     if (TestConfig.enableMocks) return;
     this.enableTimeouts(false);
 
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
+
+    const contextRegistry = new ContextRegistryClient();
+    const project: Project | undefined = await contextRegistry.getProject(requestContext, {
+      $select: "*",
+      $filter: `Name+eq+'${TestConfig.projectName}'`,
+    });
+    chai.assert(project, `Project ${TestConfig.projectName} not found for user.`);
+    projectId = project.wsgId;
   });
 
   it("should be able to retrieve Form Definitions (#integration)", async () => {
