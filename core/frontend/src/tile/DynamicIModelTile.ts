@@ -232,7 +232,8 @@ class ElementTile extends Tile {
     // ###TODO: Test content range culled.
 
     // Compute the ideal chord tolerance.
-    const pixelSize = 0.001; // ###TODO args.getPixelSize(this);
+    assert(this.maximumSize > 0);
+    const pixelSize = args.getPixelSizeInMetersAtClosestPoint(this);
     assert(pixelSize > 0);
 
     // Round down to the nearest power of ten.

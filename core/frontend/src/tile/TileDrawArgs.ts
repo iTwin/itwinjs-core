@@ -78,13 +78,30 @@ export class TileDrawArgs {
   /**  Symbology overrides */
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
 
-  /** Compute the size in meters of a single pixel at the point on the tile's bounding sphere closest to the camera. */
+  /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = this.getTileCenter(tile);
 
+    const pixelSizeAtPt = this.computePixelSizeInMetersAtClosestPoint(center, radius);
+    return 0 !== pixelSizeAtPt ? this.context.adjustPixelSizeForLOD(radius / pixelSizeAtPt) : 1.0e-3;
+  }
+
+  /** Compute the size in meters of one pixel at the point on the tile's bounding sphere closest to the camera. */
+  public getPixelSizeInMetersAtClosestPoint(tile: Tile): number {
+    const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
+    const center = this.getTileCenter(tile);
+
+    const pixelSizeAtPt = this.computePixelSizeInMetersAtClosestPoint(center, radius);
+    return 0 !== pixelSizeAtPt ? this.context.adjustPixelSizeForLOD(pixelSizeAtPt) : 1.0e-3;
+  }
+
+  /** Compute the size in meters of one pixel at the point on a sphere closest to the camera.
+   * Device scaling is not applied.
+   */
+  protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
     if (this.context.viewport.view.isCameraEnabled()) {
-      // Find point on tile bounding sphere closest to eye.
+      // Find point on sphere closest to eye.
       const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
       if (toEye) {
         toEye.scaleInPlace(radius);
@@ -94,13 +111,12 @@ export class TileDrawArgs {
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     if (undefined !== this._nearViewZ && viewPt.z > this._nearViewZ) {
-      // Limit closest point on tile bounding sphere to the near plane.
+      // Limit closest point on sphere to the near plane.
       viewPt.z = this._nearViewZ;
     }
 
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
-    const pixelSizeAtPt = this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
-    return 0 !== pixelSizeAtPt ? this.context.adjustPixelSizeForLOD(radius / pixelSizeAtPt) : 1.0e-3;
+    return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
   }
 
   /** Compute this size of a sphere on screen in pixels */
