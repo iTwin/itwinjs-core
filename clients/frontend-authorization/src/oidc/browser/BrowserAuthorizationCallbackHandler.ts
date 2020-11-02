@@ -138,7 +138,7 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
       errorMessage += `${err.message}\n`;
     }
 
-    if (window.parent || window.opener) { // simply destroy the window if a failure is detected in an iframe or popup.
+    if (window.parent) { // simply destroy the window if a failure is detected in an iframe.
       window.close();
       return;
     }

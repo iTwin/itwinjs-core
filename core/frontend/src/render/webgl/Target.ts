@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
 import { AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
@@ -54,6 +54,7 @@ import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
+import { TargetGraphics } from "./TargetGraphics";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -82,13 +83,9 @@ class EmptyHiliteSet {
 
 /** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
-  protected _decorations?: Decorations;
-  private _scene: GraphicList = [];
-  private _backgroundMap: GraphicList = [];
-  private _overlayGraphics: GraphicList = [];
+  public readonly graphics = new TargetGraphics();
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
-  private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _hilites: Hilites = new EmptyHiliteSet();
   private _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
@@ -175,9 +172,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get flashedId(): Id64String { return this._flashedId; }
   public get flashIntensity(): number { return this._flashIntensity; }
 
-  public get scene(): GraphicList { return this._scene; }
-  public get dynamics(): GraphicList | undefined { return this._dynamics; }
-
   public get analysisFraction(): number { return this._analysisFraction; }
   public set analysisFraction(fraction: number) { this._analysisFraction = fraction; }
 
@@ -257,9 +251,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private _isDisposed = false;
   public get isDisposed(): boolean {
-    return 0 === this._scene.length
-      && undefined === this._decorations
-      && undefined === this._dynamics
+    return this.graphics.isDisposed
       && undefined === this._worldDecorations
       && undefined === this._planarClassifiers
       && undefined === this._textureDrapes
@@ -387,14 +379,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get planFrustum() { return this.uniforms.frustum.planFrustum; }
 
   public changeDecorations(decs: Decorations): void {
-    dispose(this._decorations);
-    this._decorations = decs;
+    this.graphics.decorations = decs;
   }
 
   public changeScene(scene: Scene) {
-    this._scene = scene.foreground;
-    this._backgroundMap = scene.background; // NB: May contain things other than map...
-    this._overlayGraphics = scene.overlay;
+    this.graphics.changeScene(scene);
 
     this.changeTextureDrapes(scene.textureDrapes);
     this.changePlanarClassifiers(scene.planarClassifiers);
@@ -440,10 +429,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public changeDynamics(dynamics?: GraphicList) {
-    // ###TODO: set feature IDs into each graphic so that edge display works correctly...
-    // See IModelConnection.transientIds
-    disposeArray(this._dynamics);
-    this._dynamics = dynamics;
+    this.graphics.dynamics = dynamics;
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
@@ -517,9 +503,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public drawFrame(sceneMilSecElapsed?: number): void {
     assert(this.renderSystem.frameBufferStack.isEmpty);
-    if (undefined === this._scene)
-      return;
-
     if (!this.assignDC())
       return;
 
@@ -536,15 +519,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
   public reset(): void {
-    // Clear the scene
-    this._scene.length = 0;
-
-    // Clear decorations
-    this._decorations = dispose(this._decorations);
-    this._dynamics = disposeArray(this._dynamics);
+    this.graphics.dispose();
     this._worldDecorations = dispose(this._worldDecorations);
-
-    // Clear thematic texture
     dispose(this.uniforms.thematic);
 
     this.changePlanarClassifiers(undefined);
@@ -652,10 +628,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.pushState(state);
 
       this.beginPerfMetricRecord("Init Commands", this.drawForReadPixels);
-      this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
+      this._renderCommands.initForReadPixels(this.graphics);
       this.endPerfMetricRecord(this.drawForReadPixels);
 
-      this.compositor.drawForReadPixels(this._renderCommands, this._overlayGraphics, this._decorations?.worldOverlay);
+      this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
       this.uniforms.branch.pop();
 
       this._isReadPixelsInProgress = false;
@@ -679,7 +655,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.endPerfMetricRecord();
 
       this.beginPerfMetricRecord("Init Commands");
-      this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics);
+      this._renderCommands.initForRender(this.graphics);
       this.endPerfMetricRecord();
 
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
@@ -778,7 +754,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private getViewFlagsForReadPixels(): ViewFlags {
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = vf.thematicDisplay = false;
+    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = false;
+    if (!this.uniforms.thematic.wantIsoLines)
+      vf.thematicDisplay = false;
     vf.noGeometryMap = true;
     return vf;
   }
@@ -845,13 +823,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();
     this._renderCommands.setCheckRange(rectFrust);
-    this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
+    this._renderCommands.initForReadPixels(this.graphics);
     this._renderCommands.clearCheckRange();
 
     this.endPerfMetricRecord(true); // End "Init Commands"
 
     // Draw the scene
-    this.compositor.drawForReadPixels(this._renderCommands, this._overlayGraphics, this._decorations?.worldOverlay);
+    this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
 
     if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
@@ -1241,8 +1219,9 @@ export class OnScreenTarget extends Target {
       this._2dCanvas.needsClear = false;
     }
 
-    if (undefined !== this._decorations && undefined !== this._decorations.canvasDecorations) {
-      for (const overlay of this._decorations.canvasDecorations) {
+    const canvasDecs = this.graphics.canvasDecorations;
+    if (canvasDecs) {
+      for (const overlay of canvasDecs) {
         ctx.save();
         if (overlay.position)
           ctx.translate(overlay.position.x, overlay.position.y);
@@ -1255,8 +1234,8 @@ export class OnScreenTarget extends Target {
   }
 
   public pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
-    let overlays: CanvasDecoration[] | undefined;
-    if (undefined === this._decorations || undefined === (overlays = this._decorations.canvasDecorations))
+    const overlays = this.graphics.canvasDecorations;
+    if (undefined === overlays)
       return undefined;
 
     // loop over array backwards, because later entries are drawn on top.

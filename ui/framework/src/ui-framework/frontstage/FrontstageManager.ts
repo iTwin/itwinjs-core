@@ -21,7 +21,7 @@ import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
-import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
 import { FrontstageProvider } from "./FrontstageProvider";
@@ -33,7 +33,7 @@ import { TimeTracker } from "../configurableui/TimeTracker";
 
 /** Frontstage Activated Event Args interface.
  * @public
- */
+ */
 export interface FrontstageActivatedEventArgs {
   deactivatedFrontstageDef?: FrontstageDef;
   activatedFrontstageDef: FrontstageDef;
@@ -41,12 +41,12 @@ export interface FrontstageActivatedEventArgs {
 
 /** Frontstage Activated Event class.
  * @public
- */
+ */
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> { }
 
 /** Frontstage Deactivated Event Args interface.
  * @public
- */
+ */
 export interface FrontstageDeactivatedEventArgs {
   /** Frontstage being deactivated */
   deactivatedFrontstageDef: FrontstageDef;
@@ -63,36 +63,36 @@ export interface FrontstageDeactivatedEventArgs {
 
 /** Frontstage Deactivated Event class.
  * @public
- */
+ */
 export class FrontstageDeactivatedEvent extends UiEvent<FrontstageDeactivatedEventArgs> { }
 
 /** Frontstage Ready Event Args interface.
  * @public
- */
+ */
 export interface FrontstageReadyEventArgs {
   frontstageDef: FrontstageDef;
 }
 
 /** Frontstage Ready Event class.
  * @public
- */
+ */
 export class FrontstageReadyEvent extends UiEvent<FrontstageReadyEventArgs> { }
 
 /** Modal Frontstage Changed Event Args interface.
  * @public
- */
+ */
 export interface ModalFrontstageChangedEventArgs {
   modalFrontstageCount: number;
 }
 
 /** Modal Frontstage Stack Changed Event class.
  * @public
- */
+ */
 export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedEventArgs> { }
 
 /** Modal Frontstage Closed Event Args interface.
  * @public
- */
+ */
 export interface ModalFrontstageClosedEventArgs {
   /** Modal Frontstage being closed */
   modalFrontstage: ModalFrontstageInfo;
@@ -107,36 +107,36 @@ export interface ModalFrontstageClosedEventArgs {
 
 /** Modal Frontstage Closed Event class.
  * @public
- */
+ */
 export class ModalFrontstageClosedEvent extends UiEvent<ModalFrontstageClosedEventArgs> { }
 
 /** Tool Activated Event Args interface.
  * @public
- */
+ */
 export interface ToolActivatedEventArgs {
   toolId: string;
 }
 
 /** Tool Activated Event class.
  * @public
- */
+ */
 export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> { }
 
 /** Tool Icon Changed Event Args interface.
  * @public
- */
+ */
 export interface ToolIconChangedEventArgs {
   iconSpec: string;
 }
 
 /** Tool Icon Changed Event class.
  * @public
- */
+ */
 export class ToolIconChangedEvent extends UiEvent<ToolIconChangedEventArgs> { }
 
 /** Modal Frontstage information interface.
  * @public
- */
+ */
 export interface ModalFrontstageInfo {
   title: string;
   content: React.ReactNode;
@@ -145,7 +145,7 @@ export interface ModalFrontstageInfo {
 
 /** Modal Frontstage array item interface.
  * @internal
- */
+ */
 interface ModalFrontstageItem {
   modalFrontstage: ModalFrontstageInfo;
   timeTracker: TimeTracker;
@@ -181,6 +181,20 @@ export class FrontstageManager {
       FrontstageManager._toolInformationMap.set(toolId, new ToolInformation(toolId));
   }
 
+  // pass on SyncToolSettingsPropertiesEvent from ToolAdmin so they are treated as DialogItemSync events
+  private static handleSyncToolSettingsPropertiesEvent(args: SyncToolSettingsPropertiesEventArgs): void {
+    FrontstageManager.activeToolSettingsProvider && FrontstageManager.activeToolSettingsProvider.syncToolSettingsProperties(args);
+  }
+
+  // pass on ReloadToolSettingsEvent from ToolAdmin so they are treated by UiProviders
+  private static handleReloadToolSettingsEvent(): void {
+    // istanbul ignore else
+    if (FrontstageManager.activeToolSettingsProvider) {
+      FrontstageManager.activeToolSettingsProvider.reloadPropertiesFromTool();
+      FrontstageManager.onToolSettingsReloadEvent.emit();
+    }
+  }
+
   /** Initializes the FrontstageManager */
   public static initialize() {
     if (this._initialized)
@@ -190,15 +204,17 @@ export class FrontstageManager {
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
         // make sure tool settings properties are cached before creating ToolInformation
-        ToolUiManager.clearToolSettingsData();
+        ToolSettingsManager.clearToolSettingsData();
         // istanbul ignore else
         if (tool instanceof InteractiveTool)
-          ToolUiManager.initializeDataForTool(tool);
+          ToolSettingsManager.initializeDataForTool(tool);
 
         // if the tool data is not already cached then see if there is data to cache
         FrontstageManager.ensureToolInformationIsSet(tool.toolId);
         FrontstageManager.setActiveTool(tool);
       });
+      ToolSettingsManager.onSyncToolSettingsProperties.addListener(FrontstageManager.handleSyncToolSettingsPropertiesEvent);
+      ToolSettingsManager.onReloadToolSettingsProperties.addListener(FrontstageManager.handleReloadToolSettingsEvent);
     }
 
     // istanbul ignore else
@@ -248,6 +264,9 @@ export class FrontstageManager {
 
   /** Get Tool Activated event. */
   public static readonly onToolActivatedEvent = new ToolActivatedEvent();
+
+  /** Get ToolSetting Reload event. */
+  public static readonly onToolSettingsReloadEvent = new UiEvent<void>();
 
   /** Get Tool Panel Opened event.
    * @internal

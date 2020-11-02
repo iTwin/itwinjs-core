@@ -106,4 +106,8 @@ export class IModelTileTree extends TileTree {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.pruneChildren(olderThan);
   }
+
+  public forcePrune(): void {
+    this.rootTile.pruneChildren(BeTimePoint.now());
+  }
 }

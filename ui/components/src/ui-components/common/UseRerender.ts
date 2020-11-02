@@ -26,6 +26,7 @@ export function useRerender(): RerenderData<() => void>;
  * @param initialContext Data that component receives on first render cycle.
  */
 export function useRerender<T>(initialContext: T): RerenderData<(newContext: T) => void>;
+/** @internal */
 export function useRerender<T>(initialContext?: T): RerenderData<(newContext?: T) => void> {
   const data = useRef({ numRerenders: 0, rerenderRequested: false, context: initialContext }).current;
   if (data.rerenderRequested) {

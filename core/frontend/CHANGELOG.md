@@ -1,11 +1,92 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 22 Sep 2020 17:40:07 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Ensure transform animations in schedule scripts are applied correctly to tile graphics.
+- #460803 Improve clip arrow control visibility.
+- handle undefined _lut in FeatureOverrides when webgl context is lost, which obscured the actual context loss
+- link to webgl compatibility checker in context loss error message
+- Restore reality model and schedule script init - inadvertently removed.
+- fixed hilite/emphasis interaction for for non-default options
+- fixed hilite/emphasize interaction
+- Root WMS sublayer is now included is the list of Sublayers.  First level of children is visible by default, unless too many layers are found (in that case we make the root sublayer visible only).  Made sure prefixed sublayers groups are correctly linked to root sublayer.  Also removed prefix from title for prefixed sublayers.
+- Added optional wms authentication
+- #468491 Stop touch viewing operations from affect last dynamics point.
+- IModelConnection.onOpen is not raised when opening iModel with NativeApp.openBriefcase
+- Support down-sampling very large textures in tiles.
+- Reduce threshold for ecef validation.
+- Remove deprecated SpatialModelTileTrees.
+- Add methods on viewport for attach/detach reality models.  Support -1 for detach.
+- Add support for OPC point clouds in Reality Data widget.
+- Added color mix to thematic display for background map terrain and point clouds
+- added IModelApp.translateErrorNumber
+
+## 2.7.5
+Fri, 23 Oct 2020 16:23:50 GMT
+
+### Updates
+
+- Reduce threshold for ecef validation.
+
+## 2.7.4
+Mon, 19 Oct 2020 17:57:01 GMT
+
+_Version update only_
+
+## 2.7.3
+Wed, 14 Oct 2020 17:00:59 GMT
+
+_Version update only_
+
+## 2.7.2
+Tue, 13 Oct 2020 18:20:38 GMT
+
+_Version update only_
+
+## 2.7.1
+Thu, 08 Oct 2020 13:04:35 GMT
+
+### Updates
+
+- Ensure transform animations in schedule scripts are applied correctly to tile graphics.
+
+## 2.7.0
+Fri, 02 Oct 2020 18:03:32 GMT
+
+### Updates
+
+- Added MapLayerSettingsService to persist custom map sources between sessions for same project/model
+- Support authorization via URL suffix for Cesium ion.  Handle PBR texture.
+- Fixes to front end methods to pull, merge and push. 
+- Fixed desktop authorization after recent changes. 
+- Support literal double-quote characters in quoted key-in arguments.
+- Restore reality model and schedule script init - inadvertently removed.
+- Generate normals for 3d view decorations.
+- Fix locate for plan projection models with non-depth-buffered background map.
+- Calculate correct up vector even when ECEF is bad.
+- On iOS download in background
+- Look and move can now start from key. Don't use ctrl key due to browser conflicts.
+- Added switches to turn on and off the WMS feature of the map layer widget
+- Added optional wms authentication
+- Added a person to the "set up walk camera" tool decorations.
+- Cleaned up formatting of glsl shader code produced for better human readability when debugging shaders.
+- Support thematic display of point clouds.
+- Added thematic display to background terrain
+
+## 2.6.5
+Sat, 26 Sep 2020 16:06:34 GMT
+
+_Version update only_
 
 ## 2.6.4
 Tue, 22 Sep 2020 17:40:07 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.6.3
 Mon, 21 Sep 2020 14:47:09 GMT
@@ -24,7 +105,7 @@ Mon, 21 Sep 2020 13:07:44 GMT
 ## 2.6.1
 Fri, 18 Sep 2020 13:15:09 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.6.0
 Thu, 17 Sep 2020 13:16:12 GMT
@@ -55,17 +136,17 @@ Wed, 02 Sep 2020 17:42:23 GMT
 ## 2.5.4
 Fri, 28 Aug 2020 15:34:15 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.3
 Wed, 26 Aug 2020 11:46:00 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.2
 Tue, 25 Aug 2020 22:09:08 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.5.1
 Mon, 24 Aug 2020 18:13:04 GMT
@@ -140,12 +221,12 @@ Thu, 23 Jul 2020 12:57:15 GMT
 ## 2.3.2
 Tue, 14 Jul 2020 23:50:36 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.1
 Mon, 13 Jul 2020 18:50:14 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.3.0
 Fri, 10 Jul 2020 17:23:14 GMT
@@ -169,7 +250,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT
 
-*Version update only*
+_Version update only_
 
 ## 2.2.0
 Fri, 19 Jun 2020 14:10:03 GMT
@@ -1089,7 +1170,7 @@ Wed, 16 Jan 2019 16:36:09 GMT
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.186.0
 Mon, 14 Jan 2019 23:09:10 GMT
@@ -1266,12 +1347,12 @@ Mon, 26 Nov 2018 19:38:42 GMT
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.168.0
 Sat, 17 Nov 2018 14:20:11 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.167.0
 Fri, 16 Nov 2018 21:45:44 GMT
@@ -1338,22 +1419,22 @@ Wed, 24 Oct 2018 19:20:06 GMT
 ## 0.161.0
 Fri, 19 Oct 2018 13:04:14 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.160.0
 Wed, 17 Oct 2018 18:18:38 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.159.0
 Tue, 16 Oct 2018 14:09:09 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.158.0
 Mon, 15 Oct 2018 19:36:09 GMT
 
-*Version update only*
+_Version update only_
 
 ## 0.157.0
 Sun, 14 Oct 2018 17:20:06 GMT

@@ -6,11 +6,12 @@
  * @module Admin
  */
 
+import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  AbstractMenuItemProps, AbstractToolbarProps, IMatch, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
-  Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin, UiDataProvider,
+  AbstractMenuItemProps, AbstractToolbarProps, DialogLayoutDataProvider, DialogProps, IMatch, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
+  Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin,
 } from "@bentley/ui-abstract";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
@@ -19,6 +20,9 @@ import { PopupManager } from "../popup/PopupManager";
 import { CursorMenuData } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { ModalDialogManager } from "../dialog/ModalDialogManager";
+import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
+import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog";
 
 /** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
  * @beta
@@ -51,7 +55,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   private _localizedKeyinPreference: KeyinFieldLocalization = KeyinFieldLocalization.NonLocalized;
 
   public get localizedKeyinPreference(): KeyinFieldLocalization { return this._localizedKeyinPreference; }
-  public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference=preference; }
+  public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference = preference; }
 
   /** @internal */
   public onInitialized() { }
@@ -112,7 +116,7 @@ export class FrameworkUiAdmin extends UiAdmin {
           // istanbul ignore else
           if (tool.keyin === tool.englishKeyin)
             break;
-          // istanbul ignore next
+        // istanbul ignore next
         default: // eslint-disable-line no-fallthrough
         case KeyinFieldLocalization.NonLocalized:
           // istanbul ignore next
@@ -201,9 +205,9 @@ export class FrameworkUiAdmin extends UiAdmin {
   }
 
   /** Show a calculator at a particular location.
-   * @param location Location of the calculator, relative to the origin of htmlElement or the window.
    * @param initialValue Value initially displayed in the calculator.
    * @param resultIcon Icon displayed to the left of the value.
+   * @param location Location of the calculator, relative to the origin of htmlElement or the window.
    * @param onOk Function called when the OK button or the Enter key is pressed.
    * @param onCancel Function called when the Cancel button or the Escape key  is pressed.
    * @param htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
@@ -333,13 +337,39 @@ export class FrameworkUiAdmin extends UiAdmin {
     return PopupManager.showCard(content, title, toolbarProps, el, position, offset, onItemExecuted, onCancel, relativePosition);
   }
 
+  /** Show a Card containing React-based content, a title and a toolbar at a particular location.
+   * @param content The React node of the content to display
+   * @param title Title to display at the top of the card.
+   * @param toolbarProps Properties of the Toolbar to display.
+   * @param location Location of the Card, relative to the origin of htmlElement or the window.
+   * @param offset Offset of the Card from the location.
+   * @param onItemExecuted Function invoked after a Toolbar item is executed
+   * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the Card
+   * @param relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param anchorElement The HTMLElement that anchors the Card. If undefined, the location is relative to the overall window.
+   * @return true if the Card was displayed, false if the Card could not be displayed.
+   */
+  public showReactCard(
+    content: React.ReactNode, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
+    location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc,
+    relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, anchorElement);
+    const reactContent = { reactNode: content };
+
+    // istanbul ignore if
+    if (relativePosition === undefined)
+      relativePosition = RelativePosition.TopRight;
+
+    return PopupManager.showCard(reactContent, title, toolbarProps, el, position, offset, onItemExecuted, onCancel, relativePosition);
+  }
+
   /** Hides the Card. */
   public hideCard(): boolean {
     return PopupManager.hideCard();
   }
 
   /** Opens a Tool Settings Ui popup at a particular location.
-   * @param dataProvider The UiDataProvider for the tool settings
+   * @param dataProvider The DialogLayoutDataProvider for the tool settings popup dialog.
    * @param location Location of the tool settings, relative to the origin of anchorElement or the window
    * @param offset Offset of the tool settings from the location
    * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the tool settings
@@ -348,7 +378,7 @@ export class FrameworkUiAdmin extends UiAdmin {
    * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
    */
   public openToolSettingsPopup(
-    dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement,
+    dataProvider: DialogLayoutDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement,
   ): boolean {
     const { position, el } = this.resolveHtmlElement(location, anchorElement);
 
@@ -361,5 +391,41 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Closes the Tool Settings Ui popup. */
   public closeToolSettingsPopup(): boolean {
     return PopupManager.closeToolSettings();
+  }
+
+  /** Opens a Dialog and automatically populates it using the properties defined by the UiDataProvider.
+  * @param uiDataProvider The UiDataProvider for the tool settings
+  * @param title Specify title for dialog.
+  * @param isModal Specify if the dialog is opened as a modal or modeless.
+  * @param id Id of the dialog that is used to close it.
+  * @param optionalProps Optional props for Dialog construction.
+  * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
+  */
+  public openDialog(uiDataProvider: DialogLayoutDataProvider, title: string, isModal: boolean, id: string, optionalProps?: DialogProps): boolean {
+    if (isModal) {
+      ModalDialogManager.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id} {...optionalProps} />, id);
+      return true;
+    } else {
+      ModelessDialogManager.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id}  {...optionalProps} />, id);
+      return true;
+    }
+  }
+
+  /** Closes the Tool Settings Ui popup. */
+  public closeDialog(dialogId: string): boolean {
+    // istanbul ignore else
+    if (ModelessDialogManager.dialogManager.dialogs.findIndex ((info) => info.id === dialogId)) {
+      ModelessDialogManager.closeDialog(dialogId);
+      return true;
+    }
+
+    // istanbul ignore else
+    if (ModalDialogManager.dialogManager.dialogs.findIndex ((info) => info.id === dialogId)) {
+      ModalDialogManager.closeDialog();
+      return true;
+    }
+
+    // istanbul ignore next
+    return false;
   }
 }

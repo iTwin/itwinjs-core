@@ -102,7 +102,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
     toolSettingsContent={<ToolSettingsContent />}
     widgetContent={<WidgetContent />}
   >
-    <WidgetPanelsFrontstageComponent />
+    <Memo(WidgetPanelsFrontstageComponent) />
   </NineZone>
 </div>
 `;

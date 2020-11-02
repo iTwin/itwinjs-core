@@ -152,7 +152,6 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
         readOnly={this.state.readonly}
         size={this.state.size}
         maxLength={this.state.maxLength}
-        defaultValue={this.state.value}
         onBlur={this.props.onBlur}
         onChange={this._updateValue}
         setFocus={this.props.setFocus && !this.state.isDisabled}

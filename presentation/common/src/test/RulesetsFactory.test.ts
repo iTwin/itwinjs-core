@@ -292,6 +292,39 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[My Class].[My Property] = 1, 2`);
     });
 
+    it("creates a valid ruleset for point2d record with (0,0) coordinates", async () => {
+      const recordClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:MyClass",
+        label: "My Class",
+      };
+      const property: Property = {
+        property: {
+          classInfo: recordClass,
+          type: "point2d",
+          name: "MyProperty",
+        },
+        relatedClassPath: [],
+      };
+      const field = new PropertiesField(createRandomCategory(), "MyProperty",
+        "My Property", createPoint2dTypeDescription(), true, 1, [property]);
+      const record = new Item([], faker.random.word(), "", recordClass,
+        { ["MyProperty"]: { x: 0, y: 0 } }, { ["MyProperty"]: "0, 0" }, []);
+      const result = await factory.createSimilarInstancesRuleset(field, record);
+      const expectedRules: Rule[] = [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+          classes: { schemaName: "MySchema", classNames: ["MyClass"] },
+          arePolymorphic: true,
+          relatedInstances: [],
+          instanceFilter: `CompareDoubles(this.MyProperty.x, 0) = 0 AND CompareDoubles(this.MyProperty.y, 0) = 0`,
+        }],
+      }];
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[My Class].[My Property] = 0, 0`);
+    });
+
     it("creates a valid ruleset for point3d record", async () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),

@@ -464,8 +464,8 @@ export class SampleTool extends PrimitiveTool {
     toolSettings.push({ value: this._lockValue, property: SampleTool._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });
     toolSettings.push({ value: this._cityValue, property: SampleTool._getCityDescription(), editorPosition: { rowPriority: 10, columnIndex: 2 } });
     toolSettings.push({ value: this._stateValue, property: SampleTool._getStateDescription(), editorPosition: { rowPriority: 10, columnIndex: 4 } });
-    toolSettings.push({ value: this._coordinateValue, property: SampleTool._getCoordinateDescription(), editorPosition: { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, isDisabled: readonly });
-    toolSettings.push({ value: this._stationValue, property: SampleTool._getStationDescription(), editorPosition: { rowPriority: 16, columnIndex: 2, columnSpan: 3 }, isDisabled: readonly });
+    toolSettings.push({ value: this._coordinateValue, property: SampleTool._getCoordinateDescription(), editorPosition: { rowPriority: 15, columnIndex: 2 }, isDisabled: readonly });
+    toolSettings.push({ value: this._stationValue, property: SampleTool._getStationDescription(), editorPosition: { rowPriority: 16, columnIndex: 2 }, isDisabled: readonly });
     const lengthLock = { value: this._useLengthValue, property: SampleTool._getUseLengthDescription(), editorPosition: { rowPriority: 20, columnIndex: 0 } };
     toolSettings.push({ value: this._lengthValue, property: this._lengthDescription, editorPosition: { rowPriority: 20, columnIndex: 2 }, isDisabled: false, lockProperty: lengthLock });
     toolSettings.push({ value: this._surveyLengthValue, property: this._surveyLengthDescription, editorPosition: { rowPriority: 21, columnIndex: 2 }, isDisabled: readonly });

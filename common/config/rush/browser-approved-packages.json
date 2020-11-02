@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/extension-webpack-tools",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/frontend-application-insights-client",
@@ -501,6 +501,10 @@
     {
       "name": "file-saver",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "flatbuffers",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "form-data",

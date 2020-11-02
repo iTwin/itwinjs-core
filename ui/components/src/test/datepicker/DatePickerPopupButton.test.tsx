@@ -9,7 +9,7 @@ import sinon from "sinon";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import TestUtils from "../TestUtils";
 import { DatePickerPopupButton } from "../../ui-components/datepicker/DatePickerPopupButton";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 
 describe("<DatePickerPopupButton />", () => {
   let renderSpy: sinon.SinonSpy;
@@ -88,7 +88,7 @@ describe("<DatePickerPopupButton />", () => {
   });
 
   it("should render popup with time input ", async () => {
-    const renderedComponent = render(<DatePickerPopupButton selected={testDate} timeDisplay="hh:mm aa"  onDateChange={renderSpy}/>);
+    const renderedComponent = render(<DatePickerPopupButton selected={testDate} timeDisplay={TimeDisplay.H12MC} onDateChange={renderSpy}/>);
     expect(renderedComponent).not.to.be.null;
     const pickerButton = renderedComponent.getByTestId("components-date-picker-calendar-popup-button");
     expect(pickerButton.tagName).to.be.equal("BUTTON");

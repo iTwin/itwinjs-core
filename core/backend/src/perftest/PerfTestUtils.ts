@@ -214,6 +214,12 @@ export class PerfTestUtility {
     return count;
   }
 
+  public static getMinId(imodel: IModelDb, className: string): number {
+    const stat = IModelTestUtils.executeQuery(imodel, `SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM ${className}`)[0];
+    const minId: number = parseInt(stat.minId.toString().substring(2), 16);
+    return minId;
+  }
+
   public static createElemProps(className: string, _iModelName: IModelDb, modId: Id64String, catId: Id64String): TestElementProps {
     // add Geometry
     const geomArray: Arc3d[] = [

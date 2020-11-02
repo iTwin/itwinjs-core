@@ -163,7 +163,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
       readOnly: this.state.readonly,
       disabled: this.state.isDisabled,
       maxLength: this.state.maxLength,
-      defaultValue: this.state.inputValue,
+      value: this.state.inputValue,
       // onBlur: this._handleBlur,
       onChange: this._updateTextareaValue,
       setFocus: this.props.setFocus && !this.state.isDisabled,

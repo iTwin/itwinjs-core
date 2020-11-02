@@ -3,27 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as enzyme from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { AppNotificationManager, PointerMessage } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("PointerMessage", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
   });
 
   let notifications: AppNotificationManager;
@@ -37,32 +31,32 @@ describe("PointerMessage", () => {
   });
 
   it("should render correctly", () => {
-    enzyme.shallow(
+    shallow(
       <PointerMessage />,
     ).should.matchSnapshot();
   });
 
   it("should display the message", () => {
-    const showMessage = sandbox.spy(PointerMessage, "showMessage");
+    const showMessage = sinon.spy(PointerMessage, "showMessage");
     notifications.outputMessage(details);
     expect(showMessage.called).to.be.true;
   });
 
   it("should hide the message", () => {
-    const hideMessage = sandbox.spy(PointerMessage, "hideMessage");
+    const hideMessage = sinon.spy(PointerMessage, "hideMessage");
     notifications.closePointerMessage();
     expect(hideMessage.called).to.be.true;
   });
 
   it("should display a warning message", () => {
-    const showMessage = sandbox.spy(PointerMessage, "showMessage");
+    const showMessage = sinon.spy(PointerMessage, "showMessage");
     const localDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, "Brief", "Detailed", OutputMessageType.Pointer);
     notifications.outputMessage(localDetails);
     expect(showMessage.called).to.be.true;
   });
 
   it("should display an error message", () => {
-    const showMessage = sandbox.spy(PointerMessage, "showMessage");
+    const showMessage = sinon.spy(PointerMessage, "showMessage");
     const localDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Brief", "Detailed", OutputMessageType.Pointer);
     notifications.outputMessage(localDetails);
     expect(showMessage.called).to.be.true;
@@ -95,13 +89,13 @@ describe("PointerMessage", () => {
   });
 
   it("should update the message", () => {
-    const updateMessage = sandbox.spy(PointerMessage, "updateMessage");
+    const updateMessage = sinon.spy(PointerMessage, "updateMessage");
     notifications.updatePointerMessage({ x: 1, y: 1 }, RelativePosition.BottomRight);
     expect(updateMessage.called).to.be.true;
   });
 
   it("should unmount correctly", () => {
-    const sut = enzyme.mount(<PointerMessage />);
+    const sut = mount(<PointerMessage />);
     sut.unmount();
   });
 

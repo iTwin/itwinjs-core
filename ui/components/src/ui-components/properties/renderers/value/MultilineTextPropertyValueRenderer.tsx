@@ -18,6 +18,7 @@ import { UiComponents } from "../../../UiComponents";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { useRenderedStringValue } from "./PrimitivePropertyValueRenderer";
 
+/** @internal */
 export class MultilineTextPropertyValueRenderer implements IPropertyValueRenderer {
   public canRender(record: PropertyRecord): boolean {
     return record.value.valueFormat === PropertyValueFormat.Primitive

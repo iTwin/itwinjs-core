@@ -11,7 +11,7 @@
 import "./CustomNumberEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
@@ -217,7 +217,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     this.setState({ inputValue: initialDisplayValue });
   }
 
-  private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  private _onKeyPress = (e: KeyboardEvent) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
       e.preventDefault();
@@ -262,9 +262,9 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       value: this.state.inputValue,
       onChange: this._updateInputValue,
       onBlur: this.props.onBlur,
-      onKeyDown: this._onKeyPress,
       onFocus: this._onFocus,
       setFocus: this.shouldSetFocus(),
+      nativeKeyHandler: this._onKeyPress,
     };
 
     let reactNode: React.ReactNode;

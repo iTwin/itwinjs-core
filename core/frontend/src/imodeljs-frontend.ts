@@ -96,6 +96,8 @@ export * from "./tools/ToolAdmin";
 export * from "./tools/ToolAssistance";
 export * from "./tools/ViewTool";
 export * from "./BackgroundMapGeometry";
+export * from "./ViewCreator2d";
+export * from "./ViewCreator3d";
 
 /** @docs-package-description
  * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
@@ -192,3 +194,9 @@ export * from "./BackgroundMapGeometry";
  * @docs-group-description MapLayerSettingsService
  * Class for managing the storing and retrieval of map layers added by a user on the frontend
  */
+/**
+ * @docs-group-description MapLayerFormatRegistry
+ * Class for working with supported map layer formats.
+ */
+
+

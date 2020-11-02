@@ -46,6 +46,7 @@ import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
+import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
 
 /* eslint-disable react/jsx-key */
 
@@ -736,8 +737,9 @@ class AdditionalTools {
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings, { groupPriority: 30 }),
-    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
-    ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
+    ToolbarHelper.createToolbarItemFromItemDef(135, ToolWithDynamicSettings.toolItemDef, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(140, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(145, new CommandItemDef({
       commandId: "Show widget",
       iconSpec: "icon-placeholder",
       label: "Show widget",

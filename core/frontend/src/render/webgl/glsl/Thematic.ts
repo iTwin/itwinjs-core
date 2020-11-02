@@ -133,16 +133,18 @@ const applyThematicColorPrelude = `
   }`;
 
 const applyThematicColorPostlude = `
-
   float gradientMode = u_thematicSettings.x;
   float stepCount = u_thematicSettings.z;
 
   vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+  rgba = mix(rgba, baseColor, u_thematicColorMix);
 
   if (kThematicGradientMode_IsoLines == gradientMode) {
     float coord = v_thematicIndex * stepCount;
     float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
     rgba.a = 1.0 - min(line, 1.0);
+    if (u_discardBetweenIsolines && 0.0 == rgba.a)
+      discard;
   } else if (kThematicGradientMode_SteppedWithDelimiter == gradientMode) {
     float coord = v_thematicIndex * stepCount;
     float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
@@ -161,6 +163,7 @@ const applyThematicColorPostludeForPointClouds = `
   float stepCount = u_thematicSettings.z;
 
   vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+  rgba = mix(rgba, baseColor, u_thematicColorMix);
 
   if (kThematicGradientMode_IsoLines == gradientMode) {
     float coord = v_thematicIndex * stepCount;
@@ -298,6 +301,20 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
     });
   });
 
+  if (isForPointClouds || isForTerrainMesh) {
+    builder.frag.addUniform("u_thematicColorMix", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_thematicColorMix", (uniform, params) => {
+        uniform.setUniform1f(params.target.uniforms.thematic.thematicDisplay?.gradientSettings.colorMix || 0.0);
+      });
+    });
+  } else {
+    builder.frag.addUniform("u_thematicColorMix", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_thematicColorMix", (uniform, _params) => {
+        uniform.setUniform1f(0.0);
+      });
+    });
+  }
+
   frag.addUniform("u_numSensors", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_numSensors", (uniform, params) => {
       if (params.target.wantThematicSensors) {
@@ -324,6 +341,14 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
       }
     });
   });
+
+  if (!isForPointClouds) { // allows us to know when to discard between isolines to make them pickable
+    builder.frag.addUniform("u_discardBetweenIsolines", VariableType.Boolean, (prog) => {
+      prog.addProgramUniform("u_discardBetweenIsolines", (uniform, params) => {
+        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+      });
+    });
+  }
 
   const isWebGL2 = System.instance.capabilities.isWebGL2;
   if (isWebGL2) {

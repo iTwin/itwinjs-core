@@ -1,13 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
-import { Descriptor, InstanceKey, KeySet, PresentationRpcInterface, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import {
+  ContentRpcRequestOptions, Descriptor, DistinctValuesRpcRequestOptions,
+  FieldDescriptorType, HierarchyRpcRequestOptions, InstanceKey,
+  KeySet, Paged, PresentationDataCompareRpcOptions,
+  PresentationRpcInterface, PresentationStatus, RegisteredRuleset, Ruleset,
+} from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import * as defaultRuleset from "./rulesets/default.json";
 import * as getRelatedDistinctValues from "./rulesets/DistinctValues/getRelatedDistinctValues.json";
@@ -45,6 +50,18 @@ describe("PresentationRpcInterface tests", () => {
       const rootNodes1 = await Presentation.presentation.getNodes(props);
       expect(rootNodes1.length).to.be.equal(1);
     });
+  });
+
+  it("[deprecated] getNodesAndCount works as expected", async () => {
+    ruleset = defaultRuleset as any;
+    await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
+      const options: Paged<HierarchyRpcRequestOptions> = {
+        rulesetOrId: ruleset.id,
+      };
+      const nodesAndCount = await client.getNodesAndCount(iModel.getRpcProps(), options); // eslint-disable-line deprecation/deprecation
+      expect(nodesAndCount.result?.count).to.not.be.undefined;
+    });
+
   });
 
   it("getNodesAndCount works as expected", async () => {
@@ -135,6 +152,33 @@ describe("PresentationRpcInterface tests", () => {
       });
     });
 
+    it("[deprecated] getDistinctValues works as expected", async () => {
+      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
+        const options: DistinctValuesRpcRequestOptions = {
+          rulesetOrId: ruleset.id,
+          descriptor: descriptor!,
+          fieldDescriptor: {
+            type: FieldDescriptorType.Name,
+            fieldName: "SubCategory_DefinitionPartition_LinkPartition_PhysicalPartition_Model",
+          },
+          keys: keys.toJSON(),
+        };
+        const distinctValues = await client.getPagedDistinctValues(iModel.getRpcProps(), options);
+        expect(distinctValues).to.not.be.undefined;
+      });
+    });
+
+    it("getContentAndSize works as expected", async () => {
+      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
+        const options: Paged<ContentRpcRequestOptions> = {
+          rulesetOrId: ruleset.id,
+        };
+        const contentAndSize = await client.getContentAndSize(iModel.getRpcProps(), options, descriptor!, keys.toJSON()); // eslint-disable-line deprecation/deprecation
+        expect(contentAndSize).to.not.be.undefined;
+      });
+    });
+
+
     it("getContentAndSize works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         const contentAndSize = await Presentation.presentation.getContentAndSize(props, descriptor!, keys);
@@ -170,6 +214,13 @@ describe("PresentationRpcInterface tests", () => {
       });
     });
 
+    it("[deprecated] getDisplayLabelDefinitions works as expected", async () => {
+      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
+        const displayLabels = await client.getDisplayLabelDefinitions(iModel.getRpcProps(), {}, [key1, key2]); // eslint-disable-line deprecation/deprecation
+        expect(displayLabels).to.not.be.undefined;
+      });
+    });
+
     it("getSelectionScopes works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         const scopeIds = await Presentation.selection.scopes.getSelectionScopes(iModel);
@@ -181,6 +232,21 @@ describe("PresentationRpcInterface tests", () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         const computedSelections = await Presentation.selection.scopes.computeSelection(iModel, [key1.id, key2.id], "element");
         expect(computedSelections).to.not.be.undefined;
+      });
+    });
+
+    it("[deprecated] comparHierarchies works as expected", async () => {
+      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
+        const options: PresentationDataCompareRpcOptions = {
+          prev: {
+            rulesetOrId: ruleset.id,
+          },
+          rulesetOrId: ruleset.id,
+          expandedNodeKeys: [],
+        };
+        const comparison = await client.compareHierarchies(iModel.getRpcProps(), options);
+        expect(comparison).to.not.be.undefined;
+        expect(comparison.statusCode).eq(PresentationStatus.Success);
       });
     });
   });

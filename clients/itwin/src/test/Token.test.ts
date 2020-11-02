@@ -65,4 +65,14 @@ describe("AccessToken", async () => {
     chai.assert((newToken instanceof AccessToken));
     chai.assert(newToken.toTokenString() === "Bearer 98187ejlaskjd");
   });
+  it("should properly create an AccessToken from a json object", () => {
+    const jsonObject = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      _tokenString: "abc123",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      _userInfo: "blah",
+    };
+    const token = AccessToken.fromJson(jsonObject); // fromJson expects _tokenString not tokenString, so we must disable the lint rule.
+    chai.assert(token.toTokenString() === "Bearer abc123");
+  });
 });

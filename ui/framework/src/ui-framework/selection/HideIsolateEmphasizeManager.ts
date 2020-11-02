@@ -311,8 +311,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Query the model Id that models a subject
    * @param subjectId Subject Id to use in query
    */
-  private static async _getModelIds(_subjectId: string): Promise<string[]> {
-    return HideIsolateEmphasizeManager._subjectModelIdsCache!.getSubjectModelIds(_subjectId);
+  private static async _getModelIds(subjectId: string): Promise<string[]> {
+    return HideIsolateEmphasizeManager._subjectModelIdsCache!.getSubjectModelIds(subjectId);
   }
 
   /**

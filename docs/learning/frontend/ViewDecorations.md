@@ -12,6 +12,8 @@ A `Decorator` remains active until you call [ViewManager.dropDecorator]($fronten
 
 A [InteractiveTool]($frontend) can also show decorations and does *not* need to call the [ViewManager.addDecorator]($frontend) method to add itself. [InteractiveTool.decorate]($frontend) is called for the *active* tool to add its decorations, [InteractiveTool.decorate]($frontend) is not called when the tool is paused by another tool such as a [ViewTool]($frontend). To show decorations while paused, a tool can implement [InteractiveTool.decorateSuspended]($frontend).
 
+To learn how to optimize when your decorations are invalidated by using cached decorations, see the [section on cached decorations](#cached-decorations).
+
 ## Categories of View Decorations
 
 Sometimes decorations are meant to *intersperse* with the scene geometry, and sometimes they are meant to display atop of it. For this reason, there are 3 broad categories of View Decorations:
@@ -109,3 +111,54 @@ The order of precedence for Decorations is:
 1. The ToolTip is on top of all HTML decorations
 
 Within a decoration type, the last decoration drawn is on top of earlier decorations.
+
+## Cached Decorations
+
+As described in the [section about view decorators](#view-decorators), a decorator object's `decorate` method is invoked to create new [Decorations]($frontend) whenever a viewport's decorations are invalidated. Decorations are invalidated quite frequently - for example, every time the view frustum or scene changes, and even on every mouse motion. Most decorators' decorations only actually need to change when the scene changes. Having to regenerate them every time the mouse moves is quite wasteful and - for all but the most trivial decorations - can negatively impact framerate. Here is an example of a decorator that draws some complicated shape in a specified color:
+
+```ts
+class FancyDecorator {
+  private _color: ColorDef; // the color of our shape decoration
+
+  public set color(color: ColorDef): void {
+    this._color = color;
+
+    // Make sure our decorate method is called so we draw using the new color.
+    // This also invalidates every other decorator's decorations!
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
+
+  public decorate(context: DecorateContext): void {
+    // ...draw a fancy shape using this._color
+    // This gets called every single time the mouse moves,
+    // and any other time the viewport's decorations become invalidated!
+  }
+}
+```
+
+We can avoid unnecessarily recreating decorations by defining the `useCachedDecorations` property on a decorator object. If this is `true`, then whenever the viewport's decorations are invalidated, the viewport will first check to see if it already has cached decorations for this decorator. If so, it will simply reuse them; if not, it will invoke `decorate` and cache the result. When the scene changes, our cached decorations will automatically be discarded. Here is the decorator from above, updated to use cached decorations:
+
+```ts
+class FancyDecorator {
+  private _color: ColorDef; // the color of our shape decoration
+
+  // Tell the viewport to cache our decorations.
+  // We'll tell it when to regenerate them.
+  public readonly useCachedDecorations = true;
+
+  public set color(color: ColorDef): void {
+    this._color = color;
+
+    // Invalidate *only* this decorator's decorations.
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
+  }
+
+  public decorate(context: DecorateContext): void {
+    // ...draw a fancy shape using this._color
+    // This *only* gets called if the scene changed,
+    // or if explicitly asked for our decorations to be regenerated.
+  }
+}
+```
+
+For a decorator defining the `useCachedDecorations` property as true, the functions [ViewManager.invalidateCachedDecorationsAllViews]($frontend) and [Viewport.invalidateCachedDecorations]($frontend) give the decorator much tighter control over when its decorations are regenerated. This can potentially result in significantly improved performance.

@@ -124,7 +124,6 @@ export class RealityTileTree extends TileTree {
     this.loader = params.loader;
     this.yAxisUp = true === params.yAxisUp;
     this._rootTile = this.createTile(params.rootTile);
-
   }
   public get rootTile(): RealityTile { return this._rootTile; }
   public get is3d() { return true; }
@@ -141,6 +140,10 @@ export class RealityTileTree extends TileTree {
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.purgeContents(olderThan);
+  }
+
+  public forcePrune(): void {
+    this.rootTile.purgeContents(BeTimePoint.now());
   }
 
   public draw(args: TileDrawArgs): void {
@@ -162,7 +165,7 @@ export class RealityTileTree extends TileTree {
       let targetBranch;
       if (undefined !== tileGraphicType && tileGraphicType !== args.context.graphicType) {
         if (!(targetBranch = graphicTypeBranches.get(tileGraphicType))) {
-          graphicTypeBranches.set(tileGraphicType, targetBranch = new GraphicBranch());
+          graphicTypeBranches.set(tileGraphicType, targetBranch = new GraphicBranch(false));
           targetBranch.setViewFlagOverrides(args.graphics.viewFlagOverrides);
           targetBranch.symbologyOverrides = args.graphics.symbologyOverrides;
         }
@@ -195,7 +198,7 @@ export class RealityTileTree extends TileTree {
                     for (const plane of clipPlanes.planes)
                       plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
-              const branch = new GraphicBranch();
+              const branch = new GraphicBranch(false);
               const doClipOverride = new ViewFlagOverrides();
               doClipOverride.setShowClipVolume(true);
               branch.add(graphics);
@@ -244,7 +247,7 @@ export class RealityTileTree extends TileTree {
 
     const baseDepth = this.getBaseRealityDepth(args.context);
 
-    if (0 === context.missing.length) {
+    if (!args.context.target.renderSystem.isMobile && 0 === context.missing.length) { // We skip preloading on mobile devices.
       if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 

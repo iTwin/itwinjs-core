@@ -7,10 +7,12 @@ import * as React from "react";
 import { Icon, Input, Slider } from "@bentley/ui-core";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
+  SyncToolSettingsPropertiesEventArgs,
   ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, Widget, Zone,
 } from "../../../ui-framework";
 import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
 import TestUtils from "../../TestUtils";
+import { DialogItemValue, DialogPropertySyncItem } from "@bentley/ui-abstract";
 
 describe("ToolUiProvider", () => {
 
@@ -108,7 +110,12 @@ describe("ToolUiProvider", () => {
 
         if (toolUiProvider) {
           expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
-          expect(toolUiProvider.dataProvider).to.be.undefined;
+          // cover syncToolSettingsProperties
+          const useLengthValue: DialogItemValue = { value: false };
+          const syncItem: DialogPropertySyncItem = { value: useLengthValue, propertyName: "useLengthName", isDisabled: false };
+          const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
+          toolUiProvider.syncToolSettingsProperties(syncArgs);
+          //    expect(toolUiProvider.dataProvider).to.be.undefined;
         }
       }
 

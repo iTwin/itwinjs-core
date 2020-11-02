@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import produce from "immer";
 import * as React from "react";
@@ -13,12 +13,6 @@ import { createDOMRect } from "../Utils";
 import { NineZoneProvider } from "../Providers";
 
 describe("WidgetPanel", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render vertical", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
@@ -152,7 +146,7 @@ describe("WidgetPanel", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
-    sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 300 }));
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 300 }));
     render(
       <NineZoneProvider
         state={nineZone}
@@ -206,7 +200,7 @@ describe("WidgetPanel", () => {
 
     nineZone = produce(nineZone, (draft) => {
       draft.panels.left.collapsed = true;
-    })
+    });
 
     rerender(<WidgetPanel
       panel={nineZone.panels.left}

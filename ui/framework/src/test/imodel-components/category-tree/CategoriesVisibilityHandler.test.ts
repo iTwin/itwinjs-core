@@ -146,7 +146,6 @@ describe("CategoryVisibilityHandler", () => {
         await handler.changeVisibility(categoryNode, categoryKey, true);
         expect(enableCategorySpy).to.be.calledWith(viewManagerMock.object, imodelMock.object, [categoryNode.id], true, true);
       });
-      enableCategorySpy.restore();
     });
 
     it("calls enableSubcategoryCategory", async () => {
@@ -155,7 +154,6 @@ describe("CategoryVisibilityHandler", () => {
         await handler.changeVisibility(subcategoryNode, subcategoryKey, false);
         expect(enableSubCategorySpy).to.be.calledWith(viewManagerMock.object, subcategoryNode.id, false);
       });
-      enableSubCategorySpy.restore();
     });
 
     it("calls enableSubcategoryCategory and enableCategory to ensure that parent category is enabled", async () => {
@@ -167,8 +165,6 @@ describe("CategoryVisibilityHandler", () => {
         expect(enableSubCategorySpy).to.be.calledWith(viewManagerMock.object, subcategoryNode.id, true);
         expect(enableCategorySpy.calledBefore(enableSubCategorySpy)).to.be.true;
       });
-      enableCategorySpy.restore();
-      enableSubCategorySpy.restore();
     });
 
   });

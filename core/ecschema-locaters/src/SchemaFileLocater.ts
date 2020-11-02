@@ -230,7 +230,7 @@ export abstract class SchemaFileLocater {
    * @param lhs The 'left-hand' FileSchemaKey.
    * @param rhs The 'right-hand' FileSchemaKey.
    */
-  public compareSchemaKeyByVersion(lhs: FileSchemaKey, rhs: FileSchemaKey): number {
+  public compareSchemaKeyByVersion = (lhs: FileSchemaKey, rhs: FileSchemaKey): number => {
     return lhs.compareByVersion(rhs);
   }
 }

@@ -14,12 +14,29 @@ const {
 } = require('jsdom');
 global.DOMParser = new JSDOM().window.DOMParser;
 
+/** Enzyme mount with automatic unmount after the test. */
+let mounted = [];
+const isMounted = Symbol("isMounted");
+global.enzymeMount = (...args) => {
+  const enzyme = require("enzyme");
+  const result = enzyme.mount(...args);
+  result[isMounted] = true;
+  const unmount = result.unmount.bind(result);
+  result.unmount = () => {
+    result[isMounted] = false;
+    return unmount();
+  };
+  mounted.push(result);
+  return result;
+}
+
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
 const chaiAsPromised = require("chai-as-promised");
 const chaiJestSnapshot = require("chai-jest-snapshot");
 const enzyme = require("enzyme/build");
 const spies = require("chai-spies");
+const rhtl = require("@testing-library/react-hooks");
 
 // Fix node's module loader to strip ?sprite from SVG imports
 const m = require("module");
@@ -75,9 +92,20 @@ beforeEach(function () {
   chai.spy.restore();
 });
 
-afterEach(() => {
+afterEach(async () => {
+  for (const m of mounted) {
+    if (!m[isMounted])
+      continue;
+    m.unmount();
+  }
+  mounted = [];
   try {
     const rtl = require("@testing-library/react");
     rtl.cleanup();
+  } catch (e) { }
+  await rhtl.cleanup();
+  try {
+    const sinon = require("sinon");
+    sinon.restore();
   } catch (e) { }
 });

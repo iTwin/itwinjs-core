@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { SelectionTool } from "@bentley/imodeljs-frontend";
 import { BadgeType } from "@bentley/ui-abstract";
 import { BaseItemState, FrontstageManager, KeyboardShortcutManager, SyncUiEventDispatcher, SyncUiEventId, ToolButton } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ToolButton", () => {
 
@@ -22,13 +22,11 @@ describe("ToolButton", () => {
   });
 
   it("should render", () => {
-    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
-    wrapper.unmount();
+    mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
   });
 
   it("should render active & pressed", () => {
-    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isActive={true} isPressed={true} />);
-    wrapper.unmount();
+    mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isActive={true} isPressed={true} />);
   });
 
   it("renders active correctly", () => {
@@ -57,14 +55,11 @@ describe("ToolButton", () => {
     const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />);
     wrapper.find(".nz-toolbar-item-item").simulate("click");
     spyMethod.should.have.been.called;
-    wrapper.unmount();
   });
 
   it("should execute a tool", () => {
     const wrapper = mount(<ToolButton toolId={SelectionTool.toolId} />);
     wrapper.find(".nz-toolbar-item-item").simulate("click");
-    // Check on active tool
-    wrapper.unmount();
   });
 
   it("should set focus to home on Esc", () => {
@@ -73,7 +68,6 @@ describe("ToolButton", () => {
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
-    wrapper.unmount();
   });
 
   it("should use a label function", () => {
@@ -97,8 +91,6 @@ describe("ToolButton", () => {
     expect(stateFunctionCalled).to.eq(false);
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
-
-    wrapper.unmount();
   });
 
   it("ToolActivated sync event should trigger stateFunc", () => {
@@ -109,12 +101,10 @@ describe("ToolButton", () => {
       return { ...state, isVisible: true, isActive: true, isEnabled: true };
     };
 
-    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
+    mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
 
     expect(stateFunctionCalled).to.eq(false);
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
-
-    wrapper.unmount();
   });
 });

@@ -27,9 +27,13 @@ The iModel.js api has two ways to create a Snapshot iModel. Both are methods on 
 1. [SnapshotDb.createFrom]($backend)
 2. [SnapshotDb.createEmpty]($backend)
 
-The first method creates a SnapShot iModel from an existing iModel into the supplied filename.  This requires permission from the owner of the original iModel (which obviously must have been previously obtained to open the source iModel.) The `SnapshotDb` may be used to modify and/or extend the copy of the original iModel, but once closed it becomes immutable.
+The first method creates a Snapshot iModel from an existing iModel into the supplied filename.  This requires permission from the owner of the original iModel (which obviously must have been previously obtained to open the source iModel.) The `SnapshotDb` may be used to modify and/or extend the copy of the original iModel, but once closed it becomes immutable.
 
 The second method creates an *empty* Snapshot iModel given a filename. This is useful for applications that wish to create static iModels from external data sources. The `SnapshotDb` may be used to populate the Snapshot, but once closed it becomes immutable.
+
+#### Create Snapshots with *iTwin Snapshot*
+
+[iTwin Snapshot]($docs/learning/tutorials/create-test-imodel-offline.md), is a free tool for creating snapshots. iTwin Snapshot was designed for developers to quickly generate snapshots for use in iModel.js development.
 
 ### Important properties of Snapshot iModels
 

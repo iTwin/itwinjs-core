@@ -46,7 +46,7 @@ export class UpdatesTracker implements IDisposable {
 
   private onInterval() {
     const updateInfo = this._getNativePlatform().getUpdateInfo();
-    if (updateInfo)
-      this._eventSink.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, updateInfo);
+    if (updateInfo.result)
+      this._eventSink.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, updateInfo.result);
   }
 }

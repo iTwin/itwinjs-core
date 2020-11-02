@@ -222,18 +222,41 @@ export class Vector3dArray {
  */
 export class Point4dArray {
   /** pack each point and its corresponding weight into a buffer of xyzw xyzw ... */
-  public static packPointsAndWeightsToFloat64Array(points: Point3d[], weights: number[], result?: Float64Array): Float64Array {
-    result = result ? result : new Float64Array(4 * points.length);
-    let i = 0;
-    let k = 0;
-    for (k = 0; k < points.length; k++) {
-      result[i++] = points[k].x;
-      result[i++] = points[k].y;
-      result[i++] = points[k].z;
-      result[i++] = weights[k];
+  public static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array,
+    result?: Float64Array): Float64Array | undefined {
+    if (Array.isArray(data) && data[0] instanceof Point3d) {
+      const points = data as Point3d[];
+      if (points.length !== weights.length)
+        return undefined;
+      result = result ? result : new Float64Array(4 * points.length);
+      let i = 0;
+      let k = 0;
+      for (k = 0; k < points.length; k++) {
+        result[i++] = points[k].x;
+        result[i++] = points[k].y;
+        result[i++] = points[k].z;
+        result[i++] = weights[k];
+      }
+      return result;
+    } else {
+      const points = data as (Float64Array | number[]);
+      const numPoints = weights.length;
+      if (points.length !== 3 * numPoints)
+        return undefined;
+      let i = 0; let k;
+      result = result ? result : new Float64Array(4 * numPoints);
+      for (k = 0; k < numPoints; k++) {
+        const k0 = 3 * k;
+        result[i++] = points[k0];
+        result[i++] = points[k0 + 1];
+        result[i++] = points[k0 + 2];
+        result[i++] = weights[k];
+      }
+      return result;
     }
-    return result;
+    return undefined;
   }
+
   /** pack x,y,z,w in Float64Array. */
   public static packToFloat64Array(data: Point4d[], result?: Float64Array): Float64Array {
     result = result ? result : new Float64Array(4 * data.length);

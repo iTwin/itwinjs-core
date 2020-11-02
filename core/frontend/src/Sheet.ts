@@ -775,7 +775,7 @@ class RasterAttachment {
     const graphic = graphicBuilder.finish();
 
     // Wrap the polyface in a GraphicBranch.
-    const branch = new GraphicBranch();
+    const branch = new GraphicBranch(true);
     const vfOvrs = createDefaultViewFlagOverrides({ clipVolume: true, shadows: false, lighting: false, thematic: false });
     branch.setViewFlagOverrides(vfOvrs);
     branch.symbologyOverrides = new FeatureSymbology.Overrides();

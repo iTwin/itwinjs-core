@@ -36,7 +36,11 @@ export class IModelImporter {
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
   /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are imported. If `false`, throw an Error if an element would be outside of the projectExtents. */
-  public readonly autoExtendProjectExtents: boolean = true;
+  public autoExtendProjectExtents: boolean;
+  /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
+   * @note `false` is the default
+   */
+  public simplifyElementGeometry: boolean = false;
   /** The set of elements that should not be updated by this IModelImporter.
    * @note Adding an element to this set is typically necessary when remapping a source element to one that already exists in the target and already has the desired properties.
    */
@@ -48,9 +52,7 @@ export class IModelImporter {
    */
   public constructor(targetDb: IModelDb, options?: IModelImportOptions) {
     this.targetDb = targetDb;
-    if (undefined !== options) {
-      if (undefined !== options.autoExtendProjectExtents) this.autoExtendProjectExtents = options.autoExtendProjectExtents;
-    }
+    this.autoExtendProjectExtents = options?.autoExtendProjectExtents ?? true;
     // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
     this.doNotUpdateElementIds.add(IModel.dictionaryId);
@@ -176,6 +178,10 @@ export class IModelImporter {
     try {
       const elementId: Id64String = this.targetDb.elements.insertElement(elementProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
+      if (this.simplifyElementGeometry) {
+        this.targetDb.nativeDb.simplifyElementGeometry({ id: elementId, convertBReps: true });
+        Logger.logInfo(loggerCategory, `Simplified element geometry for ${this.formatElementForLogger(elementProps)}`);
+      }
       return elementId;
     } catch (error) {
       if (!this.targetDb.containsClass(elementProps.classFullName)) {
@@ -197,6 +203,10 @@ export class IModelImporter {
     this.checkProjectExtents(elementProps);
     this.targetDb.elements.updateElement(elementProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementForLogger(elementProps)}`);
+    if (this.simplifyElementGeometry) {
+      this.targetDb.nativeDb.simplifyElementGeometry({ id: elementProps.id, convertBReps: true });
+      Logger.logInfo(loggerCategory, `Simplified element geometry for ${this.formatElementForLogger(elementProps)}`);
+    }
   }
 
   /** Delete the specified Element from the target iModel.
@@ -209,6 +219,10 @@ export class IModelImporter {
 
   /** Delete the specified Element from the target iModel. */
   public deleteElement(elementId: Id64String): void {
+    if (this.doNotUpdateElementIds.has(elementId)) {
+      Logger.logInfo(loggerCategory, `Do not delete target element ${elementId}`);
+      return;
+    }
     this.onDeleteElement(elementId);
   }
 

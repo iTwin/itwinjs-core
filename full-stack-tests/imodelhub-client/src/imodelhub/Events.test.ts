@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { Guid, GuidString, Id64, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CodeEvent, EventSAS,
+  AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CheckpointCreatedEvent, CodeEvent, EventSAS,
   EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, IModelHubEventType, LockEvent, LockLevel, LockType, VersionEvent,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -256,9 +256,21 @@ describe("iModelHub EventHandler", () => {
     chai.expect(subscription.eventTypes).to.be.deep.equal(eventTypes);
   });
 
-  it("should receive LockEvent (#unit)", async () => {
-    const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2,"LockType":"1","LockLevel":"1","ObjectIds":["0x1"],"ReleasedWithChangeSet":"1"}`;
-    mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "LockEvent");
+  it("should receive LockEvent", async () => {
+    const lock = utils.generateLock(briefcaseId, "0x115", LockType.Element, LockLevel.Shared);
+
+    if (TestConfig.enableMocks) {
+      const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2,"LockType":"Element","LockLevel":"Shared","ObjectIds":["0x115"],"ReleasedWithChangeSet":"1"}`;
+      mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "LockEvent");
+    } else {
+      await imodelHubClient.events.subscriptions.delete(requestContext, imodelId, subscription.wsgId);
+      const eventTypes: EventType[] = ["LockEvent"];
+      subscription = await imodelHubClient.events.subscriptions.create(requestContext, imodelId, eventTypes);
+      chai.assert(subscription);
+      chai.expect(subscription.eventTypes).to.be.deep.equal(eventTypes);
+
+      await imodelHubClient.locks.update(requestContext, imodelId, [lock]);
+    }
 
     const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(LockEvent);
@@ -267,9 +279,9 @@ describe("iModelHub EventHandler", () => {
     chai.assert(!!typedEvent);
     chai.assert(!!typedEvent.objectIds[0]);
     chai.assert(Id64.isValidId64(typedEvent.objectIds[0]));
-    chai.expect(typedEvent.objectIds[0].toString()).to.be.equal(Id64.fromString("0x1"));
+    chai.expect(typedEvent.objectIds[0].toString()).to.be.equal(Id64.fromString("0x115"));
     chai.expect(typedEvent.lockLevel).to.be.equal(LockLevel.Shared);
-    chai.expect(typedEvent.lockType).to.be.equal(LockType.Model);
+    chai.expect(typedEvent.lockType).to.be.equal(LockType.Element);
   });
 
   it("should receive AllLocksDeletedEvent (#unit)", async () => {
@@ -351,6 +363,39 @@ describe("iModelHub EventHandler", () => {
     chai.assert(!!typedEvent);
     chai.expect(typedEvent.versionId).to.be.equal(versionId);
     chai.expect(typedEvent.changeSetId).to.be.eq("");
+  });
+
+  it("should receive CheckpointCreatedEvent (#unit)", async () => {
+    const versionId: GuidString = Guid.createValue();
+    const changeSetId: string = "changeSetId";
+    const changeSetIndex: string = "5";
+    const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","VersionId":"${versionId}","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
+    mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "CheckpointCreatedEvent");
+
+    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    chai.expect(event).to.be.instanceof(CheckpointCreatedEvent);
+    chai.assert(!!event!.iModelId);
+    const typedEvent = event as CheckpointCreatedEvent;
+    chai.assert(!!typedEvent);
+    chai.expect(typedEvent.versionId).to.be.equal(versionId);
+    chai.expect(typedEvent.changeSetId).to.be.eq(changeSetId);
+    chai.expect(typedEvent.changeSetIndex).to.be.eq(changeSetIndex);
+  });
+
+  it("should receive CheckpointCreatedEvent with no Version (#unit)", async () => {
+    const changeSetId: string = "changeSetId";
+    const changeSetIndex: string = "5";
+    const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
+    mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "CheckpointCreatedEvent");
+
+    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    chai.expect(event).to.be.instanceof(CheckpointCreatedEvent);
+    chai.assert(!!event!.iModelId);
+    const typedEvent = event as CheckpointCreatedEvent;
+    chai.assert(!!typedEvent);
+    chai.expect(!typedEvent.versionId);
+    chai.expect(typedEvent.changeSetId).to.be.eq(changeSetId);
+    chai.expect(typedEvent.changeSetIndex).to.be.eq(changeSetIndex);
   });
 
   it("should delete subscription", async () => {

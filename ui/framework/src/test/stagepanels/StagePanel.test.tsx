@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
@@ -17,7 +17,7 @@ import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePane
 import { StagePanelDef, StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
 import { UiFramework } from "../../ui-framework/UiFramework";
 import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 /* eslint-disable react/jsx-key */
 
@@ -215,8 +215,6 @@ describe("StagePanel", () => {
     wrapper.update();
     expect(wrapper.find("div.uifw-stagepanel").length).to.eq(0);
     UiShowHideManager.showHidePanels = false;
-
-    wrapper.unmount();
   });
 
   it("should update stagePanelWidgets", () => {

@@ -2,6 +2,102 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@bentley/ui-components_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Date/Time TypeEditor"
+          },
+          {
+            "comment": "Fixed initial processing of scrollToRow in Table component"
+          },
+          {
+            "comment": "Preventing setState call warning in TimelineComponent unit test"
+          },
+          {
+            "comment": "Update all editors to be controlled components."
+          },
+          {
+            "comment": "PropertyGrid: Fix component not updating on data provider change"
+          },
+          {
+            "comment": "Added jsdoc ESLint rule for UI packages"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.5",
+      "tag": "@bentley/ui-components_v2.7.5",
+      "date": "Fri, 23 Oct 2020 16:23:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.4",
+      "tag": "@bentley/ui-components_v2.7.4",
+      "date": "Mon, 19 Oct 2020 17:57:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.3",
+      "tag": "@bentley/ui-components_v2.7.3",
+      "date": "Wed, 14 Oct 2020 17:00:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.2",
+      "tag": "@bentley/ui-components_v2.7.2",
+      "date": "Tue, 13 Oct 2020 18:20:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.1",
+      "tag": "@bentley/ui-components_v2.7.1",
+      "date": "Thu, 08 Oct 2020 13:04:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.0",
+      "tag": "@bentley/ui-components_v2.7.0",
+      "date": "Fri, 02 Oct 2020 18:03:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update boolean type editors to allow component to be disabled."
+          },
+          {
+            "comment": "Add support for a DatePicker control."
+          },
+          {
+            "comment": "Update editor to use fixed focus trap."
+          },
+          {
+            "comment": " Added Table cell editor activation via keyboard when using row selection. Added Tree cell editor activation via keyboard."
+          },
+          {
+            "comment": "Fixed react-axe initialization. Improved ui-components test coverage."
+          },
+          {
+            "comment": "Table cell editing via keyboard"
+          },
+          {
+            "comment": "Add multiline text property support to property grid."
+          },
+          {
+            "comment": "TreeRenderer: Add ability to scroll to a specific node"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.6.5",
+      "tag": "@bentley/ui-components_v2.6.5",
+      "date": "Sat, 26 Sep 2020 16:06:34 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.6.4",
       "tag": "@bentley/ui-components_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",

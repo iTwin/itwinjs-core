@@ -181,7 +181,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   // set the current duration, which will call the OnChange callback
   private _setDuration = (currentDuration: number) => {
     this._timeLastCycle = new Date().getTime();
-    this.setState({ currentDuration });
+    if (!this._unmounted)
+      this.setState({ currentDuration });
     // istanbul ignore else
     if (this.props.onChange) {
       const fraction = currentDuration / this.state.totalDuration;

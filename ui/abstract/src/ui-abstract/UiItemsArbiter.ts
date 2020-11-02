@@ -28,7 +28,7 @@ export interface UiItemsApplication {
   validateWidget?: (widget: AbstractWidgetProps) => { updatedWidget: AbstractWidgetProps, action: UiItemsApplicationAction };
 }
 
-/** Arbitrates between the UiItemsApplication and a UiItemsProvider
+/** Arbitrates between the [[UiItemsApplication]] and a [[UiItemsProvider]]
  * @beta
  */
 export class UiItemsArbiter {

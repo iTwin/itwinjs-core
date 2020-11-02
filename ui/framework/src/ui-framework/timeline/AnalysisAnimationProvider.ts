@@ -12,7 +12,6 @@ import { BaseTimelineDataProvider, PlaybackSettings } from "@bentley/ui-componen
 /**  Analysis Timeline Data Provider - handles View that define 'analysisStyle' data.
  * @alpha
  */
-
 export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
   private _viewState: ViewState;
 

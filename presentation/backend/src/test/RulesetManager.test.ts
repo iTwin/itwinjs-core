@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as sinon from "sinon";
 import { RegisteredRuleset } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
@@ -24,7 +23,7 @@ describe("RulesetManager", () => {
     it("calls addon's getRulesets", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => JSON.stringify([{ ruleset, hash }])).verifiable();
+      addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) })).verifiable();
       const result = manager.get(ruleset.id);
       addonMock.verifyAll();
       expect(result).to.not.be.undefined;
@@ -34,7 +33,7 @@ describe("RulesetManager", () => {
 
     it("handles empty array response", async () => {
       const rulesetId = faker.random.uuid();
-      addonMock.setup((x) => x.getRulesets(rulesetId)).returns(() => JSON.stringify([])).verifiable();
+      addonMock.setup((x) => x.getRulesets(rulesetId)).returns(() => ({ result: JSON.stringify([]) })).verifiable();
       const result = manager.get(rulesetId);
       addonMock.verifyAll();
       expect(result).to.be.undefined;
@@ -43,7 +42,7 @@ describe("RulesetManager", () => {
     it("does not call addon's getRulesets second time", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => JSON.stringify([{ ruleset, hash }])).verifiable(moq.Times.once());
+      addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) })).verifiable(moq.Times.once());
       manager.get(ruleset.id);
       const result = manager.get(ruleset.id);
       addonMock.verifyAll();
@@ -59,7 +58,7 @@ describe("RulesetManager", () => {
     it("calls addon's addRuleset", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => hash).verifiable();
+      addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => ({ result: hash })).verifiable();
       const result = manager.add(ruleset);
       addonMock.verifyAll();
       expect(ruleset).to.deep.equal(result.toJSON());
@@ -69,7 +68,7 @@ describe("RulesetManager", () => {
     it("does not call addon's addRuleset second time", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => hash).verifiable(moq.Times.once());
+      addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => ({ result: hash })).verifiable(moq.Times.once());
       manager.add(ruleset);
       const result = manager.add(ruleset);
       addonMock.verifyAll();
@@ -84,7 +83,7 @@ describe("RulesetManager", () => {
     it("calls addon's removeRuleset with [id, hash] argument", async () => {
       const rulesetId = faker.random.uuid();
       const hash = faker.random.uuid();
-      addonMock.setup((x) => x.removeRuleset(rulesetId, hash)).returns(() => true).verifiable();
+      addonMock.setup((x) => x.removeRuleset(rulesetId, hash)).returns(() => ({ result: true })).verifiable();
       const result = manager.remove([rulesetId, hash]);
       addonMock.verifyAll();
       expect(result).to.be.true;
@@ -93,7 +92,7 @@ describe("RulesetManager", () => {
     it("calls addon's removeRuleset with RegisteredRuleset argument", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const registered = new RegisteredRuleset(ruleset, faker.random.uuid(), (r: RegisteredRuleset) => manager.remove(r));
-      addonMock.setup((x) => x.removeRuleset(ruleset.id, registered.uniqueIdentifier)).returns(() => true).verifiable();
+      addonMock.setup((x) => x.removeRuleset(ruleset.id, registered.uniqueIdentifier)).returns(() => ({ result: true })).verifiable();
       const result = manager.remove(registered);
       addonMock.verifyAll();
       expect(result).to.be.true;
@@ -116,25 +115,27 @@ describe("RulesetManager", () => {
     it("disposes registered ruleset for get result", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => JSON.stringify([{ ruleset, hash }])).verifiable();
-      const result = manager.get(ruleset.id);
-      const eventSpy = sinon.spy(manager, "remove");
+      addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) })).verifiable();
+      addonMock.setup((x) => x.removeRuleset(ruleset.id, hash)).returns(() => ({ result: true })).verifiable();
 
+      const result = manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
-      (result as RegisteredRuleset).dispose();
-      expect(eventSpy).to.have.been.calledOnce;
+      result!.dispose();
+
+      addonMock.verifyAll();
     });
 
     it("disposes registered ruleset for add result", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => hash).verifiable();
-      const result = manager.add(ruleset);
-      const eventSpy = sinon.spy(manager, "remove");
+      addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => ({ result: hash })).verifiable();
+      addonMock.setup((x) => x.removeRuleset(ruleset.id, hash)).returns(() => ({ result: true })).verifiable();
 
+      const result = manager.add(ruleset);
       expect(result).to.not.be.undefined;
       result.dispose();
-      expect(eventSpy).to.have.been.calledOnce;
+
+      addonMock.verifyAll();
     });
   });
 

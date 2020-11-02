@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
@@ -13,12 +13,6 @@ import { createDOMRect, ResizeObserverMock } from "../Utils";
 import { DragManagerProvider } from "../Providers";
 
 describe("DockedToolSettings", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render w/o entries", () => {
     const { container } = render(<DockedToolSettings />,
       {
@@ -45,7 +39,7 @@ describe("DockedToolSettings", () => {
 
   it("should render overflow button", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+    sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
@@ -68,7 +62,7 @@ describe("DockedToolSettings", () => {
 
   it("should render overflown entries", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+    sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
@@ -95,7 +89,7 @@ describe("DockedToolSettings", () => {
 
   it("should render panel container", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+    sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
@@ -125,7 +119,7 @@ describe("DockedToolSettings", () => {
 
   it("should close overflow panel on outside click", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+    sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
@@ -161,7 +155,7 @@ describe("DockedToolSettings", () => {
   it("should recalculate overflow on resize", () => {
     let width = 100;
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+    sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width });
       } else if (queryByText(this, /Entry [0-9]$/)) {
@@ -172,8 +166,8 @@ describe("DockedToolSettings", () => {
 
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
-    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
-    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+    sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element.classList.contains("nz-toolSettings-docked")) {
         resizeObserver = this;
         target = element;
@@ -207,7 +201,7 @@ describe("DockedToolSettings", () => {
   it("should recalculate overflow on entry resize", () => {
     let width = 50;
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+    sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
         return createDOMRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
@@ -218,8 +212,8 @@ describe("DockedToolSettings", () => {
 
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
-    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
-    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+    sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element instanceof HTMLElement && element.classList.contains("nz-toolSettings-setting") && queryByText(element, "Entry 1")) {
         resizeObserver = this;
         target = element;

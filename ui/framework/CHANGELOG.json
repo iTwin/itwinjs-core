@@ -2,6 +2,93 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@bentley/ui-framework_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ModelsTree: Handle GraphicalPartition3d similar to PhysicalPartition - it should not be displayed if there's a 'GraphicalPartition3d.Model.Content' attribute in JsonProperties"
+          },
+          {
+            "comment": "Added jsdoc ESLint rule for UI packages"
+          },
+          {
+            "comment": "Upgraded react-split-pane to 0.1.92"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.5",
+      "tag": "@bentley/ui-framework_v2.7.5",
+      "date": "Fri, 23 Oct 2020 16:23:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.4",
+      "tag": "@bentley/ui-framework_v2.7.4",
+      "date": "Mon, 19 Oct 2020 17:57:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.3",
+      "tag": "@bentley/ui-framework_v2.7.3",
+      "date": "Wed, 14 Oct 2020 17:00:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.2",
+      "tag": "@bentley/ui-framework_v2.7.2",
+      "date": "Tue, 13 Oct 2020 18:20:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.1",
+      "tag": "@bentley/ui-framework_v2.7.1",
+      "date": "Thu, 08 Oct 2020 13:04:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.0",
+      "tag": "@bentley/ui-framework_v2.7.0",
+      "date": "Fri, 02 Oct 2020 18:03:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to limit size of keyin stored in keyin history."
+          },
+          {
+            "comment": "Added Table cell editor activation via keyboard when using row selection. Added Tree cell editor activation via keyboard."
+          },
+          {
+            "comment": "Table cell editing via keyboard"
+          },
+          {
+            "comment": "Added useCachedNineZoneState in widget-panels Frontstage"
+          },
+          {
+            "comment": "Do not render empty stage panel when frontstage changes."
+          },
+          {
+            "comment": "ModelsTree: Add a prop for enabling auto-update"
+          },
+          {
+            "comment": "ModelsTree: Group similar category nodes to avoid duplication"
+          },
+          {
+            "comment": "Add telemetry to ui-framework."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.6.5",
+      "tag": "@bentley/ui-framework_v2.6.5",
+      "date": "Sat, 26 Sep 2020 16:06:34 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.6.4",
       "tag": "@bentley/ui-framework_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",

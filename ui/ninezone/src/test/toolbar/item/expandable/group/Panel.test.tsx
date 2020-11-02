@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import { Panel } from "../../../../../ui-ninezone";
+import { mount } from "../../../../Utils";
 
 describe("<Panel />", () => {
   it("should render", () => {

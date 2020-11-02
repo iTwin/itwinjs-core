@@ -23,7 +23,8 @@ import { FacetFaceData } from "./FacetFaceData";
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
  *
  * * IndexedPolyface carries a PolyfaceData as a member. (NOT as a base class -- it already has GeometryQuery as base)
- * * IndexedPolyfaceVisitor uses PolyfaceData as a base class.
+ * * IndexedPolyfaceVisitor uses PolyfaceData as a base class.  In this use there is only a single facet in the polyfaceData.
+ * * PolyfaceData does not know (!!!) what indices range constitute a facet.  That is managed by derived class or carrier class.
  * @public
  */
 export class PolyfaceData {
@@ -68,11 +69,15 @@ export class PolyfaceData {
   /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
-  /** Constructor for facets.  The various params control whether respective arrays are to be allocated. */
+  /** Constructor for facets.
+   *   * The various params control whether respective arrays are to be allocated.
+   *   * If arrayData is provided, all other params are IGNORED.
+   *   *
+   */
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false) {
+    this.face = [];
     this.point = new GrowableXYZArray();
     this.pointIndex = []; this.edgeVisible = [];
-    this.face = [];
     if (needNormals) { this.normal = new GrowableXYZArray(); this.normalIndex = []; }
     if (needParams) { this.param = new GrowableXYArray(); this.paramIndex = []; }
     if (needColors) { this.color = []; this.colorIndex = []; }

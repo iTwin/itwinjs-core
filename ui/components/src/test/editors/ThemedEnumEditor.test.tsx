@@ -58,7 +58,7 @@ describe("<ThemedEnumEditor />", () => {
     expect(selectNode).not.to.be.null;
     fireEvent.change(selectNode!.firstChild as HTMLElement, { target: { value: "Blue" } });
     await TestUtils.flushAsyncOperations();
-    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Enter", code: "Enter" });
+    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Enter" });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -78,7 +78,7 @@ describe("<ThemedEnumEditor />", () => {
     expect(selectNode).not.to.be.null;
     fireEvent.change(selectNode!.firstChild as HTMLElement, { target: { value: "Yellow" } });
     await TestUtils.flushAsyncOperations();
-    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Escape", code: "Escape" });
+    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Escape" });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.called).to.be.false;
   });
@@ -98,7 +98,7 @@ describe("<ThemedEnumEditor />", () => {
     expect(selectNode).not.to.be.null;
     fireEvent.change(selectNode!.firstChild as HTMLElement, { target: { value: "Green" } });
     await TestUtils.flushAsyncOperations();
-    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Enter", code: "Enter" });
+    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Enter" });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });

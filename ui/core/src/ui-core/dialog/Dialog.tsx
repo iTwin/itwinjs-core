@@ -30,6 +30,8 @@ export enum DialogButtonType {
   Yes = "yes",
   No = "no",
   Retry = "retry",
+  Next = "next",
+  Previous = "previous"
 }
 
 /** Enum for button style.
@@ -257,7 +259,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         onPointerDown={this._handleStartMove}>
         <div className={"core-dialog-title"} data-testid="core-dialog-title" style={titleStyle}>{title}</div>
         <button
-          className={"core-dialog-close icon icon-close"}
+          className={"core-focus-trap-ignore-initial core-dialog-close icon icon-close"}
           data-testid="core-dialog-close"
           onClick={onClose}
         />
@@ -278,17 +280,17 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       >
         {opened &&
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
-            <div
-              className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
-              style={{ ...containerStyle, ...minMaxStyle }}
-              data-testid="core-dialog-container"
-              onPointerDown={this._handleContainerPointerDown}
-            >
-              <div className={"core-dialog-area"} ref={this._containerRef} style={minMaxStyle}>
-                {!hideHeader &&
-                  headerElement
-                }
-                <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
+            <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
+              <div
+                className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
+                style={{ ...containerStyle, ...minMaxStyle }}
+                data-testid="core-dialog-container"
+                onPointerDown={this._handleContainerPointerDown}
+              >
+                <div className={"core-dialog-area"} ref={this._containerRef} style={minMaxStyle}>
+                  {!hideHeader &&
+                    headerElement
+                  }
                   <div
                     className={classnames(
                       "core-dialog-content",
@@ -302,25 +304,24 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
                       {footerElement}
                     </div>
                   }
-                </FocusTrap>
-
-                <div
-                  className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
-                  data-testid="core-dialog-drag-right"
-                  onPointerDown={this._handleStartResizeRight}
-                />
-                <div
-                  className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
-                  data-testid="core-dialog-drag-bottom"
-                  onPointerDown={this._handleStartResizeDown}
-                />
-                <div
-                  className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
-                  data-testid="core-dialog-drag-bottom-right"
-                  onPointerDown={this._handleStartResizeDownRight}
-                />
+                  <div
+                    className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
+                    data-testid="core-dialog-drag-right"
+                    onPointerDown={this._handleStartResizeRight}
+                  />
+                  <div
+                    className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
+                    data-testid="core-dialog-drag-bottom"
+                    onPointerDown={this._handleStartResizeDown}
+                  />
+                  <div
+                    className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
+                    data-testid="core-dialog-drag-bottom-right"
+                    onPointerDown={this._handleStartResizeDownRight}
+                  />
+                </div>
               </div>
-            </div>
+            </FocusTrap>
           </DivWithOutsideClick>
         }
       </div>
@@ -402,6 +403,14 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
           case DialogButtonType.Close:
             buttonText = UiCore.translate("dialog.close");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
+            break;
+          case DialogButtonType.Next:
+            buttonText = UiCore.translate("dialog.next");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
+            break;
+          case DialogButtonType.Previous:
+            buttonText = UiCore.translate("dialog.previous");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
         }
 

@@ -12,7 +12,7 @@ import { Events, InternetConnectivityStatus, MobileRpcConfiguration, OverriddenB
 import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { EmitStrategy } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { EventSinkManager } from "./EventSink";
+import { EventSink } from "./EventSink";
 import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { initialize, MobileDevice } from "./MobileDevice";
 
@@ -49,7 +49,7 @@ export class NativeAppBackend {
       throw new Error("NativeAppBackend.startup() has already been called once");
     }
     this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => {
-      EventSinkManager.global.emit(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, { status }, { strategy: EmitStrategy.PurgeOlderEvents });
+      EventSink.global.emit(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, { status }, { strategy: EmitStrategy.PurgeOlderEvents });
     });
 
     if (!configuration) {
@@ -60,7 +60,7 @@ export class NativeAppBackend {
     if (MobileRpcConfiguration.isMobileBackend) {
       MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
         const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
-        EventSinkManager.global.emit(Events.NativeApp.namespace, Events.NativeApp.onUserStateChanged, { accessToken: accessTokenObj, err }, { strategy: EmitStrategy.None });
+        EventSink.global.emit(Events.NativeApp.namespace, Events.NativeApp.onUserStateChanged, { accessToken: accessTokenObj, err }, { strategy: EmitStrategy.None });
       });
     }
     await IModelHost.startup(configuration);

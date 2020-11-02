@@ -164,9 +164,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   // initializes the BingImageryProvider by reading the templateUrl, logo image, and attribution list.
   public async initialize(): Promise<void> {
     // get the template url
-    // NEEDSWORK - should get bing key from server.
-    const bingKey = "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt"; // spell-checker: disable-line
-    const bingRequestUrl = this._urlBase.replace("{bingKey}", bingKey);
+    // NEEDSWORK - should get bing key from server. Currently coming from iModelApp defaultMapLayerOptions
+    const bingRequestUrl = this._urlBase.replace("{bingKey}", this._settings.accessKey ? this._settings.accessKey.value : "");
     const requestOptions: RequestOptions = { method: "GET" };
 
     try {

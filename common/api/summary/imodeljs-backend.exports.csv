@@ -73,7 +73,7 @@ public;DictionaryModel
 public;class DisplayStyle 
 public;DisplayStyle2d 
 public;DisplayStyle3d 
-public;DisplayStyleCreationOptions
+public;DisplayStyleCreationOptions 
 public;class Document 
 internal;class DocumentCarrier 
 public;DocumentListModel 
@@ -114,9 +114,7 @@ public;ElementUniqueAspect
 public;ElevationCallout 
 public;EmbeddedFileLink 
 public;Entity 
-internal;EventSink
-internal;EventSinkManager
-internal;EventSinkOptions
+internal;EventSink 
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo

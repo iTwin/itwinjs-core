@@ -447,7 +447,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   private setFocusToSelected() {
-    // istanbul ignore else
+    // istanbul ignore next
     if (this._gridRef.current) {
       const grid = this._gridRef.current as any;
       // istanbul ignore else
@@ -914,7 +914,7 @@ export class Table extends React.Component<TableProps, TableState> {
       return "";
 
     const displayValue = await TypeConverterManager
-      .getConverter(cellItem.record.property.typename)
+      .getConverter(cellItem.record.property.typename, cellItem.record.property.converter?.name)
       .convertPropertyToString(cellItem.record.property, value);
 
     return displayValue ? displayValue : "";

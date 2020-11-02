@@ -523,7 +523,7 @@ describe("Point3dArray", () => {
     const dTheta = 0.1;
     for (let i = 0; i < pointsA.length; i++)
       weights.push(1.0 + amplitude * Math.cos(i * dTheta));
-    const xyzw = Point4dArray.packPointsAndWeightsToFloat64Array(pointsA, weights);
+    const xyzw = Point4dArray.packPointsAndWeightsToFloat64Array(pointsA, weights)!;
     ck.testExactNumber(4.0 * weights.length, xyzw.length, "Point4dArray.packToFloat64Array length");
     const point4dB = Point4dArray.unpackToPoint4dArray(xyzw);
 

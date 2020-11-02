@@ -11,6 +11,7 @@ import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { BackendRequestContext, BriefcaseIdValue, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
+import { PerfTestUtility } from "./PerfTestUtils";
 
 function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
   // add Geometry
@@ -156,13 +157,13 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", `PropsPerf_Delete_${propCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
+
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
         try {
-          const elId = stat.minId + elementIdIncrement * i;
+          const elId = minId + elementIdIncrement * i;
           perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         } catch (err) {
           assert.isTrue(false);
@@ -183,19 +184,19 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", `PropsPerf_Read_${propCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
+
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         assert.exists(perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0)));
       }
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
 
       for (let j = 0; j < opCount; ++j) {
-        const elId = stat.minId + elementIdIncrement * j;
+        const elId = minId + elementIdIncrement * j;
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.exists(elemFound);
         for (let k = 0; k < propCount; ++k) {
@@ -213,9 +214,8 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", `PropsPerf_Update_${propCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
 
       const geomArray: Arc3d[] = [
         Arc3d.createXY(Point3d.create(0, 0), 2),
@@ -230,7 +230,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         const editElem: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         editElem.primProp2 = "Updated Value";
         editElem.setUserProperties("geom", geometryStream);
@@ -244,7 +244,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
 
       // verify value is updated
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.equal(elemFound.primProp2, "Updated Value");
       }
@@ -285,9 +285,9 @@ describe("SchemaDesignPerf Number of Indices", () => {
               <DbIndexList xmlns="ECDbMap.02.00">
                   <Indexes>`;
           sxml = `${sxml}<DbIndex>
-                          <Name>${  indexName}</Name>
+                          <Name>${indexName}</Name>
                           <Properties>
-                              <string>${  propName}</string>
+                              <string>${propName}</string>
                           </Properties>
                       </DbIndex>`;
           sxml = `${sxml}</Indexes>
@@ -309,9 +309,9 @@ describe("SchemaDesignPerf Number of Indices", () => {
           const indexName: string = `ix_pe_prop${i.toString()}`;
           const propName: string = `PrimProp${i.toString()}`;
           sxml = `${sxml}<DbIndex>
-                          <Name>${  indexName}</Name>
+                          <Name>${indexName}</Name>
                           <Properties>
-                              <string>${  propName}</string>
+                              <string>${propName}</string>
                           </Properties>
                       </DbIndex>`;
         }
@@ -468,13 +468,12 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_Delete_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
         try {
-          const elId = stat.minId + elementIdIncrement * i;
+          const elId = minId + elementIdIncrement * i;
           perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         } catch (err) {
           assert.isTrue(false);
@@ -494,13 +493,12 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_PerClass_Delete_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "TestIndexSchema:PropElement0");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
         try {
-          const elId = stat.minId + elementIdIncrement * i;
+          const elId = minId + elementIdIncrement * i;
           perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         } catch (err) {
           assert.isTrue(false);
@@ -521,19 +519,18 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_Read_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         assert.exists(perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0)));
       }
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
 
       for (let j = 0; j < opCount; ++j) {
-        const elId = stat.minId + elementIdIncrement * j;
+        const elId = minId + elementIdIncrement * j;
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.exists(elemFound);
         for (let k = 0; k < propCounts; ++k) {
@@ -550,19 +547,18 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `IndexPerf_PerClass_Read_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "TestIndexSchema:PropElement0");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         assert.exists(perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0)));
       }
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
 
       for (let j = 0; j < opCount; ++j) {
-        const elId = stat.minId + elementIdIncrement * j;
+        const elId = minId + elementIdIncrement * j;
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.exists(elemFound);
         for (let k = 0; k < propCounts; ++k) {
@@ -580,9 +576,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `PropsPerf_Update_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const geomArray: Arc3d[] = [
         Arc3d.createXY(Point3d.create(0, 0), 2),
         Arc3d.createXY(Point3d.create(5, 5), 5),
@@ -595,7 +590,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         const editElem: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         editElem.primProp1 = "Updated Value";
         editElem.setUserProperties("geom", geometryStream);
@@ -608,7 +603,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const endTime = new Date().getTime();
       // verify value is updated
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.equal(elemFound.primProp1, "Updated Value");
       }
@@ -622,9 +617,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", `PropsPerf_PerClassUpdate_${indexCount}.bim`);
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const minId: number = PerfTestUtility.getMinId(perfimodel, "TestIndexSchema:PropElement0");
       const elementIdIncrement = Math.floor(seedCount / opCount);
-      assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const geomArray: Arc3d[] = [
         Arc3d.createXY(Point3d.create(0, 0), 2),
         Arc3d.createXY(Point3d.create(5, 5), 5),
@@ -637,7 +631,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       const startTime = new Date().getTime();
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         const editElem: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         editElem.primProp1 = "Updated Value";
         editElem.setUserProperties("geom", geometryStream);
@@ -650,7 +644,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const endTime = new Date().getTime();
       // verify value is updated
       for (let i = 0; i < opCount; ++i) {
-        const elId = stat.minId + elementIdIncrement * i;
+        const elId = minId + elementIdIncrement * i;
         const elemFound: any = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
         assert.equal(elemFound.primProp1, "Updated Value");
       }

@@ -1,37 +1,116 @@
-# 2.6.0 Change Notes
+# 2.8.0 Change Notes
 
-## Addition of @bentley/telemetry-client
+## Color mix property added to thematic gradient settings
 
-The new `@bentley/telemetry-client` package has been added as an abstraction layer to support different types of telemetry on both the frontend and backend.
+Thematic display gradient properties now supports a colorMix value for mixing the color of background map terrain or point clouds in with the thematic gradient color.  The `colorMix` property of [ThematicGradientSettings]($common) is a value between 0.0 and 1.0, defaulting to 0.0, which determines the percentage of the original color to blend in with the thematic gradient color (so 0.0 will be only the thematic gradient color, and 1.0 will be only the original terrain map or point cloud color).
 
-This package is now **required** to be installed when depending on `@bentley/imodeljs-backend` or `@bentley/imodeljs-frontend` as it has been added as a peerDependency of both packages.
+![thematic rendering of background map terrain with colorMix set to 0.0, 0.33, and 0.67](./assets/thematicTerrainColorMix.png)
+<p align="center">Thematic rendering of background map terrain with colorMix set to 0.0, 0.33, and 0.67</p>
 
-## ESLint plugin
+## Presentation
 
-The ESLint configuration was moved from `@bentley/build-tools` to a new ESLint plugin `@bentley/eslint-plugin`. The ESLint configuration in package.json should now look like:
+### `hideNodesInHierarchy` and grouping
 
-```json
-"scripts": {
-  "lint": "eslint ./src/**/*.{ts,tsx} 1>&2",
-},
-"devDependencies": {
-  "eslint": "^6.8.0",
-  "bentley/eslint-plugin": "^2.6.0",
-  ...
-},
-"eslintConfig": {
-  "plugins": [
-    "@bentley",
-    ...
-    ],
-  "extends": "plugin:@bentley/imodeljs-recommended"
-}
+Behavior of `hideNodesInHierarchy` attribute was changed when used in combination with grouping.
+
+Previously the attribute meant that all nodes produced by the specification it was used on would be hidden, including grouping nodes. That made the combination useless, because grouping had absolutely no effect when used with `hideNodesInHierarchy`.
+
+Now, only the instance nodes are hidden, but their grouping nodes (if any) are displayed. This makes it possible to create hierarchies like the following:
+
+**Schema:**
+
+```xml
+<ECEntityClass typeName="A" />
+<ECEntityClass typeName="A1">
+  <BaseClass>A</BaseClass>
+</ECEntityClass>
+<ECEntityClass typeName="A2">
+  <BaseClass>A</BaseClass>
+</ECEntityClass>
+<ECEntityClass typeName="B" />
+<ECRelationshipClass typeName="A_B" strength="referencing" modifier="None" description="">
+    <Source multiplicity="(0..*)" roleLabel="contains" polymorphic="true">
+        <Class class="A"/>
+    </Source>
+    <Target multiplicity="(0..*)" roleLabel="is contained by" polymorphic="true">
+        <Class class="B" />
+    </Target>
+</ECRelationshipClass>
 ```
 
-Alternatively, `plugin:@bentley/ui` can be used, it extends the recommended configuration with additional rules used in core ui packages. There may be more alternative configurations in the future.
+**Instances:**
 
-The old configuration path `@bentley/build-tools/.eslintrc.js` remains in place but it's not recommended to use it.
+```
+Classes:                                  Relationship "A_B"
++-------+-------------+-------+           +-----------+-----------+
+| Class | Instance ID | Label |           | Source ID | Target ID |
++-------+-------------+-------+           +-----------+-----------+
+| A1    |           1 | One   |           |         1 |         3 |
+| A2    |           2 | Two   |           |         2 |         3 |
+| B     |           3 | Three |
+```
 
-## Electron Security enhancements
+**Presentation rules:**
 
-To reduce security risks when running under Electron, this version now runs with `nodeIntegration=false`, `contextIsoloation=true`, and `sandbox=true`. To understand the rationale and implications of these changes, please see the [Electon Security Checklist]( https://www.electronjs.org/docs/tutorial/security#checklist-security-recommendations). Note that these choices are the defaults, but can be overriden by arguments to `ElectronManger.initialize`. If you previously passed `webPreferences` arguments to that function, it is best to remove them entirely and rely on the default values.
+```json
+rules: [{
+  "ruleType": "RootNodes",
+  "specifications": [{
+    "specType": "InstanceNodesOfSpecificClasses",
+    "classes": { "schemaName": "MySchema", "classNames": ["A"] },
+    "groupByClass": true,
+    "groupByLabel": false,
+    "hideNodesInHierarchy": true
+  }]
+}, {
+  "ruleType": "ChildNodes",
+  "condition": "ParentNode.ClassName = \"A\"",
+  "specifications": [{
+    "specType": "RelatedInstanceNodes",
+    "relationshipPaths": [{
+        "relationship": { "schemaName": "MySchema", "className": "A_B" },
+        "direction": "Forward"
+    }],
+    "groupByClass": false,
+    "groupByLabel": false
+  }]
+}, {
+  "ruleType": "ChildNodes",
+  "condition": "ParentNode.ClassName = \"B\"",
+  "specifications": [{
+    "specType": "RelatedInstanceNodes",
+    "relationshipPaths": [{
+        "relationship": { "schemaName": "MySchema", "className": "A_B" },
+        "direction": "Backward"
+    }],
+    "groupByClass": false,
+    "groupByLabel": false
+  }]
+}]
+```
+
+**Result:**
+
+```
++ A1          (class "A" grouping node)
++-+ Three     (instance node of class "B", ECInstanceId = 3)
+| +-+ One     (instance node of class "A", ECInstanceId = 1)
++ A2          (class "A" grouping node)
++-+ Three     (instance node of class "B", ECInstanceId = 3)
+  +-+ Two     (instance node of class "A", ECInstanceId = 2)
+```
+
+### Nodes' duplication when using `RelatedInstanceNodes` specification
+
+Behavior of `RelatedInstanceNodes` specification when used with many-to-x relationships was changed.
+
+Previously, when traversing from a parent node, that is based on multiple instances on the "many" side of the relationship where the other side of the relationship points to the same other instance, we would see duplication.
+
+Now, in the situation described above, there will be no more duplication.
+
+## Hilite/Emphasis interaction modified.
+
+The visual interaction between hilited and emphasized geometry has been modified to look better.  Hilited geometry now always shows through emphasized geometry and visa versa.  Geometry which is both hilited and emphasized now shows the outline for both (provided they are of different widths).
+
+![Cylinder is hilited, Torus is emphasized, and Block is both hilited and emphasized](./assets/HiliteEmphasisInteraction.png)
+<p align="center">Cylinder is hilited, Torus is emphasized, and Block is both hilited and emphasized.</p>

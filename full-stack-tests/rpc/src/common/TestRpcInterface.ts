@@ -5,8 +5,10 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import {
   IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
-  RpcRoutingToken, WipRpcInterface,
+  RpcPushChannel, RpcRoutingToken, WipRpcInterface,
 } from "@bentley/imodeljs-common";
+
+export const testChannel = RpcPushChannel.create<number>("test");
 
 export interface TestOp1Params {
   a: number;

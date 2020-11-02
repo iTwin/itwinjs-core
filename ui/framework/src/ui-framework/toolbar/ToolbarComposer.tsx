@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Toolbar
@@ -25,7 +25,7 @@ import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
 import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
 
 /** Private function to set up sync event monitoring of toolbar items */
-function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfInterest: string[]) {
+function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOfInterest: string[]) {
   React.useEffect(() => {
     const handleSyncUiEvent = (args: SyncUiEventArgs) => {
       if (0 === syncIdsOfInterest.length)
@@ -34,7 +34,7 @@ function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfIn
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
         // process each item that has interest
-        itemsManager.refreshAffectedItems(args.eventIds);
+        uiDataProvider.refreshAffectedItems(args.eventIds);
       }
     };
 
@@ -42,11 +42,11 @@ function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfIn
     return () => {
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
-  }, [itemsManager, syncIdsOfInterest, itemsManager.items]);
+  }, [uiDataProvider, syncIdsOfInterest, uiDataProvider.items]);
 
   React.useEffect(() => {
     const handleToolActivatedEvent = ({ toolId }: ToolActivatedEventArgs) => {
-      itemsManager.setActiveToolId(toolId);
+      uiDataProvider.setActiveToolId(toolId);
     };
 
     FrontstageManager.onToolActivatedEvent.addListener(handleToolActivatedEvent);
@@ -54,7 +54,7 @@ function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfIn
     return () => {
       FrontstageManager.onToolActivatedEvent.removeListener(handleToolActivatedEvent);
     };
-  }, [itemsManager, itemsManager.items]);
+  }, [uiDataProvider, uiDataProvider.items]);
 }
 
 function nestedAddItemToSpecifiedParentGroup(items: ReadonlyArray<ActionButton | GroupButton>, groupChildren: Array<ActionButton | GroupButton>): Array<ActionButton | GroupButton> {

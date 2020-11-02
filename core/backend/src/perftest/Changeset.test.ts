@@ -700,9 +700,8 @@ describe("ImodelChangesetPerformance own data", () => {
           const seedData: Version = await BriefcaseManager.imodelClient.versions.create(requestContext, imodelId, lastCSId, seedVersionName);
           assert.equal(seedData.name, seedVersionName);
 
-          const stat = IModelTestUtils.executeQuery(iModelDb, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const minId: number = PerfTestUtility.getMinId(iModelDb, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(dbSize / opSize);
-          assert.equal((stat.maxId - stat.minId + 1), dbSize);
 
           switch (baseName) {
             case "I": // create changeset with insert operation
@@ -720,7 +719,7 @@ describe("ImodelChangesetPerformance own data", () => {
             case "D": // create changeset with Delete operation
               for (let i = 0; i < opSize; ++i) {
                 try {
-                  const elId = stat.minId + elementIdIncrement * i;
+                  const elId = minId + elementIdIncrement * i;
                   iModelDb.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
                 } catch (err) {
                   assert.isTrue(false);
@@ -744,7 +743,7 @@ describe("ImodelChangesetPerformance own data", () => {
                 geometryStream.push(arcData);
               }
               for (let i = 0; i < opSize; ++i) {
-                const elId = stat.minId + elementIdIncrement * i;
+                const elId = minId + elementIdIncrement * i;
                 const editElem: Element = iModelDb.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
                 (editElem as any).baseStr = "PerfElement - UpdatedValue";
                 editElem.setUserProperties("geom", geometryStream);

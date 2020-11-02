@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../ui-framework";
 import { ItemList } from "../../ui-framework/shared/ItemMap";
 import TestUtils from "../TestUtils";
@@ -118,8 +118,6 @@ describe("<Toolbar  />", async () => {
   after(() => {
     TestUtils.terminateUiFramework();
   });
-
-  afterEach(cleanup);
 
   it("should render", async () => {
     const renderedComponent = render(

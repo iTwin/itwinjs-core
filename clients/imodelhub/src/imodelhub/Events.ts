@@ -52,12 +52,14 @@ export enum IModelHubEventType {
   iModelDeletedEvent = "iModelDeletedEvent",
   /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
   VersionEvent = "VersionEvent",
+  /** Sent when a new [[Checkpoint]] is generated. See [[CheckpointCreatedEvent]]. */
+  CheckpointCreatedEvent = "CheckpointCreatedEvent",
 }
 
 /* eslint-enable no-shadow */
 
 /** @beta @deprecated Use [[IModelHubEventType]] instead */
-export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent";
+export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent";
 
 /** Base type for all iModelHub events.
  * @beta
@@ -112,8 +114,8 @@ export class LockEvent extends BriefcaseEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.lockType = parseInt(obj.LockType, 10) as LockType;
-    this.lockLevel = parseInt(obj.LockLevel, 10) as LockLevel;
+    this.lockType = LockType[obj.LockType as keyof typeof LockType];
+    this.lockLevel = LockLevel[obj.LockLevel as keyof typeof LockLevel];
     this.objectIds = (obj.ObjectIds as string[]).map((value: string) => Id64.fromJSON(value));
     this.releasedWithChangeSet = obj.ReleasedWithChangeSet;
   }
@@ -218,9 +220,38 @@ export class VersionEvent extends IModelHubEvent {
   }
 }
 
+/** Sent when a new [[Checkpoint]] is generated. [[Checkpoint]]s can be generated daily when there are new [[ChangeSet]]s pushed or when a new [[Version]] is created.
+ * @beta
+ */
+export class CheckpointCreatedEvent extends IModelHubEvent {
+  /** Index of the [[ChangeSet]] this [[Checkpoint]] was created for.  */
+  public changeSetIndex: string;
+  /** Id of the [[ChangeSet]] this [[Checkpoint]] was created for.  */
+  public changeSetId: string;
+  /** Id of the [[Version]] this [[Checkpoint]] was created for. */
+  public versionId?: GuidString;
+
+  /** Construct this event from object instance.
+   * @param obj Object instance.
+   * @internal
+   */
+  public fromJson(obj: any) {
+    super.fromJson(obj);
+    this.changeSetIndex = obj.ChangeSetIndex;
+    this.changeSetId = obj.ChangeSetId;
+    this.versionId = obj.VersionId;
+  }
+}
+
+/** Get EventConstructor which can be used to construct IModelHubEvent
+ * @internal
+ */
 type EventConstructor = (new () => IModelHubEvent);
-/** Get constructor from EventType name. */
-function constructorFromEventType(type: IModelHubEventType): EventConstructor {
+
+/** Get constructor from EventType name.
+ * @internal
+ */
+export function constructorFromEventType(type: IModelHubEventType): EventConstructor {
   switch (type) {
     case IModelHubEventType.LockEvent:
       return LockEvent;
@@ -240,6 +271,8 @@ function constructorFromEventType(type: IModelHubEventType): EventConstructor {
       return IModelDeletedEvent;
     case IModelHubEventType.VersionEvent:
       return VersionEvent;
+    case IModelHubEventType.CheckpointCreatedEvent:
+      return CheckpointCreatedEvent;
   }
 }
 

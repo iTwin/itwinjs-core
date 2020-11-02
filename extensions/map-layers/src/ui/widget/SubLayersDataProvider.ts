@@ -15,18 +15,34 @@ import { StyleMapLayerSettings } from "./MapLayerManager";
 export class SubLayersDataProvider implements ITreeDataProvider {
   private readonly _nodeMap = new Map<string, TreeNodeItem[]>();
 
+  constructor(mapLayer: StyleMapLayerSettings) {
+    this.loadNodes(mapLayer.subLayers);
+  }
+
+  public static isUnnamedGroup(subLayer: MapSubLayerProps | undefined): boolean {
+    if (!subLayer)
+      return false;
+
+    return (!subLayer.name || subLayer.name.length === 0) && (subLayer.children !== undefined && subLayer.children.length > 0);
+  }
+
+
   private createId(props: MapSubLayerProps): string {
     return undefined !== props.id ? `${props.id}` : props.name ? props.name : "no-id";
   }
 
-  private createNode(props: MapSubLayerProps): DelayLoadedTreeNodeItem {
+
+  private createNode(props: MapSubLayerProps, expanded?: boolean, isCheckboxDisabled?: boolean, icon?: string): DelayLoadedTreeNodeItem {
     return {
       id: this.createId(props),
       label: PropertyRecord.fromString(props.title ?? props.name ?? "unknown"),
       hasChildren: !!props.children,
       isCheckboxVisible: true,
-      checkBoxState: props.visible ? CheckBoxState.On : CheckBoxState.Off,
+      checkBoxState: props.visible && !isCheckboxDisabled ? CheckBoxState.On : CheckBoxState.Off,
       extendedData: { subLayerId: props.id },
+      isCheckboxDisabled,
+      autoExpand: expanded,
+      icon,
     };
   }
 
@@ -37,7 +53,12 @@ export class SubLayersDataProvider implements ITreeDataProvider {
       const treeNodes: TreeNodeItem[] = [];
 
       filteredProps.forEach((props) => {
-        treeNodes.push(this.createNode(props));
+        treeNodes.push(this.createNode(props,
+          (!parentId && props?.children !== undefined) ? true : undefined, // expand root group only (i.e. not the entire tree),
+          undefined,
+          SubLayersDataProvider.isUnnamedGroup(props) ? "icon-folder" : "icon-layers"
+
+        ));
         if (props.children)
           this.loadChildNodes(allSubLayers, props.id);
       });
@@ -53,9 +74,6 @@ export class SubLayersDataProvider implements ITreeDataProvider {
     }
   }
 
-  constructor(mapLayer: StyleMapLayerSettings) {
-    this.loadNodes(mapLayer.subLayers);
-  }
 
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
 

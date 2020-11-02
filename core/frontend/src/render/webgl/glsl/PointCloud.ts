@@ -55,7 +55,9 @@ const scratchPointCloudParams = new Float32Array(2);
 export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
   const builder = createBuilder();
 
-  builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeNonUniformColor", computeColor);
+  builder.addVarying("v_color", VariableType.Vec4);
+  builder.vert.set(VertexShaderComponent.ComputeBaseColor, computeColor);
+
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundPointDiscard);

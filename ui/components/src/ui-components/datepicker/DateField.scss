@@ -6,7 +6,7 @@
 
 .components-date-input {
   width: auto;
-  &.has-error {
+  &.components-date-has-error {
     color: $buic-foreground-alert;
   }
   &.uicore-inputs-input[disabled] {

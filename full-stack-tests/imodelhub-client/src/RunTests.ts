@@ -6,20 +6,29 @@
 import * as Mocha from "mocha";
 import { readdirSync } from "fs";
 import { join } from "path";
+import { IModelBankClient } from "@bentley/imodelhub-client";
+import { setIModelBankClient } from "./imodelhub/IModelBankCloudEnv";
 
-export function runTests(options: Mocha.MochaOptions, invert?: boolean): void {
+export function runTests(
+  options: Mocha.MochaOptions,
+  invert?: boolean,
+  customIModelBankClient?: IModelBankClient
+): void {
   const mocha = new Mocha(options);
   if (invert) {
     mocha.invert();
   }
+  if (customIModelBankClient) setIModelBankClient(customIModelBankClient);
 
   const testDirectory = join(__dirname, "imodelhub");
 
-  readdirSync(testDirectory).filter((file) => file.toLowerCase().endsWith("test.js")).forEach((file) => {
-    mocha.addFile(join(testDirectory, file));
-  });
+  readdirSync(testDirectory)
+    .filter((file) => file.toLowerCase().endsWith("test.js"))
+    .forEach((file) => {
+      mocha.addFile(join(testDirectory, file));
+    });
 
   mocha.run((failures) => {
-    process.exitCode = failures ? 1 : 0;  // exit with non-zero status if there were failures
+    process.exitCode = failures ? 1 : 0; // exit with non-zero status if there were failures
   });
 }

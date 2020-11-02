@@ -211,7 +211,7 @@
       "description": "Creates content for ECInstance(s) of specified classes.\n\nNote: this specification doesn't rely on selection. It always returns instances no matter\nwhat the selection is, so pre-filtering should be done in `ContentRule` condition and `instanceFilter`.",
       "properties": {
         "arePolymorphic": {
-          "description": "Should all `classes` be treated polymorphically.",
+          "description": "Whether to get content from instances of derived `classes`.",
           "type": "boolean"
         },
         "calculatedProperties": {
@@ -236,7 +236,11 @@
           "description": "List of ECClass specifications whose ECInstances should be selected."
         },
         "handleInstancesPolymorphically": {
-          "description": "Should instances be queried using a polymorphic query - from `classes` and all their\nsubclasses. This doesn't mean the resulting content will have all properties of the subclasses\nthough - they're only taken from base classes specified in `classes` attribute.",
+          "description": "Whether to get content from instances of derived `classes`.",
+          "type": "boolean"
+        },
+        "handlePropertiesPolymorphically": {
+          "description": "Whether to get content from properties of derived `classes`. If `true`, properties from `classes` with no instances\ndo not appear in the result set.",
           "type": "boolean"
         },
         "instanceFilter": {
@@ -588,7 +592,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "imageId": {
@@ -681,7 +685,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "nestedRules": {
@@ -774,7 +778,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "nestedRules": {
@@ -857,7 +861,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "nestedRules": {
@@ -1154,7 +1158,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "instanceFilter": {
@@ -1337,6 +1341,7 @@
             },
             {
               "enum": [
+                "*",
                 "_none_"
               ],
               "type": "string"
@@ -1354,6 +1359,7 @@
             },
             {
               "enum": [
+                "*",
                 "_none_"
               ],
               "type": "string"
@@ -1919,7 +1925,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "instanceFilter": {
@@ -2446,7 +2452,7 @@
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
           "type": "boolean"
         },
         "instanceFilter": {
@@ -2576,6 +2582,7 @@
             },
             {
               "enum": [
+                "*",
                 "_none_"
               ],
               "type": "string"

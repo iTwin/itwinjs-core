@@ -9,12 +9,13 @@ import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem,
 } from "../../ui-components";
 
-
+/** @internal */
 export enum TreeDragTypes {
   Root = "root",
   Child = "child",
 }
 
+/** @internal */
 export interface DemoDragDropObject {
   id: string;
   label: string;
@@ -56,6 +57,7 @@ export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [ // eslint-disable-line
   },
 ];
 
+/** @internal */
 export class DemoITreeDataProvider implements ITreeDataProvider {
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
   protected _data: DelayLoadedTreeNodeItem[];
@@ -89,6 +91,7 @@ export class DemoITreeDataProvider implements ITreeDataProvider {
   }
 }
 
+/** @internal */
 export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
   public insertNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem, index: number = -1): void => {
     let nodes = this._data;

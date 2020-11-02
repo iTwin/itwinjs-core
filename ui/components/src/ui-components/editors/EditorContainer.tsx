@@ -9,7 +9,7 @@
 import "./EditorContainer.scss";
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
-import { isArrowKey, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
@@ -78,6 +78,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
   private _editorRef: any;
   private _propertyEditor: PropertyEditorBase | undefined;
+  private _spanRef = React.createRef<HTMLSpanElement>();
 
   private getEditor(): TypeEditor {
     return this._editorRef;
@@ -111,6 +112,12 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
     return clonedNode;
   }
+  public componentDidMount() {
+    this._spanRef.current?.addEventListener("keydown", this._handleKeyDown, true);
+  }
+  public componentWillUnmount() {
+    this._spanRef.current?.removeEventListener("keydown", this._handleKeyDown, true);
+  }
 
   private _handleEditorBlur = (_e: React.FocusEvent) => {
     // istanbul ignore else
@@ -126,7 +133,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     e.stopPropagation();
   }
 
-  private _handleKeyDown = (e: React.KeyboardEvent) => {
+  private _handleKeyDown = (e: KeyboardEvent) => {
     switch (e.key) {
       case SpecialKey.Escape:
         this.onPressEscape(e);
@@ -137,18 +144,16 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       case SpecialKey.Tab:
         this.onPressTab(e);
         break;
+      default:
+        e.stopPropagation();
     }
-
-    // Prevent the arrow keys from bubbling up to the ReactDataGrid
-    if (isArrowKey(e.key))
-      e.stopPropagation();
   }
 
   private _handleRightClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   }
 
-  private onPressEscape(e: React.KeyboardEvent): void {
+  private onPressEscape(e: KeyboardEvent): void {
     // istanbul ignore else
     if (this._propertyEditor?.containerHandlesEscape) {
       // istanbul ignore else
@@ -158,7 +163,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     }
   }
 
-  private onPressEnter(e: React.KeyboardEvent): void {
+  private onPressEnter(e: KeyboardEvent): void {
     // istanbul ignore else
     if (this._propertyEditor?.containerHandlesEnter) {
       // istanbul ignore else
@@ -168,7 +173,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     }
   }
 
-  private onPressTab(e: React.KeyboardEvent): void {
+  private onPressTab(e: KeyboardEvent): void {
     // istanbul ignore else
     if (this._propertyEditor?.containerHandlesTab) {
       e.stopPropagation();
@@ -236,12 +241,12 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     return (
       <span className="components-editor-container"
         onBlur={this._handleContainerBlur}
-        onKeyDown={this._handleKeyDown}
         onClick={this._handleClick}
         onContextMenu={this._handleRightClick}
         title={this.props.title}
         data-testid="editor-container"
         role="presentation"
+        ref={this._spanRef}
       >
         {this.createEditor()}
       </span>

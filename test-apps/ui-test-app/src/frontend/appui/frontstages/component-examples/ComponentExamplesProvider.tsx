@@ -6,16 +6,16 @@
 import * as React from "react";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { IconSpecUtilities, RelativePosition } from "@bentley/ui-abstract";
+import { DateFormatter, IconSpecUtilities, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
-  LabeledSelect, LabeledTextarea, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumericInput, ProgressBar, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect,
+  LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
+  NewBadge, NumericInput, ProgressBar, ProgressSpinner, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect,
   Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DateFormatter, DatePickerPopupButton, DatePickerPopupButtonProps, IntlFormatter } from "@bentley/ui-components";
+import { adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps, IntlFormatter } from "@bentley/ui-components";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
@@ -35,26 +35,26 @@ class MdyFormatter implements DateFormatter {
     });
 
   public formateDate(date: Date) {
-    const formatParts = this._formatter.formatToParts (date);
-    const month = formatParts.find((part)=>part.type==="month")!.value;
-    const day = formatParts.find((part)=>part.type==="day")!.value;
-    const year = formatParts.find((part)=>part.type==="year")!.value;
+    const formatParts = this._formatter.formatToParts(date);
+    const month = formatParts.find((part) => part.type === "month")!.value;
+    const day = formatParts.find((part) => part.type === "day")!.value;
+    const year = formatParts.find((part) => part.type === "year")!.value;
     return `${month}-${day}-${year}`;
   }
 
-  public parseDate(dateString: string){
-    const mdy=dateString.split("-").filter((value) => !!value);
+  public parseDate(dateString: string) {
+    const mdy = dateString.split("-").filter((value) => !!value);
     if (mdy.length !== 3) return undefined;
     const month = parseInt(mdy[0], 10);
     const day = parseInt(mdy[1], 10);
     const year = parseInt(mdy[2], 10);
 
     // validate
-    if (isNaN(month) || month<0 || month>12)return undefined;
-    if (isNaN(day) || day<0 || day>31)return undefined;
-    if (isNaN(year) || year<1800 || year>2300)return undefined;
+    if (isNaN(month) || month < 0 || month > 12) return undefined;
+    if (isNaN(day) || day < 0 || day > 31) return undefined;
+    if (isNaN(year) || year < 1800 || year > 2300) return undefined;
 
-    return new Date(year,month-1,day);
+    return new Date(year, month - 1, day);
   }
 }
 
@@ -70,16 +70,16 @@ const customDayFormatter = new Intl.DateTimeFormat(undefined,
 /* eslint-disable no-console */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function DatePickerHost(props: DatePickerPopupButtonProps) {
-  const {onDateChange, selected, ...otherProp } = props;
-  const [currentDate,  setCurrentDate] = React.useState(selected);
+  const { onDateChange, selected, ...otherProp } = props;
+  const [currentDate, setCurrentDate] = React.useState(selected);
 
   const handleOnDateChange = React.useCallback((day: Date) => {
     onDateChange && onDateChange(day);
-    setCurrentDate (day);
+    setCurrentDate(day);
   }, [onDateChange])
 
   return (
-    <DatePickerPopupButton selected={currentDate} onDateChange={handleOnDateChange} {...otherProp}/>
+    <DatePickerPopupButton selected={currentDate} onDateChange={handleOnDateChange} {...otherProp} />
   );
 }
 
@@ -212,20 +212,20 @@ export class ComponentExamplesProvider {
   }
 
   private static get datePickerSample(): ComponentExampleCategory {
-    const londonDate = adjustDateToTimezone(new Date(), 1*60);
-    const laDate = adjustDateToTimezone(new Date(), -7*60);
+    const londonDate = adjustDateToTimezone(new Date(), 1 * 60);
+    const laDate = adjustDateToTimezone(new Date(), -7 * 60);
     return {
       title: "DatePicker",
       examples: [
         createComponentExample("Date Picker Popup", undefined, <DatePickerHost selected={new Date()} />),
         createComponentExample("Date Picker Popup w/input", undefined, <DatePickerHost selected={new Date()} displayEditField={true} />),
-        createComponentExample("Date Picker Popup w/input & 12h time", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay="hh:mm aa" />),
-        createComponentExample("Date Picker Popup w/input & 24h time", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay="hh:mm:ss" />),
-        createComponentExample("Date Picker Popup w/London date & time", undefined, <DatePickerHost selected={londonDate} displayEditField={true} timeDisplay="hh:mm:ss aa" />),
-        createComponentExample("Date Picker Popup w/LA date & time", undefined, <DatePickerHost selected={laDate} displayEditField={true} timeDisplay="hh:mm:ss aa" />),
+        createComponentExample("Date Picker Popup w/input & 12h time", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MC} />),
+        createComponentExample("Date Picker Popup w/input & 24h time", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H24MS} />),
+        createComponentExample("Date Picker Popup w/London date & time", undefined, <DatePickerHost selected={londonDate} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} />),
+        createComponentExample("Date Picker Popup w/LA date & time", undefined, <DatePickerHost selected={laDate} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} />),
         createComponentExample("Date Picker Popup w/custom formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} dateFormatter={new IntlFormatter(customDayFormatter)} />),
-        createComponentExample("Date Picker Popup w/IntlFormatter", undefined, <DatePickerHost fieldStyle={{width: "16em"}} selected={new Date()} displayEditField={true} timeDisplay="hh:mm:ss aa" dateFormatter={new IntlFormatter()} />),
-        createComponentExample("Date Picker Popup w/MDY Formatter", undefined, <DatePickerHost  selected={new Date()} displayEditField={true} timeDisplay="hh:mm:ss aa" dateFormatter={new MdyFormatter()} />),
+        createComponentExample("Date Picker Popup w/IntlFormatter", undefined, <DatePickerHost fieldStyle={{ width: "16em" }} selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new IntlFormatter()} />),
+        createComponentExample("Date Picker Popup w/MDY Formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new MdyFormatter()} />),
       ],
     };
   }
@@ -365,6 +365,17 @@ export class ComponentExamplesProvider {
         createComponentExample("Indeterminate ProgressBar", "indeterminate prop", <ProgressBar indeterminate />),
         createComponentExample("ProgressBar with label", "labelLeft prop", <ProgressBar percent={25} labelLeft="Centered Label" />),
         createComponentExample("ProgressBar with labels", "labelLeft & labelRight props", <ProgressBar percent={75} labelLeft="Loading..." labelRight="75%" />),
+        createComponentExample("ProgressSpinner", "at 50%", <ProgressSpinner value={50} />),
+        createComponentExample("Indeterminate ProgressSpinner", "indeterminate prop", <ProgressSpinner indeterminate />),
+        createComponentExample("Success ProgressSpinner", "success prop", <ProgressSpinner success />),
+        createComponentExample("Error ProgressSpinner", "error prop", <ProgressSpinner error />),
+        createComponentExample("ProgressSpinner with value", "display value of 63", <ProgressSpinner value={63}>63</ProgressSpinner>),
+        createComponentExample("ProgressSpinner Small", "width/height of 16", <ProgressSpinner indeterminate size={SpinnerSize.Small} />),
+        createComponentExample("ProgressSpinner Medium", "width/height of 32", <ProgressSpinner indeterminate size={SpinnerSize.Medium} />),
+        createComponentExample("ProgressSpinner Large", "width/height of 64", <ProgressSpinner indeterminate size={SpinnerSize.Large} />),
+        createComponentExample("ProgressSpinner XLarge", "width/height of 96", <ProgressSpinner indeterminate size={SpinnerSize.XLarge} />),
+        createComponentExample("ProgressSpinner with style", "width/height of 120",
+          <div><ProgressSpinner indeterminate style={{ display: "inline-block", width: 120, height: 120 }} />... Loading</div>),
       ],
     };
   }
@@ -430,6 +441,23 @@ export class ComponentExamplesProvider {
           <div className="uicore-full-width">
             <ThemedSelect options={colorChoices} isDisabled />
           </div>),
+        createComponentExample("Labeled Multi ThemedSelect", "Labeled ThemedSelect component with isMulti",
+          <div className="uicore-full-width">
+            <LabeledThemedSelect label={"Labeled ThemedSelect Multi"} isMulti={true} isSearchable={true} options={cityChoices} />
+          </div>),
+        createComponentExample("Disabled Labeled Multi ThemedSelect", "Labeled ThemedSelect component with isMulti",
+          <div className="uicore-full-width">
+            <LabeledThemedSelect label={"Disabled Labeled ThemedSelect Multi"} isMulti={true} isSearchable={true} options={cityChoices} isDisabled={true} />
+          </div>),
+        createComponentExample("Labeled ThemedSelect", "Labeled ThemedSelect component",
+          <div className="uicore-full-width">
+            <LabeledThemedSelect label={"Labeled ThemedSelect"} options={colorChoices} />
+          </div>),
+        createComponentExample("Disabled Labeled ThemedSelect", "Labeled ThemedSelect component with isDisabled prop and message prop",
+          <div className="uicore-full-width">
+            <LabeledThemedSelect label={"Disabled Labeled ThemedSelect"} message={"This field is disabled"} options={colorChoices} isDisabled />
+          </div>),
+
       ],
     };
   }

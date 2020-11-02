@@ -70,8 +70,6 @@ describe("ContentGroup", () => {
     contentGroup.getControlFromElement(null);
 
     spyMethod.called.should.true;
-
-    (Logger.logError as any).restore();
   });
 
   it("ContentGroup.toJSON should throw Error if class not registered", () => {

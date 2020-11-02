@@ -14,7 +14,7 @@ import { BeDuration } from "@bentley/bentleyjs-core";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
 import { HorizontalAlignment, LocalUiSettings } from "@bentley/ui-core";
 import {
-  CellItem, ColumnDescription, EditorContainer, PropertyUpdatedArgs, RowItem, SelectionMode, Table, TableDataChangeEvent, TableDataChangesListener,
+  CellItem, ColumnDescription, PropertyUpdatedArgs, RowItem, SelectionMode, Table, TableDataChangeEvent, TableDataChangesListener,
   TableDataProvider, TableProps, TableSelectionTarget,
 } from "../../../ui-components";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
@@ -22,6 +22,7 @@ import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTabl
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
+import { fireEvent, render } from "@testing-library/react";
 
 describe("Table", () => {
 
@@ -1262,32 +1263,50 @@ describe("Table", () => {
       table.update();
     });
 
-    it("clicking on an editor cell after selection should start editing", async () => {
-      // Simulate clicking on the cell to edit
-      table.update();
-      table.setState({ cellEditorState: { active: false } });
+    before(async () => {
+      await TestUtils.initializeUiComponents();
+    });
 
-      let row = table.find(rowClassName).first();
-      row.simulate("click");
-      expect(table.find(selectedRowClassName).length).to.be.equal(1);
+    after(() => {
+      TestUtils.terminateUiComponents();
+    });
+
+
+    it("clicking on an editor cell after selection should start editing", async () => {
+      const renderedTable = render(<Table
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+        onPropertyEditing={onPropertyEditing}
+        onPropertyUpdated={onPropertyUpdated}
+      />);
+      await waitForSpy(onRowsLoaded);
+
+      // Simulate clicking on the cell to edit
+      // renderedTable.debug();
+      const row = renderedTable.container.querySelector(rowClassName);
+      expect(row).not.to.be.null
+      fireEvent.click(row as HTMLElement);
+      const selectedRow = renderedTable.container.querySelector(selectedRowClassName);
+      expect(selectedRow).not.to.be.null
 
       // Click 3rd cell in row (marked as editable)
-      const cellDiv = row.find(cellClassName).at(2);
-      cellDiv.simulate("click");
-
+      const rowCells = selectedRow!.querySelectorAll(cellClassName);
+      expect(rowCells).not.to.be.null;
+      expect(rowCells.length).to.eq(3);
+      const cellDiv = rowCells[2] as HTMLElement;
+      expect(cellDiv).not.to.be.null;
+      fireEvent.click(cellDiv);
       expect(onPropertyEditing.calledOnce).to.be.true;
 
-      table.update();
-      row = table.find(rowClassName).first();
+      const editorContainerNode = cellDiv.querySelector("span.components-editor-container") as HTMLSpanElement;
+      expect(editorContainerNode).not.to.be.null;
 
-      const editorContainer = row.find(EditorContainer);
-      expect(editorContainer.length).to.equal(1);
+      const inputNode = editorContainerNode.querySelector("input") as HTMLInputElement;
+      expect(inputNode).not.to.be.null;
 
-      const inputNode = editorContainer.find("input");
-      expect(inputNode.length).to.eq(1);
-
-      inputNode.simulate("change", { target: { value: newPropertyValue } });
-      inputNode.simulate("keyDown", { key: "Enter" });
+      fireEvent.click(inputNode);
+      fireEvent.change(inputNode, { target: { value: newPropertyValue } });
+      fireEvent.keyDown(inputNode, { key: "Enter" })
 
       await TestUtils.flushAsyncOperations();
       expect(onPropertyUpdated.calledOnce).to.be.true;

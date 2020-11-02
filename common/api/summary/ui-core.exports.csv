@@ -47,7 +47,6 @@ public;Cube
 internal;CubeFace 
 internal;CubeFaceProps 
 public;CubeProps 
-public;DateFormat
 public;Dialog 
 public;DialogAlignment
 public;DialogButtonDef
@@ -129,6 +128,8 @@ public;LabeledSelect
 public;LabeledSelectProps 
 public;LabeledTextarea 
 public;LabeledTextareaProps 
+beta;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
+beta;LabeledThemedSelectProps 
 public;LabeledToggle 
 public;LabeledToggleProps 
 public;LeadingText(props: TextProps): JSX.Element
@@ -187,6 +188,8 @@ alpha;PopupContextMenuProps
 public;PopupProps 
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 
+beta;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
+beta;ProgressSpinnerProps 
 internal;PROXIMITY_THRESHOLD_DEFAULT = 100
 beta;RadialButton 
 beta;RadialButtonProps 

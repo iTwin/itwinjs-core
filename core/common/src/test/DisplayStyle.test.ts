@@ -171,6 +171,7 @@ describe("DisplayStyleSettings overrides", () => {
         customKeys: [],
         stepCount: 2,
         marginColor: ColorByName.magenta,
+        colorMix: 0,
       },
     },
   };
@@ -265,6 +266,7 @@ describe("DisplayStyleSettings overrides", () => {
         marginColor: ColorByName.magenta,
         colorScheme: 0,
         customKeys: [],
+        colorMix: 0,
       },
       axis: [-1, 0, 1],
       sunDirection: [1, 0, -1],
@@ -437,6 +439,7 @@ describe("DisplayStyleSettings overrides", () => {
           customKeys: [],
           stepCount: 3,
           marginColor: ColorByName.pink,
+          colorMix: 0.5,
         },
       },
     });

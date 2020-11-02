@@ -7,136 +7,88 @@
  * @module RpcInterface
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
+import { dispose, IDisposable } from "@bentley/bentleyjs-core";
+import { QueuedEvent, RpcPushChannel, RpcPushConnection } from "@bentley/imodeljs-common";
 import { EmitOptions, EmitStrategy } from "@bentley/imodeljs-native";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelHost } from "./IModelHost";
 
-const loggingCategory: string = BackendLoggerCategory.EventSink;
+const maxEventId = Number.MAX_SAFE_INTEGER - 10;
+let globalSink: EventSink | undefined;
+
 /** Maintains a queue of events to be sent to the frontend.
+ * @note Events are only forwarded to the frontend if [RpcPushChannel.enabled]($common) is `true`.
+ * @see [[IModelDb.eventSink]] for an event sink associated with a specific iModel.
  * @internal
  */
-export class EventSink {
-  private _eventId: number = 0;
-  private _eventQueues: QueuedEvent[] = [];
-  private readonly _namespaces: Set<string> = new Set<string>();
-  private readonly _maxEventId = Number.MAX_SAFE_INTEGER - 10;
+export class EventSink implements IDisposable {
+  private _nextEventId: number = 0;
+  private _queue: QueuedEvent[] = [];
+  private _channel?: RpcPushChannel<any>;
+  private _scheduledPush: any = undefined;
 
-  constructor(public readonly id: string) { }
-
-  private add(namespace: string): void {
-    const namespaces = this._namespaces;
-    if (!namespaces.has(namespace)) {
-      const maxNamespaces = IModelHost.configuration!.eventSinkOptions.maxNamespace;
-      if (this._namespaces.size >= maxNamespaces) {
-        const errorMessage = "EventQueue has reached maximum number of namespaces allowed";
-        Logger.logInfo(loggingCategory, errorMessage);
-        throw new Error(errorMessage);
-      }
-      namespaces.add(namespace);
-    }
+  /** Constructor.
+   * @param id The name of the sink. Must be unique among all extant EventSinks.
+   * @note The caller is responsible for invoking [[dispose]] when finished with the sink.
+   */
+  constructor(public readonly id: string) {
+    if ("" !== id)
+      this._channel = RpcPushChannel.create(id);
   }
 
-  public purge(namespace: string): void {
-    const namespaces = this._namespaces;
-    if (!namespaces.has(namespace))
-      throw new Error(`purge() Namespace' ${namespace}' is not registered`);
-
-    namespaces.delete(namespace);
-    const purgedEventList: QueuedEvent[] = [];
-    this._eventQueues.forEach((queuedEvent: QueuedEvent) => {
-      if (namespaces.has(queuedEvent.namespace))
-        purgedEventList.push(queuedEvent);
-    });
-
-    this._eventQueues = purgedEventList;
+  /** Dispose of this sink, disconnecting it from its [RpcPushChannel]($common).
+   * Subsequent attempts to emit events from this sink will have no effect.
+   * This frees up the sink's `id` for reuse by another sink.
+   */
+  public dispose(): void {
+    this._channel = dispose(this._channel);
+    this._queue.length = 0;
+    this._nextEventId = 0;
+    if (typeof this._scheduledPush !== "undefined")
+      clearTimeout(this._scheduledPush);
   }
 
+  /** Obtain the sink used to emit "global" events not associated with any specific context.
+   * @note This sink is disposed of by [[IModelHost.shutdown]].
+   */
+  public static get global(): EventSink {
+    return globalSink ?? (globalSink = new EventSink("__globalEvents__"));
+  }
+
+  /** Invoked on [[IModelHost.shutdown]]. */
+  public static clearGlobal(): void {
+    globalSink = dispose(globalSink);
+  }
+
+  /** Enqueue an event to be forwarded to the frontend. This will schedule a push to the frontend if one is not already scheduled. */
   public emit(namespace: string, eventName: string, data: any, options: EmitOptions = { strategy: EmitStrategy.None }): void {
-    if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
-      Logger.logInfo(loggingCategory, "EventSource is disabled. Interface 'NativeAppRpcInterface' is not registered");
+    if (this.isDisposed)
       return;
-    }
+
     if (options.strategy === EmitStrategy.PurgeOlderEvents) {
-      this._eventQueues = this._eventQueues.filter((value: QueuedEvent) => {
+      this._queue = this._queue.filter((value: QueuedEvent) => {
         return !(value.eventName === eventName && value.namespace === namespace);
       });
     }
-    if (options.strategy === EmitStrategy.NoDuplicateEvents) {
-      const errMsg = "Event emit strategy 'NoDuplicate' is not supported";
-      Logger.logError(loggingCategory, errMsg);
-      throw Error(errMsg);
-    }
-    const maxQueueSize = IModelHost.configuration!.eventSinkOptions.maxQueueSize;
-    if (this._eventQueues.length > maxQueueSize) {
-      Logger.logInfo(loggingCategory, "EventQueue has reached its maximum allowed size. Oldest event will be removed from the queue");
-      while (this._eventQueues.length >= maxQueueSize)
-        this._eventQueues.pop();
-    }
 
-    const namespaces = this._namespaces;
-    if (!namespaces.has(namespace))
-      this.add(namespace);
-
-    if (this._maxEventId < this._eventId)
-      this._eventId = 0;
-
-    ++this._eventId;
-    this._eventQueues.unshift({ eventId: this._eventId, namespace, eventName, data });
+    this._nextEventId = maxEventId < this._nextEventId ? 1 : this._nextEventId + 1;
+    this._queue.push({ eventId: this._nextEventId, namespace, eventName, data });
+    this.schedulePush();
   }
 
-  public fetch(limit: number): QueuedEvent[] {
-    const resolvedLimit = limit <= 0 || limit > this._eventQueues.length ? this._eventQueues.length : limit;
-    const result = this._eventQueues.splice(0, resolvedLimit);
-    return result;
-  }
-}
-
-/** Maintains a list of all event sinks.
- * @internal
- */
-export class EventSinkManager {
-  private static _sinks: Map<string, EventSink> = new Map<string, EventSink>();
-  private static _global?: EventSink;
-  public static readonly GLOBAL = "__globalEvents__";
-
-  private constructor() { }
-
-  public static get global() {
-    if (!this._global) {
-      this._global = new EventSink(this.GLOBAL);
-      this._sinks.set(this.GLOBAL, this._global);
-      // ###TODO - currently no global native events.
-      // TypeError: Cannot read property 'setGlobalEventSink' of undefined
-      // IModelJsNative.setGlobalEventSink(this._global);
-    }
-
-    return this._global;
+  /** Returns true if this sink has been disconnected from its [RpcPushChannel]($common). */
+  public get isDisposed(): boolean {
+    return undefined === this._channel;
   }
 
-  public static has(id: string): boolean {
-    return this._sinks.has(id);
-  }
+  private schedulePush() {
+    if (typeof (this._scheduledPush) !== "undefined" || this.isDisposed)
+      return;
 
-  public static delete(id: string): void {
-    if (this.has(id))
-      this._sinks.delete(id);
-  }
-
-  public static get(id: string): EventSink {
-    if (this._sinks.has(id))
-      return this._sinks.get(id)!;
-
-    if (id === this.GLOBAL)
-      return this.global;
-
-    const eventSink = new EventSink(id);
-    this._sinks.set(id, eventSink);
-    return eventSink;
-  }
-
-  public static clear() {
-    this._sinks.clear();
+    this._scheduledPush = setTimeout(async () => {
+      this._scheduledPush = undefined;
+      const events = [...this._queue];
+      this._queue.length = 0;
+      if (this._channel && this._channel.enabled)
+        await RpcPushConnection.for(this._channel).send(events);
+    });
   }
 }

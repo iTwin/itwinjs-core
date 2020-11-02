@@ -7,24 +7,20 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Provider } from "react-redux";
-import { cleanup, render } from "@testing-library/react";
-
+import { render } from "@testing-library/react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
-import { ConfigurableUiContent, CoreTools, FrontstageManager } from "../../ui-framework";
+import { Size } from "@bentley/ui-core";
+import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { ConfigurableCreateInfo, ConfigurableUiContent, CoreTools, FrontstageManager, RestoreFrontstageLayoutTool, ToolSettingsManager, ToolUiProvider } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
-import { RestoreFrontstageLayoutTool } from "../../ui-framework/tools/RestoreLayoutTool";
-import { Size } from "@bentley/ui-core";
 
 const mySessionStorage = storageMock();
 
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
 
 describe("FrontstageManager", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     Object.defineProperty(window, "sessionStorage", {
       get: () => mySessionStorage,
@@ -44,10 +40,6 @@ describe("FrontstageManager", () => {
 
     // restore the overriden property getter
     Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
-  });
-
-  afterEach(() => {
-    sandbox.restore();
   });
 
   it("initialized should return true", () => {
@@ -103,7 +95,6 @@ describe("FrontstageManager", () => {
     const spyMethod = sinon.spy(Logger, "logError");
     await FrontstageManager.setActiveFrontstage("xyz");
     spyMethod.calledOnce.should.true;
-    (Logger.logError as any).restore();
   });
 
   it("setWidgetState should find and set widget state", async () => {
@@ -176,11 +167,25 @@ describe("FrontstageManager", () => {
       expect(FrontstageManager.activeToolId).to.eq(item.toolId);
     });
 
+    it("trigger tool settings reload", () => {
+      class ToolUiProviderMock extends ToolUiProvider {
+        constructor(info: ConfigurableCreateInfo, options: any) {
+          super(info, options);
+        }
+      }
+
+      const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
+      sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
+
+      ToolSettingsManager.onReloadToolSettingsProperties.emit();
+    });
+
   });
 
   describe("ConfigurableUiContent", () => {
 
     it("mouse moves should be handled for frontstage tracking", async () => {
+      const fakeTimers = sinon.useFakeTimers();
       render(<Provider store={TestUtils.store} >
         <ConfigurableUiContent idleTimeout={100} intervalTimeout={100} />
       </Provider>);
@@ -195,12 +200,13 @@ describe("FrontstageManager", () => {
       await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
       expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageProvider.frontstageDef);
 
-      await TestUtils.tick(200);
+      fakeTimers.tick(200);
 
       divContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, buttons: 1 }));
       divContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, buttons: 1 }));
 
-      await TestUtils.tick(200);
+      fakeTimers.tick(200);
+      fakeTimers.restore();
 
       divContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, buttons: 1 }));
       divContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, buttons: 1 }));
@@ -208,8 +214,6 @@ describe("FrontstageManager", () => {
       await FrontstageManager.deactivateFrontstageDef();
       expect(FrontstageManager.activeFrontstageDef).to.be.undefined;
       spyDeactivated.calledOnce.should.true;
-
-      cleanup();
     });
 
   });

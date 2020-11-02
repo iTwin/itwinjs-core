@@ -48,6 +48,12 @@ export interface IModelTransformOptions {
    * @see [IModelExporter.wantGeometry]($backend)
    */
   loadSourceGeometry?: boolean;
+
+  /** Flag that indicates whether or not the transformation process should clone using binary geometry.
+   * Only transformations that need to manipulate geometry should consider setting this flag as it impacts performance.
+   * @note The default is `true`.
+   */
+  cloneUsingBinaryGeometry?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -72,6 +78,8 @@ export class IModelTransformer extends IModelExportHandler {
   protected _deferredElementIds = new Set<Id64String>();
   /** If true, IModelTransformer is being used in a clone-only mode and should not record provenance. */
   private readonly _noProvenance: boolean;
+  /** If true, clone elements using binary geometry as a performance optimization. */
+  private readonly _cloneUsingBinaryGeometry: boolean;
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -83,6 +91,7 @@ export class IModelTransformer extends IModelExportHandler {
     // initialize IModelTransformOptions
     this.targetScopeElementId = options?.targetScopeElementId ?? IModel.rootSubjectId;
     this._noProvenance = options?.noProvenance ?? false;
+    this._cloneUsingBinaryGeometry = options?.cloneUsingBinaryGeometry ?? true;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);
@@ -125,11 +134,12 @@ export class IModelTransformer extends IModelExportHandler {
       kind: ExternalSourceAspect.Kind.Element,
       version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
     };
-    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind LIMIT 1`;
+    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} a WHERE a.Element.Id=:elementId AND a.Scope.Id=:scopeId AND a.Kind=:kind AND a.Identifier=:identifier LIMIT 1`;
     aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
       statement.bindId("elementId", targetElementId);
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      statement.bindString("identifier", sourceElement.id); // ExternalSourceAspect.Identifier is of type string
       return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
     });
     return aspectProps;
@@ -223,7 +233,8 @@ export class IModelTransformer extends IModelExportHandler {
    * @note A subclass can override this method to provide custom transform behavior.
    */
   protected onTransformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement);
+    Logger.logTrace(loggerCategory, `onTransformElement(${sourceElement.id}) "${sourceElement.getDisplayLabel()}"`);
+    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement, { binaryGeometry: this._cloneUsingBinaryGeometry });
     if (sourceElement instanceof Subject) {
       if (targetElementProps.jsonProperties?.Subject?.Job) {
         // don't propagate source channels into target (legacy bridge case)

@@ -24,8 +24,8 @@ export class ElectronTestRunner {
   public static async runTests(config: CertaConfig): Promise<void> {
     const { BrowserWindow, app, ipcMain } = require("electron"); // eslint-disable-line @typescript-eslint/naming-convention
 
-    if (!app.isReady())
-      await new Promise((resolve) => app.on("ready", resolve));
+    const timeout = new Promise((_resolve, reject) => setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000));
+    await Promise.race([app.whenReady(), timeout]);
 
     const rendererWindow = new BrowserWindow({
       show: config.debug,
