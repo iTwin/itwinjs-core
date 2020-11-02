@@ -676,10 +676,8 @@ class DefaultConfigs {
     this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
     this.backgroundMap = this.updateData(jsonData.backgroundMap, this.backgroundMap) as BackgroundMapProps || undefined;
     if (jsonData.hilite) {
-      // /*q*/console.log(`jsonData.hilite:      ${JSON.stringify(jsonData.hilite)}`);
       if (undefined === this.hilite)
         this.hilite = Hilite.cloneSettings(defaultHilite);
-      // /*q*/console.log(`this.hilite   BEFORE: ${JSON.stringify(this.hilite)} ${JSON.stringify(this.hilite.color.colors)}`);
       const colors = this.hilite.color.colors;
       let visibleRatio = this.hilite.visibleRatio;
       let hiddenRatio = this.hilite.hiddenRatio;
@@ -697,13 +695,10 @@ class DefaultConfigs {
       if (undefined !== jsonData.hilite.silhouette)
         silhouette = jsonData.hilite.silhouette;
       this.hilite = new Hilite.Settings(ColorDef.from(colors.r, colors.g, colors.b, 0), visibleRatio, hiddenRatio, silhouette);
-      // /*q*/console.log(`this.hilite    AFTER: ${JSON.stringify(this.hilite)} ${JSON.stringify(this.hilite.color.colors)}`);
     }
     if (jsonData.emphasis) {
-      // /*q*/console.log(`jsonData.emphasis:    ${JSON.stringify(jsonData.emphasis)}`);
       if (undefined === this.emphasis)
         this.emphasis = Hilite.cloneSettings(defaultEmphasis);
-      // /*q*/console.log(`this.emphasis BEFORE: ${JSON.stringify(this.emphasis)} ${JSON.stringify(this.emphasis.color.colors)}`);
       const colors = this.emphasis.color.colors;
       let visibleRatio = this.emphasis.visibleRatio;
       let hiddenRatio = this.emphasis.hiddenRatio;
@@ -721,7 +716,6 @@ class DefaultConfigs {
       if (undefined !== jsonData.emphasis.silhouette)
         silhouette = jsonData.emphasis.silhouette;
       this.emphasis = new Hilite.Settings(ColorDef.from(colors.r, colors.g, colors.b, 0), visibleRatio, hiddenRatio, silhouette);
-      // /*q*/console.log(`this.emphasis  AFTER: ${JSON.stringify(this.emphasis)} ${JSON.stringify(this.emphasis.color.colors)}`);
     }
 
     debugPrint(`view: ${this.view !== undefined ? (`${this.view.width}X${this.view.height}`) : "undefined"}`);
@@ -1050,19 +1044,11 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   await openView(activeViewState, testConfig.view!);
   // assert(theViewport !== undefined, "ERROR: theViewport is undefined");
 
-  // /*q*/console.log(JSON.stringify(`testConfig.hilite:   ${JSON.stringify(testConfig.hilite)} ${undefined === testConfig.hilite ? "undefined" : JSON.stringify(testConfig.hilite.color.colors)}`));
-  // /*q*/console.log(JSON.stringify(`testConfig.emphasis: ${JSON.stringify(testConfig.emphasis)} ${undefined === testConfig.emphasis ? "undefined" : JSON.stringify(testConfig.emphasis.color.colors)}`));
-  // /*q*/console.log(JSON.stringify(`theViewport!.hilite   BEFORE: ${JSON.stringify(theViewport!.hilite)} ${JSON.stringify(theViewport!.hilite.color.colors)}`));
-  // /*q*/console.log(JSON.stringify(`theViewport!.emphasis BEFORE: ${JSON.stringify(theViewport!.emphasisSettings)} ${JSON.stringify(theViewport!.emphasisSettings.color.colors)}`));
   // Set the hilite/emphasis settings
-  // theViewport!.hilite = (undefined !== testConfig.hilite ? Hilite.cloneSettings(testConfig.hilite) : Hilite.cloneSettings(defaultHilite));
-  // theViewport!.emphasisSettings = (undefined !== testConfig.emphasis ? Hilite.cloneSettings(testConfig.emphasis) : Hilite.cloneSettings(defaultEmphasis));
   if (undefined !== testConfig.hilite)
     theViewport!.hilite = Hilite.cloneSettings(testConfig.hilite);
   if (undefined !== testConfig.emphasis)
     theViewport!.emphasisSettings = Hilite.cloneSettings(testConfig.emphasis);
-  // /*q*/console.log(JSON.stringify(`theViewport!.hilite    AFTER: ${JSON.stringify(theViewport!.hilite)} ${JSON.stringify(theViewport!.hilite.color.colors)}`));
-  // /*q*/console.log(JSON.stringify(`theViewport!.emphasis  AFTER: ${JSON.stringify(theViewport!.emphasisSettings)} ${JSON.stringify(theViewport!.emphasisSettings.color.colors)}`));
 
   // Set the display style
   const iModCon = activeViewState.iModelConnection;
