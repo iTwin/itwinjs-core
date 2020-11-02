@@ -14,7 +14,7 @@ pr:
 jobs:
   - template: ci-core.yaml
     parameters:
-      name: Node_12
+      name: Node_14
       nodeVersion: 14.x
       pool:
         name: $(name)
