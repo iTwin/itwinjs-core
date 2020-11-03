@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 23 Oct 2020 17:04:02 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Nov 2020 00:33:56 GMT and should not be manually modified.
+
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+### Updates
+
+- disable frontend Bentley telemetry in iModelBank use case
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
