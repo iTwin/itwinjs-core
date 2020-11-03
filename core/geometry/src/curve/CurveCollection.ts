@@ -9,6 +9,7 @@
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { AnyCurve } from "./CurveChain";
@@ -56,6 +57,23 @@ export abstract class CurveCollection extends GeometryQuery {
   public isInner: boolean = false;
   /** Return the sum of the lengths of all contained curves. */
   public sumLengths(): number { return SumLengthsContext.sumLengths(this); }
+  /** Return the closest point on the contained curves */
+  public closestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
+    let detailA: CurveLocationDetail | undefined;
+    if (this.children !== undefined) {
+      for (const child of this.children) {
+        if (child instanceof CurvePrimitive) {
+          const detailB = child.closestPoint(spacePoint, false);
+          detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+        } else if (child instanceof CurveCollection) {
+          const detailB = child.closestPoint(spacePoint);
+          detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+        }
+      }
+    }
+    return detailA;
+  }
+
   /** return the max gap between adjacent primitives in Path and Loop collections.
    *
    * * In a Path, gaps are computed between consecutive primitives.
