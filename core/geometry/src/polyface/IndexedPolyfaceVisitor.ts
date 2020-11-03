@@ -178,6 +178,14 @@ function interpolateByte(color0: number, fraction: number, color1: number, shift
   return color << shiftBits;
 }
 
+/**
+ * Interpolate each byte of color0 and color1 as integers.
+ * @param color0 32 bit color (e.g. rgb+transparency)
+ * @param fraction fractional position.  This is clamped to 0..1 to prevent byte values outside their 0..255 range.
+ * @param color1
+ * @param shiftBits
+ * @internal
+ */
 export function interpolateColor(color0: number, fraction: number, color1: number) {
   // don't allow fractions outside the individual byte ranges.
   fraction = Geometry.clamp(fraction, 0, 1);
