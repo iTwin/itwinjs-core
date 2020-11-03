@@ -6,6 +6,7 @@
  * @module Tile
  */
 
+import { GuidString } from "@bentley/bentleyjs-core";
 import { Range3dProps, TransformProps } from "@bentley/geometry-core";
 
 /** Wire format describing an [IModelTile]($frontend)
@@ -46,6 +47,8 @@ export interface TileTreeProps {
   contentRange?: Range3dProps;
   /** Optional namespace applied to tile content Ids for tiles belonging to this tree. */
   contentIdQualifier?: string;
+  /** ###TODO Move to IModelTileTreeProps */
+  geometryGuid?: GuidString;
 }
 
 /** Metadata describing the version/format of the tiles supplied by the backend.

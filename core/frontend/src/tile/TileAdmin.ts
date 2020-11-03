@@ -1246,6 +1246,9 @@ class Admin extends TileAdmin {
 
     // Invalidate scenes of all viewports viewing any affected model.
     for (const vp of this._viewports) {
+      if (vp.iModel !== session.iModel)
+        continue;
+
       for (const modelId of modelIds) {
         if (vp.view.viewsModel(modelId)) {
           vp.invalidateScene();

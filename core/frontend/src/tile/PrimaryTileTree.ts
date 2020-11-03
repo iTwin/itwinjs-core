@@ -16,6 +16,7 @@ import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SceneContext } from "../ViewContext";
 import { ViewState, ViewState3d } from "../ViewState";
 import { RenderScheduleState } from "../RenderScheduleState";
+import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
@@ -25,7 +26,6 @@ interface PrimaryTreeId {
   readonly treeId: PrimaryTileTreeId;
   readonly modelId: Id64String;
   readonly is3d: boolean;
-  readonly guid: string | undefined;
   readonly isPlanProjection: boolean;
 }
 
@@ -39,14 +39,20 @@ class PlanProjectionTileTree extends IModelTileTree {
 }
 
 class PrimaryTreeSupplier implements TileTreeSupplier {
+  public constructor() {
+    InteractiveEditingSession.onBegin.addListener((session) => {
+      session.onEnded.addOnce((sesh) => {
+        assert(sesh === session);
+        this.onSessionEnd(session);
+      });
+    });
+  }
+
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
     // NB: we don't compare isPlanProjection or is3d - they should always have the same value for a given modelId.
-    // NB: We do compare the guids, because a model's guid may change when an InteractiveEditingSession ends.
     let cmp = compareStrings(lhs.modelId, rhs.modelId);
     if (0 === cmp) {
-      cmp = compareStringsOrUndefined(lhs.guid, rhs.guid);
-      if (0 === cmp)
-        cmp = compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
+      cmp = compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
     }
 
     return cmp;
@@ -64,7 +70,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
       batchType: BatchType.Primary,
     };
 
-    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, id.guid, options);
+    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
     if (!id.isPlanProjection)
       return new IModelTileTree(params);
 
@@ -88,6 +94,22 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(id, this);
   }
+
+  private onSessionEnd(session: InteractiveEditingSession): void {
+    // Reset tile trees for any models that were modified during the session.
+    const changes = session.getGeometryChanges();
+    const trees = session.iModel.tiles.getTreeOwnersForSupplier(this);
+    for (const kvp of trees) {
+      const id = kvp.id as PrimaryTreeId;
+      assert(undefined !== id.modelId);
+      for (const change of changes) {
+        if (change.id === id.modelId) {
+          kvp.owner.dispose();
+          break;
+        }
+      }
+    }
+  }
 }
 
 const primaryTreeSupplier = new PrimaryTreeSupplier();
@@ -108,7 +130,6 @@ class PrimaryTreeReference extends TileTreeReference {
       modelId: model.id,
       is3d: model.is3d,
       treeId: this.createTreeId(view, model.id, transformNodeId),
-      guid: model.geometryGuid,
       isPlanProjection,
     };
 
@@ -130,12 +151,11 @@ class PrimaryTreeReference extends TileTreeReference {
 
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this._view, this._id.modelId, this._id.treeId.animationTransformNodeId);
-    if (this._model.geometryGuid !== this._id.guid || 0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
         treeId: newId,
-        guid: this._model.geometryGuid,
         isPlanProjection: this._id.isPlanProjection,
       };
 

@@ -143,6 +143,19 @@ export class Tiles {
       dict.forEach((_key, value) => func(value));
   }
 
+  /** Obtain the TileTreeOwners supplied by the specified supplier. */
+  public getTreeOwnersForSupplier(supplier: TileTreeSupplier): Iterable<{ id: any, owner: TileTreeOwner }> {
+    function * iterator(trees: Dictionary<any, TreeOwner> | undefined) {
+      if (trees)
+        for (const entry of trees)
+          yield { id: entry.key, owner: entry.value }
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(this._treesBySupplier.get(supplier)),
+    };
+  }
+
   /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
   public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
     // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTreeReferences exist pointing to a given Owner.

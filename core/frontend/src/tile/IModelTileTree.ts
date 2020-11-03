@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeTimePoint, DbOpcode, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeTimePoint, DbOpcode, GuidString, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass,
@@ -38,16 +38,16 @@ const viewFlagOverrides = new ViewFlagOverrides();
 export interface IModelTileTreeParams extends TileTreeParams {
   rootTile: TileProps;
   contentIdQualifier?: string;
-  geometryGuid?: string;
+  geometryGuid?: GuidString;
   maxInitialTilesToSkip?: number;
   formatVersion?: number;
   options: IModelTileTreeOptions;
 }
 
 /** @internal */
-export function iModelTileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConnection, modelId: Id64String, geometryGuid: string | undefined, options: IModelTileTreeOptions): IModelTileTreeParams {
+export function iModelTileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams {
   const location = Transform.fromJSON(props.location);
-  const { formatVersion, id, rootTile, contentIdQualifier, maxInitialTilesToSkip } = props;
+  const { formatVersion, id, rootTile, contentIdQualifier, maxInitialTilesToSkip, geometryGuid } = props;
 
   let contentRange;
   if (undefined !== props.contentRange)
