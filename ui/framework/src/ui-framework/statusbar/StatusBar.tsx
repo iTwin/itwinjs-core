@@ -7,85 +7,24 @@
  */
 
 import "./StatusBar.scss";
-import classnames from "classnames";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
-import { OutputMessageType } from "@bentley/imodeljs-frontend";
-import { CommonDivProps, CommonProps, Div, Icon, IconProps, MessageSeverity } from "@bentley/ui-core";
+import { CommonDivProps, CommonProps, Div, MessageSeverity } from "@bentley/ui-core";
 import { Footer, Status } from "@bentley/ui-ninezone";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
-import { MessageDiv } from "../messages/MessageSpan";
-import { NotifyMessageDetailsType, NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-import { ActivityMessage } from "./ActivityMessage";
-import { StickyMessage } from "./StickyMessage";
-import { ToastMessage } from "./ToastMessage";
+import { StatusMessage, StatusMessageManager } from "../messages/StatusMessageManager";
+import { StatusMessageRenderer } from "../messages/StatusMessageRenderer";
 
 // cspell:ignore safearea
-
-/** Interface for StatusBar Message */
-interface StatusBarMessage {
-  id: string;
-  messageDetails: NotifyMessageDetailsType;
-  severity: MessageSeverity;
-}
-
-/** Manager for StatusBar messages */
-class StatusBarMessageManager {
-  private _messages: ReadonlyArray<StatusBarMessage> = [];
-  private _messageId: number = 0;
-
-  public initialize() {
-    this._messages = [];
-    this._messageId = 0;
-  }
-
-  public get messages() { return this._messages; }
-
-  public add(messageDetails: NotifyMessageDetailsType): void {
-    const id = this._messageId.toString();
-    const severity = MessageManager.getSeverity(messageDetails);
-
-    const messages = this._messages.slice();
-    messages.splice(0, 0, { id, messageDetails, severity });  // Insert at beginning
-    this._messages = messages;
-
-    this._messageId++;
-
-    /** Remove Sticky messages beyond the max displayed */
-    const stickyMessages = this._messages.filter((message) => message.messageDetails.msgType === OutputMessageType.Sticky);
-    if (stickyMessages.length > MessageManager.maxDisplayedStickyMessages) {
-      const removeMessages = stickyMessages.slice(MessageManager.maxDisplayedStickyMessages);
-      for (const removeMessage of removeMessages) {
-        this.remove(removeMessage.id);
-      }
-    }
-  }
-
-  public remove(id: string): boolean {
-    let result = false;
-    const foundIndex = this._messages.findIndex((message: StatusBarMessage) => message.id === id);
-
-    // istanbul ignore else
-    if (foundIndex >= 0) {
-      const messages = this._messages.slice();
-      messages.splice(foundIndex, 1);
-      this._messages = messages;
-      result = true;
-    }
-
-    return result;
-  }
-}
 
 /** State for the [[StatusBar]] React component
  * @internal
  */
 interface StatusBarState {
   openWidget: StatusBarFieldId;
-  messages: ReadonlyArray<StatusBarMessage>;
+  messages: ReadonlyArray<StatusMessage>;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
   isActivityMessageVisible: boolean;
   toastTarget: HTMLElement | null;
@@ -103,7 +42,7 @@ export interface StatusBarProps extends CommonProps {
  * @public
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
-  private _messageManager = new StatusBarMessageManager();
+  private _statusMessageManager = new StatusMessageManager();
 
   public static severityToStatus(severity: MessageSeverity): Status {
     let status = Status.Information;
@@ -176,7 +115,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   public componentDidMount() {
-    this._messageManager.initialize();
+    this._statusMessageManager.initialize();
     MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.addListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
@@ -191,16 +130,16 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   private _handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
-    this._messageManager.add(args.message);
+    this._statusMessageManager.add(args.message);
 
-    this.setState({ messages: this._messageManager.messages });
+    this.setState({ messages: this._statusMessageManager.messages });
   }
 
   /** Respond to clearing the message list */
   private _handleMessagesUpdatedEvent = () => {
     if (MessageManager.messages.length === 0) {
-      this._messageManager.initialize();
-      this.setState({ messages: this._messageManager.messages });
+      this._statusMessageManager.initialize();
+      this.setState({ messages: this._statusMessageManager.messages });
     }
   }
 
@@ -228,64 +167,19 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     if (!(this.state.activityMessageInfo && this.state.isActivityMessageVisible) && this.state.messages.length === 0)
       return null;
 
-    const messages = this.state.messages;
-    const maxHeight = Math.floor(window.innerHeight * 0.66);
-
     return (
-      <ReactResizeDetector handleHeight
-        render={({ height }) => (
-          <div className={classnames("uifw-statusbar-messages-container", (height >= maxHeight) && /* istanbul ignore next */ "uifw-scrollable")}>
-            <ul className="uifw-statusbar-message-list">
-              {messages.length > 0 &&
-                messages.map((message: StatusBarMessage) => {
-                  let messageNode = null;
-                  if (message.messageDetails.msgType === OutputMessageType.Toast) {
-                    messageNode = (
-                      <li key={message.id}>
-                        <ToastMessage id={message.id} messageDetails={message.messageDetails} severity={message.severity}
-                          closeMessage={this._closeMessage} toastTarget={this.state.toastTarget} />
-                      </li>
-                    );
-                  } else if (message.messageDetails.msgType === OutputMessageType.Sticky) {
-                    messageNode = (
-                      <li key={message.id}>
-                        <StickyMessage id={message.id} messageDetails={message.messageDetails} severity={message.severity}
-                          closeMessage={this._closeMessage} />
-                      </li>
-                    );
-                  }
-                  return messageNode;
-                })
-              }
-              {(this.state.activityMessageInfo && this.state.isActivityMessageVisible) &&
-                <li key="activity-message">
-                  {this.getActivityMessage()}
-                </li>
-              }
-            </ul>
-          </div>
-        )}
-      />
-    );
-  }
-
-  /**
-   * Returns ActivityMessage to display with most recent values
-   * reflecting activity progress.
-   */
-  private getActivityMessage(): React.ReactNode {
-    // istanbul ignore next
-    if (!this.state.activityMessageInfo)
-      return null;
-
-    return (
-      <ActivityMessage
+      <StatusMessageRenderer
+        messages={this.state.messages}
         activityMessageInfo={this.state.activityMessageInfo}
+        isActivityMessageVisible={this.state.isActivityMessageVisible}
+        toastTarget={this.state.toastTarget}
+        closeMessage={this._closeMessage}
         cancelActivityMessage={this._cancelActivityMessage}
         dismissActivityMessage={this._dismissActivityMessage}
       />
     );
   }
+
 
   /**
    * Ends canceled process and dismisses ActivityMessage
@@ -312,8 +206,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
   private _closeMessage = (id: string) => {
     // istanbul ignore else
-    if (this._messageManager.remove(id))
-      this.setState({ messages: this._messageManager.messages });
+    if (this._statusMessageManager.remove(id))
+      this.setState({ messages: this._statusMessageManager.messages });
   }
 
   private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {
@@ -362,22 +256,3 @@ export const StatusBarContext = React.createContext<StatusBarWidgetControlArgs>(
   openWidget: "",
   toastTargetRef: { current: null },
 });
-
-/** Message String/Label
- * @internal
- */
-export function MessageLabel(props: { message: NotifyMessageType, className: string }) {
-  const classNames = classnames("uifw-statusbar-message-label", props.className);
-  return <MessageDiv className={classNames} message={props.message} />;
-}
-
-/** Icon for Message
- * @internal
- */
-export function HollowIcon(props: IconProps) {
-  return (
-    <span className="uifw-statusbar-hollow-icon">
-      <Icon {...props} />
-    </span>
-  );
-}
