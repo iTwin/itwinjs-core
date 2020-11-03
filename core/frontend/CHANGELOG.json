@@ -83,6 +83,18 @@
       }
     },
     {
+      "version": "2.8.1",
+      "tag": "@bentley/imodeljs-frontend_v2.8.1",
+      "date": "Tue, 03 Nov 2020 00:33:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "disable frontend Bentley telemetry in iModelBank use case"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/imodeljs-frontend_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",

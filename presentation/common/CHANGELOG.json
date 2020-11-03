@@ -35,6 +35,12 @@
       }
     },
     {
+      "version": "2.8.1",
+      "tag": "@bentley/presentation-common_v2.8.1",
+      "date": "Tue, 03 Nov 2020 00:33:56 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/presentation-common_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",

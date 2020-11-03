@@ -1,6 +1,6 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 23 Nov 2020 20:57:56 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 22:12:04 GMT and should not be manually modified.
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -32,6 +32,11 @@ Wed, 18 Nov 2020 16:01:50 GMT
 - Change Editor components to process native keyboard events instead of synthetic ones.
 - Added MessagePopup - Displays Toast & Sticky messages without a StatusBar
 - Update EditorContainer tests in attempt to fix sporadic test failures.
+
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+_Version update only_
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
