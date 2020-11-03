@@ -9,7 +9,8 @@
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range2d } from "../geometry3d/Range";
-import { IndexedPolyface, IndexedPolyfaceVisitor } from "./Polyface";
+import { IndexedPolyface } from "./Polyface";
+import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 
 /**
  * Data for a face in a polyface containing facets.
