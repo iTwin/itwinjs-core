@@ -661,7 +661,8 @@ class Admin extends TileAdmin {
   private readonly _pruneForMemoryUsageTime: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
-  private _canceledRequests?: Map<IModelConnection, Map<string, Set<string>>>;
+  private _canceledIModelTileRequests?: Map<IModelConnection, Map<string, Set<string>>>;
+  private _canceledElementGraphicsRequests?: Map<IModelConnection, string[]>;
   private _cancelBackendTileRequests: boolean;
   private _tileTreePropsRequests: TileTreePropsRequest[] = [];
   private _cleanup?: () => void;
@@ -844,8 +845,8 @@ class Admin extends TileAdmin {
         this.cancel(active);
 
     // If the backend is servicing a single client, ask it to immediately stop processing requests for content we no longer want.
-    if (undefined !== this._canceledRequests && this._canceledRequests.size > 0) {
-      for (const [iModelConnection, entries] of this._canceledRequests) {
+    if (undefined !== this._canceledIModelTileRequests && this._canceledIModelTileRequests.size > 0) {
+      for (const [iModelConnection, entries] of this._canceledIModelTileRequests) {
         const treeContentIds: TileTreeContentIds[] = [];
         for (const [treeId, tileIds] of entries) {
           const contentIds = Array.from(tileIds);
@@ -857,7 +858,14 @@ class Admin extends TileAdmin {
         NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.getRpcProps(), treeContentIds);
       }
 
-      this._canceledRequests.clear();
+      this._canceledIModelTileRequests.clear();
+    }
+
+    if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
+      for (const [connection, requestIds] of this._canceledElementGraphicsRequests)
+        NativeAppRpcInterface.getClient().cancelElementGraphicsRequests(connection.getRpcProps(), requestIds);
+
+      this._canceledElementGraphicsRequests.clear();
     }
 
     // Fill up the active requests from the queue.
@@ -1067,7 +1075,7 @@ class Admin extends TileAdmin {
         this.onViewportIModelClosed(vp);
     });
 
-    // Remove any TileTreeProps requests associated with this iModel
+    // Remove any TileTreeProps requests associated with this iModel.
     this._tileTreePropsRequests = this._tileTreePropsRequests.filter((req) => {
       if (req.iModel !== iModel)
         return true;
@@ -1076,7 +1084,11 @@ class Admin extends TileAdmin {
       return false;
     });
 
-    // Dispatch TileTreeProps requests not associated with this iModel
+    // Remove any canceled requests for this iModel.
+    this._canceledIModelTileRequests?.delete(iModel);
+    this._canceledElementGraphicsRequests?.delete(iModel);
+
+    // Dispatch TileTreeProps requests not associated with this iModel.
     this.dispatchTileTreePropsRequests();
   }
 
@@ -1200,11 +1212,12 @@ class Admin extends TileAdmin {
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
-    if (this._cancelBackendTileRequests) {
-      if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface))
-        this._cancelBackendTileRequests = false;
-      else
-        this._canceledRequests = new Map<IModelConnection, Map<string, Set<string>>>();
+    if (RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
+      this._canceledElementGraphicsRequests = new Map<IModelConnection, string[]>();
+      if (this._cancelBackendTileRequests)
+        this._canceledIModelTileRequests = new Map<IModelConnection, Map<string, Set<string>>>();
+    } else {
+      this._cancelBackendTileRequests = false;
     }
   }
 
@@ -1261,13 +1274,13 @@ class Admin extends TileAdmin {
   }
 
   public cancelIModelTileRequest(tile: Tile): void {
-    if (undefined === this._canceledRequests)
+    if (undefined === this._canceledIModelTileRequests)
       return;
 
-    let iModelEntry = this._canceledRequests.get(tile.tree.iModel);
+    let iModelEntry = this._canceledIModelTileRequests.get(tile.tree.iModel);
     if (undefined === iModelEntry) {
       iModelEntry = new Map<string, Set<string>>();
-      this._canceledRequests.set(tile.tree.iModel, iModelEntry);
+      this._canceledIModelTileRequests.set(tile.tree.iModel, iModelEntry);
     }
 
     let contentIds = iModelEntry.get(tile.tree.id);
@@ -1279,8 +1292,16 @@ class Admin extends TileAdmin {
     contentIds.add(tile.contentId);
   }
 
-  public cancelElementGraphicsRequest(_tile: Tile): void {
-    // ###TODO
+  public cancelElementGraphicsRequest(tile: Tile): void {
+    const requests = this._canceledElementGraphicsRequests;
+    if (!requests)
+      return;
+
+    let ids = requests.get(tile.tree.iModel);
+    if (!ids)
+      requests.set(tile.tree.iModel, ids = []);
+
+    ids.push(tile.contentId);
   }
 
   public terminateTileTreePropsRequest(request: TileTreePropsRequest): void {
