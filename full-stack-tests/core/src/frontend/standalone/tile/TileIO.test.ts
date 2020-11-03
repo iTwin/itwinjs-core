@@ -764,47 +764,6 @@ describe("mirukuru TileTree", () => {
     const noEdges2 = treeRef.treeOwner;
     expect(noEdges2).to.equal(noEdges);
   });
-
-  it("should preserve model's geometryGuid as cache key", async () => {
-    const model = await getGeometricModel(imodel, "0x1c");
-    expect(model.geometryGuid).to.be.undefined;
-    let tree = await getPrimaryTileTree(model, true);
-
-    const getGuid = () => tree.geometryGuid;
-    expect(getGuid()).to.be.undefined;
-
-    model.geometryGuid = "abcdef";
-    tree = await getPrimaryTileTree(model, false);
-    expect(getGuid()).not.to.be.undefined;
-    expect(getGuid()).to.equal("abcdef");
-
-    model.geometryGuid = undefined;
-  });
-
-  it("should use correct URL for tile cache", async () => {
-    const model = await getGeometricModel(imodel, "0x1c");
-    model.geometryGuid = undefined;
-    const expectContentId = async (expected: string, edgesRequired: boolean) => {
-      let contentId: string | undefined;
-      const cache = CloudStorageTileCache.getCache();
-      const retrieveImpl = cache.retrieve;
-      cache.retrieve = async (id: TileContentIdentifier) => {
-        contentId = cache.formResourceName(id);
-        cache.retrieve = retrieveImpl;
-        return cache.retrieve(id);
-      };
-
-      const tree = await getPrimaryTileTree(model, edgesRequired);
-      await tree.staticBranch.requestContent(() => false);
-      expect(contentId).not.to.be.undefined;
-      expect(contentId!.includes(expected)).to.be.true;
-    };
-
-    await expectContentId("first", false);
-    model.geometryGuid = "abcdef";
-    await expectContentId("abcdef", true);
-    model.geometryGuid = undefined;
-  });
 });
 
 describe("TileAdmin", () => {
