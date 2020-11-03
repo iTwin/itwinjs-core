@@ -5,7 +5,7 @@ trigger:
     - master
     - release/*
 pr:
-  draft: false
+  drafts: false
   branches:
     include:
     - master
