@@ -211,8 +211,8 @@ class RootTile extends Tile {
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     const children: Tile[] = [ this.staticBranch ];
-    // ###TODO if (this._dynamicRoot)
-    //   children.push(this._dynamicRoot); Will need to add dynamic root tile to children when session starts.
+    if (this._tileState.type === "dynamic")
+      children.push(this._tileState.rootTile);
 
     resolve(children);
   }

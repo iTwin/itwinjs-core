@@ -159,8 +159,7 @@ export class InteractiveEditingSession {
 
   private constructor(iModel: IModelConnection) {
     this.iModel = iModel;
-    if (iModel.eventSource) // ###TODO make this always defined
-      this._cleanup = iModel.eventSource.on(Events.NativeApp.namespace, Events.NativeApp.modelGeometryChanges, (changes: any) => this.handleGeometryChanges(changes));
+    this._cleanup = iModel.eventSource.on(Events.NativeApp.namespace, Events.NativeApp.modelGeometryChanges, (changes: any) => this.handleGeometryChanges(changes));
   }
 
   private dispose(): void {
