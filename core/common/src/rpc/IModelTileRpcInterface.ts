@@ -13,7 +13,7 @@ import { CloudStorageTileCache } from "../CloudStorageTileCache";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { TileTreeProps, TileVersionInfo } from "../TileProps";
+import { IModelTileTreeProps, TileVersionInfo } from "../TileProps";
 import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
 
 /** Wire format describing a request to produce graphics in [[TileFormat.IModelGraphics]] format for a single element.
@@ -59,7 +59,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   }
 
   /** @internal */
-  public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<TileTreeProps> { return this.forward(arguments); }
+  public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> { return this.forward(arguments); }
   /** @internal */
   public async requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array> {
     const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId, guid);

@@ -10,7 +10,7 @@ import { assert, BeDuration, BeTimePoint, DbOpcode, GuidString, Id64, Id64Array,
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass,
-  ModelGeometryChanges, TileProps, TileTreeProps, ViewFlagOverrides,
+  IModelTileTreeProps, ModelGeometryChanges, TileProps,ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -45,7 +45,7 @@ export interface IModelTileTreeParams extends TileTreeParams {
 }
 
 /** @internal */
-export function iModelTileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams {
+export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams {
   const location = Transform.fromJSON(props.location);
   const { formatVersion, id, rootTile, contentIdQualifier, maxInitialTilesToSkip, geometryGuid } = props;
 

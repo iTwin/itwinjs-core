@@ -8,8 +8,8 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, ModelGeometryChanges, NativeAppRpcInterface, RpcOperation, RpcRegistry,
-  RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
+  defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
+  NativeAppRpcInterface, RpcOperation, RpcRegistry, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -125,7 +125,7 @@ export abstract class TileAdmin {
    * return the maximum *major* format version to be used to request tile content from the backend.
    * @see [[TileAdmin.Props.maximumMajorTileFormatVersion]]
    * @see [[CurrentImdlVersion]]
-   * @see [TileTreeProps.formatVersion]($common)
+   * @see [IModelTileTreeProps.formatVersion]($common)
    * @internal
    */
   public abstract getMaximumMajorTileFormatVersion(formatVersion?: number): number;
@@ -216,7 +216,7 @@ export abstract class TileAdmin {
   public abstract onShutDown(): void;
 
   /** @internal */
-  public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
+  public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
 
   /** @internal */
   public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
@@ -313,9 +313,9 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     totalDispatchedRequests: number;
     /** The total number of tiles for which content requests were dispatched and then canceled on the backend before completion. */
     totalAbortedRequests: number;
-    /** The number of in-flight TileTreeProps requests. */
+    /** The number of in-flight IModelTileTreeProps requests. */
     numActiveTileTreePropsRequests: number;
-    /** The number of pending TileTreeProps requests. */
+    /** The number of pending IModelTileTreeProps requests. */
     numPendingTileTreePropsRequests: number;
   }
 
@@ -330,7 +330,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     maxActiveRequests?: number;
 
-    /** The maximum number of simultaneously active requests for TileTreeProps. Requests are fulfilled in FIFO order.
+    /** The maximum number of simultaneously active requests for IModelTileTreeProps. Requests are fulfilled in FIFO order.
      *
      * Default value: 10
      * @alpha
@@ -543,15 +543,15 @@ class Queue extends PriorityQueue<TileRequest> {
   }
 }
 
-/** Some views contain thousands of models. When we open such a view, the first thing we do is request the TileTreeProps for each model. This involves a http request per model,
+/** Some views contain thousands of models. When we open such a view, the first thing we do is request the IModelTileTreeProps for each model. This involves a http request per model,
  * which can exceed the maximum number of simultaneous requests permitted by the browser.
- * Similar to how we throttle requests for tile *content*, we throttle requests for TileTreeProps based on `TileAdmin.Props.maxActiveTileTreePropsRequests`, heretofore referred to as `N`.
- * TileAdmin maintains a FIFO queue of requests for TileTreeProps. The first N of those requests have been dispatched; the remainder are waiting for their turn.
+ * Similar to how we throttle requests for tile *content*, we throttle requests for IModelTileTreeProps based on `TileAdmin.Props.maxActiveTileTreePropsRequests`, heretofore referred to as `N`.
+ * TileAdmin maintains a FIFO queue of requests for IModelTileTreeProps. The first N of those requests have been dispatched; the remainder are waiting for their turn.
  * When `TileAdmin.requestTileTreeProps` is called, it appends a new request to the queue, and if the queue length < N, dispatches it immediately.
  * When a request completes, throws an error, or is canceled, it is removed from the queue, and any not-yet-dispatched requests are dispatched (not exceeding N total in flight).
  * When an IModelConnection is closed, any requests associated with that iModel are canceled.
  * NOTE: This request queue currently does not interact at all with the tile content request queue.
- * NOTE: We rely on TreeOwner to not request the same TileTreeProps multiple times - we do not check the queue for presence of a requested tree before enqeueing it.
+ * NOTE: We rely on TreeOwner to not request the same IModelTileTreeProps multiple times - we do not check the queue for presence of a requested tree before enqeueing it.
  */
 class TileTreePropsRequest {
   private _isDispatched = false;
@@ -559,7 +559,7 @@ class TileTreePropsRequest {
   public constructor(
     public readonly iModel: IModelConnection,
     private readonly _treeId: string,
-    private readonly _resolve: (props: TileTreeProps) => void,
+    private readonly _resolve: (props: IModelTileTreeProps) => void,
     private readonly _reject: (error: Error) => void) {
   }
 
@@ -596,11 +596,11 @@ class TileTreePropsRequest {
 }
 
 /** @internal */
-export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<TileTreeProps>;
+export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<IModelTileTreeProps>;
 
 let requestTileTreePropsOverride: RequestTileTreePropsFunc | undefined;
 
-async function requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
+async function requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps> {
   if (requestTileTreePropsOverride)
     return requestTileTreePropsOverride(iModel, treeId);
 
@@ -1148,10 +1148,10 @@ class Admin extends TileAdmin {
     this._tileUsagePerViewport.delete(vp);
   }
 
-  public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
+  public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps> {
     this.initializeRpc();
     const requests = this._tileTreePropsRequests;
-    return new Promise<TileTreeProps>((resolve, reject) => {
+    return new Promise<IModelTileTreeProps>((resolve, reject) => {
       const request = new TileTreePropsRequest(iModel, treeId, resolve, reject);
       requests.push(request);
       if (this._tileTreePropsRequests.length <= this._maxActiveTileTreePropsRequests)

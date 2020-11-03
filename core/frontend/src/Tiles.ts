@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, Dictionary, dispose, Id64Array, IModelStatus } from "@bentley/bentleyjs-core";
-import { TileTreeProps } from "@bentley/imodeljs-common";
+import { IModelTileTreeProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
@@ -96,7 +96,7 @@ export class Tiles {
   }
 
   /** @internal */
-  public async getTileTreeProps(id: string): Promise<TileTreeProps> {
+  public async getTileTreeProps(id: string): Promise<IModelTileTreeProps> {
     return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
   }
 

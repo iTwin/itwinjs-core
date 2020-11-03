@@ -27,7 +27,7 @@ export interface TileProps {
   isLeaf?: boolean;
 }
 
-/** Wire format describing an [IModelTileTree]($frontend)
+/** Wire format describing a [TileTree]($frontend)
  * @internal
  */
 export interface TileTreeProps {
@@ -39,16 +39,22 @@ export interface TileTreeProps {
   location: TransformProps;
   /** If defined, limits the number of child tiles which can be skipped in selecting tiles of appropriate LOD */
   maxTilesToSkip?: number;
-  /** If defined, specifies the number of levels of the tile tree that can be skipped when selecting tiles. */
-  maxInitialTilesToSkip?: number;
-  /** Optionally specifies the maximum tile format version supported. */
-  formatVersion?: number;
   /** Optional volume within which content of all tiles' contents are guaranteed to be contained - never larger than `rootTile.range` and sometimes much smaller. */
   contentRange?: Range3dProps;
+}
+
+/** Wire format describing an [IModelTileTree]($frontend).
+ * @internal
+ */
+export interface IModelTileTreeProps extends TileTreeProps {
   /** Optional namespace applied to tile content Ids for tiles belonging to this tree. */
   contentIdQualifier?: string;
   /** ###TODO Move to IModelTileTreeProps */
   geometryGuid?: GuidString;
+  /** If defined, specifies the number of levels of the tile tree that can be skipped when selecting tiles. */
+  maxInitialTilesToSkip?: number;
+  /** Optionally specifies the maximum tile format version supported. */
+  formatVersion?: number;
 }
 
 /** Metadata describing the version/format of the tiles supplied by the backend.

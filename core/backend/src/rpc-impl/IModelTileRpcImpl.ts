@@ -8,8 +8,8 @@
 
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, RpcInterface,
-  RpcInvocation, RpcManager, RpcPendingResponse, TileTreeContentIds, TileTreeProps, TileVersionInfo,
+  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface,
+  IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, TileTreeContentIds,TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
@@ -93,12 +93,12 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
   }
 }
 
-async function getTileTreeProps(props: TileRequestProps): Promise<TileTreeProps> {
+async function getTileTreeProps(props: TileRequestProps): Promise<IModelTileTreeProps> {
   const db = IModelDb.findByKey(props.tokenProps.key);
   return db.tiles.requestTileTreeProps(props.requestContext, props.treeId);
 }
 
-class RequestTileTreePropsMemoizer extends TileRequestMemoizer<TileTreeProps, TileRequestProps> {
+class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreeProps, TileRequestProps> {
   protected get _timeoutMilliseconds() { return IModelHost.tileTreeRequestTimeout; }
   protected get _operationName() { return "requestTileTreeProps"; }
   protected stringify(props: TileRequestProps): string { return props.treeId; }
@@ -112,7 +112,7 @@ class RequestTileTreePropsMemoizer extends TileRequestMemoizer<TileTreeProps, Ti
     super(getTileTreeProps, generateTileRequestKey);
   }
 
-  public static async perform(props: TileRequestProps): Promise<TileTreeProps> {
+  public static async perform(props: TileRequestProps): Promise<IModelTileTreeProps> {
     if (undefined === this._instance)
       this._instance = new RequestTileTreePropsMemoizer();
 
@@ -164,7 +164,7 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
-  public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<TileTreeProps> {
+  public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
     const requestContext = ClientRequestContext.current;
     return RequestTileTreePropsMemoizer.perform({ requestContext, tokenProps, treeId });
   }

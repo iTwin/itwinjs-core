@@ -608,7 +608,7 @@ describe("mirukuru TileTree", () => {
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
-    const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", undefined, options);
+    const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
     const tree = new IModelTileTree(params);
 
     const response: TileRequest.Response = await tree.staticBranch.requestContent(() => false);
@@ -666,7 +666,7 @@ describe("mirukuru TileTree", () => {
     expect(v3Props).not.to.be.undefined;
 
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: false, allowInstancing: false };
-    const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", undefined, options);
+    const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", options);
 
     const v3Tree = new IModelTileTree(params);
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
@@ -988,7 +988,7 @@ describe("TileAdmin", () => {
           expect(qualifier.length > 0).to.be.true;
 
         const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
-        const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", undefined, options);
+        const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
         const tree = new IModelTileTree(params);
 
         const intfc = IModelTileRpcInterface.getClient();
