@@ -27,6 +27,11 @@ export interface AutoSuggestData {
  */
 export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
+/** Prototype for async function returning AutoSuggestData
+ * @beta
+ */
+export type AsyncGetAutoSuggestDataFunc = (value: string) => Promise<AutoSuggestData[]>;
+
 /** Properties for the [[AutoSuggest]] component.
  * @beta
  */
@@ -34,7 +39,9 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   /** Current value. */
   value?: string;
   /** Options for dropdown. */
-  options: AutoSuggestData[] | GetAutoSuggestDataFunc;
+  options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
+  /** Asynchronously calculate suggestions for any given input value. */
+  getSuggestions?: AsyncGetAutoSuggestDataFunc;
   /** Handler for when suggested selected. */
   onSuggestionSelected: (selected: AutoSuggestData) => void;
   /** Indicates whether to set focus to the input element */
@@ -47,10 +54,6 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   /** Handler for input receiving focus. */
   onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  /** Calculate suggestions for any given input value.
-   * @deprecated
-   */
-  getSuggestions?: GetAutoSuggestDataFunc;
   /** Gets a label associated with a given value */
   getLabel?: (value: string | undefined) => string;
 
@@ -68,6 +71,7 @@ interface AutoSuggestState {
  * @beta
  */
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
+  private _isMounted = false;
 
   constructor(props: AutoSuggestProps) {
     super(props);
@@ -81,6 +85,16 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
       inputValue: this.getLabel(props.value),
       suggestions: [],
     };
+  }
+
+  /** @internal */
+  public componentDidMount() {
+    this._isMounted = true;
+  }
+
+  /** @internal */
+  public componentWillUnmount() {
+    this._isMounted = false;
   }
 
   public componentDidUpdate(prevProps: AutoSuggestProps) {
@@ -111,11 +125,12 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
   }
 
   /** Autosuggest will call this function every time you need to update suggestions. */
-  private _onSuggestionsFetchRequested = (request: ReactAutosuggest.SuggestionsFetchRequestedParams): void => {
+  private _onSuggestionsFetchRequested = async (request: ReactAutosuggest.SuggestionsFetchRequestedParams): Promise<void> => {
     const value = request.value;
-    this.setState({
-      suggestions: this._getSuggestions(value),
-    });
+    const suggestions = await this._getSuggestions(value);
+
+    if (this._isMounted)
+      this.setState({ suggestions });
   }
 
   /** Autosuggest will call this function every time you need to clear suggestions. */
@@ -128,19 +143,28 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
   }
 
   /** Teach Autosuggest how to calculate suggestions for any given input value. */
-  private _getSuggestions = (value: string): AutoSuggestData[] => {
+  private _getSuggestions = async (value: string): Promise<AutoSuggestData[]> => {
     if (typeof this.props.options === "function")
-      return this.props.options(value);
+      return Promise.resolve(this.props.options(value));
 
-    if (this.props.getSuggestions)              // eslint-disable-line deprecation/deprecation
-      return this.props.getSuggestions(value);  // eslint-disable-line deprecation/deprecation
+    if (this.props.getSuggestions)
+      return this.props.getSuggestions(value);
+
+    if (this.props.options === undefined) {
+      Logger.logError(UiCore.loggerCategory(this), `props.options or props.getSuggestions should be provided`);
+      return Promise.resolve([]);
+    }
 
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
 
-    return inputLength === 0 ? /* istanbul ignore next */[] : this.props.options.filter((data: AutoSuggestData) => {
-      return data.label.toLowerCase().includes(inputValue) || data.value.toLowerCase().includes(inputValue);
-    });
+    return Promise.resolve(
+      inputLength === 0 ?
+      /* istanbul ignore next */[] :
+        this.props.options.filter((data: AutoSuggestData) => {
+          return data.label.toLowerCase().includes(inputValue) || data.value.toLowerCase().includes(inputValue);
+        })
+    );
   }
 
   /** When suggestion is clicked, Autosuggest needs to populate the input based on the clicked suggestion.  */
