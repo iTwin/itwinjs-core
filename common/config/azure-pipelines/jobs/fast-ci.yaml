@@ -10,7 +10,6 @@ pr:
     include:
     - master
     - releases/*
-    - imodel02
 
 jobs:
   - template: ci-core.yaml
