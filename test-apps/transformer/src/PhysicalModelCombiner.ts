@@ -29,6 +29,9 @@ export class PhysicalModelCombiner extends IModelTransformer {
       // exclude problem elements
       combiner.exporter.excludeElement("0x40000009395");
       combiner.exporter.excludeElement("0x400000093a0");
+      combiner.importer.simplifyElementGeometry = false;
+    } else {
+      combiner.importer.simplifyElementGeometry = true;
     }
     combiner.combine();
     combiner.dispose();
@@ -58,7 +61,6 @@ export class PhysicalModelCombiner extends IModelTransformer {
   public combine(): void {
     this.exporter.visitRelationships = false;
     this.initSubCategoryFilter();
-    this.importer.simplifyElementGeometry = true;
     this.processAll();
     this.targetDb.saveChanges(`Finished processing elements`);
     this.exporter.visitRelationships = true;
