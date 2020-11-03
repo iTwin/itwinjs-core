@@ -862,8 +862,10 @@ class Admin extends TileAdmin {
     }
 
     if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
-      for (const [connection, requestIds] of this._canceledElementGraphicsRequests)
+      for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
         NativeAppRpcInterface.getClient().cancelElementGraphicsRequests(connection.getRpcProps(), requestIds);
+        this._totalAbortedRequests += requestIds.length;
+      }
 
       this._canceledElementGraphicsRequests.clear();
     }
