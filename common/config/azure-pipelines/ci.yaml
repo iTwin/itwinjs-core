@@ -1,5 +1,7 @@
 # iModel.js CI Build
 
+trigger: none
+
 pr:
   draft: false
   branches:
