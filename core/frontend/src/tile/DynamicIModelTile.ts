@@ -332,18 +332,25 @@ class GraphicsTile extends Tile {
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
-    // ###TODO: tree flags, content flags, max format version.
+    // ###TODO tree flags (enforce display priority)
+    // ###TODO classifiers, animation
+
     assert(undefined !== this.parent);
 
     const requestId = requestIdSequence.next();
     assert(!requestId.done);
 
+    assert(this.tree instanceof IModelTileTree);
+    const idProvider = this.tree.contentIdProvider;
+
     const props = {
       id: requestId.value.toString(16),
       elementId: this.parent.contentId,
       toleranceLog10: this.toleranceLog10,
-      formatVersion: CurrentImdlVersion.Major,
+      formatVersion: idProvider.majorFormatVersion,
       location: this.tree.iModelTransform,
+      contentFlags: idProvider.contentFlags,
+      omitEdges: !this.tree.hasEdges,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);

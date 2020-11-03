@@ -234,6 +234,14 @@ interface ContentIdSpec {
  * @internal
  */
 export abstract class ContentIdProvider {
+  public readonly majorFormatVersion: number;
+  public readonly contentFlags: ContentFlags;
+
+  protected constructor(formatVersion: number, contentFlags: ContentFlags) {
+    this.majorFormatVersion = formatVersion;
+    this.contentFlags = contentFlags;
+  }
+
   public get rootContentId(): string {
     return this.computeId(0, 0, 0, 0, 1);
   }
@@ -280,12 +288,12 @@ export abstract class ContentIdProvider {
     switch (majorVersion) {
       case 0:
       case 1:
-        return new ContentIdV1Provider();
+        return new ContentIdV1Provider(majorVersion);
       case 2:
       case 3:
         return new ContentIdV2Provider(majorVersion, allowInstancing, options);
       default:
-        return new ContentIdV4Provider(allowInstancing, options);
+        return new ContentIdV4Provider(allowInstancing, options, majorVersion);
     }
   }
 }
@@ -295,6 +303,10 @@ export abstract class ContentIdProvider {
  * @internal
  */
 class ContentIdV1Provider extends ContentIdProvider {
+  public constructor(majorVersion: number) {
+    super(majorVersion, ContentFlags.None);
+  }
+
   protected get _separator() { return "/"; }
   protected computeId(depth: number, i: number, j: number, k: number, mult: number): string {
     return this.join(depth, i, j, k, mult);
@@ -309,8 +321,8 @@ class ContentIdV2Provider extends ContentIdProvider {
   private readonly _prefix: string;
 
   public constructor(majorVersion: number, allowInstancing: boolean, options: TileOptions) {
-    super();
     const flags = (allowInstancing && options.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+    super(majorVersion, flags);
     this._prefix = this._separator + majorVersion.toString(16) + this._separator + flags.toString(16) + this._separator;
   }
 
@@ -327,8 +339,7 @@ class ContentIdV2Provider extends ContentIdProvider {
 class ContentIdV4Provider extends ContentIdProvider {
   private readonly _prefix: string;
 
-  public constructor(allowInstancing: boolean, options: TileOptions) {
-    super();
+  public constructor(allowInstancing: boolean, options: TileOptions, majorVersion: number) {
     let flags = (allowInstancing && options.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
     if (options.enableImprovedElision)
       flags = flags | ContentFlags.ImprovedElision;
@@ -336,6 +347,7 @@ class ContentIdV4Provider extends ContentIdProvider {
     if (options.ignoreAreaPatterns)
       flags = flags | ContentFlags.IgnoreAreaPatterns;
 
+    super(majorVersion, flags);
     this._prefix = this._separator + flags.toString(16) + this._separator;
   }
 
