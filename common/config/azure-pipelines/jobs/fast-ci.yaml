@@ -1,9 +1,9 @@
 # iModel.js CI Build
 
 trigger:
-  branches:
-    - master
-    - release/*
+  - master
+  - release/*
+
 pr:
   drafts: false
   branches:
