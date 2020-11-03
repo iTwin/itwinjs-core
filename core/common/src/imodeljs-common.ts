@@ -128,7 +128,6 @@ export * from "./tile/B3dmTileIO";
 export * from "./tile/CompositeTileIO";
 export * from "./tile/GltfTileIO";
 export * from "./tile/I3dmTileIO";
-export * from "./tile/IModelGraphicsIO";
 export * from "./tile/IModelTileIO";
 export * from "./tile/PntsTileIO";
 export * from "./tile/TileIO";
