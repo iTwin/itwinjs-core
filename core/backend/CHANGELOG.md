@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Sat, 21 Nov 2020 15:53:59 GMT and should not be manually modified.
+This log was last generated on Sat, 21 Nov 2020 16:01:10 GMT and should not be manually modified.
+
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+### Updates
+
+- avoid waiting on usage logging requests to succeed/fail; disable backend Bentley telemetry in iModelBank use case
+- Update to @bentley/imodeljs-native@2.8.8
+- Update to @bentley/imodeljs-native@2.8.9
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT

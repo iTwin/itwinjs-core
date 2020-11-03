@@ -1,6 +1,11 @@
 # Change Log - @bentley/electron-manager
 
-This log was last generated on Sat, 21 Nov 2020 15:53:59 GMT and should not be manually modified.
+This log was last generated on Sat, 21 Nov 2020 16:01:09 GMT and should not be manually modified.
+
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+_Version update only_
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
