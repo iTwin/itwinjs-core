@@ -90,9 +90,4 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   public async requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array> {
     return this.forward(arguments);
   }
-
-  /** @internal */
-  public async cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void> {
-    return this.forward(arguments);
-  }
 }

@@ -255,7 +255,9 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract onCacheMiss(): void;
   /** @internal */
-  public abstract onActiveRequestCanceled(tile: Tile): void;
+  public abstract cancelIModelTileRequest(tile: Tile): void;
+  /** @internal */
+  public abstract cancelElementGraphicsRequest(tile: Tile): void;
 
   /** Event raised when a request to load a tile's content completes.
    * @internal
@@ -1258,7 +1260,7 @@ class Admin extends TileAdmin {
     }
   }
 
-  public onActiveRequestCanceled(tile: Tile): void {
+  public cancelIModelTileRequest(tile: Tile): void {
     if (undefined === this._canceledRequests)
       return;
 
@@ -1275,6 +1277,10 @@ class Admin extends TileAdmin {
     }
 
     contentIds.add(tile.contentId);
+  }
+
+  public cancelElementGraphicsRequest(_tile: Tile): void {
+    // ###TODO
   }
 
   public terminateTileTreePropsRequest(request: TileTreePropsRequest): void {

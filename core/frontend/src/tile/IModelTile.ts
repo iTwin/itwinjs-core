@@ -166,7 +166,7 @@ export class IModelTile extends Tile {
   }
 
   public onActiveRequestCanceled(): void {
-    IModelApp.tileAdmin.onActiveRequestCanceled(this);
+    IModelApp.tileAdmin.cancelIModelTileRequest(this);
   }
 
   protected get rangeGraphicColor(): ColorDef {

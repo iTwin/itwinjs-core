@@ -378,4 +378,8 @@ class GraphicsTile extends Tile {
 
     return content;
   }
+
+  public onActiveRequestCanceled(): void {
+    IModelApp.tileAdmin.cancelElementGraphicsRequest(this);
+  }
 }

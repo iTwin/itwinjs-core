@@ -84,7 +84,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.4.1";
+  public static interfaceVersion = "0.4.2";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -115,6 +115,12 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    */
   public async cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void> { return this.forward(arguments); }
 
+  /** Cancel element graphics requests.
+   * @see [[IModelTileRpcInterface.requestElementGraphics]].
+   */
+  public async cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void> {
+    return this.forward(arguments);
+  }
   /**
    * Request download of a briefcase. The call require internet connection and must have valid token.
    * @param _requestProps Properties required to locate the iModel and download it as a briefcase

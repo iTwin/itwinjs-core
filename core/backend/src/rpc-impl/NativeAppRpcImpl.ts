@@ -76,6 +76,11 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     return cancelTileContentRequests(tokenProps, contentIds);
   }
 
+  public async cancelElementGraphicsRequests(rpcProps: IModelRpcProps, requestIds: string[]): Promise<void> {
+    const iModel = IModelDb.findByKey(rpcProps.key);
+    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
+  }
+
   /**
    * Request download of a briefcase. The call require internet connection and must have valid token.
    * @param requestProps Properties to download the briefcase

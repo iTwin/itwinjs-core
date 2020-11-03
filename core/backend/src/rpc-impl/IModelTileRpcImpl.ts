@@ -210,12 +210,6 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const iModel = IModelDb.findByKey(rpcProps.key);
     return iModel.nativeDb.generateElementGraphics(request);
   }
-
-  /** @internal */
-  public async cancelElementGraphicsRequests(rpcProps: IModelRpcProps, requestIds: string[]): Promise<void> {
-    const iModel = IModelDb.findByKey(rpcProps.key);
-    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
-  }
 }
 
 /** @internal */
