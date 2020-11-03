@@ -15,6 +15,7 @@ import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
 import { addSelectApplicationData, addSelectBCVAccessKey, addSelectFileAccessKey } from "./HubQuery";
 import { IModelClient } from "../IModelClient";
+import { LockQuery } from "./Locks";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
@@ -279,8 +280,13 @@ export class BriefcaseHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    await this._imodelClient.locks.deleteAll(requestContext, iModelId, briefcaseId);
+    const existingLocksOwnedByBriefcase = await this._imodelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(briefcaseId));
     requestContext.enter();
+    if (existingLocksOwnedByBriefcase.length > 0) {
+      await this._imodelClient.locks.deleteAll(requestContext, iModelId, briefcaseId);
+      requestContext.enter();
+    }
+
     await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, briefcaseId));
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Deleted briefcase from iModel", () => ({ iModelId, briefcaseId }));
