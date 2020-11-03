@@ -76,10 +76,14 @@ describe("Dialog", () => {
           { type: DialogButtonType.Yes, onClick: () => { } },
           { type: DialogButtonType.No, onClick: () => { } },
           { type: DialogButtonType.Retry, onClick: () => { } },
+          { type: DialogButtonType.Next, onClick: () => { } },
+          { type: DialogButtonType.Previous, onClick: () => { } },
         ]} />);
       expect(component.getByText(UiCore.translate("dialog.yes"))).to.exist;
       expect(component.getByText(UiCore.translate("dialog.no"))).to.exist;
       expect(component.getByText(UiCore.translate("dialog.retry"))).to.exist;
+      expect(component.getByText(UiCore.translate("dialog.next"))).to.exist;
+      expect(component.getByText(UiCore.translate("dialog.previous"))).to.exist;
     });
 
     it("should render with custom button", () => {

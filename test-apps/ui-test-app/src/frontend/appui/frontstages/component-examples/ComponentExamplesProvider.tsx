@@ -10,9 +10,9 @@ import { DateFormatter, IconSpecUtilities, RelativePosition, TimeDisplay } from 
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
-  LabeledSelect, LabeledTextarea, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumericInput, ProgressBar, ProgressSpinner, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
-  ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
+  LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
+  NewBadge, NumericInput, ProgressBar, ProgressSpinner, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect,
+  Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps, IntlFormatter } from "@bentley/ui-components";
@@ -441,6 +441,23 @@ export class ComponentExamplesProvider {
           <div className="uicore-full-width">
             <ThemedSelect options={colorChoices} isDisabled />
           </div>),
+        createComponentExample("Labeled Multi ThemedSelect", "Labeled ThemedSelect component with isMulti",
+          <div className="uicore-full-width">
+            <LabeledThemedSelect label={"Labeled ThemedSelect Multi"} isMulti={true} isSearchable={true} options={cityChoices} />
+          </div>),
+        createComponentExample("Disabled Labeled Multi ThemedSelect", "Labeled ThemedSelect component with isMulti",
+          <div className="uicore-full-width">
+            <LabeledThemedSelect label={"Disabled Labeled ThemedSelect Multi"} isMulti={true} isSearchable={true} options={cityChoices} isDisabled={true} />
+          </div>),
+        createComponentExample("Labeled ThemedSelect", "Labeled ThemedSelect component",
+          <div className="uicore-full-width">
+            <LabeledThemedSelect label={"Labeled ThemedSelect"} options={colorChoices} />
+          </div>),
+        createComponentExample("Disabled Labeled ThemedSelect", "Labeled ThemedSelect component with isDisabled prop and message prop",
+          <div className="uicore-full-width">
+            <LabeledThemedSelect label={"Disabled Labeled ThemedSelect"} message={"This field is disabled"} options={colorChoices} isDisabled />
+          </div>),
+
       ],
     };
   }

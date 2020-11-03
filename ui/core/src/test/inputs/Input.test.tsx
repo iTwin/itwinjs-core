@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { Input } from "../../ui-core";
+import * as sinon from "sinon";
 
 describe("<Input />", () => {
   it("renders", () => {
@@ -26,6 +27,20 @@ describe("<Input />", () => {
 
     const element = document.activeElement as HTMLElement;
     expect(element && element === input).to.be.true;
+  });
+
+  it("native key handler passed by props is called", () => {
+    const spyOnKeyboardEvent = sinon.spy();
+    const spyOnSecondKeyboardEvent = sinon.spy();
+
+    const component = render(<Input setFocus={true} nativeKeyHandler={spyOnKeyboardEvent} />);
+    const inputNode = component.container.querySelector("input") as HTMLElement;
+    expect(inputNode).not.to.be.null;
+    fireEvent.keyDown(inputNode, { key: "Enter" });
+    component.rerender(<Input setFocus={true} nativeKeyHandler={spyOnSecondKeyboardEvent} />);
+    fireEvent.keyDown(inputNode, { key: "Enter" });
+    expect(spyOnKeyboardEvent.calledOnce).to.be.true;
+    expect(spyOnSecondKeyboardEvent.calledOnce).to.be.true;
   });
 
 });

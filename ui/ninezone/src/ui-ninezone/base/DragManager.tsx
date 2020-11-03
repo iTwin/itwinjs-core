@@ -231,6 +231,16 @@ function useTarget<T extends Element>(onTargeted: (targeted: boolean) => void) {
       dragManager.onDrag.remove(listener);
     };
   }, [onTargeted, dragManager]);
+  React.useEffect(() => {
+    const listener = () => {
+      targeted.current && onTargeted(false);
+      targeted.current = false;
+    };
+    dragManager.onDragEnd.add(listener);
+    return () => {
+      dragManager.onDragEnd.remove(listener);
+    };
+  }, [onTargeted, dragManager]);
   return ref;
 }
 

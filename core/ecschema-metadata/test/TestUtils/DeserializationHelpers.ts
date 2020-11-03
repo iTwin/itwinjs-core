@@ -4,6 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DOMParser } from "xmldom";
+import { ISchemaLocater, SchemaContext } from "../../src/Context";
+import { AbstractParser } from "../../src/Deserialization/AbstractParser";
+import { SchemaReadHelper } from "../../src/Deserialization/Helper";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
+import { XmlParser } from "../../src/Deserialization/XmlParser";
+import { SchemaMatchType } from "../../src/ECObjects";
+import { Schema } from "../../src/Metadata/Schema";
+import { SchemaKey } from "../../src/SchemaKey";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {
@@ -15,6 +23,45 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
     },
     ...referenceJson,
   };
+}
+export class ReferenceSchemaLocater implements ISchemaLocater {
+  private readonly _schemaList: Map<string,Object>;
+  private readonly _parser: (schemaContent: any, context: SchemaContext)=>Schema;
+
+  constructor(parser: (schemaContent: any, context: SchemaContext)=>Schema) {
+    this._schemaList = new Map();
+    this._parser= parser;
+  }
+
+  public addSchema(schemaName: string, schema: any){
+    this._schemaList.set(schemaName,schema);
+  }
+  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+    return this.getSchemaSync(schemaKey,matchType,context) as T;
+  }
+
+  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+
+    if (this._schemaList.has(schemaKey.name)){
+      const schemaBody = this._schemaList.get(schemaKey.name);
+      const schema = this._parser(schemaBody, context);
+
+      return schema as T;
+    }
+
+    return undefined;
+  }
+}
+
+export async function deserializeXml(schemaXml: string, context: SchemaContext) {
+  return Promise.resolve(deserializeXmlSync(schemaXml, context));
+}
+
+export function deserializeXmlSync(schemaXml: string, context: SchemaContext) {
+  const parser = new DOMParser();
+  const document = parser.parseFromString(schemaXml);
+  const reader = new SchemaReadHelper(XmlParser, context);
+  return reader.readSchemaSync(new Schema(context), document);
 }
 
 export function createSchemaXmlWithItems(itemsXml: string | Element, ec32: boolean = false): Document {

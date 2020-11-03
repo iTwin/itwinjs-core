@@ -53,6 +53,7 @@ import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
+import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
@@ -242,6 +243,7 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
+    ToolWithDynamicSettings.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {

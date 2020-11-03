@@ -105,6 +105,7 @@ export * from "./ui-core/radio/Radio";
 export * from "./ui-core/select/LabeledSelect";
 export * from "./ui-core/select/Select";
 export * from "./ui-core/select/ThemedSelect";
+export * from "./ui-core/select/LabeledThemedSelect";
 export * from "./ui-core/searchbox/SearchBox";
 
 export * from "./ui-core/slider/Slider";

@@ -14,6 +14,7 @@ import { PrimitivePropertyRenderer } from "../../../ui-components/properties/ren
 import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../TestUtils";
+import { fireEvent, render } from "@testing-library/react";
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {
@@ -109,6 +110,10 @@ describe("PropertyRenderer", () => {
     propertyRecord = TestUtils.createPrimitiveStringProperty("Label", "Model");
   });
 
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
+
   it("updates displayed value if propertyRecord changes", async () => {
     const originalValue = "OriginalValue";
     const recordValue = "ChangedValue";
@@ -202,7 +207,7 @@ describe("PropertyRenderer", () => {
 
   it("calls onEditCommit on Enter key when editing", async () => {
     const spyMethod = sinon.spy();
-    const propertyRenderer = mount(
+    const propertyRenderer = render(
       <PropertyRenderer
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
@@ -210,17 +215,17 @@ describe("PropertyRenderer", () => {
         onEditCommit={spyMethod}
       />);
 
-    const inputNode = propertyRenderer.find("input");
-    expect(inputNode.length).to.eq(1);
+    const inputNode = propertyRenderer.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Enter" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
     await TestUtils.flushAsyncOperations();
     expect(spyMethod.calledOnce).to.be.true;
   });
 
   it("calls onEditCancel on Escape key when editing", () => {
     const spyMethod = sinon.spy();
-    const propertyRenderer = mount(
+    const propertyRenderer = render(
       <PropertyRenderer
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
@@ -228,10 +233,10 @@ describe("PropertyRenderer", () => {
         onEditCancel={spyMethod}
       />);
 
-    const inputNode = propertyRenderer.find("input");
-    expect(inputNode.length).to.eq(1);
+    const inputNode = propertyRenderer.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Escape" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
     expect(spyMethod.calledOnce).to.be.true;
   });
 

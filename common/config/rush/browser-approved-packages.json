@@ -503,6 +503,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "flatbuffers",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "form-data",
       "allowedCategories": [ "backend" ]
     },

@@ -14,6 +14,20 @@ import TestUtils from "../TestUtils";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 
 describe("<NumericInputEditor />", () => {
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  beforeEach(() => {
+    sinon.restore();
+  });
+
+  afterEach(cleanup);
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
+
   it("should render", () => {
     mount(<NumericInputEditor />);
   });
@@ -127,11 +141,11 @@ describe("<NumericInputEditor />", () => {
     function handleCommit(_commit: PropertyUpdatedArgs): void {
       spyOnCommit();
     }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
-    const inputNode = wrapper.find("input");
-    expect(inputNode.length).to.eq(1);
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const inputNode = wrapper.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Enter" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });

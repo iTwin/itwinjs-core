@@ -8,7 +8,7 @@ import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { LinksRenderer } from "../../../../ui-components/properties/LinkHandler";
 import { PrimitivePropertyRenderer } from "../../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
 import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
@@ -21,6 +21,10 @@ describe("FlatPropertyRenderer", () => {
 
   before(async () => {
     await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
   });
 
   beforeEach(() => {
@@ -129,7 +133,7 @@ describe("FlatPropertyRenderer", () => {
 
   it("calls onEditCommit on Enter key when editing", async () => {
     const spyMethod = sinon.spy();
-    const propertyRenderer = mount(
+    const propertyRenderer = render(
       <FlatPropertyRenderer
         category={{ name: "Cat1", label: "Category 1", expand: true }}
         orientation={Orientation.Horizontal}
@@ -140,16 +144,16 @@ describe("FlatPropertyRenderer", () => {
         onExpansionToggled={() => { }}
       />);
 
-    const inputNode = propertyRenderer.find("input");
-    expect(inputNode.length).to.eq(1);
+    const inputNode = propertyRenderer.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Enter" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
     await TestUtils.flushAsyncOperations();
     expect(spyMethod.calledOnce).to.be.true;
   });
 
   it("does not attempt to call onEditCommit callback when it is not present and throw", async () => {
-    const propertyRenderer = mount(
+    const propertyRenderer = render(
       <FlatPropertyRenderer
         category={{ name: "Cat1", label: "Category 1", expand: true }}
         orientation={Orientation.Horizontal}
@@ -159,16 +163,16 @@ describe("FlatPropertyRenderer", () => {
         onExpansionToggled={() => { }}
       />);
 
-    const inputNode = propertyRenderer.find("input");
-    expect(inputNode.length).to.eq(1);
+    const inputNode = propertyRenderer.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Enter" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
     await TestUtils.flushAsyncOperations();
   });
 
   it("calls onEditCancel on Escape key when editing", () => {
     const spyMethod = sinon.spy();
-    const propertyRenderer = mount(
+    const propertyRenderer = render(
       <FlatPropertyRenderer
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
@@ -178,10 +182,10 @@ describe("FlatPropertyRenderer", () => {
         onExpansionToggled={() => { }}
       />);
 
-    const inputNode = propertyRenderer.find("input");
-    expect(inputNode.length).to.eq(1);
+    const inputNode = propertyRenderer.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
 
-    inputNode.simulate("keyDown", { key: "Escape" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
     expect(spyMethod.calledOnce).to.be.true;
   });
 

@@ -886,7 +886,7 @@ export class ConcurrencyControl {
     openOrCreateCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     get pendingRequest(): ConcurrencyControl.Request;
-    // (undocumented)
+    // @internal
     queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
     request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void>;
     requestResources(ctx: AuthorizedClientRequestContext, elements: ConcurrencyControl.ElementAndOpcode[], models?: ConcurrencyControl.ModelAndOpcode[], relationships?: ConcurrencyControl.RelationshipAndOpcode[]): Promise<void>;
@@ -896,8 +896,9 @@ export class ConcurrencyControl {
     requestResourcesForInsert(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
     // @internal (undocumented)
     requestResourcesForOpcode(ctx: AuthorizedClientRequestContext, opcode: DbOpcode, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
-    // @internal (undocumented)
+    // @alpha
     requestResourcesForUpdate(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
+    // @internal
     reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]>;
     setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void;
     // @internal (undocumented)
@@ -2494,6 +2495,8 @@ export namespace IModelDb {
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): void;
         insertElement(elProps: ElementProps): Id64String;
+        // @internal
+        _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal

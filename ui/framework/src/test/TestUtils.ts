@@ -13,7 +13,7 @@ import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core
 
 import {
   ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
-  FrameworkState, SyncUiEventDispatcher, ToolUiManager, UiFramework,
+  FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
 } from "../ui-framework";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
@@ -97,7 +97,7 @@ export class TestUtils {
 
       TestUtils._uiFrameworkInitialized = true;
     }
-    ToolUiManager.clearToolSettingsData();
+    ToolSettingsManager.clearToolSettingsData();
     SyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
   }
 

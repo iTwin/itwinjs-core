@@ -8,7 +8,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@bentley/ui-components";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid, ToolUiManager,
+  ConfigurableCreateInfo, ConfigurableUiManager, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid, ToolSettingsManager,
   ToolUiProvider,
 } from "@bentley/ui-framework";
 import { Tool1 } from "../../tools/Tool1";
@@ -37,9 +37,9 @@ function Tool1Color() {
         }
       }
     };
-    ToolUiManager.onSyncToolSettingsProperties.addListener(handleChanged);
+    ToolSettingsManager.onSyncToolSettingsProperties.addListener(handleChanged);
     return () => {
-      ToolUiManager.onSyncToolSettingsProperties.removeListener(handleChanged);
+      ToolSettingsManager.onSyncToolSettingsProperties.removeListener(handleChanged);
     };
   }, []);
 

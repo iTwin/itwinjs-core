@@ -53,10 +53,9 @@ describe("KindOfQuantity", () => {
     const validFullKOQProps = {
       ...baseJson,
       relativeError: 1.234,
-      persistenceUnit: "Formats.DefaultReal",
+      persistenceUnit: "Formats.IN",
       presentationUnits: [
-        "Formats.IN",
-        "Formats.DefaultReal",
+        "Formats.DefaultReal[Formats.IN]",
       ],
     };
     it("async - should successfully deserialize", async () => {
@@ -68,14 +67,13 @@ describe("KindOfQuantity", () => {
       expect(testKoq!.label).eq("SomeDisplayLabel");
       expect(testKoq!.description).eq("A really long description...");
       expect(testKoq!.relativeError).eq(1.234);
-      expect(testKoq!.persistenceUnit!.name).eq("DefaultReal");
+      expect(testKoq!.persistenceUnit!.name).eq("IN");
 
       expect(testKoq!.presentationFormats).exist;
-      expect(testKoq!.presentationFormats!.length).eq(2);
+      expect(testKoq!.presentationFormats!.length).eq(1);
 
-      expect(testKoq!.defaultPresentationFormat!.name).eq("IN");
-      expect(testKoq!.presentationFormats![0].name).eq("IN");
-      expect(testKoq!.presentationFormats![1].name).eq("DefaultReal");
+      expect(testKoq!.defaultPresentationFormat!.name).eq("Formats.DefaultReal[Formats.IN]");
+      expect(testKoq!.presentationFormats![0].name).eq("Formats.DefaultReal[Formats.IN]");
     });
 
     const koqNoPresUnits = {
@@ -337,10 +335,9 @@ describe("KindOfQuantity", () => {
       const koqJson = {
         ...baseJson,
         relativeError: 1.234,
-        persistenceUnit: "Formats.DefaultReal",
+        persistenceUnit: "Formats.IN",
         presentationUnits: [
-          "Formats.IN",
-          "Formats.DefaultReal",
+          "Formats.DefaultReal[Formats.IN]",
         ],
       };
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
@@ -359,10 +356,9 @@ describe("KindOfQuantity", () => {
       const koqJson = {
         ...baseJson,
         relativeError: 1.234,
-        persistenceUnit: "Formats.DefaultReal",
+        persistenceUnit: "Formats.IN",
         presentationUnits: [
-          "Formats.IN",
-          "Formats.DefaultReal",
+          "Formats.DefaultReal[Formats.IN]",
         ],
       };
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
@@ -372,10 +368,9 @@ describe("KindOfQuantity", () => {
         label: "SomeDisplayLabel",
         description: "A really long description...",
         relativeError: 1.234,
-        persistenceUnit: "Formats.DefaultReal",
+        persistenceUnit: "Formats.IN",
         presentationUnits: [
-          "Formats.IN",
-          "Formats.DefaultReal",
+          "Formats.DefaultReal[Formats.IN]",
         ],
       };
       expect(testKoq).to.exist;
@@ -388,7 +383,7 @@ describe("KindOfQuantity", () => {
       const koqJson = {
         ...baseJson,
         relativeError: 1.234,
-        persistenceUnit: "Formats.DefaultReal",
+        persistenceUnit: "Formats.IN",
         presentationUnits: [],
       };
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
@@ -411,7 +406,7 @@ describe("KindOfQuantity", () => {
     const schemaJson = {
       ...baseJson,
       relativeError: 1.234,
-      persistenceUnit: "Formats.DefaultReal",
+      persistenceUnit: "Formats.IN",
       presentationUnits: [
         "Formats.DoubleUnitFormat",
         "Formats.QuadUnitFormat",
@@ -426,7 +421,7 @@ describe("KindOfQuantity", () => {
       expect(serialized.nodeName).to.eq("KindOfQuantity");
       expect(serialized.getAttribute("typeName")).to.eq("TestKindOfQuantity");
       expect(serialized.getAttribute("relativeError")).to.eq("1.234");
-      expect(serialized.getAttribute("persistenceUnit")).to.eq("f:DefaultReal");
+      expect(serialized.getAttribute("persistenceUnit")).to.eq("f:IN");
       expect(serialized.getAttribute("presentationUnits")).to.eq("f:DoubleUnitFormat;f:QuadUnitFormat");
     });
   });

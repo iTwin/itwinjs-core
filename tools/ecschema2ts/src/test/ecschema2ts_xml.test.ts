@@ -756,7 +756,7 @@ describe("convert schema xml string to ts", () => {
                           displayLabel="Kind of Quantity"
                           persistenceUnit="u:CM"
                           relativeError="1E-3"
-                          presentationUnits="u:FT;u:M"/>
+                          presentationUnits="f:DefaultReal(6)[u:FT|feet];f:DefaultReal[u:IN|inch];f:DefaultReal(8)[u:CM|centimeter][u:M|meter]"/>
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),

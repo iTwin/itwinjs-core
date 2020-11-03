@@ -25,6 +25,7 @@ import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisi
 import { getItemNamesFromFormatString } from "../utils/FormatEnums";
 import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
 import { ClassProps, PropertyProps, RelationshipConstraintProps, SchemaReferenceProps } from "./JsonProps";
+import {validateSchemaReferences, validateSchemaReferencesSync} from "../Validation/ECRules";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
@@ -161,6 +162,16 @@ export class SchemaReadHelper<T = unknown> {
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
     await (this._schema as MutableSchema).addReference(refSchema);
+    const diagnostics = validateSchemaReferences(this._schema!);
+
+    let errorMessage: string = "";
+    for await (const diagnostic of diagnostics) {
+      errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    }
+
+    if (errorMessage) {
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `${errorMessage}`);
+    }
   }
 
   /**
@@ -174,6 +185,15 @@ export class SchemaReadHelper<T = unknown> {
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
     (this._schema as MutableSchema).addReferenceSync(refSchema);
+    const diagnostics = validateSchemaReferencesSync(this._schema!);
+
+    let errorMessage: string = "";
+    for (const diagnostic of diagnostics) {
+      errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    }
+    if (errorMessage) {
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `${errorMessage}`);
+    }
   }
 
   /**

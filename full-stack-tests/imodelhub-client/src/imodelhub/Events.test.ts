@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { Guid, GuidString, Id64, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CodeEvent, EventSAS,
+  AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CheckpointCreatedEvent, CodeEvent, EventSAS,
   EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, IModelHubEventType, LockEvent, LockLevel, LockType, VersionEvent,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -363,6 +363,39 @@ describe("iModelHub EventHandler", () => {
     chai.assert(!!typedEvent);
     chai.expect(typedEvent.versionId).to.be.equal(versionId);
     chai.expect(typedEvent.changeSetId).to.be.eq("");
+  });
+
+  it("should receive CheckpointCreatedEvent (#unit)", async () => {
+    const versionId: GuidString = Guid.createValue();
+    const changeSetId: string = "changeSetId";
+    const changeSetIndex: string = "5";
+    const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","VersionId":"${versionId}","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
+    mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "CheckpointCreatedEvent");
+
+    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    chai.expect(event).to.be.instanceof(CheckpointCreatedEvent);
+    chai.assert(!!event!.iModelId);
+    const typedEvent = event as CheckpointCreatedEvent;
+    chai.assert(!!typedEvent);
+    chai.expect(typedEvent.versionId).to.be.equal(versionId);
+    chai.expect(typedEvent.changeSetId).to.be.eq(changeSetId);
+    chai.expect(typedEvent.changeSetIndex).to.be.eq(changeSetIndex);
+  });
+
+  it("should receive CheckpointCreatedEvent with no Version (#unit)", async () => {
+    const changeSetId: string = "changeSetId";
+    const changeSetIndex: string = "5";
+    const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
+    mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "CheckpointCreatedEvent");
+
+    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    chai.expect(event).to.be.instanceof(CheckpointCreatedEvent);
+    chai.assert(!!event!.iModelId);
+    const typedEvent = event as CheckpointCreatedEvent;
+    chai.assert(!!typedEvent);
+    chai.expect(!typedEvent.versionId);
+    chai.expect(typedEvent.changeSetId).to.be.eq(changeSetId);
+    chai.expect(typedEvent.changeSetIndex).to.be.eq(changeSetIndex);
   });
 
   it("should delete subscription", async () => {

@@ -41,8 +41,7 @@ import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./Sheet";
 import { TentativePoint } from "./TentativePoint";
-import { TileAdmin } from "./tile/internal";
-import { MapLayerFormatRegistry } from "./tile/map/MapLayerFormatRegistry";
+import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as extensionTool from "./tools/ExtensionTool";
@@ -89,6 +88,10 @@ export interface IModelAppOptions {
   settings?: SettingsAdmin;
   /** If present, supplies the [[ViewManager]] for this session. */
   viewManager?: ViewManager;
+  /** If present, supplies Map Layer Options for this session such as Azure Access Keys
+   * @beta
+  */
+  mapLayerOptions?: MapLayerOptions;
   /** If present, supplies the [[TileAdmin]] for this session.
    * @alpha
    */
@@ -197,6 +200,7 @@ export class IModelApp {
   private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
   private static _securityOptions: FrontendSecurityOptions;
+  private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -210,7 +214,7 @@ export class IModelApp {
   /** The [[MapLayerProviderRegistry]] for this session.
    * @internal
    */
-  public static mapLayerFormatRegistry = new MapLayerFormatRegistry();
+  public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
@@ -389,6 +393,24 @@ export class IModelApp {
       auxCoordState,
     ].forEach((module) => this.registerModuleEntities(module));
 
+    const defaultMapLayerOptions: MapLayerOptions = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      MapboxImagery: { key: "access_token", value: "pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg" },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      BingMaps: { key: "key", value: "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt" },
+    }
+    if (opts.mapLayerOptions) {
+      // if we were passed maplayeroptions, fill in any gaps with defaultMapLayerOptions
+      for (const key of Object.keys(defaultMapLayerOptions)) {
+        if (opts.mapLayerOptions[key])
+          continue;
+        opts.mapLayerOptions[key] = defaultMapLayerOptions[key];
+      }
+    } else {
+      opts.mapLayerOptions = defaultMapLayerOptions;
+    }
+
+
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
@@ -404,6 +426,7 @@ export class IModelApp {
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._featureToggles = (opts.featureToggles !== undefined) ? opts.featureToggles : new FeatureToggleClient();
+    this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
 
     [
       this.renderSystem,

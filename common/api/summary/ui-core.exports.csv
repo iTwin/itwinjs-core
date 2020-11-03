@@ -128,6 +128,8 @@ public;LabeledSelect
 public;LabeledSelectProps 
 public;LabeledTextarea 
 public;LabeledTextareaProps 
+beta;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
+beta;LabeledThemedSelectProps 
 public;LabeledToggle 
 public;LabeledToggleProps 
 public;LeadingText(props: TextProps): JSX.Element

@@ -11,7 +11,8 @@
   border-radius: $nz-widget-tab-border-radius $nz-widget-tab-border-radius 0 0;
   flex: 0 0 auto;
   position: relative;
-  min-height: $nz-widget-tab-height;
+  height: $nz-widget-tab-height;
+  border-bottom: 1px solid $buic-background-5;
 
   > .nz-handle {
     width: 100%;

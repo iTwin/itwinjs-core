@@ -13,8 +13,9 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import {
-  ColorEditorParams, DialogItem, DialogItemValue, DialogPropertyItem, DialogPropertySyncItem, ImageCheckBoxParams, InputEditorSizeParams,
-  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent, UiDataProvider,
+  ColorEditorParams, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, ImageCheckBoxParams,
+  InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, PropertyEditorParamTypes, RelativePosition,
+  SuppressLabelEditorParams, SyncPropertiesChangeEvent,
 } from "@bentley/ui-abstract";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
@@ -23,6 +24,9 @@ enum ToolOptions {
   White = 2,
   Blue = 3,
   Yellow = 4,
+  Purple = 5,
+  Pink = 6,
+  Green = 7,
 }
 
 enum ToolOptionNames {
@@ -30,9 +34,12 @@ enum ToolOptionNames {
   White = "White",
   Blue = "Blue",
   Yellow = "Yellow",
+  Purple = "Purple",
+  Pink = "Pink",
+  Green = "Green",
 }
 
-class PointOnePopupSettingsProvider extends UiDataProvider {
+class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
   // ------------- Weight ---------------
   private static _weightName = "weight";
   private static _getWeightDescription(): PropertyDescription {
@@ -56,45 +63,11 @@ class PointOnePopupSettingsProvider extends UiDataProvider {
     this._weightValue.value = weightVal;
   }
 
-  // ------------- Color ---------------
-  private static _colorOptionPropertyName = "colorOption";
-  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
-  private static getEnumAsPicklistDescription(): PropertyDescription {
-    return {
-      name: this._colorOptionPropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
-      typename: "enum",
-      enum: {
-        choices: [
-          { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
-          { label: this.enumAsPicklistMessage(ToolOptionNames.White), value: ToolOptions.White },
-          { label: this.enumAsPicklistMessage(ToolOptionNames.Blue), value: ToolOptions.Blue },
-          { label: this.enumAsPicklistMessage(ToolOptionNames.Yellow), value: ToolOptions.Yellow },
-        ],
-      },
-    };
-  }
-
-  private _colorOptionValue: DialogItemValue = { value: ToolOptions.Blue };
-
-  public get colorOption(): ToolOptions {
-    return this._colorOptionValue.value as ToolOptions;
-  }
-
-  public set colorOption(option: ToolOptions) {
-    this._colorOptionValue.value = option;
-  }
-
   /** Called by UI to inform data provider of changes.  */
   public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
-        if (prop.propertyName === PointOnePopupSettingsProvider._colorOptionPropertyName) {
-          this.colorOption = (prop.value.value! as number) as ToolOptions;
-          const msg = `Set Color Option = ${this.colorOption}`;
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
-          continue;
-        } else if (prop.propertyName === PointOnePopupSettingsProvider._weightName) {
+        if (prop.propertyName === PointOnePopupSettingsProvider._weightName) {
           this.weight = prop.value.value! as number;
           const msg = `Set Weight = ${this.weight}`;
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
@@ -105,10 +78,9 @@ class PointOnePopupSettingsProvider extends UiDataProvider {
     return { status: PropertyChangeStatus.Success };
   }
 
-  /** Used Called by UI to request available properties when UI is manually created. */
+  /** Called by UI to request available properties when UI is manually created. */
   public supplyDialogItems(): DialogItem[] | undefined {
     return [
-      { value: this._colorOptionValue, property: PointOnePopupSettingsProvider.getEnumAsPicklistDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } },
       { value: this._weightValue, property: PointOnePopupSettingsProvider._getWeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 1 } },
     ];
   }
@@ -127,7 +99,7 @@ class PointOnePopupSettingsProvider extends UiDataProvider {
   }
 }
 
-class PointTwoPopupSettingsProvider extends UiDataProvider {
+class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
 
   // ------------- text based edit field ---------------
   private static _sourcePropertyName = "source";
@@ -197,6 +169,46 @@ export class ToolWithSettings extends PrimitiveTool {
 
   private toggleCoordinateUpdate() {
     this._showCoordinatesOnPointerMove = !this._showCoordinatesOnPointerMove;
+  }
+
+  // ------------- Color List ---------------
+  private static _colorOptionPropertyName = "colorOption";
+  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
+  private static getEnumAsPicklistDescription(showExtendedSet: boolean): PropertyDescription {
+    const colorChoices = showExtendedSet ? [
+      { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
+      { label: this.enumAsPicklistMessage(ToolOptionNames.White), value: ToolOptions.White },
+      { label: this.enumAsPicklistMessage(ToolOptionNames.Blue), value: ToolOptions.Blue },
+      { label: this.enumAsPicklistMessage(ToolOptionNames.Yellow), value: ToolOptions.Yellow },
+      { label: this.enumAsPicklistMessage(ToolOptionNames.Purple), value: ToolOptions.Purple },
+      { label: this.enumAsPicklistMessage(ToolOptionNames.Pink), value: ToolOptions.Pink },
+      { label: this.enumAsPicklistMessage(ToolOptionNames.Green), value: ToolOptions.Green },
+    ] :
+      [
+        { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
+        { label: this.enumAsPicklistMessage(ToolOptionNames.White), value: ToolOptions.White },
+        { label: this.enumAsPicklistMessage(ToolOptionNames.Blue), value: ToolOptions.Blue },
+        { label: this.enumAsPicklistMessage(ToolOptionNames.Yellow), value: ToolOptions.Yellow },
+      ];
+
+    return {
+      name: this._colorOptionPropertyName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+      typename: "enum",
+      enum: {
+        choices: colorChoices,
+      },
+    };
+  }
+
+  private _colorOptionValue: DialogItemValue = { value: ToolOptions.Blue };
+
+  public get colorOption(): ToolOptions {
+    return this._colorOptionValue.value as ToolOptions;
+  }
+
+  public set colorOption(option: ToolOptions) {
+    this._colorOptionValue.value = option;
   }
 
   // ------------- Color ---------------
@@ -543,7 +555,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
     this.points.push(ev.point.clone());
     if (2 === this.points.length) {
-      const msg = `Point One -> Color=${this._pointOnePopupSettingsProvider.colorOption} Weight=${this._pointOnePopupSettingsProvider.weight}`;
+      const msg = `Point One -> Weight=${this._pointOnePopupSettingsProvider.weight}`;
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
     } else if (3 === this.points.length) {
       const msg = `Point Two -> Source=${this._pointTwoPopupSettingsProvider.source}`;
@@ -584,7 +596,11 @@ export class ToolWithSettings extends PrimitiveTool {
       this._isUseLengthCheckboxDisabled = !this._isUseLengthCheckboxDisabled;
 
       const syncItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._useLengthName, value: this._useLengthValue, isDisabled: this._isUseLengthCheckboxDisabled };
-      this.syncToolSettingsProperties([syncItem]);
+      // test updating color option and available colors by providing a new enum list
+      this.colorOption = this._isUseLengthCheckboxDisabled ? ToolOptions.Pink : ToolOptions.Red;
+      const updatedColorListProperty = ToolWithSettings.getEnumAsPicklistDescription(this._isUseLengthCheckboxDisabled);
+      const syncColorItem: DialogPropertySyncItem = { propertyName: ToolWithSettings._colorOptionPropertyName, value: this._colorOptionValue, property: updatedColorListProperty };
+      this.syncToolSettingsProperties([syncItem, syncColorItem]);
 
       const isDisabledStr = this._isUseLengthCheckboxDisabled ? "disabled" : "enabled";
       const msg = `UseLength checkbox is now '${isDisabledStr}'`;
@@ -635,12 +651,13 @@ export class ToolWithSettings extends PrimitiveTool {
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
     const readonly = false;
     const toolSettings = new Array<DialogItem>();
+    toolSettings.push({ value: this._colorOptionValue, property: ToolWithSettings.getEnumAsPicklistDescription(this._isUseLengthCheckboxDisabled), editorPosition: { rowPriority: 1, columnIndex: 1 } });
     toolSettings.push({ value: this._colorValue, property: ToolWithSettings._getColorDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 } });
     toolSettings.push({ value: this._lockValue, property: ToolWithSettings._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });
     toolSettings.push({ value: this._cityValue, property: ToolWithSettings._getCityDescription(), editorPosition: { rowPriority: 10, columnIndex: 2 } });
     toolSettings.push({ value: this._stateValue, property: ToolWithSettings._getStateDescription(), editorPosition: { rowPriority: 10, columnIndex: 4 } });
-    toolSettings.push({ value: this._coordinateValue, property: ToolWithSettings._getCoordinateDescription(), editorPosition: { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, isDisabled: readonly });
-    toolSettings.push({ value: this._stationValue, property: ToolWithSettings._getStationDescription(), editorPosition: { rowPriority: 16, columnIndex: 2, columnSpan: 3 }, isDisabled: readonly });
+    toolSettings.push({ value: this._coordinateValue, property: ToolWithSettings._getCoordinateDescription(), editorPosition: { rowPriority: 15, columnIndex: 2 }, isDisabled: readonly });
+    toolSettings.push({ value: this._stationValue, property: ToolWithSettings._getStationDescription(), editorPosition: { rowPriority: 16, columnIndex: 2 }, isDisabled: readonly });
     const lengthLock = { value: this._useLengthValue, property: ToolWithSettings._getUseLengthDescription(), editorPosition: { rowPriority: 20, columnIndex: 0 }, isDisabled: this._isUseLengthCheckboxDisabled };
     toolSettings.push({ value: this._lengthValue, property: this._lengthDescription, editorPosition: { rowPriority: 20, columnIndex: 2 }, isDisabled: false, lockProperty: lengthLock });
     toolSettings.push({ value: this._surveyLengthValue, property: this._surveyLengthDescription, editorPosition: { rowPriority: 21, columnIndex: 2 }, isDisabled: readonly });
@@ -697,5 +714,4 @@ export class ToolWithSettings extends PrimitiveTool {
     // return true is change is valid
     return true;
   }
-
 }

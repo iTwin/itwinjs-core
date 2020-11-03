@@ -685,6 +685,14 @@ export abstract class InteractiveTool extends Tool {
   public syncToolSettingsProperties(syncData: DialogPropertySyncItem[]) {
     IModelApp.toolAdmin.syncToolSettingsProperties(this.toolId, syncData);
   }
+
+  /** Called by tool to inform UI to reload ToolSettings with new set of properties. This allows properties to be added or removed from ToolSetting
+   * component as tool processing progresses.
+   * @beta
+   */
+  public reloadToolSettingsProperties() {
+    IModelApp.toolAdmin.reloadToolSettingsProperties();
+  }
 }
 
 /** The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.

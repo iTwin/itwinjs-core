@@ -12,7 +12,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Size } from "@bentley/ui-core";
 import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
-import { ConfigurableUiContent, CoreTools, FrontstageManager, RestoreFrontstageLayoutTool } from "../../ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiContent, CoreTools, FrontstageManager, RestoreFrontstageLayoutTool, ToolSettingsManager, ToolUiProvider } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
 
@@ -165,6 +165,19 @@ describe("FrontstageManager", () => {
       const item = CoreTools.selectElementCommand;
       item.execute();
       expect(FrontstageManager.activeToolId).to.eq(item.toolId);
+    });
+
+    it("trigger tool settings reload", () => {
+      class ToolUiProviderMock extends ToolUiProvider {
+        constructor(info: ConfigurableCreateInfo, options: any) {
+          super(info, options);
+        }
+      }
+
+      const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
+      sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
+
+      ToolSettingsManager.onReloadToolSettingsProperties.emit();
     });
 
   });

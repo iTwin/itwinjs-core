@@ -149,6 +149,7 @@ import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { Map4d } from '@bentley/geometry-core';
+import { MapLayerKey } from '@bentley/imodeljs-common';
 import { MapLayerProps } from '@bentley/imodeljs-common';
 import { MapLayerSettings } from '@bentley/imodeljs-common';
 import { MapSubLayerProps } from '@bentley/imodeljs-common';
@@ -3851,7 +3852,7 @@ export class IModelApp {
     // @internal
     static makeModalDiv(options: ModalOptions): ModalReturn;
     // @internal
-    static mapLayerFormatRegistry: MapLayerFormatRegistry;
+    static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
@@ -3901,6 +3902,8 @@ export interface IModelAppOptions {
     imodelClient?: IModelClient;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
+    // @beta
+    mapLayerOptions?: MapLayerOptions;
     notifications?: NotificationManager;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
@@ -4281,6 +4284,8 @@ export abstract class InteractiveTool extends Tool {
     onUnsuspend(): void;
     receivedDownEvent: boolean;
     // @beta
+    reloadToolSettingsProperties(): void;
+    // @beta
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // @beta
     syncToolSettingsProperties(syncData: DialogPropertySyncItem[]): void;
@@ -4516,7 +4521,9 @@ export class MapLayerFormat {
 
 // @internal (undocumented)
 export class MapLayerFormatRegistry {
-    constructor();
+    constructor(opts: MapLayerOptions);
+    // (undocumented)
+    get configOptions(): MapLayerOptions;
     // (undocumented)
     createImageryMapLayerTree(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
     // (undocumented)
@@ -4592,6 +4599,18 @@ export abstract class MapLayerImageryProvider {
     get usesCachedTiles(): boolean;
     // (undocumented)
     protected _usesCachedTiles: boolean;
+}
+
+// @beta
+export interface MapLayerOptions {
+    // (undocumented)
+    [format: string]: MapLayerKey | undefined;
+    // (undocumented)
+    AzureMaps?: MapLayerKey;
+    // (undocumented)
+    BingMaps?: MapLayerKey;
+    // (undocumented)
+    MapBoxImagery?: MapLayerKey;
 }
 
 // @internal (undocumented)
@@ -9486,6 +9505,11 @@ export class ToolAdmin {
     // @internal
     processEvent(): Promise<void>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
+    // @internal
+    get reloadToolSettingsHandler(): (() => void) | undefined;
+    set reloadToolSettingsHandler(handler: (() => void) | undefined);
+    // @beta
+    reloadToolSettingsProperties(): void;
     // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
     // (undocumented)
@@ -10282,6 +10306,36 @@ export class ViewClipTool extends PrimitiveTool {
     static setViewClip(viewport: Viewport, clip?: ClipVector): boolean;
     // (undocumented)
     protected showPrompt(): void;
+}
+
+// @beta
+export class ViewCreator2d {
+    constructor(_imodel: IModelConnection);
+    createViewForModel(modelId: Id64String, modelType: string, options?: ViewCreator2dOptions): Promise<ViewState>;
+    static isDrawingModelClass(modelType: string): boolean;
+    static isSheetModelClass(modelType: string): boolean;
+    }
+
+// @beta
+export interface ViewCreator2dOptions {
+    bgColor?: ColorDef;
+    useSeedView?: boolean;
+    vpAspect?: number;
+}
+
+// @beta
+export class ViewCreator3d {
+    constructor(_imodel: IModelConnection);
+    createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
+    }
+
+// @beta
+export interface ViewCreator3dOptions {
+    cameraOn?: boolean;
+    skyboxOn?: boolean;
+    standardViewId?: StandardViewId;
+    useSeedView?: boolean;
+    vpAspect?: number;
 }
 
 // @internal (undocumented)

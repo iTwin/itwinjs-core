@@ -1600,9 +1600,13 @@ export interface EditableTreeProps {
 
 // @beta
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @beta
 export interface EditorContainerProps extends CommonProps {
