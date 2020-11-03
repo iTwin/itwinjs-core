@@ -280,7 +280,7 @@ export class BriefcaseHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    const existingLocksOwnedByBriefcase = await this._imodelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(briefcaseId));
+    const existingLocksOwnedByBriefcase = await this._imodelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(briefcaseId).top(1));
     requestContext.enter();
     if (existingLocksOwnedByBriefcase.length > 0) {
       await this._imodelClient.locks.deleteAll(requestContext, iModelId, briefcaseId);

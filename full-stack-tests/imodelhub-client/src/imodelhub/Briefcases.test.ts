@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { Briefcase, BriefcaseQuery, ChangeSet, IModelClient, IModelHubClient, IModelHubClientError } from "@bentley/imodelhub-client";
+import { Briefcase, BriefcaseQuery, ChangeSet, IModelClient, IModelHubClient, IModelHubClientError, Lock } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
@@ -83,7 +83,6 @@ describe("iModelHub BriefcaseHandler", () => {
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Briefcases test";
   let briefcaseId: number;
-  let acquiredBriefcaseId: number;
 
   before(async function () {
     this.enableTimeouts(false);
@@ -135,7 +134,6 @@ describe("iModelHub BriefcaseHandler", () => {
     utils.mockCreateBriefcase(imodelId, 3);
     const briefcase = await iModelClient.briefcases.create(requestContext, imodelId);
     chai.expect(briefcase.briefcaseId).to.be.greaterThan(1);
-    acquiredBriefcaseId = briefcase.briefcaseId!;
   });
 
   it("should get all briefcases (#iModelBank)", async () => {
@@ -149,15 +147,43 @@ describe("iModelHub BriefcaseHandler", () => {
     }
   });
 
-  it("should delete a briefcase (#iModelBank)", async () => {
-    utils.mockGetBriefcase(imodelId, utils.generateBriefcase(2), utils.generateBriefcase(acquiredBriefcaseId));
+  it("should delete a briefcase that does not own locks (#iModelBank)", async () => {
+    let newBriefcase: Briefcase = utils.generateBriefcase(briefcaseId);
+    utils.mockCreateBriefcase(imodelId, undefined, newBriefcase);
+    newBriefcase = await iModelClient.briefcases.create(requestContext, imodelId, newBriefcase);
+
+    utils.mockGetBriefcase(imodelId, newBriefcase);
     const originalBriefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
 
-    utils.mockDeleteAllLocks(imodelId, acquiredBriefcaseId!);
-    mockDeleteBriefcase(imodelId, acquiredBriefcaseId);
-    await iModelClient.briefcases.delete(requestContext, imodelId, acquiredBriefcaseId);
+    utils.mockGetLocks(imodelId, `?$filter=BriefcaseId+eq+${newBriefcase.briefcaseId}&$top=1`);
+    mockDeleteBriefcase(imodelId, newBriefcase.briefcaseId!);
+    await iModelClient.briefcases.delete(requestContext, imodelId, newBriefcase.briefcaseId!);
 
-    utils.mockGetBriefcase(imodelId, utils.generateBriefcase(2));
+    utils.mockGetBriefcase(imodelId);
+    const briefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
+
+    chai.expect(briefcaseCount).to.be.lessThan(originalBriefcaseCount);
+  });
+
+  it("should delete a briefcase that owns locks (#iModelBank)", async () => {
+    let newBriefcase: Briefcase = utils.generateBriefcase(briefcaseId);
+    utils.mockCreateBriefcase(imodelId, undefined, newBriefcase);
+    newBriefcase = await iModelClient.briefcases.create(requestContext, imodelId, newBriefcase);
+
+    const lastObjectId = await utils.getLastLockObjectId(requestContext, imodelId);
+    const lock = utils.generateLock(newBriefcase.briefcaseId, utils.incrementLockObjectId(lastObjectId), 1, 2);
+    utils.mockUpdateLocks(imodelId, [lock]);
+    await iModelClient.locks.update(requestContext, imodelId, [lock]);
+
+    utils.mockGetBriefcase(imodelId, newBriefcase);
+    const originalBriefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
+
+    utils.mockGetLocks(imodelId, `?$filter=BriefcaseId+eq+${newBriefcase.briefcaseId}&$top=1`, ResponseBuilder.generateObject<Lock>(Lock));
+    utils.mockDeleteAllLocks(imodelId, newBriefcase.briefcaseId!);
+    mockDeleteBriefcase(imodelId, newBriefcase.briefcaseId!);
+    await iModelClient.briefcases.delete(requestContext, imodelId, newBriefcase.briefcaseId!);
+
+    utils.mockGetBriefcase(imodelId);
     const briefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
 
     chai.expect(briefcaseCount).to.be.lessThan(originalBriefcaseCount);
