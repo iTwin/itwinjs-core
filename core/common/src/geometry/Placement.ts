@@ -91,7 +91,7 @@ export class Placement3d implements Placement3dProps {
    * @throws [[IModelError]] if the Transform is invalid for a GeometricElement3d.
    */
   public multiplyTransform(other: Transform): void {
-    const transform: Transform = this.transform.multiplyTransformTransform(other);
+    const transform: Transform = other.multiplyTransformTransform(this.transform);
     const angles: YawPitchRollAngles | undefined = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
     if (undefined === angles) {
       throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
