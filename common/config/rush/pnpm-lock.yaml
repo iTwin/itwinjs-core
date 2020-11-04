@@ -380,8 +380,26 @@ dependencies:
   yargs: 15.4.1
 lockfileVersion: 5.1
 packages:
-  /@azure/ms-rest-js/2.1.0:
+  /@azure/abort-controller/1.0.2:
     dependencies:
+      tslib: 2.1.0
+    dev: false
+    engines:
+      node: '>=8.0.0'
+    resolution:
+      integrity: sha512-XUyTo+bcyxHEf+jlN2MXA7YU9nxVehaubngHV1MIZZaqYmZqykkoeAz/JMMEeR7t3TcyDwbFa3Zw8BZywmIx4g==
+  /@azure/core-auth/1.1.4:
+    dependencies:
+      '@azure/abort-controller': 1.0.2
+      tslib: 2.1.0
+    dev: false
+    engines:
+      node: '>=8.0.0'
+    resolution:
+      integrity: sha512-+j1embyH1jqf04AIfJPdLafd5SC1y6z1Jz4i+USR1XkTp6KM8P5u4/AjmWMVoEQdM/M29PJcRDZcCEWjK9S1bw==
+  /@azure/ms-rest-js/2.2.0:
+    dependencies:
+      '@azure/core-auth': 1.1.4
       '@types/node-fetch': 2.5.8
       '@types/tunnel': 0.0.1
       abort-controller: 3.0.0
@@ -394,10 +412,10 @@ packages:
       xml2js: 0.4.23
     dev: false
     resolution:
-      integrity: sha512-4BXLVImYRt+jcUmEJ5LUWglI8RBNVQndY6IcyvQ4U8O4kIXdmlRz3cJdA/RpXf5rKT38KOoTO2T6Z1f6Z1HDBg==
+      integrity: sha512-lmSqjNuqx/TmwXLpVs1acAExUhHGkHvXIdfyttNc3qlpcn6xoT8JqGFRVwvoh5rZKPfy84aSaXUEPf/gwfRZHg==
   /@azure/storage-blob/10.4.0:
     dependencies:
-      '@azure/ms-rest-js': 2.1.0
+      '@azure/ms-rest-js': 2.2.0
       events: 3.2.0
       tslib: 1.14.1
     dev: false
@@ -1674,7 +1692,7 @@ packages:
   /@bentley/react-scripts/3.4.6_48b17a5d78442b2ad165e79b3193b2e6:
     dependencies:
       '@babel/core': 7.9.0
-      '@bentley/webpack-tools-core': 2.10.6_webpack@4.42.0
+      '@bentley/webpack-tools-core': 2.11.0_webpack@4.42.0
       '@svgr/webpack': 4.3.3
       '@typescript-eslint/eslint-plugin': 2.34.0_b19fc4176cc1ce9aa077ffdbf5f88816
       '@typescript-eslint/parser': 2.34.0_eslint@6.8.0+typescript@3.7.5
@@ -1750,12 +1768,15 @@ packages:
         optional: true
     resolution:
       integrity: sha512-lFxmClVnb6XoqPlB39YS/FfzwDfLytCrAo5pm8qrLuKQyM3dCKor1ov3F1UAMrDjX5DpB8UVfBodR/rPViNWTQ==
-  /@bentley/webpack-tools-core/2.10.6_webpack@4.42.0:
+  /@bentley/webpack-tools-core/2.11.0_webpack@4.42.0:
     dependencies:
       chalk: 3.0.0
       file-loader: 4.3.0_webpack@4.42.0
+      findup: 0.1.5
       fs-extra: 8.1.0
       glob: 7.1.6
+      lodash: 4.17.20
+      resolve: 1.19.0
       source-map-loader: 1.1.3_webpack@4.42.0
       webpack: 4.42.0_webpack@4.42.0
       webpack-filter-warnings-plugin: 1.2.1_webpack@4.42.0
@@ -1764,7 +1785,7 @@ packages:
     peerDependencies:
       webpack: 4.42.0
     resolution:
-      integrity: sha512-5axuRhrHBq9Co4ZsnQbJxNDkPSNSgoXcdsqPPpjeIh7tBSZPr2641OgfY3jEn93Z1h7IvRrzrSXu/bA9GfVGRA==
+      integrity: sha512-MNs2rry6EtZTstdAORrQ78MnxwiqSNFtjt+ozbRU3UaHTvVOQyHGBnuc1qi4dYXwOD/eNsYhySBDri+uo4CntA==
   /@cnakazawa/watch/1.0.4:
     dependencies:
       exec-sh: 0.3.4
@@ -2267,7 +2288,7 @@ packages:
   /@nodelib/fs.walk/1.2.6:
     dependencies:
       '@nodelib/fs.scandir': 2.1.4
-      fastq: 1.10.0
+      fastq: 1.10.1
     dev: false
     engines:
       node: '>= 8'
@@ -4240,7 +4261,7 @@ packages:
   /autoprefixer/8.6.5:
     dependencies:
       browserslist: 3.2.8
-      caniuse-lite: 1.0.30001179
+      caniuse-lite: 1.0.30001180
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       postcss: 6.0.23
@@ -4252,7 +4273,7 @@ packages:
   /autoprefixer/9.8.6:
     dependencies:
       browserslist: 4.16.1
-      caniuse-lite: 1.0.30001179
+      caniuse-lite: 1.0.30001180
       colorette: 1.2.1
       normalize-range: 0.1.2
       num2fraction: 1.2.2
@@ -4824,16 +4845,16 @@ packages:
       integrity: sha512-Z942RysHXmJrhqk88FmKBVq/v5tqmSkDz7p54G/MGyjMnCFFnC79XWNbg+Vta8W6Wb2qtSZTSxIGkJrRpCFEiA==
   /browserslist/3.2.8:
     dependencies:
-      caniuse-lite: 1.0.30001179
-      electron-to-chromium: 1.3.645
+      caniuse-lite: 1.0.30001180
+      electron-to-chromium: 1.3.647
     dev: false
     hasBin: true
     resolution:
       integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==
   /browserslist/4.10.0:
     dependencies:
-      caniuse-lite: 1.0.30001179
-      electron-to-chromium: 1.3.645
+      caniuse-lite: 1.0.30001180
+      electron-to-chromium: 1.3.647
       node-releases: 1.1.70
       pkg-up: 3.1.0
     dev: false
@@ -4842,8 +4863,8 @@ packages:
       integrity: sha512-TpfK0TDgv71dzuTsEAlQiHeWQ/tiPqgNZVdv046fvNtBZrjbv2O3TsWCDU0AWGJJKCF/KsjNdLzR9hXOsh/CfA==
   /browserslist/4.11.1:
     dependencies:
-      caniuse-lite: 1.0.30001179
-      electron-to-chromium: 1.3.645
+      caniuse-lite: 1.0.30001180
+      electron-to-chromium: 1.3.647
       node-releases: 1.1.70
       pkg-up: 2.0.0
     dev: false
@@ -4852,9 +4873,9 @@ packages:
       integrity: sha512-DCTr3kDrKEYNw6Jb9HFxVLQNaue8z+0ZfRBRjmCunKDEXEBajKDj2Y+Uelg+Pi29OnvaSGwjOsnRyNEkXzHg5g==
   /browserslist/4.16.1:
     dependencies:
-      caniuse-lite: 1.0.30001179
+      caniuse-lite: 1.0.30001180
       colorette: 1.2.1
-      electron-to-chromium: 1.3.645
+      electron-to-chromium: 1.3.647
       escalade: 3.1.1
       node-releases: 1.1.70
     dev: false
@@ -4981,7 +5002,7 @@ packages:
       p-map: 4.0.0
       promise-inflight: 1.0.1
       rimraf: 3.0.2
-      ssri: 8.0.0
+      ssri: 8.0.1
       tar: 6.1.0
       unique-filename: 1.1.1
     dev: false
@@ -5106,16 +5127,16 @@ packages:
   /caniuse-api/3.0.0:
     dependencies:
       browserslist: 4.16.1
-      caniuse-lite: 1.0.30001179
+      caniuse-lite: 1.0.30001180
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: false
     resolution:
       integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==
-  /caniuse-lite/1.0.30001179:
+  /caniuse-lite/1.0.30001180:
     dev: false
     resolution:
-      integrity: sha512-blMmO0QQujuUWZKyVrD1msR4WNDAqb/UPO1Sw2WWsQ7deoM5bJiicKnWJ1Y0NS/aGINSnKPIWBMw5luX+NDUCA==
+      integrity: sha512-n8JVqXuZMVSPKiPiypjFtDTXc4jWIdjxull0f92WLo7e1MSi3uJ3NvveakSh/aCl1QKFAvIz3vIj0v+0K+FrXw==
   /capture-exit/2.0.0:
     dependencies:
       rsvp: 4.8.5
@@ -6860,10 +6881,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
-  /electron-to-chromium/1.3.645:
+  /electron-to-chromium/1.3.647:
     dev: false
     resolution:
-      integrity: sha512-T7mYop3aDpRHIQaUYcmzmh6j9MAe560n6ukqjJMbVC6bVTau7dSpvB18bcsBPPtOSe10cKxhJFtlbEzLa0LL1g==
+      integrity: sha512-Or2Nu8TjkmSywY9hk85K/Y6il28hchlonITz30fkC87qvSNupQl29O12BzDDDTnUFlo6kEIFL2QGSpkZDMxH8g==
   /electron/11.2.1:
     dependencies:
       '@electron/get': 1.12.3
@@ -8145,12 +8166,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-9K8+qfNNiicc9YrSs3WfQx8LMY0=
-  /fastq/1.10.0:
+  /fastq/1.10.1:
     dependencies:
       reusify: 1.0.4
     dev: false
     resolution:
-      integrity: sha512-NL2Qc5L3iQEsyYzweq7qfgy5OtXCmGzGvhElGEd/SoFWEMOEczNh5s5ocaF01HDetxz+p8ecjNPA6cZxxIHmzA==
+      integrity: sha512-AWuv6Ery3pM+dY7LYS8YIaCiQvUaos9OB1RyNgaOWnaX+Tik7Onvcsf8x8c+YtDeT0maYLniBip2hox5KtEXXA==
   /faye-websocket/0.10.0:
     dependencies:
       websocket-driver: 0.6.5
@@ -9769,16 +9790,16 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-S1zBo1D6zcsyuC6PMmY5+55YMILQ9av8lotMx447Bq6SAgo/sDK6y6uUKmuYhW7eacnIhFfsPmCNYdDzsnnDCg==
-  /internal-slot/1.0.2:
+  /internal-slot/1.0.3:
     dependencies:
-      es-abstract: 1.17.7
+      get-intrinsic: 1.1.0
       has: 1.0.3
       side-channel: 1.0.4
     dev: false
     engines:
       node: '>= 0.4'
     resolution:
-      integrity: sha512-2cQNfwhAfJIkU4KZPkDI+Gj5yNNnbqi40W9Gge6dfnk4TocEVm00B3bdiL+JINrbGJil2TeHvM4rETGzk/f/0g==
+      integrity: sha512-O0DB1JC/sPyZl7cIo78n5dR7eUSwwpYPiXRhTzNxZVAMUuB8vlnRFyLxdrVToks6XPLVnFfbzaVd5WLjhgg+vA==
   /interpret/1.4.0:
     dev: false
     engines:
@@ -14075,7 +14096,7 @@ packages:
     dependencies:
       autoprefixer: 9.8.6
       browserslist: 4.16.1
-      caniuse-lite: 1.0.30001179
+      caniuse-lite: 1.0.30001180
       css-blank-pseudo: 0.1.4
       css-has-pseudo: 0.10.0
       css-prefers-color-scheme: 3.1.1
@@ -16556,14 +16577,14 @@ packages:
     dev: false
     resolution:
       integrity: sha512-3Wge10hNcT1Kur4PDFwEieXSCMCJs/7WvSACcrMYrNp+b8kDL1/0wJch5Ni2WrtwEa2IO8OsVfeKIciKCDx/QA==
-  /ssri/8.0.0:
+  /ssri/8.0.1:
     dependencies:
       minipass: 3.1.3
     dev: false
     engines:
       node: '>= 8'
     resolution:
-      integrity: sha512-aq/pz989nxVYwn16Tsbj1TqFpD5LLrQxHf5zaHuieFV+R0Bbr4y8qUsOA45hXT/N4/9UNXTarBjnjVmjSOVaAA==
+      integrity: sha512-97qShzy1AiyxvPNIkLWoGua7xoQzzPjQ0HAH4B0rWKo7SZ6USuPcrUiAFrws0UH8RrbWmgq3LMTObhPIHbbBeQ==
   /stable/0.1.8:
     dev: false
     resolution:
@@ -16702,7 +16723,7 @@ packages:
       define-properties: 1.1.3
       es-abstract: 1.18.0-next.2
       has-symbols: 1.0.1
-      internal-slot: 1.0.2
+      internal-slot: 1.0.3
       regexp.prototype.flags: 1.3.1
       side-channel: 1.0.4
     dev: false
@@ -21279,7 +21300,6 @@ packages:
       integrity: sha512-3XrZTZsW2KwGdMCRF1ZOO/8o1u6lYBK+X1wGei44rEntXRNjIGunboKbw28TAv2lYei1BSC4GXftViLgJhNi4g==
       tarball: 'file:projects/webpack-tools-core.tgz'
     version: 0.0.0
-registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@babel/core': 7.7.4
