@@ -30,8 +30,8 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "semver": "^5.5.0",
-    "@ungap/url-search-params": "^0.1.2"
+    "@ungap/url-search-params": "^0.1.2",
+    "semver": "^5.5.0"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.9.0-dev.9",

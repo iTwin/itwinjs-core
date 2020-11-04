@@ -39,13 +39,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.9.0-dev.9",
-    "@bentley/geometry-core": "^2.9.0-dev.9",
-    "@bentley/imodeljs-backend": "^2.9.0-dev.9",
-    "@bentley/imodelhub-client": "^2.9.0-dev.9",
     "@bentley/backend-itwin-client": "^2.9.0-dev.9",
-    "@bentley/imodeljs-common": "^2.9.0-dev.9",
+    "@bentley/bentleyjs-core": "^2.9.0-dev.9",
     "@bentley/context-registry-client": "^2.9.0-dev.9",
+    "@bentley/geometry-core": "^2.9.0-dev.9",
+    "@bentley/imodelhub-client": "^2.9.0-dev.9",
+    "@bentley/imodeljs-backend": "^2.9.0-dev.9",
+    "@bentley/imodeljs-common": "^2.9.0-dev.9",
     "@bentley/rbac-client": "^2.9.0-dev.9"
   },
   "//devDependencies": [
@@ -53,16 +53,16 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/imodeljs-backend": "2.9.0-dev.9",
-    "@bentley/itwin-client": "2.9.0-dev.9",
-    "@bentley/bentleyjs-core": "2.9.0-dev.9",
-    "@bentley/geometry-core": "2.9.0-dev.9",
     "@bentley/backend-itwin-client": "2.9.0-dev.9",
-    "@bentley/imodeljs-common": "2.9.0-dev.9",
-    "@bentley/oidc-signin-tool": "2.9.0-dev.9",
+    "@bentley/bentleyjs-core": "2.9.0-dev.9",
     "@bentley/build-tools": "2.9.0-dev.9",
-    "@bentley/eslint-plugin": "2.9.0-dev.9",
     "@bentley/config-loader": "2.9.0-dev.9",
+    "@bentley/eslint-plugin": "2.9.0-dev.9",
+    "@bentley/geometry-core": "2.9.0-dev.9",
+    "@bentley/imodeljs-backend": "2.9.0-dev.9",
+    "@bentley/imodeljs-common": "2.9.0-dev.9",
+    "@bentley/itwin-client": "2.9.0-dev.9",
+    "@bentley/oidc-signin-tool": "2.9.0-dev.9",
     "@bentley/rbac-client": "2.9.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",

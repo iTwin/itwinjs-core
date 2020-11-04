@@ -38,16 +38,16 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.9.0-dev.9",
-    "@bentley/imodeljs-common": "^2.9.0-dev.9",
     "@bentley/imodeljs-backend": "^2.9.0-dev.9",
+    "@bentley/imodeljs-common": "^2.9.0-dev.9",
     "@bentley/presentation-common": "^2.9.0-dev.9"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.9.0-dev.9",
     "@bentley/build-tools": "2.9.0-dev.9",
     "@bentley/eslint-plugin": "2.9.0-dev.9",
-    "@bentley/imodeljs-common": "2.9.0-dev.9",
     "@bentley/imodeljs-backend": "2.9.0-dev.9",
+    "@bentley/imodeljs-common": "2.9.0-dev.9",
     "@bentley/presentation-common": "2.9.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

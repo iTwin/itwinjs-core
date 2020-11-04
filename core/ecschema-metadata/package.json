@@ -55,7 +55,6 @@
     "xmldom": "^0.1.27",
     "xmlhttprequest": "^1.8.0"
   },
-  "dependencies": {},
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.9.0-dev.9",
     "@bentley/imodeljs-i18n": "^2.9.0-dev.9"

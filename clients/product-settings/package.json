@@ -34,17 +34,16 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {},
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.9.0-dev.9",
     "@bentley/itwin-client": "^2.9.0-dev.9"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.9.0-dev.9",
-    "@bentley/eslint-plugin": "2.9.0-dev.9",
     "@bentley/certa": "2.9.0-dev.9",
     "@bentley/config-loader": "2.9.0-dev.9",
     "@bentley/context-registry-client": "2.9.0-dev.9",
+    "@bentley/eslint-plugin": "2.9.0-dev.9",
     "@bentley/imodelhub-client": "2.9.0-dev.9",
     "@bentley/oidc-signin-tool": "2.9.0-dev.9",
     "@bentley/rbac-client": "2.9.0-dev.9",
