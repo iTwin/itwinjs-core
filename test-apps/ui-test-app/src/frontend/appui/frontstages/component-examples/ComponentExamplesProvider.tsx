@@ -33,10 +33,6 @@ function fahrenheitToCelsius(f: number) {
   return (f - 32) * 5 / 9;
 }
 
-function celsiusToFahrenheit(c: number) {
-  return (c * 9 / 5) + 32;
-}
-
 function parseStringToCelsius(userInput: string): ParseResults {
   let convertFromFahrenheit = false;
   let temperatureStr = userInput;
@@ -61,10 +57,8 @@ function parseStringToCelsius(userInput: string): ParseResults {
   }
 }
 
-function formatCelsiusValue(temperature: string | number | boolean | {} | [] | string[] | Date): string {
-  if (typeof temperature === "number")
-    return `${temperature.toFixed(1)}C`;
-  return temperature.toString();
+function formatCelsiusValue(temperature: number): string {
+  return `${temperature.toFixed(1)}C`;
 }
 
 /** An example formatter that both formats and parses dates. */
@@ -436,7 +430,7 @@ export class ComponentExamplesProvider {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Volume value set to ${value}`));
       console.log(`Volume value set to: ${value}`);
     }
-    const onTemperatureChange = (value: string | number | boolean | {} | [] | string[] | Date) => {
+    const onTemperatureChange = (value: number) => {
       if (typeof value === "number") {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Temperature value set to ${value} C`));
         console.log(`Temperature value set to ${value} C`);

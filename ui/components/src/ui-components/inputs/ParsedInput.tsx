@@ -17,13 +17,13 @@ import "./ParsedInput.scss";
  */
 export interface ParsedInputProps extends CommonProps {
   /** InitialValue which is used to restore input field if ESC is pressed */
-  initialValue: string | number | boolean | {} | string[] | Date | [];  // TODO-should this only support number values?
+  initialValue: number;
   /** Function used to format the value */
-  formatValue: (value: string | number | boolean | {} | string[] | Date | []) => string;
+  formatValue: (value: number) => string;
   /** Function used to parse user input into a value */
   parseString: (stringValue: string) => ParseResults;
   /** Function to call when value is changed */
-  onChange?: (newValue: string | number | boolean | {} | string[] | Date | []) => void;
+  onChange?: (newValue: number) => void;
   /** if readonly then only the formatValue function is used. */
   readonly?: boolean;
 }
@@ -48,10 +48,10 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
   // See if new initialValue props have changed since component mounted
   React.useEffect(() => {
     // istanbul ignore else
-    if (initialValue !== currentValueRef) {
+    if (initialValue !== currentValueRef.current) {
       currentValueRef.current = initialValue;
       lastFormattedValueRef.current = formatValue(initialValue);
-      setFormattedValue(formatValue(lastFormattedValueRef.current));
+      setFormattedValue(lastFormattedValueRef.current);
       setHasBadInput(false);
     }
   }, [formatValue, initialValue])
@@ -65,12 +65,16 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
       return;
 
     const parseResults = (parseString(strVal));
+    // istanbul ignore else
     if (!parseResults.parseError) {
+      // istanbul ignore else
       if (undefined !== parseResults.value) {
+        // istanbul ignore else
         if (currentValueRef.current !== parseResults.value) {
-          currentValueRef.current = parseResults.value;
+          currentValueRef.current = parseResults.value as number;
           lastFormattedValueRef.current = formatValue(currentValueRef.current);
-          onChange && onChange(parseResults.value);
+          onChange && onChange(currentValueRef.current);
+          // istanbul ignore else
           if (isMountedRef.current) {
             setFormattedValue(lastFormattedValueRef.current);
             setHasBadInput(false);
@@ -83,15 +87,13 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
   }, [formatValue, onChange, parseString]);
 
   const handleOnBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
-    if (event.target.value !== lastFormattedValueRef.current)
-      updateQuantityValueFromString(event.target.value);
+    updateQuantityValueFromString(event.target.value);
   }, [updateQuantityValueFromString]);
 
   function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
     // istanbul ignore else
     if (event.key === SpecialKey.Enter) {
-      if (event.currentTarget.value !== lastFormattedValueRef.current)
-        updateQuantityValueFromString(event.currentTarget.value);
+      updateQuantityValueFromString(event.currentTarget.value);
       event.preventDefault();
     }
     if (event.key === SpecialKey.Escape) {

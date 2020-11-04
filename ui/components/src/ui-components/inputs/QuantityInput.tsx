@@ -13,6 +13,7 @@ import { ParseResults } from "@bentley/ui-abstract";
 import { QuantityStatus } from "@bentley/imodeljs-quantity";
 import { IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
 import { ParsedInput } from "./ParsedInput";
+import { UiComponents } from "../UiComponents";
 
 /** Props for [[QuantityInput]] control
  * @beta
@@ -35,31 +36,32 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
   const [formatterSpec, setFormatterSpec] = React.useState(() => IModelApp.quantityFormatter.findFormatterSpecByQuantityType(quantityType));
   const [parserSpec, setParserSpec] = React.useState(() => IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));
 
-  const formatValue = React.useCallback((value: string | number | boolean | {} | string[] | Date | []) => {
-    if (typeof value === "number") {
-      if (formatterSpec) {
-        return IModelApp.quantityFormatter.formatQuantity(value, formatterSpec);
-      }
-      return value.toFixed(2);
+  const formatValue = React.useCallback((value: number) => {
+    // istanbul ignore else
+    if (formatterSpec) {
+      return IModelApp.quantityFormatter.formatQuantity(value, formatterSpec);
     }
-    return value.toString();
+    // istanbul ignore next
+    return value.toFixed(2);
   }, [formatterSpec]);
 
   const parseString = (userInput: string): ParseResults => {
+    // istanbul ignore else
     if (parserSpec) {
       const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, parserSpec);
+      // istanbul ignore else
       if (parseResult.status === QuantityStatus.Success) {
         return { value: parseResult.value };
       } else {
-        return { parseError: "Parse Error" };
+        return { parseError: `${UiComponents.translate("QuantityInput.NoParserDefined")}${parseResult.status}` };
       }
     }
-    return { parseError: "no parser defined" };
+    // istanbul ignore next
+    return { parseError: UiComponents.translate("QuantityInput.NoParserDefined") };
   };
 
-  const handleQuantityChange = React.useCallback((newValue: string | number | boolean | {} | string[] | Date | []) => {
-    if (typeof newValue === "number")
-      onQuantityChange && onQuantityChange(newValue);
+  const handleQuantityChange = React.useCallback((newValue: number) => {
+    onQuantityChange && onQuantityChange(newValue);
   }, [onQuantityChange]);
   const classNames = classnames(className, "components-quantity-input");
 

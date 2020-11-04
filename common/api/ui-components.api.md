@@ -2995,9 +2995,9 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
 
 // @beta
 export interface ParsedInputProps extends CommonProps {
-    formatValue: (value: string | number | boolean | {} | string[] | Date | []) => string;
-    initialValue: string | number | boolean | {} | string[] | Date | [];
-    onChange?: (newValue: string | number | boolean | {} | string[] | Date | []) => void;
+    formatValue: (value: number) => string;
+    initialValue: number;
+    onChange?: (newValue: number) => void;
     parseString: (stringValue: string) => ParseResults;
     readonly?: boolean;
 }
