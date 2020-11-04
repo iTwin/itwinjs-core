@@ -10,20 +10,26 @@ import * as React from "react";
 import classnames from "classnames";
 import { CommonProps, Input } from "@bentley/ui-core";
 import { ParseResults, SpecialKey } from "@bentley/ui-abstract";
-import { QuantityStatus } from "@bentley/imodeljs-quantity";
-import { IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
 import "./ParsedInput.scss";
 
+/** Props for [[ParsedInput]] control
+ * @beta
+ */
 export interface ParsedInputProps extends CommonProps {
+  /** InitialValue which is used to restore input field if ESC is pressed */
   initialValue: string | number | boolean | {} | string[] | Date | [];  // TODO-should this only support number values?
+  /** Function used to format the value */
   formatValue: (value: string | number | boolean | {} | string[] | Date | []) => string;
+  /** Function used to parse user input into a value */
   parseString: (stringValue: string) => ParseResults;
+  /** Function to call when value is changed */
   onChange?: (newValue: string | number | boolean | {} | string[] | Date | []) => void;
+  /** if readonly then only the formatValue function is used. */
   readonly?: boolean;
 }
 
 /** Generic Input component that requires formatting and parsing functions to be passed in as props.
- * @internal
+ * @beta
  */
 export function ParsedInput({ initialValue, formatValue, parseString, readonly, className, style, onChange }: ParsedInputProps) {
   const currentValueRef = React.useRef(initialValue);
@@ -39,7 +45,7 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
     }
   }, [])
 
-  // See if new initialDate props have changed since component mounted
+  // See if new initialValue props have changed since component mounted
   React.useEffect(() => {
     // istanbul ignore else
     if (initialValue !== currentValueRef) {
@@ -48,7 +54,7 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
       setFormattedValue(formatValue(lastFormattedValueRef.current));
       setHasBadInput(false);
     }
-  }, [])
+  }, [formatValue, initialValue])
 
   const handleInputChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setFormattedValue(event.currentTarget.value);
@@ -61,7 +67,7 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
     const parseResults = (parseString(strVal));
     if (!parseResults.parseError) {
       if (undefined !== parseResults.value) {
-        if (currentValueRef.current != parseResults.value) {
+        if (currentValueRef.current !== parseResults.value) {
           currentValueRef.current = parseResults.value;
           lastFormattedValueRef.current = formatValue(currentValueRef.current);
           onChange && onChange(parseResults.value);
@@ -74,12 +80,12 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
     } else {
       setHasBadInput(true);
     }
-  }, []);
+  }, [formatValue, onChange, parseString]);
 
   const handleOnBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
     if (event.target.value !== lastFormattedValueRef.current)
       updateQuantityValueFromString(event.target.value);
-  }, []);
+  }, [updateQuantityValueFromString]);
 
   function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
     // istanbul ignore else
@@ -100,4 +106,3 @@ export function ParsedInput({ initialValue, formatValue, parseString, readonly, 
   return <Input data-testid="components-parsed-input" style={style} className={classNames} onKeyDown={onInputKeyDown} onBlur={handleOnBlur}
     onChange={handleInputChange} value={formattedValue} disabled={readonly} />
 }
-

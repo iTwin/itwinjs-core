@@ -14,14 +14,21 @@ import { QuantityStatus } from "@bentley/imodeljs-quantity";
 import { IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
 import { ParsedInput } from "./ParsedInput";
 
+/** Props for [[QuantityInput]] control
+ * @beta
+ */
 export interface QuantityProps extends CommonProps {
+  /** Initial magnitude in 'persistence' units. See `getUnitByQuantityType` in [QuantityFormatter]($imodeljs-frontend) */
   initialValue: number;
+  /** Type of quantity being input. */
   quantityType: QuantityType;
-  readonly?: boolean;
+  /** Function to call in the quantity value is changed. The value returned will be in 'persistence' units. */
   onQuantityChange: (newQuantityValue: number) => void;
+  /** Set to `true` if value is for display only */
+  readonly?: boolean;
 }
 
-/**
+/** Input control that allows users to input a quantity and show the formatted string that represents the value.
  * @beta
  */
 export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange }: QuantityProps) {
@@ -53,7 +60,7 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
   const handleQuantityChange = React.useCallback((newValue: string | number | boolean | {} | string[] | Date | []) => {
     if (typeof newValue === "number")
       onQuantityChange && onQuantityChange(newValue);
-  }, []);
+  }, [onQuantityChange]);
   const classNames = classnames(className, "components-quantity-input");
 
   React.useEffect(() => {
