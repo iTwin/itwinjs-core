@@ -86,8 +86,12 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     return CloudStorageTileCache.getCache().retrieve({ tokenProps, treeId, contentId, guid });
   }
 
-  /** @internal */
-  public async requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array> {
+  /** Requests graphics for a single element in [[TileFormat.IModel]] format.
+   * @returns graphics in iMdl format, or `undefined` if the element's geometry produced no graphics or the request was canceled before completion.
+   * @throws IModelError on bad request (nonexistent element, duplicate request Id, etc).
+   * @internal
+   */
+  public async requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     return this.forward(arguments);
   }
 }

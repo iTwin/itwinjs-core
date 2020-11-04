@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { assert } from "@bentley/bentleyjs-core";
 import { CurrentImdlVersion, ElementGraphicsRequestProps } from "@bentley/imodeljs-common";
+import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { GeometricElement3d, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -33,7 +35,11 @@ describe("ElementGraphics", () => {
       formatVersion: CurrentImdlVersion.Major,
     };
 
-    const content = await imodel.nativeDb.generateElementGraphics(request);
+    const result = await imodel.nativeDb.generateElementGraphics(request);
+    expect(result.status).to.equal(ElementGraphicsStatus.Success);
+    assert(result.status === ElementGraphicsStatus.Success);
+
+    const content = result.content;
     expect(content).not.to.be.undefined;
     expect(content instanceof Uint8Array).to.be.true;
     expect(content.length).least(40);

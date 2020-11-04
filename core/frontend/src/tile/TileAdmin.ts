@@ -222,7 +222,7 @@ export abstract class TileAdmin {
   public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
 
   /** @internal */
-  public abstract requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array>;
+  public abstract requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -1195,7 +1195,7 @@ class Admin extends TileAdmin {
     return intfc.requestTileContent(iModelRpcProps, treeId, contentId, isCanceled, guid);
   }
 
-  public requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array> {
+  public requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
     return intfc.requestElementGraphics(iModel.getRpcProps(), requestProps);

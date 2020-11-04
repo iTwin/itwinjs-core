@@ -8,9 +8,11 @@
 
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface,
-  IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, TileTreeContentIds,TileVersionInfo,
+  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelError, IModelRpcProps,
+  IModelTileRpcInterface, IModelStatus, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse,
+  TileTreeContentIds, TileVersionInfo,
 } from "@bentley/imodeljs-common";
+import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -206,9 +208,32 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   /** @internal */
-  public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array> {
+  public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     const iModel = IModelDb.findByKey(rpcProps.key);
-    return iModel.nativeDb.generateElementGraphics(request);
+    const result = await iModel.nativeDb.generateElementGraphics(request);
+    let error: string | undefined;
+    switch (result.status) {
+      case ElementGraphicsStatus.NoGeometry:
+      case ElementGraphicsStatus.Canceled:
+        return undefined;
+      case ElementGraphicsStatus.Success:
+        return result.content;
+      case ElementGraphicsStatus.InvalidJson:
+        error = "Invalid JSON";
+        break;
+      case ElementGraphicsStatus.UnknownMajorFormatVersion:
+        error = "Unknown major format version";
+        break;
+      case ElementGraphicsStatus.ElementNotFound:
+        error = `Element Id ${request.elementId} not found`;
+        break;
+      case ElementGraphicsStatus.DuplicateRequestId:
+        error = `Duplicate request Id "${request.id}"`;
+        break;
+    }
+
+    assert(undefined !== error);
+    throw new IModelError(IModelStatus.BadRequest, error);
   }
 }
 
