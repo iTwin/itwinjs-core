@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.9.0-dev.0",
+  "version": "2.9.0-dev.10",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -11,6 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/ninezone"
   },
   "scripts": {
+    "compile": "npm run build",
     "copy:assets": "cpx \"./src/**/*.*css\" \"./lib\"",
     "build": "npm run copy:assets && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -32,8 +33,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-abstract": "^2.9.0-dev.0",
-    "@bentley/ui-core": "^2.9.0-dev.0",
+    "@bentley/ui-abstract": "^2.9.0-dev.10",
+    "@bentley/ui-core": "^2.9.0-dev.10",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -42,10 +43,10 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.9.0-dev.0",
-    "@bentley/eslint-plugin": "2.9.0-dev.0",
-    "@bentley/ui-abstract": "2.9.0-dev.0",
-    "@bentley/ui-core": "2.9.0-dev.0",
+    "@bentley/build-tools": "2.9.0-dev.10",
+    "@bentley/eslint-plugin": "2.9.0-dev.10",
+    "@bentley/ui-abstract": "2.9.0-dev.10",
+    "@bentley/ui-core": "2.9.0-dev.10",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",

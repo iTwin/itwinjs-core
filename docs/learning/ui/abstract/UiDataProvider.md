@@ -1,6 +1,6 @@
 # UIDataProvider
 
-The [UiDataProvider]($ui-abstract:Dialog) sets up data synchronization for apps that with to develop their UI directly in React.
+The [UiDataProvider]($ui-abstract:Dialog) sets up data synchronization for apps that wish to develop their UI directly in React.
 
 As an abstract class, the app must extend it with a class in their own app:
 

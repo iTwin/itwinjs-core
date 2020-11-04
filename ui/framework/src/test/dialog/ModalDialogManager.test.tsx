@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
 import { DialogChangedEventArgs, ModalDialogManager, ModalDialogRenderer, StandardMessageBox } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ModalDialogManager", () => {
 
@@ -76,8 +75,6 @@ describe("ModalDialogManager", () => {
     expect(ModalDialogManager.dialogCount).to.eq(0);
     wrapper.update();
     expect(wrapper.find(StandardMessageBox).length).to.eq(0);
-
-    wrapper.unmount();
   });
 
   it("ModalDialogRenderer component with two dialogs", () => {
@@ -117,8 +114,6 @@ describe("ModalDialogManager", () => {
     expect(ModalDialogManager.dialogCount).to.eq(0);
     wrapper.update();
     expect(wrapper.find(StandardMessageBox).length).to.eq(0);
-
-    wrapper.unmount();
   });
 
 });

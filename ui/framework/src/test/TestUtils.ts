@@ -13,21 +13,17 @@ import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core
 
 import {
   ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
-  FrameworkState, UiFramework,
+  FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
 } from "../ui-framework";
-import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
-import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
-/** @internal */
-export interface SampleAppState {
+interface SampleAppState {
   placeHolder?: boolean;
 }
 
 const initialState: SampleAppState = {
   placeHolder: false,
 };
-
 
 /** @internal */
 export interface RootState {
@@ -63,7 +59,6 @@ export class TestUtils {
 
   public static get i18n(): I18N {
     if (!TestUtils._i18n) {
-      // const port = process.debugPort;
       TestUtils._i18n = new I18N();
     }
     return TestUtils._i18n;
@@ -102,7 +97,7 @@ export class TestUtils {
 
       TestUtils._uiFrameworkInitialized = true;
     }
-    ToolUiManager.clearToolSettingsData();
+    ToolSettingsManager.clearToolSettingsData();
     SyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
   }
 
@@ -177,22 +172,6 @@ export class TestUtils {
   /** Waits until all async operations finish */
   public static async flushAsyncOperations() {
     return new Promise((resolve) => setTimeout(resolve));
-  }
-
-  /** Sleeps a specified number of milliseconds */
-  public static sleep(milliseconds: number) {
-    const start = new Date().getTime();
-    for (let i = 0; i < 1e7; i++) {
-      if ((new Date().getTime() - start) > milliseconds) {
-        break;
-      }
-    }
-  }
-
-  /** Sleeps a specified number of milliseconds then flushes async operations */
-  public static async tick(milliseconds: number) {
-    TestUtils.sleep(milliseconds);
-    await TestUtils.flushAsyncOperations();
   }
 
   public static createBubbledEvent(type: string, props = {}) {
@@ -292,5 +271,8 @@ declare module "sinon" {
     <T extends (...args: any) => any>(): sinon.SinonStub<Parameters<T>, ReturnType<T>>;
   }
 }
+
+/** Enzyme mount with automatic unmount after the test. */
+export const mount: typeof enzyme.mount = (global as any).enzymeMount;
 
 export default TestUtils;   // eslint-disable-line: no-default-export

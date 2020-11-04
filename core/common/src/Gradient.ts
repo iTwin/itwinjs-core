@@ -62,7 +62,7 @@ export namespace Gradient {
 
   /** Compare two KeyColor objects for equality. Returns true if equal. */
   export function keyColorEquals(a: KeyColor, b: KeyColor): boolean {
-    return (a.value === b.value) || a.color.equals(b.color);
+    return (a.value === b.value) && a.color.equals(b.color);
   }
 
   /** Multi-color area fill defined by a range of colors that vary by position */

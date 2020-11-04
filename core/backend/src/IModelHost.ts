@@ -41,6 +41,7 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient, RequestHost } from "@bentley/backend-itwin-client";
 import { MobileFileHandler } from "./MobileFileHandler";
+import { EventSink } from "./EventSink";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -78,14 +79,6 @@ export interface CrashReportingConfig {
   /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
   uploadToBentley?: boolean;
 }
-/** Configuration for event sink
- * @internal
- */
-export interface EventSinkOptions {
-  maxQueueSize: number;
-  maxNamespace: number;
-}
-
 /**
  * Type of the backend application
  * @alpha
@@ -184,10 +177,7 @@ export class IModelHostConfiguration {
    * @alpha
    */
   public crashReportingConfig?: CrashReportingConfig;
-  /** Configuration for event sink
-   * @internal
-   */
-  public eventSinkOptions: EventSinkOptions = { maxQueueSize: 5000, maxNamespace: 255 };
+
   public concurrentQuery: ConcurrentQueryConfig = {
     concurrent: os.cpus().length,
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
@@ -490,7 +480,7 @@ export class IModelHost {
       this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
     }
 
-    if (configuration.applicationType !== ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
+    if (!IModelHost.isUsingIModelBankClient && configuration.applicationType !== ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
       const usageLoggingClient = new BackendFeatureUsageTelemetryClient({ backendApplicationId: this.applicationId, backendApplicationVersion: this.applicationVersion, backendMachineName: os.hostname(), clientAuthManager: this._clientAuthIntrospectionManager });
       this.telemetry.addClient(usageLoggingClient);
     }
@@ -540,6 +530,7 @@ export class IModelHost {
     if (!IModelHost.configuration)
       return;
     IModelHost.onBeforeShutdown.raiseEvent();
+    EventSink.clearGlobal();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
     IModelHost._nativeAppBackend = false;

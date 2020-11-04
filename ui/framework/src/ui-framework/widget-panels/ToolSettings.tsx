@@ -15,7 +15,7 @@ import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 
 /** Defines a ToolSettings property entry.
  * @beta
- */
+ */
 export interface ToolSettingsEntry {
   // label node which potentially can contain a lock node as well.
   labelNode: React.ReactNode;
@@ -46,7 +46,7 @@ export function ToolSettingsDockedContent() {
   const settings = useHorizontalToolSettingNodes();
   // for the overflow to work properly each setting in the DockedToolSettings should be wrapped by a DockedToolSetting component
   return (
-    <DockedToolSettings>
+    <DockedToolSettings key={Date.now()}>
       {settings && settings.map((entry, index) => <DockedToolSetting key={index}><TsLabel>{entry.labelNode}</TsLabel>{entry.editorNode}</DockedToolSetting>)}
     </DockedToolSettings>
   );
@@ -66,12 +66,24 @@ export function useHorizontalToolSettingNodes() {
       FrontstageManager.onToolActivatedEvent.removeListener(handleToolActivatedEvent);
     };
   }, [setSettings]);
+
+  React.useEffect(() => {
+    const handleToolSettingsReloadEvent = () => {
+      const nodes = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
+      setSettings(nodes);
+    };
+    FrontstageManager.onToolSettingsReloadEvent.addListener(handleToolSettingsReloadEvent);
+    return () => {
+      FrontstageManager.onToolSettingsReloadEvent.removeListener(handleToolSettingsReloadEvent);
+    };
+  }, [setSettings]);
+
   return settings;
 }
 
 /** Defines the ToolSettingsEntry entries that are used to populate a grid layout of ToolSetting properties.
  * @beta
- */
+ */
 export interface ToolSettingsGridProps {
   // label node which potentially can contain a lock node as well.
   settings?: ToolSettingsEntry[];
@@ -121,13 +133,25 @@ export function useToolSettingsNode() {
       FrontstageManager.onToolActivatedEvent.removeListener(handleToolActivatedEvent);
     };
   }, [setSettings]);
+
+  React.useEffect(() => {
+    const handleToolSettingsReloadEvent = () => {
+      const nodes = FrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
+      setSettings(nodes);
+    };
+    FrontstageManager.onToolSettingsReloadEvent.addListener(handleToolSettingsReloadEvent);
+    return () => {
+      FrontstageManager.onToolSettingsReloadEvent.removeListener(handleToolSettingsReloadEvent);
+    };
+  }, [setSettings]);
+
   return settings;
 }
 
 /** @internal */
 export function ToolSettingsContent() {
   const toolSettings = React.useContext(ToolSettingsStateContext);
-  // This is needed to remount underlaying components tree when going into widget state.
+  // This is needed to remount underlying components tree when going into widget state.
   if (toolSettings.type === "docked")
     return null;
   return <ToolSettingsWidgetContent />;

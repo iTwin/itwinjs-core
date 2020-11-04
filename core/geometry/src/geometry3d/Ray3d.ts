@@ -257,14 +257,18 @@ export class Ray3d implements BeJSONFunctions {
    * Return the intersection of the unbounded ray with a plane.
    * Stores the point of intersection in the result point given as a parameter,
    * and returns the parameter along the ray where the intersection occurs.
-   * Returns undefined if the ray and plane are parallel.
+   * Returns undefined if the ray and plane are parallel or coplanar.
    */
   public intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined {
     const vectorA = Vector3d.createStartEnd(plane.getOriginRef(), this.origin);
     const uDotN = this.direction.dotProduct(plane.getNormalRef());
+    const nDotN = this.direction.magnitudeSquared();
     const aDotN = vectorA.dotProduct(plane.getNormalRef());
     const division = Geometry.conditionalDivideFraction(-aDotN, uDotN);
     if (undefined === division)
+      return undefined;
+    const division1 = Geometry.conditionalDivideFraction(nDotN, uDotN);
+    if (undefined === division1)
       return undefined;
     if (result) {
       this.origin.plusScaled(this.direction, division, result);

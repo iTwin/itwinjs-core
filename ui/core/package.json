@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.9.0-dev.0",
+  "version": "2.9.0-dev.10",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -11,6 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/core"
   },
   "scripts": {
+    "compile": "npm run build",
     "copy:assets": "cpx \"./src/**/*.{*css,svg}\" ./lib && cpx \"./public/**/*\" ./lib/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
@@ -32,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.9.0-dev.0",
-    "@bentley/geometry-core": "^2.9.0-dev.0",
-    "@bentley/imodeljs-i18n": "^2.9.0-dev.0",
-    "@bentley/ui-abstract": "^2.9.0-dev.0",
+    "@bentley/bentleyjs-core": "^2.9.0-dev.10",
+    "@bentley/geometry-core": "^2.9.0-dev.10",
+    "@bentley/imodeljs-i18n": "^2.9.0-dev.10",
+    "@bentley/ui-abstract": "^2.9.0-dev.10",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -44,12 +45,12 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/geometry-core": "2.9.0-dev.0",
-    "@bentley/build-tools": "2.9.0-dev.0",
-    "@bentley/eslint-plugin": "2.9.0-dev.0",
-    "@bentley/bentleyjs-core": "2.9.0-dev.0",
-    "@bentley/imodeljs-i18n": "2.9.0-dev.0",
-    "@bentley/ui-abstract": "2.9.0-dev.0",
+    "@bentley/geometry-core": "2.9.0-dev.10",
+    "@bentley/build-tools": "2.9.0-dev.10",
+    "@bentley/eslint-plugin": "2.9.0-dev.10",
+    "@bentley/bentleyjs-core": "2.9.0-dev.10",
+    "@bentley/imodeljs-i18n": "2.9.0-dev.10",
+    "@bentley/ui-abstract": "2.9.0-dev.10",
     "@bentley/react-scripts": "3.4.6",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",

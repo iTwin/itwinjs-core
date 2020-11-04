@@ -1,10 +1,11 @@
 {
   "name": "@bentley/geonames-extension",
-  "version": "2.9.0-dev.0",
+  "version": "2.9.0-dev.10",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "compile": "npm run build",
     "build": "extension-webpack-tools build -s ./src/geoNames.ts -o ./lib/extension",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
@@ -24,10 +25,10 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.9.0-dev.0",
-    "@bentley/eslint-plugin": "2.9.0-dev.0",
-    "@bentley/config-loader": "2.9.0-dev.0",
-    "@bentley/extension-webpack-tools": "2.9.0-dev.0",
+    "@bentley/build-tools": "2.9.0-dev.10",
+    "@bentley/eslint-plugin": "2.9.0-dev.10",
+    "@bentley/config-loader": "2.9.0-dev.10",
+    "@bentley/extension-webpack-tools": "2.9.0-dev.10",
     "@types/node": "10.14.1",
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
@@ -35,13 +36,13 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.9.0-dev.0",
-    "@bentley/geometry-core": "2.9.0-dev.0",
-    "@bentley/itwin-client": "2.9.0-dev.0",
-    "@bentley/imodeljs-common": "2.9.0-dev.0",
-    "@bentley/imodeljs-i18n": "2.9.0-dev.0",
-    "@bentley/imodeljs-frontend": "2.9.0-dev.0",
-    "@bentley/imodeljs-quantity": "2.9.0-dev.0",
+    "@bentley/bentleyjs-core": "2.9.0-dev.10",
+    "@bentley/geometry-core": "2.9.0-dev.10",
+    "@bentley/itwin-client": "2.9.0-dev.10",
+    "@bentley/imodeljs-common": "2.9.0-dev.10",
+    "@bentley/imodeljs-i18n": "2.9.0-dev.10",
+    "@bentley/imodeljs-frontend": "2.9.0-dev.10",
+    "@bentley/imodeljs-quantity": "2.9.0-dev.10",
     "svg-sprite-loader": "4.2.1"
   },
   "eslintConfig": {

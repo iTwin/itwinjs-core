@@ -127,10 +127,8 @@ public;Environment
 internal;ErrorNums
 public;EventController
 public;EventHandled
-internal;EventListener = (data: any) => void
-internal;EventSource
-internal;class EventSourceManager
-internal;EventSourceOptions
+beta;EventListener = (eventData: any) => void
+beta;EventSource 
 beta;class Extension
 beta;ExtensionAdmin
 beta;ExtensionAdminProps
@@ -262,6 +260,7 @@ internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
+beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
 internal;MapLayerSource 
@@ -354,6 +353,7 @@ internal;RealityTileTree
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
 public;RemoteBriefcaseConnection 
+beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics
@@ -511,6 +511,10 @@ alpha;class ViewClipModifyTool
 alpha;ViewClipPlanesModifyTool 
 alpha;ViewClipShapeModifyTool 
 alpha;ViewClipTool 
+beta;ViewCreator2d
+beta;ViewCreator2dOptions
+beta;ViewCreator3d
+beta;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
 beta;ViewGlobeBirdTool 

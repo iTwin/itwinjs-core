@@ -4,6 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "compile": "npm run build",
     "build": "npm run build-code && npm run extract-assets",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "build-code": "tsc 1>&2",
@@ -15,17 +16,17 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.9.0-dev.0",
-    "@bentley/geometry-core": "2.9.0-dev.0",
-    "@bentley/itwin-client": "2.9.0-dev.0",
-    "@bentley/imodeljs-common": "2.9.0-dev.0",
-    "@bentley/imodeljs-backend": "2.9.0-dev.0",
+    "@bentley/bentleyjs-core": "2.9.0-dev.10",
+    "@bentley/geometry-core": "2.9.0-dev.10",
+    "@bentley/itwin-client": "2.9.0-dev.10",
+    "@bentley/imodeljs-common": "2.9.0-dev.10",
+    "@bentley/imodeljs-backend": "2.9.0-dev.10",
     "fs-extra": "^8.1.0",
     "yargs": "^15.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.9.0-dev.0",
-    "@bentley/eslint-plugin": "2.9.0-dev.0",
+    "@bentley/build-tools": "2.9.0-dev.10",
+    "@bentley/eslint-plugin": "2.9.0-dev.10",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
     "@types/node": "10.14.1",

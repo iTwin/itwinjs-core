@@ -387,23 +387,6 @@ export class TestUtils {
     propertyRecord.isReadonly = false;
     return propertyRecord;
   }
-
-  /** Sleeps a specified number of milliseconds */
-  public static sleep(milliseconds: number) {
-    const start = new Date().getTime();
-    for (let i = 0; i < 1e7; i++) {
-      if ((new Date().getTime() - start) > milliseconds) {
-        break;
-      }
-    }
-  }
-
-  /** Sleeps a specified number of milliseconds then flushes async operations */
-  public static async tick(milliseconds: number) {
-    TestUtils.sleep(milliseconds);
-    await TestUtils.flushAsyncOperations();
-  }
-
 }
 
 /** @internal */

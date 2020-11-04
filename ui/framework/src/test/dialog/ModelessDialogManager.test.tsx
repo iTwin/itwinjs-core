@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ConfigurableUiManager, DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ModelessDialogManager", () => {
 
@@ -63,7 +62,6 @@ describe("ModelessDialogManager", () => {
     const logSpyMethod = sinon.spy(Logger, "logError");
     ModelessDialogManager.closeDialog("bad");
     logSpyMethod.calledOnce.should.true;
-    (Logger.logError as any).restore();
   });
 
   it("ModelessDialogRenderer component", () => {
@@ -86,8 +84,6 @@ describe("ModelessDialogManager", () => {
     expect(ModelessDialogManager.dialogCount).to.eq(0);
     wrapper.update();
     expect(wrapper.find(ModelessDialog).length).to.eq(0);
-
-    wrapper.unmount();
   });
 
   it("ModelessDialogRenderer component with two dialogs", () => {
@@ -128,8 +124,6 @@ describe("ModelessDialogManager", () => {
     expect(ModelessDialogManager.dialogCount).to.eq(0);
     wrapper.update();
     expect(wrapper.find(ModelessDialog).length).to.eq(0);
-
-    wrapper.unmount();
   });
 
   it("ModelessDialogRenderer component with two dialogs closed in FIFO order", () => {
@@ -172,8 +166,6 @@ describe("ModelessDialogManager", () => {
     expect(ModelessDialogManager.dialogCount).to.eq(0);
     wrapper.update();
     expect(wrapper.find(ModelessDialog).length).to.eq(0);
-
-    wrapper.unmount();
   });
 
   it("ModelessDialogRenderer component with two dialogs and bring forward", () => {
@@ -228,8 +220,6 @@ describe("ModelessDialogManager", () => {
     expect(ModelessDialogManager.dialogCount).to.eq(0);
     wrapper.update();
     expect(wrapper.find(ModelessDialog).length).to.eq(0);
-
-    wrapper.unmount();
   });
 
 });

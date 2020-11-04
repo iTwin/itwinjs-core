@@ -8,7 +8,7 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-client";
 import { IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, BriefcaseConnection, EventSourceManager, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority,
+  AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority,
   OutputMessageType,
 } from "@bentley/imodeljs-frontend";
 import { Icon, Spinner, SpinnerSize } from "@bentley/ui-core";
@@ -86,9 +86,7 @@ class SyncManager {
     this.onStateChange.raiseEvent();
 
     // Once the initial state of the briefcase is known, register for events announcing new txns and pushes that clear local txns.
-    const rpcKey: string = this.iModelConnection.getRpcProps().key;
-
-    EventSourceManager.get(rpcKey).on(IModelWriteRpcInterface.name, "onSavedChanges", (data: any) => {
+    this.iModelConnection.eventSource.on(IModelWriteRpcInterface.name, "onSavedChanges", (data: any) => {
       if (data.time > this.state.timeOfLastSaveEvent) { // work around out-of-order events
         this.state.timeOfLastSaveEvent = data.time;
         this.state.mustPush = data.hasPendingTxns;
@@ -96,7 +94,7 @@ class SyncManager {
       }
     });
 
-    EventSourceManager.get(rpcKey).on(IModelWriteRpcInterface.name, "onPushedChanges", (data: any) => {
+    this.iModelConnection.eventSource.on(IModelWriteRpcInterface.name, "onPushedChanges", (data: any) => {
       // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
       const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== data.parentChangeSetId);
       this.state.mustPush = false;
@@ -105,7 +103,7 @@ class SyncManager {
       this.onStateChange.raiseEvent();
     });
 
-    EventSourceManager.get(rpcKey).on(IModelWriteRpcInterface.name, "onPulledChanges", (data: any) => {
+    this.iModelConnection.eventSource.on(IModelWriteRpcInterface.name, "onPulledChanges", (data: any) => {
       this.updateParentChangesetId(data.parentChangeSetId);
       this.onStateChange.raiseEvent();
 

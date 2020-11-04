@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
@@ -190,7 +190,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
     if (meshes.length === 0)
       return undefined;
 
-    const branch = new GraphicBranch();
+    const branch = new GraphicBranch(true);
     for (const mesh of meshes) {
       const primitive = Primitive.create(() => mesh);
       branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), tileId));

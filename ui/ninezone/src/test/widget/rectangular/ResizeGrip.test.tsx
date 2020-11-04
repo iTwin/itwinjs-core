@@ -2,20 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../ui-ninezone";
-import { PointerCaptor } from "../../../ui-ninezone/base/PointerCaptor";
-import { createBoundingClientRect, createPointerEvent } from "../../Utils";
+import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../ui-ninezone";
+import { createBoundingClientRect, createPointerEvent, mount } from "../../Utils";
 
 describe("<ResizeGrip />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<ResizeGrip direction={ResizeDirection.EastWest} />);
   });
@@ -121,7 +114,7 @@ describe("<ResizeGrip />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<ResizeGrip
@@ -139,7 +132,7 @@ describe("<ResizeGrip />", () => {
     const ref = {
       current: null,
     };
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<ResizeGrip
@@ -150,7 +143,7 @@ describe("<ResizeGrip />", () => {
     const pointerDown = createPointerEvent();
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    sinon.stub(ref, "current").get(() => null);
+    sinon.stub(ref, "current").get(() => null).set(() => { });
 
     const pointerMove = createPointerEvent();
     pointerCaptor.prop("onPointerMove")!(pointerMove);
@@ -205,7 +198,7 @@ describe("<ResizeGrip />", () => {
     const ref = {
       current: null,
     };
-    sandbox.stub(React, "createRef").returns(ref);
+    sinon.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<ResizeGrip
@@ -216,7 +209,7 @@ describe("<ResizeGrip />", () => {
     const pointerDown = createPointerEvent();
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    sinon.stub(ref, "current").get(() => null);
+    sinon.stub(ref, "current").get(() => null).set(() => { });
 
     const pointerUp = createPointerEvent();
     pointerCaptor.prop("onPointerUp")!(pointerUp);

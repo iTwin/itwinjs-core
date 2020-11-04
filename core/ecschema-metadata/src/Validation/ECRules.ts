@@ -232,6 +232,10 @@ export const ECRuleSet: IRuleSet = {
  * @param schema The schema to validate.
  */
 export async function* validateSchemaReferences(schema: Schema): AsyncIterable<SchemaDiagnostic<any[]>> {
+  yield* validateSchemaReferencesSync(schema);
+}
+
+export function* validateSchemaReferencesSync(schema: Schema): Iterable<SchemaDiagnostic<any[]>> {
   const aliases = new Map();
   for (const schemaRef of schema.references) {
     if (schemaRef.customAttributes && schemaRef.customAttributes.has("CoreCustomAttributes.SupplementalSchema"))
@@ -255,7 +259,6 @@ export async function* validateSchemaReferences(schema: Schema): AsyncIterable<S
     yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, result]);
   }
 }
-
 /**
  * EC Rule: Sealed classes cannot be a base class.
  * @internal Should we make all of these methods internal??

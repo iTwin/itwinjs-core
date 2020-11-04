@@ -193,7 +193,7 @@ class SchemaDeserializer {
   public async deserializeXmlFile(schemaFilePath: string, schemaContext: SchemaContext, referencePaths?: string[]): Promise<Schema> {
     // If the schema file doesn't exist, throw an error
     if (!fs.existsSync(schemaFilePath))
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "Unable to locate schema XML file at " + schemaFilePath);
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaFilePath}`);
 
     // Needed to avoid crash in backend when calling IModelHost.startup.  This
     // can be removed once the backed is no longer need for de-serialization.
@@ -241,7 +241,7 @@ class SchemaDeserializer {
   public deserializeJsonFile(schemaFilePath: string, context: SchemaContext, referencePaths?: string[]): Schema {
     // If the schema file doesn't exist, throw an error
     if (!fs.existsSync(schemaFilePath))
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "Unable to locate schema JSON file at " + schemaFilePath);
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema JSON file at ${schemaFilePath}`);
 
     // add locater to the context
     if (!referencePaths)
@@ -313,17 +313,17 @@ export class ECSchemaToTsXmlWriter implements ECSchemaToTsFileWriter {
     // write to file
     let createdFilesLog: string = "";
 
-    const schemaFile = this._outdir + schema.schemaKey.name + ".ts";
+    const schemaFile = `${this._outdir}${schema.schemaKey.name}.ts`;
     fs.writeFileSync(schemaFile, schemaTsString);
-    createdFilesLog += "Successfully created typescript file, \"" + schemaFile + "\".\r\n";
+    createdFilesLog += `Successfully created typescript file, "${schemaFile}".\r\n`;
 
-    const elemFile = this._outdir + schema.schemaKey.name + "Elements.ts";
+    const elemFile = `${this._outdir}${schema.schemaKey.name}Elements.ts`;
     fs.writeFileSync(elemFile, elemTsString);
-    createdFilesLog += "Successfully created typescript file, \"" + elemFile + "\".\r\n";
+    createdFilesLog += `Successfully created typescript file, "${elemFile}".\r\n`;
 
-    const propsElemFile = this._outdir + schema.schemaKey.name + "ElementProps.ts";
+    const propsElemFile = `${this._outdir}${schema.schemaKey.name}ElementProps.ts`;
     fs.writeFileSync(propsElemFile, propsTsString);
-    createdFilesLog += "Successfully created typescript file, \"" + propsElemFile + "\".\r\n";
+    createdFilesLog += `Successfully created typescript file, "propsElemFile".\r\n`;
 
     return createdFilesLog;
   }

@@ -2,18 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Backstage, BackstageProps, SafeAreaInsets } from "../../ui-ninezone";
+import { mount } from "../Utils";
 
 describe("<Backstage />", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     mount(<Backstage />);
   });
@@ -39,14 +34,14 @@ describe("<Backstage />", () => {
   });
 
   it("should add event listener", () => {
-    const addEventListenerSpy = sandbox.spy(document, "addEventListener");
+    const addEventListenerSpy = sinon.spy(document, "addEventListener");
 
     mount(<Backstage />);
     addEventListenerSpy.calledOnce.should.true;
   });
 
   it("should remove event listener", () => {
-    const removeEventListenerSpy = sandbox.spy(document, "removeEventListener");
+    const removeEventListenerSpy = sinon.spy(document, "removeEventListener");
     const sut = mount(<Backstage />);
     sut.unmount();
 

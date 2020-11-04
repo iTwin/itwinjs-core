@@ -14,11 +14,11 @@ interface CallInfo {
 
 describe("useThrottledFn", () => {
   let clock: sinon.SinonFakeTimers;
-  before(() => {
+  beforeEach(() => {
     clock = sinon.useFakeTimers({ now: Date.now() });
   });
 
-  after(() => {
+  afterEach(() => {
     clock.restore();
   });
 

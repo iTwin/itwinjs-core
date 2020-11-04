@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
+import * as sinon from "sinon";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { FieldDefinitions, FieldValues, Form } from "../../ui-core";
 import TestUtils from "../TestUtils";
@@ -52,6 +53,7 @@ describe("<Form />", () => {
   };
 
   it("render with default button label with submit error", async () => {
+    const fakeTimers = sinon.useFakeTimers();
     const form = render(<Form handleFormSubmit={async (_values: FieldValues) => { throw new Error("bad news"); }} fields={fields} />);
     expect(form).not.to.be.null;
     const button = form.container.querySelector("button") as HTMLButtonElement;
@@ -60,11 +62,13 @@ describe("<Form />", () => {
     expect(form.container.querySelector("div.core-form-alert")).to.be.null;
     // fire click to trigger handleFormSubmit processing
     fireEvent.click(button);
-    await TestUtils.tick(500);
+    await fakeTimers.tickAsync(500);
+    fakeTimers.restore();
     expect(form.container.querySelector("div.core-form-alert")).not.to.be.null;
   });
 
   it("exercise Form and Fields", async () => {
+    const fakeTimers = sinon.useFakeTimers();
     await TestUtils.initializeUiCore();
     let submitProcessed = false;
 
@@ -107,7 +111,8 @@ describe("<Form />", () => {
     expect(submitProcessed).to.be.eq(false);
     // fire click to trigger handleFormSubmit processing
     fireEvent.click(button);
-    await TestUtils.tick(500);
+    fakeTimers.tick(500);
+    fakeTimers.restore();
     expect(submitProcessed).to.be.eq(true);
   });
 });

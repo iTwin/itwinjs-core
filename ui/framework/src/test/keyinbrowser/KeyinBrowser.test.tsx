@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import { AutoSuggest, Button, LabeledInput } from "@bentley/ui-core";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { KeyinBrowser } from "../../ui-framework";
-import TestUtils, { storageMock } from "../TestUtils";
+import TestUtils, { mount, storageMock } from "../TestUtils";
 
 const myLocalStorage = storageMock();
 
@@ -27,8 +26,6 @@ describe("<KeyinBrowser>", () => {
     // use mock renderer so standards tools are registered.
     await MockRender.App.startup();
   });
-
-  afterEach(cleanup);
 
   after(async () => {
     await MockRender.App.shutdown();
@@ -56,12 +53,10 @@ describe("<KeyinBrowser>", () => {
   it.skip("Handles arguments", async () => {
     const renderedComponent = render(<KeyinBrowser />);
     expect(renderedComponent).not.to.be.undefined;
-    renderedComponent.debug();
 
     // simulate selecting toolId
     let selectInput = renderedComponent.getByTestId("uif-keyin-autosuggest") as HTMLInputElement;
     fireEvent.change(selectInput, { target: { value: "Select" } });
-    renderedComponent.debug();
 
     // execute button should trigger saving state of input fields
     const executeButton = renderedComponent.getByTestId("uif-keyin-browser-execute");
@@ -82,11 +77,8 @@ describe("<KeyinBrowser>", () => {
     const savedArgs = window.localStorage.getItem(`keyinbrowser:${savedToolId}`);
     expect(savedArgs).to.eq(`["marker.js","blue"]`);
 
-    cleanup();
-
     // When we render the browser again it should show last used values
     const newlyRenderedComponent = render(<KeyinBrowser />);
-    // newlyRenderedComponent.debug();
 
     selectInput = newlyRenderedComponent.getByTestId("uif-keyin-autosuggest") as HTMLInputElement;
     expect(selectInput.value).to.be.eq("Select");
@@ -118,8 +110,6 @@ describe("<KeyinBrowser>", () => {
 
     const savedArgs = window.localStorage.getItem(`keyinbrowser:${savedToolId}`);
     expect(savedArgs).to.eq(`["marker.js","blue"]`);
-
-    cleanup();
   });
 
   it("should invoke onExecute handler when execute button is clicked", async () => {
@@ -128,7 +118,6 @@ describe("<KeyinBrowser>", () => {
     const btn = sut.find(Button);
     btn.simulate("click");
     spy.calledOnce.should.true;
-    sut.unmount();
   });
 
   it("Argument change should change state", async () => {
@@ -142,8 +131,6 @@ describe("<KeyinBrowser>", () => {
     const value = "abc";
     input.simulate("change", { target: { value } });
     expect(wrapper.state("currentArgs")).to.eq(value);
-
-    wrapper.unmount();
   });
 
   it("Enter key in args should invoke onExecute handler", async () => {
@@ -157,8 +144,6 @@ describe("<KeyinBrowser>", () => {
 
     input.simulate("keydown", { key: "Enter" });
     spy.calledOnce.should.true;
-
-    wrapper.unmount();
   });
 
   it("Enter key in AutoSuggest should invoke onExecute handler", async () => {
@@ -201,8 +186,6 @@ describe("<KeyinBrowser>", () => {
     input.simulate("change", { target: { value: "pan view" } });
     input.simulate("keydown", { key: "Tab" });
     expect(wrapper.state("currentToolId")).to.eq("Select");
-
-    wrapper.unmount();
   });
 
   it("Escape key in AutoSuggest should invoke onCancel handler", async () => {
@@ -217,8 +200,6 @@ describe("<KeyinBrowser>", () => {
 
     input.simulate("keydown", { key: "Escape" });
     spy.calledOnceWithExactly().should.true;
-
-    wrapper.unmount();
   });
 
   it("Escape key in Args field should invoke onCancel handler", async () => {
@@ -233,8 +214,6 @@ describe("<KeyinBrowser>", () => {
 
     input.simulate("keydown", { key: "Escape" });
     spy.calledOnceWithExactly().should.true;
-
-    wrapper.unmount();
   });
 
   it("Trying to run key-in in unit test environment should invoke outputMessage with failure", async () => {
@@ -252,9 +231,6 @@ describe("<KeyinBrowser>", () => {
     input.simulate("keydown", { key: "Enter" });
     await TestUtils.flushAsyncOperations();
     spyOutput.calledOnce.should.true;
-
-    wrapper.unmount();
-    (IModelApp.notifications.outputMessage as any).restore();
   });
 
   it("Trying to run key-in with incorrect args should invoke outputMessage with failure", async () => {
@@ -272,9 +248,6 @@ describe("<KeyinBrowser>", () => {
     input.simulate("keydown", { key: "Enter" });
     await TestUtils.flushAsyncOperations();
     spyOutput.calledOnce.should.true;
-
-    wrapper.unmount();
-    (IModelApp.notifications.outputMessage as any).restore();
   });
 
 });

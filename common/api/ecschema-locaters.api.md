@@ -24,7 +24,7 @@ export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
     addSchemaSearchPaths(schemaPaths: string[]): void;
-    compareSchemaKeyByVersion(lhs: FileSchemaKey, rhs: FileSchemaKey): number;
+    compareSchemaKeyByVersion: (lhs: FileSchemaKey, rhs: FileSchemaKey) => number;
     // (undocumented)
     fileExists(filePath: string): Promise<boolean | undefined>;
     // (undocumented)

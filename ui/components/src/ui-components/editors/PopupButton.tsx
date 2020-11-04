@@ -60,10 +60,12 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
   public componentDidMount() {
     if (this.props.setFocus && this._buttonRef.current)
       this._buttonRef.current.focus();
+    this._buttonRef.current?.addEventListener ("keydown", this._handleKeyDown)
   }
 
   /** @internal */
   public componentWillUnmount() {
+    this._buttonRef.current?.removeEventListener ("keydown", this._handleKeyDown)
   }
 
   private _togglePopup = (event: React.MouseEvent) => {
@@ -84,7 +86,10 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
       });
   }
 
-  private _handleKeyDown = (event: React.KeyboardEvent) => {
+  private _emptyKeyDown = (_event: React.KeyboardEvent) => {
+
+  }
+  private _handleKeyDown = (event: KeyboardEvent) => {
     // istanbul ignore else
     if ((event.key === SpecialKey.ArrowDown || event.key === SpecialKey.Space || event.key === SpecialKey.Enter) && !this.state.showPopup) {
       event.preventDefault();
@@ -107,7 +112,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
       <div className={this.props.className}>
         <div className={classNames}
           onClick={this._togglePopup}
-          onKeyDown={this._handleKeyDown}
+          onKeyDown={this._emptyKeyDown}
           data-testid="components-popup-button"
           tabIndex={0}
           ref={this._buttonRef}
@@ -165,6 +170,7 @@ export function PopupOkCancelButtons(props: OkCancelProps) {
       </Button>
       <Button
         className={classnames("components-popup-large-button", "components-popup-cancel-button")}
+        data-testid="components-popup-cancel-button"
         title={UiCore.translate("dialog.cancel")}
         onClick={props.onCancel}
       >

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import produce from "immer";
 import * as React from "react";
@@ -13,12 +13,6 @@ import {
 import { createDragItemInfo, NineZoneProvider } from "../Providers";
 
 describe("FloatingTab", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);

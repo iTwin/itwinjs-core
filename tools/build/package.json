@@ -1,6 +1,6 @@
 {
   "name": "@bentley/build-tools",
-  "version": "2.9.0-dev.0",
+  "version": "2.9.0-dev.10",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -11,6 +11,7 @@
     "betools": "bin/betools.js"
   },
   "scripts": {
+    "compile": "npm run build",
     "copy:rules": "cpx \"./node_modules/tslint-consistent-codestyle/rules/**/*\" ./tslint-rules/tslint-consistent-codestyle/rules && cpx \"./node_modules/tslint-consistent-codestyle/src/**/*\" ./tslint-rules/tslint-consistent-codestyle/src && cpx \"./node_modules/tslint-eslint-rules/dist/**/*\" ./tslint-rules/tslint-eslint-rules/dist",
     "build": "tsc 1>&2 && npm run copy:rules",
     "clean": "rimraf tslint-rules ../../modules .rush/temp/package-deps*.json",
@@ -30,7 +31,7 @@
   },
   "dependencies": {
     "@microsoft/api-extractor": "7.7.3",
-    "@bentley/eslint-plugin": "2.9.0-dev.0",
+    "@bentley/eslint-plugin": "2.9.0-dev.10",
     "chai": "^4.1.2",
     "chalk": "^3.0.0",
     "cpx": "^1.5.0",

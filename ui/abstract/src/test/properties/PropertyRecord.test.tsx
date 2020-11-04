@@ -17,6 +17,14 @@ const getPropertyDescription = (): PropertyDescription => {
   };
 };
 
+const getUpdatedPropertyDescription = (): PropertyDescription => {
+  return {
+    name: "Item1",
+    displayLabel: "Update Item One",
+    typename: StandardTypeNames.Number,
+  };
+};
+
 describe("PropertyRecord", () => {
 
   describe("copyWithNewValue", () => {
@@ -26,6 +34,14 @@ describe("PropertyRecord", () => {
       const newRecord = sut.copyWithNewValue(value2);
 
       expect(newRecord.value).to.eq(value2);
+    });
+
+    it("should have new value and description", () => {
+      const sut = new PropertyRecord(value1, getPropertyDescription());
+      const newDescription = getUpdatedPropertyDescription();
+      const newRecord = sut.copyWithNewValue(value2, newDescription);
+      expect(newRecord.value).to.eq(value2);
+      expect(newRecord.property.displayLabel).to.eq(newDescription.displayLabel);
     });
 
     it("should copy all attributes from source", () => {

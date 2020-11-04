@@ -70,7 +70,6 @@ describe("RulesEmbedding", () => {
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
       isChangeTrackingEnabled: false,
-      cacheDirectory: "",
     });
     nativePlatform = new TNativePlatform();
     imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");

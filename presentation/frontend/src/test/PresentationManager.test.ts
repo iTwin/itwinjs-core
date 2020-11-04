@@ -124,10 +124,21 @@ describe("PresentationManager", () => {
 
     it("starts listening to update events", async () => {
       sinon.stub(IModelApp, "isNativeApp").get(() => true);
-      const eventSource = sinon.createStubInstance(EventSource) as unknown as EventSource;
-      PresentationManager.create({ eventSource });
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(eventSource.on).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
+      const eventSourceStub = sinon.createStubInstance(EventSource);
+      using(PresentationManager.create({ eventSource: (eventSourceStub as unknown as EventSource) }), (_) => { });
+      expect(eventSourceStub.on).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
+    });
+
+    it("uses global EventSource if not provided through props", async () => {
+      sinon.stub(IModelApp, "isNativeApp").get(() => true);
+      const eventSourceStub = sinon.createStubInstance(EventSource);
+      sinon.stub(EventSource, "global").get(() => (eventSourceStub as unknown as EventSource));
+
+      using(PresentationManager.create(), (_) => { });
+      expect(eventSourceStub.on).to.be.calledOnce;
+
+      using(PresentationManager.create({}), (_) => { });
+      expect(eventSourceStub.on).to.be.calledTwice;
     });
 
   });
@@ -141,10 +152,11 @@ describe("PresentationManager", () => {
 
     it("stops listening to update events", async () => {
       sinon.stub(IModelApp, "isNativeApp").get(() => true);
-      const eventSource = sinon.createStubInstance(EventSource) as unknown as EventSource;
-      using(PresentationManager.create({ eventSource }), (_) => { });
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(eventSource.off).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
+      const offSpy = sinon.stub();
+      const eventSourceStub = sinon.createStubInstance(EventSource);
+      eventSourceStub.on.returns(offSpy);
+      using(PresentationManager.create({ eventSource: (eventSourceStub as unknown as EventSource) }), (_) => { });
+      expect(offSpy).to.be.calledOnce;
     });
 
   });

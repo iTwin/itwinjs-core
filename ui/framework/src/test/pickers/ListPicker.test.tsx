@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as enzyme from "enzyme";
+import { ReactWrapper, shallow, ShallowWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ToolbarItemContext } from "@bentley/ui-components";
@@ -12,7 +12,7 @@ import { Group, Item } from "@bentley/ui-ninezone";
 import {
   ExpandableSection, FrameworkVersion, ListItem, ListItemType, ListPicker, ListPickerBase, ListPickerItem, ListPickerPropsExtended,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -57,7 +57,7 @@ describe("ListPicker", () => {
 
   describe("v2 rendering", () => {
     it("should render correctly", () => {
-      enzyme.shallow(
+      shallow(
         <FrameworkVersion version="2">
           <ToolbarItemContext.Provider
             value={{
@@ -81,7 +81,7 @@ describe("ListPicker", () => {
       const disableAllFunc = () => { };
       const invertFunc = () => { };
 
-      const component = enzyme.mount(
+      const component = mount(
         <FrameworkVersion version="2">
           <ToolbarItemContext.Provider
             value={{
@@ -108,7 +108,7 @@ describe("ListPicker", () => {
 
   describe("v1 rendering", () => {
     it("should render correctly", () => {
-      enzyme.shallow(
+      shallow(
         <FrameworkVersion version="1">
           <ListPicker
             title={title}
@@ -124,7 +124,7 @@ describe("ListPicker", () => {
       const disableAllFunc = () => { };
       const invertFunc = () => { };
 
-      const component = enzyme.mount(
+      const component = mount(
         <FrameworkVersion version="1">
           <ListPicker
             title={title}
@@ -141,11 +141,11 @@ describe("ListPicker", () => {
   });
 
   describe("isSpecialItem", () => {
-    let listPickerWrapper: enzyme.ShallowWrapper<any>;
+    let listPickerWrapper: ShallowWrapper<any>;
     let listPickerInstance: ListPicker;
 
     beforeEach(() => {
-      listPickerWrapper = enzyme.shallow(
+      listPickerWrapper = shallow(
         <ListPicker
           title={title}
           items={listItems}
@@ -208,7 +208,7 @@ describe("ListPicker", () => {
 
   describe("ListPickerItem", () => {
     it("should render correctly", () => {
-      enzyme.shallow(
+      shallow(
         <ListPickerItem
           key="key"
         />,
@@ -226,7 +226,7 @@ describe("ListPicker", () => {
       const singleItemList = new Array<ListItem>();
       singleItemList.push(unknownItem);
 
-      const component = enzyme.mount(
+      const component = mount(
         <ListPickerItem
           key="key"
           isActive={true}
@@ -240,34 +240,33 @@ describe("ListPicker", () => {
 
   describe("ExpandableSection", () => {
     it("should render correctly", () => {
-      enzyme.shallow(<ExpandableSection />);
+      shallow(<ExpandableSection />);
     });
 
     it("should unmount correctly", () => {
-      const component = enzyme.mount(
+      const component = mount(
         <ExpandableSection />,
       );
       component.unmount();
     });
 
     it("should handle onClick", () => {
-      const component = enzyme.mount(
+      const component = mount(
         <ExpandableSection />,
       );
       component.find("div.ListPickerInnerContainer-header").simulate("click");
       component.update();
       component.find("div.ListPickerInnerContainer-header-expanded");
       expect(component.length).to.eq(1);
-      component.unmount();
     });
   });
 
   describe("ListPickerBase", () => {
-    let listPickerBaseWrapper: enzyme.ShallowWrapper<any>;
+    let listPickerBaseWrapper: ShallowWrapper<any>;
     let listPickerBaseInstance: ListPickerBase;
 
     beforeEach(() => {
-      listPickerBaseWrapper = enzyme.shallow(
+      listPickerBaseWrapper = shallow(
         <ListPickerBase
           title={title}
           items={listItems}
@@ -277,7 +276,7 @@ describe("ListPicker", () => {
     });
 
     it("should render correctly", () => {
-      enzyme.shallow(
+      shallow(
         <ListPickerBase
           title={title}
           items={listItems}
@@ -310,7 +309,7 @@ describe("ListPicker", () => {
     it("simulate expanding", () => {
       const spyOnExpanded = sinon.spy();
 
-      const component = enzyme.mount(
+      const component = mount(
         <ListPickerBase
           title={title}
           items={listItems}
@@ -325,11 +324,10 @@ describe("ListPicker", () => {
       component.update();
 
       expect(spyOnExpanded.calledOnce).to.be.true;
-      component.unmount();
     });
 
     it("should unmount correctly", () => {
-      const component = enzyme.mount(
+      const component = mount(
         <ListPickerBase
           title={title}
           items={listItems}
@@ -341,7 +339,7 @@ describe("ListPicker", () => {
 
     it("should close on outside click", () => {
       const spy = sinon.spy();
-      const component = enzyme.mount<ListPickerBase>(
+      const component = mount<ListPickerBase>(
         <ListPickerBase
           title={title}
           items={listItems}
@@ -360,7 +358,7 @@ describe("ListPicker", () => {
   });
 
   describe("setEnabled", () => {
-    let listPickerWrapper: enzyme.ReactWrapper<ListPickerPropsExtended>;
+    let listPickerWrapper: ReactWrapper<ListPickerPropsExtended>;
     const localSetEnabled = sinon.fake();
     const localListItems = new Array<ListItem>();
     const allSpyMethod = sinon.fake();
@@ -384,7 +382,7 @@ describe("ListPicker", () => {
     });
 
     beforeEach(() => {
-      listPickerWrapper = enzyme.mount(
+      listPickerWrapper = mount(
         <ListPicker
           title={title}
           items={localListItems}
@@ -400,10 +398,6 @@ describe("ListPicker", () => {
       expect(item).not.to.be.undefined;
       item.prop("onClick")!();
       listPickerWrapper.update();
-    });
-
-    afterEach(() => {
-      listPickerWrapper.unmount();
     });
 
     it("should call enableAllFunc handler when All clicked", () => {
@@ -448,7 +442,7 @@ describe("ListPicker", () => {
     });
 
     it("Close other ListPicker", () => {
-      const wrapper1 = enzyme.mount(
+      const wrapper1 = mount(
         <ListPicker
           title={title}
           items={localListItems}
@@ -460,7 +454,7 @@ describe("ListPicker", () => {
       wrapper1.update();
       wrapper1.find(Group).should.exist;
 
-      const wrapper2 = enzyme.mount(
+      const wrapper2 = mount(
         <ListPicker
           title={title}
           items={listItems}
@@ -477,16 +471,13 @@ describe("ListPicker", () => {
       itemComponent2.simulate("click");
       wrapper2.update();
       wrapper2.find(Group).length.should.eq(0);
-
-      wrapper1.unmount();
-      wrapper2.unmount();
     });
   });
 
   describe("onOutsideClick", () => {
     it("should minimize on outside click", () => {
       const spy = sinon.spy();
-      const sut = enzyme.mount<ListPickerBase>(<ListPickerBase
+      const sut = mount<ListPickerBase>(<ListPickerBase
         title={title}
         items={listItems}
         setEnabled={setEnabled}
@@ -495,7 +486,7 @@ describe("ListPicker", () => {
       sut.setState({ expanded: true });
       const containedGroup = sut.findWhere((w) => {
         return w.name() === "WithOnOutsideClick";
-      }) as enzyme.ReactWrapper<WithOnOutsideClickProps>;
+      }) as ReactWrapper<WithOnOutsideClickProps>;
 
       const event = new MouseEvent("");
       sinon.stub(event, "target").get(() => document.createElement("div"));
@@ -507,7 +498,7 @@ describe("ListPicker", () => {
 
   it("should not minimize on outside click", () => {
     const spy = sinon.spy();
-    const sut = enzyme.mount<ListPickerBase>(<ListPickerBase
+    const sut = mount<ListPickerBase>(<ListPickerBase
       title={title}
       items={listItems}
       setEnabled={setEnabled}
@@ -516,7 +507,7 @@ describe("ListPicker", () => {
     sut.setState({ expanded: true });
     const containedGroup = sut.findWhere((w) => {
       return w.name() === "WithOnOutsideClick";
-    }) as enzyme.ReactWrapper<WithOnOutsideClickProps>;
+    }) as ReactWrapper<WithOnOutsideClickProps>;
 
     const event = new MouseEvent("");
     containedGroup.prop("onOutsideClick")!(event);

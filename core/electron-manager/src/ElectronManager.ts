@@ -7,6 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
+import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
 
 // cSpell:ignore signin devserver webcontents
 
@@ -45,6 +46,7 @@ class ElectronManager {
     };
 
     this._mainWindow = new BrowserWindow(opts);
+    ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 

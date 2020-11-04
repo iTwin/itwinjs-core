@@ -705,8 +705,12 @@
         "ignore-styles",
         "lib/**/*.js"
       ],
+      "env": {
+        "NODE_ENV": "development",
+      },
       "outFiles": [
-        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",
+        "${workspaceFolder}/full-stack-tests/presentation/lib/**/*.js"
       ]
     },
     {

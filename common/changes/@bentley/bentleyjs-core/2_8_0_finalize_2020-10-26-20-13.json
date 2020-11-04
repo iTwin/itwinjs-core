@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/bentleyjs-core"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Affan.Khan@Bentley.com"
+}

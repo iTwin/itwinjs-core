@@ -524,7 +524,7 @@ class PointCloudTechnique extends VariedTechnique {
           flags.isClassified = iClassified;
           const builder = createPointCloudBuilder(flags.isClassified, featureMode, thematic);
           if (FeatureMode.Overrides === featureMode)
-            addUniformFeatureSymbology(builder);
+            addUniformFeatureSymbology(builder, true);
 
           this.addFeatureId(builder, featureMode);
           this.addShader(builder, flags, gl);
@@ -569,7 +569,7 @@ class TerrainMeshTechnique extends VariedTechnique {
               flags.isTranslucent = 1 === iTranslucent;
               const builder = createTerrainMeshBuilder(flags.isClassified, featureMode, flags.isShadowable, thematic);
               if (FeatureMode.Pick === featureMode)
-                addUniformFeatureSymbology(builder);
+                addUniformFeatureSymbology(builder, false);
               if (flags.isTranslucent) {
                 addShaderFlags(builder);
                 addTranslucency(builder);

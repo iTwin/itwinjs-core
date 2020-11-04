@@ -1600,9 +1600,13 @@ export interface EditableTreeProps {
 
 // @beta
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @beta
 export interface EditorContainerProps extends CommonProps {
@@ -1724,6 +1728,22 @@ export class FavoritePropertiesRenderer {
     hasFavorites(propertyData: PropertyData): boolean;
     // (undocumented)
     renderFavorites(propertyData: PropertyData, orientation?: Orientation): HTMLElement | string;
+}
+
+// @alpha
+export class FavoritePropertyList extends React.PureComponent<FavoritePropertyListProps> {
+    // @internal (undocumented)
+    render(): JSX.Element | null;
+}
+
+// @alpha
+export interface FavoritePropertyListProps {
+    // (undocumented)
+    orientation?: Orientation;
+    // (undocumented)
+    propertyData: PropertyData;
+    // (undocumented)
+    propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 // @beta

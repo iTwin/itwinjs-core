@@ -1,6 +1,6 @@
 {
   "name": "@bentley/analytical-backend",
-  "version": "2.9.0-dev.0",
+  "version": "2.9.0-dev.10",
   "main": "lib/analytical-backend.js",
   "typings": "lib/analytical-backend",
   "license": "MIT",
@@ -8,6 +8,7 @@
     "node": ">=10.16.0 <13.0"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2 && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
@@ -31,20 +32,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.9.0-dev.0",
-    "@bentley/imodeljs-backend": "^2.9.0-dev.0",
-    "@bentley/imodeljs-common": "^2.9.0-dev.0"
+    "@bentley/bentleyjs-core": "^2.9.0-dev.10",
+    "@bentley/imodeljs-backend": "^2.9.0-dev.10",
+    "@bentley/imodeljs-common": "^2.9.0-dev.10"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.9.0-dev.0",
-    "@bentley/build-tools": "2.9.0-dev.0",
-    "@bentley/eslint-plugin": "2.9.0-dev.0",
-    "@bentley/imodeljs-backend": "2.9.0-dev.0",
-    "@bentley/imodeljs-common": "2.9.0-dev.0",
+    "@bentley/bentleyjs-core": "2.9.0-dev.10",
+    "@bentley/build-tools": "2.9.0-dev.10",
+    "@bentley/eslint-plugin": "2.9.0-dev.10",
+    "@bentley/imodeljs-backend": "2.9.0-dev.10",
+    "@bentley/imodeljs-common": "2.9.0-dev.10",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import SplitPane from "react-split-pane";
@@ -12,7 +12,7 @@ import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
   ContentLayoutProps, ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ContentLayout", () => {
 
@@ -75,8 +75,7 @@ describe("ContentLayout", () => {
   });
 
   it("SingleContent should render", () => {
-    const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
-    wrapper.unmount();
+    mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
   });
 
   it("SingleContent renders correctly", () => {
@@ -84,8 +83,7 @@ describe("ContentLayout", () => {
   });
 
   it("TwoHalvesVertical should render", () => {
-    const wrapper = mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />);
-    wrapper.unmount();
+    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />);
   });
 
   it("TwoHalvesVertical renders correctly", () => {
@@ -100,8 +98,7 @@ describe("ContentLayout", () => {
   });
 
   it("TwoHalvesHorizontal should render", () => {
-    const wrapper = mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} isInFooterMode={false} />);
-    wrapper.unmount();
+    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} isInFooterMode={false} />);
   });
 
   it("TwoHalvesHorizontal renders correctly", () => {
@@ -123,8 +120,7 @@ describe("ContentLayout", () => {
   );
 
   it("FourQuadrantsVertical should render", () => {
-    const wrapper = mount(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsVerticalLayoutDef} isInFooterMode={false} />);
-    wrapper.unmount();
+    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsVerticalLayoutDef} isInFooterMode={false} />);
   });
 
   it("FourQuadrantsVertical renders correctly", () => {
@@ -145,8 +141,7 @@ describe("ContentLayout", () => {
   );
 
   it("FourQuadrantsHorizontal should render", () => {
-    const wrapper = mount(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsHorizontalLayoutDef} isInFooterMode={false} />);
-    wrapper.unmount();
+    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsHorizontalLayoutDef} isInFooterMode={false} />);
   });
 
   it("FourQuadrantsVertical renders correctly", () => {
@@ -160,7 +155,6 @@ describe("ContentLayout", () => {
     expect(ContentViewManager.isMouseDown).to.be.true;
     layoutDiv.simulate("mouseUp");
     expect(ContentViewManager.isMouseDown).to.be.false;
-    wrapper.unmount();
   });
 
   it("ContentWrapper mouse down", () => {
@@ -173,8 +167,6 @@ describe("ContentLayout", () => {
     layoutWrappers.at(1).simulate("mouseDown");
     wrapper.update();
     expect(wrapper.find("div.uifw-contentlayout-overlay-active").length).to.eq(1);
-
-    wrapper.unmount();
   });
 
   it("Vertical SplitPane onChanged", () => {
@@ -189,8 +181,6 @@ describe("ContentLayout", () => {
     splitPanel.prop("onChange")!(50);
 
     wrapper.update();
-
-    wrapper.unmount();
   });
 
   it("Horizontal SplitPane onChanged", () => {
@@ -205,8 +195,6 @@ describe("ContentLayout", () => {
     splitPanel.prop("onChange")!(50);
 
     wrapper.update();
-
-    wrapper.unmount();
   });
 
   it("ContentLayoutManager.loadLayout should throw Error if ContentLayoutProps does not have an id", () => {

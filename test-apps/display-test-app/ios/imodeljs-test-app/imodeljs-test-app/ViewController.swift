@@ -15,7 +15,8 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
         let bundlePath = Bundle.main.bundlePath;
         let mainPath = bundlePath.appending ("/Assets/main.js");
         let main = URL(fileURLWithPath: mainPath);
-        host.loadBackend (main);
+        let client = MobileAuthorizationClient(viewController: self);
+        host.loadBackend(main, withAuthClient: client,withInspect: true)
     }
     
     func setupFrontend (bimFile: URL?) {
@@ -38,7 +39,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
 
         self.view.setNeedsLayout()
     
-        let host = IModelJsHost.sharedInstance() as! IModelJsHost
+        let host = IModelJsHost.sharedInstance();
         
         // let frontProvider = "http://192.168.1.242:3000";
 
@@ -48,13 +49,14 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
         if (bimFile != nil) {
             let encodedPath = bimFile?.path.replacingOccurrences(of: "/", with: "%2F");
             queryParam.append("&standalone=true");
+            queryParam.append("&signInForStandalone=true")
             queryParam.append("&iModelName=" + encodedPath!);
         }
 
         let url = URL.init(string: frontProvider + queryParam);
         let req = URLRequest(url: url!);
         self.webView!.load(req)
-        host.register(self.webView);
+        host.register(self.webView!);
     }
     /// Show alert for webkit alert
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {

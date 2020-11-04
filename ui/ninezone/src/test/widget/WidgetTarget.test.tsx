@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
@@ -9,12 +9,6 @@ import { addPanelWidget, createNineZoneState, CursorTypeContext, DragManager, Pa
 import { createDragStartArgs, NineZoneProvider } from "../Providers";
 
 describe("WidgetTarget", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render with cursor type", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
@@ -53,7 +47,7 @@ describe("WidgetTarget", () => {
       </NineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widget-widgetTarget")[0];
-    sandbox.stub(document, "elementFromPoint").returns(target);
+    sinon.stub(document, "elementFromPoint").returns(target);
     act(() => {
       dragManager.current!.handleDragStart(createDragStartArgs());
       fireEvent.mouseMove(target);

@@ -6,6 +6,8 @@
  * @module StatusBar
  */
 
+import "./StatusBar.scss"
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
@@ -20,9 +22,14 @@ export function WidgetPanelsStatusBar(props: CommonProps) {
   if (!zone || !zone.isStatusBar)
     return null;
   const widget = zone.getSingleWidgetDef();
+  const className = classnames(
+    "uifw-widgetPanels-statusBar",
+    props.className,
+  );
   return (
     <StatusBar
-      {...props}
+      className={className}
+      style={props.style}
       isInFooterMode
       widgetControl={widget?.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl}
     />

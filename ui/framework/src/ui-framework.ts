@@ -58,6 +58,7 @@ export * from "./ui-framework/dialog/ModalDialogManager";
 export * from "./ui-framework/dialog/ModelessDialog";
 export * from "./ui-framework/dialog/ModelessDialogManager";
 export * from "./ui-framework/dialog/StandardMessageBox";
+export * from "./ui-framework/dialog/UiDataProvidedDialog";
 
 export * from "./ui-framework/dragdrop/DragDropLayerManager";
 export * from "./ui-framework/dragdrop/ZoneTargets";
@@ -255,7 +256,7 @@ export * from "./ui-framework/zones/FrameworkZone";
 export * from "./ui-framework/zones/StatusBarZone";
 export * from "./ui-framework/zones/toolsettings/ToolSettingsZone";
 export * from "./ui-framework/zones/toolsettings/ToolInformation";
-export * from "./ui-framework/zones/toolsettings/ToolUiManager";
+export * from "./ui-framework/zones/toolsettings/ToolSettingsManager";
 export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
 export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 export * from "./ui-framework/zones/Zone";

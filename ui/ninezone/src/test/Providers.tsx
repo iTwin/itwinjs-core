@@ -6,20 +6,19 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   createNineZoneState,
+  DragManager,
   DragManagerContext,
   NineZoneProvider as RealNineZoneProvider,
   NineZoneProviderProps as RealNineZoneProviderProps,
 } from "../ui-ninezone";
 import { Point, Rectangle, Size } from "@bentley/ui-core";
-import { DragManager } from "../ui-ninezone/base/DragManager";
-
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 /** @internal */
-export type NineZoneProviderProps =
-  PartialBy<RealNineZoneProviderProps, "measure" | "state" | "dispatch"> &
-  Pick<DragManagerConsumerProps, "dragManagerRef">;
+export interface NineZoneProviderProps extends PartialBy<RealNineZoneProviderProps, "measure" | "state" | "dispatch"> {
+  dragManagerRef?: React.Ref<DragManager>;
+}
 
 /** @internal */
 export function NineZoneProvider(props: NineZoneProviderProps) {
@@ -31,37 +30,22 @@ export function NineZoneProvider(props: NineZoneProviderProps) {
       measure={() => new Rectangle()}
       {...otherProps}
     >
-      <DragManagerConsumer dragManagerRef={dragManagerRef}>
-        {children}
-      </DragManagerConsumer>
+      <ContextConsumer
+        context={DragManagerContext}
+        contextRef={dragManagerRef}
+      />
+      {children}
     </RealNineZoneProvider>
   );
 }
 
 /** @internal */
 export function DragManagerProvider(props: { children?: React.ReactNode }) {
-  const dragManager = React.useRef(new DragManager());
+  const [dragManager] = React.useState(new DragManager());
   return (
-    <DragManagerContext.Provider value={dragManager.current}>
+    <DragManagerContext.Provider value={dragManager}>
       {props.children}
     </DragManagerContext.Provider>
-  );
-}
-
-interface DragManagerConsumerProps {
-  children?: React.ReactNode;
-  dragManagerRef?: React.RefObject<DragManager>;
-}
-
-function DragManagerConsumer(props: DragManagerConsumerProps) {
-  const dragManager = React.useContext(DragManagerContext);
-  if (props.dragManagerRef) {
-    (props.dragManagerRef as React.MutableRefObject<DragManager>).current = dragManager;
-  }
-  return (
-    <>
-      {props.children}
-    </>
   );
 }
 
@@ -121,7 +105,7 @@ export const withOnRender = <P extends {}, C>(
 
 interface ContextConsumerProps<T> {
   context: React.Context<T>;
-  contextRef?: React.RefObject<T>;
+  contextRef?: React.Ref<T>;
 }
 
 /** @internal */

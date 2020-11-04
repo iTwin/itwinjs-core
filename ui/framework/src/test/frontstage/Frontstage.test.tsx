@@ -3,23 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StagePanelSection, WidgetState } from "@bentley/ui-abstract";
 import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
 import {
-  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, WidgetProvider, ZoneDefProvider,
+  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, WidgetProvider, ZoneDef, ZoneDefProvider,
+  ZoneLocation,
 } from "../../ui-framework";
-import { ZoneLocation } from "../../ui-framework/zones/Zone";
-import { ZoneDef } from "../../ui-framework/zones/ZoneDef";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
 
 describe("Frontstage", () => {
-  const sandbox = sinon.createSandbox();
-
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
@@ -32,11 +29,7 @@ describe("Frontstage", () => {
   });
 
   beforeEach(() => {
-    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
-  });
-
-  afterEach(() => {
-    sandbox.restore();
+    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
   });
 
   it("should render", () => {
@@ -86,8 +79,6 @@ describe("Frontstage", () => {
       wrapper.update();
       expect(widgetDef2.isVisible).to.eq(false);
     }
-
-    wrapper.unmount();
   });
 
   it("should change DOM parent of widget content", async () => {
@@ -114,8 +105,6 @@ describe("Frontstage", () => {
 
     expect(saveTransientStateSpy.calledOnce).true;
     expect(restoreTransientStateSpy.calledOnce).true;
-
-    wrapper.unmount();
   });
 
   it("should remount widget if widget control is not provided", async () => {
@@ -130,7 +119,7 @@ describe("Frontstage", () => {
     const widget = FrontstageManager.findWidget("widget3");
     sinon.stub(widget!, "widgetControl").get(() => undefined);
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-    const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
+    const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
 
     expect(contentRenderer.state().widgetKey).eq(2);
 
@@ -148,8 +137,6 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(3);
     expect(componentWillUnmountSpy.calledOnce).true;
     expect(widgetElementComponentDidMountSpy.calledOnce).true;
-
-    wrapper.unmount();
   });
 
   it("should remount widget if widget control did not handle state restoration", async () => {
@@ -164,7 +151,7 @@ describe("Frontstage", () => {
     const widget = FrontstageManager.findWidget("widget3");
     sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(false);
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-    const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
+    const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
 
     expect(contentRenderer.state().widgetKey).eq(2);
 
@@ -182,8 +169,6 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(3);
     expect(componentWillUnmountSpy.calledOnce).true;
     expect(widgetElementComponentDidMountSpy.calledOnce).true;
-
-    wrapper.unmount();
   });
 
   it("should not remount widget if widget control handled state restoration", async () => {
@@ -198,7 +183,7 @@ describe("Frontstage", () => {
     const widget = FrontstageManager.findWidget("widget3");
     sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(true);
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-    const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
+    const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
 
     expect(contentRenderer.state().widgetKey).eq(2);
 
@@ -216,8 +201,6 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(2);
     expect(componentWillUnmountSpy.calledOnce).false;
     expect(widgetElementComponentDidMountSpy.calledOnce).false;
-
-    wrapper.unmount();
   });
 
   it("should update when widget state changes", async () => {
@@ -243,8 +226,6 @@ describe("Frontstage", () => {
     expect(forceUpdateSpy.calledTwice).true;
     expect(widgetDef.activeState).to.eq(WidgetState.Closed);
     expect(widgetDef.stateChanged).true;
-
-    wrapper.unmount();
   });
 
   it("WidgetManager should add dynamic WidgetDef to Frontstage on activation", async () => {
@@ -262,8 +243,6 @@ describe("Frontstage", () => {
       const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
       expect(foundWidgetDef).to.not.be.undefined;
     }
-
-    wrapper.unmount();
   });
 
   it("WidgetManager should add dynamic WidgetDef to Frontstage after activation", async () => {
@@ -281,8 +260,6 @@ describe("Frontstage", () => {
       const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
       expect(foundWidgetDef).to.not.be.undefined;
     }
-
-    wrapper.unmount();
   });
 
   it("WidgetManager should add dynamic WidgetDef to Frontstage from provider", async () => {
@@ -310,8 +287,6 @@ describe("Frontstage", () => {
       const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
       expect(foundWidgetDef).to.not.be.undefined;
     }
-
-    wrapper.unmount();
   });
 
 });

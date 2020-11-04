@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@bentley/ui-abstract";
 import { ActionItemButton, BaseItemState, CommandItemDef, KeyboardShortcutManager, SyncUiEventDispatcher } from "../../ui-framework";
 import { SyncUiEventId } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import TestUtils from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("ActionItemButton", () => {
 
@@ -67,7 +67,6 @@ describe("ActionItemButton", () => {
     const wrapper = mount(<ActionItemButton actionItem={spyCommand} />);
     wrapper.find(".nz-toolbar-item-item").simulate("click");
     spyMethod.should.have.been.called;
-    wrapper.unmount();
   });
 
   it("should set focus to home on Esc", () => {
@@ -77,7 +76,6 @@ describe("ActionItemButton", () => {
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
-    wrapper.unmount();
   });
 
   it("sync event should trigger stateFunc", () => {
@@ -113,7 +111,6 @@ describe("ActionItemButton", () => {
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
-    wrapper.unmount();
   });
 
   it("ToolActivated sync event should trigger stateFunc", () => {
@@ -137,7 +134,6 @@ describe("ActionItemButton", () => {
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
-    wrapper.unmount();
   });
 
   it("should handle changing state via props", () => {
@@ -163,5 +159,4 @@ it("should render with badgeType", () => {
   badge.length.should.eq(1);
   const newBadge = wrapper.find("div.core-new-badge");
   newBadge.length.should.eq(1);
-  wrapper.unmount();
 });

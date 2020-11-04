@@ -1,11 +1,12 @@
 {
   "name": "@bentley/webgl-compatibility",
-  "version": "2.9.0-dev.0",
+  "version": "2.9.0-dev.10",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/webgl-compatibility.js",
   "imodeljsSharedLibrary": true,
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "npm test -- --cover",
@@ -34,9 +35,9 @@
   "dependencies": {},
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.9.0-dev.0",
-    "@bentley/eslint-plugin": "2.9.0-dev.0",
-    "@bentley/certa": "2.9.0-dev.0",
+    "@bentley/build-tools": "2.9.0-dev.10",
+    "@bentley/eslint-plugin": "2.9.0-dev.10",
+    "@bentley/certa": "2.9.0-dev.10",
     "@types/node": "10.14.1",
     "@types/mocha": "^5.2.5",
     "@types/chai": "^4.1.4",

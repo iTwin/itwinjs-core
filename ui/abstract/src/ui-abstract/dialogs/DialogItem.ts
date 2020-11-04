@@ -23,7 +23,9 @@ export interface EditorPosition {
   rowPriority: number;
   /** Determines the column position for the type editor */
   columnIndex: number;
-  /** Number of columns to occupy. Defaults to 1 */
+  /** Number of columns to occupy. Defaults to 1
+   * @deprecated
+   */
   columnSpan?: number;
 }
 
@@ -39,10 +41,7 @@ export interface BaseDialogItem {
  * @beta
  */
 export interface DialogItem extends BaseDialogItem {
-  readonly value: DialogItemValue;
-  readonly property: PropertyDescription;
   readonly editorPosition: EditorPosition;
-  readonly isDisabled?: boolean;
   readonly lockProperty?: BaseDialogItem;
 }
 
@@ -59,4 +58,5 @@ export interface DialogPropertyItem {
  */
 export interface DialogPropertySyncItem extends DialogPropertyItem {
   readonly isDisabled?: boolean;
+  readonly property?: PropertyDescription;
 }

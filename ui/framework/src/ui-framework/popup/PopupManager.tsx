@@ -10,8 +10,8 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription, PropertyRecord,
-  PropertyValueFormat, RelativePosition, UiDataProvider,
+  AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription,
+  PropertyRecord, PropertyValueFormat, RelativePosition,
 } from "@bentley/ui-abstract";
 import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
@@ -23,6 +23,8 @@ import { CardPopup } from "./CardPopup";
 import { ToolSettingsPopup } from "./ToolSettingsPopup";
 import { KeyinPalettePopup } from "./KeyinPalettePopup";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
+
+// cSpell:ignore uiadmin
 
 /** Information maintained by PopupManager about a Popup
  * @alpha
@@ -40,7 +42,7 @@ export interface PopupsChangedEventArgs {
 
 /** Popups Changed Event class.
  * @alpha
- */
+ */
 export class PopupsChangedEvent extends UiEvent<PopupsChangedEventArgs> { }
 
 /** Props for each popup managed by the PopupManager
@@ -52,6 +54,25 @@ export interface PopupPropsBase {
   pt: XAndY;
   offset: XAndY;
 }
+
+/** Describes React based content
+ * @alpha
+ */
+export interface ReactContent {
+  reactNode: React.ReactNode;
+}
+
+/** Type for Popup Content
+ * @alpha
+ */
+export type PopupContentType = HTMLElement | ReactContent;
+
+/** ReactContent type guard.
+ * @internal
+ */
+export const isReactContent = (content: PopupContentType): content is ReactContent => {
+  return (content as ReactContent).reactNode !== undefined;
+};
 
 /** Popup Manager class
  * @alpha
@@ -231,7 +252,7 @@ export class PopupManager {
   }
 
   public static showCard(
-    content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
+    content: PopupContentType, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
     el: HTMLElement, pt: XAndY, offset: XAndY,
     onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition,
   ): boolean {
@@ -259,7 +280,7 @@ export class PopupManager {
   }
 
   public static openToolSettings(
-    dataProvider: UiDataProvider, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition,
+    dataProvider: DialogLayoutDataProvider, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition,
   ): boolean {
 
     const id = PopupManager._toolSettingsId;
