@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-webpack-tools",
+      "comment": "Update the version of node-sass to 4.14.1",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-webpack-tools",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}
