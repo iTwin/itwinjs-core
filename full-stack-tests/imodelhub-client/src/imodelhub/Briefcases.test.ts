@@ -15,13 +15,26 @@ import * as utils from "./TestUtils";
 import { workDir } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
 
-function mockGetBriefcaseById(imodelId: GuidString, briefcase: Briefcase) {
+export function mockDeleteAllLocksWithRegularUser(imodelId: GuidString, briefcaseId: number) {
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", `${briefcase.briefcaseId!}`);
-  const requestResponse = ResponseBuilder.generateGetResponse(briefcase);
-  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Lock", `DeleteChunk-${briefcaseId}`);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, ResponseBuilder.generateError("iModelHub.UserDoesNotHavePermission"), 1, undefined, undefined, 403);
+}
+
+export function mockGetBriefcaseById(imodelId: GuidString, briefcaseId: number, briefcase?: Briefcase) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", briefcaseId.toString());
+  let requestResponse;
+  if (briefcase) {
+    requestResponse = ResponseBuilder.generateGetArrayResponse<Briefcase>([briefcase]);
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
+  } else {
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateError("InstanceNotFound", ""), 0, undefined, undefined, 404);
+  }
 }
 
 function mockGetBriefcaseRequest(imodelId: GuidString, briefcase: Briefcase, selectDownloadUrl: boolean, selectApplicationData: boolean, selectBCVAccessKey: boolean = false) {
@@ -152,17 +165,19 @@ describe("iModelHub BriefcaseHandler", () => {
     utils.mockCreateBriefcase(imodelId, undefined, newBriefcase);
     newBriefcase = await iModelClient.briefcases.create(requestContext, imodelId, newBriefcase);
 
-    utils.mockGetBriefcase(imodelId, newBriefcase);
-    const originalBriefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
-
     utils.mockGetLocks(imodelId, `?$filter=BriefcaseId+eq+${newBriefcase.briefcaseId}&$top=1`);
     mockDeleteBriefcase(imodelId, newBriefcase.briefcaseId!);
     await iModelClient.briefcases.delete(requestContext, imodelId, newBriefcase.briefcaseId!);
 
-    utils.mockGetBriefcase(imodelId);
-    const briefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
-
-    chai.expect(briefcaseCount).to.be.lessThan(originalBriefcaseCount);
+    mockGetBriefcaseById(imodelId, newBriefcase.briefcaseId!);
+    let error;
+    try {
+      await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(newBriefcase.briefcaseId!));
+    } catch (err) {
+      error = err;
+    }
+    chai.expect(error).not.to.equal(undefined);
+    chai.expect(error.name).to.equal("InstanceNotFound");
   });
 
   it("should delete a briefcase that owns locks (#iModelBank)", async () => {
@@ -175,18 +190,46 @@ describe("iModelHub BriefcaseHandler", () => {
     utils.mockUpdateLocks(imodelId, [lock]);
     await iModelClient.locks.update(requestContext, imodelId, [lock]);
 
-    utils.mockGetBriefcase(imodelId, newBriefcase);
-    const originalBriefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
-
     utils.mockGetLocks(imodelId, `?$filter=BriefcaseId+eq+${newBriefcase.briefcaseId}&$top=1`, ResponseBuilder.generateObject<Lock>(Lock));
     utils.mockDeleteAllLocks(imodelId, newBriefcase.briefcaseId!);
     mockDeleteBriefcase(imodelId, newBriefcase.briefcaseId!);
     await iModelClient.briefcases.delete(requestContext, imodelId, newBriefcase.briefcaseId!);
 
-    utils.mockGetBriefcase(imodelId);
-    const briefcaseCount = (await iModelClient.briefcases.get(requestContext, imodelId)).length;
+    mockGetBriefcaseById(imodelId, newBriefcase.briefcaseId!);
+    let error;
+    try {
+      await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(newBriefcase.briefcaseId!));
+    } catch (err) {
+      error = err;
+    }
+    chai.expect(error).not.to.equal(undefined);
+    chai.expect(error.name).to.equal("InstanceNotFound");
+  });
 
-    chai.expect(briefcaseCount).to.be.lessThan(originalBriefcaseCount);
+  it("should delete a briefcase that owns locks without write permission (#iModelBank|#unit)", async () => {
+    let newBriefcase: Briefcase = utils.generateBriefcase(briefcaseId);
+    utils.mockCreateBriefcase(imodelId, undefined, newBriefcase);
+    newBriefcase = await iModelClient.briefcases.create(requestContext, imodelId, newBriefcase);
+
+    const lastObjectId = await utils.getLastLockObjectId(requestContext, imodelId);
+    const lock = utils.generateLock(newBriefcase.briefcaseId, utils.incrementLockObjectId(lastObjectId), 1, 2);
+    utils.mockUpdateLocks(imodelId, [lock]);
+    await iModelClient.locks.update(requestContext, imodelId, [lock]);
+
+    utils.mockGetLocks(imodelId, `?$filter=BriefcaseId+eq+${newBriefcase.briefcaseId}&$top=1`, ResponseBuilder.generateObject<Lock>(Lock));
+    mockDeleteAllLocksWithRegularUser(imodelId, newBriefcase.briefcaseId!);
+    mockDeleteBriefcase(imodelId, newBriefcase.briefcaseId!);
+    await iModelClient.briefcases.delete(requestContext, imodelId, newBriefcase.briefcaseId!);
+
+    mockGetBriefcaseById(imodelId, newBriefcase.briefcaseId!);
+    let error;
+    try {
+      await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(newBriefcase.briefcaseId!));
+    } catch (err) {
+      error = err;
+    }
+    chai.expect(error).not.to.equal(undefined);
+    chai.expect(error.name).to.equal("InstanceNotFound");
   });
 
   it("should fail getting an invalid briefcase (#iModelBank)", async () => {
@@ -202,7 +245,7 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should get information on a briefcase by id (#iModelBank)", async () => {
-    mockGetBriefcaseById(imodelId, utils.generateBriefcase(briefcaseId));
+    mockGetBriefcaseById(imodelId, briefcaseId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId)))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.expect(briefcase.downloadUrl).to.be.equal(undefined);
@@ -290,7 +333,7 @@ describe("iModelHub BriefcaseHandler", () => {
     briefcase.acquiredDate = new Date().toISOString();
     briefcase.expirationDate = new Date(dateAfter30Days).toISOString();
 
-    mockGetBriefcaseById(imodelId, briefcase);
+    mockGetBriefcaseById(imodelId, briefcase.briefcaseId!, briefcase);
     briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcase.briefcaseId!)))[0];
     chai.expect(Date.parse(briefcase.expirationDate!)).to.be.within(Date.parse(briefcase.acquiredDate!), dateAfter30Days);
 
@@ -307,7 +350,7 @@ describe("iModelHub BriefcaseHandler", () => {
     utils.mockCreateBriefcase(imodelId, undefined, briefcase);
     briefcase = await iModelClient.briefcases.create(requestContext, imodelId, briefcase);
 
-    mockGetBriefcaseById(imodelId, briefcase);
+    mockGetBriefcaseById(imodelId, briefcase.briefcaseId!, briefcase);
     briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcase.briefcaseId!)))[0];
     chai.expect(briefcase.deviceName).to.be.equals(deviceName);
     chai.expect(briefcase.changeSetIdOnDevice).to.be.equals(undefined);
@@ -320,7 +363,7 @@ describe("iModelHub BriefcaseHandler", () => {
     mockUpdateBriefcase(imodelId, briefcase);
     briefcase = await iModelClient.briefcases.update(requestContext, imodelId, briefcase);
 
-    mockGetBriefcaseById(imodelId, briefcase);
+    mockGetBriefcaseById(imodelId, briefcase.briefcaseId!, briefcase);
     briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcase.briefcaseId!)))[0];
     chai.expect(briefcase.deviceName).to.be.equals(deviceName);
     chai.expect(briefcase.changeSetIdOnDevice).to.be.equals(changeSet.id);
