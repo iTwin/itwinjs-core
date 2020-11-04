@@ -209,8 +209,11 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+    const requestContext = ClientRequestContext.current;
     const iModel = IModelDb.findByKey(rpcProps.key);
     const result = await iModel.nativeDb.generateElementGraphics(request);
+
+    requestContext.enter();
     let error: string | undefined;
     switch (result.status) {
       case ElementGraphicsStatus.NoGeometry:
