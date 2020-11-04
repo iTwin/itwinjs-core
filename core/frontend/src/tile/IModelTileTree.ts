@@ -6,10 +6,10 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeTimePoint, DbOpcode, GuidString, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass,
+  BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange,
   IModelTileTreeProps, ModelGeometryChanges, TileProps,ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -63,17 +63,6 @@ function findElementChangesForModel(changes: Iterable<ModelGeometryChanges>, mod
       return change.elements;
 
   return undefined;
-}
-
-/** Hides elements within static tiles if they have been modified during the current editing session.
- * Those elements are instead drawn as individual "tiles" in the dynamic branch of the [[RootTile]].
- */
-class StaticAppearanceProvider implements FeatureAppearanceProvider {
-  public readonly hiddenElements = new Id64.Uint32Set();
-
-  public getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
-    return this.hiddenElements.has(elemLo, elemHi) ? undefined : overrides.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
-  }
 }
 
 /** No interactive editing session is currently active. */
@@ -233,7 +222,7 @@ class RootTile extends Tile {
     for (let i = 0; i < numStaticTiles; i++)
       tiles[i].drawGraphics(args);
 
-    if ("dynamic" !== this._tileState.type || numStaticTiles == tiles.length) {
+    if ("dynamic" !== this._tileState.type || numStaticTiles === tiles.length) {
       if ("dynamic" === this._tileState.type)
         args.appearanceProvider = this._tileState.rootTile.appearanceProvider;
 
@@ -297,7 +286,7 @@ class RootTile extends Tile {
   public updateDynamicRange(tile: Tile): void {
     this.resetRange();
     if (this._staticTreeContentRange && this.tree.contentRange && !tile.contentRange.isNull)
-        this.tree.contentRange.extendRange(tile.contentRange);
+      this.tree.contentRange.extendRange(tile.contentRange);
 
     if (!tile.range.isNull)
       this.range.extendRange(tile.range);

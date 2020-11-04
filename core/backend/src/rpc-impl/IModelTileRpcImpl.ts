@@ -9,7 +9,7 @@
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
   CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelError, IModelRpcProps,
-  IModelTileRpcInterface, IModelStatus, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse,
+  IModelStatus, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse,
   TileTreeContentIds, TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";

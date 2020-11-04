@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface,
+  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, NativeAppRpcInterface,
   QueuedEvent, RpcManager, RpcPushChannel, RpcPushConnection, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {

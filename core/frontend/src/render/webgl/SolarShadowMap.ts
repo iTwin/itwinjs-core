@@ -36,9 +36,9 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
     private _useViewportMap?: boolean;
     private readonly _processTiles: ProcessTiles;
 
-    constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs, processTiles: ProcessTiles) {
+    constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs, process: ProcessTiles) {
       super(args);
-      this._processTiles = processTiles;
+      this._processTiles = process;
     }
 
     public processSelectedTiles(tiles: Tile[]): void {
@@ -81,9 +81,9 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
       return size;
     }
 
-    public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTreeReference, planes: FrustumPlanes, processTiles: ProcessTiles) {
+    public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTreeReference, planes: FrustumPlanes, process: ProcessTiles) {
       const args = tileTree.createDrawArgs(context);
-      return undefined !== args ? new SolarShadowMapDrawArgs(planes, shadowMap, args, processTiles) : undefined;
+      return undefined !== args ? new SolarShadowMapDrawArgs(planes, shadowMap, args, process) : undefined;
     }
   }
 

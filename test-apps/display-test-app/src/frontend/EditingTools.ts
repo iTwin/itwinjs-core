@@ -28,6 +28,7 @@ export class EditingSessionTool extends Tool {
   public static get maxArgs() { return 0; }
 
   public run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._run();
     return true;
   }
@@ -52,8 +53,10 @@ export abstract class UndoRedoTool extends Tool {
 
   public run(): boolean {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
-    if (imodel)
+    if (imodel) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       IModelWriteRpcInterface.getClient().undoRedo(imodel.getRpcProps(), this.isUndo);
+    }
 
     return true;
   }
@@ -76,6 +79,7 @@ export class DeleteElementsTool extends Tool {
   public static get maxArgs() { return 0; }
 
   public run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._run();
     return true;
   }
@@ -110,6 +114,7 @@ abstract class InteractiveEditingTool extends PrimitiveTool {
   }
 
   public onCleanup(): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.closeEditor();
   }
 
@@ -325,7 +330,7 @@ export class PlaceLineStringTool extends InteractiveEditingTool {
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    const editor = await this.getEditor();
+    await this.getEditor();
     this._points.push(ev.point.clone());
     this.setupAndPromptForNextAction();
 

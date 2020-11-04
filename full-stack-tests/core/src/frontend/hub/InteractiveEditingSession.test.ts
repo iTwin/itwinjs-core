@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 const expect = chai.expect;
-import * as path from "path";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 import { BeDuration, compareStrings, DbOpcode, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BatchType, Code, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
+import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
 import {
-  ElementEditor3d, GeometricModel3dState, IModelApp, IModelConnection, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection, TileLoadPriority,
+  ElementEditor3d, GeometricModel3dState, IModelApp, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection, TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
@@ -222,8 +221,8 @@ describe("InteractiveEditingSession (#integration)", () => {
       await BeDuration.wait(waitTime);
 
       const rangeTolerance = 0.0001;
-      const trees = tree instanceof IModelTileTree ? [ tree ] : tree;
-      for (const t of trees) {
+      const treeList = tree instanceof IModelTileTree ? [ tree ] : tree;
+      for (const t of treeList) {
         expect(t.tileState).to.equal(expectedState);
         expect(t.hiddenElements.length).to.equal(expectedHiddenElementCount);
         expect(t.rootTile.range.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;

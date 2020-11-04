@@ -134,7 +134,7 @@ describe("Tile tolerance", () => {
 
     // We know the tolerance we expect for the root tile...
     const knownRootTolerance = 0.14354; // approximate.
-    const rootTile = (tree as IModelTileTree).staticBranch as IModelTile;
+    const rootTile = (tree as IModelTileTree).staticBranch;
     const rootTolerance = computeTileChordTolerance(rootTile, true);
     expect(rootTolerance).least(knownRootTolerance);
     expect(rootTolerance).most(knownRootTolerance + 0.00001);

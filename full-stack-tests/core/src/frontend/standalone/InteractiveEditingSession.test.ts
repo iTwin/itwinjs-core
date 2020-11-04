@@ -7,8 +7,8 @@ const expect = chai.expect;
 import * as path from "path";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-import { BeDuration, DbOpcode, OpenMode } from "@bentley/bentleyjs-core";
-import { ElectronRpcConfiguration, ElementGeometryChange, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { ElectronRpcConfiguration, IModelError } from "@bentley/imodeljs-common";
 import { IModelApp, InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
 
 if (ElectronRpcConfiguration.isElectron) {
@@ -70,7 +70,7 @@ if (ElectronRpcConfiguration.isElectron) {
 
     async function openWritable(): Promise<StandaloneConnection> {
       expect(imodel).to.be.undefined;
-      return await StandaloneConnection.openFile(newFilePath, OpenMode.ReadWrite);
+      return StandaloneConnection.openFile(newFilePath, OpenMode.ReadWrite);
     }
 
     it("throws if begin is called repeatedly", async () => {

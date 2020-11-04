@@ -9,10 +9,9 @@
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface
+  ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
-import { IModelApp } from "./IModelApp";
 import { RemoveEventListener } from "./EventSource";
 
 let initialized = false;

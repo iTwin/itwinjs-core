@@ -9,10 +9,9 @@ import { assert, ClientRequestContext, DbOpcode, GuidString, Id64, Id64Array, Id
 import { Range3d } from "@bentley/geometry-core";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3dProps, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelRpcProps, IModelWriteRpcInterface,
+  AxisAlignedBox3dProps, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface,
   RelatedElement, RpcInterface, RpcManager, SubCategoryAppearance, SyncMode, ThumbnailProps,
 } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb, IModelDb } from "../IModelDb";
 import {

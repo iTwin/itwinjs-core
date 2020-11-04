@@ -11,7 +11,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, CurrentImdlVersion, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass, TileFormat,
+  BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass, TileFormat,
 } from "@bentley/imodeljs-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
@@ -69,14 +69,13 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
 
   private get _imodelRoot() { return this.parent as RootIModelTile; }
 
-  private get elementChildren(): ElementTile[] {
+  private get _elementChildren(): ElementTile[] {
     assert(undefined !== this.children);
     assert(this.children === this._elements.array);
     return this._elements.array;
   }
 
   public constructor(parent: RootIModelTile, elements: Iterable<ElementGeometryChange>) {
-    const range = Range3d.createNull();
     const params: TileParams = {
       parent,
       isLeaf: false,
@@ -123,7 +122,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
       if (change.type !== DbOpcode.Insert)
         this._hiddenElements.addId(change.id);
 
-      let tile = this._elements.findEquivalent((tile: ElementTile) => compareStrings(tile.contentId, change.id));
+      let tile = this._elements.findEquivalent((t: ElementTile) => compareStrings(t.contentId, change.id));
       if (change.type === DbOpcode.Delete) {
         if (tile) {
           tile.dispose();
@@ -161,14 +160,13 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   }
 
   public selectTiles(selected: Tile[], args: TileDrawArgs): void {
-    for (const child of this.elementChildren)
+    for (const child of this._elementChildren)
       child.selectTiles(selected, args);
   }
 
   public pruneChildren(olderThan: BeTimePoint): void {
     // Never discard ElementTiles - do discard not-recently-used graphics.
-    const children = this.elementChildren;
-    for (const child of this.elementChildren)
+    for (const child of this._elementChildren)
       child.pruneChildren(olderThan);
   }
 }
@@ -327,7 +325,7 @@ class GraphicsTile extends Tile {
     return 0;
   }
 
-  public _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     resolve(undefined);
   }
 
