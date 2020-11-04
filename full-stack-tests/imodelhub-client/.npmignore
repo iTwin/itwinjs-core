@@ -5,5 +5,3 @@
 !lib/**/*.js
 !lib/**/*.js.map
 !lib/assets/**/*
-!lib/rulesets/**/*
-!certa.json
