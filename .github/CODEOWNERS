@@ -14,7 +14,7 @@
 
 # No one specific needs to review changelogs. That will be left up to the reviewers specified in other places
 # The imodeljs-changelog-approvers doesn't notify anyone explicitly.
-/common/changes @imodeljs-changelog-approvers
+/common/changes @imodeljs/devs
 
 .github/workflows @calebmshafer @wgoehrig @ColinKerr
 
