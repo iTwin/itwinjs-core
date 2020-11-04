@@ -169,8 +169,7 @@ describe("Content", () => {
       }]);
     });
 
-    // TODO: support related content
-    it.skip("gets paged distinct related content values", async () => {
+    it("gets paged distinct related content values", async () => {
       const ruleset: Ruleset = {
         id: Guid.createValue(),
         rules: [{
