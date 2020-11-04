@@ -23,6 +23,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { CurveCollection } from "../../curve/CurveCollection";
 
 /* eslint-disable no-console */
 /** Functions useful for modifying test data. */
@@ -628,6 +629,8 @@ describe("ReOrientFacets", () => {
     const solids = Sample.createClosedSolidSampler(true);
     const defaultOptions = StrokeOptions.createForFacets();
     // REMARK: (EDL Oct 2020) Mutter and grumble.  The builder does not observe shouldTriangulate !!!
+    // REMARK: (EDL Oct 2020) What can be asserted about the silhouette output?
+    //       We'll at least assert its not null  for the forward view cases ...
     for (const solid of solids) {
       for (const viewVector of [Vector3d.create(0, 0, 1), Vector3d.create(1, -1, 1)]) {
         const builder = PolyfaceBuilder.create(defaultOptions);
@@ -638,6 +641,8 @@ describe("ReOrientFacets", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
           for (const selector of [0, 1, 2]) {
             const edges = PolyfaceQuery.boundaryOfVisibleSubset(mesh, selector as (0 | 1 | 2), viewVector);
+            if (selector < 2)
+              ck.testDefined(edges);
             if (edges) {
               y0 += 40.0;
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, edges, x0, y0, 0);
