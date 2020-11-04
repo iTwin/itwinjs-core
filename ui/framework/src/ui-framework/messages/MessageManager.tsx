@@ -134,7 +134,7 @@ export class MessageManager {
   private static _maxCachedMessages = 500;
   private static _maxDisplayedStickyMessages = 3;
   private static _messages: NotifyMessageDetailsType[] = [];
-  private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
+  private static _ongoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
   private static _lastMessage?: NotifyMessageDetailsType;
 
   /** The MessageAddedEvent is fired when a message is added via outputMessage(). */
@@ -237,8 +237,8 @@ export class MessageManager {
    * @returns true if details is valid and can be used to display ActivityMessage
    */
   public static setupActivityMessageDetails(details: ActivityMessageDetails): boolean {
-    this._OngoingActivityMessage.details = details;
-    this._OngoingActivityMessage.isRestored = details.showDialogInitially;
+    this._ongoingActivityMessage.details = details;
+    this._ongoingActivityMessage.isRestored = details.showDialogInitially;
     return true;
   }
 
@@ -262,17 +262,17 @@ export class MessageManager {
    * @returns true if details is valid and can be used to display ActivityMessage
    */
   public static setupActivityMessageValues(message: NotifyMessageType, percentage: number, restored?: boolean): boolean {
-    this._OngoingActivityMessage.message = message;
-    this._OngoingActivityMessage.percentage = percentage;
+    this._ongoingActivityMessage.message = message;
+    this._ongoingActivityMessage.percentage = percentage;
 
     this.onActivityMessageUpdatedEvent.emit({
       message,
       percentage,
-      details: this._OngoingActivityMessage.details,
-      restored: (restored !== undefined) ? restored : this._OngoingActivityMessage.isRestored,
+      details: this._ongoingActivityMessage.details,
+      restored: (restored !== undefined) ? restored : this._ongoingActivityMessage.isRestored,
     });
 
-    this._OngoingActivityMessage.isRestored = false;
+    this._ongoingActivityMessage.isRestored = false;
 
     return true;
   }
@@ -294,9 +294,9 @@ export class MessageManager {
    */
   private static endActivityProcessing(isCompleted: boolean): void {
     if (isCompleted)
-      this._OngoingActivityMessage.details.onActivityCompleted();
+      this._ongoingActivityMessage.details.onActivityCompleted();
     else
-      this._OngoingActivityMessage.details.onActivityCancelled();
+      this._ongoingActivityMessage.details.onActivityCancelled();
   }
 
   /**

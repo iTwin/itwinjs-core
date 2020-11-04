@@ -40,6 +40,8 @@ describe("ActivityMessagePopup", () => {
     wrapper.update();
     expect(wrapper.find(ActivityMessage).length).to.eq(0);
     expect(wrapper.find(Message).length).to.eq(0);
+
+    wrapper.unmount();
   });
 
   it("Activity message should be canceled", () => {
@@ -60,6 +62,8 @@ describe("ActivityMessagePopup", () => {
     expect(wrapper.find(ActivityMessage).length).to.eq(0);
     expect(wrapper.find(Message).length).to.eq(0);
     spy.calledOnce.should.true;
+
+    wrapper.unmount();
   });
 
   it("Activity message should be dismissed & restored", () => {
@@ -87,6 +91,8 @@ describe("ActivityMessagePopup", () => {
     wrapper.update();
     expect(wrapper.find(ActivityMessage).length).to.eq(1);
     expect(wrapper.find(Message).length).to.eq(1);
+
+    wrapper.unmount();
   });
 
 });
