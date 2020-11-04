@@ -20,6 +20,7 @@
     "**/test-apps/**/build": true,
     "**/out": true,
     "**/lib": true,
+    "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
   "typescript.tsdk": "node_modules\\typescript\\lib",
