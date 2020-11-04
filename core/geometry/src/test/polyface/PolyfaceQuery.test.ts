@@ -23,7 +23,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { CurveCollection } from "../../curve/CurveCollection";
 
 /* eslint-disable no-console */
 /** Functions useful for modifying test data. */
