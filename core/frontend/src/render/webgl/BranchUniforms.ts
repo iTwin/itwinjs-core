@@ -68,6 +68,8 @@ export class BranchUniforms {
   private readonly _scratchVIModelMatrix = Transform.createIdentity();
   private readonly _zeroPoint = new Point3d(0, 0, 0);
 
+  public get stack(): BranchStack { return this._stack; }
+
   public constructor(target: Target) {
     this._target = target;
   }

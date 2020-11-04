@@ -253,4 +253,9 @@ export class TileDrawArgs {
   public markReady(tile: Tile): void {
     this.readyTiles.add(tile);
   }
+
+  /** Invoked by [[TileTree.selectTiles]]. This exists chiefly for [[SolarShadowMap]].
+   * @internal
+   */
+  public processSelectedTiles(_tiles: Tile[]): void { }
 }

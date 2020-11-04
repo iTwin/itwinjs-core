@@ -122,6 +122,7 @@ export abstract class TileTree {
     this._lastSelected = BeTimePoint.now();
     const tiles = this._selectTiles(args);
     IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, tiles, args.readyTiles);
+    args.processSelectedTiles(tiles);
     return tiles;
   }
 
