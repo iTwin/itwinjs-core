@@ -12,6 +12,8 @@ An app uses [BriefcaseDb]($backend) and [ConcurrencyControl]($backend) to follow
 
 Locks and code reservations are associated with a briefcase while it is making changes and are released when it pushes.
 
+The ConcurrencyControl API refers to locks and codes collectively as "resources".
+
 ## Background
 
 This article assumes that you already know that:
@@ -128,25 +130,34 @@ Only models and elements may be changed optimistically. Locking is required when
 
 ## How and When to Acquire Locks and Reserve Codes
 
-This section describes how an app reserves Codes and/or acquires locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic). Or, you can acquire resources ahead of time.
+This section describes how an app reserves Codes and/or acquires locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic).
 
-### Acquiring locks ahead of time
+As explained above, in optimistic concurrency, models and elements are changed without locks. Codes must still be reserved. However, you get to defer the task of reserving codes until you are ready to call saveChanges.
 
-To lock one or more elements and/or models exclusively, call ConcurrencyControl.requestResourcesForUpdate, passing the elements to be locked in the second argument (if any) and the models to be locked in the third argument.
+There are several variations on the pessimistic option, ranging from very preemptive and pessimistic to nearly optimistic:
+
+1. You can be *very* pessimistic by exclusively locking all models that you plan to work with before doing anything. That guarantees no deadlocks. You can also reserve all Codes ahead of time, even before you know you will actually use them.
+1. You can wait until you are about to modify elements and models and lock them at that time. This approach works pretty well if you plan to push often.
+1. You can defer acquiring locks and codes until you are ready to call saveChanges. You do that by working in "bulk mode". It's almost like optimistic mode, except that you do acquire locks in the end.
+
+### When are locks and codes Released?
+
+If you call [BriefcaseDb.pushChanges]($backend), all locks are released, all used Codes are marked as used, and unused Codes are relinquished.
+If you call [BriefcaseDb.abandonChanges]($backend), all *pending* requests for locks and Codes are abandoned. The briefcase continues to hold locks and/or reserved Codes that were previously acquired.
+Call [ConcurrencyControl.abandonResources]($backend) to relinquish all locks and reserved Codes.
+
+### Acquiring locks preemptively
+
+Call [ConcurrencyControl.LocksManager.lockModels]($backend) to lock models exclusively.
 
 ### Reserving codes ahead of time
 
-The following function are available to manage Codes:
-* [ConcurrencyControl.Codes.reserve]($backend) to reserve Codes before using them in elements.
-* ConcurrencyControl.hasReservedCode to check if a Code has already been reserved. This is a quick check against the local resources cache.
-* [ConcurrencyControl.Codes.query]($backend) to send a request to the server to learn the status of a Code or family of Codes.
-* [ConcurrencyControl.abandonResources]($backend) to preemptively release all locks and Codes currently held by the briefcase.
-
-If you call BriefcaseDb.pushChanges, all locks are released, all used Codes are marked as used, and unused Codes are relinquished.
+Call [ConcurrencyControl.CodesManager.reserve]($backend) to reserve Codes before using them in elements.
 
 ### Acquiring locks and/or codes pessimistically
 
-1.  Call [ConcurrencyControl.requestResources]($backend) on the elements and/or models that you intended to insert, update, of delete to request the locks and/or codes that the planned local operations will require. This may send a request to iModelHub.
+1.  Call [ConcurrencyControl.LocksManager.lockModels]($backend) to lock models preemptively, if you wish.
+1.  Call [ConcurrencyControl.requestResources]($backend) on the elements and/or models that you intend to insert, update, of delete. This method will request the locks and/or codes that the planned local operations will require. It may send a request to iModelHub.
 1.  If the request fails, cancel the local operation.
 1.  If the request succeeds, go ahead with the local operation, make the planned local changes, and then call [IModelDb.saveChanges]($backend).
 
@@ -157,12 +168,10 @@ This approach may be used when the iModel's locking policy is set to optimistic.
 
 Note that sending a request to iModelHub is a relatively expensive operation. Therefore it is important to batch up requests for locks and/or Codes.
 
-If you call BriefcaseDb.pushChanges, all locks are released, all used Codes are marked as used, and unused Codes are relinquished.
-
-### Acquiring locks and/or codes optimistically
+### Acquiring locks and/or codes optimistically or in bulk mode
 
 1.  Insert or update models and elements.
-1.  Call [ConcurrencyControl.request]($backend) to request the locks and codes that those local operations require.
+1.  Call [ConcurrencyControl.request]($backend) to request the codes that those local operations require.
 1.  If the request fails, call [IModelDb.abandonChanges]($backend) to roll back the local transaction.
 1.  If the request succeeds, call [IModelDb.saveChanges]($backend) to commit the local transaction.
 
