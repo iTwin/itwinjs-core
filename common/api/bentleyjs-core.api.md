@@ -1191,6 +1191,9 @@ export namespace OrderedId64Iterable {
     export function uniqueIterator(ids: OrderedId64Iterable): Generator<string, void, unknown>;
 }
 
+// @beta
+export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
+
 // @public
 export class PerfLogger implements IDisposable {
     constructor(operation: string, metaData?: GetMetaDataFunction);
