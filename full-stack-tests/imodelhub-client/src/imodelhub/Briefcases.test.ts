@@ -198,7 +198,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(briefcases.length).to.equal(0);
   });
 
-  it("should delete a briefcase that owns locks without write permission (#iModelBank|#unit)", async () => {
+  it("should delete a briefcase that owns locks without write permission (#unit)", async () => {
     let newBriefcase: Briefcase = utils.generateBriefcase(briefcaseId);
     utils.mockCreateBriefcase(imodelId, undefined, newBriefcase);
     newBriefcase = await iModelClient.briefcases.create(requestContext, imodelId, newBriefcase);
