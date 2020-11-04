@@ -93,7 +93,7 @@ function mockDeleteBriefcase(imodelId: GuidString, briefcaseId: number) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, {});
 }
 
-describe.only("iModelHub BriefcaseHandler", () => {
+describe("iModelHub BriefcaseHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
   let contextId: string;
   let imodelId: GuidString;
