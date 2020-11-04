@@ -114,7 +114,7 @@ public;ElementUniqueAspect
 public;ElevationCallout 
 public;EmbeddedFileLink 
 public;Entity 
-internal;EventSink
+internal;EventSink 
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo

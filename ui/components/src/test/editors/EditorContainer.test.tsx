@@ -29,7 +29,8 @@ describe("<EditorContainer />", () => {
 
   it("should render", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
-    mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    const sut = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    sut.unmount();
   });
 
   it("renders correctly", () => {
@@ -41,6 +42,7 @@ describe("<EditorContainer />", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(wrapper.find("input.components-text-editor").length).to.eq(1);
+    wrapper.unmount();
   });
 
   it("calls onCommit for Enter", async () => {
@@ -66,6 +68,7 @@ describe("<EditorContainer />", () => {
     expect(inputNode).not.to.be.null;
 
     fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
+    await TestUtils.flushAsyncOperations();
     expect(spyOnCancel.calledOnce).to.be.true;
   });
 
@@ -85,6 +88,7 @@ describe("<EditorContainer />", () => {
     await TestUtils.flushAsyncOperations();
 
     expect(spyOnCancel.calledOnce).to.be.true;
+    wrapper.unmount();
   });
 
   it("calls onCommit for Tab", async () => {
@@ -119,6 +123,7 @@ describe("<EditorContainer />", () => {
     const renderedWrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     const renderedInputNode = renderedWrapper.container.querySelector("input");
     fireEvent.keyDown(renderedInputNode as HTMLElement, { key: "ArrowLeft" });
+    wrapper.unmount();
   });
 
 });

@@ -1358,6 +1358,7 @@ export abstract class CurveCollection extends GeometryQuery {
     abstract cloneStroked(options?: StrokeOptions): AnyCurve;
     cloneTransformed(transform: Transform): CurveCollection | undefined;
     cloneWithExpandedLineStrings(): CurveCollection | undefined;
+    closestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): CurvePrimitive[];
     static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction?: number): CurveLocationDetail | undefined;
     abstract readonly curveCollectionType: CurveCollectionType;
@@ -1471,6 +1472,7 @@ export class CurveLocationDetail {
     a: number;
     captureFraction1Point1(fraction1: number, point1: Point3d): void;
     childDetail?: CurveLocationDetail;
+    static chooseSmallerA(detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined): CurveLocationDetail | undefined;
     clone(result?: CurveLocationDetail): CurveLocationDetail;
     collapseToEnd(): void;
     collapseToStart(): void;

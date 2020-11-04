@@ -32,9 +32,9 @@ describe("<LabeledThemedSelect />", () => {
     { label: "New York", value: "New York" },
   ];
 
-
   it("should render", () => {
-    mount(<LabeledThemedSelect label="themedselect test" options={[]} />);
+    const sut = mount(<LabeledThemedSelect label="themedselect test" options={[]} />);
+    sut.unmount();
   });
 
   it("renders correctly", () => {
