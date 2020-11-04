@@ -825,7 +825,7 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelNotFoundResponse]] if an open IModelDb matching the token is not found.
    */
   public static findByKey(key: string): IModelDb {
-    const iModelDb: IModelDb | undefined = IModelDb.tryFindByKey(key);
+    const iModelDb = IModelDb.tryFindByKey(key);
     if (undefined === iModelDb) {
       Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
@@ -837,11 +837,11 @@ export abstract class IModelDb extends IModel {
    * @returns The matching IModelDb or `undefined`.
    */
   public static tryFindByKey(key: string): IModelDb | undefined {
-    const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(key);
+    const briefcaseDb = BriefcaseDb.tryFindByKey(key);
     if (briefcaseDb) {
       return briefcaseDb;
     }
-    const snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(key);
+    const snapshotDb = SnapshotDb.tryFindByKey(key);
     return snapshotDb ? snapshotDb : StandaloneDb.tryFindByKey(key);
   }
 
@@ -882,7 +882,7 @@ export abstract class IModelDb extends IModel {
    */
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
     const statement = new ECSqlStatement();
-    const result: StatusCodeWithMessage<DbResult> = statement.tryPrepare(this.nativeDb, sql);
+    const result = statement.tryPrepare(this.nativeDb, sql);
     return DbResult.BE_SQLITE_OK === result.status ? statement : undefined;
   }
 
@@ -971,7 +971,7 @@ export abstract class IModelDb extends IModel {
    * @see importSchema
    */
   public containsClass(classFullName: string): boolean {
-    const classNameParts: string[] = classFullName.replace(".", ":").split(":");
+    const classNameParts = classFullName.replace(".", ":").split(":");
     return classNameParts.length === 2 && this.nativeDb.getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined;
   }
 
@@ -1078,21 +1078,21 @@ export abstract class IModelDb extends IModel {
    */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
-    const resultString: string = this.nativeDb.getMassProperties(JSON.stringify(props));
+    const resultString = this.nativeDb.getMassProperties(JSON.stringify(props));
     return JSON.parse(resultString) as MassPropertiesResponseProps;
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps> {
     requestContext.enter();
-    const resultString: string = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
+    const resultString = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
     return JSON.parse(resultString) as IModelCoordinatesResponseProps;
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps> {
     requestContext.enter();
-    const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
+    const resultString = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
   }
 
@@ -1408,7 +1408,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetElement
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      const element: T | undefined = this.tryGetElement(elementId);
+      const element = this.tryGetElement<T>(elementId);
       if (undefined === element) {
         throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
@@ -1655,7 +1655,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(aspectProps, iModel);
 
-      const status = iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+      const status = iModel.nativeDb.insertElementAspect(aspectProps);
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory, () => ({ classFullName: aspectProps.classFullName }));
 
@@ -1671,7 +1671,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(aspectProps, iModel);
 
-      const status = iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+      const status = iModel.nativeDb.updateElementAspect(aspectProps as any);
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId: aspectProps.id }));
 
@@ -1710,7 +1710,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param wantPrivate If true, include private view definitions.
      */
     public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
-      const where: string = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
+      const where = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
       const ids = this._iModel.queryEntityIds({ from: className, limit, offset, where });
 
       const props: ViewDefinitionProps[] = [];
