@@ -351,6 +351,7 @@ class GraphicsTile extends Tile {
       location: this.tree.iModelTransform,
       contentFlags: idProvider.contentFlags,
       omitEdges: !this.tree.hasEdges,
+      clipToProjectExtents: true,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);

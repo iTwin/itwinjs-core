@@ -36,6 +36,8 @@ export interface ElementGraphicsRequestProps {
   readonly location?: TransformProps;
   /** If true, surface edges will be omitted from the graphics. */
   readonly omitEdges?: boolean;
+  /** If true, the element's graphics will be clipped against the iModel's project extents. */
+  readonly clipToProjectExtents?: boolean;
 }
 
 /** @public */
