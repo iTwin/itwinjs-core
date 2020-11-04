@@ -86,3 +86,8 @@ export class Entity implements EntityProps {
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
 }
+
+/** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
+ * @public
+ */
+export type EntityClassType<T> = Function & { prototype: T };

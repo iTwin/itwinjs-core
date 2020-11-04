@@ -290,13 +290,17 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
   }
 
   /** Calculate suggestions for any given input value. */
-  private _getSuggestions = (value: string): AutoSuggestData[] => {
+  private _getSuggestions = async (value: string): Promise<AutoSuggestData[]> => {
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
 
-    return inputLength === 0 ? /* istanbul ignore next */[] : this.state.keyins.filter((data: KeyinBrowserData) => {
-      return data.label.toLowerCase().includes(inputValue) || data.englishKeyin.toLowerCase().includes(inputValue);
-    });
+    return Promise.resolve(
+      inputLength === 0 ?
+        /* istanbul ignore next */[] :
+        this.state.keyins.filter((data: KeyinBrowserData) => {
+          return data.label.toLowerCase().includes(inputValue) || data.englishKeyin.toLowerCase().includes(inputValue);
+        })
+    );
   }
 
   /** @internal */
