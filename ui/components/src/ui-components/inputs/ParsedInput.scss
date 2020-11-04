@@ -1,0 +1,22 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+
+$quantity-focus-boxshadow-alert-gradient1:   rgba(var(--buic-accessory-alert-tint), 0);
+$quantity-focus-boxshadow-alert-gradient2:     rgba(var(--buic-accessory-alert), 0.65);
+$quantity-inputs-focus-alert-gradient: $quantity-focus-boxshadow-alert-gradient1 0px 1px 1px, $quantity-focus-boxshadow-alert-gradient2 0px 0px 0px 2px;
+
+.components-parsed-input {
+  width: auto;
+  &.components-parsed-input-has-error {
+    color: $buic-foreground-alert;
+    font-weight: bold;
+  }
+  &.components-parsed-input[disabled] {
+    color: var(--buic-foreground-body);
+    opacity: 0.65;
+  }
+
+}

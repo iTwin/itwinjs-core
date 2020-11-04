@@ -60,10 +60,16 @@ export class Input extends React.PureComponent<InputProps> {
     if (this._inputElement.current && this._nativeKeyHandler)
       this._inputElement.current.removeEventListener("keydown", this._nativeKeyHandler);
   }
+
+  private _handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    if (event.currentTarget.value.length)
+      event.currentTarget.setSelectionRange(0, event.currentTarget.value.length);
+  }
+
   public render(): JSX.Element {
     const { className, style, setFocus, nativeKeyHandler, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
-      <input ref={this._inputElement} type="text" {...props}
+      <input ref={this._inputElement} type="text" {...props} onFocus={this._handleFocus}
         className={classnames("uicore-inputs-input", className)} style={style} />
     );
   }
