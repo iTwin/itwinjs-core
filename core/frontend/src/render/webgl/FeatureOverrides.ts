@@ -97,6 +97,13 @@ export class FeatureOverrides implements WebGLDisposable {
       this._uniformSymbologyFlags += 1;
   }
 
+  public getUniformOverrides(): Uint8Array {
+    assert(this.isUniform);
+    assert(undefined !== this._lut);
+    assert(undefined !== this._lut.dataBytes);
+    return this._lut.dataBytes;
+  }
+
   private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims = computeWidthAndHeight(nFeatures, 2);

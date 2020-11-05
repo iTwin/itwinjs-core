@@ -404,6 +404,19 @@ export class ToolAdmin {
     this._toolSettingsChangeHandler = handler;
   }
 
+  /** The registered handler method that will inform the UI to reload tool setting with properties from active tool.
+ *  @internal
+ */
+  private _reloadToolSettingsHandler: (() => void) | undefined = undefined;
+
+  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool.
+   * @internal
+   */
+  public get reloadToolSettingsHandler() { return this._reloadToolSettingsHandler; }
+  public set reloadToolSettingsHandler(handler: (() => void) | undefined) {
+    this._reloadToolSettingsHandler = handler;
+  }
+
   /** The registered handler method that will trigger UI Sync processing.
    *  @internal
    */
@@ -1209,7 +1222,7 @@ export class ToolAdmin {
         case "Y":
           return this.doRedoOperation();
         case "F2":
-          return IModelApp.uiAdmin.showKeyinPalette ();
+          return IModelApp.uiAdmin.showKeyinPalette();
       }
     }
 
@@ -1401,6 +1414,14 @@ export class ToolAdmin {
   public syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void {
     if (this.toolSettingsChangeHandler)
       this.toolSettingsChangeHandler(toolId, syncProperties);
+  }
+
+  /** Method used by interactive tools to send request to reload UI from properties returned via method supplyToolSettingsProperties.
+   * @beta
+   */
+  public reloadToolSettingsProperties(): void {
+    if (this.reloadToolSettingsHandler)
+      this.reloadToolSettingsHandler();
   }
 
   /** Method used by interactive tools to inform one or more UI components to refresh. This is typically used to update labels or icons associated with a specific tool.

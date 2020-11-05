@@ -222,15 +222,24 @@ export class SchemaComparer {
 
     if (!propertyB) {
       promises.push(this._reporter.reportPropertyMissing(propertyA, this._compareDirection));
-      promises.push(this._reporter.reportPropertyDelta(propertyA, "label", propertyA.label, undefined, this._compareDirection));
-      promises.push(this._reporter.reportPropertyDelta(propertyA, "description", propertyA.description, undefined, this._compareDirection));
-      promises.push(this._reporter.reportPropertyDelta(propertyA, "isReadOnly", propertyA.isReadOnly, undefined, this._compareDirection));
+      if (undefined !== propertyA.label)
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "label", propertyA.label, undefined, this._compareDirection));
+      if (undefined !== propertyA.description)
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "description", propertyA.description, undefined, this._compareDirection));
+
       promises.push(this._reporter.reportPropertyDelta(propertyA, "priority", propertyA.priority, undefined, this._compareDirection));
+      promises.push(this._reporter.reportPropertyDelta(propertyA, "isReadOnly", propertyA.isReadOnly, undefined, this._compareDirection));
 
       const catKeyA = propertyA.category ? (await propertyA.category).key : undefined;
       const catKeyAText = catKeyA ? catKeyA.fullName : undefined;
+      if (undefined !== catKeyAText)
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "category", catKeyAText, undefined, this._compareDirection));
 
-      promises.push(this._reporter.reportPropertyDelta(propertyA, "category", catKeyAText, undefined, this._compareDirection));
+      const koqKeyA = propertyA.kindOfQuantity ? (await propertyA.kindOfQuantity).key : undefined;
+      const koqKeyAText = koqKeyA ? koqKeyA.fullName : undefined;
+      if (undefined !== koqKeyAText)
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "kindOfQuantity", koqKeyAText, undefined, this._compareDirection));
+
       await this.comparePropertyType(propertyA, undefined);
       await Promise.all(promises);
       return;
@@ -258,6 +267,16 @@ export class SchemaComparer {
       const catKeyBText = catKeyB ? catKeyB.fullName : undefined;
       if (catKeyAText !== catKeyBText) {
         promises.push(this._reporter.reportPropertyDelta(propertyA, "category", catKeyAText, catKeyBText, this._compareDirection));
+      }
+    }
+
+    if (propertyA.kindOfQuantity || propertyB.kindOfQuantity) {
+      const koqKeyA = propertyA.kindOfQuantity ? (await propertyA.kindOfQuantity).key : undefined;
+      const koqKeyB = propertyB.kindOfQuantity ? (await propertyB.kindOfQuantity).key : undefined;
+      const koqKeyAText = koqKeyA ? koqKeyA.fullName : undefined;
+      const koqKeyBText = koqKeyB ? koqKeyB.fullName : undefined;
+      if (koqKeyAText !== koqKeyBText) {
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "kindOfQuantity", koqKeyAText, koqKeyBText, this._compareDirection));
       }
     }
 

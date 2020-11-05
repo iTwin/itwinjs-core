@@ -11,6 +11,8 @@ import { PropertyDescription } from "../ui-abstract/properties/Description";
 import { UiAdmin } from "../ui-abstract/UiAdmin";
 import { UiDataProvider } from "../ui-abstract/dialogs/UiDataProvider";
 import { StandardTypeNames } from "../ui-abstract/properties/StandardTypeNames";
+import { DialogLayoutDataProvider } from "../ui-abstract/dialogs/UiLayoutDataProvider";
+import { DialogItem, DialogPropertySyncItem } from "../ui-abstract/dialogs/DialogItem";
 
 describe("UiAdmin", () => {
 
@@ -180,18 +182,33 @@ describe("UiAdmin", () => {
   it("sendUiEvent calls event handler", () => {
     const spyOnHandler = sinon.spy();
     UiAdmin.onGenericUiEvent.addListener(spyOnHandler);
-    UiAdmin.sendUiEvent({uiComponentId:"TestId"});
+    UiAdmin.sendUiEvent({ uiComponentId: "TestId" });
     UiAdmin.onGenericUiEvent.removeListener(spyOnHandler);
     expect(spyOnHandler.calledOnce).to.be.true;
   });
 
   it("get set feature flags", () => {
     let flags = uiAdmin.featureFlags;
-    expect (Object.keys(flags).length === 0);
-    uiAdmin.updateFeatureFlags ({allowKeyinPalette:true});
+    expect(Object.keys(flags).length === 0);
+    uiAdmin.updateFeatureFlags({ allowKeyinPalette: true });
     flags = uiAdmin.featureFlags;
-    expect (Object.keys(flags).length === 1);
-    expect (flags.allowKeyinPalette).not.to.be.undefined;
+    expect(Object.keys(flags).length === 1);
+    expect(flags.allowKeyinPalette).not.to.be.undefined;
   });
 
+  it("openDialog should return false by default", () => {
+    class TestDialogDynamicUiDataProvider extends DialogLayoutDataProvider {
+      /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
+      public applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {
+      };
+
+      /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
+      public supplyDialogItems(): DialogItem[] | undefined {
+        return undefined;
+      }
+    }
+
+    expect(uiAdmin.openDialog(new TestDialogDynamicUiDataProvider(), "test-title", true, "test-modal")).to.be.false;
+    expect(uiAdmin.closeDialog("test-modal")).to.be.false;
+  });
 });

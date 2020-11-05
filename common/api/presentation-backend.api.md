@@ -45,6 +45,12 @@ import { VariableValue } from '@bentley/presentation-common';
 import { VariableValueJSON } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
 
+// @alpha (undocumented)
+export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
+    // (undocumented)
+    listener: (diagnostics: DiagnosticsScopeLogs) => void;
+}
+
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
@@ -59,6 +65,9 @@ export enum DuplicateRulesetHandlingStrategy {
     // (undocumented)
     Skip = 0
 }
+
+// @internal (undocumented)
+export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
 
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
@@ -313,6 +322,12 @@ export interface RulesetVariablesManager {
     setString(variableId: string, value: string): void;
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
 }
+
+// @beta
+export type WithClientRequestContext<T> = T & {
+    requestContext: ClientRequestContext;
+    diagnostics?: BackendDiagnosticsOptions;
+};
 
 
 // (No @packageDocumentation comment for this package)

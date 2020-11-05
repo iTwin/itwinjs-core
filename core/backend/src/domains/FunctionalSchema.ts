@@ -39,7 +39,7 @@ export class FunctionalSchema extends Schema {
       if (!(requestContext instanceof AuthorizedClientRequestContext)) {
         throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
       }
-      await iModelDb.concurrencyControl.lockSchema(requestContext);
+      await iModelDb.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
     const stat = iModelDb.nativeDb.importFunctionalSchema();

@@ -14,7 +14,7 @@ export * from "./ui-abstract/backstage/BackstageItemsManager";
 export * from "./ui-abstract/common/KeyboardKey";
 
 export * from "./ui-abstract/dialogs/DialogItem";
-export * from "./ui-abstract/dialogs/DialogItemsManager";
+export * from "./ui-abstract/dialogs/UiLayoutDataProvider";
 export * from "./ui-abstract/dialogs/UiDataProvider";
 
 export * from "./ui-abstract/items/AbstractItemProps";

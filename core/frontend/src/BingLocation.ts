@@ -10,6 +10,7 @@ import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
 /** @internal */
@@ -19,7 +20,10 @@ export class BingLocationProvider {
   protected _requestContext = new ClientRequestContext("");
 
   constructor() {
-    const bingKey = "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt";
+    let bingKey = "";
+    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) {
+      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+    }
     this._locationRequestTemplate = "https://dev.virtualearth.net/REST/v1/Locations?query={query}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
     // this._localCircularSearchRequestTemplate = "https://dev.virtualearth.net/REST/v1/LocalSearch/?CircularMapView={{circle}}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }

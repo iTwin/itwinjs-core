@@ -2,6 +2,36 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@bentley/ui-core_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Move definitions to ui-abstract"
+          },
+          {
+            "comment": "Explicitly set line-height for checkbox to avoid in compatible line-height being inherited from a parent element."
+          },
+          {
+            "comment": "Revert changes made to limit focus trap to contents only. Use class now to ignore unwanted focus target."
+          },
+          {
+            "comment": "Add missing semicolons to .scss files."
+          },
+          {
+            "comment": "Added jsdoc ESLint rule for UI packages"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.5",
+      "tag": "@bentley/ui-core_v2.7.5",
+      "date": "Fri, 23 Oct 2020 16:23:51 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.7.4",
       "tag": "@bentley/ui-core_v2.7.4",
       "date": "Mon, 19 Oct 2020 17:57:02 GMT",

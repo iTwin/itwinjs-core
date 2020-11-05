@@ -1372,9 +1372,24 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
 
 // @internal
+export enum ContentFlags {
+    // (undocumented)
+    AllowInstancing = 1,
+    // (undocumented)
+    IgnoreAreaPatterns = 4,
+    // (undocumented)
+    ImprovedElision = 2,
+    // (undocumented)
+    None = 0
+}
+
+// @internal
 export abstract class ContentIdProvider {
+    protected constructor(formatVersion: number, contentFlags: ContentFlags);
     // (undocumented)
     protected abstract computeId(depth: number, i: number, j: number, k: number, mult: number): string;
+    // (undocumented)
+    readonly contentFlags: ContentFlags;
     static create(allowInstancing: boolean, options: TileOptions, formatVersion?: number): ContentIdProvider;
     // (undocumented)
     idFromParentAndMultiplier(parentId: string, multiplier: number): string;
@@ -1382,6 +1397,8 @@ export abstract class ContentIdProvider {
     idFromSpec(spec: ContentIdSpec): string;
     // (undocumented)
     protected join(depth: number, i: number, j: number, k: number, mult: number): string;
+    // (undocumented)
+    readonly majorFormatVersion: number;
     // (undocumented)
     get rootContentId(): string;
     // (undocumented)
@@ -1475,6 +1492,12 @@ export const defaultTileOptions: TileOptions;
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
+}
+
+// @alpha
+export interface DeletedElementGeometryChange {
+    readonly id: Id64String;
+    readonly type: DbOpcode.Delete;
 }
 
 // @alpha
@@ -2007,11 +2030,31 @@ export interface ElementAspectProps extends EntityProps {
 }
 
 // @alpha
-export interface ElementGeometryChange {
-    // (undocumented)
-    id: Id64String;
-    // (undocumented)
-    range?: Range3dProps;
+export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
+
+// @alpha
+export namespace ElementGeometryChange {
+    export function iterable(modelChanges: ModelGeometryChangesProps): Iterable<ElementGeometryChange>;
+    export function iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange>;
+}
+
+// @internal
+export interface ElementGraphicsRequestProps {
+    readonly clipToProjectExtents?: boolean;
+    readonly contentFlags?: ContentFlags;
+    readonly elementId: Id64String;
+    readonly formatVersion: number;
+    readonly id: string;
+    readonly location?: TransformProps;
+    readonly omitEdges?: boolean;
+    readonly toleranceLog10: number;
+    readonly treeFlags?: TreeFlags;
+}
+
+// @alpha
+export interface ElementIdsAndRangesProps {
+    readonly ids: CompressedId64Set;
+    readonly ranges: Range3dProps[];
 }
 
 // @public
@@ -2117,6 +2160,13 @@ export namespace Events {
         onUserStateChanged = "onUserStateChanged";
         const modelGeometryChanges = "modelGeometryChanges";
     }
+}
+
+// @alpha
+export interface ExtantElementGeometryChange {
+    readonly id: Id64String;
+    readonly range: Range3d;
+    readonly type: DbOpcode.Insert | DbOpcode.Update;
 }
 
 // @public
@@ -3438,6 +3488,8 @@ export abstract class IModel implements IModelProps {
     getConnectionProps(): IModelConnectionProps;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
+    // @internal (undocumented)
+    protected abstract getEventSourceProps(): IModelEventSourceProps;
     getRpcProps(): IModelRpcProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
@@ -3464,7 +3516,7 @@ export abstract class IModel implements IModelProps {
 }
 
 // @internal (undocumented)
-export type IModelConnectionProps = IModelProps & IModelRpcProps;
+export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
 
 // @beta
 export interface IModelCoordinatesRequestProps {
@@ -3510,6 +3562,12 @@ export interface IModelEncryptionProps {
 // @public
 export class IModelError extends BentleyError {
     constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
+
+// @internal
+export interface IModelEventSourceProps {
+    // (undocumented)
+    eventSourceName: string;
 }
 
 // @public
@@ -3604,10 +3662,12 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     queryVersionInfo(): Promise<TileVersionInfo>;
+    // @internal
+    requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal (undocumented)
     requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
-    requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<TileTreeProps>;
+    requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
 }
 
 // @internal
@@ -3615,6 +3675,14 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
 
 // @internal
 export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string;
+
+// @internal
+export interface IModelTileTreeProps extends TileTreeProps {
+    contentIdQualifier?: string;
+    formatVersion?: number;
+    geometryGuid?: GuidString;
+    maxInitialTilesToSkip?: number;
+}
 
 // @public
 export class IModelVersion {
@@ -3670,6 +3738,8 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     saveThumbnail(_iModelToken: IModelRpcProps, _val: Uint8Array): Promise<void>;
     // (undocumented)
     synchConcurrencyControlResourcesCache(_tokenProps: IModelRpcProps): Promise<void>;
+    // (undocumented)
+    undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus>;
     // (undocumented)
     updateProjectExtents(_iModelToken: IModelRpcProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
 }
@@ -3888,8 +3958,17 @@ export class MapImagerySettings {
     toJSON(): MapImageryProps;
 }
 
+// @beta
+export interface MapLayerKey {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    value: string;
+}
+
 // @alpha
 export interface MapLayerProps {
+    accessKey?: MapLayerKey;
     formatId?: string;
     isBase?: boolean;
     maxZoom?: number;
@@ -3905,6 +3984,8 @@ export interface MapLayerProps {
 
 // @alpha
 export class MapLayerSettings {
+    // (undocumented)
+    readonly accessKey?: MapLayerKey;
     get allSubLayersInvisible(): boolean;
     clone(changedProps: MapLayerProps): MapLayerSettings;
     // @internal (undocumented)
@@ -4200,11 +4281,28 @@ export class ModelClipGroups {
 
 // @alpha
 export interface ModelGeometryChanges {
-    deleted?: Id64String[];
-    inserted?: ElementGeometryChange[];
-    modelId: Id64String;
-    range?: Range3dProps;
-    updated?: ElementGeometryChange[];
+    readonly elements: Iterable<ElementGeometryChange>;
+    readonly geometryGuid: GuidString;
+    readonly id: Id64String;
+    readonly range: Range3d;
+}
+
+// @alpha
+export namespace ModelGeometryChanges {
+    export function findByModelId(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): ModelGeometryChanges | undefined;
+    export function fromJSON(props: ModelGeometryChangesProps): ModelGeometryChanges;
+    export function iterable(modelChanges: ModelGeometryChangesProps[]): Iterable<ModelGeometryChanges>;
+    export function iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges>;
+}
+
+// @alpha
+export interface ModelGeometryChangesProps {
+    readonly deleted?: CompressedId64Set;
+    readonly guid: GuidString;
+    readonly id: Id64String;
+    readonly inserted?: ElementIdsAndRangesProps;
+    readonly range: Range3dProps;
+    readonly updated?: ElementIdsAndRangesProps;
 }
 
 // @public
@@ -4249,19 +4347,21 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     authInitialize(_issuer: string, _config: any): Promise<void>;
     authSignIn(): Promise<void>;
     authSignOut(): Promise<void>;
+    cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void>;
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_key: BriefcaseKey): Promise<void>;
     deleteBriefcase(_key: BriefcaseKey): Promise<void>;
     downloadRequestCompleted(_key: BriefcaseKey): Promise<void>;
-    fetchEvents(_iModelToken: IModelRpcProps, _maxToFetch: number): Promise<QueuedEvent[]>;
     getBriefcases(): Promise<BriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
     getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
     static interfaceVersion: string;
+    // (undocumented)
+    isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean>;
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
-    openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelProps>;
+    openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
     requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean>;
     requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps>;
@@ -4273,6 +4373,8 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     storageRemove(_storageId: string, _key: string): Promise<void>;
     storageRemoveAll(_storageId: string): Promise<void>;
     storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
+    // (undocumented)
+    toggleInteractiveEditingSession(_tokenProps: IModelRpcProps, _startSession: boolean): Promise<boolean>;
 }
 
 // @public
@@ -5127,13 +5229,9 @@ export enum QueryResponseStatus {
 
 // @internal
 export interface QueuedEvent {
-    // (undocumented)
     data: any;
-    // (undocumented)
     eventId: number;
-    // (undocumented)
     eventName: string;
-    // (undocumented)
     namespace: string;
 }
 
@@ -5791,9 +5889,9 @@ export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcReques
 
 // @alpha
 export class RpcPushChannel<T> {
-    constructor(name: string, service?: RpcPushService);
-    // @internal
-    static delete(name: string, service?: RpcPushService): void;
+    static create<T>(name: string, service?: RpcPushService): RpcPushChannel<T>;
+    // (undocumented)
+    dispose(): void;
     // @internal (undocumented)
     static enabled: boolean;
     // (undocumented)
@@ -5801,7 +5899,10 @@ export class RpcPushChannel<T> {
     // (undocumented)
     get id(): string;
     // (undocumented)
+    get isDisposed(): boolean;
+    // (undocumented)
     readonly name: string;
+    static obtain<T>(name: string, service?: RpcPushService): RpcPushChannel<T>;
     // (undocumented)
     readonly service: RpcPushService;
     // (undocumented)
@@ -7003,12 +7104,9 @@ export interface TileTreeMetadata {
 
 // @internal
 export interface TileTreeProps {
-    contentIdQualifier?: string;
     contentRange?: Range3dProps;
-    formatVersion?: number;
     id: string;
     location: TransformProps;
-    maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
 }
@@ -7016,6 +7114,16 @@ export interface TileTreeProps {
 // @alpha
 export interface TileVersionInfo {
     formatVersion: number;
+}
+
+// @internal
+export enum TreeFlags {
+    // (undocumented)
+    EnforceDisplayPriority = 2,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    UseProjectExtents = 1
 }
 
 // @beta

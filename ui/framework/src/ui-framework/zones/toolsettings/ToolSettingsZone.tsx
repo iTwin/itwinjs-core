@@ -20,20 +20,20 @@ import { UiFramework } from "../../UiFramework";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
 import { Outline } from "../Outline";
-import { ToolUiManager } from "../toolsettings/ToolUiManager";
+import { ToolSettingsManager } from "./ToolSettingsManager";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 // cSpell:ignore safearea
 
 /** State for the ToolSettingsZone content.
- */
+ */
 enum ToolSettingsZoneContent {
   Closed,
   ToolSettings, // eslint-disable-line no-shadow
 }
 
 /** State for the [[ToolSettingsZone]].
- */
+ */
 interface ToolSettingsZoneState {
   toolSettingsZoneContent: ToolSettingsZoneContent;
   title: string;
@@ -41,7 +41,7 @@ interface ToolSettingsZoneState {
 
 /** Properties for the [[ToolSettingsZone]] React component.
  * @internal
- */
+ */
 export interface ToolSettingsZoneProps extends CommonProps {
   dropTarget: ZoneTargetType | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
@@ -56,7 +56,7 @@ export interface ToolSettingsZoneProps extends CommonProps {
 
 /** Tool Settings Zone React component.
  * @internal
- */
+ */
 export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
   private _hiddenVisibility: React.CSSProperties = {
     visibility: "hidden",
@@ -69,7 +69,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   constructor(props: ToolSettingsZoneProps) {
     super(props);
 
-    const title = `${ToolUiManager.activeToolLabel}`;
+    const title = `${ToolSettingsManager.activeToolLabel}`;
 
     this.state = {
       toolSettingsZoneContent: this.props.isClosed ? ToolSettingsZoneContent.Closed : ToolSettingsZoneContent.ToolSettings,
@@ -79,7 +79,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
 
   private _handleToolActivatedEvent = (): void => {
     // Update tool settings title when active tool changes.
-    const title = `${ToolUiManager.activeToolLabel}`;
+    const title = `${ToolSettingsManager.activeToolLabel}`;
     this.setState({ title });
   }
 

@@ -9,17 +9,17 @@
 
 import { ClientRequestContext, Config, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelProps, IModelRpcProps, IModelVersion, InternetConnectivityStatus,
-  MobileAuthorizationClientConfiguration, NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager,
+  BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, InternetConnectivityStatus,
+  MobileAuthorizationClientConfiguration, NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, RequestBriefcaseProps, RpcInterface, RpcManager,
   StorageValue,
   TileTreeContentIds,
 } from "@bentley/imodeljs-common";
-import { EmitStrategy } from "@bentley/imodeljs-native";
+import { EmitStrategy, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ProgressCallback, ProgressInfo } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { EventSinkManager } from "../EventSink";
-import { BriefcaseDb } from "../IModelDb";
+import { EventSink } from "../EventSink";
+import { BriefcaseDb, IModelDb } from "../IModelDb";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { NativeAppStorage } from "../NativeAppStorage";
 import { cancelTileContentRequests } from "./IModelTileRpcImpl";
@@ -72,22 +72,13 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     return Config.App.getContainer();
   }
 
-  /**
-   * Fetches events from backend
-   * @param tokenProps global or imodel base context for event queue
-   * @param limit maximum number of event to return.
-   * @returns list of queued event that is pending on backend.
-   */
-  public async fetchEvents(tokenProps: IModelRpcProps, limit: number): Promise<QueuedEvent[]> {
-    let key: string = EventSinkManager.GLOBAL;
-    if (tokenProps.key && tokenProps.key !== EventSinkManager.GLOBAL)
-      key = tokenProps.key;
-
-    return EventSinkManager.get(key).fetch(limit);
-  }
-
   public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
+  }
+
+  public async cancelElementGraphicsRequests(rpcProps: IModelRpcProps, requestIds: string[]): Promise<void> {
+    const iModel = IModelDb.findByKey(rpcProps.key);
+    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
   }
 
   /**
@@ -112,7 +103,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     let downloadProgress: ProgressCallback | undefined;
     if (reportProgress) {
       downloadProgress = (progress: ProgressInfo) => {
-        EventSinkManager.global.emit(
+        EventSink.global.emit(
           Events.NativeApp.namespace,
           `${Events.NativeApp.onBriefcaseDownloadProgress}-${requestProps.iModelId}`,
           { progress }, { strategy: EmitStrategy.PurgeOlderEvents });
@@ -161,7 +152,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @param openOptions Options to open the briefcase
    * @returns IModelRpcProps which allow to create IModelConnection.
    */
-  public async openBriefcase(key: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<IModelProps> {
+  public async openBriefcase(key: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps> {
     const requestContext = ClientRequestContext.current;
     BriefcaseManager.initializeOffline();
 
@@ -310,5 +301,19 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
       redirectUrl: config.redirectUri,
       scope: config.scope,
     });
+  }
+
+  public async toggleInteractiveEditingSession(tokenProps: IModelRpcProps, startSession: boolean): Promise<boolean> {
+    const imodel = IModelDb.findByKey(tokenProps.key);
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
+    if (val.error)
+      throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
+
+    return val.result!;
+  }
+
+  public async isInteractiveEditingSupported(tokenProps: IModelRpcProps): Promise<boolean> {
+    const imodel = IModelDb.findByKey(tokenProps.key);
+    return imodel.nativeDb.isGeometricModelTrackingSupported();
   }
 }

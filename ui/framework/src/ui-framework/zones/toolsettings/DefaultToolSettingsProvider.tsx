@@ -9,65 +9,31 @@
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 // cSpell:Ignore configurableui
-import { DialogItem, DialogItemsManager, DialogPropertySyncItem, SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
+import { DialogItem, DialogPropertySyncItem, SyncPropertiesChangeEventArgs, UiLayoutDataProvider } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
-import { SyncToolSettingsPropertiesEventArgs, ToolUiManager } from "../toolsettings/ToolUiManager";
+import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "./ToolSettingsManager";
 import { ToolUiProvider } from "./ToolUiProvider";
-
-/** Responsive Layout Mode */
 
 /** @internal */
 
-/** DataProvider that keeps underlying data in sync with UI display */
-class ToolSettingsDataProvider extends DialogItemsManager {
-  private static _thisInstance?: ToolSettingsDataProvider;
-  // istanbul ignore next
-  public onUiPropertyChanged = () => { };
-
-  constructor() {
-    super();
-
-    // istanbul ignore else
-    if (!ToolSettingsDataProvider._thisInstance) {
-      ToolSettingsDataProvider._thisInstance = this;
-    }
-  }
-
-  // pass on SyncToolSettingsPropertiesEvent from ToolAdmin so they are treated as DialogItemSync events
-  private static _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
-    const syncArgs: SyncPropertiesChangeEventArgs = { properties: args.syncProperties };
-
-    // istanbul ignore else
-    if (ToolSettingsDataProvider._thisInstance)
-      ToolSettingsDataProvider._thisInstance.onSyncPropertiesChangeEvent.emit(syncArgs);
-  }
-
-  public static get instance() {
-    if (!ToolSettingsDataProvider._thisInstance) {
-      ToolSettingsDataProvider._thisInstance = new ToolSettingsDataProvider();
-      ToolUiManager.onSyncToolSettingsProperties.addListener(ToolSettingsDataProvider._handleSyncToolSettingsPropertiesEvent);
-    }
-    return ToolSettingsDataProvider._thisInstance;
-  }
-
+/** ToolSettingsUiDataProvider keeps tool data in sync with UI display */
+class ToolSettingsUiDataProvider extends UiLayoutDataProvider {
   // istanbul ignore next
   public isToolSettingsManager = (): boolean => {
     return true;
   }
 
-  public applyUiPropertyChange = (syncItem: DialogPropertySyncItem) => {
-    const activeTool = IModelApp.toolAdmin.activeTool;
-    // istanbul ignore else
-    if (!activeTool)
-      return;
+  public supplyDialogItems(): DialogItem[] | undefined {
+    return ToolSettingsManager.toolSettingsProperties;
+  }
 
+  // send property changes from UI back to tool
+  public applyUiPropertyChange = (syncItem: DialogPropertySyncItem) => {
     // istanbul ignore next
-    activeTool.applyToolSettingPropertyChange(syncItem);
-    // istanbul ignore next
-    this.onUiPropertyChanged();
+    IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.applyToolSettingPropertyChange(syncItem);
   }
 }
 
@@ -75,43 +41,44 @@ class ToolSettingsDataProvider extends DialogItemsManager {
  * @internal
  */
 export class DefaultToolSettingsProvider extends ToolUiProvider {
-  public valueMap = new Map<string, DialogItem>();  // allows easy lookup of record given the property name
-  public toolSettingsDP = ToolSettingsDataProvider.instance;
-  private _componentGenerator = new ComponentGenerator(this.toolSettingsDP);
+  public uiDataProvider = new ToolSettingsUiDataProvider();
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-
-    this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
-    this.toolSettingsDP.onUiPropertyChanged = this._handleUiPropertyChanged;
-  }
-
-  public applyUiPropertyChange(syncItem: DialogPropertySyncItem) {
-    this.toolSettingsDP.applyUiPropertyChange(syncItem);
   }
 
   public updateToolSettingsNodes(): void {
     // istanbul ignore else
-    if ((this.toolSettingsDP as DialogItemsManager).layoutDialogRows()) {
+    if (this.uiDataProvider.layoutDialogRows()) {
+      const componentGenerator = new ComponentGenerator(this.uiDataProvider);
+
       this.toolSettingsNode = (
-        <DefaultDialogGridContainer itemsManager={this.toolSettingsDP} componentGenerator={this._componentGenerator} isToolSettings={true} key={Date.now()} />
+        <DefaultDialogGridContainer componentGenerator={componentGenerator} isToolSettings={true} />
       );
-      this.horizontalToolSettingNodes = this._componentGenerator.getToolSettingsEntries();
+      this.horizontalToolSettingNodes = componentGenerator.getToolSettingsEntries();
     } else {
       this.toolSettingsNode = null;
       this.horizontalToolSettingNodes = [];
     }
   }
-  public onInitialize(): void {
-    // update the items to be from the active tool
-    this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
+
+  public reloadPropertiesFromTool(): void {
+    // trigger the items to be reloaded from the active tool
+    this.uiDataProvider.reloadDialogItems(false);
     this.updateToolSettingsNodes();
+    // NOTE: UI components will typically listen for FrontstageManager.onToolSettingsReloadEvent which is
+    // emitted after this method is called.
   }
 
-  // istanbul ignore next
-  private _handleUiPropertyChanged = () => {
-    this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
-    this.updateToolSettingsNodes();
+  // called when tool is activated to repopulate tool settings.
+  public onInitialize(): void {
+    this.reloadPropertiesFromTool();
+  }
+
+  // called to process ToolSettingsManager.onSyncToolSettingsProperties event
+  public syncToolSettingsProperties(args: SyncToolSettingsPropertiesEventArgs): void {
+    const syncArgs: SyncPropertiesChangeEventArgs = { properties: args.syncProperties };
+    this.uiDataProvider.onSyncPropertiesChangeEvent.emit(syncArgs);
   }
 }
 

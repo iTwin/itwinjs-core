@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore iconpicker lineweight hocs
+// cSpell:ignore iconpicker lineweight hocs datepicker
 
 export { UiComponents } from "./ui-components/UiComponents";
 
@@ -167,6 +167,7 @@ export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
 export * from "./ui-components/favorite/FavoritePropertiesRenderer";
+export * from "./ui-components/favorite/FavoritePropertyList";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";

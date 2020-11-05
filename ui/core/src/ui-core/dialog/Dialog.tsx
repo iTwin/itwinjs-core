@@ -30,6 +30,8 @@ export enum DialogButtonType {
   Yes = "yes",
   No = "no",
   Retry = "retry",
+  Next = "next",
+  Previous = "previous"
 }
 
 /** Enum for button style.
@@ -401,6 +403,14 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
           case DialogButtonType.Close:
             buttonText = UiCore.translate("dialog.close");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
+            break;
+          case DialogButtonType.Next:
+            buttonText = UiCore.translate("dialog.next");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
+            break;
+          case DialogButtonType.Previous:
+            buttonText = UiCore.translate("dialog.previous");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
         }
 

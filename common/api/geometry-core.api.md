@@ -399,6 +399,12 @@ export interface BeJSONFunctions {
 }
 
 // @public
+export class BentleyGeometryFlatBuffer {
+    static bytesToGeometry(justTheBytes: Uint8Array, hasVersionSignature?: boolean): GeometryQuery | GeometryQuery[] | undefined;
+    static geometryToBytes(data: GeometryQuery | GeometryQuery[], addVersionSignature?: boolean): Uint8Array | undefined;
+}
+
+// @public
 export class Bezier1dNd {
     constructor(blockSize: number, polygon: Float64Array);
     clonePolygon(result?: Float64Array): Float64Array;
@@ -667,7 +673,7 @@ export class BSpline1dNd {
 
 // @public
 export abstract class BSpline2dNd extends GeometryQuery {
-    protected constructor(numPolesU: number, numPolesV: number, poleLength: number, knotsU: KnotVector, knotsV: KnotVector);
+    protected constructor(numPolesU: number, numPolesV: number, poleLength: number, knotsU: KnotVector, knotsV: KnotVector, coffs: Float64Array);
     protected _basisBuffer1UV: Float64Array[];
     protected _basisBufferUV: Float64Array[];
     coffs: Float64Array;
@@ -774,13 +780,23 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
 
 // @public
 export class BSplineCurve3dH extends BSplineCurve3dBase {
+    static assemblePackedXYZW(controlPoints: Float64Array | Point4d[] | {
+        xyz: Float64Array;
+        weights: Float64Array;
+    } | Point3d[]): Float64Array | undefined;
     clone(): BSplineCurve3dH;
     cloneTransformed(transform: Transform): BSplineCurve3dH;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     copyPoints(): any[];
     copyPointsFloat64Array(): Float64Array;
-    static create(controlPoints: Float64Array | Point4d[] | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined;
+    // (undocumented)
+    copyWeightsFloat64Array(): Float64Array;
+    copyXYZFloat64Array(deweighted: boolean): Float64Array;
+    static create(controlPointData: Float64Array | Point4d[] | {
+        xyz: Float64Array;
+        weights: Float64Array;
+    } | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined;
     static createUniformKnots(controlPoints: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
@@ -834,7 +850,9 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     copyKnots(select: UVSelect, includeExtraEndKnot: boolean): number[];
     copyPoints4d(): Point4d[];
     copyPointsAndWeights(points: Point3d[], weights: number[], formatter?: (x: number, y: number, z: number) => any): void;
-    static create(controlPointArray: Point3d[], weightArray: number[], numPolesU: number, orderU: number, knotArrayU: number[] | undefined, numPolesV: number, orderV: number, knotArrayV: number[] | undefined): BSplineSurface3dH | undefined;
+    copyWeightsToFloat64Array(): Float64Array;
+    copyXYZToFloat64Array(unweight: boolean): Float64Array;
+    static create(controlPointArray: Point3d[] | Float64Array, weightArray: number[] | Float64Array, numPolesU: number, orderU: number, knotArrayU: number[] | Float64Array | undefined, numPolesV: number, orderV: number, knotArrayV: number[] | Float64Array | undefined): BSplineSurface3dH | undefined;
     static createGrid(xyzwGrid: number[][][], weightStyle: WeightStyle, orderU: number, knotArrayU: number[], orderV: number, knotArrayV: number[]): BSplineSurface3dH | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
@@ -1340,6 +1358,7 @@ export abstract class CurveCollection extends GeometryQuery {
     abstract cloneStroked(options?: StrokeOptions): AnyCurve;
     cloneTransformed(transform: Transform): CurveCollection | undefined;
     cloneWithExpandedLineStrings(): CurveCollection | undefined;
+    closestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): CurvePrimitive[];
     static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction?: number): CurveLocationDetail | undefined;
     abstract readonly curveCollectionType: CurveCollectionType;
@@ -1453,6 +1472,7 @@ export class CurveLocationDetail {
     a: number;
     captureFraction1Point1(fraction1: number, point1: Point3d): void;
     childDetail?: CurveLocationDetail;
+    static chooseSmallerA(detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined): CurveLocationDetail | undefined;
     clone(result?: CurveLocationDetail): CurveLocationDetail;
     collapseToEnd(): void;
     collapseToStart(): void;
@@ -3852,7 +3872,7 @@ export class Point4dArray {
     static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined): boolean;
     static isCloseToPlane(data: Point4d[] | Float64Array, plane: Plane3dByOriginAndUnitNormal, tolerance?: number): boolean;
     static multiplyInPlace(transform: Transform, xyzw: Float64Array): void;
-    static packPointsAndWeightsToFloat64Array(points: Point3d[], weights: number[], result?: Float64Array): Float64Array;
+    static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array, result?: Float64Array): Float64Array | undefined;
     static packToFloat64Array(data: Point4d[], result?: Float64Array): Float64Array;
     static unpackFloat64ArrayToPointsAndWeights(data: Float64Array, points: Point3d[], weights: number[], pointFormatter?: (x: number, y: number, z: number) => any): void;
     static unpackToPoint4dArray(data: Float64Array): Point4d[];
@@ -4369,7 +4389,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     intersect(other: Range3d, result?: Range3d): Range3d;
     intersectsRange(other: Range3d): boolean;
     intersectsRangeXY(other: Range3d): boolean;
-    isAlmostEqual(other: Range3d): boolean;
+    isAlmostEqual(other: Range3d, tol?: number): boolean;
     get isAlmostZeroX(): boolean;
     get isAlmostZeroY(): boolean;
     get isAlmostZeroZ(): boolean;

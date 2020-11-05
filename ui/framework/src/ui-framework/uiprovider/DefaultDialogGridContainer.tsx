@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module UiProvider
@@ -9,7 +9,7 @@
 import "./DefaultDialogGridContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DialogItemsManager, DialogRow } from "@bentley/ui-abstract";
+import { DialogRow } from "@bentley/ui-abstract";
 import { ScrollableWidgetContent } from "@bentley/ui-ninezone";
 import { FrameworkVersionSwitch, useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { ToolSettingsContentContext } from "../widgets/ToolSettingsContent";
@@ -24,7 +24,7 @@ enum LayoutMode {
  * Component to provide grid of property editors
  * @beta
  */
-export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: { itemsManager: DialogItemsManager, componentGenerator: ComponentGenerator }) {
+export function ToolSettingsGridContainer({ componentGenerator }: { componentGenerator: ComponentGenerator }) {
   const { availableContentWidth } = React.useContext(ToolSettingsContentContext);
   const version = useFrameworkVersion();
   const layoutMode = toLayoutMode(availableContentWidth);
@@ -36,7 +36,6 @@ export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: 
   const container = (
     <DialogGridContainer
       componentGenerator={componentGenerator}
-      itemsManager={itemsManager}
       containerClassName={className}
     />
   );
@@ -53,14 +52,13 @@ export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: 
 }
 
 interface DialogGridContainerProps {
-  itemsManager: DialogItemsManager;
   componentGenerator: ComponentGenerator;
   containerClassName?: string;
 }
 
 /** @internal */
 // istanbul ignore next
-export function DialogGridContainer({ itemsManager, componentGenerator, containerClassName }: DialogGridContainerProps) {
+export function DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps) {
   const className = classnames(
     "uifw-default-container",
     containerClassName,
@@ -68,24 +66,20 @@ export function DialogGridContainer({ itemsManager, componentGenerator, containe
   return (
     <div className="uifw-default-resizer-parent">
       <div className={className}>
-        {itemsManager.rows.map((row: DialogRow, index: number) => componentGenerator.getRow(row, index))}
+        {componentGenerator.uiDataProvider.rows.map((row: DialogRow, index: number) => componentGenerator.getRow(row, index))}
       </div>
     </div>
   );
 }
 
-/** DefaultDialogGridContainer populates a React node with the items specified by the DialogItemsManager
+/** DefaultDialogGridContainer populates a React node with the items specified by the UiLayoutDataProvider
  * @beta
  */
-export function DefaultDialogGridContainer({ itemsManager, componentGenerator, isToolSettings }: { itemsManager: DialogItemsManager, componentGenerator?: ComponentGenerator, isToolSettings?: boolean }) {
-  // istanbul ignore if
-  if (!componentGenerator)
-    componentGenerator = new ComponentGenerator(itemsManager);
-
+export function DefaultDialogGridContainer({ componentGenerator, isToolSettings }: { componentGenerator: ComponentGenerator, isToolSettings?: boolean }) {
   return (!!isToolSettings ?
-    <ToolSettingsGridContainer itemsManager={itemsManager} componentGenerator={componentGenerator} /> :
+    <ToolSettingsGridContainer componentGenerator={componentGenerator} /> :
     /* istanbul ignore next */
-    <DialogGridContainer itemsManager={itemsManager} componentGenerator={componentGenerator} />);
+    <DialogGridContainer componentGenerator={componentGenerator} />);
 }
 
 const toLayoutMode = (width: number) => {

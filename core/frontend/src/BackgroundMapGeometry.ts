@@ -385,13 +385,6 @@ export class BackgroundMapLocation {
     const projectExtents = iModel.projectExtents;
     const origin = projectExtents.localXYZToWorld(.5, .5, .5)!;
 
-    const ecefOriginTest = ecefLocationDbToEcef.multiplyPoint3d(origin);
-    const cartoOriginTest = Cartographic.fromEcef(ecefOriginTest);
-    if (cartoOriginTest !== undefined && Math.abs(cartoOriginTest.height) < 1.0E5) {
-      this._ecefValidated = true;     // ECEF looks reasonable - use it...
-      return;
-    }
-
     origin.z = 0; // always use ground plane
     const eastPoint = origin.plusXYZ(10, 0, 0);
     const northPoint = origin.plusXYZ(0, 10, 0);

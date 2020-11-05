@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-locaters",
-  "version": "2.9.0-dev.1",
+  "version": "2.9.0-dev.8",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/ecschema-locaters.js",
@@ -10,6 +10,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-locaters"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
@@ -30,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.9.0-dev.1",
-    "@bentley/eslint-plugin": "2.9.0-dev.1",
-    "@bentley/ecschema-metadata": "2.9.0-dev.1",
+    "@bentley/build-tools": "2.9.0-dev.8",
+    "@bentley/eslint-plugin": "2.9.0-dev.8",
+    "@bentley/ecschema-metadata": "2.9.0-dev.8",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -54,7 +55,7 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@bentley/ecschema-metadata": "^2.9.0-dev.1"
+    "@bentley/ecschema-metadata": "^2.9.0-dev.8"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

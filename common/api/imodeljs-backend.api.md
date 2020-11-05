@@ -96,9 +96,11 @@ import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
+import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
+import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
@@ -141,7 +143,6 @@ import { QueryLimit } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
 import { QueryResponse } from '@bentley/imodeljs-common';
-import { QueuedEvent } from '@bentley/imodeljs-common';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
@@ -174,7 +175,6 @@ import { TextureFlags } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
-import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
@@ -418,8 +418,6 @@ export class BriefcaseDb extends IModelDb {
     // @beta
     get concurrencyControl(): ConcurrencyControl;
     get contextId(): GuidString;
-    // @internal
-    get eventSink(): EventSink | undefined;
     // @internal
     static findByKey(key: string): BriefcaseDb;
     // @internal
@@ -812,7 +810,11 @@ export class ConcurrencyControl {
     abandonRequest(): void;
     abandonResources(requestContext: AuthorizedClientRequestContext): Promise<void>;
     areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
+    // @internal @deprecated (undocumented)
     areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
+    // @internal (undocumented)
+    areCodesAvailable0(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
+    // @internal @deprecated (undocumented)
     areCodesAvailable2(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<boolean>;
     areLocksAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
     buildConcurrencyControlRequestForDb(): void;
@@ -826,32 +828,43 @@ export class ConcurrencyControl {
     buildRequestForRelationship(_instance: RelationshipProps, _opcode: DbOpcode): void;
     // @alpha
     get channel(): ConcurrencyControl.Channel;
-    get codes(): ConcurrencyControl.Codes;
-    // @internal (undocumented)
+    get codes(): ConcurrencyControl.CodesManager;
     endBulkMode(rqctx: AuthorizedClientRequestContext): Promise<void>;
-    // (undocumented)
+    // @internal @deprecated (undocumented)
     getHeldElementLock(elementId: Id64String): LockLevel;
-    // (undocumented)
+    // @internal @deprecated (undocumented)
     getHeldLock(type: LockType, objectId: Id64String): LockLevel;
-    // (undocumented)
+    // @internal (undocumented)
+    getHeldLock0(type: LockType, objectId: Id64String): LockLevel;
+    // @internal @deprecated (undocumented)
     getHeldModelLock(modelId: Id64String): LockLevel;
     // @internal (undocumented)
     getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
-    // @alpha
+    // @internal @deprecated (undocumented)
     get hasCodeSpecsLock(): boolean;
     get hasPendingRequests(): boolean;
-    // @alpha
+    // @internal @deprecated (undocumented)
     hasReservedCode(code: CodeProps): boolean;
-    // @alpha
+    // (undocumented)
+    hasReservedCode0(code: CodeProps): boolean;
+    // @internal @deprecated (undocumented)
     get hasSchemaLock(): boolean;
-    // @alpha
+    // @internal @deprecated (undocumented)
     holdsLock(lock: ConcurrencyControl.LockProps): boolean;
     // @internal (undocumented)
-    get iModel(): BriefcaseDb;
+    holdsLock0(lock: ConcurrencyControl.LockProps): boolean;
     // @internal (undocumented)
+    get iModel(): BriefcaseDb;
     get isBulkMode(): boolean;
+    // @internal @deprecated (undocumented)
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
+    // @internal (undocumented)
+    lockCodeSpecs0(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
+    get locks(): ConcurrencyControl.LocksManager;
+    // @internal @deprecated (undocumented)
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
+    // @internal (undocumented)
+    lockSchema0(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     // @internal (undocumented)
     get modelsAffectedByWrites(): Id64String[];
     // @internal (undocumented)
@@ -884,27 +897,21 @@ export class ConcurrencyControl {
     onSavedChanges(): void;
     // @internal (undocumented)
     onUndoRedo(): void;
-    // (undocumented)
-    openOrCreateCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     get pendingRequest(): ConcurrencyControl.Request;
-    // (undocumented)
+    // @internal @deprecated (undocumented)
     queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
     request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void>;
     requestResources(ctx: AuthorizedClientRequestContext, elements: ConcurrencyControl.ElementAndOpcode[], models?: ConcurrencyControl.ModelAndOpcode[], relationships?: ConcurrencyControl.RelationshipAndOpcode[]): Promise<void>;
-    // @internal (undocumented)
     requestResourcesForDelete(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
-    // @internal (undocumented)
     requestResourcesForInsert(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
     // @internal (undocumented)
     requestResourcesForOpcode(ctx: AuthorizedClientRequestContext, opcode: DbOpcode, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
-    // @internal (undocumented)
     requestResourcesForUpdate(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
+    // @internal @deprecated (undocumented)
     reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]>;
     setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void;
-    // @internal (undocumented)
     startBulkMode(): void;
-    // (undocumented)
     syncCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
 }
 
@@ -944,8 +951,11 @@ export namespace ConcurrencyControl {
         // (undocumented)
         readonly ownerInfo: any;
     }
-    export class Codes {
+    export class CodesManager {
+        // @internal
         constructor(_iModel: BriefcaseDb);
+        areAvailable(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<boolean>;
+        isReserved(code: CodeProps): boolean;
         query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
         reserve(requestContext: AuthorizedClientRequestContext, codes?: CodeProps[]): Promise<void>;
     }
@@ -969,6 +979,22 @@ export namespace ConcurrencyControl {
         objectId: string;
         // (undocumented)
         type: LockType;
+    }
+    export class LocksManager {
+        // @internal
+        constructor(_iModel: BriefcaseDb);
+        // @alpha
+        getHeldElementLock(elementId: Id64String): LockLevel;
+        // @alpha
+        getHeldLock(type: LockType, objectId: Id64String): LockLevel;
+        // @alpha
+        getHeldModelLock(modelId: Id64String): LockLevel;
+        get hasCodeSpecsLock(): boolean;
+        get hasSchemaLock(): boolean;
+        holdsLock(lock: ConcurrencyControl.LockProps): boolean;
+        lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
+        lockModels(requestContext: AuthorizedClientRequestContext, models: ModelProps[]): Promise<void>;
+        lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     }
     // (undocumented)
     export interface ModelAndOpcode {
@@ -1813,41 +1839,16 @@ export class Entity implements EntityProps {
 }
 
 // @internal
-export class EventSink {
+export class EventSink implements IDisposable {
     constructor(id: string);
-    // (undocumented)
+    static clearGlobal(): void;
+    dispose(): void;
     emit(namespace: string, eventName: string, data: any, options?: EmitOptions): void;
-    // (undocumented)
-    fetch(limit: number): QueuedEvent[];
-    // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    purge(namespace: string): void;
-}
-
-// @internal
-export class EventSinkManager {
-    // (undocumented)
-    static clear(): void;
-    // (undocumented)
-    static delete(id: string): void;
-    // (undocumented)
-    static get(id: string): EventSink;
-    // (undocumented)
-    static readonly GLOBAL = "__globalEvents__";
-    // (undocumented)
     static get global(): EventSink;
     // (undocumented)
-    static has(id: string): boolean;
+    readonly id: string;
+    get isDisposed(): boolean;
     }
-
-// @internal
-export interface EventSinkOptions {
-    // (undocumented)
-    maxNamespace: number;
-    // (undocumented)
-    maxQueueSize: number;
-}
 
 // @public
 export namespace ExportGraphics {
@@ -2420,6 +2421,8 @@ export abstract class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
+    // @internal
+    get eventSink(): EventSink;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static findByKey(key: string): IModelDb;
@@ -2429,6 +2432,8 @@ export abstract class IModelDb extends IModel {
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     getBriefcaseId(): BriefcaseId;
+    // @internal (undocumented)
+    protected getEventSourceProps(): IModelEventSourceProps;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta
     getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
@@ -2517,6 +2522,8 @@ export namespace IModelDb {
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): void;
         insertElement(elProps: ElementProps): Id64String;
+        // @internal
+        _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal
@@ -2559,7 +2566,7 @@ export namespace IModelDb {
         // (undocumented)
         requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array>;
         // (undocumented)
-        requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps>;
+        requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps>;
     }
     export class Views {
         // @internal
@@ -2714,8 +2721,6 @@ export class IModelHostConfiguration {
     static defaultLogTileSizeThreshold: number;
     // @internal
     static defaultTileRequestTimeout: number;
-    // @internal
-    eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
     // @internal
     logTileLoadTimeThreshold: number;
@@ -2735,7 +2740,7 @@ export class IModelHostConfiguration {
 // @beta
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    readonly autoExtendProjectExtents: boolean;
+    autoExtendProjectExtents: boolean;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
@@ -2755,6 +2760,7 @@ export class IModelImporter {
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
     protected onUpdateModel(modelProps: ModelProps): void;
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
+    simplifyElementGeometry: boolean;
     readonly targetDb: IModelDb;
 }
 
@@ -2866,7 +2872,6 @@ export class IModelTransformer extends IModelExportHandler {
 
 // @beta
 export interface IModelTransformOptions {
-    // @alpha
     cloneUsingBinaryGeometry?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;

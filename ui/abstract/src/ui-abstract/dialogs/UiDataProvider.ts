@@ -7,37 +7,27 @@
  */
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { DialogItem, DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
+import { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
 
 /** Sync UI Control Properties Event class.
  * @beta
- */
+ */
 export class SyncPropertiesChangeEvent extends BeUiEvent<SyncPropertiesChangeEventArgs> { }
 
-/** [[UiDataProvider ]] Abstract class that allows property values to be passed between hosting API and UI
+/** [[UiDataProvider ]] Abstract class that allows property values to be passed between hosting API and UI.
  * @beta
  */
 // istanbul ignore next
 export abstract class UiDataProvider {
-  /** Called by UI to inform data provider of changes. If used by modal dialog then this is typically only called
-   * when "OK" or "Apply" button is selected.
-   */
+  /** Called by UI to inform data provider of changes. */
   public processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult {
-    return { status: PropertyChangeStatus.Success };
-  }
-
-  /** Called to get any defined DialogItems that can be use to dynamically layout properties in UI (See ToolWithSettings for example). */
-  public supplyDialogItems(): DialogItem[] | undefined {
-    return;
-  }
-
-  /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
-  public supplyAvailableProperties(): DialogPropertyItem[] {
-    return [];
+    throw (new Error("Derived UiDataProvider must implement this method to apply changes to a bulk set of properties."))
   }
 
   /** Get Sync UI Control Properties Event */
   public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
+
+  public onItemsReloadedEvent = new BeUiEvent<void>();
 
   /** Called by UI to validate a property value */
   public validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
@@ -45,14 +35,32 @@ export abstract class UiDataProvider {
   }
 
   /** Called to sync properties synchronously if a UiDataProvider is active for the UI */
-  public syncProperties(_syncProperties: DialogPropertySyncItem[]) {
-    return;
+  public syncProperties(syncProperties: DialogPropertySyncItem[]) {
+    this.fireSyncPropertiesEvent(syncProperties);
+  }
+
+  /** Called to inform listener that the UiDataProvider has updated values for the UI */
+  public fireSyncPropertiesEvent(syncProperties: DialogPropertySyncItem[]) {
+    this.onSyncPropertiesChangeEvent.emit({ properties: syncProperties });
+  }
+
+  /** Called to inform listeners that new properties are ready for display in UI.
+   */
+  public fireItemsReloadedEvent() {
+    this.onItemsReloadedEvent.emit();
+  }
+
+  /** Used to pass properties between a tool and an explicity defined UI dialog. See method supplyDialogItems in [[UiLayoutDataProvider]] for supplying
+   * properties that will be used to dynamically create and layout control in a Dialog or Widget.
+   */
+  public supplyAvailableProperties(): DialogPropertyItem[] {
+    throw (new Error("Derived UiDataProvider that want to use DialogPropertyItems must implement this method. Not for use with dynamic UI controls."))
   }
 }
 
 /** Sync UI Control Properties Event Args interface.
  * @beta
- */
+ */
 export interface SyncPropertiesChangeEventArgs {
   properties: DialogPropertySyncItem[];
 }
@@ -69,7 +77,7 @@ export enum PropertyChangeStatus {
 
 /** Interface used by UiDataProvider to report change status (validation) to UI.
  * @beta
- */
+ */
 export interface PropertyChangeResult {
   errorMsg?: string;
   status: PropertyChangeStatus;

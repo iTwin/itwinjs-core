@@ -67,8 +67,15 @@ export interface IModelProps {
   name?: string;
 }
 
+/** Supplies the name of the [EventSource]($frontend) through which the backend pushes notifications to the frontend.
+ * @internal
+ */
+export interface IModelEventSourceProps {
+  eventSourceName: string;
+}
+
 /** @internal */
-export type IModelConnectionProps = IModelProps & IModelRpcProps;
+export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
@@ -243,6 +250,9 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
+  protected abstract getEventSourceProps(): IModelEventSourceProps;
+
+  /** @internal */
   public getConnectionProps(): IModelConnectionProps {
     return {
       name: this.name,
@@ -251,6 +261,7 @@ export abstract class IModel implements IModelProps {
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
       ... this.getRpcProps(),
+      ...this.getEventSourceProps(),
     };
   }
 

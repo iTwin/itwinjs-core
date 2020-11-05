@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodel-bridge",
-  "version": "2.9.0-dev.1",
+  "version": "2.9.0-dev.8",
   "description": "iModel.js bridge components",
   "main": "lib/imodel-bridge.js",
   "typings": "lib/imodel-bridge",
@@ -13,6 +13,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/imodel-bridge"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --tsIndexFile=./imodel-bridge.ts --json=../../generated-docs/core/imodel-bridge/file.json --onlyJson",
@@ -38,31 +39,31 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.9.0-dev.1",
-    "@bentley/geometry-core": "^2.9.0-dev.1",
-    "@bentley/imodeljs-backend": "^2.9.0-dev.1",
-    "@bentley/imodelhub-client": "^2.9.0-dev.1",
-    "@bentley/backend-itwin-client": "^2.9.0-dev.1",
-    "@bentley/imodeljs-common": "^2.9.0-dev.1",
-    "@bentley/context-registry-client": "^2.9.0-dev.1",
-    "@bentley/rbac-client": "^2.9.0-dev.1"
+    "@bentley/bentleyjs-core": "^2.9.0-dev.8",
+    "@bentley/geometry-core": "^2.9.0-dev.8",
+    "@bentley/imodeljs-backend": "^2.9.0-dev.8",
+    "@bentley/imodelhub-client": "^2.9.0-dev.8",
+    "@bentley/backend-itwin-client": "^2.9.0-dev.8",
+    "@bentley/imodeljs-common": "^2.9.0-dev.8",
+    "@bentley/context-registry-client": "^2.9.0-dev.8",
+    "@bentley/rbac-client": "^2.9.0-dev.8"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/imodeljs-backend": "2.9.0-dev.1",
-    "@bentley/itwin-client": "2.9.0-dev.1",
-    "@bentley/bentleyjs-core": "2.9.0-dev.1",
-    "@bentley/geometry-core": "2.9.0-dev.1",
-    "@bentley/backend-itwin-client": "2.9.0-dev.1",
-    "@bentley/imodeljs-common": "2.9.0-dev.1",
-    "@bentley/oidc-signin-tool": "2.9.0-dev.1",
-    "@bentley/build-tools": "2.9.0-dev.1",
-    "@bentley/eslint-plugin": "2.9.0-dev.1",
-    "@bentley/config-loader": "2.9.0-dev.1",
-    "@bentley/rbac-client": "2.9.0-dev.1",
+    "@bentley/imodeljs-backend": "2.9.0-dev.8",
+    "@bentley/itwin-client": "2.9.0-dev.8",
+    "@bentley/bentleyjs-core": "2.9.0-dev.8",
+    "@bentley/geometry-core": "2.9.0-dev.8",
+    "@bentley/backend-itwin-client": "2.9.0-dev.8",
+    "@bentley/imodeljs-common": "2.9.0-dev.8",
+    "@bentley/oidc-signin-tool": "2.9.0-dev.8",
+    "@bentley/build-tools": "2.9.0-dev.8",
+    "@bentley/eslint-plugin": "2.9.0-dev.8",
+    "@bentley/config-loader": "2.9.0-dev.8",
+    "@bentley/rbac-client": "2.9.0-dev.8",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

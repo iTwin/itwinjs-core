@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/config-loader"
+    }
+  ],
+  "packageName": "@bentley/config-loader",
+  "email": "Affan.Khan@Bentley.com"
+}

@@ -55,7 +55,8 @@ export abstract class TileTree {
   /** The length of time after which tiles belonging to this tree are considered elegible for disposal if they are no longer in use. */
   public readonly expirationTime: BeDuration;
   /** @internal */
-  public readonly loadPriority: TileLoadPriority;
+  public get loadPriority(): TileLoadPriority { return this._loadPriority; }
+  private readonly _loadPriority: TileLoadPriority;
   /** Optional tight bounding box around the entire contents of all of this tree's tiles. */
   public readonly contentRange?: ElementAlignedBox3d;
 
@@ -93,6 +94,12 @@ export abstract class TileTree {
   /** @internal */
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
+  /** This function will forcibly prune any unused tiles associated with the tree, ignoring any expiration times.
+   * An unused tile is a tile that is not currently in use by any viewport.
+   * @alpha
+   **/
+  public abstract forcePrune(): void;
+
   /** Constructor */
   protected constructor(params: TileTreeParams) {
     this._lastSelected = BeTimePoint.now();
@@ -104,7 +111,7 @@ export abstract class TileTree {
     this.contentRange = params.contentRange;
 
     const admin = IModelApp.tileAdmin;
-    this.loadPriority = params.priority;
+    this._loadPriority = params.priority;
     this.expirationTime = params.expirationTime ?? admin.tileExpirationTime;
   }
 
@@ -115,6 +122,7 @@ export abstract class TileTree {
     this._lastSelected = BeTimePoint.now();
     const tiles = this._selectTiles(args);
     IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, tiles, args.readyTiles);
+    args.processSelectedTiles(tiles);
     return tiles;
   }
 

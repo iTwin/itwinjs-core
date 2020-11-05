@@ -516,11 +516,15 @@ export enum DialogButtonType {
     // (undocumented)
     Close = "close",
     // (undocumented)
+    Next = "next",
+    // (undocumented)
     No = "no",
     // (undocumented)
     None = "",
     // (undocumented)
     OK = "ok",
+    // (undocumented)
+    Previous = "previous",
     // (undocumented)
     Retry = "retry",
     // (undocumented)
@@ -961,6 +965,10 @@ export class Input extends React.PureComponent<InputProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
+    componentDidUpdate(prevProps: InputProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
     render(): JSX.Element;
 }
 
@@ -978,6 +986,8 @@ export interface InputLabelProps extends LabeledComponentProps, MessagedComponen
 
 // @public
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+    // (undocumented)
+    nativeKeyHandler?: (e: KeyboardEvent) => void;
     setFocus?: boolean;
 }
 
@@ -1060,6 +1070,13 @@ export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
 
 // @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
+}
+
+// @beta
+export function LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element;
+
+// @beta
+export interface LabeledThemedSelectProps extends ThemedSelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
 // @public
@@ -1498,6 +1515,19 @@ export interface ProgressBarProps extends CommonProps {
     percent?: number;
 }
 
+// @beta
+export function ProgressSpinner(props: ProgressSpinnerProps): JSX.Element;
+
+// @beta
+export interface ProgressSpinnerProps extends CommonProps {
+    children?: React.ReactNode;
+    error?: boolean;
+    indeterminate?: boolean;
+    size?: SpinnerSize;
+    success?: boolean;
+    value?: number;
+}
+
 // @internal
 export const PROXIMITY_THRESHOLD_DEFAULT = 100;
 
@@ -1867,13 +1897,9 @@ export interface SpinnerProps {
 
 // @public
 export enum SpinnerSize {
-    // (undocumented)
     Large = 2,
-    // (undocumented)
     Medium = 1,
-    // (undocumented)
     Small = 0,
-    // (undocumented)
     XLarge = 3
 }
 
