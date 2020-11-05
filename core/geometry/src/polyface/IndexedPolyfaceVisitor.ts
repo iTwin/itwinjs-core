@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
+=======
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+>>>>>>> 22ec0d02d2... method PolyfaceQuery.boundaryOfVisibleSubset (#166)
 *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
@@ -234,7 +240,11 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
   /** Advance the iterator to a particular facet in the client polyface */
   public moveToReadIndex(activeIndex: number): boolean {
     if (activeIndex >= 0 && activeIndex <= this._parentFacetIndices.length) {
+<<<<<<< HEAD
       this._nextActiveIndex = activeIndex;
+=======
+      this._nextActiveIndex = activeIndex
+>>>>>>> 22ec0d02d2... method PolyfaceQuery.boundaryOfVisibleSubset (#166)
       return super.moveToReadIndex(this._parentFacetIndices[activeIndex++]);
     }
     return false;
