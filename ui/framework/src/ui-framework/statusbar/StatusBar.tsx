@@ -14,7 +14,7 @@ import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from 
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-import { StatusMessage, StatusMessageManager } from "../messages/StatusMessageManager";
+import { StatusMessage } from "../messages/StatusMessageManager";
 import { StatusMessageRenderer } from "../messages/StatusMessageRenderer";
 
 // cspell:ignore safearea
@@ -42,7 +42,6 @@ export interface StatusBarProps extends CommonProps {
  * @public
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
-  private _statusMessageManager = new StatusMessageManager();
 
   public static severityToStatus(severity: MessageSeverity): Status {
     let status = Status.Information;
@@ -67,12 +66,16 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   /** @internal */
-  public readonly state: Readonly<StatusBarState> = {
-    openWidget: null,
-    messages: [],
-    activityMessageInfo: undefined,
-    isActivityMessageVisible: false,
-    toastTarget: null,
+  constructor(props: StatusBarProps) {
+    super(props);
+
+    this.state = {
+      openWidget: null,
+      messages: MessageManager.activeMessageManager.messages,
+      activityMessageInfo: undefined,
+      isActivityMessageVisible: false,
+      toastTarget: null,
+    };
   };
 
   public render(): React.ReactNode {
@@ -115,11 +118,13 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   public componentDidMount() {
-    this._statusMessageManager.initialize();
     MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.addListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
     MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent);
+
+    MessageManager.activeMessageManager.initialize();
+    MessageManager.updateMessages();
   }
 
   public componentWillUnmount() {
@@ -129,18 +134,13 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.onMessagesUpdatedEvent.removeListener(this._handleMessagesUpdatedEvent);
   }
 
-  private _handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
-    this._statusMessageManager.add(args.message);
-
-    this.setState({ messages: this._statusMessageManager.messages });
+  private _handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
+    this.setState({ messages: MessageManager.activeMessageManager.messages });
   }
 
   /** Respond to clearing the message list */
   private _handleMessagesUpdatedEvent = () => {
-    if (MessageManager.messages.length === 0) {
-      this._statusMessageManager.initialize();
-      this.setState({ messages: this._statusMessageManager.messages });
-    }
+    this.setState({ messages: MessageManager.activeMessageManager.messages });
   }
 
   /**
@@ -205,9 +205,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   private _closeMessage = (id: string) => {
-    // istanbul ignore else
-    if (this._statusMessageManager.remove(id))
-      this.setState({ messages: this._statusMessageManager.messages });
+    MessageManager.activeMessageManager.remove(id);
+    MessageManager.updateMessages();
   }
 
   private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {

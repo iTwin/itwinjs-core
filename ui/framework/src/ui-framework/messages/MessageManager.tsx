@@ -23,6 +23,7 @@ import { UiFramework } from "../UiFramework";
 import { MessageSpan } from "./MessageSpan";
 import { PointerMessage } from "./Pointer";
 import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
+import { StatusMessageManager } from "./StatusMessageManager";
 
 class MessageBoxCallbacks {
   constructor(
@@ -136,6 +137,7 @@ export class MessageManager {
   private static _messages: NotifyMessageDetailsType[] = [];
   private static _ongoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
   private static _lastMessage?: NotifyMessageDetailsType;
+  private static _activeMessageManager = new StatusMessageManager();
 
   /** The MessageAddedEvent is fired when a message is added via outputMessage(). */
   public static readonly onMessageAddedEvent = new MessageAddedEvent();
@@ -163,11 +165,21 @@ export class MessageManager {
   /** List of messages as NotifyMessageDetailsType. */
   public static get messages(): Readonly<NotifyMessageDetailsType[]> { return this._messages; }
 
+  /** Manager of active messages. */
+  public static get activeMessageManager(): StatusMessageManager { return this._activeMessageManager; }
+
   /** Clear the message list. */
   public static clearMessages(): void {
     this._messages.splice(0);
+    this._activeMessageManager.initialize();
+
     this.onMessagesUpdatedEvent.emit({});
     this._lastMessage = undefined;
+  }
+
+  /** Update the message list. */
+  public static updateMessages(): void {
+    this.onMessagesUpdatedEvent.emit({});
   }
 
   /** Set the maximum number of cached message. */
@@ -209,6 +221,8 @@ export class MessageManager {
       this.addToMessageCenter(message);
       this._lastMessage = message;
     }
+
+    this._activeMessageManager.add(message);
 
     this.onMessageAddedEvent.emit({ message });
   }
