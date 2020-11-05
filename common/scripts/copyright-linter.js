@@ -14,9 +14,12 @@ const filePaths = process.argv.reduce((acc, cur) => {
   }
 }, false);
 
-const copyrightBanner = `/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/`;
+function getCopyrightBanner(useCRLF) {
+  const eol = (useCRLF) ? "\r\n" : "\n";
+  return `/*---------------------------------------------------------------------------------------------${eol}* Copyright (c) Bentley Systems, Incorporated. All rights reserved.${eol}* See LICENSE.md in the project root for license terms and full copyright notice.${eol}*--------------------------------------------------------------------------------------------*/${eol}`;
+}
 
-const longCopyright = "/?/[*](.|\n|\r\n)*?Copyright(.|\n|\r\n)*?[*]/";
+const longCopyright = "/?/[*](.|\n|\r\n)*?Copyright(.|\n|\r\n)*?[*]/(\n|\r\n)";
 const shortCopyright = "//\\s*Copyright.*\n";
 const oldCopyrightBanner = RegExp(
   `^(${longCopyright})|(${shortCopyright})`,
@@ -26,6 +29,8 @@ const oldCopyrightBanner = RegExp(
 if (filePaths) {
   filePaths.forEach((filePath) => {
     let fileContent = fs.readFileSync(filePath, { encoding: "utf8" });
+    const copyrightBanner = getCopyrightBanner(/\r\n/.test(fileContent))
+
     if (fileContent.startsWith(copyrightBanner))
       return;
 
@@ -34,7 +39,7 @@ if (filePaths) {
       copyrightBanner
     );
     if (!fileContent.includes(copyrightBanner)) {
-      fileContent = copyrightBanner + "\n" + fileContent;
+      fileContent = copyrightBanner + fileContent;
     }
     fs.writeFileSync(filePath, fileContent);
   });
