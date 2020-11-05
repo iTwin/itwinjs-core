@@ -37,7 +37,7 @@ import { ConcurrencyControl } from "./ConcurrencyControl";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
-import { Entity } from "./Entity";
+import { Entity, EntityClassType } from "./Entity";
 import { EventSink } from "./EventSink";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
@@ -709,7 +709,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Abandon pending changes in this iModel - also be sure to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase. */
+  /** Abandon pending changes in this iModel. You might also want to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase and you want to relinquish locks or codes that you acquired preemptively. */
   public abandonChanges(): void {
     if (this.isBriefcaseDb() && this.isPushEnabled) {
       this.concurrencyControl.abandonRequest();
@@ -742,7 +742,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb() && this.isPushEnabled) {
-      await this.concurrencyControl.lockSchema(requestContext);
+      await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
 
@@ -794,7 +794,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb() && this.isPushEnabled) {
-      await this.concurrencyControl.lockSchema(requestContext);
+      await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
 
@@ -1195,23 +1195,36 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
-     * @throws [[IModelError]] if the model is not found or cannot be loaded.
+     * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @throws [[IModelError]] if the model is not found, cannot be loaded, or fails validation when `modelClass` is specified.
      * @see tryGetModel
      */
-    public getModel<T extends Model>(modelId: Id64String): T {
-      return this._iModel.constructEntity<T>(this.getModelProps(modelId));
+    public getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T {
+      const model: T | undefined = this.tryGetModel(modelId, modelClass);
+      if (undefined === model) {
+        throw new IModelError(IModelStatus.NotFound, `Model=${modelId}`, Logger.logWarning, loggerCategory);
+      }
+      return model;
     }
 
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
-     * @returns The Model or `undefined` if the model is not found.
+     * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @returns The Model or `undefined` if the model is not found or fails validation when `modelClass` is specified.
      * @throws [[IModelError]] if the model cannot be loaded.
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModel
      */
-    public tryGetModel<T extends Model>(modelId: Id64String): T | undefined {
-      const modelProps = this.tryGetModelProps(modelId);
-      return undefined !== modelProps ? this._iModel.constructEntity<T>(modelProps) : undefined;
+    public tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined {
+      const modelProps = this.tryGetModelProps<T>(modelId);
+      if (undefined === modelProps) {
+        return undefined; // no Model with that modelId found
+      }
+      const model = this._iModel.constructEntity<T>(modelProps);
+      if (undefined === modelClass) {
+        return model; // modelClass was not specified, cannot call instanceof to validate
+      }
+      return model instanceof modelClass ? model : undefined;
     }
 
     /** Read the properties for a Model as a json string.
@@ -1224,7 +1237,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
       const modelJson = this.tryGetModelJson<T>(modelIdArg);
       if (undefined === modelJson) {
-        throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`);
+        throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`, Logger.logWarning, loggerCategory);
       }
       return modelJson;
     }
@@ -1249,29 +1262,31 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Get the sub-model of the specified Element.
      * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
-     * @throws [[IModelError]] if the sub-model is not found or cannot be loaded.
+     * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @throws [[IModelError]] if the sub-model is not found, cannot be loaded, or fails validation when `modelClass` is specified.
      * @see tryGetSubModel
      */
-    public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T {
-      const modeledElementProps = this._iModel.elements.getElementProps(modeledElementId);
+    public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
+      const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
       if (modeledElementProps.id === IModel.rootSubjectId) {
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggerCategory);
       }
-      return this.getModel<T>(modeledElementProps.id!);
+      return this.getModel<T>(modeledElementProps.id!, modelClass);
     }
 
     /** Get the sub-model of the specified Element.
      * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
-     * @returns The sub-model or `undefined` if the specified element does not have a sub-model.
+     * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @returns The sub-model or `undefined` if the specified element does not have a sub-model or fails validation when `modelClass` is specified.
      * @see getSubModel
      */
-    public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined {
+    public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
       if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id)) {
         return undefined;
       }
-      return this.tryGetModel<T>(modeledElementProps.id!);
+      return this.tryGetModel<T>(modeledElementProps.id!, modelClass);
     }
 
     /** Create a new model in memory.
@@ -1404,32 +1419,41 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @throws [[IModelError]] if the element is not found or cannot be loaded.
+     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @throws [[IModelError]] if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
      * @see tryGetElement
      */
-    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      const element = this.tryGetElement<T>(elementId);
+    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
+      const element = this.tryGetElement<T>(elementId, elementClass);
       if (undefined === element) {
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`, Logger.logWarning, loggerCategory);
       }
       return element;
     }
 
     /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @returns The element or `undefined` if the element is not found.
+     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @returns The element or `undefined` if the element is not found or fails validation when `elementClass` is specified.
      * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElement
      */
-    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
       if (typeof elementId === "string") {
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       } else if (elementId instanceof Code) {
         elementId = { code: elementId };
       }
-      const elementProps: T | undefined = this.tryGetElementJson(elementId);
-      return undefined !== elementProps ? this._iModel.constructEntity<T>(elementProps) : undefined;
+      const elementProps = this.tryGetElementJson<T>(elementId);
+      if (undefined === elementProps) {
+        return undefined; // no Element with that elementId found
+      }
+      const element = this._iModel.constructEntity<T>(elementProps);
+      if (undefined === elementClass) {
+        return element; // elementClass was not specified, cannot call instanceof to validate
+      }
+      return element instanceof elementClass ? element : undefined;
     }
 
     /** Query for the Id of the element that has a specified code.
@@ -2233,7 +2257,7 @@ export class BriefcaseDb extends IModelDb {
 
       const alreadyOpenEndTime = new Date();
       Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-      await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime);
+      briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime); // eslint-disable-line @typescript-eslint/no-floating-promises
       return briefcaseDb;
     }
 
@@ -2273,14 +2297,14 @@ export class BriefcaseDb extends IModelDb {
 
     const endTime = new Date();
     Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-    await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime);
+    briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
   }
 
   /** Log usage when opening the iModel */
-  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string, startTime: Date, endTime: Date) {
+  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string, startTime: Date, endTime: Date): Promise<void> {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.briefcase.getDebugInfo());
@@ -2300,15 +2324,14 @@ export class BriefcaseDb extends IModelDb {
       },
     );
     Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage/telemetry", () => this.briefcase.getDebugInfo());
-    await IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent);
+    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    try {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
-      await UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
-    } catch (err) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
-    }
+    Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
+    UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
+      .catch((err) => {
+        requestContext.enter();
+        Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
+      });
   }
 
   /** Close this IModel, if it is currently open.

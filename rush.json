@@ -22,7 +22,7 @@
   },
   "gitPolicy": {
     "allowedEmailRegExps": [
-      "[^@]+@users\\.noreply\\.github\\.com",
+      "[^@]+@users\\.noreply\\.github\\.com"
     ],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },

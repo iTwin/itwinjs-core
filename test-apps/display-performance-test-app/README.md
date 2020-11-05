@@ -7,9 +7,9 @@
 ## To run a performance test on a web browser:
 
 * Run the command "npm run start:web" to just run the backend. Then, go to a web browser and go to the site http:\\\\localhost:3000 to start the test.
-* Run the command "npm run test:chrome" to run the backend and automatically bring up a Google Chrome browser window to start the test. This will also automatically kill <b>ALL</b> Google Chrome browser windows once the test has completed.
-* Run the command "npm run test:edge" to run the backend and automatically bring up an Edge browser window to start the test. This will also automatically kill <b>ALL</b> Edge browser windows once the test has completed.
-* Run the command "npm run test:firefox" to run the backend and automatically bring up a FireFox browser window to start the test. This will also automatically kill <b>ALL</b> FireFox browser windows once the test has completed.
+* Run the command "npm run test:chrome" to run the backend and automatically bring up a Google Chrome browser window to start the test. This will also automatically kill **ALL** Google Chrome browser windows once the test has completed.
+* Run the command "npm run test:edge" to run the backend and automatically bring up an Edge browser window to start the test. This will also automatically kill **ALL** Edge browser windows once the test has completed.
+* Run the command "npm run test:firefox" to run the backend and automatically bring up a FireFox browser window to start the test. This will also automatically kill **ALL** FireFox browser windows once the test has completed.
 
 ## Options available for a performance test run:
 
@@ -99,6 +99,15 @@ You can specify any tile property that is part of the TileAdmin.Props interface.
 * requestTilesWithoutEdges - By default, when requesting tiles for a 3d view for which edge display is turned off, the response will include both surfaces and edges in the tile data. The tile deserialization code will then discard the edge data to save memory. This wastes bandwidth downloading unused data. Setting the following option to `true` will instead produce a response which omits all of the edge data, improving download speed and reducing space used in the browser cache. Default value: false
 * disableMagnification - If true, the TileAdmin will always subdivide tiles during refinement and never magnify them. Default value: false
 
+You can specify hilite and emphasis properties as follows:
+
+* red - The value from 0-255 for the red component of the hilite/emphasis color. Defaults to 35 for hilite, 0 for emphasis.
+* green - The value from 0-255 for the green component of the hilite/emphasis color. Defaults to 187 for hilite, 0 for emphasis.
+* blue - The value from 0-255 for the blue component of the hilite/emphasis color. Defaults to 252 for hilite, 0 for emphasis.
+* visibleRatio - The value from 0-1 to mix in the hilite/emphasis color on visible parts of the object(s). Defaults to 0.25 for hilite, 0.0 for emphasis.
+* hiddenRatio - The value from 0-1 to mix in the hilite/emphasis color on hidden parts of the object(s). Defauilts to 0.0 for both hilite and emphasis.
+* silhouette - A Value of 0, 1, or 2 for the width of the hilite/emphasis silhouette. Defaults to 1 for hilite and 2 for emphasis.
+
 If any settings are not specified, the program will not change these settings. For example: if no view flags were specified, the program will not specifically alter the view flags (though the view flags may be altered depending on what settings the chosen view has applied or if a specific display style has been chosen that affects the view flags).
 
 Specifying any individual view flag, render option, or tile property will not overwrite another individual setting. For example: if the visibleEdges view flag is set to true for all tests and an individual test sets the hiddenEdges view flag to true, this will not overwrite the previous setting of true for the visibleEdges view flag.
@@ -113,6 +122,7 @@ The json config file allows you to specify settings for the entire test run, for
 
 Below is an example json config file:
 
+```json
 {
   "outputName": "performanceResults.csv",
   "outputPath": "D:/output/performanceData/",
@@ -137,7 +147,7 @@ Below is an example json config file:
           "renderOptions": {
             "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"],
             "displaySolarShadows": true
-		      },
+          },
           "tileProps": {
             "disableMagnification": false,
             "elideEmptyChildContentRequests": false,
@@ -243,6 +253,7 @@ Below is an example json config file:
     }
   ]
 }
+```
 
 ## Performance file output
 
@@ -261,6 +272,7 @@ The performance data file should always contain the following column headers:
 * Render Options - a string representation of any render options that are used
 * Tile Props - a string representation of any tile properties that are used
 * Bkg Map Props - a string representation of what background map properties are used
+* Other Props - a string representation of other miscellaneous properties that are set including hilite/emphasis
 
  The performance data file may contain any or all of the below column headers. These columns will NOT appear if the 'minimize' flag has been set to true in the config json file. If the webgl extension EXT_disjoint_timer_query is available (and therefore GPU data is able to be gathered), there will be one column with the given name and a second column containing "GPU-" + the given name. If GPU data is not available, there will only be one column with the given name.
 
@@ -362,3 +374,8 @@ The 'ReadPixels Selector' column contains a string representation of the Pixel.S
 * +feature - Pixel.Selector.Feature is used; this reads the feature information for each pixel
 * +geom+dist - Pixel.Selector.GeometryAndDistance is used; this reads the geometry information (i.e. if an element is linear, planar, surface, etc.) and the distance (i.e. depth) information
 * +feature+geom+dist - Pixel.Selector.All is used; this reads both the Feature and the GeometryAndDistance information
+
+The 'Other Props' column contains a string representation of other miscellaneous properties. The column entry will be blank if none were tested. The string representation may be any of the following:
+
+* +hXXXXXXXXX - hilite was modified; XXXXXXXXX represents the modification of the hilite properties in base 36 notation.
+* +eXXXXXXXXX - emphasis was modified; XXXXXXXXX represents the modification of the emphasis properties in base 36 notation.

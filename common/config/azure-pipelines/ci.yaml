@@ -1,8 +1,24 @@
 # iModel.js CI Build
 
-trigger:
-  - master
-  - release/*
+trigger: none
+
+pr:
+  drafts: false
+  branches:
+    include:
+    - master
+    - releases/*
+  paths:
+    include:
+    - common/config/azure-pipelines/ci.yaml
+
+schedules:
+  - cron: "0 5 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+      - master
+      - releases/*
 
 jobs:
   - template: jobs/ci-core.yaml
