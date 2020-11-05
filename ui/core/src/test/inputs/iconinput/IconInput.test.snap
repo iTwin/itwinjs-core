@@ -4,7 +4,7 @@ exports[`IconInput renders correctly 1`] = `
 <div
   className="core-iconInput-container"
 >
-  <Input />
+  <ForwardRef(Input) />
   <div
     className="core-iconInput-icon"
   >

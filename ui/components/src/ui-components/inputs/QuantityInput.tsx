@@ -32,51 +32,53 @@ export interface QuantityProps extends CommonProps {
 /** Input control that allows users to input a quantity and show the formatted string that represents the value.
  * @beta
  */
-export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange }: QuantityProps) {
-  const [formatterSpec, setFormatterSpec] = React.useState(() => IModelApp.quantityFormatter.findFormatterSpecByQuantityType(quantityType));
-  const [parserSpec, setParserSpec] = React.useState(() => IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));
+export const QuantityInput = React.forwardRef<HTMLInputElement, QuantityProps>(
+  function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange }, ref) {
+    const [formatterSpec, setFormatterSpec] = React.useState(() => IModelApp.quantityFormatter.findFormatterSpecByQuantityType(quantityType));
+    const [parserSpec, setParserSpec] = React.useState(() => IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));
 
-  const formatValue = React.useCallback((value: number) => {
-    // istanbul ignore else
-    if (formatterSpec) {
-      return IModelApp.quantityFormatter.formatQuantity(value, formatterSpec);
-    }
-    // istanbul ignore next
-    return value.toFixed(2);
-  }, [formatterSpec]);
-
-  const parseString = (userInput: string): ParseResults => {
-    // istanbul ignore else
-    if (parserSpec) {
-      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, parserSpec);
+    const formatValue = React.useCallback((value: number) => {
       // istanbul ignore else
-      if (parseResult.status === QuantityStatus.Success) {
-        return { value: parseResult.value };
-      } else {
-        return { parseError: `${UiComponents.translate("QuantityInput.NoParserDefined")}${parseResult.status}` };
+      if (formatterSpec) {
+        return IModelApp.quantityFormatter.formatQuantity(value, formatterSpec);
       }
-    }
-    // istanbul ignore next
-    return { parseError: UiComponents.translate("QuantityInput.NoParserDefined") };
-  };
+      // istanbul ignore next
+      return value.toFixed(2);
+    }, [formatterSpec]);
 
-  const handleQuantityChange = React.useCallback((newValue: number) => {
-    onQuantityChange && onQuantityChange(newValue);
-  }, [onQuantityChange]);
-  const classNames = classnames(className, "components-quantity-input");
-
-  React.useEffect(() => {
-    const handleUnitSystemChanged = ((): void => {
-      setFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(quantityType));
-      setParserSpec(IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));
-    });
-
-    IModelApp.quantityFormatter.onActiveUnitSystemChanged.addListener(handleUnitSystemChanged);
-    return () => {
-      IModelApp.quantityFormatter.onActiveUnitSystemChanged.removeListener(handleUnitSystemChanged);
+    const parseString = (userInput: string): ParseResults => {
+      // istanbul ignore else
+      if (parserSpec) {
+        const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, parserSpec);
+        // istanbul ignore else
+        if (parseResult.status === QuantityStatus.Success) {
+          return { value: parseResult.value };
+        } else {
+          return { parseError: `${UiComponents.translate("QuantityInput.NoParserDefined")}${parseResult.status}` };
+        }
+      }
+      // istanbul ignore next
+      return { parseError: UiComponents.translate("QuantityInput.NoParserDefined") };
     };
-  }, [quantityType]);
 
-  return <ParsedInput data-testid="components-quantity-input" style={style} className={classNames}
-    onChange={handleQuantityChange} initialValue={initialValue} readonly={readonly} formatValue={formatValue} parseString={parseString} />
-}
+    const handleQuantityChange = React.useCallback((newValue: number) => {
+      onQuantityChange && onQuantityChange(newValue);
+    }, [onQuantityChange]);
+    const classNames = classnames(className, "components-quantity-input");
+
+    React.useEffect(() => {
+      const handleUnitSystemChanged = ((): void => {
+        setFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(quantityType));
+        setParserSpec(IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));
+      });
+
+      IModelApp.quantityFormatter.onActiveUnitSystemChanged.addListener(handleUnitSystemChanged);
+      return () => {
+        IModelApp.quantityFormatter.onActiveUnitSystemChanged.removeListener(handleUnitSystemChanged);
+      };
+    }, [quantityType]);
+
+    return <ParsedInput data-testid="components-quantity-input" ref={ref} style={style} className={classNames}
+      onChange={handleQuantityChange} initialValue={initialValue} readonly={readonly} formatValue={formatValue} parseString={parseString} />
+  }
+);

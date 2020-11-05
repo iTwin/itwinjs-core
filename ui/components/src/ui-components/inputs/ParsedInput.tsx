@@ -31,80 +31,82 @@ export interface ParsedInputProps extends CommonProps {
 /** Generic Input component that requires formatting and parsing functions to be passed in as props.
  * @beta
  */
-export function ParsedInput({ initialValue, formatValue, parseString, readonly, className, style, onChange }: ParsedInputProps) {
-  const currentValueRef = React.useRef(initialValue);
-  const isMountedRef = React.useRef(false);
-  const lastFormattedValueRef = React.useRef(formatValue(initialValue));
-  const [formattedValue, setFormattedValue] = React.useState(() => lastFormattedValueRef.current);
-  const [hasBadInput, setHasBadInput] = React.useState(false);
+export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
+  function ParsedInput({ initialValue, formatValue, parseString, readonly, className, style, onChange }, ref) {
+    const currentValueRef = React.useRef(initialValue);
+    const isMountedRef = React.useRef(false);
+    const lastFormattedValueRef = React.useRef(formatValue(initialValue));
+    const [formattedValue, setFormattedValue] = React.useState(() => lastFormattedValueRef.current);
+    const [hasBadInput, setHasBadInput] = React.useState(false);
 
-  React.useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    }
-  }, [])
+    React.useEffect(() => {
+      isMountedRef.current = true;
+      return () => {
+        isMountedRef.current = false;
+      }
+    }, [])
 
-  // See if new initialValue props have changed since component mounted
-  React.useEffect(() => {
-    // istanbul ignore else
-    if (initialValue !== currentValueRef.current) {
-      currentValueRef.current = initialValue;
-      lastFormattedValueRef.current = formatValue(initialValue);
-      setFormattedValue(lastFormattedValueRef.current);
-      setHasBadInput(false);
-    }
-  }, [formatValue, initialValue])
-
-  const handleInputChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormattedValue(event.currentTarget.value);
-  }, [])
-
-  const updateQuantityValueFromString = React.useCallback((strVal: string) => {
-    if (lastFormattedValueRef.current === strVal)
-      return;
-
-    const parseResults = (parseString(strVal));
-    // istanbul ignore else
-    if (!parseResults.parseError) {
+    // See if new initialValue props have changed since component mounted
+    React.useEffect(() => {
       // istanbul ignore else
-      if (undefined !== parseResults.value) {
+      if (initialValue !== currentValueRef.current) {
+        currentValueRef.current = initialValue;
+        lastFormattedValueRef.current = formatValue(initialValue);
+        setFormattedValue(lastFormattedValueRef.current);
+        setHasBadInput(false);
+      }
+    }, [formatValue, initialValue])
+
+    const handleInputChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      setFormattedValue(event.currentTarget.value);
+    }, [])
+
+    const updateQuantityValueFromString = React.useCallback((strVal: string) => {
+      if (lastFormattedValueRef.current === strVal)
+        return;
+
+      const parseResults = (parseString(strVal));
+      // istanbul ignore else
+      if (!parseResults.parseError) {
         // istanbul ignore else
-        if (currentValueRef.current !== parseResults.value) {
-          currentValueRef.current = parseResults.value as number;
-          lastFormattedValueRef.current = formatValue(currentValueRef.current);
-          onChange && onChange(currentValueRef.current);
+        if (undefined !== parseResults.value) {
           // istanbul ignore else
-          if (isMountedRef.current) {
-            setFormattedValue(lastFormattedValueRef.current);
-            setHasBadInput(false);
+          if (currentValueRef.current !== parseResults.value) {
+            currentValueRef.current = parseResults.value as number;
+            lastFormattedValueRef.current = formatValue(currentValueRef.current);
+            onChange && onChange(currentValueRef.current);
+            // istanbul ignore else
+            if (isMountedRef.current) {
+              setFormattedValue(lastFormattedValueRef.current);
+              setHasBadInput(false);
+            }
           }
         }
+      } else {
+        setHasBadInput(true);
       }
-    } else {
-      setHasBadInput(true);
-    }
-  }, [formatValue, onChange, parseString]);
+    }, [formatValue, onChange, parseString]);
 
-  const handleOnBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
-    updateQuantityValueFromString(event.target.value);
-  }, [updateQuantityValueFromString]);
+    const handleOnBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+      updateQuantityValueFromString(event.target.value);
+    }, [updateQuantityValueFromString]);
 
-  function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
-    // istanbul ignore else
-    if (event.key === SpecialKey.Enter) {
-      updateQuantityValueFromString(event.currentTarget.value);
-      event.preventDefault();
+    function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
+      // istanbul ignore else
+      if (event.key === SpecialKey.Enter) {
+        updateQuantityValueFromString(event.currentTarget.value);
+        event.preventDefault();
+      }
+      if (event.key === SpecialKey.Escape) {
+        setFormattedValue(formatValue(currentValueRef.current));
+        setHasBadInput(false);
+        event.preventDefault();
+      }
     }
-    if (event.key === SpecialKey.Escape) {
-      setFormattedValue(formatValue(currentValueRef.current));
-      setHasBadInput(false);
-      event.preventDefault();
-    }
+
+    const classNames = classnames(className, "components-parsed-input", hasBadInput && "components-parsed-input-has-error");
+
+    return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={onInputKeyDown} onBlur={handleOnBlur}
+      onChange={handleInputChange} value={formattedValue} disabled={readonly} />
   }
-
-  const classNames = classnames(className, "components-parsed-input", hasBadInput && "components-parsed-input-has-error");
-
-  return <Input data-testid="components-parsed-input" style={style} className={classNames} onKeyDown={onInputKeyDown} onBlur={handleOnBlur}
-    onChange={handleInputChange} value={formattedValue} disabled={readonly} />
-}
+);
