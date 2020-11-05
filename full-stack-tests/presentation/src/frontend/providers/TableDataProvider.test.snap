@@ -39,7 +39,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
@@ -86,7 +86,7 @@ Array [
           },
           "value": Object {
             "displayValue": "BisCore.DictionaryModel",
-            "value": 16,
+            "value": "0x10",
             "valueFormat": 0,
           },
         },
@@ -108,7 +108,7 @@ Array [
           },
           "value": Object {
             "displayValue": "Properties_60InstancesWithUrl2",
-            "value": 28,
+            "value": "0x1c",
             "valueFormat": 0,
           },
         },
@@ -135,7 +135,7 @@ Array [
           },
           "value": Object {
             "displayValue": "Properties_60InstancesWithUrl2",
-            "value": 28,
+            "value": "0x1c",
             "valueFormat": 0,
           },
         },
@@ -157,7 +157,7 @@ Array [
           },
           "value": Object {
             "displayValue": "BisCore.DictionaryModel",
-            "value": 16,
+            "value": "0x10",
             "valueFormat": 0,
           },
         },

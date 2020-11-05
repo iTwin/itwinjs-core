@@ -6,8 +6,8 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
 import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
 import {
-  imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
-  SnapshotConnection, Tool, Viewport, ViewState,
+  imageBufferToPngDataUrl, IModelApp, IModelConnection, InteractiveEditingSession, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
+  Tool, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
 import { ClassificationsPanel } from "./ClassificationsPanel";
@@ -24,6 +24,7 @@ import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
+import { openStandaloneIModel } from "./openStandaloneIModel";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -394,7 +395,7 @@ export class Viewer extends Window {
   }
 
   private async clearViews(): Promise<void> {
-    await this._imodel.close();
+    await this.closeIModel();
     this.views.clear();
   }
 
@@ -404,11 +405,11 @@ export class Viewer extends Window {
   }
 
   private async resetIModel(filename: string): Promise<void> {
-    let newIModel: SnapshotConnection;
+    let newIModel: IModelConnection;
     const sameFile = filename === this._imodel.getRpcProps().key;
     if (!sameFile) {
       try {
-        newIModel = await SnapshotConnection.openFile(filename);
+        newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
       } catch (err) {
         alert(err.toString());
         return;
@@ -421,7 +422,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await SnapshotConnection.openFile(filename);
+      newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
 
     this._imodel = newIModel!;
     await this.buildViewList();
@@ -443,10 +444,18 @@ export class Viewer extends Window {
   private async openIModel(filename: string): Promise<void> {
     try {
       await this.resetIModel(filename);
-      setTitle(filename);
+      setTitle(this._imodel);
     } catch (_) {
       alert("Error - could not open file.");
     }
+  }
+
+  private async closeIModel(): Promise<void> {
+    const session = InteractiveEditingSession.get(this._imodel);
+    if (session)
+      await session.end();
+
+    await this._imodel.close();
   }
 
   public onFocus(): void {
@@ -483,7 +492,7 @@ export class Viewer extends Window {
   public onClosed(): void {
     if (undefined === IModelApp.viewManager.selectedView) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
-      this._imodel.close().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // eslint-disable-line @typescript-eslint/no-floating-promises
+      this.closeIModel().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
