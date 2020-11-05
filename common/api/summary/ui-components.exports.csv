@@ -293,7 +293,7 @@ alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 beta;PagedTreeNodeLoader
 public;PageOptions
-beta;ParsedInput({ initialValue, formatValue, parseString, readonly, className, style, onChange }: ParsedInputProps): JSX.Element
+beta;ParsedInput: React.ForwardRefExoticComponent
 beta;ParsedInputProps 
 alpha;PlaybackSettings
 alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
@@ -351,7 +351,7 @@ public;PropertyValueRendererContext
 public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
-beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange }: QuantityProps): JSX.Element
+beta;QuantityInput: React.ForwardRefExoticComponent
 beta;QuantityProps 
 public;ReactDataGridColumn 
 public;ResultSelector 

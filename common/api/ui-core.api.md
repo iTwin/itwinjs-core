@@ -63,10 +63,17 @@ export class Annulus {
 }
 
 // @beta
+export type AsyncGetAutoSuggestDataFunc = (value: string) => Promise<AutoSuggestData[]>;
+
+// @beta
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
     constructor(props: AutoSuggestProps);
+    // @internal (undocumented)
+    componentDidMount(): void;
     // (undocumented)
     componentDidUpdate(prevProps: AutoSuggestProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
     }
@@ -84,14 +91,13 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
     getLabel?: (value: string | undefined) => string;
-    // @deprecated
-    getSuggestions?: GetAutoSuggestDataFunc;
+    getSuggestions?: AsyncGetAutoSuggestDataFunc;
     onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onSuggestionSelected: (selected: AutoSuggestData) => void;
-    options: AutoSuggestData[] | GetAutoSuggestDataFunc;
+    options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
     setFocus?: boolean;
     value?: string;
 }

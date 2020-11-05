@@ -2991,7 +2991,7 @@ export interface PageOptions {
 }
 
 // @beta
-export function ParsedInput({ initialValue, formatValue, parseString, readonly, className, style, onChange }: ParsedInputProps): JSX.Element;
+export const ParsedInput: React.ForwardRefExoticComponent<ParsedInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @beta
 export interface ParsedInputProps extends CommonProps {
@@ -3447,7 +3447,7 @@ export interface PropertyViewProps extends SharedRendererProps {
 }
 
 // @beta
-export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange }: QuantityProps): JSX.Element;
+export const QuantityInput: React.ForwardRefExoticComponent<QuantityProps & React.RefAttributes<HTMLInputElement>>;
 
 // @beta
 export interface QuantityProps extends CommonProps {

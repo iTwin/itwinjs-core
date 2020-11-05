@@ -1838,6 +1838,11 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
+// @public
+export type EntityClassType<T> = Function & {
+    prototype: T;
+};
+
 // @internal
 export class EventSink implements IDisposable {
     constructor(id: string);
@@ -2514,7 +2519,7 @@ export namespace IModelDb {
         deleteElement(ids: Id64Arg): void;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
-        getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
+        getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T;
         // @internal
         getElementJson<T extends ElementProps>(elementIdArg: string): T;
         getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
@@ -2528,7 +2533,7 @@ export namespace IModelDb {
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal
         queryLastModifiedTime(elementId: Id64String): string;
-        tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
+        tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined;
         tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
         updateElement(elProps: ElementProps): void;
@@ -2538,17 +2543,17 @@ export namespace IModelDb {
         constructor(_iModel: IModelDb);
         createModel<T extends Model>(modelProps: ModelProps): T;
         deleteModel(ids: Id64Arg): void;
-        getModel<T extends Model>(modelId: Id64String): T;
+        getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T;
         // @internal
         getModelJson(modelIdArg: string): string;
         getModelProps<T extends ModelProps>(modelId: Id64String): T;
-        getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T;
+        getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T;
         insertModel(props: ModelProps): Id64String;
         // @internal
         queryLastModifiedTime(modelId: Id64String): string;
-        tryGetModel<T extends Model>(modelId: Id64String): T | undefined;
+        tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
         tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined;
-        tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined;
+        tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
         updateModel(props: UpdateModelOptions): void;
     }
     // @internal

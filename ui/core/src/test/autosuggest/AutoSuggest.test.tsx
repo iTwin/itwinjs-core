@@ -8,6 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { AutoSuggest, AutoSuggestData } from "../../ui-core";
+import TestUtils from "../TestUtils";
 
 describe("AutoSuggest", () => {
   const options: AutoSuggestData[] = [
@@ -57,7 +58,7 @@ describe("AutoSuggest", () => {
     wrapper.unmount();
   });
 
-  it("should open suggestions when typing", () => {
+  it("should open suggestions when typing", async () => {
     const outerNode = document.createElement("div");
     document.body.appendChild(outerNode);
 
@@ -73,12 +74,14 @@ describe("AutoSuggest", () => {
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
+    await TestUtils.flushAsyncOperations();
     wrapper.update();
 
     let li = wrapper.find("li");
     expect(li.length).to.eq(1);
 
     input.simulate("change", { target: { value: "lab" } });
+    await TestUtils.flushAsyncOperations();
     wrapper.update();
 
     li = wrapper.find("li");
@@ -94,7 +97,7 @@ describe("AutoSuggest", () => {
     document.body.removeChild(outerNode);
   });
 
-  it("should call onSuggestionSelected with clicked suggestion", () => {
+  it("should call onSuggestionSelected with clicked suggestion", async () => {
     const outerNode = document.createElement("div");
     document.body.appendChild(outerNode);
 
@@ -110,6 +113,7 @@ describe("AutoSuggest", () => {
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
+    await TestUtils.flushAsyncOperations();
     wrapper.update();
 
     const li = wrapper.find("li");
@@ -131,6 +135,10 @@ describe("AutoSuggest", () => {
     });
   };
 
+  const getSuggestionsAsync = async (value: string): Promise<AutoSuggestData[]> => {
+    return Promise.resolve(getSuggestions(value));
+  }
+
   const getLabel = (value: string | undefined): string => {
     let label = "";
     const entry = options.find((data: AutoSuggestData) => data.value === value);
@@ -139,7 +147,7 @@ describe("AutoSuggest", () => {
     return label;
   };
 
-  it("should support options function and getLabel", () => {
+  it("should support options function and getLabel", async () => {
     const outerNode = document.createElement("div");
     document.body.appendChild(outerNode);
 
@@ -155,6 +163,7 @@ describe("AutoSuggest", () => {
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
+    await TestUtils.flushAsyncOperations();
     wrapper.update();
 
     const li = wrapper.find("li");
@@ -164,12 +173,12 @@ describe("AutoSuggest", () => {
     document.body.removeChild(outerNode);
   });
 
-  it("should support getSuggestion prop (deprecated)", () => {
+  it("should support getSuggestions prop", async () => {
     const outerNode = document.createElement("div");
     document.body.appendChild(outerNode);
 
     const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={[]} getSuggestions={getSuggestions} onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
+    const wrapper = mount(<AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
     const autoSuggest = wrapper.find(AutoSuggest);
     expect(autoSuggest.length).to.eq(1);
 
@@ -180,6 +189,7 @@ describe("AutoSuggest", () => {
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
+    await TestUtils.flushAsyncOperations();
     wrapper.update();
 
     const li = wrapper.find("li");
@@ -189,7 +199,7 @@ describe("AutoSuggest", () => {
     document.body.removeChild(outerNode);
   });
 
-  it("should log Error when options function provided but not getLabel", () => {
+  it("should log Error when options function provided but not getLabel", async () => {
     const outerNode = document.createElement("div");
     document.body.appendChild(outerNode);
 
@@ -206,10 +216,38 @@ describe("AutoSuggest", () => {
     inputNode.focus();
 
     input.simulate("change", { target: { value: "abc" } });
+    await TestUtils.flushAsyncOperations();
     wrapper.update();
 
     const li = wrapper.find("li");
     expect(li.length).to.eq(1);
+
+    wrapper.unmount();
+    document.body.removeChild(outerNode);
+
+    spyLogger.called.should.true;
+    (Logger.logError as any).restore();
+  });
+
+  it("should log Error when no options or getSuggestions provided", async () => {
+    const outerNode = document.createElement("div");
+    document.body.appendChild(outerNode);
+
+    const spyMethod = sinon.spy();
+    const spyLogger = sinon.spy(Logger, "logError");
+    const wrapper = mount(<AutoSuggest onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
+    const autoSuggest = wrapper.find(AutoSuggest);
+    expect(autoSuggest.length).to.eq(1);
+
+    const input = autoSuggest.find("input[type='text']");
+    expect(input.length).to.eq(1);
+
+    const inputNode = getInputElement(input);
+    inputNode.focus();
+
+    input.simulate("change", { target: { value: "abc" } });
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
 
     wrapper.unmount();
     document.body.removeChild(outerNode);

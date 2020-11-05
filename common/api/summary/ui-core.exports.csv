@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 internal;AnnularSector
 internal;Annulus
+beta;AsyncGetAutoSuggestDataFunc = (value: string) => Promise
 beta;AutoSuggest 
 beta;AutoSuggestData
 beta;AutoSuggestProps 
