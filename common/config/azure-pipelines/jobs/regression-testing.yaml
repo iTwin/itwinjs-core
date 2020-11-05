@@ -6,15 +6,14 @@
 #
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
-trigger: none
-
-schedules:
-- cron: "0 5 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - master
-    - releases/*
+trigger:
+  schedules:
+  - cron: "0 0 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+      - master
+      - releases/*
 
 jobs:
 - template: ci-core.yaml

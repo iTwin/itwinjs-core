@@ -10,8 +10,8 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, RpcManager,
-  SnapshotIModelRpcInterface,
+  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition,
+  RpcManager, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -85,7 +85,16 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 }
 
 export const getRpcInterfaces = (appType: "native" | "browser"): RpcInterfaceDefinition[] => {
-  const rpcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
+  const rpcs: RpcInterfaceDefinition[] = [
+    DtaRpcInterface,
+    Editor3dRpcInterface,
+    IModelReadRpcInterface,
+    IModelTileRpcInterface,
+    IModelWriteRpcInterface,
+    SnapshotIModelRpcInterface,
+    StandaloneIModelRpcInterface,
+  ];
+
   if ("native" === appType)
     rpcs.push(NativeAppRpcInterface);
 
@@ -112,6 +121,9 @@ const setupStandaloneConfiguration = () => {
 
   if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
     configuration.signInForStandalone = true;
+
+  if (undefined !== process.env.SVT_READ_WRITE)
+    configuration.openReadWrite = true;
 
   if (undefined !== process.env.SVT_DISABLE_INSTANCING)
     configuration.disableInstancing = true;

@@ -100,6 +100,7 @@ import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
+import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
@@ -174,7 +175,6 @@ import { TextureFlags } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
-import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
@@ -2571,7 +2571,7 @@ export namespace IModelDb {
         // (undocumented)
         requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array>;
         // (undocumented)
-        requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps>;
+        requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps>;
     }
     export class Views {
         // @internal
