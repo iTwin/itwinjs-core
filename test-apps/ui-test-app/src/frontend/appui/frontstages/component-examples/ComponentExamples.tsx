@@ -5,7 +5,7 @@
 import "./ComponentExamples.scss";
 import * as React from "react";
 import { CommonProps, Toggle, VerticalTabs } from "@bentley/ui-core";
-import { ColorTheme, MessageManager, MessagePopup, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
+import { ColorTheme, MessageManager, MessageRenderer, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
 import { ComponentExamplesProvider } from "./ComponentExamplesProvider";
 
 export interface ComponentExampleCategory {
@@ -80,7 +80,7 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
           );
         })}
       </div>
-      <MessagePopup />
+      <MessageRenderer />
     </div>
   );
 };

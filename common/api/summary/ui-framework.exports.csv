@@ -323,8 +323,8 @@ public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
 public;MessageManager
-beta;MessagePopup(props: MessagePopupProps): JSX.Element | null
-beta;MessagePopupProps 
+beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
+beta;MessageRendererProps 
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager

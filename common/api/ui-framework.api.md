@@ -3457,10 +3457,10 @@ export class MessageManager {
 }
 
 // @beta
-export function MessagePopup(props: MessagePopupProps): JSX.Element | null;
+export function MessageRenderer(props: MessageRendererProps): JSX.Element | null;
 
 // @beta
-export interface MessagePopupProps extends CommonProps {
+export interface MessageRendererProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
     // (undocumented)

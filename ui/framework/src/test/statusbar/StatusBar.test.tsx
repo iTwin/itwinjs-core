@@ -16,7 +16,7 @@ import {
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 import { MessageManager } from "../../ui-framework/messages/MessageManager";
-import { StatusMessageRenderer } from "../../ui-framework/messages/StatusMessageRenderer";
+import { StatusMessagesContainer } from "../../ui-framework/messages/StatusMessagesContainer";
 
 describe("StatusBar", () => {
 
@@ -239,7 +239,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusMessageRenderer should render empty correctly", () => {
-    const wrapper = mount(<StatusMessageRenderer
+    const wrapper = mount(<StatusMessagesContainer
       messages={[]}
       activityMessageInfo={undefined}
       isActivityMessageVisible={false}

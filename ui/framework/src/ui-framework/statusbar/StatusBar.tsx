@@ -15,7 +15,7 @@ import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
 import { StatusMessage } from "../messages/StatusMessageManager";
-import { StatusMessageRenderer } from "../messages/StatusMessageRenderer";
+import { StatusMessagesContainer } from "../messages/StatusMessagesContainer";
 
 // cspell:ignore safearea
 
@@ -168,7 +168,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       return null;
 
     return (
-      <StatusMessageRenderer
+      <StatusMessagesContainer
         messages={this.state.messages}
         activityMessageInfo={this.state.activityMessageInfo}
         isActivityMessageVisible={this.state.isActivityMessageVisible}

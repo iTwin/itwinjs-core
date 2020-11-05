@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/z-index";
 
-.uifw-message-popup {
+.uifw-message-renderer {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
@@ -20,7 +20,7 @@
 }
 
 @media screen and (min-width: 401px) {
-  .uifw-message-popup {
+  .uifw-message-renderer {
     min-width: 400px;
     max-width: 640px;
     margin-top: 24px;

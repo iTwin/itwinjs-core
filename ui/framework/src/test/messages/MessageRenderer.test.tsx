@@ -7,10 +7,10 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { Message, MessageButton, MessageHyperlink, MessageProgress } from "@bentley/ui-ninezone";
-import { ActivityMessage, AppNotificationManager, MessageManager, MessagePopup, StickyMessage, ToastMessage } from "../../ui-framework";
+import { ActivityMessage, AppNotificationManager, MessageManager, MessageRenderer, StickyMessage, ToastMessage } from "../../ui-framework";
 import { mount, TestUtils } from "../TestUtils";
 
-describe("MessagePopup", () => {
+describe("MessageRenderer", () => {
 
   let notifications: AppNotificationManager;
 
@@ -28,8 +28,8 @@ describe("MessagePopup", () => {
     MessageManager.activeMessageManager.initialize();
   });
 
-  it("Popup should render a Toast  message", () => {
-    const wrapper = mount(<MessagePopup />);
+  it("Renderer should render a Toast  message", () => {
+    const wrapper = mount(<MessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Toast);
     notifications.outputMessage(details);
@@ -41,8 +41,8 @@ describe("MessagePopup", () => {
     wrapper.unmount();
   });
 
-  it("Popup should render a Sticky  message", () => {
-    const wrapper = mount(<MessagePopup />);
+  it("Renderer should render a Sticky  message", () => {
+    const wrapper = mount(<MessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Sticky);
     notifications.outputMessage(details);
@@ -57,7 +57,7 @@ describe("MessagePopup", () => {
   it("Sticky message should close on button click", () => {
     const fakeTimers = sinon.useFakeTimers();
     const spy = sinon.spy();
-    const wrapper = mount(<MessagePopup closeMessage={spy} />);
+    const wrapper = mount(<MessageRenderer closeMessage={spy} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     notifications.outputMessage(details);
@@ -75,8 +75,8 @@ describe("MessagePopup", () => {
     wrapper.unmount();
   });
 
-  it("Popup should render an Activity message", () => {
-    const wrapper = mount(<MessagePopup cancelActivityMessage={() => { }} dismissActivityMessage={() => { }} />);
+  it("Renderer should render an Activity message", () => {
+    const wrapper = mount(<MessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={() => { }} />);
 
     const details = new ActivityMessageDetails(true, true, false);
     notifications.setupActivityMessage(details);
@@ -97,7 +97,7 @@ describe("MessagePopup", () => {
 
   it("Activity message should be canceled", () => {
     const spy = sinon.spy();
-    const wrapper = mount(<MessagePopup cancelActivityMessage={spy} dismissActivityMessage={() => { }} />);
+    const wrapper = mount(<MessageRenderer cancelActivityMessage={spy} dismissActivityMessage={() => { }} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
@@ -119,7 +119,7 @@ describe("MessagePopup", () => {
 
   it("Activity message should be dismissed & restored", () => {
     const spy = sinon.spy();
-    const wrapper = mount(<MessagePopup cancelActivityMessage={() => { }} dismissActivityMessage={spy} />);
+    const wrapper = mount(<MessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={spy} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
@@ -146,8 +146,8 @@ describe("MessagePopup", () => {
     wrapper.unmount();
   });
 
-  it("Popup should clear messages", () => {
-    const wrapper = mount(<MessagePopup />);
+  it("Renderer should clear messages", () => {
+    const wrapper = mount(<MessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     notifications.outputMessage(details);

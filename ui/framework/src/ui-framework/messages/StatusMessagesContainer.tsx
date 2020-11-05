@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import "./StatusMessageRenderer.scss";
+import "./StatusMessagesContainer.scss";
 import * as React from "react";
 import classnames from "classnames";
 import ReactResizeDetector from "react-resize-detector";
@@ -17,10 +17,10 @@ import { ToastMessage } from "./ToastMessage";
 import { StickyMessage } from "./StickyMessage";
 import { ActivityMessage } from "./ActivityMessage";
 
-/** Properties for [[StatusMessageRenderer]] component
+/** Properties for [[StatusMessagesContainer]] component
  * @internal
  */
-export interface StatusMessageRendererProps {
+export interface StatusMessagesContainerProps {
   messages: ReadonlyArray<StatusMessage>;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
   isActivityMessageVisible: boolean;
@@ -33,7 +33,7 @@ export interface StatusMessageRendererProps {
 /** Component that renders one or more Toast, Sticky or Activity messages
  * @internal
  */
-export function StatusMessageRenderer(props: StatusMessageRendererProps) {
+export function StatusMessagesContainer(props: StatusMessagesContainerProps) {
   if (!(props.activityMessageInfo && props.isActivityMessageVisible) && props.messages.length === 0)
     return null;
 

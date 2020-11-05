@@ -6,18 +6,18 @@
  * @module Notification
  */
 
-import "./MessagePopup.scss";
+import "./MessageRenderer.scss";
 import * as React from "react";
 import classnames from "classnames";
-import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
+import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "./MessageManager";
 import { CommonProps } from "@bentley/ui-core";
 import { StatusMessage } from "./StatusMessageManager";
-import { StatusMessageRenderer } from "./StatusMessageRenderer";
+import { StatusMessagesContainer } from "./StatusMessagesContainer";
 
-/** Properties for [[MessagePopup]] component
+/** Properties for [[MessageRenderer]] component
  * @beta
  */
-export interface MessagePopupProps extends CommonProps {
+export interface MessageRendererProps extends CommonProps {
   closeMessage?: (id: string) => void;
   cancelActivityMessage?: () => void;
   dismissActivityMessage?: () => void;
@@ -26,7 +26,7 @@ export interface MessagePopupProps extends CommonProps {
 /** Message Popup React component that renders one or more Toast or Sticky messages and an Activity message
  * @beta
  */
-export function MessagePopup(props: MessagePopupProps) {
+export function MessageRenderer(props: MessageRendererProps) {
   const [messages, setMessages] = React.useState<ReadonlyArray<StatusMessage>>(MessageManager.activeMessageManager.messages);
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
   const [isActivityMessageVisible, setIsActivityMessageVisible] = React.useState(false);
@@ -87,8 +87,8 @@ export function MessagePopup(props: MessagePopupProps) {
     return null;
 
   return (
-    <div className={classnames("uifw-message-popup", props.className)} style={props.style}>
-      <StatusMessageRenderer
+    <div className={classnames("uifw-message-renderer", props.className)} style={props.style}>
+      <StatusMessagesContainer
         messages={messages}
         activityMessageInfo={activityMessageInfo}
         isActivityMessageVisible={isActivityMessageVisible}
