@@ -88,5 +88,5 @@ export abstract class IModelBridge {
 
   public abstract getApplicationId(): string;
   public abstract getApplicationVersion(): string;
-  public abstract getBridgeName(): string;
+  public getDataChangesDescription?(): string;
 }
