@@ -48,10 +48,7 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
 
     // See if new initialValue props have changed since component mounted
     React.useEffect(() => {
-      // istanbul ignore else
-      if (initialValue !== currentValueRef.current)
-        currentValueRef.current = initialValue;
-
+      currentValueRef.current = initialValue;
       const currentFormattedValue = formatValue(currentValueRef.current);
       if (currentFormattedValue !== lastFormattedValueRef.current) {
         lastFormattedValueRef.current = currentFormattedValue;
