@@ -11,19 +11,20 @@ import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumericInput, ProgressBar, ProgressSpinner, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect,
-  Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
+  NewBadge, NumericInput, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
+  ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps, IntlFormatter } from "@bentley/ui-components";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 /** An example formatter that both formats and parses dates. */
 class MdyFormatter implements DateFormatter {
@@ -308,7 +309,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Basic Textarea", "Textarea with placeholder", <Textarea placeholder="Basic Textarea" />),
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
-        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput placeholder="Icon Input" min={1} max={100} className="uicore-full-width" />),
+        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
@@ -352,6 +353,59 @@ export class ComponentExamplesProvider {
           <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} percent={50} showCancel={true} />),
         createComponentExample("Determinate LoadingPrompt with status", undefined,
           <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} showStatus={true} percent={50} status="Updating..." />),
+      ],
+    };
+  }
+
+  private static get _reactMessage(): ReactMessage {
+    const reactNode = (
+      <span>
+        For more details, <UnderlinedButton onClick={() => { }}>click here</UnderlinedButton>.
+      </span >
+    );
+    return ({ reactNode });
+  }
+
+  /** Tool that will start a sample activity and display ActivityMessage.
+   */
+  private static _activityTool = async () => {
+    let isCancelled = false;
+    let progress = 0;
+
+    const details = new ActivityMessageDetails(true, true, true, true);
+    details.onActivityCancelled = () => {
+      isCancelled = true;
+    };
+    IModelApp.notifications.setupActivityMessage(details);
+
+    while (!isCancelled && progress <= 100) {
+      IModelApp.notifications.outputActivityMessage("This is a sample activity message", progress);
+      await BeDuration.wait(100);
+      progress++;
+    }
+
+    const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
+    IModelApp.notifications.endActivityMessage(endReason);
+  }
+
+  private static get messageSamples(): ComponentExampleCategory {
+    return {
+      title: "Messages",
+      examples: [
+        createComponentExample("Toast", undefined,
+          <UnderlinedButton onActivate={
+            () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", undefined, OutputMessageType.Toast))
+          }>Toast message</UnderlinedButton>),
+        createComponentExample("Toast with link", undefined,
+          <UnderlinedButton onActivate={
+            () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage)
+            )}>Toast with link</UnderlinedButton>),
+        createComponentExample("Sticky", undefined,
+          <UnderlinedButton onActivate={
+            () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky))
+          }>Sticky message</UnderlinedButton>),
+        createComponentExample("Activity", undefined,
+          <UnderlinedButton onActivate={this._activityTool}>Activity message</UnderlinedButton>),
       ],
     };
   }
@@ -645,6 +699,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.inputsSamples,
       ComponentExamplesProvider.listboxSamples,
       ComponentExamplesProvider.loadingSamples,
+      ComponentExamplesProvider.messageSamples,
       ComponentExamplesProvider.progressIndicatorsSamples,
       ComponentExamplesProvider.searchBoxSample,
       ComponentExamplesProvider.selectSamples,
