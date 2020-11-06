@@ -7,15 +7,18 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "./ClipPrimitive";
 import { ClipPlaneContainment } from "./ClipUtils";
+import { ClipPlane } from "./ClipPlane";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 
 /** Class holding an array structure of shapes defined by `ClipPrimitive`
  * * The `ClipVector` defines an intersection of the member `ClipPrimitive` regions.
@@ -351,5 +354,77 @@ export class ClipVector {
         return false;
     }
     return true;
+  }
+
+  /** Serializes this ClipVector to a compact string representation appropriate for transmission as part of a URL.
+   * Chiefly used for requesting [Tile]($frontend)s with section cut facets.
+   * UnionOfConvexClipPlaneSets is obtained for each ClipPrimitive. The encoding is as follows:
+   *  ClipVector:
+   *    ClipPrimitive[]
+   *    _
+   *  ClipPrimitive:
+   *    invisible: 0|1
+   *    ConvexClipPlaneSet[]
+   *    _
+   *  ConvexClipPlaneSet:
+   *    ClipPlane[]
+   *    _
+   *  ClipPlane:
+   *    flags: 0|1|2|3, where 1=invisible and 2=interior
+   *    inwardNormal: Number[3]
+   *    distance: Number
+   *  Number:
+   *    number
+   *    _
+   * @internal
+   */
+  public toCompactString(): string {
+    function formatNumber(num: number) {
+      return `${num.toString()}_`;
+    }
+
+    function formatVector3d(vec: Vector3d) {
+      return `${formatNumber(vec.x)}${formatNumber(vec.y)}${formatNumber(vec.z)}`;
+    }
+
+    function formatFlags(flags: number) {
+      const f = flags.toString();
+      assert(1 === f.length);
+      return f;
+    }
+
+    function formatPlane(plane: ClipPlane) {
+      let flags = plane.invisible ? 1 : 0;
+      flags |= (plane.interior ? 2 : 0);
+      return `${formatFlags(flags)}${formatVector3d(plane.inwardNormalRef)}${formatNumber(plane.distance)}`;
+    }
+
+    function formatPlaneSet(set: ConvexClipPlaneSet) {
+      let planes = "";
+      for (const plane of set.planes)
+        planes = `${planes}${formatPlane(plane)}`;
+
+      return `${planes}_`;
+    }
+
+    function formatPrimitive(prim: ClipPrimitive) {
+      const flags = prim.invisible ? 1 : 0;
+      let str = flags.toString();
+      assert(1 === str.length);
+
+      const union = prim.fetchClipPlanesRef();
+      if (union) {
+        for (const s of union.convexSets)
+          str = `${str}${formatPlaneSet(s)}`;
+      }
+
+      return `${str}_`;
+    }
+
+    let result = "";
+    for (const primitive of this.clips)
+      result = `${result}${formatPrimitive(primitive)}`;
+
+    return `${result}_`;
   }
 }
