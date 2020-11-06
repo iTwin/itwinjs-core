@@ -90,7 +90,7 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       }
     }, [formatValue, onChange, parseString]);
 
-    const handleOnBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+    const handleBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
       updateValueFromString(event.target.value);
     }, [updateValueFromString]);
 
@@ -109,7 +109,7 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
 
     const classNames = classnames(className, "components-parsed-input", hasBadInput && "components-parsed-input-has-error");
 
-    return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={handleKeyDown} onBlur={handleOnBlur}
+    return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={handleKeyDown} onBlur={handleBlur}
       onChange={handleInputChange} value={formattedValue} disabled={readonly} />
   }
 );
