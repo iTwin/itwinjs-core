@@ -11,9 +11,7 @@ exports[`<LabeledTextarea /> renders correctly 1`] = `
     textarea test
      
   </div>
-  <Textarea
-    rows={3}
-  />
+  <ForwardRef(Textarea) />
 </label>
 `;
 
@@ -28,9 +26,8 @@ exports[`<LabeledTextarea /> renders disabled correctly 1`] = `
     textarea test
      
   </div>
-  <Textarea
+  <ForwardRef(Textarea)
     disabled={true}
-    rows={3}
   />
 </label>
 `;
@@ -46,9 +43,7 @@ exports[`<LabeledTextarea /> renders message correctly 1`] = `
     textarea test
      
   </div>
-  <Textarea
-    rows={3}
-  />
+  <ForwardRef(Textarea) />
   <div
     className="uicore-message"
   >
@@ -68,8 +63,6 @@ exports[`<LabeledTextarea /> renders status correctly 1`] = `
     textarea test
      
   </div>
-  <Textarea
-    rows={3}
-  />
+  <ForwardRef(Textarea) />
 </label>
 `;
