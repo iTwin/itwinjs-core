@@ -675,6 +675,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.processDeferredElements();
     this.detectElementDeletes();
     this.detectRelationshipDeletes();
+    this.importer.computeProjectExtents();
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
@@ -690,6 +691,7 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(requestContext, startChangeSetId);
     requestContext.enter();
     this.processDeferredElements();
+    this.importer.computeProjectExtents();
   }
 }
 

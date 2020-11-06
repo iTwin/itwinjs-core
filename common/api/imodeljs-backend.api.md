@@ -2745,7 +2745,10 @@ export class IModelHostConfiguration {
 // @beta
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    autoExtendProjectExtents: boolean;
+    autoExtendProjectExtents: boolean | {
+        excludeOutliers: boolean;
+    };
+    computeProjectExtents(): void;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
@@ -2771,7 +2774,9 @@ export class IModelImporter {
 
 // @beta
 export interface IModelImportOptions {
-    autoExtendProjectExtents?: boolean;
+    autoExtendProjectExtents?: boolean | {
+        excludeOutliers: boolean;
+    };
 }
 
 // @public
