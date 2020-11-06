@@ -203,7 +203,6 @@ export class Field {
   public getFieldDescriptor(): FieldDescriptor {
     return {
       type: FieldDescriptorType.Name,
-      parent: this.parent ? this.parent.getFieldDescriptor() : undefined,
       fieldName: this.name,
     } as NamedFieldDescriptor;
   }
@@ -272,13 +271,18 @@ export class PropertiesField extends Field {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  private get propertySourceInfo() {
-    // note: properties fields should always have at least one property
+  private get _propertySourceInfo() {
+    const pathFromPropertyToSelectClass = new Array<RelatedClassInfo>();
+    let currAncestor = this.parent;
+    while (currAncestor) {
+      pathFromPropertyToSelectClass.push(...currAncestor.pathToPrimaryClass);
+      currAncestor = currAncestor.parent;
+    }
     return {
+      // note: properties fields should always have at least one property
       propertyClass: this.properties[0].property.classInfo.name,
       propertyName: this.properties[0].property.name,
-      pathFromSelectToPropertyClass: RelationshipPath.strip(this.properties[0].relatedClassPath),
+      pathFromSelectToPropertyClass: RelationshipPath.strip(RelationshipPath.reverse(pathFromPropertyToSelectClass)),
     };
   }
 
@@ -289,8 +293,7 @@ export class PropertiesField extends Field {
   public getFieldDescriptor(): FieldDescriptor {
     return {
       type: FieldDescriptorType.Properties,
-      parent: this.parent ? this.parent.getFieldDescriptor() : undefined,
-      ...this.propertySourceInfo,
+      ...this._propertySourceInfo,
     } as PropertiesFieldDescriptor;
   }
 }
@@ -432,7 +435,6 @@ export enum FieldDescriptorType {
  */
 export interface FieldDescriptorBase {
   type: FieldDescriptorType;
-  parent?: FieldDescriptor;
 }
 
 /**
