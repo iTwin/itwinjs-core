@@ -46,7 +46,7 @@ export const QuantityInput = React.forwardRef<HTMLInputElement, QuantityProps>(
       return value.toFixed(2);
     }, [formatterSpec]);
 
-    const parseString = (userInput: string): ParseResults => {
+    const parseString = React.useCallback((userInput: string): ParseResults => {
       // istanbul ignore else
       if (parserSpec) {
         const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, parserSpec);
@@ -59,11 +59,8 @@ export const QuantityInput = React.forwardRef<HTMLInputElement, QuantityProps>(
       }
       // istanbul ignore next
       return { parseError: UiComponents.translate("QuantityInput.NoParserDefined") };
-    };
+    }, [parserSpec]);
 
-    const handleQuantityChange = React.useCallback((newValue: number) => {
-      onQuantityChange && onQuantityChange(newValue);
-    }, [onQuantityChange]);
     const classNames = classnames(className, "components-quantity-input");
 
     React.useEffect(() => {
@@ -79,6 +76,6 @@ export const QuantityInput = React.forwardRef<HTMLInputElement, QuantityProps>(
     }, [quantityType]);
 
     return <ParsedInput data-testid="components-quantity-input" ref={ref} style={style} className={classNames}
-      onChange={handleQuantityChange} initialValue={initialValue} readonly={readonly} formatValue={formatValue} parseString={parseString} />
+      onChange={onQuantityChange} initialValue={initialValue} readonly={readonly} formatValue={formatValue} parseString={parseString} />
   }
 );

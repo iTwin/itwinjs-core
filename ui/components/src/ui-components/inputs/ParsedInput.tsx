@@ -60,7 +60,7 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       }
     }, [formatValue, initialValue])
 
-    const handleInputChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
       setFormattedValue(event.currentTarget.value);
     }, [])
 
@@ -94,7 +94,7 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       updateValueFromString(event.target.value);
     }, [updateValueFromString]);
 
-    function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
       // istanbul ignore else
       if (event.key === SpecialKey.Enter) {
         updateValueFromString(event.currentTarget.value);
@@ -105,11 +105,11 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
         setHasBadInput(false);
         event.preventDefault();
       }
-    }
+    }, [formatValue, updateValueFromString]);
 
     const classNames = classnames(className, "components-parsed-input", hasBadInput && "components-parsed-input-has-error");
 
     return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={handleKeyDown} onBlur={handleBlur}
-      onChange={handleInputChange} value={formattedValue} disabled={readonly} />
+      onChange={handleChange} value={formattedValue} disabled={readonly} />
   }
 );
