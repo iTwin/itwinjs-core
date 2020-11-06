@@ -49,9 +49,12 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
     // See if new initialValue props have changed since component mounted
     React.useEffect(() => {
       // istanbul ignore else
-      if (initialValue !== currentValueRef.current) {
+      if (initialValue !== currentValueRef.current)
         currentValueRef.current = initialValue;
-        lastFormattedValueRef.current = formatValue(initialValue);
+
+      const currentFormattedValue = formatValue(currentValueRef.current);
+      if (currentFormattedValue !== lastFormattedValueRef.current) {
+        lastFormattedValueRef.current = currentFormattedValue;
         setFormattedValue(lastFormattedValueRef.current);
         setHasBadInput(false);
       }
@@ -61,7 +64,7 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       setFormattedValue(event.currentTarget.value);
     }, [])
 
-    const updateQuantityValueFromString = React.useCallback((strVal: string) => {
+    const updateValueFromString = React.useCallback((strVal: string) => {
       if (lastFormattedValueRef.current === strVal)
         return;
 
@@ -69,10 +72,10 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       // istanbul ignore else
       if (!parseResults.parseError) {
         // istanbul ignore else
-        if (undefined !== parseResults.value) {
+        if (undefined !== parseResults.value && typeof parseResults.value === "number") {
           // istanbul ignore else
           if (currentValueRef.current !== parseResults.value) {
-            currentValueRef.current = parseResults.value as number;
+            currentValueRef.current = parseResults.value;
             lastFormattedValueRef.current = formatValue(currentValueRef.current);
             onChange && onChange(currentValueRef.current);
             // istanbul ignore else
@@ -88,13 +91,13 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
     }, [formatValue, onChange, parseString]);
 
     const handleOnBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
-      updateQuantityValueFromString(event.target.value);
-    }, [updateQuantityValueFromString]);
+      updateValueFromString(event.target.value);
+    }, [updateValueFromString]);
 
-    function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
+    function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
       // istanbul ignore else
       if (event.key === SpecialKey.Enter) {
-        updateQuantityValueFromString(event.currentTarget.value);
+        updateValueFromString(event.currentTarget.value);
         event.preventDefault();
       }
       if (event.key === SpecialKey.Escape) {
@@ -106,7 +109,7 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
 
     const classNames = classnames(className, "components-parsed-input", hasBadInput && "components-parsed-input-has-error");
 
-    return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={onInputKeyDown} onBlur={handleOnBlur}
+    return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={handleKeyDown} onBlur={handleOnBlur}
       onChange={handleInputChange} value={formattedValue} disabled={readonly} />
   }
 );

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { ParsedInput } from "../../ui-components/inputs/ParsedInput";
@@ -62,19 +62,16 @@ describe("ParsedInput", () => {
     Object.defineProperty(IModelApp, "requestNextAnimation", rnaDescriptorToRestore);
   });
 
-  afterEach(cleanup);
-
-  it("should process format and parse function", async () => {
+  it("should process format and parse function", () => {
     const initialTemperature = 20;  // 20 C
     const spyOnChange = sinon.spy();
 
     const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
     expect(wrapper).not.to.be.undefined;
-    const input = (await wrapper.findByTestId("components-parsed-input")) as HTMLInputElement;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
     expect(input.value).to.eq("20.0C");
     fireEvent.change(input, { target: { value: "32F" } });
     fireEvent.keyDown(input, { key: SpecialKey.Enter });
-    await TestUtils.flushAsyncOperations();
     expect(spyOnChange).to.have.been.called;
     expect(input.value).to.eq("0.0C");
   });
