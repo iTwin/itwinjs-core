@@ -5,7 +5,7 @@
 import "./ComponentExamples.scss";
 import * as React from "react";
 import { CommonProps, Toggle, VerticalTabs } from "@bentley/ui-core";
-import { ColorTheme, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
+import { ColorTheme, MessageManager, MessageRenderer, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
 import { ComponentExamplesProvider } from "./ComponentExamplesProvider";
 
 export interface ComponentExampleCategory {
@@ -18,7 +18,10 @@ export interface ComponentExampleCategory {
 export class ComponentExamplesModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.examples");
   public categories: ComponentExampleCategory[] = ComponentExamplesProvider.categories;
-  public get content(): React.ReactNode { return (<ComponentExamplesPage categories={this.categories} />); }
+  public get content(): React.ReactNode {
+    MessageManager.maxDisplayedStickyMessages = 6;
+    return (<ComponentExamplesPage categories={this.categories} />);
+  }
 }
 
 interface ComponentExamplesPageProps {
@@ -77,6 +80,7 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
           );
         })}
       </div>
+      <MessageRenderer />
     </div>
   );
 };

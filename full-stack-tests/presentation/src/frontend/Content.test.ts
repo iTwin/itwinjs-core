@@ -169,7 +169,7 @@ describe("Content", () => {
       }]);
     });
 
-    it("gets paged distinct related content values", async () => {
+    it.skip("gets paged distinct related content values", async () => {
       const ruleset: Ruleset = {
         id: Guid.createValue(),
         rules: [{
