@@ -1491,6 +1491,7 @@ export class ECSqlBinder {
     bindDouble(val: number): void;
     bindGuid(val: GuidString): void;
     bindId(val: Id64String): void;
+    bindIdSet(vector: Id64String[]): void;
     bindInteger(val: number | string): void;
     bindMember(memberName: string): ECSqlBinder;
     bindNavigation(val: NavigationBindingValue): void;
@@ -1534,6 +1535,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindDouble(parameter: number | string, val: number): void;
     bindGuid(parameter: number | string, val: GuidString): void;
     bindId(parameter: number | string, val: Id64String): void;
+    // (undocumented)
+    bindIdSet(parameter: number | string, val: Id64String[]): void;
     bindInteger(parameter: number | string, val: number | string): void;
     bindNavigation(parameter: number | string, val: NavigationBindingValue): void;
     bindNull(parameter: number | string): void;
