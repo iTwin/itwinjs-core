@@ -177,7 +177,7 @@ Note that sending a request to iModelHub is a relatively expensive operation. Th
 
 The optimistic approach is simpler than using the pessimistic approach, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict. Use this approach only if you know that your changes are isolated such that conflicts are unlikely.
 
-This approach is available _only_ when the iModel's locking policy is set to optimistic.
+This approach is available _only_ when the iModel's locking policy is set to optimistic!
 
 If you call BriefcaseDb.pushChanges, all locks are released, all used Codes are marked as used, and unused Codes are relinquished.
 
