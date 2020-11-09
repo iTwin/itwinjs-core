@@ -36,7 +36,7 @@ rush.json @calebmshafer @scsewall
 /common/api/ecschema2ts.api.md                      @calebmshafer @ColinKerr @wgoehrig
 /common/api/electron-manager.api.md                 @wgoehrig @ramanujam-raman
 /common/api/express-server.api.md                   @wgoehrig @calebmshafer
-/common/api/extension-client.api.md                 @calebmshafer @pauliunas
+/common/api/extension-client.api.md                 @calebmshafer @paulius-valiunas
 /common/api/forms-data-management-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-application-insights-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-authorization-client.api.md     @calebmshafer @ramanujam-raman
@@ -152,8 +152,8 @@ rush.json @calebmshafer @scsewall
 /tools/oidc-signin-tool @calebmshafer @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
-/tools/eslint-plugin @calebmshafer @pauliunas
-/tools/extension-cli @calebmshafer @pauliunas
+/tools/eslint-plugin @calebmshafer @paulius-valiunas
+/tools/extension-cli @calebmshafer @paulius-valiunas
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
