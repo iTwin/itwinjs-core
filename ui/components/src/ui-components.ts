@@ -169,6 +169,9 @@ export * from "./ui-components/table/hocs/withDragDrop";
 export * from "./ui-components/favorite/FavoritePropertiesRenderer";
 export * from "./ui-components/favorite/FavoritePropertyList";
 
+export * from "./ui-components/inputs/QuantityInput";
+export * from "./ui-components/inputs/ParsedInput";
+
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
@@ -230,6 +233,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description Filtering
  * Classes and components for working with filtering.
+ */
+/**
+ * @docs-group-description Inputs
+ * Input Components that format and parse input for IModelApps.
  */
 /**
  * @docs-group-description LineWeight

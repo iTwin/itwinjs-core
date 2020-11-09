@@ -24,16 +24,16 @@ export interface IconInputProps extends InputProps {
 /** Input component with icon to the left of the input field
  * @public
  */
-export class IconInput extends React.PureComponent<IconInputProps> {
-  public render(): JSX.Element {
-    const { icon, containerClassName, ...props } = this.props;
+export const IconInput = React.forwardRef<HTMLInputElement, IconInputProps>(
+  function IconInput(props, ref) {
+    const { icon, containerClassName, ...otherProps } = props;
     return (
       <div className={classnames("core-iconInput-container", containerClassName)} >
-        <Input {...props} />
+        <Input ref={ref} {...otherProps} />
         <div className="core-iconInput-icon">
           {icon}
         </div>
       </div>
     );
   }
-}
+);
