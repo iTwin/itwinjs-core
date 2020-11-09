@@ -115,7 +115,6 @@
     "@bentley/imodeljs-native": "2.9.3",
     "@azure/storage-blob": "10.4.0",
     "@bentley/context-registry-client": "2.9.0-dev.15",
-    "@bentley/imodeljs-native": "2.9.2",
     "@bentley/usage-logging-client": "2.9.0-dev.15",
     "@openid/appauth": "^1.2.6",
     "deep-assign": "^2.0.0",

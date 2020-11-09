@@ -3,7 +3,7 @@ dependencies:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': 1.0.29
   '@bentley/icons-generic-webfont': 1.0.29
-  '@bentley/imodeljs-native': 2.9.2
+  '@bentley/imodeljs-native': 2.9.3
   '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': 2.5.9
@@ -1686,11 +1686,11 @@ packages:
     dev: false
     resolution:
       integrity: sha512-8bWeEstKNiRtZWFt18XKpEUa/yuc/wCsrfg0mIt1aGVtnjdpbYY4/Un05eNy6mOIZCeFmEjLn6sPBeEX2YmDKw==
-  /@bentley/imodeljs-native/2.9.2:
+  /@bentley/imodeljs-native/2.9.3:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha512-ruFBIyN/t5o8eykw+WZH0VN+GoortsJPPDK/57iEafpNNwC0OJbFsm+h0qwQtQ1JCS1BkuuqZ+g7xNzlEZFgKg==
+      integrity: sha512-vh+e0r2DEdF4OfTATvlJAOB3rr3U6gRhZ09KKn0r61G2hzBOTad04QbOyHonlJeISS8UuI+98buc99J0b8eFSw==
   /@bentley/react-scripts/3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba:
     dependencies:
       '@babel/core': 7.9.0
@@ -19553,7 +19553,7 @@ packages:
   'file:projects/imodeljs-backend.tgz':
     dependencies:
       '@azure/storage-blob': 10.4.0
-      '@bentley/imodeljs-native': 2.9.2
+      '@bentley/imodeljs-native': 2.9.3
       '@openid/appauth': 1.3.0
       '@types/chai': 4.2.14
       '@types/chai-as-promised': 7.1.3
@@ -19598,7 +19598,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-UGknH2crpHumy1YNCv61XLF+bWX9ant2kYRLVV1EzM+s4K/URLa7GQWBpJ8eblv0P433sYCVVny4NjZE335jXg==
+      integrity: sha512-MhfqJNe2vkTG/sgVdA/E3JigLHzlGGlGrLG3axVZa5WPy36lGJiPqlPfqXoOupx5gsYcF0k6fkGA2QcxqhIcAA==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-common.tgz':
@@ -20899,12 +20899,13 @@ packages:
       integrity: sha512-Ylayv/nm1mFzJbZWoYPDz1UJDDH6HtsGScoRY4Lx8YdlaFbrTwNfXd0my/w2lFAjI9SKe48Jl2e+zWqPStbC0w==
       tarball: 'file:projects/webpack-tools-core.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@babel/core': 7.7.4
   '@bentley/icons-generic': ^1.0.15
   '@bentley/icons-generic-webfont': ^1.0.15
-  '@bentley/imodeljs-native': 2.9.2
+  '@bentley/imodeljs-native': 2.9.3
   '@bentley/react-scripts': 3.4.6
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': ^2.5.5
