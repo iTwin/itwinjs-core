@@ -210,13 +210,21 @@ export class Relationships {
    */
   public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity<Relationship>(props); }
 
-  /** Insert a new relationship instance into the iModel.
+  /** Check classFullName to ensure it is a link table relationship class. */
+  private checkRelationshipClass(classFullName: string) {
+    if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName)) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class "${classFullName} must be a relationship class and descendant of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement."`, Logger.logWarning, loggerCategory);
+    }
+  }
+
+  /** Insert a new relationship instance into the iModel. The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: RelationshipProps): Id64String {
+    this.checkRelationshipClass(props.classFullName);
     const val = this._iModel.nativeDb.insertLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
     if (val.error)
       throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
