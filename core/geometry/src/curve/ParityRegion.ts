@@ -19,6 +19,7 @@ import { StrokeOptions } from "./StrokeOptions";
  * * A `ParityRegion` is a collection of `Loop` objects.
  * * The loops collectively define a planar region.
  * * A point is "in" the composite region if it is "in" an odd number of the loops.
+ * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
 export class ParityRegion extends CurveCollection {
