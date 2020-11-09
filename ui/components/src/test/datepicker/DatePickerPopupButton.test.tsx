@@ -45,7 +45,7 @@ describe("<DatePickerPopupButton />", () => {
   });
 
   it("should render with edit field ", () => {
-    const renderedComponent = render(<DatePickerPopupButton selected={testDate} displayEditField={true}/>);
+    const renderedComponent = render(<DatePickerPopupButton selected={testDate} displayEditField={true} />);
     expect(renderedComponent).not.to.be.null;
     renderedComponent.getByTestId("components-date-input");
   });
@@ -60,7 +60,7 @@ describe("<DatePickerPopupButton />", () => {
     expect(popupPanelDiv).not.to.be.undefined;
 
     const testDayTicks = new Date(2018, 6, 19).getTime();
-    const dataValueSelector=`li[data-value='${testDayTicks}']`; // li[data-value='1531972800000']
+    const dataValueSelector = `li[data-value='${testDayTicks}']`; // li[data-value='1531972800000']
     const dayEntry = popupPanelDiv.querySelector(dataValueSelector);
     expect(dayEntry).not.to.be.null;
     fireEvent.click(dayEntry!);
@@ -79,7 +79,7 @@ describe("<DatePickerPopupButton />", () => {
     expect(popupPanelDiv).not.to.be.undefined;
 
     const testDayTicks = new Date(2018, 6, 19).getTime();
-    const dataValueSelector=`li[data-value='${testDayTicks}']`; // li[data-value='1531972800000']
+    const dataValueSelector = `li[data-value='${testDayTicks}']`; // li[data-value='1531972800000']
     const dayEntry = popupPanelDiv.querySelector(dataValueSelector);
     expect(dayEntry).not.to.be.null;
     fireEvent.click(dayEntry!);
@@ -88,7 +88,7 @@ describe("<DatePickerPopupButton />", () => {
   });
 
   it("should render popup with time input ", async () => {
-    const renderedComponent = render(<DatePickerPopupButton selected={testDate} timeDisplay={TimeDisplay.H12MC} onDateChange={renderSpy}/>);
+    const renderedComponent = render(<DatePickerPopupButton selected={testDate} timeDisplay={TimeDisplay.H12MC} onDateChange={renderSpy} />);
     expect(renderedComponent).not.to.be.null;
     const pickerButton = renderedComponent.getByTestId("components-date-picker-calendar-popup-button");
     expect(pickerButton.tagName).to.be.equal("BUTTON");

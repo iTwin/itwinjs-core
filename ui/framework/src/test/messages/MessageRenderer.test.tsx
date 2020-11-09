@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
+import { ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { Message, MessageButton, MessageHyperlink, MessageProgress } from "@bentley/ui-ninezone";
-import { ActivityMessage, ActivityMessagePopup, AppNotificationManager, MessageManager } from "../../ui-framework";
+import { ActivityMessage, AppNotificationManager, MessageManager, MessageRenderer, StickyMessage, ToastMessage } from "../../ui-framework";
 import { mount, TestUtils } from "../TestUtils";
 
-describe("ActivityMessagePopup", () => {
+describe("MessageRenderer", () => {
 
   let notifications: AppNotificationManager;
 
@@ -24,8 +24,59 @@ describe("ActivityMessagePopup", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("Popup should render an Activity message", () => {
-    const wrapper = mount(<ActivityMessagePopup cancelActivityMessage={() => { }} dismissActivityMessage={() => { }} />);
+  beforeEach(() => {
+    MessageManager.activeMessageManager.initialize();
+  });
+
+  it("Renderer should render a Toast  message", () => {
+    const wrapper = mount(<MessageRenderer />);
+
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Toast);
+    notifications.outputMessage(details);
+    wrapper.update();
+
+    expect(wrapper.find(ToastMessage).length).to.eq(1);
+    expect(wrapper.find(Message).length).to.eq(1);
+
+    wrapper.unmount();
+  });
+
+  it("Renderer should render a Sticky  message", () => {
+    const wrapper = mount(<MessageRenderer />);
+
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Sticky);
+    notifications.outputMessage(details);
+    wrapper.update();
+
+    expect(wrapper.find(StickyMessage).length).to.eq(1);
+    expect(wrapper.find(Message).length).to.eq(1);
+
+    wrapper.unmount();
+  });
+
+  it("Sticky message should close on button click", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const spy = sinon.spy();
+    const wrapper = mount(<MessageRenderer closeMessage={spy} />);
+
+    const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
+    notifications.outputMessage(details);
+    wrapper.update();
+
+    expect(wrapper.find(MessageButton).length).to.eq(1);
+
+    wrapper.find(MessageButton).simulate("click");
+    fakeTimers.tick(1000);
+    fakeTimers.restore();
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(0);
+    spy.calledOnce.should.true;
+
+    wrapper.unmount();
+  });
+
+  it("Renderer should render an Activity message", () => {
+    const wrapper = mount(<MessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={() => { }} />);
 
     const details = new ActivityMessageDetails(true, true, false);
     notifications.setupActivityMessage(details);
@@ -40,11 +91,13 @@ describe("ActivityMessagePopup", () => {
     wrapper.update();
     expect(wrapper.find(ActivityMessage).length).to.eq(0);
     expect(wrapper.find(Message).length).to.eq(0);
+
+    wrapper.unmount();
   });
 
   it("Activity message should be canceled", () => {
     const spy = sinon.spy();
-    const wrapper = mount(<ActivityMessagePopup cancelActivityMessage={spy} dismissActivityMessage={() => { }} />);
+    const wrapper = mount(<MessageRenderer cancelActivityMessage={spy} dismissActivityMessage={() => { }} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
@@ -60,11 +113,13 @@ describe("ActivityMessagePopup", () => {
     expect(wrapper.find(ActivityMessage).length).to.eq(0);
     expect(wrapper.find(Message).length).to.eq(0);
     spy.calledOnce.should.true;
+
+    wrapper.unmount();
   });
 
   it("Activity message should be dismissed & restored", () => {
     const spy = sinon.spy();
-    const wrapper = mount(<ActivityMessagePopup cancelActivityMessage={() => { }} dismissActivityMessage={spy} />);
+    const wrapper = mount(<MessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={spy} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
@@ -87,6 +142,23 @@ describe("ActivityMessagePopup", () => {
     wrapper.update();
     expect(wrapper.find(ActivityMessage).length).to.eq(1);
     expect(wrapper.find(Message).length).to.eq(1);
+
+    wrapper.unmount();
+  });
+
+  it("Renderer should clear messages", () => {
+    const wrapper = mount(<MessageRenderer />);
+
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
+    notifications.outputMessage(details);
+    wrapper.update();
+
+    expect(wrapper.find(Message).length).to.eq(1);
+
+    MessageManager.clearMessages();
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(0);
+    wrapper.unmount();
   });
 
 });

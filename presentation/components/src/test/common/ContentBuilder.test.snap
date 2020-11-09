@@ -124,29 +124,24 @@ PropertyRecord {
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with merged inside nested content value 1`] = `
+exports[`ContentBuilder createPropertyRecord with nested content creates record with merged nested content value 1`] = `
 PropertyRecord {
   "autoExpand": true,
-  "isReadonly": true,
   "property": Object {
-    "displayLabel": "deposit index",
-    "name": "Tasty Wooden Chair",
-    "typename": "datetime",
+    "displayLabel": "connect",
+    "name": "Savings Account",
+    "typename": "int",
   },
   "value": Object {
     "members": Object {
-      "Buckinghamshire": PropertyRecord {
+      "West Virginia": PropertyRecord {
         "description": "merged",
         "isMerged": true,
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "generating Beauty",
-          "editor": Object {
-            "name": "Intranet",
-            "params": Array [],
-          },
-          "name": "Tasty Wooden Chair$Buckinghamshire",
-          "typename": "bit",
+          "displayLabel": "robust Electronics",
+          "name": "Savings Account$West Virginia",
+          "typename": "serial",
         },
         "value": Object {
           "displayValue": "merged",
@@ -160,13 +155,14 @@ PropertyRecord {
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with merged outside nested content value 1`] = `
+exports[`ContentBuilder createPropertyRecord with nested content creates record with merged nesting content value 1`] = `
 PropertyRecord {
+  "autoExpand": true,
   "isMerged": true,
   "isReadonly": true,
   "property": Object {
-    "displayLabel": "seize Fantastic Steel Pizza bandwidth",
-    "name": "Awesome Granite Pants",
+    "displayLabel": "withdrawal",
+    "name": "redundant",
     "typename": "binary",
   },
   "value": Object {
