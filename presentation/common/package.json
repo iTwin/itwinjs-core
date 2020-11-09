@@ -47,9 +47,9 @@
     "@bentley/imodeljs-common": "^2.9.0-dev.15"
   },
   "devDependencies": {
+    "@bentley/bentleyjs-core": "2.9.0-dev.15",
     "@bentley/build-tools": "2.9.0-dev.15",
     "@bentley/eslint-plugin": "2.9.0-dev.15",
-    "@bentley/bentleyjs-core": "2.9.0-dev.15",
     "@bentley/imodeljs-common": "2.9.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

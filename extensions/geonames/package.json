@@ -26,8 +26,8 @@
   },
   "devDependencies": {
     "@bentley/build-tools": "2.9.0-dev.15",
-    "@bentley/eslint-plugin": "2.9.0-dev.15",
     "@bentley/config-loader": "2.9.0-dev.15",
+    "@bentley/eslint-plugin": "2.9.0-dev.15",
     "@bentley/extension-webpack-tools": "2.9.0-dev.15",
     "@types/node": "10.14.1",
     "cpx": "^1.5.0",
@@ -38,11 +38,11 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "2.9.0-dev.15",
     "@bentley/geometry-core": "2.9.0-dev.15",
-    "@bentley/itwin-client": "2.9.0-dev.15",
     "@bentley/imodeljs-common": "2.9.0-dev.15",
-    "@bentley/imodeljs-i18n": "2.9.0-dev.15",
     "@bentley/imodeljs-frontend": "2.9.0-dev.15",
+    "@bentley/imodeljs-i18n": "2.9.0-dev.15",
     "@bentley/imodeljs-quantity": "2.9.0-dev.15",
+    "@bentley/itwin-client": "2.9.0-dev.15",
     "svg-sprite-loader": "4.2.1"
   },
   "eslintConfig": {
