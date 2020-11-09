@@ -11,6 +11,7 @@ import { Geometry } from "../Geometry";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
+import { TransformProps, XYZProps } from "../geometry3d/XYZProps";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
@@ -19,7 +20,7 @@ import { Triangulator } from "../topology/Triangulation";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
+import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
@@ -45,6 +46,44 @@ export enum ClipMaskXYZRangePlanes {
   /** all 6 planes */
   All = 0x3f,
 }
+
+/** Wire format describing a [[ClipPrimitive]] defined by a set of clip planes.
+ * @public
+ */
+export interface ClipPrimitivePlanesProps {
+  planes?: {
+    /** The set of clip planes. */
+    clips?: UnionOfConvexClipPlaneSetsProps;
+    /** `true` if the primitive is a hole. */
+    invisible?: boolean;
+  };
+}
+
+/** Wire format describing a [[ClipShape]].
+ * @public
+ */
+export interface ClipPrimitiveShapeProps {
+  /** The clip polygon. */
+  shape?: {
+    /** The points describing the polygon. */
+    points?: XYZProps[];
+    /** Transform applied to the polygon. */
+    trans?: TransformProps;
+    /** Lower bound on Z. */
+    zlow?: number;
+    /** Upper bound on Z. */
+    zhigh?: number;
+    /** `true` if this shape is a mask. */
+    mask?: boolean;
+    /** `true` if this shape is invisible. */
+    invisible?: boolean;
+  };
+}
+
+/** Wire format describing a [[ClipPrimitive]].
+ * @public
+ */
+export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapeProps;
 
 /**
  * * ClipPrimitive is a base class for clipping implementations that use
@@ -90,13 +129,15 @@ export class ClipPrimitive {
     return new ClipPrimitive(planeData, isInvisible);
   }
   /** Emit json form of the clip planes */
-  public toJSON(): any {
-    const data: any = {};
+  public toJSON(): ClipPrimitiveProps {
+    const planes: ClipPrimitivePlanesProps["planes"] = {};
     if (this._clipPlanes)
-      data.clips = this._clipPlanes.toJSON();
+      planes.clips = this._clipPlanes.toJSON();
+
     if (this._invisible)
-      data.invisible = true;
-    return { planes: data };
+      planes.invisible = true;
+
+    return { planes };
   }
 
   /**
@@ -207,25 +248,25 @@ export class ClipPrimitive {
    * * First try to convert to a ClipShape
    * * then try as a standalone instance of the base class ClipPrimitive.
    */
-  public static fromJSON(json: any): ClipPrimitive | undefined {
-    // try known derived classes first . . .
-    const shape = ClipShape.fromClipShapeJSON(json);
+  public static fromJSON(json: ClipPrimitiveProps | undefined): ClipPrimitive | undefined {
+    if (!json)
+      return undefined;
+
+    const shape = ClipShape.fromClipShapeJSON(json as ClipPrimitiveShapeProps);
     if (shape)
       return shape;
-    const prim = ClipPrimitive.fromJSONClipPrimitive(json);
-    if (prim)
-      return prim;
-    return undefined;
+
+    return ClipPrimitive.fromJSONClipPrimitive(json as ClipPrimitivePlanesProps);
   }
   /** Specific converter producing the base class ClipPrimitive. */
-  public static fromJSONClipPrimitive(json: any): ClipPrimitive | undefined {
-    if (json && json.planes) {
-      const planes = json.planes;
-      const clipPlanes = planes.hasOwnProperty("clips") ? UnionOfConvexClipPlaneSets.fromJSON(planes.clips) : undefined;
-      const invisible = planes.hasOwnProperty("invisible") ? planes.invisible : false;
-      return new ClipPrimitive(clipPlanes, invisible);
-    }
-    return undefined;
+  public static fromJSONClipPrimitive(json: ClipPrimitivePlanesProps | undefined): ClipPrimitive | undefined {
+    const planes = json?.planes;
+    if (!planes)
+      return undefined;
+
+    const clipPlanes = planes.clips ? UnionOfConvexClipPlaneSets.fromJSON(planes.clips) : undefined;
+    const invisible = undefined !== planes.invisible ? planes.invisible : false;
+    return new ClipPrimitive(clipPlanes, invisible);
   }
 }
 
@@ -324,50 +365,47 @@ export class ClipShape extends ClipPrimitive {
       this._transformToClip = Transform.createIdentity();
     }
   }
+
   /** emit json object form */
-  public toJSON(): any {
-    const val: any = {};
-    val.shape = {};
-    val.shape.points = [];
-    for (const pt of this._polygon)
-      val.shape.points.push(pt.toJSON());
+  public toJSON(): ClipPrimitiveShapeProps {
+    const shape: ClipPrimitiveShapeProps["shape"] = {
+      points: this._polygon.map((pt) => pt.toJSON()),
+    };
+
     if (this.invisible)
-      val.shape.invisible = true;
+      shape.invisible = true;
+
     if (this._transformFromClip && !this._transformFromClip.isIdentity)
-      val.shape.trans = this._transformFromClip.toJSON();
+      shape.trans = this._transformFromClip.toJSON();
+
     if (this.isMask)
-      val.shape.mask = true;
+      shape.mask = true;
+
     if (typeof (this.zLow) !== "undefined" && this.zLow !== -Number.MAX_VALUE)
-      val.shape.zlow = this.zLow;
+      shape.zlow = this.zLow;
+
     if (typeof (this.zHigh) !== "undefined" && this.zHigh !== Number.MAX_VALUE)
-      val.shape.zhigh = this.zHigh;
-    return val;
+      shape.zhigh = this.zHigh;
+
+    return { shape };
   }
+
   /** parse `json` to a clip shape. */
-  public static fromClipShapeJSON(json: any, result?: ClipShape): ClipShape | undefined {
-    if (!json.shape)
+  public static fromClipShapeJSON(json: ClipPrimitiveShapeProps | undefined, result?: ClipShape): ClipShape | undefined {
+    const shape = json?.shape;
+    if (!shape)
       return undefined;
-    const points: Point3d[] = [];
-    if (json.shape.points)
-      for (const pt of json.shape.points)
-        points.push(Point3d.fromJSON(pt));
-    let trans: Transform | undefined;
-    if (json.shape.trans)
-      trans = Transform.fromJSON(json.shape.trans);
-    let zLow: number | undefined;
-    if (undefined !== json.shape.zlow)
-      zLow = json.shape.zlow as number;
-    let zHigh: number | undefined;
-    if (undefined !== json.shape.zhigh)
-      zHigh = json.shape.zhigh as number;
-    let isMask = false;
-    if (json.shape.mask)
-      isMask = json.shape.mask as boolean;
-    let invisible = false;
-    if (json.shape.invisible)
-      invisible = true;
+
+    const points: Point3d[] = shape.points ? shape.points.map((pt) => Point3d.fromJSON(pt)) : [];
+    const trans = shape.trans ? Transform.fromJSON(shape.trans) : undefined;
+    const zLow = typeof shape.zlow === "number" ? shape.zlow : undefined;
+    const zHigh = typeof shape.zhigh === "number" ? shape.zhigh : undefined;
+    const isMask = typeof shape.mask === "boolean" && shape.mask;
+    const invisible = typeof shape.invisible === "boolean" && shape.invisible;
+
     return ClipShape.createShape(points, zLow, zHigh, trans, isMask, invisible, result);
   }
+
   /** Returns a new ClipShape that is a deep copy of the ClipShape given */
   public static createFrom(other: ClipShape, result?: ClipShape): ClipShape {
     const retVal = ClipShape.createEmpty(false, false, undefined, result);

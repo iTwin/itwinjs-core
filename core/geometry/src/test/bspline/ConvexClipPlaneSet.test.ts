@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
 import { BooleanClipNode } from "../../clipping/BooleanClipNode";
 import { Clipper } from "../../clipping/ClipUtils";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "../../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -23,7 +23,7 @@ import { Checker } from "../Checker";
 describe("ConvexClipPlaneSet", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
-    const errorSet1 = ConvexClipPlaneSet.fromJSON(1);
+    const errorSet1 = ConvexClipPlaneSet.fromJSON(1 as unknown as ConvexClipPlaneSetProps);
     ck.testExactNumber(0, errorSet1.planes.length);
     const ax = -1;
     const ay = -2;
@@ -75,7 +75,7 @@ describe("ConvexClipPlaneSet", () => {
   });
   it("UnionOfConvexSets", () => {
     const ck = new Checker();
-    const setA = UnionOfConvexClipPlaneSets.fromJSON(1);
+    const setA = UnionOfConvexClipPlaneSets.fromJSON(1 as unknown as UnionOfConvexClipPlaneSetsProps);
     const setB = UnionOfConvexClipPlaneSets.createEmpty(setA);
     const box01 = ConvexClipPlaneSet.createRange3dPlanes(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1));
     const box12 = ConvexClipPlaneSet.createRange3dPlanes(Range3d.createXYZXYZ(1, 0, 0, 2, 1, 1));

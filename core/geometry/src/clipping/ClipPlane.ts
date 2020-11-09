@@ -11,6 +11,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+import { XYZProps } from "../geometry3d/XYZProps";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../geometry3d/Matrix3d";
@@ -24,6 +25,21 @@ import { Point4d } from "../geometry4d/Point4d";
 import { AnalyticRoots } from "../numerics/Polynomials";
 import { Clipper, ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+
+/** Wire format describing a [[ClipPlane]].
+ * If either [[normal]] or [[dist]] are omitted, defaults to a normal of [[Vector3d.unitZ]] and a distance of zero.
+ * @public
+ */
+export interface ClipPlaneProps {
+  /** The plane's inward normal. */
+  normal?: XYZProps;
+  /** The plane's distance from the origin. */
+  dist?: number;
+  /** Defaults to `false`. */
+  invisible?: boolean;
+  /** Defaults to `false`. */
+  interior?: boolean;
+}
 
 /** A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
@@ -159,23 +175,29 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
    * return a json object of the form
    * `{"normal":[u,v,w],"dist":signedDistanceValue,"interior":true,"invisible":true}`
    */
-  public toJSON(): any {
-    const val: any = {};
-    val.normal = this.inwardNormalRef.toJSON();
-    val.dist = this.distance;
+  public toJSON(): ClipPlaneProps {
+    const props: ClipPlaneProps = {
+      normal: this.inwardNormalRef.toJSON(),
+      dist: this.distance,
+    };
+
     if (this.interior)
-      val.interior = true;
+      props.interior = true;
+
     if (this.invisible)
-      val.invisible = true;
-    return val;
+      props.invisible = true;
+
+    return props;
   }
+
   /** parse json object to ClipPlane instance */
-  public static fromJSON(json: any, result?: ClipPlane): ClipPlane | undefined {
-    if (json && json.normal && Number.isFinite(json.dist)) {
+  public static fromJSON(json: ClipPlaneProps, result?: ClipPlane): ClipPlane | undefined {
+    if (json && json.normal && undefined !== json.dist && Number.isFinite(json.dist))
       return ClipPlane.createNormalAndDistance(Vector3d.fromJSON(json.normal), json.dist, !!json.invisible, !!json.interior);
-    }
+
     return ClipPlane.createNormalAndDistance(Vector3d.unitZ(), 0, false, false, result);
   }
+
   /** Set both the invisible and interior flags. */
   public setFlags(invisible: boolean, interior: boolean) {
     this._invisible = invisible;

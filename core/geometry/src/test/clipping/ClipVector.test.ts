@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveShapeProps, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -178,7 +178,8 @@ describe("ClipVector", () => {
     // Test the to/from JSON methods
     const clipJSON = clipVector012.toJSON();
     ck.testTrue(clipJSON.length === clipVector012.clips.length, "Converted clipVector to a JSON representation as an array of ClipShapes");
-    for (const shape of clipJSON) {
+    for (const primitive of clipJSON) {
+      const shape = primitive as ClipPrimitiveShapeProps;
       ck.testTrue(shape.shape !== undefined && shape.shape.points !== undefined && shape.shape.points.length > 0, "Each ClipShape was stored successfully, with its member points");
     }
     const parsedClipVector = ClipVector.fromJSON(clipJSON);

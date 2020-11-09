@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { ClipVector, Geometry, XAndY } from "@bentley/geometry-core";
+import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@bentley/geometry-core";
 
 /** @internal */
 export interface ViewDetailsProps {
@@ -24,7 +24,7 @@ export interface ViewDetailsProps {
   /** Default: same as gridSpaceX. */
   gridSpaceY?: number;
   /** Clip applied to the view. */
-  clip?: any;
+  clip?: ClipVectorProps;
 }
 
 /** Describes the orientation of the grid displayed within a viewport.
@@ -46,7 +46,7 @@ export enum GridOrientationType {
 /** @internal */
 export interface ModelClipGroupProps {
   models?: Id64Array;
-  clip?: any;
+  clip?: ClipVectorProps;
 }
 
 /** @internal */

@@ -15,10 +15,15 @@ import { Range3d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "./ClipPrimitive";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveProps, ClipShape } from "./ClipPrimitive";
 import { ClipPlaneContainment } from "./ClipUtils";
 import { ClipPlane } from "./ClipPlane";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+
+/** Wire format describing a [[ClipVector]].
+ * @public
+ */
+export type ClipVectorProps = ClipPrimitiveProps[];
 
 /** Class holding an array structure of shapes defined by `ClipPrimitive`
  * * The `ClipVector` defines an intersection of the member `ClipPrimitive` regions.
@@ -81,21 +86,19 @@ export class ClipVector {
   }
 
   /** Parse this ClipVector into a JSON object. */
-  public toJSON(): any {
+  public toJSON(): ClipVectorProps {
     if (!this.isValid)
       return [];
 
-    const val: any = [];
-    for (const clipShape of this.clips)
-      val.push(clipShape.toJSON());
-
-    return val;
+    return this.clips.map((clip) => clip.toJSON());
   }
 
   /** Parse a JSON object into a new ClipVector. */
-  public static fromJSON(json: any, result?: ClipVector): ClipVector {
+  public static fromJSON(json: ClipVectorProps | undefined, result?: ClipVector): ClipVector {
     result = result ? result : new ClipVector();
     result.clear();
+    if (!Array.isArray(json))
+      return result;
 
     try {
       for (const clip of json) {
