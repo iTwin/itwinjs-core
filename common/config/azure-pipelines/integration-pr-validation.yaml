@@ -6,6 +6,13 @@ trigger:
   - master
   - release/*
 
+pr:
+  drafts: false
+  branches:
+    include:
+    - master
+    - releases/*
+
 variables:
 - group: iModel.js non-secret config variables
 - group: iModel.js Integration Test Users

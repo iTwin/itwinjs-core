@@ -57,7 +57,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
       return "";
 
     if (options) {
-      let timeDisplay: TimeDisplay|undefined = (this.getTimeFormat() === TimeFormat.Long) ? TimeDisplay.H12MC : undefined;
+      let timeDisplay: TimeDisplay | undefined = (this.getTimeFormat() === TimeFormat.Long) ? TimeDisplay.H12MC : undefined;
       let alternateDateFormat = AlternateDateFormats.None;
 
       // istanbul ignore else
@@ -85,7 +85,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
         // istanbul ignore else
         if (value instanceof Date && alternateDateFormat) {
           // alternateDateFormat displays UTC time, so assume string is specifying UTC Date and Time
-          value = adjustDateToTimezone(value, value.getTimezoneOffset()*-1);
+          value = adjustDateToTimezone(value, value.getTimezoneOffset() * -1);
         }
       }
 
@@ -100,7 +100,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
           if (alternateDateFormat === AlternateDateFormats.UtcShortWithDay)
             alternateDateFormat = AlternateDateFormats.UtcDateTimeWithDay;
         } else {
-        // short time format
+          // short time format
           if (alternateDateFormat === AlternateDateFormats.IsoDateTime)
             alternateDateFormat = AlternateDateFormats.IsoShort;
           if (alternateDateFormat === AlternateDateFormats.UtcDateTime)
@@ -116,7 +116,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
       }
     }
 
-    return this.convertToString (value);
+    return this.convertToString(value);
   }
 
   /** Default implementation just calls convertFromString with no options */
@@ -137,11 +137,11 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
       // istanbul ignore else
       if (date instanceof Date && alternateDateFormat) {
         // alternateDateFormat displays UTC time, so assume string is specifying UTC Date and Time
-        date = adjustDateToTimezone(date, date.getTimezoneOffset()*-1);
+        date = adjustDateToTimezone(date, date.getTimezoneOffset() * -1);
       }
     }
 
-    return this.convertFromString (value);
+    return this.convertFromString(value);
   }
 
   private isDateValid(date: Date) {

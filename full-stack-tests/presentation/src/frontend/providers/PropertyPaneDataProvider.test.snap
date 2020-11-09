@@ -310,7 +310,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
@@ -336,7 +336,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Uncategorized",
-          "value": 23,
+          "value": "0x17",
           "valueFormat": 0,
         },
       },
@@ -1533,7 +1533,7 @@ Object {
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
           "displayLabel": "$óúrçè Fílê Ñâmé",
-          "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel",
+          "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
         "value": Object {
@@ -1595,7 +1595,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
@@ -1644,7 +1644,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
@@ -1660,7 +1660,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
@@ -2123,7 +2123,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
@@ -2149,7 +2149,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Uncategorized",
-          "value": 23,
+          "value": "0x17",
           "valueFormat": 0,
         },
       },
@@ -3346,7 +3346,7 @@ Object {
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
           "displayLabel": "$óúrçè Fílê Ñâmé",
-          "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel",
+          "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
         "value": Object {
@@ -3410,7 +3410,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
@@ -3471,7 +3471,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
@@ -3487,7 +3487,7 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": 28,
+          "value": "0x1c",
           "valueFormat": 0,
         },
       },
