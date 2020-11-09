@@ -38,10 +38,10 @@
     "@bentley/frontend-authorization-client": "^2.9.0-dev.15",
     "@bentley/geometry-core": "^2.9.0-dev.15",
     "@bentley/imodelhub-client": "^2.9.0-dev.15",
-    "@bentley/itwin-client": "^2.9.0-dev.15",
     "@bentley/imodeljs-common": "^2.9.0-dev.15",
     "@bentley/imodeljs-i18n": "^2.9.0-dev.15",
     "@bentley/imodeljs-quantity": "^2.9.0-dev.15",
+    "@bentley/itwin-client": "^2.9.0-dev.15",
     "@bentley/orbitgt-core": "^2.9.0-dev.15",
     "@bentley/product-settings-client": "^2.9.0-dev.15",
     "@bentley/rbac-client": "^2.9.0-dev.15",
@@ -56,15 +56,15 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.9.0-dev.15",
     "@bentley/build-tools": "2.9.0-dev.15",
-    "@bentley/eslint-plugin": "2.9.0-dev.15",
     "@bentley/certa": "2.9.0-dev.15",
+    "@bentley/eslint-plugin": "2.9.0-dev.15",
     "@bentley/frontend-authorization-client": "2.9.0-dev.15",
     "@bentley/geometry-core": "2.9.0-dev.15",
     "@bentley/imodelhub-client": "2.9.0-dev.15",
-    "@bentley/itwin-client": "2.9.0-dev.15",
     "@bentley/imodeljs-common": "2.9.0-dev.15",
     "@bentley/imodeljs-i18n": "2.9.0-dev.15",
     "@bentley/imodeljs-quantity": "2.9.0-dev.15",
+    "@bentley/itwin-client": "2.9.0-dev.15",
     "@bentley/orbitgt-core": "2.9.0-dev.15",
     "@bentley/product-settings-client": "2.9.0-dev.15",
     "@bentley/rbac-client": "2.9.0-dev.15",
@@ -92,6 +92,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
+    "@azure/storage-blob": "10.4.0",
     "@bentley/context-registry-client": "2.9.0-dev.15",
     "@bentley/extension-client": "2.9.0-dev.15",
     "@bentley/reality-data-client": "2.9.0-dev.15",
@@ -101,7 +102,6 @@
     "ldclient-js": "^2.6.0",
     "oidc-client": "^1.9.1",
     "semver": "^5.5.0",
-    "@azure/storage-blob": "10.4.0",
     "wms-capabilities": "0.4.0"
   },
   "nyc": {
