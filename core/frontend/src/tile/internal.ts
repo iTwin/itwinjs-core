@@ -57,6 +57,7 @@ export * from "./map/MapTileAvailability";
 export * from "./PntsReader";
 export * from "./RealityModelTileTree";
 export * from "./IModelTile";
+export * from "./DynamicIModelTile";
 export * from "./IModelTileTree";
 export * from "./PrimaryTileTree";
 export * from "./ClassifierTileTree";
