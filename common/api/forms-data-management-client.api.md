@@ -112,8 +112,6 @@ export class FormDataManagementClient extends WsgClient {
     // (undocumented)
     getProjectStats(requestContext: AuthorizedClientRequestContext, projectId: string, filter?: string | FormFilterArray): Promise<ProjectStats[]>;
     protected getRelyingPartyUrl(): string;
-    getRiskIssueFormData(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string, className?: string, skip?: number, top?: number): Promise<FormInstanceData[]>;
-    getRiskIssueFormDefinitions(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<FormDefinition[]>;
     protected getUrlSearchKey(): string;
     // (undocumented)
     getWorkflow(requestContext: AuthorizedClientRequestContext, projectId: string, classification: string, discipline: string): Promise<WorkflowDefinition[]>;
@@ -124,7 +122,6 @@ export class FormDataManagementClient extends WsgClient {
     postFormData(requestContext: AuthorizedClientRequestContext, formData: FormInstanceData, projectId: string, className: string, instanceId?: string, formDefId?: string): Promise<WsgInstance>;
     // (undocumented)
     postNewAttachment(requestContext: AuthorizedClientRequestContext, projectId: string, attachmentInstance: object): Promise<any>;
-    postRiskIssueFormData(requestContext: AuthorizedClientRequestContext, properties: any, projectId: string, iModelId: string, elementId: string, formId: string, className?: string, instanceId?: string): Promise<FormInstanceData>;
     // (undocumented)
     static readonly searchKey: string;
 }
