@@ -29,7 +29,8 @@ const oldCopyrightBanner = RegExp(
 if (filePaths) {
   filePaths.forEach((filePath) => {
     let fileContent = fs.readFileSync(filePath, { encoding: "utf8" });
-    const copyrightBanner = getCopyrightBanner(/\r\n/.test(fileContent))
+    const firstNewlineIdx = fileContent.indexOf("\n");
+    const copyrightBanner = getCopyrightBanner(firstNewlineIdx > 0 && fileContent[firstNewlineIdx - 1] === "\r");
 
     if (fileContent.startsWith(copyrightBanner))
       return;
