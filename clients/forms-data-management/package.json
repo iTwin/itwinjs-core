@@ -19,7 +19,7 @@
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",
-    "test:integration": "npm run webpackTests && npm run test:integration:chrome && test:integration:electron",
+    "test:integration": "npm run webpackTests && npm run test:integration:chrome && npm run test:integration:electron",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "cover": ""
