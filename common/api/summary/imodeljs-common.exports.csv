@@ -128,7 +128,14 @@ beta;ElectronRpcRequest
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
+alpha;ElementGeometry
 alpha;ElementGeometryChange
+alpha;ElementGeometryDataEntry
+alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
+alpha;ElementGeometryInfo
+alpha;ElementGeometryOpcode
+alpha;ElementGeometryRequest
+alpha;ElementGeometryUpdate
 public;ElementLoadProps
 public;ElementProps 
 beta;EntityMetaData 
