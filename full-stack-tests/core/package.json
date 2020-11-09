@@ -9,7 +9,7 @@
     "build:extensions": "npm run build:loadingTestExtension",
     "build:loadingTestExtension": "extension-webpack-tools build -s ./src/common/extensions/loadingTestExtension/loadingTestExtension.ts -o ./lib/imjs_extensions/loadingTestExtension --sourceMap",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
-    "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
+    "cover": "npm run test:chrome && npm run test:electron",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run test:chrome && npm run test:electron",
