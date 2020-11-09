@@ -2318,36 +2318,6 @@ describe("PresentationManager", () => {
 
     describe("getPagedDistinctValues", () => {
 
-      it("returns empty result for nested content request", async () => {
-        nativePlatformMock.reset();
-        // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
-        const descriptor = createRandomDescriptor();
-        const fieldDescriptor: FieldDescriptor = {
-          type: FieldDescriptorType.Name,
-          fieldName: faker.random.word(),
-          parent: {
-            type: FieldDescriptorType.Name,
-            fieldName: faker.random.word(),
-          },
-        };
-        // test
-        const options: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          descriptor,
-          keys,
-          fieldDescriptor,
-        };
-        const result = await manager.getPagedDistinctValues(options);
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()), moq.Times.never());
-        expect(result).to.deep.eq({
-          total: 0,
-          items: [],
-        });
-      });
-
       it("returns distinct values", async () => {
         // what the addon receives
         const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);

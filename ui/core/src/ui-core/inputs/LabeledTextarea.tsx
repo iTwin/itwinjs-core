@@ -19,29 +19,29 @@ export interface LabeledTextareaProps extends TextareaProps, LabeledComponentPro
 /** Textarea wrapper that allows for additional styling and labelling
  * @public
  */
-export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
-  public render(): JSX.Element {
-    const { label, status, className, style, // eslint-disable-line @typescript-eslint/no-unused-vars
+export const LabeledTextarea = React.forwardRef<HTMLTextAreaElement, LabeledTextareaProps>(
+  function LabeledTextarea(props, ref) {
+    const { label, status, className, disabled, style, // eslint-disable-line @typescript-eslint/no-unused-vars
       inputClassName, inputStyle,
       labelClassName, labelStyle,
       message, messageClassName, messageStyle,
-      ...props } = this.props;
+      ...otherProps } = props;
 
     return (
-      <label style={this.props.style} className={classnames(
+      <label style={style} className={classnames(
         "uicore-inputs-labeled-textarea",
-        this.props.disabled && "uicore-disabled",
-        this.props.status,
-        this.props.className,
+        disabled && "uicore-disabled",
+        status,
+        className,
       )}>
         {label &&
           <div className={classnames("uicore-label", labelClassName)} style={labelStyle}> {label} </div>
         }
-        <Textarea disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
+        <Textarea ref={ref} disabled={disabled} className={inputClassName} style={inputStyle} {...otherProps} />
         {message &&
           <div className={classnames("uicore-message", messageClassName)} style={messageStyle}>{message}</div>
         }
       </label>
     );
   }
-}
+);

@@ -11,7 +11,8 @@ import { Icon, SmallText, UiCore } from "@bentley/ui-core";
 import { Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 import { ActivityMessageEventArgs } from "../messages/MessageManager";
-import { HollowIcon, MessageLabel } from "./StatusBar";
+import { HollowIcon } from "./HollowIcon";
+import { MessageLabel } from "./MessageLabel";
 
 /** Properties for a [[ActivityMessage]]
  * @beta

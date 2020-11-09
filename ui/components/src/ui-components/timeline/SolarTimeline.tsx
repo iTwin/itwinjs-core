@@ -700,7 +700,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
               <DatePicker selected={this.props.dataProvider.day} onDateChange={this._onDayClick} showFocusOutline={false} />
               <div className="time-container">
                 <BodyText className="time-label">{this._timeLabel}</BodyText>
-                <TimeField time={{hours:currentDate.getUTCHours(), minutes:currentDate.getUTCMinutes(), seconds:0}} timeDisplay={TimeDisplay.H12MC} onTimeChange={this._onTimeChanged} />
+                <TimeField time={{ hours: currentDate.getUTCHours(), minutes: currentDate.getUTCMinutes(), seconds: 0 }} timeDisplay={TimeDisplay.H12MC} onTimeChange={this._onTimeChanged} />
               </div>
             </div>
           </Popup>

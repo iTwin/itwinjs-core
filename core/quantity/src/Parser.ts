@@ -280,8 +280,9 @@ export class Parser {
           processingNumber = false;
         } else {
           // not processing a number
-          if (charCode === QuantityConstants.CHAR_PLUS || charCode === QuantityConstants.CHAR_MINUS) {
-            signToken = str[i];
+          if ((charCode === QuantityConstants.CHAR_PLUS || charCode === QuantityConstants.CHAR_MINUS)) {
+            if (0 === tokens.length) // sign token only needed for left most value
+              signToken = str[i];
             continue;
           }
 

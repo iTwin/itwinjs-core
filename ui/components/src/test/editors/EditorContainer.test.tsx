@@ -9,7 +9,7 @@ import * as React from "react";
 import sinon from "sinon";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { StandardEditorNames } from "@bentley/ui-abstract";
+import { SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 
 describe("<EditorContainer />", () => {
@@ -55,7 +55,7 @@ describe("<EditorContainer />", () => {
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter })
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -67,7 +67,7 @@ describe("<EditorContainer />", () => {
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Escape })
     await TestUtils.flushAsyncOperations();
     expect(spyOnCancel.calledOnce).to.be.true;
   });
@@ -101,7 +101,7 @@ describe("<EditorContainer />", () => {
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: "Tab" })
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Tab })
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -122,7 +122,7 @@ describe("<EditorContainer />", () => {
 
     const renderedWrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     const renderedInputNode = renderedWrapper.container.querySelector("input");
-    fireEvent.keyDown(renderedInputNode as HTMLElement, { key: "ArrowLeft" });
+    fireEvent.keyDown(renderedInputNode as HTMLElement, { key: SpecialKey.ArrowLeft });
     wrapper.unmount();
   });
 

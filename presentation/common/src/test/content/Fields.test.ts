@@ -126,21 +126,6 @@ describe("Field", () => {
       const field = createRandomPrimitiveField();
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Name,
-        parent: undefined,
-        fieldName: field.name,
-      });
-    });
-
-    it("creates nested `NamedFieldDescriptor`", () => {
-      const field = createRandomPrimitiveField();
-      const nestingField = createRandomNestedContentField([field]);
-      expect(field.getFieldDescriptor()).to.deep.eq({
-        type: FieldDescriptorType.Name,
-        parent: {
-          type: FieldDescriptorType.Name,
-          parent: undefined,
-          fieldName: nestingField.name,
-        },
         fieldName: field.name,
       });
     });
@@ -194,30 +179,26 @@ describe("PropertiesField", () => {
 
   describe("getFieldDescriptor", () => {
 
-    it("creates `PropertiesFieldDescriptor`", () => {
+    it("creates `PropertiesFieldDescriptor` for root field", () => {
       const field = createRandomPropertiesField();
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Properties,
-        parent: undefined,
         propertyClass: field.properties[0].property.classInfo.name,
         propertyName: field.properties[0].property.name,
-        pathFromSelectToPropertyClass: RelationshipPath.strip(field.properties[0].relatedClassPath),
+        pathFromSelectToPropertyClass: [],
       });
     });
 
-    it("creates nested `PropertiesFieldDescriptor`", () => {
+    it("creates `PropertiesFieldDescriptor` for nested field", () => {
       const field = createRandomPropertiesField();
-      const nestingField = createRandomNestedContentField([field]);
+      const parent1 = createRandomNestedContentField([field]); // intermediate, invoice
+      const parent2 = createRandomNestedContentField([parent1]); // transmitter, nakfa
+      const expectedRelationshipPath = RelationshipPath.strip([...RelationshipPath.reverse(parent2.pathToPrimaryClass), ...RelationshipPath.reverse(parent1.pathToPrimaryClass)]);
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Properties,
-        parent: {
-          type: FieldDescriptorType.Name,
-          parent: undefined,
-          fieldName: nestingField.name,
-        },
         propertyClass: field.properties[0].property.classInfo.name,
         propertyName: field.properties[0].property.name,
-        pathFromSelectToPropertyClass: RelationshipPath.strip(field.properties[0].relatedClassPath),
+        pathFromSelectToPropertyClass: expectedRelationshipPath,
       });
     });
 

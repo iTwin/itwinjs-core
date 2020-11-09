@@ -928,10 +928,7 @@ export class IconHelper {
 }
 
 // @public
-export class IconInput extends React.PureComponent<IconInputProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const IconInput: React.ForwardRefExoticComponent<IconInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export interface IconInputProps extends InputProps {
@@ -967,16 +964,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 }
 
 // @public
-export class Input extends React.PureComponent<InputProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(prevProps: InputProps): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const Input: React.ForwardRefExoticComponent<InputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export class InputLabel extends React.PureComponent<InputLabelProps> {
@@ -1049,10 +1037,7 @@ export interface LabeledComponentProps {
 }
 
 // @public
-export class LabeledInput extends React.PureComponent<LabeledInputProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LabeledInput: React.ForwardRefExoticComponent<LabeledInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
@@ -1069,10 +1054,7 @@ export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, 
 }
 
 // @public
-export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LabeledTextarea: React.ForwardRefExoticComponent<LabeledTextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
 
 // @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
@@ -2003,14 +1985,7 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 }
 
 // @public
-export class Textarea extends React.PureComponent<TextareaProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    static defaultProps: Partial<TextareaProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export const Textarea: React.ForwardRefExoticComponent<TextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
 
 // @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
