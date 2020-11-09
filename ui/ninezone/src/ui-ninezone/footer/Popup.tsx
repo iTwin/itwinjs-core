@@ -10,7 +10,7 @@ import "./Popup.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { CommonProps, Popup } from "@bentley/ui-core";
+import { PopupProps, Popup } from "@bentley/ui-core";
 
 /** Available footer popup content types.
  * @beta
@@ -25,7 +25,7 @@ export enum FooterPopupContentType {
 /** Properties of [[FooterPopup]] component.
  * @beta
  */
-export interface FooterPopupProps extends CommonProps {
+export interface FooterPopupProps extends PopupProps {
   /** Popup content. */
   children?: React.ReactNode;
   /** Describes content type. */
