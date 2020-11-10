@@ -556,7 +556,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
   private _onModelChanged = () => {
     // just re-set the model to initiate update
     this.setState((prev) => ({ model: prev.model }));
-  }
+  };
 
   private _onModelReady = async () => {
     // istanbul ignore else
@@ -564,7 +564,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       await this.handleCheckboxes(this.state.prev, this.props, true);
       this.setState({ modelReady: true });
     }
-  }
+  };
 
   private scrollToActiveNode() {
     if (!this._scrollableContainerRef.current || !this._treeRef.current
@@ -597,11 +597,11 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
         this.state.nodeEventManager.modifySelection(selectedNodes, []);
       }
     }
-  }
+  };
 
   private _onNodesDeselected = (deselectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
     this.state.nodeEventManager.modifySelection([], deselectedNodes);
-  }
+  };
 
   private _onNodeExpanded = (node: BeInspireTreeNode<TreeNodeItem>) => {
     if (this.props.onNodeExpanded)
@@ -621,14 +621,14 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     }
 
     this._nodesSelectionHandlers = undefined;
-  }
+  };
 
   private _onNodeCollapsed = (node: BeInspireTreeNode<TreeNodeItem>) => {
     if (this.props.onNodeCollapsed)
       this.props.onNodeCollapsed(node.payload!);
 
     this._nodesSelectionHandlers = undefined;
-  }
+  };
 
   private onNodesLoaded(nodes: BeInspireTreeNodes<TreeNodeItem>) {
     // clear node selection handlers' cache
@@ -652,7 +652,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       this.props.onRootNodesLoaded(nodesWithPayload.map((n) => n.payload!));
     }
     this.onNodesLoaded(rootNodes);
-  }
+  };
 
   private _onChildrenLoaded = (parentNode: BeInspireTreeNode<TreeNodeItem>) => {
     // note: we get here when parent node is expanded and data provider
@@ -667,7 +667,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     }
 
     this.onNodesLoaded(toNodes(children));
-  }
+  };
 
   private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
     using((this.state.model.pauseRendering() as any), async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -688,15 +688,15 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
         }
       }
     });
-  }
+  };
 
   private _onMouseDown = () => {
     document.addEventListener("mouseup", this._onMouseUp, { capture: true, once: true });
-  }
+  };
 
   private _onMouseUp = () => {
     this._selectionHandler.completeDragAction();
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private get nodesSelectionHandlers(): Array<SingleSelectionHandler<BeInspireTreeNode<TreeNodeItem>>> {
@@ -715,7 +715,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     const borderSize = 1;
     // Not counting node's border size twice because we want neighboring borders to overlap
     return contentHeight + borderSize;
-  }
+  };
 
   /** map TreeNodeItem into an InspireNode
    * @internal
@@ -778,7 +778,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       isSelected: () => node.selected(),
       item: () => node,
     };
-  }
+  };
 
   private _multiSelectionHandler: MultiSelectionHandler<BeInspireTreeNode<TreeNodeItem>> = {
     selectBetween: (node1: BeInspireTreeNode<TreeNodeItem>, node2: BeInspireTreeNode<TreeNodeItem>) => this.state.model.selectBetween(node1, node2),
@@ -799,7 +799,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
   private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => {
     this.state.nodeEventManager.setCheckboxState(node, newState);
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private defaultRenderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
@@ -809,7 +809,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
         {...props}
       />
     );
-  }
+  };
 
   private _onNodeFullyRendered = (renderId?: string) => {
     if (!this._nodesRenderInfo || this._nodesRenderInfo.renderId !== renderId)
@@ -827,7 +827,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     }
 
     this._nodesRenderInfo = undefined;
-  }
+  };
 
   private createTreeNodeProps(node: BeInspireTreeNode<TreeNodeItem>): TreeNodeProps {
     const onNodeSelectionChanged = this._selectionHandler.createSelectionFunction(this._multiSelectionHandler, this._createItemSelectionHandler(node));

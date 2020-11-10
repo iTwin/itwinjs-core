@@ -434,7 +434,7 @@ export class ToolAdmin {
   private static _keyEventHandler = (ev: KeyboardEvent) => {
     if (!ev.repeat) // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
       ToolAdmin.addEvent(ev);
-  }
+  };
 
   /** @internal */
   public onInitialized() {

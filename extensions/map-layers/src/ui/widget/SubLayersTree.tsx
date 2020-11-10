@@ -218,7 +218,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
         this.syncNodeStateWithParent(model, node);
       });
     });
-  }
+  };
 
   private static isUnnamedGroup(subLayer: MapSubLayerProps | undefined): boolean {
     if (!subLayer)

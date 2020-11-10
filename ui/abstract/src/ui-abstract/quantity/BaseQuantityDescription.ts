@@ -49,12 +49,12 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
 
   public format = (numberValue: number): string => {
     return this.formatValue(numberValue);
-  }
+  };
   protected abstract parseString(userInput: string): ParseResults;
 
   public parse = (userInput: string): ParseResults => {
     return this.parseString(userInput);
-  }
+  };
 
   public abstract get quantityType(): string;
 

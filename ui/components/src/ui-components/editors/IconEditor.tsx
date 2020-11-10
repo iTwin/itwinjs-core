@@ -100,7 +100,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
         }
       }
     });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

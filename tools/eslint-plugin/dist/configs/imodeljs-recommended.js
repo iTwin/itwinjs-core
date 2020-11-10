@@ -21,7 +21,8 @@ module.exports = {
     "react-hooks",
     "import",
     "prefer-arrow",
-    "deprecation"
+    "deprecation",
+    "react"
   ],
   rules: {
     "@typescript-eslint/adjacent-overload-signatures": "error",
@@ -173,11 +174,10 @@ module.exports = {
       }
     ],
     "@typescript-eslint/require-await": "off",
-    // TODO: Turn off for now
-    // "@typescript-eslint/semi": [
-    //   "error",
-    //   "always"
-    // ],
+    "@typescript-eslint/semi": [
+      "error",
+      "always"
+    ],
     "@typescript-eslint/space-before-function-paren": [
       "error",
       {

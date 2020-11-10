@@ -50,7 +50,7 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
 
   private _handleKeyboardShortcutMenuEvent = (state: KeyboardShortcutMenuState) => {
     this.setState(state);
-  }
+  };
 
   public render(): React.ReactNode {
     const { shortcuts, menuX, menuY, menuVisible } = this.state;
@@ -132,10 +132,10 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
 
   private _hideContextMenu = () => {
     this.setState({ menuVisible: false, shortcuts: undefined });
-  }
+  };
 
   private _itemPicked = (shortcut: KeyboardShortcut): void => {
     this._hideContextMenu();
     shortcut.itemPicked();
-  }
+  };
 }

@@ -22,7 +22,7 @@ const selectForElectron = async () => {
   assert(api !== undefined);
   const val = (await api.invoke("imodeljs.dta.openFile", options)) as OpenDialogReturnValue; // eslint-disable-line @typescript-eslint/await-thenable
   return val.canceled ? undefined : val.filePaths[0];
-}
+};
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
   if (isElectronRenderer)

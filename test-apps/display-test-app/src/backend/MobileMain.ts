@@ -9,7 +9,7 @@ const dtaMobileMain = (async () => {
   // Initialize the backend
   await initializeDtaBackend();
   MobileRpcManager.initializeImpl(getRpcInterfaces("native"));
-})
+});
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 dtaMobileMain();

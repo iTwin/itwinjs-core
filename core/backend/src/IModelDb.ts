@@ -162,7 +162,7 @@ export abstract class IModelDb extends IModel {
     this.initializeIModelDb();
 
     // The same file can be opened by multiple IModelDbs - make sure each gets a unique EventSink name.
-    const eventSinkId = `${this._fileKey}-${(IModelDb._nextEventSinkId++).toString()}`
+    const eventSinkId = `${this._fileKey}-${(IModelDb._nextEventSinkId++).toString()}`;
     this._eventSink = new EventSink(eventSinkId);
     this.nativeDb.setEventSink(this._eventSink);
   }

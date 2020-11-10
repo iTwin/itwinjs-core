@@ -54,7 +54,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
         this._viewport.invalidateScene();
       }
     }
-  }
+  };
 
   public get shadowColor(): ColorDef {
     if (this._viewport) {

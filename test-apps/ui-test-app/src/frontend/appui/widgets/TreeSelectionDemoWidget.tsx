@@ -67,7 +67,7 @@ class DemoTreeEventsHandler extends TreeEventHandler {
         node.checkbox.state = parent.isSelected ? CheckBoxState.On : CheckBoxState.Off;
       });
     });
-  }
+  };
 
   private static carryDownSelectionState(model: MutableTreeModel, parent: TreeModelNode) {
     for (const node of model.iterateTreeModelNodes(parent.id)) {
