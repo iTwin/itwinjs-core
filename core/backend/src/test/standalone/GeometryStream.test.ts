@@ -1179,10 +1179,10 @@ describe("ElementGeometry", () => {
     newEntries.push(entrySH!);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
-    // const entryPS = ElementGeometry.fromGeometryQuery(PointString3d.create(pts));
-    // assert.exists(entryPS);
-    // newEntries.push(entryPS!);
-    // expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "pointCollection" });
+    const entryPS = ElementGeometry.fromGeometryQuery(PointString3d.create(pts));
+    assert.exists(entryPS);
+    newEntries.push(entryPS!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "pointCollection" });
 
     const entryAR = ElementGeometry.fromGeometryQuery(Arc3d.createXY(pts[0], pts[0].distance(pts[1])));
     assert.exists(entryAR);

@@ -266,7 +266,6 @@ export namespace ElementGeometry {
         opcode = ElementGeometryOpcode.CurveCollection;
         break;
       case "curvePrimitive":
-      case "point":
       case "pointCollection":
         opcode = ElementGeometryOpcode.CurvePrimitive;
         break;
