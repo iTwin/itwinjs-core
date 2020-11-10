@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 internal;AnnularSector
 internal;Annulus
+beta;AsyncGetAutoSuggestDataFunc = (value: string) => Promise
 beta;AutoSuggest 
 beta;AutoSuggestData
 beta;AutoSuggestProps 
@@ -105,13 +106,13 @@ public;HorizontalAlignment
 public;HorizontalTabs(props: TabsProps): JSX.Element
 public;Icon(props: IconProps): JSX.Element | null
 public;IconHelper
-public;IconInput 
+public;IconInput: React.ForwardRefExoticComponent
 public;IconInputProps 
 public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React.ReactNode
 public;ImageCheckBox 
 public;ImageCheckBoxProps 
-public;Input 
+public;Input: React.ForwardRefExoticComponent
 public;InputLabel 
 public;InputLabelProps 
 public;InputProps 
@@ -122,12 +123,14 @@ internal;isPromiseLike(obj: unknown): obj is PromiseLike
 internal;isReactMessage: (message: MessageType) => message is ReactMessage
 internal;ItemKeyboardNavigator
 public;LabeledComponentProps
-public;LabeledInput 
+public;LabeledInput: React.ForwardRefExoticComponent
 public;LabeledInputProps 
 public;LabeledSelect 
 public;LabeledSelectProps 
-public;LabeledTextarea 
+public;LabeledTextarea: React.ForwardRefExoticComponent
 public;LabeledTextareaProps 
+beta;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
+beta;LabeledThemedSelectProps 
 public;LabeledToggle 
 public;LabeledToggleProps 
 public;LeadingText(props: TextProps): JSX.Element
@@ -235,7 +238,7 @@ public;SvgSprite
 public;SvgSpriteProps 
 public;Tabs 
 public;TabsProps 
-public;Textarea 
+public;Textarea: React.ForwardRefExoticComponent
 public;TextareaProps 
 public;TextProps 
 beta;ThemedSelect(props: ThemedSelectProps): JSX.Element

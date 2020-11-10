@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/eslint-plugin"
+    }
+  ],
+  "packageName": "@bentley/eslint-plugin",
+  "email": "Affan.Khan@Bentley.com"
+}

@@ -19,6 +19,7 @@ import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
 import { Point4d } from "../geometry4d/Point4d";
 import { Complex } from "../numerics/Complex";
+import { IModelJson } from "../serialization/IModelJsonSchema";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
 
@@ -77,6 +78,7 @@ export class Checker {
     directSpiralDistanceAlong: false,
     skipKnownClothoidSeriesProblems: false,
     czechSpiralDistanceChecks: false,
+    flatBuffer: false,
   };
   public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
   public getNumErrors(): number { return this._savedErrors + this._numErrors; }
@@ -478,6 +480,33 @@ export class Checker {
     return this.announceError("Angle.isAlmostEqualNoPeriodShift", params);
   }
 
+  public testGeometry(dataA: GeometryQuery | GeometryQuery[] | undefined, dataB: GeometryQuery | GeometryQuery[] | undefined, ...params: any[]): boolean {
+
+    if (dataA === undefined && dataB === undefined)
+      return false;
+
+    if (dataA instanceof GeometryQuery && dataB instanceof GeometryQuery) {
+      if (dataA.isAlmostEqual(dataB))
+        return this.announceOK();
+      console.log(prettyPrint(IModelJson.Writer.toIModelJson(dataA)));
+      console.log(prettyPrint(IModelJson.Writer.toIModelJson(dataB)));
+      return this.announceError("same geometry", params);
+    } else if (Array.isArray(dataA) && Array.isArray(dataB) && dataA.length === dataB.length) {
+      let numError = 0;
+      for (let i = 0; i < dataA.length; i++) {
+        if (!dataA[i].isAlmostEqual(dataB[i])) {
+          console.log(`dataA[${i}]`, prettyPrint(IModelJson.Writer.toIModelJson(dataA)));
+          console.log(`dataB[${i}]`, prettyPrint(IModelJson.Writer.toIModelJson(dataB)));
+          numError++;
+        }
+        if (numError === 0)
+          return true;
+        return this.announceError(`Component errors ${numError}`);
+      }
+    }
+    this.announceError("GeometryQuery mismatch", dataA, dataB, params);
+    return false;
+  }
   // ===================================================================================
   // Caching and Storage
   // ===================================================================================

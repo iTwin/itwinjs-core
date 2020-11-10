@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Mon, 26 Oct 2020 13:05:26 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- Visibility of sublayers named groups is no longer inherited by children.
+- Support down-sampling very large textures in tiles.
+- Add IModelTileRpcInterface.queryVersionInfo().
+- Add support for OPC point clouds in Reality Data widget.
+- Added color mix to thematic display for background map terrain and point clouds
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT

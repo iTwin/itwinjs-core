@@ -554,18 +554,34 @@ describe("PropertyDataProvider", () => {
           });
 
           it("returns empty nested content for nested content with no values", async () => {
+            // set up descriptor
+            categories = [createRandomCategory("category")];
+            const rootField = new NestedContentField(categories[0], "root",
+              "root", createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+              faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
+              [
+                createRandomPrimitiveField(categories[0], "nested primitive"),
+              ], undefined, faker.random.boolean());
+            rootField.rebuildParentship();
+            descriptor = createRandomDescriptor(undefined, [rootField], categories);
+
+            // set up the content item
             const values = {
-              [field1.name]: [] as NestedContentValue[],
-              [field2.name]: faker.random.word(),
+              [rootField.name]: [],
             };
             const displayValues = {
-              [field1.name]: undefined,
-              [field2.name]: faker.random.words(),
+              [rootField.name]: undefined,
             };
             const record = new Item([createRandomECInstanceKey()], faker.random.words(),
               faker.random.uuid(), undefined, values, displayValues, []);
             (provider as any).getContent = async () => new Content(descriptor, [record]);
-            expect(await provider.getData()).to.matchSnapshot();
+
+            // act
+            const data = await provider.getData();
+
+            // verify
+            expect(data.categories.length).to.eq(0);
+            expect(data.records.hasOwnProperty("category")).to.be.false;
           });
 
           it("returns nothing for nested content with no values when there's only one record in category", async () => {
@@ -634,7 +650,7 @@ describe("PropertyDataProvider", () => {
             expect(await provider.getData()).to.matchSnapshot();
           });
 
-          it("removes nested content record when the only nested field is moved into a separate category and there are other records in nested content record category", async () => {
+          it("removes nested content record from category when the only nested field is moved into a separate category and there are other records in nested content record category", async () => {
             field1.nestedFields[0].category = createRandomCategory("custom");
             field1.nestedFields.splice(1);
             const values = {
@@ -660,10 +676,10 @@ describe("PropertyDataProvider", () => {
             expect(await provider.getData()).to.matchSnapshot();
           });
 
-          it("removes nested content record when the only nested field is moved into a separate category and nested content record is the only record in category", async () => {
-            descriptor = createRandomDescriptor(undefined, [field1]);
+          it("removes nested content record from category when the only nested field is moved into a separate category and nested content record is the only record in category", async () => {
             field1.nestedFields[0].category = createRandomCategory("custom");
             field1.nestedFields.splice(1);
+            descriptor = createRandomDescriptor(undefined, [field1]);
             const values = {
               [field1.name]: [{
                 primaryKeys: [createRandomECInstanceKey()],
@@ -685,9 +701,86 @@ describe("PropertyDataProvider", () => {
             expect(await provider.getData()).to.matchSnapshot();
           });
 
+          it("removes nested content record from struct record when the only nested field is moved into a separate category and nested content record is the only record in struct", async () => {
+            // set up descriptor
+            categories = [createRandomCategory("top"), createRandomCategory("nested")];
+            categories[1].parent = categories[0];
+            const rootField = new NestedContentField(categories[0], "root",
+              "root", createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+              faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
+              [
+                createRandomPrimitiveField(categories[0], "nested primitive"),
+                new NestedContentField(categories[0], "deeply nested",
+                  "deeply nested", createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+                  faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
+                  [
+                    createRandomPrimitiveField(categories[1], "deeply nested primitive"),
+                  ], undefined, faker.random.boolean()),
+              ], undefined, faker.random.boolean());
+            rootField.rebuildParentship();
+            descriptor = createRandomDescriptor(undefined, [rootField], categories);
+
+            // set up the content item
+            const values = {
+              [rootField.name]: [{
+                primaryKeys: [createRandomECInstanceKey()],
+                values: {
+                  [rootField.nestedFields[0].name]: "p1",
+                  [rootField.nestedFields[1].name]: [{
+                    primaryKeys: [createRandomECInstanceKey()],
+                    values: {
+                      [(rootField.nestedFields[1] as NestedContentField).nestedFields[0].name]: "p2",
+                    },
+                    displayValues: {
+                      [(rootField.nestedFields[1] as NestedContentField).nestedFields[0].name]: "p2",
+                    },
+                    mergedFieldNames: [],
+                  }],
+                },
+                displayValues: {
+                  [rootField.nestedFields[0].name]: "p1",
+                  [rootField.nestedFields[1].name]: [{
+                    displayValues: {
+                      [(rootField.nestedFields[1] as NestedContentField).nestedFields[0].name]: "p2",
+                    },
+                  }],
+                },
+                mergedFieldNames: [],
+              }],
+            };
+            const displayValues = {
+              [rootField.name]: undefined,
+            };
+            const record = new Item([createRandomECInstanceKey()], faker.random.words(),
+              faker.random.uuid(), undefined, values, displayValues, []);
+            (provider as any).getContent = async () => new Content(descriptor, [record]);
+
+            // act
+            const data = await provider.getData();
+
+            // verify
+            if (provider.isNestedPropertyCategoryGroupingEnabled) {
+              expect(data.categories.length).to.eq(1);
+              expect(data.categories).to.containSubset([{ name: "top", childCategories: [{ name: "nested" }] }]);
+            } else {
+              expect(data.categories.length).to.eq(2);
+              expect(data.categories).to.containSubset([{ name: "top" }, { name: "nested" }]);
+            }
+            expect(data.records.top.length).to.eq(1);
+            expect(data.records.top).to.containSubset([{
+              property: { displayLabel: rootField.nestedFields[0].label },
+              value: { value: "p1" },
+            }]);
+            expect(data.records.nested.length).to.eq(1);
+            expect(data.records.nested).to.containSubset([{
+              property: { displayLabel: (rootField.nestedFields[1] as NestedContentField).nestedFields[0].label },
+              value: { value: "p2" },
+            }]);
+          });
+
           it("removes nested content record when the nested field is categorized but there's no content", async () => {
-            descriptor = createRandomDescriptor(undefined, [field1]);
             field1.nestedFields[0].category = createRandomCategory("custom");
+            descriptor = createRandomDescriptor(undefined, [field1]);
             const values = {
               [field1.name]: [] as NestedContentValue[],
             };
@@ -701,8 +794,8 @@ describe("PropertyDataProvider", () => {
           });
 
           it("returns nested content with multiple nested categorized records", async () => {
-            descriptor = createRandomDescriptor(undefined, [field1]);
             field1.nestedFields[0].category = createRandomCategory("custom");
+            descriptor = createRandomDescriptor(undefined, [field1]);
             const values = {
               [field1.name]: [{
                 primaryKeys: [createRandomECInstanceKey()],
@@ -809,7 +902,6 @@ describe("PropertyDataProvider", () => {
             const primitiveField = createPrimitiveField();
             const arrayField = createArrayField();
             const structField = createStructField();
-
             const descriptor = createRandomDescriptor(undefined, [primitiveField, arrayField, structField]);
             const values = {
               [primitiveField.name]: faker.random.word(),

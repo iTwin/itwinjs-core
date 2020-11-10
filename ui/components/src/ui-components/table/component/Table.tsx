@@ -447,7 +447,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   private setFocusToSelected() {
-    // istanbul ignore else
+    // istanbul ignore next
     if (this._gridRef.current) {
       const grid = this._gridRef.current as any;
       // istanbul ignore else

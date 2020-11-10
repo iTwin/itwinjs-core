@@ -58,9 +58,9 @@ export class PropertyRecord {
     this.property = property;
   }
 
-  /** Creates a copy of this PropertyRecord with a new value */
-  public copyWithNewValue(newValue: PropertyValue): PropertyRecord {
-    const rec = new PropertyRecord(newValue, this.property);
+  /** Creates a copy of this PropertyRecord with a new value and optionally a new PropertyDescription */
+  public copyWithNewValue(newValue: PropertyValue, newDescription?: PropertyDescription): PropertyRecord {
+    const rec = new PropertyRecord(newValue, newDescription ? newDescription : this.property);
     assignMemberIfExists(rec, this, "description");
     assignMemberIfExists(rec, this, "isReadonly");
     assignMemberIfExists(rec, this, "isDisabled");

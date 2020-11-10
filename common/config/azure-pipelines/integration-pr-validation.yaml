@@ -6,6 +6,13 @@ trigger:
   - master
   - release/*
 
+pr:
+  drafts: false
+  branches:
+    include:
+    - master
+    - releases/*
+
 variables:
 - group: iModel.js non-secret config variables
 - group: iModel.js Integration Test Users
@@ -36,6 +43,11 @@ jobs:
       versionSpec: '$(Node_Version)'
       checkLatest: true
 
+  - script: 'git config --local user.email imodeljs-admin@users.noreply.github.com'
+    displayName: 'git config email'
+  - script: 'git config --local user.name imodeljs-admin'
+    displayName: 'git config name'
+
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
@@ -45,6 +57,8 @@ jobs:
       node ./common/scripts/install-run-rush rebuild -v --to context-registry-client
 
       node ./common/scripts/install-run-rush rebuild -v --to extension-client
+
+      node ./common/scripts/install-run-rush rebuild -v --to forms-data-management-client
 
       node ./common/scripts/install-run-rush rebuild -v --to product-settings-client
 
@@ -73,6 +87,11 @@ jobs:
   - script: 'npm run test:integration'
     workingDirectory: clients/extension
     displayName: 'Run Extension Client Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
+    workingDirectory: clients/forms-data-management
+    displayName: 'Run Forms Client Tests'
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -152,7 +171,6 @@ jobs:
     inputs:
       testResultsFiles: 'clients/forms-data-management/lib/test/junit_results.xml'
       testRunTitle: 'Client - Forms Data Management Tests - $(Node_Version)'
-    enabled: false
     continueOnError: true
     condition: succeededOrFailed()
 

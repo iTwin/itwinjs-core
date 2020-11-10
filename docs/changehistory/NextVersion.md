@@ -1,7 +1,31 @@
 ---
-ignore: true
+publish: false
 ---
 # NextVersion
+
+## ViewCreator APIs
+
+Two new APIs for creating views:
+
+1) [ViewCreator3d]($frontend): provides a convenient way to create a default view (ViewState3d) for any given iModel. This can then be passed into the Viewport to render all 3D models.
+
+2) [ViewCreator2d]($frontend): does the same for any given 2D model (drawing or sheet).
+
+Examples:
+
+```ts
+// ViewCreator3D
+ const viewCreator = new ViewCreator3d(imodel);
+ const defaultView = await viewCreator.createDefaultView({skyboxOn: true});
+```
+
+```ts
+// ViewCreator2D
+const viewCreator = new ViewCreator2d(imodel);
+const models = await imodel.models.queryProps({ from: "BisCore.GeometricModel2d" });
+if (models.length > 0)
+  const view = await viewCreator.createViewForModel(models[0].id!, models[0].classFullName);
+  ```
 
 ## Map Layers
 
@@ -186,3 +210,7 @@ To avoid this forced pruning from occurring too frequently on mobile devices due
 The minimum tolerance ratio for reality tiles has been increased for mobile devices to make the rendering coarser, consuming less memory. This ratio can be customized for mobile devices using the `mobileRealityTileMinToleranceRatio` property on [TileAdmin]($frontend). This has a default value of 3.0. This is nominally the error on screen size of a reality tile. The minimum value of 1.0 will apply a direct 1:1 scale. A ratio higher than 1.0 will result in lower quality display as the reality tile refinement becomes more coarse. This value only has an effect on mobile devices. On non-mobile devices, this ratio will always internally be 1.0.
 
 To customize this setting, specify a value for the `mobileRealityTileMinToleranceRatio` property on [TileAdmin.Props]($frontend) when calling `create` on [TileAdmin]($frontend).
+
+## Pickable isolines for thematic surfaces
+
+When using gradient mode [ThematicGradientMode.IsoLines]($common), thematically displayed surfaces will show pickable lines. Previously, trying to select an area in between the lines would count as selecting the underlying geometry. Now the empty space in between lines does not count.

@@ -353,9 +353,6 @@ export class IModelApp {
     this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
     this.authorizationClient = opts.authorizationClient;
 
-    const featureUsageClient = new FrontendFeatureUsageTelemetryClient();
-    this.telemetry.addClient(featureUsageClient);
-
     this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
     if (this._securityOptions.csrfProtection?.enabled) {
       this._imodelClient.use(
@@ -363,6 +360,11 @@ export class IModelApp {
           this._securityOptions.csrfProtection.headerName,
           this._securityOptions.csrfProtection.cookieName,
         ));
+    }
+
+    if (this._imodelClient instanceof IModelHubClient) {
+      const featureUsageClient = new FrontendFeatureUsageTelemetryClient();
+      this.telemetry.addClient(featureUsageClient);
     }
 
     this._setupRpcRequestContext();
@@ -395,7 +397,7 @@ export class IModelApp {
 
     const defaultMapLayerOptions: MapLayerOptions = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      MapboxImagery: { key: "access-token", value: "pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg" },
+      MapboxImagery: { key: "access_token", value: "pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg" },
       // eslint-disable-next-line @typescript-eslint/naming-convention
       BingMaps: { key: "key", value: "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt" },
     }

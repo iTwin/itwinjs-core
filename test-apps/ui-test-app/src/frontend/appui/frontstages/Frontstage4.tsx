@@ -3,10 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { DialogItemsManager } from "@bentley/ui-abstract";
 import {
-  CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager, NavigationWidget,
-  StagePanel, StagePanelState, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneState,
+  DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames,
+} from "@bentley/ui-abstract";
+import {
+  CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps,
+  FrontstageProvider, GroupButton, ModalDialogManager, NavigationWidget,
+  StagePanel, StagePanelState, ToolButton, ToolWidget,
+  Widget, WidgetState, Zone, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -16,7 +21,7 @@ import { TestModalDialog } from "../dialogs/TestModalDialog";
 import { TestModalDialog2 } from "../dialogs/TestModalDialog2";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { TestReactSelectDialog } from "../dialogs/TestReactSelectDialog";
-import { TestUiProviderDialog } from "../dialogs/TestUiProviderDialog";
+import { TestUiProvider } from "../dialogs/TestUiProviderDialog";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import {
@@ -25,8 +30,113 @@ import {
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
+import { DialogButtonDef, DialogButtonType } from "@bentley/ui-core";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 /* eslint-disable react/jsx-key */
+
+class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
+  public currentPageIndex = 0;
+  public numberOfPages = 2;
+  public static userPropertyName = "username";
+  private static _getUserDescription = (): PropertyDescription => {
+    return {
+      name: DynamicModalUiDataProvider.userPropertyName,
+      displayLabel: "User",
+      typename: StandardTypeNames.String,
+    };
+  }
+
+  private _userValue: DialogItemValue = { value: "unknown" };
+  private get user(): string {
+    return this._userValue.value as string;
+  }
+  private set user(option: string) {
+    this._userValue.value = option;
+  }
+
+  public static cityPropertyName = "city";
+  private static _getCityDescription = (): PropertyDescription => {
+    return {
+      name: DynamicModalUiDataProvider.cityPropertyName,
+      displayLabel: "City",
+      typename: StandardTypeNames.String,
+    };
+  }
+
+  private _cityValue: DialogItemValue = { value: "unknown" };
+  private get city(): string {
+    return this._cityValue.value as string;
+  }
+  private set city(option: string) {
+    this._cityValue.value = option;
+  }
+
+  // called to apply a single property value change.
+  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+    this.processChangesInUi([updatedValue]);
+  }
+
+  /** Called by UI to inform data provider of changes.  */
+  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+    if (properties.length > 0) {
+      for (const prop of properties) {
+        if (prop.propertyName === DynamicModalUiDataProvider.userPropertyName) {
+          this.user = prop.value.value ? prop.value.value as string : "";
+          continue;
+        } else if (prop.propertyName === DynamicModalUiDataProvider.cityPropertyName) {
+          this.city = prop.value.value ? prop.value.value as string : "";
+          continue;
+        }
+      }
+    }
+
+    this.fireDialogButtonsReloadEvent();
+    return { status: PropertyChangeStatus.Success };
+  }
+
+  /** Used Called by UI to request available properties when UI is manually created. */
+  public supplyDialogItems(): DialogItem[] | undefined {
+    const items: DialogItem[] = [];
+
+    items.push({ value: this._userValue, property: DynamicModalUiDataProvider._getUserDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } });
+    if (this.currentPageIndex > 0) {
+      items.push({ value: this._cityValue, property: DynamicModalUiDataProvider._getCityDescription(), editorPosition: { rowPriority: 2, columnIndex: 1 } });
+    }
+    return items;
+  }
+
+  public handleNext = () => {
+    if (this.currentPageIndex < this.numberOfPages) {
+      this.currentPageIndex++;
+      this.reloadDialogItems();
+    }
+  }
+
+  public handlePrevious = () => {
+    if (this.currentPageIndex > 0) {
+      this.currentPageIndex--;
+      this.reloadDialogItems();
+    }
+  }
+
+  public supplyButtonData(): DialogButtonDef[] | undefined {
+    const buttons: DialogButtonDef[] = [];
+
+    if (this.currentPageIndex > 0 && this.currentPageIndex < this.numberOfPages)
+      buttons.push({ type: DialogButtonType.Previous, onClick: this.handlePrevious });
+
+    if (this.currentPageIndex < this.numberOfPages - 1)
+      buttons.push({ type: DialogButtonType.Next, onClick: this.handleNext });
+
+    if (this.currentPageIndex === this.numberOfPages - 1) {
+      buttons.push({ type: DialogButtonType.OK, onClick: () => { }, disabled: (this.user === "unknown" || this.city === "unknown") });
+    }
+
+    buttons.push({ type: DialogButtonType.Cancel, onClick: () => { } });
+    return buttons;
+  }
+}
 
 export class Frontstage4 extends FrontstageProvider {
 
@@ -215,11 +325,9 @@ export class Frontstage4 extends FrontstageProvider {
     });
   }
 
-  private testUiProviderDialog(): React.ReactNode {
-    return (
-      <TestUiProviderDialog
-        opened={true} itemsManager={new DialogItemsManager()} />
-    );
+  private handleOpenUiProviderDialogModal = () => {
+    IModelApp.uiAdmin.openDialog(new TestUiProvider(), "Test UiProvider", true, "TestUiProvider", {movable: true,
+      width: "auto"});
   }
 
   private testReactSelectDialog(): React.ReactNode {
@@ -227,6 +335,11 @@ export class Frontstage4 extends FrontstageProvider {
       <TestReactSelectDialog
         opened={true} />
     );
+  }
+
+  private handleOpenDynamicModal = () => {
+    IModelApp.uiAdmin.openDialog(new DynamicModalUiDataProvider(), "Dynamic Model", true, "SampleApp:DynamicModal", {movable: true,
+      width: 280, minWidth: 280});
   }
 
   /** Define a NavigationWidget with Buttons to display in the TopRight zone.
@@ -242,9 +355,10 @@ export class Frontstage4 extends FrontstageProvider {
             <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec} labelKey={AppTools.item5.label} />
             <ToolButton toolId="openDialog" label="open modal" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog())} />
             <ToolButton toolId="openDialog2" label="open modal 2" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog2())} />
+            <ToolButton toolId="openDynamicModal" label="open dynamic modal" iconSpec="icon-tools" execute={this.handleOpenDynamicModal} />
             <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.radialMenu())} />
             <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testPopup())} />
-            <ToolButton toolId="uiProviderModalTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testUiProviderDialog())} />
+            <ToolButton toolId="uiProviderModalTest" iconSpec="icon-placeholder" execute={this.handleOpenUiProviderDialogModal} />
             <ToolButton toolId="reactSelectModalTest" iconSpec="icon-lightbulb" execute={() => ModalDialogManager.openDialog(this.testReactSelectDialog())} />
           </>
         }

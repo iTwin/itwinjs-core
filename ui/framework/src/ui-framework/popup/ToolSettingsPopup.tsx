@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { DialogItemsManager, DialogPropertySyncItem, OnCancelFunc, RelativePosition, SpecialKey, UiDataProvider } from "@bentley/ui-abstract";
+import { DialogLayoutDataProvider, OnCancelFunc, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
@@ -17,7 +17,7 @@ import { DialogGridContainer } from "../uiprovider/DefaultDialogGridContainer";
 
 /** @alpha */
 export interface ToolSettingsPopupProps extends PopupPropsBase {
-  dataProvider: UiDataProvider;
+  dataProvider: DialogLayoutDataProvider;
   relativePosition: RelativePosition;
   orientation: Orientation;
   onCancel: OnCancelFunc;
@@ -32,24 +32,14 @@ interface ToolSettingsPopupState {
  * @alpha
  */
 export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
-  private _componentGenerator?: ComponentGenerator;
-  private _itemsManager?: DialogItemsManager;
 
   /** @internal */
   public readonly state = {
     size: new Size(-1, -1),
   };
 
-  private _applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
-    this.props.dataProvider.processChangesInUi([updatedValue]);
-  }
-
   constructor(props: ToolSettingsPopupProps) {
     super(props);
-
-    this._itemsManager = DialogItemsManager.fromUiDataProvider(props.dataProvider);
-    this._itemsManager.applyUiPropertyChange = this._applyUiPropertyChange;
-    this._componentGenerator = new ComponentGenerator(this._itemsManager);
   }
 
   private _onSizeKnown = (newSize: SizeProps) => {
@@ -69,6 +59,7 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
   }
 
   public render() {
+    const componentGenerator = new ComponentGenerator(this.props.dataProvider);
     let point = PopupManager.getPopupPosition(this.props.el, this.props.pt, new Point(), this.state.size);
     const popupRect = CursorPopup.getPopupRect(point, this.props.offset, this.state.size, this.props.relativePosition);
     point = new Point(popupRect.left, popupRect.top);
@@ -81,8 +72,8 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
         <DivWithOutsideClick onOutsideClick={this.props.onCancel} onKeyDown={this._handleKeyDown}>
           <PositionPopupContent>
             <FocusTrap active={true} returnFocusOnDeactivate={true}>
-              {this._componentGenerator && this._itemsManager &&
-                <DialogGridContainer itemsManager={this._itemsManager} componentGenerator={this._componentGenerator} />
+              {componentGenerator &&
+                <DialogGridContainer componentGenerator={componentGenerator} />
               }
             </FocusTrap>
           </PositionPopupContent>

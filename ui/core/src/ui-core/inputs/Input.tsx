@@ -8,6 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
+import { useRefs } from "../utils/hooks/useRefs";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Input]] component
@@ -16,26 +17,44 @@ import { CommonProps } from "../utils/Props";
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
   /** Indicates whether to set focus to the input element */
   setFocus?: boolean;
+  nativeKeyHandler?: (e: KeyboardEvent) => void;
 }
 
 /** Basic text input, is a wrapper for the `<input type="text">` HTML element.
  * @public
  */
-export class Input extends React.PureComponent<InputProps> {
-  private _inputElement = React.createRef<HTMLInputElement>();
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  function Input(props, ref) {
+    const { className, style, setFocus, nativeKeyHandler, ...otherProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const inputElementRef = React.useRef<HTMLInputElement>();
+    const refs = useRefs(inputElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
 
-  public componentDidMount() {
-    if (this.props.setFocus && this._inputElement.current) {
-      this._inputElement.current.focus();
-      this._inputElement.current.select();
-    }
-  }
+    React.useEffect(() => {
+      const currentElement = inputElementRef.current;
+      const currentHandler = nativeKeyHandler;
 
-  public render(): JSX.Element {
-    const { className, style, setFocus, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (currentElement && currentHandler) {
+        currentElement.addEventListener("keydown", currentHandler);
+      }
+      return () => {
+        if (currentHandler && currentElement) {
+          currentElement.removeEventListener("keydown", currentHandler);
+        }
+      };
+    }, [nativeKeyHandler]);
+
+    React.useEffect(() => {
+      if (inputElementRef.current && setFocus)
+        inputElementRef.current.focus();
+    }, [setFocus]);
+
+    const handleFocus = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+      event.currentTarget.select();
+    }, []);
+
     return (
-      <input ref={this._inputElement} type="text" {...props}
+      <input ref={refs} type="text" {...otherProps} onFocus={handleFocus}
         className={classnames("uicore-inputs-input", className)} style={style} />
     );
   }
-}
+);

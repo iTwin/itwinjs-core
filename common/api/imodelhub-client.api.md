@@ -258,6 +258,15 @@ export class Checkpoint extends WsgInstance {
     state?: InitializationState;
 }
 
+// @beta
+export class CheckpointCreatedEvent extends IModelHubEvent {
+    changeSetId: string;
+    changeSetIndex: string;
+    // @internal
+    fromJson(obj: any): void;
+    versionId?: GuidString;
+}
+
 // @alpha
 export class CheckpointHandler {
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
@@ -451,12 +460,23 @@ export class EventSubscriptionHandler {
 }
 
 // @beta @deprecated (undocumented)
-export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent";
+export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent";
 
 // @internal
 export enum GetEventOperationType {
     Destructive = 0,
     Peek = 1
+}
+
+// @internal
+export class GlobalCheckpointCreatedEvent extends IModelHubGlobalEvent {
+    // (undocumented)
+    changeSetId?: string;
+    // (undocumented)
+    changeSetIndex?: string;
+    fromJson(obj: any): void;
+    // (undocumented)
+    versionId?: GuidString;
 }
 
 // @internal
@@ -505,7 +525,9 @@ export type GlobalEventType =
 /** Sent when a [[ChangeSet]] is pushed. See [[ChangeSetCreatedEvent]]. */
 "ChangeSetCreatedEvent" |
 /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
-"NamedVersionCreatedEvent";
+"NamedVersionCreatedEvent" |
+/** Sent when a new [[Checkpoint]] is generated. See [[GlobalCheckpointCreatedEvent]]. */
+"CheckpointCreatedEvent";
 
 // @internal
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
@@ -766,6 +788,7 @@ export enum IModelHubEventType {
     BriefcaseDeletedEvent = "BriefcaseDeletedEvent",
     ChangeSetPostPushEvent = "ChangeSetPostPushEvent",
     ChangeSetPrePushEvent = "ChangeSetPrePushEvent",
+    CheckpointCreatedEvent = "CheckpointCreatedEvent",
     // @alpha
     CodeEvent = "CodeEvent",
     iModelDeletedEvent = "iModelDeletedEvent",

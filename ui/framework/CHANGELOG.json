@@ -2,6 +2,24 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@bentley/ui-framework_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ModelsTree: Handle GraphicalPartition3d similar to PhysicalPartition - it should not be displayed if there's a 'GraphicalPartition3d.Model.Content' attribute in JsonProperties"
+          },
+          {
+            "comment": "Added jsdoc ESLint rule for UI packages"
+          },
+          {
+            "comment": "Upgraded react-split-pane to 0.1.92"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.5",
       "tag": "@bentley/ui-framework_v2.7.5",
       "date": "Fri, 23 Oct 2020 16:23:51 GMT",

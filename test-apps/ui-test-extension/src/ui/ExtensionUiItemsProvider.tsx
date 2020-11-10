@@ -2,18 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import * as React from "react";
 import {
   AbstractStatusBarItemUtilities, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
   StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { SampleTool } from "./tools/SampleTool";
-import { UnitsPopup } from "./UnitsPopup";
+import { UnitsPopupUiDataProvider } from "./UnitsPopup";
 // import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.
-import { ModalDialogManager } from "@bentley/ui-framework";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { ExtensionFrontstage } from "./Frontstage";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 export class ExtensionUiItemsProvider implements UiItemsProvider {
   public readonly id = "ExtensionUiItemsProvider";
@@ -50,25 +48,17 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
    * documentation on imodeljs.org.
    */
   public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
-    const unitsIcon = "icon-app-1";   // `svg:${statusBarButtonSvg}` chage once svg imports are working.
+    const unitsIcon = "icon-app-1";   // `svg:${statusBarButtonSvg}` change once svg imports are working.
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
         AbstractStatusBarItemUtilities.createActionItem("UiTestExtension:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, ExtensionUiItemsProvider.i18n.translate("uiTestExtension:StatusBar.UnitsFlyover"),
           () => {
-            ModalDialogManager.openDialog(this.unitsPopup());
-          }));
+            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(ExtensionUiItemsProvider.i18n), ExtensionUiItemsProvider.i18n.translate("uiTestExtension:StatusBar.Units"),
+              true, "uiTestExtension:units-popup", {movable: true,  width: 280, minWidth: 280});
+          }
+        ));
     }
     return statusBarItems;
   }
-
-  public unitsPopup(): React.ReactNode {
-    return (
-      <UnitsPopup
-        opened={true}
-        i18N={ExtensionUiItemsProvider.i18n}
-      />
-    );
-  }
-
 }

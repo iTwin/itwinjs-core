@@ -340,7 +340,7 @@
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "chalk",
@@ -505,6 +505,10 @@
     {
       "name": "file-saver",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "flatbuffers",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "form-data",

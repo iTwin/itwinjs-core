@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 26 Oct 2020 13:05:26 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+
+## 2.8.0
+Fri, 23 Oct 2020 17:04:02 GMT
+
+### Updates
+
+- ModelsTree: Handle GraphicalPartition3d similar to PhysicalPartition - it should not be displayed if there's a 'GraphicalPartition3d.Model.Content' attribute in JsonProperties
+- Added jsdoc ESLint rule for UI packages
+- Upgraded react-split-pane to 0.1.92
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:51 GMT

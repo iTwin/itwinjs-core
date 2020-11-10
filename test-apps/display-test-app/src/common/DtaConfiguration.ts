@@ -39,4 +39,5 @@ export interface DtaConfiguration {
   minimumSpatialTolerance?: number; // default undefined (no minimum)
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   antialiasSamples?: number; // default 1 (No antialiasing)
+  openReadWrite?: boolean; // default false
 }

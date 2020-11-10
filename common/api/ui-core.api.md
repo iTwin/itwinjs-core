@@ -63,10 +63,17 @@ export class Annulus {
 }
 
 // @beta
+export type AsyncGetAutoSuggestDataFunc = (value: string) => Promise<AutoSuggestData[]>;
+
+// @beta
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
     constructor(props: AutoSuggestProps);
+    // @internal (undocumented)
+    componentDidMount(): void;
     // (undocumented)
     componentDidUpdate(prevProps: AutoSuggestProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
     }
@@ -84,14 +91,13 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
     getLabel?: (value: string | undefined) => string;
-    // @deprecated
-    getSuggestions?: GetAutoSuggestDataFunc;
+    getSuggestions?: AsyncGetAutoSuggestDataFunc;
     onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onSuggestionSelected: (selected: AutoSuggestData) => void;
-    options: AutoSuggestData[] | GetAutoSuggestDataFunc;
+    options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
     setFocus?: boolean;
     value?: string;
 }
@@ -516,11 +522,15 @@ export enum DialogButtonType {
     // (undocumented)
     Close = "close",
     // (undocumented)
+    Next = "next",
+    // (undocumented)
     No = "no",
     // (undocumented)
     None = "",
     // (undocumented)
     OK = "ok",
+    // (undocumented)
+    Previous = "previous",
     // (undocumented)
     Retry = "retry",
     // (undocumented)
@@ -918,10 +928,7 @@ export class IconHelper {
 }
 
 // @public
-export class IconInput extends React.PureComponent<IconInputProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const IconInput: React.ForwardRefExoticComponent<IconInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export interface IconInputProps extends InputProps {
@@ -957,12 +964,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 }
 
 // @public
-export class Input extends React.PureComponent<InputProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const Input: React.ForwardRefExoticComponent<InputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export class InputLabel extends React.PureComponent<InputLabelProps> {
@@ -978,6 +980,8 @@ export interface InputLabelProps extends LabeledComponentProps, MessagedComponen
 
 // @public
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+    // (undocumented)
+    nativeKeyHandler?: (e: KeyboardEvent) => void;
     setFocus?: boolean;
 }
 
@@ -1033,10 +1037,7 @@ export interface LabeledComponentProps {
 }
 
 // @public
-export class LabeledInput extends React.PureComponent<LabeledInputProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LabeledInput: React.ForwardRefExoticComponent<LabeledInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
@@ -1053,13 +1054,17 @@ export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, 
 }
 
 // @public
-export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LabeledTextarea: React.ForwardRefExoticComponent<LabeledTextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
 
 // @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
+}
+
+// @beta
+export function LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element;
+
+// @beta
+export interface LabeledThemedSelectProps extends ThemedSelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
 // @public
@@ -1980,14 +1985,7 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 }
 
 // @public
-export class Textarea extends React.PureComponent<TextareaProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    static defaultProps: Partial<TextareaProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export const Textarea: React.ForwardRefExoticComponent<TextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
 
 // @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
