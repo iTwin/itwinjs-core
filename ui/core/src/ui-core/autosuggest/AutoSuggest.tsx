@@ -57,6 +57,19 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   /** Gets a label associated with a given value */
   getLabel?: (value: string | undefined) => string;
 
+  /** Use it only if you need to customize the rendering of the input.
+   * @alpha
+   */
+  renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+  /** Use it if you want to customize things inside the suggestions container beyond rendering the suggestions themselves.
+   * @alpha
+   */
+  renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
+  /** Called every time you need to clear suggestions.
+   * @alpha
+   */
+  onSuggestionsClearRequested?: ReactAutosuggest.OnSuggestionsClearRequested;
+
   /** @internal */
   alwaysRenderSuggestions?: boolean;
 }
@@ -135,7 +148,9 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
   /** Autosuggest will call this function every time you need to clear suggestions. */
   private _onSuggestionsClearRequested = () => {
-    this.setState({ suggestions: [] });
+    this.setState(
+      () => ({ suggestions: [] }),
+      () => this.props.onSuggestionsClearRequested && this.props.onSuggestionsClearRequested());
   }
 
   private _onSuggestionSelected = (_event: React.FormEvent<any>, data: ReactAutosuggest.SuggestionSelectedEventData<AutoSuggestData>): void => {
@@ -175,7 +190,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     <span>
       {suggestion.label}
     </span>
-  )
+  );
 
   private getLabel(value: string | undefined): string {
     let label = "";
@@ -234,7 +249,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     const { inputValue, suggestions } = this.state;
     const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions, // eslint-disable-line @typescript-eslint/no-unused-vars
       onPressEnter, onPressEscape, onPressTab, onInputFocus, getLabel, // eslint-disable-line @typescript-eslint/no-unused-vars
-      getSuggestions, // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-unused-vars
+      getSuggestions, renderInputComponent, renderSuggestionsContainer, // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-unused-vars
       ...props } = this.props;
     const inputPlaceholder = (!inputValue) ? placeholder : undefined;
 
@@ -261,6 +276,8 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
           inputProps={inputProps}
           onSuggestionSelected={this._onSuggestionSelected}
           alwaysRenderSuggestions={alwaysRenderSuggestions}
+          renderInputComponent={renderInputComponent}
+          renderSuggestionsContainer={renderSuggestionsContainer}
         />
       </div>
     );
