@@ -16,7 +16,7 @@ import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
 import { PanelTarget } from "./PanelTarget";
-import { RectangleProps } from "@bentley/ui-core";
+import { RectangleProps, SizeProps } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { WidgetComponent } from "../widget/Widget";
 import produce from "immer";
@@ -265,6 +265,8 @@ function useAnimatePanelWidgets(): {
   }>());
   const panel = React.useContext(PanelStateContext);
   assert(panel);
+  const horizontal = React.useRef(false);
+  horizontal.current = isHorizontalPanelSide(panel.side);
   const [prevWidgets, setPrevWidgets] = React.useState(panel.widgets);
   const [sizes, setSizes] = React.useState<{ [id: string]: number | undefined }>({});
   if (prevWidgets !== panel.widgets) {
@@ -276,7 +278,7 @@ function useAnimatePanelWidgets(): {
         continue;
       }
       const size = ref.current.measure();
-      widgetTransitions.current.set(widgetId, { from: size.height, to: undefined });
+      widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, size), to: undefined });
     }
     if (panel.widgets.length < prevWidgets.length) {
       // Widget removed.
@@ -329,7 +331,7 @@ function useAnimatePanelWidgets(): {
       assert(ref.current);
       const size = ref.current.measure();
 
-      widgetTransition.to = size.height;
+      widgetTransition.to = getSize(horizontal.current, size);
       if (widgetTransition.from !== widgetTransition.to) {
         initTransition = true;
       }
@@ -381,7 +383,7 @@ function useAnimatePanelWidgets(): {
       assert(ref);
       assert(ref.current);
       const size = ref.current.measure();
-      widgetTransitions.current.set(wId, { from: size.height, to: undefined });
+      widgetTransitions.current.set(wId, { from: getSize(horizontal.current, size), to: undefined });
     }
   }, [panel.widgets]);
   const handlePrepareTransition = React.useCallback(() => {
@@ -400,4 +402,8 @@ function useAnimatePanelWidgets(): {
     transition,
     sizes,
   };
+}
+
+function getSize(horizontal: boolean, size: SizeProps) {
+  return horizontal ? size.width : size.height;
 }
