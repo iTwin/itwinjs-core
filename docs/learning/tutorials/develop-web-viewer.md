@@ -3,7 +3,7 @@
 ### Setup
 - [Install necessary prerequisites]($docs/getting-started/development-prerequisites)
 - [Clone imodeljs-samples repo](https://github.com/imodeljs/imodeljs-samples)
-- Have access to a cloud hosted iModel. If you do not have access to one, [follow a create online iModel tutorial]($docs/learning/tutorials/index.md)
+- Have access to a cloud hosted iModel. If you do not have access to one, follow one of our tutorials to [create an online iModel]($docs/learning/tutorials/index.md)
 
 ### Build
 - Open the cloned repo in VS Code

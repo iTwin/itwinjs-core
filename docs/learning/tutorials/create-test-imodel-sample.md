@@ -11,7 +11,7 @@ The quickest way to get access to a cloud hosted iModel is by creating an iModel
 
 ### Stadium
 
-Soccer stadium in Singapore. Features landscape details and a metro station. Largest iModel.
+Soccer stadium in Singapore. Features landscape details and a metro station. This is the largest sample iModel.
 
 ![stadium]($docs/learning/tutorials/images/stadium.png)
 
@@ -23,7 +23,7 @@ Cafe and apartments.
 
 ### Bay Town Process Plant
 
-Simple processing plant. Smallest iModel.
+Simple processing plant. This is the smallest sample iModel.
 
 ![bay-town-process-plant]($docs/learning/tutorials/images/bay-town-process-plant.png)
 
