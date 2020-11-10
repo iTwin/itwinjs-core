@@ -19,6 +19,7 @@ import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * A `Loop` is a curve chain that is the boundary of a closed (planar) loop.
+ * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
 export class Loop extends CurveChain {

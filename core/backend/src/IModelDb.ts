@@ -20,10 +20,10 @@ import {
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
-  IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion,
+  IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
-  SyncMode, ThumbnailProps, TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
+  SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
@@ -1893,16 +1893,16 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public constructor(private _iModel: IModelDb) { }
 
     /** @internal */
-    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps> {
+    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps> {
       requestContext.enter();
 
-      return new Promise<TileTreeProps>((resolve, reject) => {
+      return new Promise<IModelTileTreeProps>((resolve, reject) => {
         requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, `TreeId=${id}`));
           else
-            resolve(ret.result as TileTreeProps);
+            resolve(ret.result as IModelTileTreeProps);
         });
       });
     }

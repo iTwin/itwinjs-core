@@ -93,6 +93,7 @@ export * from "./rpc/EditorRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
+export * from "./rpc/ModelGeometryChanges";
 export * from "./rpc/NativeAppRpcInterface";
 export * from "./rpc/SnapshotIModelRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";

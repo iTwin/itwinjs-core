@@ -58,6 +58,8 @@ jobs:
 
       node ./common/scripts/install-run-rush rebuild -v --to extension-client
 
+      node ./common/scripts/install-run-rush rebuild -v --to forms-data-management-client
+
       node ./common/scripts/install-run-rush rebuild -v --to product-settings-client
 
       node ./common/scripts/install-run-rush rebuild -v --to projectshare-client
@@ -85,6 +87,11 @@ jobs:
   - script: 'npm run test:integration'
     workingDirectory: clients/extension
     displayName: 'Run Extension Client Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
+    workingDirectory: clients/forms-data-management
+    displayName: 'Run Forms Client Tests'
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -164,7 +171,6 @@ jobs:
     inputs:
       testResultsFiles: 'clients/forms-data-management/lib/test/junit_results.xml'
       testRunTitle: 'Client - Forms Data Management Tests - $(Node_Version)'
-    enabled: false
     continueOnError: true
     condition: succeededOrFailed()
 

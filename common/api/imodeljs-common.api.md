@@ -1372,9 +1372,24 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
 
 // @internal
+export enum ContentFlags {
+    // (undocumented)
+    AllowInstancing = 1,
+    // (undocumented)
+    IgnoreAreaPatterns = 4,
+    // (undocumented)
+    ImprovedElision = 2,
+    // (undocumented)
+    None = 0
+}
+
+// @internal
 export abstract class ContentIdProvider {
+    protected constructor(formatVersion: number, contentFlags: ContentFlags);
     // (undocumented)
     protected abstract computeId(depth: number, i: number, j: number, k: number, mult: number): string;
+    // (undocumented)
+    readonly contentFlags: ContentFlags;
     static create(allowInstancing: boolean, options: TileOptions, formatVersion?: number): ContentIdProvider;
     // (undocumented)
     idFromParentAndMultiplier(parentId: string, multiplier: number): string;
@@ -1382,6 +1397,8 @@ export abstract class ContentIdProvider {
     idFromSpec(spec: ContentIdSpec): string;
     // (undocumented)
     protected join(depth: number, i: number, j: number, k: number, mult: number): string;
+    // (undocumented)
+    readonly majorFormatVersion: number;
     // (undocumented)
     get rootContentId(): string;
     // (undocumented)
@@ -1475,6 +1492,12 @@ export const defaultTileOptions: TileOptions;
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
+}
+
+// @alpha
+export interface DeletedElementGeometryChange {
+    readonly id: Id64String;
+    readonly type: DbOpcode.Delete;
 }
 
 // @alpha
@@ -2047,11 +2070,12 @@ export namespace ElementGeometry {
 }
 
 // @alpha
-export interface ElementGeometryChange {
-    // (undocumented)
-    id: Id64String;
-    // (undocumented)
-    range?: Range3dProps;
+export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
+
+// @alpha
+export namespace ElementGeometryChange {
+    export function iterable(modelChanges: ModelGeometryChangesProps): Iterable<ElementGeometryChange>;
+    export function iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange>;
 }
 
 // @alpha
@@ -2114,6 +2138,25 @@ export interface ElementGeometryUpdate {
     is2dPart?: boolean;
     isWorld?: boolean;
     viewIndependent?: boolean;
+}
+
+// @internal
+export interface ElementGraphicsRequestProps {
+    readonly clipToProjectExtents?: boolean;
+    readonly contentFlags?: ContentFlags;
+    readonly elementId: Id64String;
+    readonly formatVersion: number;
+    readonly id: string;
+    readonly location?: TransformProps;
+    readonly omitEdges?: boolean;
+    readonly toleranceLog10: number;
+    readonly treeFlags?: TreeFlags;
+}
+
+// @alpha
+export interface ElementIdsAndRangesProps {
+    readonly ids: CompressedId64Set;
+    readonly ranges: Range3dProps[];
 }
 
 // @public
@@ -2219,6 +2262,13 @@ export namespace Events {
         onUserStateChanged = "onUserStateChanged";
         const modelGeometryChanges = "modelGeometryChanges";
     }
+}
+
+// @alpha
+export interface ExtantElementGeometryChange {
+    readonly id: Id64String;
+    readonly range: Range3d;
+    readonly type: DbOpcode.Insert | DbOpcode.Update;
 }
 
 // @public
@@ -3714,10 +3764,12 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     queryVersionInfo(): Promise<TileVersionInfo>;
+    // @internal
+    requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal (undocumented)
     requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
-    requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<TileTreeProps>;
+    requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
 }
 
 // @internal
@@ -3725,6 +3777,14 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
 
 // @internal
 export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string;
+
+// @internal
+export interface IModelTileTreeProps extends TileTreeProps {
+    contentIdQualifier?: string;
+    formatVersion?: number;
+    geometryGuid?: GuidString;
+    maxInitialTilesToSkip?: number;
+}
 
 // @public
 export class IModelVersion {
@@ -3780,6 +3840,8 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     saveThumbnail(_iModelToken: IModelRpcProps, _val: Uint8Array): Promise<void>;
     // (undocumented)
     synchConcurrencyControlResourcesCache(_tokenProps: IModelRpcProps): Promise<void>;
+    // (undocumented)
+    undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus>;
     // (undocumented)
     updateProjectExtents(_iModelToken: IModelRpcProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
 }
@@ -4321,11 +4383,28 @@ export class ModelClipGroups {
 
 // @alpha
 export interface ModelGeometryChanges {
-    deleted?: Id64String[];
-    inserted?: ElementGeometryChange[];
-    modelId: Id64String;
-    range?: Range3dProps;
-    updated?: ElementGeometryChange[];
+    readonly elements: Iterable<ElementGeometryChange>;
+    readonly geometryGuid: GuidString;
+    readonly id: Id64String;
+    readonly range: Range3d;
+}
+
+// @alpha
+export namespace ModelGeometryChanges {
+    export function findByModelId(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): ModelGeometryChanges | undefined;
+    export function fromJSON(props: ModelGeometryChangesProps): ModelGeometryChanges;
+    export function iterable(modelChanges: ModelGeometryChangesProps[]): Iterable<ModelGeometryChanges>;
+    export function iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges>;
+}
+
+// @alpha
+export interface ModelGeometryChangesProps {
+    readonly deleted?: CompressedId64Set;
+    readonly guid: GuidString;
+    readonly id: Id64String;
+    readonly inserted?: ElementIdsAndRangesProps;
+    readonly range: Range3dProps;
+    readonly updated?: ElementIdsAndRangesProps;
 }
 
 // @public
@@ -4370,6 +4449,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     authInitialize(_issuer: string, _config: any): Promise<void>;
     authSignIn(): Promise<void>;
     authSignOut(): Promise<void>;
+    cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void>;
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_key: BriefcaseKey): Promise<void>;
@@ -4380,6 +4460,8 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
     static interfaceVersion: string;
+    // (undocumented)
+    isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean>;
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
     openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
@@ -4393,6 +4475,8 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     storageRemove(_storageId: string, _key: string): Promise<void>;
     storageRemoveAll(_storageId: string): Promise<void>;
     storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
+    // (undocumented)
+    toggleInteractiveEditingSession(_tokenProps: IModelRpcProps, _startSession: boolean): Promise<boolean>;
 }
 
 // @public
@@ -7122,12 +7206,9 @@ export interface TileTreeMetadata {
 
 // @internal
 export interface TileTreeProps {
-    contentIdQualifier?: string;
     contentRange?: Range3dProps;
-    formatVersion?: number;
     id: string;
     location: TransformProps;
-    maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
 }
@@ -7135,6 +7216,16 @@ export interface TileTreeProps {
 // @alpha
 export interface TileVersionInfo {
     formatVersion: number;
+}
+
+// @internal
+export enum TreeFlags {
+    // (undocumented)
+    EnforceDisplayPriority = 2,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    UseProjectExtents = 1
 }
 
 // @beta
