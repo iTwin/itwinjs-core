@@ -8,9 +8,11 @@
 
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, IModelRpcProps, IModelTileRpcInterface, RpcInterface,
-  RpcInvocation, RpcManager, RpcPendingResponse, TileTreeContentIds, TileTreeProps, TileVersionInfo,
+  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelError, IModelRpcProps,
+  IModelStatus, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse,
+  TileTreeContentIds, TileVersionInfo,
 } from "@bentley/imodeljs-common";
+import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -93,12 +95,12 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
   }
 }
 
-async function getTileTreeProps(props: TileRequestProps): Promise<TileTreeProps> {
+async function getTileTreeProps(props: TileRequestProps): Promise<IModelTileTreeProps> {
   const db = IModelDb.findByKey(props.tokenProps.key);
   return db.tiles.requestTileTreeProps(props.requestContext, props.treeId);
 }
 
-class RequestTileTreePropsMemoizer extends TileRequestMemoizer<TileTreeProps, TileRequestProps> {
+class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreeProps, TileRequestProps> {
   protected get _timeoutMilliseconds() { return IModelHost.tileTreeRequestTimeout; }
   protected get _operationName() { return "requestTileTreeProps"; }
   protected stringify(props: TileRequestProps): string { return props.treeId; }
@@ -112,7 +114,7 @@ class RequestTileTreePropsMemoizer extends TileRequestMemoizer<TileTreeProps, Ti
     super(getTileTreeProps, generateTileRequestKey);
   }
 
-  public static async perform(props: TileRequestProps): Promise<TileTreeProps> {
+  public static async perform(props: TileRequestProps): Promise<IModelTileTreeProps> {
     if (undefined === this._instance)
       this._instance = new RequestTileTreePropsMemoizer();
 
@@ -164,7 +166,7 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
-  public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<TileTreeProps> {
+  public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
     const requestContext = ClientRequestContext.current;
     return RequestTileTreePropsMemoizer.perform({ requestContext, tokenProps, treeId });
   }
@@ -203,6 +205,38 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
     return IModelHost.platform.getTileVersionInfo();
+  }
+
+  /** @internal */
+  public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+    const requestContext = ClientRequestContext.current;
+    const iModel = IModelDb.findByKey(rpcProps.key);
+    const result = await iModel.nativeDb.generateElementGraphics(request);
+
+    requestContext.enter();
+    let error: string | undefined;
+    switch (result.status) {
+      case ElementGraphicsStatus.NoGeometry:
+      case ElementGraphicsStatus.Canceled:
+        return undefined;
+      case ElementGraphicsStatus.Success:
+        return result.content;
+      case ElementGraphicsStatus.InvalidJson:
+        error = "Invalid JSON";
+        break;
+      case ElementGraphicsStatus.UnknownMajorFormatVersion:
+        error = "Unknown major format version";
+        break;
+      case ElementGraphicsStatus.ElementNotFound:
+        error = `Element Id ${request.elementId} not found`;
+        break;
+      case ElementGraphicsStatus.DuplicateRequestId:
+        error = `Duplicate request Id "${request.id}"`;
+        break;
+    }
+
+    assert(undefined !== error);
+    throw new IModelError(IModelStatus.BadRequest, error);
   }
 }
 
