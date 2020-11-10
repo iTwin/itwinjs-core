@@ -9,7 +9,6 @@
 import { ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@bentley/imodeljs-common";
-import { parentPort } from "worker_threads";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
@@ -71,7 +70,7 @@ export class B3dmReader extends GltfReader {
         if (classes !== undefined && classIds !== undefined && instancesLength !== 0) {
           const classCounts = new Array<number>(classes.length);
           classCounts.fill(0);
-          var classIndexes = new Uint16Array(instancesLength);
+          const classIndexes = new Uint16Array(instancesLength);
           for (let i = 0; i < instancesLength; ++i) {
             const classId = classIds[i];
             classIndexes[i] = classCounts[classId]++;
@@ -147,7 +146,7 @@ export class B3dmReader extends GltfReader {
       if (this._batchTableLength > 0 && undefined !== this._batchTableJson && undefined !== json.attributes) {
         const view = this.getBufferView(json.attributes, "_BATCHID");
         let batchIds: undefined | GltfBufferData;
-        if (undefined !== view && (undefined != (batchIds = view.toBufferData(GltfDataType.UInt32)) || undefined !== (batchIds = view.toBufferData(GltfDataType.Float)))) {
+        if (undefined !== view && (undefined !== (batchIds = view.toBufferData(GltfDataType.UInt32)) || undefined !== (batchIds = view.toBufferData(GltfDataType.Float)))) {
           const indices = [];
           const { colors, colorMap } = mesh;
           let colorRemap: Uint32Array | undefined;

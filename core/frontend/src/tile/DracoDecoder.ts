@@ -15,7 +15,7 @@ import { assert } from "@bentley/bentleyjs-core";
 export interface DecodedPointCloud {
   qParams: QParams3d;
   qPoints: Uint16Array;
-  colors?: Uint8Array
+  colors?: Uint8Array;
 }
 
 /** @internal */

@@ -7,18 +7,13 @@
  */
 
 import { assert, ByteStream, Id64String, utf8ToString } from "@bentley/bentleyjs-core";
-import { Angle, Matrix3d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
-import {
-  BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, Quantization,
-} from "@bentley/imodeljs-common";
+import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, Quantization } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch } from "../render/GraphicBranch";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { extractFlashedVolumeClassifierCommands } from "../render/webgl/DrawCommand";
-import { DracoDecoder } from "./DracoDecoder";
 
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
@@ -39,16 +34,17 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
 
   let qParams, qPoints;
   let colors: Uint8Array | undefined;
-  let dracoPointExtension = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
+  const dracoPointExtension = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
   if (dracoPointExtension && dracoPointExtension.byteLength !== undefined && dracoPointExtension.byteOffset !== undefined && dracoPointExtension.properties?.POSITION !== undefined) {
+    return undefined; // Defer Draco decompression until web workers implementation.
+    /*
     const bufferData = new Uint8Array(stream.arrayBuffer, dataOffset + dracoPointExtension.byteOffset, dracoPointExtension.byteLength);
     const decoded = DracoDecoder.readDracoPointCloud(bufferData, dracoPointExtension.properties?.POSITION, dracoPointExtension.properties?.RGB);
     if (decoded) {
       qPoints = decoded.qPoints;
       qParams = decoded.qParams;
-      colors = decoded.colors;
-    }
+      colors = decoded.colors; */
   } else {
     if (undefined === featureValue.POSITION_QUANTIZED ||
       undefined === featureValue.QUANTIZED_VOLUME_OFFSET ||

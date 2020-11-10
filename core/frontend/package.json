@@ -102,8 +102,7 @@
     "oidc-client": "^1.9.1",
     "semver": "^5.5.0",
     "@azure/storage-blob": "10.4.0",
-    "wms-capabilities": "0.4.0",
-    "draco3d": "1.3.6"
+    "wms-capabilities": "0.4.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

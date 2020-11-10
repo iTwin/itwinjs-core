@@ -208,8 +208,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.detachRealityModelByIndex(index);
   }
 
-
-
   public setOSMBuildingDisplay(options: { onOff?: boolean }): boolean {
     const tilesetUrl = getCesiumOSMBuildingsUrl();
     const currentIndex = this._contextRealityModels.findIndex((x) => x.url === tilesetUrl);

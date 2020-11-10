@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import { Cartographic, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -23,7 +23,7 @@ import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
-  TileTreeReference, TileTreeSet, TileTreeSupplier
+  TileTreeReference, TileTreeSet, TileTreeSupplier,
 } from "./internal";
 import { createDefaultViewFlagOverrides } from "./ViewFlagOverrides";
 
@@ -495,7 +495,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     const strings = [];
     if (batch !== undefined) {
       for (const key of Object.keys(batch))
-        if (-1 == key.indexOf("#"))     // Avoid internal cesium
+        if (-1 === key.indexOf("#"))     // Avoid internal cesium
           strings.push(`${key}: ${batch[key]}`);
     } else if (this._name) {
       strings.push(this._name);
