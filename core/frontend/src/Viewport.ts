@@ -1308,12 +1308,15 @@ export abstract class Viewport implements IDisposable {
    * @param index The reality model index
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideRealityModelAppearance]]
-  * @beta
-  */
+   * @beta
+   */
   public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
   }
 
+  /** Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
+   * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
+   */
   public setOSMBuildingDisplay(options: { onOff?: boolean }) {
     if (this.displayStyle.setOSMBuildingDisplay(options))
       this.invalidateRenderPlan();

@@ -208,6 +208,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.detachRealityModelByIndex(index);
   }
 
+
+  /** Set the display of the OpenStreetMap worldwide building layer in this display style by attaching or detaching the reality model displaying the buildings.
+   * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
+   */
   public setOSMBuildingDisplay(options: { onOff?: boolean }): boolean {
     const tilesetUrl = getCesiumOSMBuildingsUrl();
     const currentIndex = this._contextRealityModels.findIndex((x) => x.url === tilesetUrl);
