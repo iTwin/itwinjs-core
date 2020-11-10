@@ -45,7 +45,7 @@ describe("useTransientState", () => {
   it("should invoke onSave", () => {
     const onSaveTransientState = new EventEmitter<(tabId: TabState["id"]) => void>();
     const widgetContentManager: WidgetContentManagerContextArgs = {
-      getWidgetContentContainerRef: () => React.createRef(),
+      setContainer: () => { },
       onRestoreTransientState: new EventEmitter<(tabId: TabState["id"]) => void>(),
       onSaveTransientState,
     };
@@ -67,7 +67,7 @@ describe("useTransientState", () => {
   it("should invoke onRestore", () => {
     const onRestoreTransientState = new EventEmitter<(tabId: TabState["id"]) => void>();
     const widgetContentManager: WidgetContentManagerContextArgs = {
-      getWidgetContentContainerRef: () => React.createRef(),
+      setContainer: () => { },
       onRestoreTransientState,
       onSaveTransientState: new EventEmitter<(tabId: TabState["id"]) => void>(),
     };
