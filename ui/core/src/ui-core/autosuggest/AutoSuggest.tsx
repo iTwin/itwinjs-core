@@ -56,19 +56,17 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   /** Gets a label associated with a given value */
   getLabel?: (value: string | undefined) => string;
+  /** Called every time you need to clear suggestions. */
+  onSuggestionsClearRequested?: () => void;
 
   /** Use it only if you need to customize the rendering of the input.
-   * @alpha
+   * @internal
    */
   renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
   /** Use it if you want to customize things inside the suggestions container beyond rendering the suggestions themselves.
-   * @alpha
+   * @internal
    */
   renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
-  /** Called every time you need to clear suggestions.
-   * @alpha
-   */
-  onSuggestionsClearRequested?: ReactAutosuggest.OnSuggestionsClearRequested;
 
   /** @internal */
   alwaysRenderSuggestions?: boolean;
@@ -148,9 +146,8 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
   /** Autosuggest will call this function every time you need to clear suggestions. */
   private _onSuggestionsClearRequested = () => {
-    this.setState(
-      () => ({ suggestions: [] }),
-      () => this.props.onSuggestionsClearRequested && this.props.onSuggestionsClearRequested());
+    this.setState({ suggestions: [] });
+    this.props.onSuggestionsClearRequested && this.props.onSuggestionsClearRequested();
   }
 
   private _onSuggestionSelected = (_event: React.FormEvent<any>, data: ReactAutosuggest.SuggestionSelectedEventData<AutoSuggestData>): void => {
