@@ -11,6 +11,7 @@ import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@bentl
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
+import { parseToggle } from "./parseToggle";
 
 /** @alpha */
 export class AttachRealityModelTool extends Tool {
@@ -220,7 +221,7 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
 }
 
 
-/** @alpha */
+/** @beta */
 export class AttachCesiumAssetTool extends Tool {
   public static toolId = "AttachCesiumAssetTool";
   public static get minArgs() { return 1; }
@@ -239,5 +240,27 @@ export class AttachCesiumAssetTool extends Tool {
   public parseAndRun(...args: string[]): boolean {
     const assetId = parseInt(args[0], 10);
     return Number.isNaN(assetId) ? false : this.run(assetId, args[1]);
+  }
+}
+
+
+/** @beta */
+export class ToggleOSMBuildingDisplay extends Tool {
+  public static toolId = "SetBuildingDisplay";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(onOff?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp === undefined)
+      return false;
+
+    vp.setOSMBuildingDisplay({ onOff });
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const toggle = parseToggle(args[0]);
+    return typeof toggle === "string" ? false : this.run(toggle);
   }
 }

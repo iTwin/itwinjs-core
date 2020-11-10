@@ -1305,13 +1305,18 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Obtain the override applied to a "contextual" reality model displayed in this viewport.
- * @param index The reality model index
- * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
- * @see [[overrideRealityModelAppearance]]
- * @beta
- */
+   * @param index The reality model index
+   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
+   * @see [[overrideRealityModelAppearance]]
+  * @beta
+  */
   public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
+  }
+
+  public setOSMBuildingDisplay(options: { onOff?: boolean }) {
+    if (this.displayStyle.setOSMBuildingDisplay(options))
+      this.invalidateRenderPlan();
   }
 
   /** Some changes may or may not require us to invalidate the scene.

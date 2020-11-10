@@ -27,9 +27,17 @@ enum QuantizedMeshExtensionIds {
 }
 
 /** @internal */
+const cesiumRequestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
+
+export function getCesiumOSMBuildingsUrl() {
+  const osmAssetId = 96188;
+  return `$CesiumIonAsset=${osmAssetId}:${cesiumRequestKey}`;
+}
+
+/** @internal */
 export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
   const requestContext = new ClientRequestContext("");
-  const _requestKey = requestKey ? requestKey : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
+  const _requestKey = requestKey ? requestKey : cesiumRequestKey;
   const _requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
   const apiUrl: string = _requestTemplate.replace("{CesiumRequestToken}", _requestKey);
   const apiRequestOptions: RequestOptions = { method: "GET", responseType: "json" };

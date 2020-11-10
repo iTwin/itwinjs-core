@@ -18,7 +18,7 @@ import {
   TileDrawArgs, TileLoadPriority, TileRequest,
 } from "./internal";
 
-const defaultViewFlagOverrides = createDefaultViewFlagOverrides({ lighting: false });
+const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
 
 const scratchTileCenterWorld = new Point3d();
 const scratchTileCenterView = new Point3d();

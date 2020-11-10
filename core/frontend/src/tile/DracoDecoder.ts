@@ -90,6 +90,8 @@ export class DracoDecoder {
       return undefined;
     DracoDecoder.decodeUVParams(mesh.uvParams, dracoGeometry, dracoDecoder, attributes.TEXCOORD_0);
     DracoDecoder.decodeNormals(mesh.normals, dracoGeometry, dracoDecoder, attributes.NORMAL);
+    if (attributes._BATCHID !== undefined && mesh.features !== undefined)
+      DracoDecoder.decodeBatchIds(mesh.features, dracoGeometry, dracoDecoder, attributes._BATCHID);
     dracoModule.destroy(dracoGeometry);
     dracoModule.destroy(dracoDecoder);
 
@@ -101,6 +103,21 @@ export class DracoDecoder {
 
     const quantized = DracoDecoder.decodeAndQuantize(dracoGeometry, dracoDecoder, attributeId);
     qPoints.fromTypedArray(quantized.range, quantized.qPoints);
+    return true;
+  }
+  private static decodeBatchIds(features: Mesh.Features, dracoGeometry: any, dracoDecoder: any, attributeId: number): boolean {
+    const dracoAttribute = dracoDecoder.GetAttributeByUniqueId(dracoGeometry, attributeId);
+    if (undefined === dracoAttribute) return false;
+
+    const unquantizedValues = new DracoDecoder._dracoDecoderModule.DracoFloat32Array();
+    const numPoints = dracoGeometry.num_points();
+    dracoDecoder.GetAttributeFloatForAllPoints(dracoGeometry, dracoAttribute, unquantizedValues);
+    const featureIndices = [];
+    featureIndices.length = numPoints;
+    for (let i = 0; i < numPoints; i++)
+      featureIndices[i] = unquantizedValues.GetValue(i);
+
+    features.setIndices(featureIndices);
     return true;
   }
   private static decodeUVParams(points: Point2d[], dracoGeometry: any, dracoDecoder: any, attributeId: number): boolean {

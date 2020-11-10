@@ -19,6 +19,7 @@ import { TileLoadStatus } from "./Tile";
 /** @internal */
 export interface RealityTileParams extends TileParams {
   readonly transformToRoot?: Transform;
+  readonly additiveRefinement?: boolean;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
@@ -28,11 +29,13 @@ const scratchLoadedChildren = new Array<RealityTile>();
  */
 export class RealityTile extends Tile {
   public readonly transformToRoot?: Transform;
+  public readonly additiveRefinement?: boolean;
   private _everDisplayed = false;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
     this.transformToRoot = props.transformToRoot;
+    this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
     if (undefined === this.transformToRoot)
       return;
 
@@ -171,6 +174,9 @@ export class RealityTile extends Tile {
         }
       }
     } else {
+      if (this.additiveRefinement && this.isDisplayable)
+        context.selectOrQueue(this, args, traversalDetails);
+
       this.selectRealityChildren(context, args, traversalDetails);
       if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
         const minimumVisibleFactor = .25;     // If the tile has not yet been displayed in this viewport -- display only if it is within 25% of visible. Avoid overly tiles popping into view unexpectedly (terrain)

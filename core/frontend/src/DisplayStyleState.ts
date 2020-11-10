@@ -17,7 +17,7 @@ import { IModelConnection } from "./IModelConnection";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { MapCartoRectangle, MapTileTree, MapTileTreeReference, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeReference, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ScreenViewport, Viewport } from "./Viewport";
 
@@ -206,6 +206,25 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const index = this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
     if (- 1 !== index)
       this.detachRealityModelByIndex(index);
+  }
+
+
+
+  public setOSMBuildingDisplay(options: { onOff?: boolean }): boolean {
+    const tilesetUrl = getCesiumOSMBuildingsUrl();
+    const currentIndex = this._contextRealityModels.findIndex((x) => x.url === tilesetUrl);
+    const name = "OpenStreetMap Buildings";    // TBD - Internationalizion.....
+    const doToggle = options.onOff === undefined;
+
+    if (!doToggle && options.onOff !== undefined)
+      return false;       // Nothing to do (unless more options are added)
+
+    if (options.onOff || (currentIndex < 0 && doToggle))
+      this.attachRealityModel({ tilesetUrl, name });
+    else
+      this.detachRealityModelByIndex(currentIndex)
+
+    return true;
   }
 
   /** Find index of a reality model.
