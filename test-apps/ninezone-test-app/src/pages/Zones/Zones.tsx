@@ -353,8 +353,8 @@ export default function Zones() {
     initialState = addTab(initialState, "topLeft_2", { label: "Tab 2", preferredPanelWidgetSize: "fit-content" });
     initialState = addTab(initialState, "topLeft_3", { label: "Tab 3" });
     initialState = addTab(initialState, "topLeft_4", { label: "Tab 4" });
-    initialState = addTab(initialState, "bottomLeft_1", { label: "Tab 1 Of Bottom Left Widget" });
     initialState = addTab(initialState, "centerLeft_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomLeft_1", { label: "Tab 1 Of Bottom Left Widget" });
     initialState = addTab(initialState, "topRight_1", { label: "Tab 1" });
     initialState = addTab(initialState, "topPanel_1", { label: "Tab 1" });
     initialState = addTab(initialState, "bottomPanel1_1", { label: "Tab 1" });

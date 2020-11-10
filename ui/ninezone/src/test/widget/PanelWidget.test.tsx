@@ -13,6 +13,14 @@ import {
 import { ContextConsumer, NineZoneProvider } from "../Providers";
 import { createDOMRect } from "../Utils";
 
+export const defaultProps = {
+  onBeforeTransition: () => { },
+  onPrepareTransition: () => { },
+  onTransitionEnd: () => { },
+  size: undefined,
+  transition: undefined,
+}
+
 describe("PanelWidget", () => {
   interface ProviderProps {
     children: React.ReactNode;
@@ -41,7 +49,7 @@ describe("PanelWidget", () => {
       <Provider
         state={nineZone}
       >
-        <PanelWidget widgetId="w1" />
+        <PanelWidget widgetId="w1" {...defaultProps} />
       </Provider>,
     );
     container.firstChild!.should.matchSnapshot();
@@ -55,7 +63,7 @@ describe("PanelWidget", () => {
       <Provider
         state={nineZone}
       >
-        <PanelWidget widgetId="w1" />
+        <PanelWidget widgetId="w1" {...defaultProps} />
       </Provider>,
     );
     container.firstChild!.should.matchSnapshot();
@@ -71,7 +79,7 @@ describe("PanelWidget", () => {
       <Provider
         state={nineZone}
       >
-        <PanelWidget widgetId="w1" />
+        <PanelWidget widgetId="w1" {...defaultProps} />
       </Provider>,
     );
     container.firstChild!.should.matchSnapshot();
@@ -88,7 +96,7 @@ describe("PanelWidget", () => {
         state={nineZone}
         side="top"
       >
-        <PanelWidget widgetId="w1" />
+        <PanelWidget widgetId="w1" {...defaultProps} />
       </Provider>,
     );
     container.firstChild!.should.matchSnapshot();
@@ -102,7 +110,8 @@ describe("PanelWidget", () => {
       <Provider
         state={nineZone}
       >
-        <PanelWidget widgetId="w1" />
+        <PanelWidget widgetId="w1"
+          {...defaultProps} />
       </Provider>,
     );
     const widget = container.getElementsByClassName("nz-widget-panelWidget")[0];
@@ -126,6 +135,7 @@ describe("PanelWidget", () => {
       >
         <PanelWidget
           widgetId="w1"
+          {...defaultProps}
         />
       </Provider>,
     );
@@ -143,6 +153,7 @@ describe("PanelWidget", () => {
     >
       <PanelWidget
         widgetId="w1"
+        {...defaultProps}
       />
     </Provider>);
 
@@ -170,6 +181,7 @@ describe("PanelWidget", () => {
       >
         <PanelWidget
           widgetId="w1"
+          {...defaultProps}
         />
       </Provider>,
     );
@@ -186,6 +198,7 @@ describe("PanelWidget", () => {
     >
       <PanelWidget
         widgetId="w1"
+        {...defaultProps}
       />
     </Provider>);
 
@@ -213,6 +226,7 @@ describe("PanelWidget", () => {
       >
         <PanelWidget
           widgetId="w1"
+          {...defaultProps}
         />
       </Provider>,
     );
@@ -225,6 +239,7 @@ describe("PanelWidget", () => {
     >
       <PanelWidget
         widgetId="w1"
+        {...defaultProps}
       />
     </Provider>);
 
@@ -249,6 +264,7 @@ describe("PanelWidget", () => {
       >
         <PanelWidget
           widgetId="w1"
+          {...defaultProps}
         />
         <ContextConsumer
           context={WidgetContentManagerContext}
@@ -266,6 +282,7 @@ describe("PanelWidget", () => {
     >
       <PanelWidget
         widgetId="w1"
+        {...defaultProps}
       />
     </Provider>);
 
