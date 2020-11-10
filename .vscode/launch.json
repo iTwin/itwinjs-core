@@ -1552,6 +1552,7 @@
       "description": "Select client library to debug",
       "type": "pickString",
       "options": [
+        "forms-data-management",
         "product-settings",
         "projectshare",
         "rbac"
