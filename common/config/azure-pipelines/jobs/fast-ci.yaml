@@ -8,15 +8,14 @@ pr:
   drafts: false
   branches:
     include:
-    - master
-    - releases/*
+      - master
+      - releases/*
 
 jobs:
   - template: ci-core.yaml
     parameters:
       name: Node_12
-      nodeVersion: 12.17.0
+      nodeVersion: 12.x
       pool:
         demands:
-        - Agent.OS -equals $(platform)
-
+          - Agent.OS -equals $(platform)
