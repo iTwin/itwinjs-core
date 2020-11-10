@@ -9,5 +9,5 @@ If you already have access to an iModel this will guide you through locating the
 - Click on the card to launch [Design Review](https://www.bentley.com/en/products/product-line/digital-twins/itwin-design-review/project-coordination)
 
 
-### iTwin Hub screenshotz
+### iTwin Hub screenshot
 ![itwin hub overview]($docs/learning/tutorials/images/itwin-hub.png)
