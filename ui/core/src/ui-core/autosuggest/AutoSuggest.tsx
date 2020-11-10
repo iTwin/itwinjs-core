@@ -249,7 +249,8 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     const { inputValue, suggestions } = this.state;
     const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions, // eslint-disable-line @typescript-eslint/no-unused-vars
       onPressEnter, onPressEscape, onPressTab, onInputFocus, getLabel, // eslint-disable-line @typescript-eslint/no-unused-vars
-      getSuggestions, renderInputComponent, renderSuggestionsContainer, // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-unused-vars
+      getSuggestions,  // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-unused-vars
+      renderInputComponent, renderSuggestionsContainer, onSuggestionsClearRequested,  // eslint-disable-line @typescript-eslint/no-unused-vars
       ...props } = this.props;
     const inputPlaceholder = (!inputValue) ? placeholder : undefined;
 
