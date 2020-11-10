@@ -53,20 +53,20 @@ As a side effect, any additional plugins added in consumer packages won't be loa
 - `no-internal` - prevents use of internal/alpha APIs. Example configurations:
 
 ```json
-// default config
-"@bentley/no-internal": "error"
-```
-
-```json
 // custom config
 "@bentley/no-internal": [
 "error",
   {
-    "warnOn": ["internal", "alpha"]
+    "warnOn": ["internal", "alpha", "beta"]
   }
 ]
 ```
 
-The rule will report an error whenever you use anything marked with one of the tags configured in the `warnOn` option. Allowed tags: `internal`, `alpha`, `beta`, `public`.
+```json
+// default config
+"@bentley/no-internal": "error"
+// warnOn is set to ["internal", "alpha"] by default
+```
 
-`warnOn` is set to `["internal", "alpha"]` by default.
+The rule will report an error whenever you use anything marked with one of the tags configured in the `warnOn` option.
+Allowed tags: `internal`, `alpha`, `beta`, `public`.
