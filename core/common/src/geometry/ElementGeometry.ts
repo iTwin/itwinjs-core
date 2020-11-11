@@ -63,7 +63,7 @@ export enum ElementGeometryOpcode {
 }
 
 /** A...
- * See [IModelDb.elementGeometryRequest]($imodeljs-backend)
+ * See IModelDb.elementGeometryRequest
  * @alpha
  */
 export interface ElementGeometryDataEntry {
@@ -92,12 +92,12 @@ export interface ElementGeometryInfo {
 }
 
 /** A callback function that receives geometry stream data.
- * See [IModelDb.elementGeometryRequest]($imodeljs-backend)
+ * See IModelDb.elementGeometryRequest
  * @alpha
  */
 export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
 
-/** Parameters for [IModelDb.elementGeometryRequest]($imodeljs-backend)
+/** Parameters for IModelDb.elementGeometryRequest
  * @alpha
  */
 export interface ElementGeometryRequest {
