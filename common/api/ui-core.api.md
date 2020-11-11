@@ -21,6 +21,7 @@ import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import * as ReactAutosuggest from 'react-autosuggest';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
@@ -96,8 +97,13 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onSuggestionsClearRequested?: () => void;
     onSuggestionSelected: (selected: AutoSuggestData) => void;
     options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
+    // @internal
+    renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+    // @internal
+    renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
     setFocus?: boolean;
     value?: string;
 }
