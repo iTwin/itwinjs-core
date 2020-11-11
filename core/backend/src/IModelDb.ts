@@ -1307,11 +1307,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(props, this._iModel);
 
-      const val = this._iModel.nativeDb.insertModel(props);
+      const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
       if (val.error)
         throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
-      props.id = Id64.fromJSON(val.result!.id);
+      props.id = Id64.fromJSON(JSON.parse(val.result!).id);
       jsClass.onInserted(props.id, this._iModel);
       return props.id;
     }
@@ -1324,7 +1324,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(props, this._iModel);
 
-      const error = this._iModel.nativeDb.updateModel(props);
+      const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
       if (error !== IModelStatus.Success)
         throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
 
