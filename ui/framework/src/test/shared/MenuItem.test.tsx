@@ -120,8 +120,8 @@ describe("MenuItem", () => {
     const wrapper = mount(<div>{menuItemNodes}</div>);
     expect(wrapper.find(ContextMenuItem).length).to.eq(1);
     expect(wrapper.find(".core-badge").length).to.eq(1);
-    expect(wrapper.find(".icon-placeholder").length).to.eq(1)
-    expect(wrapper.find(".icon-checkmark").length).to.eq(1)
+    expect(wrapper.find(".icon-placeholder").length).to.eq(1);
+    expect(wrapper.find(".icon-checkmark").length).to.eq(1);
   });
 
   it("onSelect handled correctly on click", async () => {

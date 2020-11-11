@@ -21,6 +21,7 @@ import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import * as ReactAutosuggest from 'react-autosuggest';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
@@ -96,8 +97,13 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onSuggestionsClearRequested?: () => void;
     onSuggestionSelected: (selected: AutoSuggestData) => void;
     options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
+    // @internal
+    renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+    // @internal
+    renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
     setFocus?: boolean;
     value?: string;
 }
@@ -928,10 +934,7 @@ export class IconHelper {
 }
 
 // @public
-export class IconInput extends React.PureComponent<IconInputProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const IconInput: React.ForwardRefExoticComponent<IconInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export interface IconInputProps extends InputProps {
@@ -967,16 +970,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 }
 
 // @public
-export class Input extends React.PureComponent<InputProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(prevProps: InputProps): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const Input: React.ForwardRefExoticComponent<InputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export class InputLabel extends React.PureComponent<InputLabelProps> {
@@ -1049,10 +1043,7 @@ export interface LabeledComponentProps {
 }
 
 // @public
-export class LabeledInput extends React.PureComponent<LabeledInputProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LabeledInput: React.ForwardRefExoticComponent<LabeledInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
@@ -1069,10 +1060,7 @@ export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, 
 }
 
 // @public
-export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LabeledTextarea: React.ForwardRefExoticComponent<LabeledTextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
 
 // @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
@@ -2003,14 +1991,7 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 }
 
 // @public
-export class Textarea extends React.PureComponent<TextareaProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    static defaultProps: Partial<TextareaProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export const Textarea: React.ForwardRefExoticComponent<TextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
 
 // @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {

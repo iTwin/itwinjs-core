@@ -165,21 +165,21 @@ export class TreeNode extends React.Component<TreeNodeProps> {
   private _onCheckboxChange = (checked: boolean) => {
     if (this.props.checkboxProps && this.props.checkboxProps.onClick && !this.props.checkboxProps.isDisabled)
       this.props.checkboxProps.onClick(checked ? CheckBoxState.On : CheckBoxState.Off);
-  }
+  };
 
   private _onCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-  }
+  };
 
   private _onClickExpansionToggle = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     if (this.props.onClickExpansionToggle)
       this.props.onClickExpansionToggle();
-  }
+  };
 
   private _onClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     if (this.props.onClick)
       this.props.onClick(e);
-  }
+  };
 }

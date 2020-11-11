@@ -67,7 +67,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
       await authorizationClient.signOut(new ClientRequestContext());
     else
       Logger.logError(UiFramework.loggerCategory(this), "IModelApp.authorizationClient must be set for signOut");
-  }
+  };
 
   public get content(): React.ReactNode {
     const initials = this._getInitials();

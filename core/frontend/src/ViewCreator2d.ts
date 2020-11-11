@@ -84,7 +84,7 @@ export class ViewCreator2d {
     const baseClassName = await this._imodel.findClassFor(modelType, undefined);
 
     if (baseClassName === undefined)
-      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid", Logger.logError, loggerCategory, () => ({ modelType, modelId }))
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid", Logger.logError, loggerCategory, () => ({ modelType, modelId }));
 
     const viewState = await this._createViewState2d(modelId, baseClassName.classFullName, options);
     try {
@@ -111,7 +111,7 @@ export class ViewCreator2d {
       props = await this._addSheetViewProps(modelId, props);
       viewState = SheetViewState.createFromProps(props, this._imodel);
     } else
-      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported", Logger.logError, loggerCategory, () => ({ modelType, modelId }))
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported", Logger.logError, loggerCategory, () => ({ modelType, modelId }));
 
     return viewState;
   }
@@ -199,7 +199,7 @@ export class ViewCreator2d {
 
     // merge seed view props if needed
     return options?.useSeedView ? this._mergeSeedView(modelId, viewStateProps) : viewStateProps;
-  }
+  };
 
   /**
    * Adds Sheet view props to given view props.
@@ -301,5 +301,5 @@ export class ViewCreator2d {
       rows.push(row.id);
 
     return rows;
-  }
+  };
 }

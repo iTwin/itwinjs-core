@@ -117,11 +117,11 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
 
   private _handleTargetRef = (target: HTMLElement | null) => {
     this.setState({ target });
-  }
+  };
 
   private _handleClose = () => {
     this.setOpenWidget(null);
-  }
+  };
 
   private _handleOutsideClick = (e: MouseEvent) => {
     if (!this._indicator.current ||
@@ -130,7 +130,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
       return;
 
     this._handleClose();
-  }
+  };
 
   /** Return array of SnapRow elements, one for each support snap mode. This array will populate the pop-up used
    * to select a SnapMode.
@@ -155,7 +155,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
   /** Called when user clicks on a Snap Mode entry in the pop-up window. */
   private _handleSnapModeFieldClick = (snapModeField: number) => {
     this.props.setSnapMode(snapModeField);
-  }
+  };
 
   /** Called when user click on field in status bar which triggers the pop-up to open. */
   private _handleSnapModeIndicatorClick = () => {
@@ -164,7 +164,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
       this.setOpenWidget(null);
     else
       this.setOpenWidget(this._className);
-  }
+  };
 
   /** Opens the pop-up window. */
   private setOpenWidget(openWidget: StatusBarFieldId) {

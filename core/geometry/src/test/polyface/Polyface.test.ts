@@ -24,7 +24,8 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { MomentData } from "../../geometry4d/MomentData";
-import { IndexedPolyface, IndexedPolyfaceVisitor, Polyface } from "../../polyface/Polyface";
+import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
+import { IndexedPolyfaceVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -381,9 +382,9 @@ describe("Polyface.Box", () => {
 function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, checkClosure: boolean, options?: StrokeOptions, dx0: number = 0, dy0: number = 0) {
   let fileName1 = `${fileName.slice()}.X`;
   if (options) {
-    if (options.hasMaxEdgeLength) fileName1 = `{fileName1}E`;
-    if (options.needNormals) fileName1 = `{fileName1}N`;
-    if (options.needParams) fileName1 = `{fileName1}P`;
+    if (options.hasMaxEdgeLength) fileName1 = `${fileName1}E`;
+    if (options.needNormals) fileName1 = `${fileName1}N`;
+    if (options.needParams) fileName1 = `${fileName1}P`;
   }
 
   const allMesh = [];
@@ -1550,7 +1551,7 @@ function appendIndexErrors(name: string, data: number[], numValues: number, erro
   for (i = 0; i < data.length; i++) {
     k = data[i];
     if (k < 0 || k >= numValues) {
-      errors.push({ indexArrayName: name, indexOfBadPointIndex: i, badPointIndex: k })
+      errors.push({ indexArrayName: name, indexOfBadPointIndex: i, badPointIndex: k });
       return;
     }
   }

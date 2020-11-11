@@ -145,7 +145,7 @@ export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeCom
         this._selectionHandler.replaceSelection(this.getKeys(nodes));
       else
         this._selectionHandler.addToSelection(this.getKeys(nodes));
-    }
+    };
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private onNodesDeselected = (nodes: TreeNodeItem[]) => {
@@ -161,7 +161,7 @@ export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeCom
         return;
 
       this._selectionHandler.removeFromSelection(this.getKeys(nodes));
-    }
+    };
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private onSelectionChanged = (args: SelectionChangeEventArgs, _provider: ISelectionProvider) => {
@@ -172,7 +172,7 @@ export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeCom
           isNodeSelected: this.createIsNodeSelectedCallback(),
         });
       }
-    }
+    };
 
     public render() {
       const {

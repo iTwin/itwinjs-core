@@ -107,12 +107,12 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 
   private _onMouseEnter = () => {
     document.addEventListener("mousemove", this._onMouseMove);
-  }
+  };
 
   private _onMouseLeave = () => {
     this.setState({ value: null, percent: null });
     document.removeEventListener("mousemove", this._onMouseMove);
-  }
+  };
 
   private _onMouseMove = (e: Event) => {
     const { activeHandleID, getEventData } = this.props;
@@ -122,13 +122,13 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     } else {
       this.setState(getEventData(e));
     }
-  }
+  };
 
   private _handleTooltipTarget = (element: HTMLDivElement | null) => {
     this.setState({
       tooltipTarget: element || undefined,
     });
-  }
+  };
 
   public render() {
     const { value, percent } = this.state;
@@ -221,19 +221,19 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
       tickValue += tickIncrement;
     }
     return tickValues;
-  }
+  };
 
   private _handleSunriseTooltipTarget = (element: HTMLSpanElement | null) => {
     this.setState({
       sunriseTooltipTarget: element || undefined,
     });
-  }
+  };
 
   private _handleSunsetTooltipTarget = (element: HTMLSpanElement | null) => {
     this.setState({
       sunsetTooltipTarget: element || undefined,
     });
-  }
+  };
 
   public render() {
     const { formatTick, formatTime, onChange, onUpdate, dayStartMs, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs } = this.props;
@@ -473,7 +473,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
       if (newPlayingState)
         this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
     });
-  }
+  };
 
   private _play(sunTimeMs: number) {
     this._timeLastCycle = new Date().getTime();
@@ -505,7 +505,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     // istanbul ignore else
     if (this.props.onPlayPause)
       this.props.onPlayPause(false);
-  }
+  };
 
   // user clicked play button
   private _onPlay = () => {
@@ -519,7 +519,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     } else {
       this._play(this.state.currentTimeOffsetMs);
     }
-  }
+  };
 
   private setPlaybackTimeBySunTime(sunOffsetMs: number, sunRiseOffsetMs: number, sunDeltaMs: number, adjustedDuration?: number) {
     this._totalPlayTime = ((sunOffsetMs - sunRiseOffsetMs) / (sunDeltaMs)) * ((adjustedDuration) ? adjustedDuration : this.state.adjustedDuration);
@@ -543,7 +543,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     this.setState({ dayStartMs, sunRiseOffsetMs, sunSetOffsetMs, currentTimeOffsetMs: sunOffsetMs, sunDeltaMs, isDateOpened: false }, () => {
       this._timeLastCycle = new Date().getTime();
     });
-  }
+  };
 
   private _onTimeChanged = (time: TimeSpec) => {
     // compute the current date (with time)
@@ -567,23 +567,23 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
     // update the timeline
     this.setState({ currentTimeOffsetMs });
-  }
+  };
 
   private _onCloseDayPicker = () => {
     this.setState({ isDateOpened: false });
-  }
+  };
 
   private _onOpenDayPicker = () => {
     this.setState((prevState) => ({ isDateOpened: !prevState.isDateOpened }));
-  }
+  };
 
   private _onCloseSettingsPopup = () => {
     this.setState({ isSettingsOpened: false });
-  }
+  };
 
   private _onOpenSettingsPopup = () => {
     this.setState((prevState) => ({ isSettingsOpened: !prevState.isSettingsOpened }));
-  }
+  };
 
   private ensureRange(value: number, min: number, max: number): number {
     return Math.max(Math.min(value, max), min);
@@ -611,32 +611,32 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   private _onUpdate = (values: ReadonlyArray<number>) => {
     if (!this.state.isPlaying)
       this.processSunTimeChange(values[0]);
-  }
+  };
 
   private _onChange = (values: ReadonlyArray<number>) => {
     if (!this.state.isPlaying)
       this.processSunTimeChange(values[0]);
-  }
+  };
 
   private _onSpeedChange = (value: number) => {
     const adjustedDuration = this.state.duration / value;
     this.setState({ speed: value, adjustedDuration });
-  }
+  };
 
   private _onToggleLoop = () => {
     this.setState((prevState) => ({ loop: !prevState.loop }));
-  }
+  };
 
   private _onToggleDisplay = () => {
     this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
-  }
+  };
 
   private _formatTick = (millisec: number) => {
     const hour = millisec / millisecPerHour;
     const abbrev = (hour < 12) ? this._amLabel : (hour === 24) ? this._amLabel : this._pmLabel;
     const newHour = (hour === 0) ? 12 : (hour <= 12) ? hour : hour - 12;
     return `${newHour}${abbrev}`;
-  }
+  };
 
   private _formatTime = (millisec: number) => {
     const date = new Date(millisec);
@@ -645,15 +645,15 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     const abbrev = (hours < 12) ? this._amLabel : (hours === 24) ? this._amLabel : this._pmLabel;
     hours = (hours > 12) ? hours - 12 : hours;
     return `${hours}:${minutes} ${abbrev}`;
-  }
+  };
 
   private _formatDate = (date: Date) => {
     return `${this._months[date.getUTCMonth()]}, ${date.getUTCDate()}`;
-  }
+  };
 
   private _onPresetColorPick = (shadowColor: ColorDef) => {
     this.setState({ shadowColor }, () => this.props.dataProvider.shadowColor = shadowColor);
-  }
+  };
 
   private _handleHueOrSaturationChange = (hueOrSaturation: HSVColor) => {
     if (hueOrSaturation.s === 0)  // for a ColorDef to be created from hsv s can't be 0
@@ -661,7 +661,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
     const shadowColor = hueOrSaturation.toColorDef();
     this.setState({ shadowColor }, () => this.props.dataProvider.shadowColor = shadowColor);
-  }
+  };
 
   public render() {
     const { dataProvider } = this.props;
@@ -700,7 +700,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
               <DatePicker selected={this.props.dataProvider.day} onDateChange={this._onDayClick} showFocusOutline={false} />
               <div className="time-container">
                 <BodyText className="time-label">{this._timeLabel}</BodyText>
-                <TimeField time={{hours:currentDate.getUTCHours(), minutes:currentDate.getUTCMinutes(), seconds:0}} timeDisplay={TimeDisplay.H12MC} onTimeChange={this._onTimeChanged} />
+                <TimeField time={{ hours: currentDate.getUTCHours(), minutes: currentDate.getUTCMinutes(), seconds: 0 }} timeDisplay={TimeDisplay.H12MC} onTimeChange={this._onTimeChanged} />
               </div>
             </div>
           </Popup>

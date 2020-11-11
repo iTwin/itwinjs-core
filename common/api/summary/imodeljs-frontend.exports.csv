@@ -107,6 +107,7 @@ public;class DisplayStyleState
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
+internal;class DynamicIModelTile 
 public;DynamicsContext 
 alpha;EditingFunctions
 alpha;EditingFunctions
@@ -232,10 +233,11 @@ internal;iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefin
 internal;IModelTileTree 
 internal;IModelTileTreeOptions
 internal;IModelTileTreeParams 
-internal;iModelTileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConnection, modelId: Id64String, geometryGuid: string | undefined, options: IModelTileTreeOptions): IModelTileTreeParams
+internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
+alpha;InteractiveEditingSession
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
@@ -372,6 +374,7 @@ beta;RenderTargetDebugControl
 internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
+internal;RootIModelTile = Tile &
 public;RotateViewTool 
 alpha;RotationMode
 internal;RoundOff

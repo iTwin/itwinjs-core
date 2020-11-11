@@ -2374,7 +2374,7 @@ describe("computeProjectExtents", () => {
   });
 
   it("should report outliers", () => {
-    const elemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: "0x38", wantGeometry: true });
+    const elemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: "0x39", wantGeometry: true });
     elemProps.id = Id64.invalid;
     const placement = Placement3d.fromJSON(elemProps.placement);
     const originalOrigin = placement.origin.clone();

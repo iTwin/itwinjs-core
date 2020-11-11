@@ -432,9 +432,9 @@ export class CursorPopupRenderer extends React.Component<any, CursorPopupRendere
 
   private _handlePopupChangedEvent = (_args: any) => {
     this.forceUpdate();
-  }
+  };
 
   private _handleCursorPopupUpdatePositionEvent = (args: CursorPopupUpdatePositionEventArgs) => {
     this.setState({ pt: Point.create(args.pt) });
-  }
+  };
 }

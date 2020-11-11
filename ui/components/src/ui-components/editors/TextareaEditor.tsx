@@ -66,7 +66,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
       this.setState({
         inputValue: e.target.value,
       });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -134,14 +134,14 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
         this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
       }
     }
-  }
+  };
 
   private _handleCancel = (_event: React.MouseEvent): void => {
     // istanbul ignore else
     if (this.props.onCancel) {
       this.props.onCancel();
     }
-  }
+  };
 
   // private _handleBlur = (_event: React.FocusEvent): void => {
   //   // eslint-disable-next-line no-console

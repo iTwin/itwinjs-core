@@ -39,7 +39,7 @@ export class CalculatorPopup extends React.PureComponent<CalculatorPopupProps, C
     // istanbul ignore else
     if (!this.state.size.equals(newSize))
       this.setState({ size: Size.create(newSize) });
-  }
+  };
 
   /** @internal */
   public render() {

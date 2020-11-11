@@ -23,7 +23,7 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip(props: Common
   const panelState = React.useContext(PanelStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   assert(panelState);
-  const { side } = panelState
+  const { side } = panelState;
   const [ref, resizing, active] = useResizeGrip<HTMLDivElement>();
   const className = classnames(
     "nz-widgetPanels-grip",

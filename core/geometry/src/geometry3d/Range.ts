@@ -129,8 +129,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
 
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
-  public isAlmostEqual(other: Range3d): boolean {
-    return (this.low.isAlmostEqual(other.low) && this.high.isAlmostEqual(other.high))
+  public isAlmostEqual(other: Range3d, tol?: number): boolean {
+    return (this.low.isAlmostEqual(other.low, tol) && this.high.isAlmostEqual(other.high, tol))
       || (this.isNull && other.isNull);
   }
   /** copy low and high values from other. */
@@ -681,7 +681,13 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       this.extendXYZ(x / w, y / w, z / w);
   }
   /** Expand this range to include a point. */
-  public extendPoint(point: Point3d): void { this.extendXYZ(point.x, point.y, point.z); }
+  public extendPoint(point: Point3d, transform?: Transform): void {
+    if (transform) {
+      this.extendTransformedXYZ(transform, point.x, point.y, point.z);
+    } else {
+      this.extendXYZ(point.x, point.y, point.z);
+    }
+  }
 
   /** Expand this range to include a transformed point. */
   public extendTransformedPoint(transform: Transform, point: Point3d): void {

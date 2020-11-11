@@ -16,7 +16,7 @@ export class LocalFileSupport {
       return false;
     }
     return true;
-  }
+  };
 
   public static openLocalFile = async (fileName: string): Promise<IModelConnection | undefined> => {
     // Close the current iModelConnection
@@ -36,5 +36,5 @@ export class LocalFileSupport {
       iModelConnection = undefined;
     }
     return iModelConnection;
-  }
+  };
 }
