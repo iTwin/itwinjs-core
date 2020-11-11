@@ -178,9 +178,9 @@ module.exports = {
         if(!resolved)
         return;
         if (resolved.resolvedReturnType && resolved.resolvedReturnType.symbol)
-          checkJsDoc(resolved.resolvedReturnType.symbol.valueDeclaration); // class
+          checkJsDoc(resolved.resolvedReturnType.symbol.valueDeclaration, node); // class
         if(resolved.declaration)
-          checkJsDoc(resolved.declaration); // constructor
+          checkJsDoc(resolved.declaration, node); // constructor
       },
 
       TaggedTemplateExpression(node) {
