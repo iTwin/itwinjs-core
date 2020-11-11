@@ -167,7 +167,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
             const otherAngles = YawPitchRollAngles.fromJSON(other?.rotation);
             assert.isTrue(angles.isAlmostEqual(otherAngles));
           }
-          break
+          break;
         case ElementGeometryOpcode.Image:
           const image = ElementGeometry.toImageGraphic(entry);
           assert.exists(image);
