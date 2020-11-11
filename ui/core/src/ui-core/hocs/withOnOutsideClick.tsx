@@ -64,19 +64,19 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
         return;
 
       return this.onOutsideClick(e);
-    }
+    };
 
     /** @internal */
     public handleDocumentPointerDown = (e: PointerEvent) => {
       this.isDownOutside = !!this.ref.current && (e.target instanceof Node) && !this.ref.current.contains(e.target);
-    }
+    };
 
     /** @internal */
     public handleDocumentPointerUp = (e: PointerEvent) => {
       const isOutsideClick = this.ref.current && e.target instanceof Node && !this.ref.current.contains(e.target) && this.isDownOutside;
       this.isDownOutside = false;
       return isOutsideClick ? this.onOutsideClick(e) : 0;
-    }
+    };
 
     public render() {
       const { onOutsideClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars

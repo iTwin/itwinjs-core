@@ -114,7 +114,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   private _handleToolbarItemRef = (toolbarItemRef: React.MutableRefObject<ToolbarItem | null>) => (toolbarItem: ToolbarItem | null) => {
     toolbarItemRef.current = toolbarItem;
     this._update && this.forceUpdate();
-  }
+  };
 }
 
 /** Properties of [[Toolbar]] component.
@@ -195,11 +195,11 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
 
       </div>
     );
-  }
+  };
 
   private _handlePanelsRef = (panels: HTMLElement | null) => {
     this.setState({ panels });
-  }
+  };
 }
 
 /** Defines toolbar item component.

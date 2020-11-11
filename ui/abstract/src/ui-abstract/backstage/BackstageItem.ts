@@ -104,7 +104,7 @@ export class BackstageItemUtilities {
     stageId: frontstageId,
     subtitle,
     ...overrides,
-  })
+  });
 
   /** Creates an action backstage item */
   public static createActionItem = (
@@ -119,5 +119,5 @@ export class BackstageItemUtilities {
     label,
     subtitle,
     ...overrides,
-  })
+  });
 }

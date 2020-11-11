@@ -120,7 +120,7 @@ class VerticalPropertyGridWidget extends React.Component {
     }
 
     return updated;
-  }
+  };
 
   public render() {
     return (
@@ -192,7 +192,7 @@ class HorizontalPropertyGridWidget extends React.Component<{ style?: React.CSSPr
     }
 
     return updated;
-  }
+  };
 
   public render() {
     return (
@@ -237,7 +237,7 @@ class HorizontalPropertyGridContent extends React.Component {
     }
 
     return updated;
-  }
+  };
 
   public render(): React.ReactNode {
     return (

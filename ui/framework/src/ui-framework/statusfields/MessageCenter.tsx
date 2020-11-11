@@ -81,7 +81,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
     // istanbul ignore else
     if (this._unloadMessagesUpdatedHandler)
       this.setState({ messageCount: MessageManager.messages.length });
-  }
+  };
 
   public render(): React.ReactNode {
     const tooltip = `${this.state.messageCount} ${this._title}`;
@@ -143,11 +143,11 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
     else if (this.props.targetRef)
       (this.props.targetRef as React.MutableRefObject<HTMLElement | null>).current = target;
     this.setState({ target });
-  }
+  };
 
   private _handleClose = () => {
     this.setOpenWidget(null);
-  }
+  };
 
   private _handleOutsideClick = (e: MouseEvent) => {
     if (!this._indicator.current ||
@@ -156,7 +156,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
       return;
 
     this._handleClose();
-  }
+  };
 
   private _handleMessageIndicatorClick = () => {
     const isOpen = this.props.openWidget === this._className;
@@ -164,11 +164,11 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
       this.setOpenWidget(null);
     else
       this.setOpenWidget(this._className);
-  }
+  };
 
   private _changeActiveTab = (tab: MessageCenterActiveTab) => {
     this.setState({ activeTab: tab });
-  }
+  };
 
   private getMessages(): React.ReactChild[] {
     const messages = MessageManager.messages.slice(0).reverse();

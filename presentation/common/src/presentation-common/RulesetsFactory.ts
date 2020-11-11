@@ -258,4 +258,4 @@ const hexToDec = (id: Id64String) => {
     }
   }
   return digits.reverse().join("");
-}
+};

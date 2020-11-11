@@ -115,7 +115,7 @@ export class FavoritePropertiesManager implements IDisposable {
     const propertiesOrder = await this._storage.loadPropertiesOrder(projectId, imodelId) || [];
     this._propertiesOrder.set(getiModelInfo(projectId, imodelId), propertiesOrder);
     await this._adjustPropertyOrderInfos(projectId, imodelId);
-  }
+  };
 
   /**
    * Function that removes order information of properties that are no longer
@@ -146,7 +146,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
     let priority = propertiesOrder.length;
     propertiesOrder.forEach((oi) => oi.priority = priority--);
-  }
+  };
 
   private validateInitializedScope(projectId?: string, imodelId?: string) {
     if (this._globalProperties === undefined)
@@ -490,7 +490,7 @@ export class FavoritePropertiesManager implements IDisposable {
     };
 
     return fields.sort(sortFunction);
-  }
+  };
 
   private getFieldPriority(field: Field, projectId: string, imodelId: string): number {
     const orderInfos = this._propertiesOrder.get(getiModelInfo(projectId, imodelId))!;
@@ -534,7 +534,7 @@ export class FavoritePropertiesManager implements IDisposable {
       baseClasses[row.classFullName].push(row.baseClassFullName);
     }
     return baseClasses;
-  }
+  };
 
   /** Changes field properties priorities to lower than another fields priority
    * @param imodel IModelConnection.

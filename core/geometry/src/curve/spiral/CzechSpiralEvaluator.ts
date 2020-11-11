@@ -99,7 +99,7 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
     return SimpleNewton.runNewton1D(d,
       (x: number) => {
         const xx = x * x;
-        return x * (1.0 + xx * xx * a) - d
+        return x * (1.0 + xx * xx * a) - d;
       },
       (x: number) => {
         const xx = x * x;

@@ -497,7 +497,7 @@ export class UiFramework {
     // If Ui Version 1, restore widget opacity; otherwise, set widget opacity to 1.0 to basically turn the feature off.
     // This fixes use of "backdrop-filter: blur(10px)"" CSS.
     UiFramework.setWidgetOpacity(args.version === "1" ? UiFramework._version1WidgetOpacity : 1.0);
-  }
+  };
 
   // istanbul ignore next
   private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
@@ -506,6 +506,6 @@ export class UiFramework {
     if (accessToken === undefined) {
       ConfigurableUiManager.closeUi();
     }
-  }
+  };
 
 }

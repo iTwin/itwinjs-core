@@ -18,7 +18,7 @@ const matches = [
 ];
 
 describe("<FilteredText />", () => {
-  afterEach (cleanup)
+  afterEach (cleanup);
 
   it("should render", async () => {
     const wrapper = render(<FilteredText value={"Hello World!"} />);

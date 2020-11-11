@@ -43,5 +43,5 @@ export class ModelessDialog extends React.Component<ModelessDialogProps> {
 
   private _updateDialog = () => {
     this.forceUpdate();
-  }
+  };
 }

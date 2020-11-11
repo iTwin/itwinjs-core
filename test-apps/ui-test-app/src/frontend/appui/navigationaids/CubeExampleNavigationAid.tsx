@@ -41,7 +41,7 @@ class CubeExampleNavigationAid extends React.Component {
 
   private _onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     event.preventDefault();
-  }
+  };
 
   public componentDidMount() {
     this._draw();
@@ -72,7 +72,7 @@ class CubeExampleNavigationAid extends React.Component {
         color,
       );
     }
-  }
+  };
 
   // Colour adjustment function
   // Nicked from http://stackoverflow.com/questions/5560248

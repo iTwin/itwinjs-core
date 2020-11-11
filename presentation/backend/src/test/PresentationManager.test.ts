@@ -102,7 +102,7 @@ describe("PresentationManager", () => {
         const testTaskAllocations = { [999]: 111 };
         const cacheConfig = {
           mode: HierarchyCacheMode.Memory,
-        }
+        };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
@@ -180,7 +180,7 @@ describe("PresentationManager", () => {
             mode: HierarchyCacheMode.Disk,
             directory: faker.random.word(),
           },
-        }
+        };
         const expectedConfig = {
           ...cacheConfig, disk: { ...cacheConfig.disk, directory: path.resolve(cacheConfig.disk!.directory!) },
         };
