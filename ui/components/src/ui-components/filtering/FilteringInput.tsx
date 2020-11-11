@@ -22,6 +22,7 @@ interface FilteringInputState {
   searchText: string;
   /** @internal */
   context: InputContext;
+  resultSelectorKey: number;
 }
 
 /** [[FilteringInput]] React Component properties
@@ -36,10 +37,20 @@ export interface FilteringInputProps extends CommonProps {
   onFilterClear: () => void;
   /** Tells the component if parent component is still handling the filtering */
   filteringInProgress: boolean;
+  /** Tells the component if parent component has finished filtering
+   * @alpha
+   */
+  filteringComplete?: boolean;
   /** [[ResultSelector]] React Component properties */
   resultSelectorProps?: ResultSelectorProps;
   /** Specify that the <input> element should automatically get focus */
   autoFocus?: boolean;
+  /**
+   * Tells component to reset the state of internal [[ResultSelector]] whenever provided `resultSelectorProps` change.
+   * This allows resetting the selected active match back to 0.
+   * @beta
+  */
+  resetResultSelectOnPropsChange?: boolean;
 }
 
 /**
@@ -71,6 +82,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     this.state = {
       searchText: "",
       context: InputContext.ReadyToFilter,
+      resultSelectorKey: 0,
     };
   }
 
@@ -116,20 +128,39 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 
   private _onInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ searchText: e.target.value, context: InputContext.ReadyToFilter });
+    if (this.props.filteringComplete)
+      this.props.onFilterCancel();
   }
 
   /** @internal */
   public static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState) {
+    if (props.filteringInProgress) {
+      return { context: InputContext.FilteringInProgress };
+    }
+
+    if (props.filteringComplete) {
+      if (props.resultSelectorProps)
+        return { context: InputContext.FilteringFinished };
+      return { context: InputContext.FilteringFinishedWithNoStepping };
+    }
+
     if (state.context === InputContext.FilteringInProgress && !props.filteringInProgress) {
       if (state.searchText && props.resultSelectorProps)
         return { context: InputContext.FilteringFinished };
       else
         return { context: InputContext.FilteringFinishedWithNoStepping };
-    } else if (state.context === InputContext.ReadyToFilter && props.filteringInProgress) {
-      return { context: InputContext.FilteringInProgress };
     }
+
     return null;
   }
+
+  /** @internal */
+  public componentDidUpdate(prevProps: FilteringInputProps, _prevState: FilteringInputState ) {
+    if (this.props.resetResultSelectOnPropsChange && this.props.resultSelectorProps!==prevProps.resultSelectorProps) {
+      this.setState((state, _props) => ({ resultSelectorKey: state.resultSelectorKey + 1 }));
+    }
+  }
+
 
   public render() {
     return (
@@ -151,7 +182,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 
           <span className="components-filtering-input-input-components">
             {this.state.context === InputContext.FilteringFinished ?
-              <ResultSelector {...this.props.resultSelectorProps!} /> : undefined}
+              <ResultSelector key={this.state.resultSelectorKey} {...this.props.resultSelectorProps!} /> : undefined}
 
             {this.state.context === InputContext.ReadyToFilter ?
               // eslint-disable-next-line jsx-a11y/click-events-have-key-events
