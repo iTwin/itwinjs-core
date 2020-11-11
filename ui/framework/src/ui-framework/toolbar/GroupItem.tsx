@@ -231,7 +231,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
         this.setState({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible, isPressed: newState.isPressed });
       }
     }
-  }
+  };
 
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
@@ -353,7 +353,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       this.closeGroupButton();
       KeyboardShortcutManager.setFocusToHome();
     }
-  }
+  };
 
   public render(): React.ReactNode {
     if (!this.state.isVisible)
@@ -431,18 +431,18 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     this._closeOnPanelOpened = false;
     FrontstageManager.onToolPanelOpenedEvent.emit();
     this._closeOnPanelOpened = true;
-  }
+  };
 
   private _handleClick = () => {
     this.setState((prevState) => ({
       isPressed: !prevState.isPressed,
     }));
-  }
+  };
 
   private _handleDragInteractionClick = () => {
     const activeItem = this.getItemById(this.state.activeItemId);
     activeItem && activeItem instanceof ActionButtonItemDef && activeItem.execute();
-  }
+  };
 
   private _handleOverflowClick = () => {
     this.setState((prevState) => {
@@ -455,7 +455,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       !!this.state.isPressed && FrontstageManager.onToolPanelOpenedEvent.emit();
       this._closeOnPanelOpened = true;
     });
-  }
+  };
 
   private _handleDragInteractionOutsideClick = (e: MouseEvent) => {
     if (this.props.groupItemDef.overflow) {
@@ -463,17 +463,17 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       return;
     }
     this.closeGroupButton();
-  }
+  };
 
   private _handleOutsideClick = (e: MouseEvent) => {
     this._ref.current && (e.target instanceof Node) && !this._ref.current.contains(e.target) && this.closeGroupButton();
-  }
+  };
 
   private _handleToolActivatedEvent = ({ toolId }: ToolActivatedEventArgs) => {
     this.setState({
       activeToolId: toolId,
     });
-  }
+  };
 
   private _handleToolPanelOpenedEvent = () => {
     // istanbul ignore else
@@ -481,7 +481,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       return;
     // istanbul ignore next
     this.closeGroupButton();
-  }
+  };
 
   private closeGroupButton() {
     const trayId = this.resetTrayId();
@@ -638,7 +638,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
         backTrays,
       };
     });
-  }
+  };
 
   private _handleExpanderClick = (trayId: string) => {
     this.setState((prevState) => {
@@ -647,7 +647,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
         backTrays: [...prevState.backTrays, prevState.trayId],
       };
     });
-  }
+  };
 }
 
 /** Properties for the [[GroupButton]] React component

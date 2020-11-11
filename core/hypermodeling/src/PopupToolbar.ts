@@ -45,13 +45,13 @@ export class PopupToolbarManager {
       mgr._current.onToolbarItemExecuted(item.id);
 
     mgr.close();
-  }
+  };
 
   private static _cancel = () => {
     const mgr = PopupToolbarManager;
     if (!mgr._current || !mgr._current.overToolbarHotspot)
       mgr.close(); // Don't hide when click is over hotspot
-  }
+  };
 
   private static close(): boolean {
     this._current = undefined;

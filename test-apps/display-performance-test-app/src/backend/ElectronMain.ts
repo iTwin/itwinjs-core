@@ -48,7 +48,7 @@ const dptaElectronMain = async () => {
       }
     });
   });
-}
+};
 
 // execute this immediately when we load
 dptaElectronMain(); // eslint-disable-line @typescript-eslint/no-floating-promises

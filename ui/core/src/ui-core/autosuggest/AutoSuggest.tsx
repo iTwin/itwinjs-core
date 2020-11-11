@@ -127,13 +127,13 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     this.setState({
       inputValue: newValue,
     });
-  }
+  };
 
   private _onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (this.props.onInputFocus)
       this.props.onInputFocus(e);
-  }
+  };
 
   /** Autosuggest will call this function every time you need to update suggestions. */
   private _onSuggestionsFetchRequested = async (request: ReactAutosuggest.SuggestionsFetchRequestedParams): Promise<void> => {
@@ -142,17 +142,17 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
     if (this._isMounted)
       this.setState({ suggestions });
-  }
+  };
 
   /** Autosuggest will call this function every time you need to clear suggestions. */
   private _onSuggestionsClearRequested = () => {
     this.setState({ suggestions: [] });
     this.props.onSuggestionsClearRequested && this.props.onSuggestionsClearRequested();
-  }
+  };
 
   private _onSuggestionSelected = (_event: React.FormEvent<any>, data: ReactAutosuggest.SuggestionSelectedEventData<AutoSuggestData>): void => {
     this.props.onSuggestionSelected(data.suggestion);
-  }
+  };
 
   /** Teach Autosuggest how to calculate suggestions for any given input value. */
   private _getSuggestions = async (value: string): Promise<AutoSuggestData[]> => {
@@ -177,7 +177,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
           return data.label.toLowerCase().includes(inputValue) || data.value.toLowerCase().includes(inputValue);
         })
     );
-  }
+  };
 
   /** When suggestion is clicked, Autosuggest needs to populate the input based on the clicked suggestion.  */
   private _getSuggestionValue = (suggestion: AutoSuggestData) => suggestion.label;
@@ -223,7 +223,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
           this.props.onPressTab(e);
         break;
     }
-  }
+  };
 
   private _theme = {
     container: "uicore-autosuggest__container",

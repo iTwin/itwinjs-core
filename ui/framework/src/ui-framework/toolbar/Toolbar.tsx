@@ -162,7 +162,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
         this.setState({ items });
       });
     }
-  }
+  };
 
   private layoutToolbarItems(itemList: ItemList): React.ReactNode[] {
     // istanbul ignore next -
@@ -265,7 +265,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
       const items = this.generateToolbarItems(this.props.items, new Size(width, height));
       this.setState({ width, height, items });
     }
-  }
+  };
 
   private hasVisibleItems(items: ItemList) {
     for (const item of items) {

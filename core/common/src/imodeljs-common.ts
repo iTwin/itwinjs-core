@@ -79,6 +79,7 @@ export * from "./domains/GenericElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/BoundingSphere";
 export * from "./geometry/Cartographic";
+export * from "./geometry/ElementGeometry";
 export * from "./geometry/FrustumPlanes";
 export * from "./geometry/GeometryStream";
 export * from "./geometry/ImageGraphic";

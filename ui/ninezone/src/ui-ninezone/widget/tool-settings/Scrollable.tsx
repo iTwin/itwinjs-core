@@ -96,15 +96,15 @@ export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSe
       isBottomIndicatorVisible,
       isTopIndicatorVisible,
     };
-  }
+  };
 
   private _scrollTop = () => {
     this.scroll(-1);
-  }
+  };
 
   private _scrollBottom = () => {
     this.scroll(1);
-  }
+  };
 
   private calculateOffset(content: HTMLElement) {
     return Math.max(10, content.clientHeight - ScrollableToolSettings.INDICATOR_HEIGHT * 1.5);

@@ -44,7 +44,7 @@ export class ElementSelectionListener {
       /** _showCard demonstrates HTMLElement content. _showReactCard demonstrates React content. */
       await this._showReactCard(evt, selection);
     }
-  }
+  };
 
   private async _showCard(evt: SelectionChangeEventArgs, selection: Readonly<KeySet>) {
     const contentContainer = document.createElement("div");
@@ -87,11 +87,11 @@ export class ElementSelectionListener {
 
   private _toolbarItemExecuted = (_item: ActionButtonItemDef) => {
     this._closeCard();
-  }
+  };
 
   private _toolbarCancel = () => {
     this._closeCard();
-  }
+  };
 
   private _closeCard() {
     IModelApp.uiAdmin.hideCard();
@@ -120,7 +120,7 @@ export class ElementSelectionListener {
       toolbarId: "example-toolbar",
       items,
     };
-  }
+  };
 
   private get _openPropertyGridItemDef() {
     return new CommandItemDef({

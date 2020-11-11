@@ -14,7 +14,7 @@ import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnviron
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { UserInfo } from "@bentley/itwin-client";
-import { workDir } from "./TestConstants"
+import { workDir } from "./TestConstants";
 import { createIModelBankFileHandler } from "./FileHandler";
 
 // To run tests with imodel-bank integration:
@@ -28,7 +28,7 @@ import { createIModelBankFileHandler } from "./FileHandler";
 let imodelBankClient: IModelBankClient;
 
 export function setIModelBankClient(_client: IModelBankClient) {
-  imodelBankClient = _client
+  imodelBankClient = _client;
 }
 
 export function getIModelBankCloudEnv(): IModelCloudEnvironment {

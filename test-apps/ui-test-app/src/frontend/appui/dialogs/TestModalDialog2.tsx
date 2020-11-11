@@ -51,7 +51,7 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     this.setState({ colors1 });
     const msg = `Color1 set to ${color.toRgbString()} alpha=${(color.getAlpha() / 255) * 100}%`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
-  }
+  };
 
   private _handleColorChange2 = (color: ColorDef, index: number) => {
     const colors2 = [...this.state.colors2];
@@ -59,7 +59,7 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     this.setState({ colors2 });
     const msg = `Color2 set to ${color.toRgbString()} alpha=${(color.getAlpha() / 255) * 100}%`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
-  }
+  };
 
   public render(): JSX.Element {
 
@@ -106,18 +106,18 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.OK);
     });
-  }
+  };
 
   private _handleCancel = () => {
     this._closeDialog(() => {
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.Cancel);
     });
-  }
+  };
 
   private _closeDialog = (_followUp: () => void) => {
     this.setState({
       opened: false,
     });
-  }
+  };
 }

@@ -254,11 +254,11 @@ export class Stacked extends React.PureComponent<StackedProps> {
   private _handleResizeStart = (args: ResizeGripResizeArgs) => {
     const bounds = Rectangle.create(args.bounds);
     this._relativePosition = bounds.topLeft().getOffsetTo(args.position);
-  }
+  };
 
   private _handleResizeEnd = () => {
     this._relativePosition = undefined;
-  }
+  };
 
   private _handleTabsGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
@@ -268,7 +268,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
     const handle = getTabsGripHandle(this.props);
     const resizeBy = getResizeBy(difference, handle);
     this.props.onResize && this.props.onResize(resizeBy, handle, filledHeightDiff);
-  }
+  };
 
   private _handleContentGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
@@ -278,7 +278,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
     const handle = getContentGripHandle(this.props);
     const resizeBy = getResizeBy(difference, handle);
     this.props.onResize && this.props.onResize(resizeBy, handle, filledHeightDiff);
-  }
+  };
 
   private _handlePrimaryGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
@@ -288,7 +288,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
     const handle = getPrimaryGripHandle(this.props);
     const resizeBy = getResizeBy(difference, handle);
     this.props.onResize && this.props.onResize(resizeBy, handle, filledHeightDiff);
-  }
+  };
 
   private _handleSecondaryGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
@@ -298,7 +298,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
     const resizeBy = getResizeBy(difference, handle);
     const filledHeightDiff = this.getFilledHeightDiff();
     this.props.onResize && this.props.onResize(resizeBy, handle, filledHeightDiff);
-  }
+  };
 }
 
 const getSecondaryGripHandle = (props: Pick<StackedProps, "verticalAnchor">) => {

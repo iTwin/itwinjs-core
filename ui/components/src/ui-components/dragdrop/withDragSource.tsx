@@ -201,6 +201,6 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       if (this.state.altKey !== altKey) {
         this.setState({ altKey });
       }
-    }
+    };
   });
 };
