@@ -65,7 +65,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
   // istanbul ignore next
   const storeHistoryKeyins = React.useCallback(async (value: string[]) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    const result = await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, value)
+    const result = await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, value);
     if (result.status !== UiSettingsStatus.Success) {
       const briefMessage = UiFramework.translate("keyinbrowser.couldNotSaveHistory");
       const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage);
@@ -199,12 +199,12 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
           // istanbul ignore else
           if (value.isHistory) {
             filteredHistory.push(value);
-            newKeyinSet.push({ ...value, matches })
+            newKeyinSet.push({ ...value, matches });
           } else {
             // only add entry if no match in filtered history
             // istanbul ignore else
             if (-1 === filteredHistory.findIndex((historyEntry: KeyinEntry) => historyEntry.value === value.value))
-              newKeyinSet.push({ ...value, matches })
+              newKeyinSet.push({ ...value, matches });
           }
         }
       });
@@ -260,7 +260,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
             const itemClass = `uifw-command-palette-value-entry${index === lastHistoryIndex ? " uifw-history-bottom-border" : ""}`;
             return <ListboxItem key={`${entry.value}-${index}`} className={itemClass} value={value} >
               <FilteredText value={entry.value} matches={entry.matches} />
-            </ListboxItem>
+            </ListboxItem>;
           })
         }
       </Listbox >

@@ -65,17 +65,17 @@ export class CursorPrompt {
 
     if (!CursorInformation.onCursorUpdatedEvent.has(this._handleCursorUpdated))
       CursorInformation.onCursorUpdatedEvent.addListener(this._handleCursorUpdated);
-  }
+  };
 
   private _endCursorPopup = (fadeOut?: boolean) => {
     CursorPopupManager.close(this._popupId, false, fadeOut);
     CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
-  }
+  };
 
   private _handleCursorUpdated = (args: CursorUpdatedEventArgs) => {
     setTimeout(() => {
       CursorPopupManager.updatePosition(args.newPt);
     });
-  }
+  };
 
 }

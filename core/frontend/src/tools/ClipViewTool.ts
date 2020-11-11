@@ -85,7 +85,7 @@ export class ViewClipTool extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   public requireWriteableTarget(): boolean { return false; }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }

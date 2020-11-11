@@ -60,7 +60,7 @@ export class ResultSelector extends React.PureComponent<ResultSelectorProps, Res
       this.props.onSelectedChanged(this.state.selectedResultId - 1);
       this.setState((state) => ({ selectedResultId: state.selectedResultId - 1 }));
     }
-  }
+  };
 
   private _onClickNext = () => {
     if (this.state.selectedResultInEditMode) {
@@ -71,7 +71,7 @@ export class ResultSelector extends React.PureComponent<ResultSelectorProps, Res
       this.props.onSelectedChanged(this.state.selectedResultId + 1);
       this.setState((state) => ({ selectedResultId: state.selectedResultId + 1 }));
     }
-  }
+  };
 
   private get _maxSelectedResultInputLength() {
     return this.props.resultCount.toString().length;
@@ -80,7 +80,7 @@ export class ResultSelector extends React.PureComponent<ResultSelectorProps, Res
   private _onSelectedResultChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length <= this._maxSelectedResultInputLength)
       this.setState({ selectedResultEdit: event.target.value });
-  }
+  };
 
   private _onSelectedResultConfirmed = () => {
     let selectedId = +this.state.selectedResultEdit;
@@ -91,19 +91,19 @@ export class ResultSelector extends React.PureComponent<ResultSelectorProps, Res
 
     this.setState({ selectedResultInEditMode: false, selectedResultId: selectedId });
     this.props.onSelectedChanged(selectedId);
-  }
+  };
 
   private _onSelectedResultClick = () => {
     this.setState((state) => ({
       selectedResultInEditMode: true,
       selectedResultEdit: state.selectedResultId.toString(),
     }));
-  }
+  };
 
   private _onSelectedResultKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === SpecialKey.Enter)
       this._onSelectedResultConfirmed();
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

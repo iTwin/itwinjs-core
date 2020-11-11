@@ -708,7 +708,7 @@ describe("GrowablePoint3dArray", () => {
     for (let i = 0; i < 75; i++) {
       const xyz = { x: i, y: 10 + i, z: 20 + i };
       dataA.push(xyz);
-      dataB.pushFront(xyz)
+      dataB.pushFront(xyz);
     }
     dataA.reverseInPlace();
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataB));

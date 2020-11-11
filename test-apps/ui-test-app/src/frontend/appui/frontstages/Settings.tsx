@@ -78,25 +78,25 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     UiFramework.setColorTheme(value.value);
 
     await SampleAppIModelApp.appUiSettings.colorTheme.saveSetting(SampleAppIModelApp.uiSettings);
-  }
+  };
 
   private _onAutoHideChange = async () => {
     UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
 
     await SampleAppIModelApp.appUiSettings.autoHideUi.saveSetting(SampleAppIModelApp.uiSettings);
-  }
+  };
 
   private _onUseProximityOpacityChange = async () => {
     UiShowHideManager.useProximityOpacity = !UiShowHideManager.useProximityOpacity;
 
     await SampleAppIModelApp.appUiSettings.useProximityOpacity.saveSetting(SampleAppIModelApp.uiSettings);
-  }
+  };
 
   private _onSnapWidgetOpacityChange = async () => {
     UiShowHideManager.snapWidgetOpacity = !UiShowHideManager.snapWidgetOpacity;
 
     await SampleAppIModelApp.appUiSettings.snapWidgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
-  }
+  };
 
   public render(): React.ReactNode {
     return (

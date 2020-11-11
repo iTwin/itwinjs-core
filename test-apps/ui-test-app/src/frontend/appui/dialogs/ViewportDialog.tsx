@@ -62,7 +62,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
         iModelConnection: args.iModelConnection,
       });
     }
-  }
+  };
 
   public render(): JSX.Element {
 
@@ -115,7 +115,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
   private _handleClose = () => {
     this._closeDialog(() => {
     });
-  }
+  };
 
   private _closeDialog = (followUp: () => void) => {
     this.setState(() => ({
@@ -125,5 +125,5 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
         ModelessDialogManager.closeDialog(this.props.dialogId);
       followUp();
     });
-  }
+  };
 }
