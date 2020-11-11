@@ -19,7 +19,6 @@ import { MutableSchema, Schema } from "../../src/Metadata/Schema";
 import { Unit } from "../../src/Metadata/Unit";
 import { SchemaKey } from "../../src/SchemaKey";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { DOMParser, XMLSerializer } from "xmldom";
 import * as FileSystem from "fs";
 import { SchemaReadHelper } from "../../src/Deserialization/Helper";
 import { XmlParser } from "../../src/Deserialization/XmlParser";
@@ -690,18 +689,17 @@ describe.only("Schema", () => {
 
       it.only("Deserialize after Serialization", async () => {
 
-          const fakeJson = {
+          const referenceJson = {
             $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-            name: "FakeSchema",
+            name: "RefSchema",
             version: "1.2.3",
-            alias: "fk",
+            alias: "rf",
             label: "SomeDisplayLabel",
             description: "A really long description...",
             items: {
               testClass: {
                 schemaItemType: "EntityClass",
                 label: "ExampleEntity",
-                name:"Test",
                 description: "An example entity class.",
                 modifier: "Sealed"
               }}
@@ -710,41 +708,9 @@ describe.only("Schema", () => {
         const context = new SchemaContext();
         const CoreCustomjsonBuffer = FileSystem.readFileSync("./test/Metadata/CoreCustomAttributes.01.00.03.ecschema.json");
         const CoreCustomjsonObj = JSON.parse(CoreCustomjsonBuffer.toString());
-        const CoreCustomSchema = await Schema.fromJson(CoreCustomjsonObj, context);
+        await Schema.fromJson(CoreCustomjsonObj, context);
 
-        const xml =
-        `<?xml version="1.0" encoding="UTF-8" ?>
-        <ECSchema schemaName="futureondynamic" alias="futureon" version="02.00.00" displayLabel="Futureon" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-        <ECSchemaReference name="FakeSchema" version="01.02.03" alias="fk"/>
-        <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
-        <ECEntityClass typeName="IShellMetadata" displayLabel="Shell metadata" description="Common shell metadata" modifier="Abstract">
-        <ECCustomAttributes>
-         <IsMixin xmlns="CoreCustomAttributes.01.00.03">
-          <AppliesToEntityClass>fk:Test
-          </AppliesToEntityClass>
-         </IsMixin>
-        </ECCustomAttributes>
-        </ECEntityClass>
-        </ECSchema>`
-
-        const parser = new DOMParser();
-        const document = parser.parseFromString(xml);
-        const FakeSchema =Schema.fromJsonSync(fakeJson, context);
-        context.addSchema(CoreCustomSchema);
-
-        const reader2 = new SchemaReadHelper(XmlParser, context);
-        const schema2:any = reader2.readSchemaSync(new Schema(context), document);
-
-        let xmlDoc: any = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
-        xmlDoc = await schema2!.toXml(xmlDoc);
-        const serializer = new XMLSerializer();
-        const schemaString = serializer.serializeToString(xmlDoc);
-
-        // console.log(`\n\n-----Modifier Attrib------\n `)
-        // console.log(xmlDoc.childNodes[1].childNodes[0].attributes[3]);
-
-        // console.log(`\n\n----Schema String------\n `)
-        // console.log(schemaString);
+        Schema.fromJsonSync(referenceJson, context);
 
         const schemaJson = {
           $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -753,16 +719,26 @@ describe.only("Schema", () => {
           alias: "vs",
           label: "SomeDisplayLabel",
           description: "A really long description...",
+          references:[
+            {
+               name:"FakeSchema",
+               version:"01.02.03"
+            },
+            {
+               name:"CoreCustomAttributes",
+               version:"01.00.03"
+            }
+         ],
           items: {
-            testClass: {
-              schemaItemType: "Entity000Class",
-              label: "ExampleEntity",
-              description: "An example entity class.",
-              modifier: "Sealed"
-            }}
+            IShellMetadata:{
+              schemaItemType:"Mixin",
+              label:"Shell metadata",
+              description:"Common shell metadata",
+              appliesTo:"RefSchema.testClass"
+           }}
           };
 
-        const schema =Schema.fromJsonSync(schemaJson, new SchemaContext());
+        const schema =Schema.fromJsonSync(schemaJson, context);
         const serialized = (await schema.toXml(newDom)).documentElement;
 
 
@@ -773,10 +749,14 @@ describe.only("Schema", () => {
         expect(serialized.getAttribute("alias")).to.eql(schemaJson.alias);
         expect(serialized.getAttribute("displayLabel")).to.eql(schemaJson.label);
         expect(serialized.getAttribute("description")).to.eql(schemaJson.description);
-        expect((serialized.childNodes[0] as Element).getAttribute("modifier")).to.eql("Sealed");
+        expect((serialized.childNodes[2] as Element).getAttribute("modifier")).to.eql("Abstract");
 
-        const reader = new SchemaReadHelper(XmlParser, new SchemaContext());
-        const deserialized = reader.readSchemaSync(new Schema(new SchemaContext()), serialized.ownerDocument!);
+        const deserialContext = new SchemaContext();
+        const reader = new SchemaReadHelper(XmlParser, deserialContext);
+        Schema.fromJsonSync(referenceJson, deserialContext);
+        Schema.fromJsonSync(CoreCustomjsonObj, deserialContext);
+
+        const deserialized = reader.readSchemaSync(new Schema(deserialContext), serialized.ownerDocument!);
         expect(deserialized).to.not.be.null;
         expect(deserialized.toJSON()).to.eql(schema.toJSON());
       });
