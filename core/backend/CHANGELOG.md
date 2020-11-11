@@ -1,6 +1,6 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 03 Nov 2020 00:33:56 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 18:20:22 GMT and should not be manually modified.
 
 ## 2.8.1
 Tue, 03 Nov 2020 00:33:56 GMT
@@ -23,6 +23,18 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Elemeent CRUD perf test fixed
 - Add IModelTileRpcInterface.queryVersionInfo().
 - ConcurrencyManager documentation
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.7.9
+
+## 2.7.5
+Fri, 23 Oct 2020 16:23:50 GMT
+
+_Version update only_
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:01 GMT

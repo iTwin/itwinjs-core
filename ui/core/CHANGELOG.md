@@ -1,6 +1,6 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 03 Nov 2020 00:33:56 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 18:20:22 GMT and should not be manually modified.
 
 ## 2.8.1
 Tue, 03 Nov 2020 00:33:56 GMT
@@ -17,6 +17,16 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Revert changes made to limit focus trap to contents only. Use class now to ignore unwanted focus target.
 - Add missing semicolons to .scss files.
 - Added jsdoc ESLint rule for UI packages
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+_Version update only_
+
+## 2.7.5
+Fri, 23 Oct 2020 16:23:51 GMT
+
+_Version update only_
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:02 GMT

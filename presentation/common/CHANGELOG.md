@@ -1,6 +1,6 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Tue, 03 Nov 2020 00:33:56 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 18:20:22 GMT and should not be manually modified.
 
 ## 2.8.1
 Tue, 03 Nov 2020 00:33:56 GMT
@@ -18,6 +18,16 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Do not duplicate nodes when traversing from node that merges multiple instances from the 'many' side of relationship
 - Add support for specifying "*" and property overrides in `RelatedPropertiesSpecification.properties`
 - Ruleset creation fails for (0, 0) 2D point
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+_Version update only_
+
+## 2.7.5
+Fri, 23 Oct 2020 16:23:50 GMT
+
+_Version update only_
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:02 GMT
