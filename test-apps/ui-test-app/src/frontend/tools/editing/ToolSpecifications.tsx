@@ -207,7 +207,7 @@ export class EditTools {
         title={title}
       />
     );
-  }
+  };
 
   public static get errorMessageBoxCommand() {
     return new CommandItemDef({

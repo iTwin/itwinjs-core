@@ -234,7 +234,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
   /** Advance the iterator to a particular facet in the client polyface */
   public moveToReadIndex(activeIndex: number): boolean {
     if (activeIndex >= 0 && activeIndex <= this._parentFacetIndices.length) {
-      this._nextActiveIndex = activeIndex
+      this._nextActiveIndex = activeIndex;
       return super.moveToReadIndex(this._parentFacetIndices[activeIndex++]);
     }
     return false;

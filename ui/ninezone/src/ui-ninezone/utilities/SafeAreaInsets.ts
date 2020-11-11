@@ -43,5 +43,5 @@ export class SafeAreaInsetsHelpers {
       "nz-safe-area-right": SafeAreaInsetsHelpers.isRight(flags),
       "nz-safe-area-top": SafeAreaInsetsHelpers.isTop(flags),
     };
-  }
+  };
 }

@@ -352,14 +352,14 @@ export class PresentationManager {
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getNativePlatform().forceLoadSchemas(imodelAddon);
-  }
+  };
 
   /** @internal */
   public getNativePlatform = (): NativePlatformDefinition => {
     if (this._isDisposed)
       throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
     return this._nativePlatform!;
-  }
+  };
 
   private setupRulesetDirectories(props?: PresentationManagerProps) {
     const supplementalRulesetDirectories = [path.join(props?.presentationAssetsRoot ?? PRESENTATION_BACKEND_ASSETS_ROOT, "supplemental-presentation-rules")];
@@ -917,7 +917,7 @@ const normalizeLocale = (locale?: string) => {
 
 const normalizeDirectory = (directory?: string) => {
   return directory ? path.resolve(directory) : "";
-}
+};
 
 const createCacheConfig = (config?: HierarchyCacheConfig): IModelJsNative.ECPresentationHierarchyCacheConfig => {
   if (config?.mode === HierarchyCacheMode.Disk)
@@ -927,4 +927,4 @@ const createCacheConfig = (config?: HierarchyCacheConfig): IModelJsNative.ECPres
   if (config?.mode === HierarchyCacheMode.Memory)
     return config;
   return { mode: HierarchyCacheMode.Disk, directory: "" };
-}
+};

@@ -43,8 +43,8 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       isMountedRef.current = true;
       return () => {
         isMountedRef.current = false;
-      }
-    }, [])
+      };
+    }, []);
 
     // See if new initialValue props have changed since component mounted
     React.useEffect(() => {
@@ -55,11 +55,11 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
         setFormattedValue(lastFormattedValueRef.current);
         setHasBadInput(false);
       }
-    }, [formatValue, initialValue])
+    }, [formatValue, initialValue]);
 
     const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
       setFormattedValue(event.currentTarget.value);
-    }, [])
+    }, []);
 
     const updateValueFromString = React.useCallback((strVal: string) => {
       if (lastFormattedValueRef.current === strVal)
@@ -107,6 +107,6 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
     const classNames = classnames(className, "components-parsed-input", hasBadInput && "components-parsed-input-has-error");
 
     return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={handleKeyDown} onBlur={handleBlur}
-      onChange={handleChange} value={formattedValue} disabled={readonly} />
+      onChange={handleChange} value={formattedValue} disabled={readonly} />;
   }
 );
