@@ -355,6 +355,6 @@ export class PopupRenderer extends React.Component<{}, PopupRendererState> {
 
   private _handlePopupsChangedEvent = (args: PopupsChangedEventArgs) => {
     this.setState({ popups: args.popups });
-  }
+  };
 
 }

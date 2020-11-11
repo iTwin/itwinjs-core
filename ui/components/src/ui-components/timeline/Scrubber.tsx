@@ -69,13 +69,13 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
   // istanbul ignore next - WIP
   private _onMouseEnter = () => {
     document.addEventListener("mousemove", this._onMouseMove);
-  }
+  };
 
   // istanbul ignore next - WIP
   private _onMouseLeave = () => {
     this.setState({ value: null, percent: null });
     document.removeEventListener("mousemove", this._onMouseMove);
-  }
+  };
 
   // istanbul ignore next - WIP
   private _onMouseMove = (e: Event) => {
@@ -86,7 +86,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     } else {
       this.setState(getEventData(e));
     }
-  }
+  };
 
   // istanbul ignore next - WIP
   public render() {
@@ -157,12 +157,12 @@ class Handle extends React.Component<HandleProps, HandleState> {
   // istanbul ignore next - WIP
   private _onMouseEnter = () => {
     this.setState({ mouseOver: true });
-  }
+  };
 
   // istanbul ignore next - WIP
   private _onMouseLeave = () => {
     this.setState({ mouseOver: false });
-  }
+  };
 
   // istanbul ignore next - WIP
   public render() {

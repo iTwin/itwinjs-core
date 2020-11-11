@@ -52,7 +52,7 @@ class CubeContent extends React.Component<{}, CubeContentState> {
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
     this.setState({ rotMatrix: args.rotMatrix });
-  }
+  };
 }
 
 ConfigurableUiManager.registerControl("CubeContent", CubeContentControl);

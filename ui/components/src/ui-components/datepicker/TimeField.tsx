@@ -250,5 +250,5 @@ export function TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFie
     {dayPeriodText &&
       <Input className="components-time-period-input" onKeyDown={handleDayPeriodOnKeyDown} onBlur={handleDayPeriodOnBlur} onChange={handleDayPeriodChange} value={dayPeriodText} disabled={readOnly} />
     }
-  </div>
+  </div>;
 }

@@ -9,7 +9,7 @@ export class MobxDemoModel {
 
   @action public addBird = (bird: string) => {
     this._birds.push(bird);
-  }
+  };
 
   @computed public get birdCount() {
     return this._birds.length;

@@ -194,7 +194,7 @@ export class ViewportSelectionHandler implements IDisposable {
       level: args.level,
     };
     await this.applyUnifiedSelection(args.imodel, info, selection);
-  }
+  };
 }
 
 let counter = 1;

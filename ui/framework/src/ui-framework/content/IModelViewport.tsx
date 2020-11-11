@@ -123,7 +123,7 @@ export class IModelViewportControl extends ViewportContentControl {
       throw new UiError(UiFramework.loggerCategory(this), "No ViewState could be determined");
 
     return viewState!;
-  }
+  };
 
   /** Get the React component that will contain the Viewport */
   protected getImodelConnectedViewportReactElement(): React.ReactNode {
@@ -177,7 +177,7 @@ export class IModelViewportControl extends ViewportContentControl {
       return null;
 
     return <DefaultViewOverlay viewport={viewport} />;
-  }
+  };
 
   /** Get the NavigationAidControl associated with this ContentControl */
   public get navigationAidControl(): string {
