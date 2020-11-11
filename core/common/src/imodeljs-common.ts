@@ -150,6 +150,10 @@ export * from "./tile/TileMetadata";
  * Types for working with geometry.
  */
 /**
+ * @docs-group-description Serialization
+ * Types for serializing geometry
+ */
+/**
  * @docs-group-description Views
  * Types for defining graphical views of the contents of an iModel.
  */
