@@ -199,7 +199,7 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly transformToRoot?: Transform;
   public readonly additiveRefinement?: boolean;
   public readonly parent?: RealityTile;
-  public readonly hasNoContents?: boolean;
+  public readonly noContentButTerminateOnSelection?: boolean;
 
   constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
     this.contentId = thisId;
@@ -208,14 +208,18 @@ class RealityModelTileProps implements RealityTileParams {
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     this.transformToRoot = transformToRoot;
     this.additiveRefinement = additiveRefinement;
-
     const hasContents = undefined !== getUrl(json.content);
+
     if (hasContents)
       this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume);
-    else
-      this.hasNoContents = true;
+    else {
+      // A node without content should probably be selectable even if not additive refinement - But restrict it to that case here
+      // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world buidling set.
+      if (this.additiveRefinement || parent?.additiveRefinement)
+        this.noContentButTerminateOnSelection = true;
+    }
 
-    this.maximumSize = RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
+    this.maximumSize = (this.noContentButTerminateOnSelection || hasContents) ? RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError) : 0;
   }
 }
 
