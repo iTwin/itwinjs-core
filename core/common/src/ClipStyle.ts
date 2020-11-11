@@ -6,10 +6,8 @@
  * @module Views
  */
 
-import { ClipVector } from "@bentley/geometry-core";
-
 /** Wire format describing a [[ClipStyle]].
- * @alpha
+ * @beta
  */
 export interface ClipStyleProps {
   /** If `true`, geometry will be produced at the clip planes in a 3d view.
@@ -21,7 +19,7 @@ export interface ClipStyleProps {
 }
 
 /** Describes symbology and behavior applied to a [ClipVector]($geometry-core) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
- * @alpha
+ * @beta
  */
 export class ClipStyle {
   /** If `true`, geometry will be produced at the clip planes.
@@ -31,12 +29,16 @@ export class ClipStyle {
    */
   public readonly produceCutGeometry: boolean;
 
+  private static readonly _defaultClipStyle = new ClipStyle();
+  private static readonly _cutClipStyle = new ClipStyle({ produceCutGeometry: true });
+
   private constructor(json?: ClipStyleProps) {
     this.produceCutGeometry = json?.produceCutGeometry ?? false;
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
-    return new ClipStyle(props);
+    // At present we have only one property - a boolean. In future we may add symbology for cut geometry.
+    return true === props?.produceCutGeometry ? this._cutClipStyle : this._defaultClipStyle;
   }
 
   public toJSON(): ClipStyleProps {
@@ -47,15 +49,11 @@ export class ClipStyle {
     return props;
   }
 
+  public equals(other: ClipStyle): boolean {
+    return this === other || this.produceCutGeometry === other.produceCutGeometry;
+  }
+
   public get matchesDefaults(): boolean {
     return !this.produceCutGeometry;
   }
-}
-
-/** Describes a [ClipVector]($geometry-core) styled for display in a [Viewport]($frontend).
- * @alpha
- */
-export interface StyledClipVector {
-  readonly clip: ClipVector;
-  readonly style: ClipStyle;
 }

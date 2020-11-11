@@ -8,7 +8,7 @@
 
 import { BeEvent, Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@bentley/geometry-core";
-import { ClipStyle, ClipStyleProps, StyledClipVector } from "./ClipStyle";
+import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ModelClipGroup, ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 
 /** @internal */
@@ -143,7 +143,7 @@ export class ViewDetails {
   }
 
   /** The style applied to the view's [[clipVector]].
-   * @alpha
+   * @beta
    */
   public get clipStyle(): ClipStyle {
     return this._clipStyle;
@@ -154,18 +154,6 @@ export class ViewDetails {
       delete this._json.clipStyle;
     else
       this._json.clipStyle = style.toJSON();
-  }
-
-  /** The clip vector and associated style, if [[clipVector]] is defined.
-   * @alpha
-   */
-  public get styledClipVector(): StyledClipVector | undefined {
-    const clip = this.clipVector;
-    return clip ? { clip, style: this.clipStyle } : undefined;
-  }
-  public set styledClipVector(clip: StyledClipVector | undefined) {
-    this.clipVector = clip?.clip;
-    this.clipStyle = clip ? clip.style : ClipStyle.fromJSON();
   }
 
   /** Returns the internal JSON representation. This is *not* a copy.
