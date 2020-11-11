@@ -22,7 +22,7 @@ import {
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
   SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -1321,11 +1321,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(props, this._iModel);
 
-      const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
+      const val = this._iModel.nativeDb.insertModel(props);
       if (val.error)
         throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
-      props.id = Id64.fromJSON(JSON.parse(val.result!).id);
+      props.id = Id64.fromJSON(val.result!.id);
       jsClass.onInserted(props.id, this._iModel);
       return props.id;
     }
@@ -1338,7 +1338,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(props, this._iModel);
 
-      const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
+      const error = this._iModel.nativeDb.updateModel(props);
       if (error !== IModelStatus.Success)
         throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
 

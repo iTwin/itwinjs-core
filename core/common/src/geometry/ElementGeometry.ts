@@ -7,7 +7,7 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { AngleSweep, Arc3d, BentleyGeometryFlatBuffer, GeometryQuery, LineString3d, Loop, Matrix3d, Point2d, Point3d, PointString3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AngleSweep, Arc3d, BentleyGeometryFlatBuffer, GeometryQuery, LineString3d, Loop, Matrix3d, Point2d, Point3d, PointString3d, Range3d, Transform, TransformProps, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { TextStringProps } from "./TextString";
 import { ColorDef } from "../ColorDef";
@@ -420,10 +420,10 @@ export namespace ElementGeometry {
 
     const type = toBRepType(ppfb.brepType());
 
-    let transform;
+    let transform: TransformProps | undefined;
     const entityTransform = ppfb.entityTransform();
     if (null !== entityTransform)
-      transform = Transform.createRowValues(entityTransform.x00(), entityTransform.x01(), entityTransform.x02(), entityTransform.tx(), entityTransform.x10(), entityTransform.x11(), entityTransform.x12(), entityTransform.ty(), entityTransform.x20(), entityTransform.x21(), entityTransform.x22(), entityTransform.tz());
+      transform = Transform.createRowValues(entityTransform.x00(), entityTransform.x01(), entityTransform.x02(), entityTransform.tx(), entityTransform.x10(), entityTransform.x11(), entityTransform.x12(), entityTransform.ty(), entityTransform.x20(), entityTransform.x21(), entityTransform.x22(), entityTransform.tz()).toJSON();
 
     const faceSymbLen = ppfb.symbologyLength();
     let faceSymbology;
@@ -448,6 +448,7 @@ export namespace ElementGeometry {
     const entityData = ppfb.entityDataArray();
     if (wantBRepData && null !== entityData)
       data = Base64.fromUint8Array(entityData);
+
 
     return { data, type, transform, faceSymbology };
   }
