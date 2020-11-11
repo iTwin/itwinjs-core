@@ -51,10 +51,10 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
     // istanbul ignore next
     if (this._viewport)
       this._viewport.analysisFraction = animationFraction;
-  }
+  };
 
   // istanbul ignore next
   public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
     this.updateSettings(settings);
-  }
+  };
 }

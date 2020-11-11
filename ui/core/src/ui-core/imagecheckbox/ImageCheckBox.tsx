@@ -51,19 +51,19 @@ export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     if (this.props.onClick) {
       this.props.onClick(e.target.checked);
     }
-  }
+  };
 
   private _onInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
     // istanbul ignore next
     if (e && e.stopPropagation)
       e.stopPropagation();
-  }
+  };
 
   private _onLabelClick = (e: React.MouseEvent<HTMLLabelElement>) => {
     // istanbul ignore next
     if (e && e.stopPropagation)
       e.stopPropagation();
-  }
+  };
 
   /** @internal */
   public render() {

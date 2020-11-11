@@ -237,7 +237,7 @@ class AdditionalTools {
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
     const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.misc", 130, "icon-tools", IModelApp.i18n.translate("SampleApp:buttons.misc"), children, { isHidden: groupHiddenCondition });
     return item;
-  }
+  };
 
   // test ToolbarHelper.createToolbarItemsFromItemDefs
   public additionalVerticalToolbarItems: CommonToolbarItem[] = [this.getMiscGroupItem()];

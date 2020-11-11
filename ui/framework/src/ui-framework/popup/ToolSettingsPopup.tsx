@@ -46,7 +46,7 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
     // istanbul ignore else
     if (!this.state.size.equals(newSize))
       this.setState({ size: Size.create(newSize) });
-  }
+  };
 
   private _handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
@@ -56,7 +56,7 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
           this.props.onCancel();
         break;
     }
-  }
+  };
 
   public render() {
     const componentGenerator = new ComponentGenerator(this.props.dataProvider);

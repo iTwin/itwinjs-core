@@ -125,9 +125,9 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 
   // istanbul ignore next
   public onPlaybackSettingChanged = (_settings: PlaybackSettings) => {
-  }
+  };
 
   // istanbul ignore next
   public onAnimationFractionChanged = (_animationFraction: number) => {
-  }
+  };
 }

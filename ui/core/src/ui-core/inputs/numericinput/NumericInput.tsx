@@ -51,7 +51,7 @@ export class NumericInput extends React.Component<NumericInputProps> {
         result = this.props.step(direction);
     }
     return result;
-  }
+  };
 
   public render() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

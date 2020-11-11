@@ -1284,10 +1284,10 @@ describe("Table", () => {
       // Simulate clicking on the cell to edit
       // renderedTable.debug();
       const row = renderedTable.container.querySelector(rowClassName);
-      expect(row).not.to.be.null
+      expect(row).not.to.be.null;
       fireEvent.click(row as HTMLElement);
       const selectedRow = renderedTable.container.querySelector(selectedRowClassName);
-      expect(selectedRow).not.to.be.null
+      expect(selectedRow).not.to.be.null;
 
       // Click 3rd cell in row (marked as editable)
       const rowCells = selectedRow!.querySelectorAll(cellClassName);
@@ -1306,7 +1306,7 @@ describe("Table", () => {
 
       fireEvent.click(inputNode);
       fireEvent.change(inputNode, { target: { value: newPropertyValue } });
-      fireEvent.keyDown(inputNode, { key: "Enter" })
+      fireEvent.keyDown(inputNode, { key: "Enter" });
 
       await TestUtils.flushAsyncOperations();
       expect(onPropertyUpdated.calledOnce).to.be.true;

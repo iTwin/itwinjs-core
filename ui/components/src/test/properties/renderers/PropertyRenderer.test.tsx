@@ -218,7 +218,7 @@ describe("PropertyRenderer", () => {
     const inputNode = propertyRenderer.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" });
     await TestUtils.flushAsyncOperations();
     expect(spyMethod.calledOnce).to.be.true;
   });
@@ -236,7 +236,7 @@ describe("PropertyRenderer", () => {
     const inputNode = propertyRenderer.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
+    fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" });
     expect(spyMethod.calledOnce).to.be.true;
   });
 

@@ -151,7 +151,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
   private _onCheckboxClick = (newValue: CheckBoxState) => {
     if (this.props.checkboxProps && this.props.checkboxProps.onClick)
       this.props.checkboxProps.onClick(this.props.node, newValue);
-  }
+  };
 }
 
 function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {

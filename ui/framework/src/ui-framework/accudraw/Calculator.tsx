@@ -65,7 +65,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
     const displayValue = this.props.engine.processValue(keyChar);
     this._mainDivFocus();
     this.setState({ displayValue });
-  }
+  };
 
   private _onOperatorButtonClick = (operator: CalculatorOperator) => {
     if (operator === CalculatorOperator.Clear && this._equalsClicked)
@@ -79,11 +79,11 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
       this._equalsClicked = true;
     else if (operator === CalculatorOperator.ClearAll)
       this._equalsClicked = false;
-  }
+  };
 
   private _handleOk = (_event: React.MouseEvent): void => {
     this._ok();
-  }
+  };
 
   private _ok() {
     // istanbul ignore else
@@ -95,7 +95,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
 
   private _handleCancel = (_event: React.MouseEvent): void => {
     this._cancel();
-  }
+  };
 
   private _cancel() {
     // istanbul ignore else
@@ -217,7 +217,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
         this._ok();
         break;
     }
-  }
+  };
 
 }
 
@@ -285,7 +285,7 @@ class ValueButton extends React.PureComponent<ValueButtonProps> {
 
   private _handleOnClick = (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     this.props.onClick(this.props.keyChar);
-  }
+  };
 
   public render() {
     const { className, keyChar, onClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -314,7 +314,7 @@ class OperatorButton extends React.PureComponent<OperatorButtonProps> {
 
   private _handleOnClick = (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     this.props.onClick(this.props.operator);
-  }
+  };
 
   public render() {
     const { className, children, operator, onClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars

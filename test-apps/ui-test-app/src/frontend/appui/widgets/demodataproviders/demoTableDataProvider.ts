@@ -112,16 +112,16 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
 
   public getColumns = async (): Promise<ColumnDescription[]> => {
     return columns;
-  }
+  };
   public getRowsCount = async (): Promise<number> => {
     return this._data.length;
-  }
+  };
   public getRow = async (rowIndex: number, unfiltered?: boolean): Promise<RowItem> => {
     if (rowIndex > this._data.length || this._data[rowIndex] === undefined) return { key: "", cells: [] };
     if (unfiltered && !unfiltered) // suppress warning, unfiltered unused
       return { key: "", cells: [] };
     return mutableRowToRowItem(this._data[rowIndex], this);
-  }
+  };
   public sort = async (columnIndex: number, sortDirection: SortDirection): Promise<void> => {
     if (columnIndex && sortDirection) return;
     this._data.sort((row1: DemoMutableRow, row2: DemoMutableRow) => {
@@ -134,19 +134,19 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
       return 0;
     });
     this.onRowsChanged.raiseEvent();
-  }
+  };
 
   // Mutable methods
   public addRow = (rowItem: RowItem): number => {
     this._data.push(rowItemToMutableRow(rowItem));
     this.onRowsChanged.raiseEvent();
     return this._data.length - 1;
-  }
+  };
   public insertRow = (rowItem: RowItem, index: number): number => {
     this._data.splice(index, 0, rowItemToMutableRow(rowItem));
     this.onRowsChanged.raiseEvent();
     return index;
-  }
+  };
   public deleteRow = (rowItem: RowItem): void => {
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this._data.length; i++) {
@@ -156,7 +156,7 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
         return;
       }
     }
-  }
+  };
   public moveRow = (rowItem: RowItem, newIndex: number): number => {
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this._data.length; i++) {
@@ -170,7 +170,7 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
       }
     }
     return -1;
-  }
+  };
 }
 
 export const demoMutableTableDataProvider = new DemoMutableTableDataProvider(tableData);

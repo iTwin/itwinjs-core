@@ -20,7 +20,7 @@ describe("AutoSuggest", () => {
   const getInputElement = (wrapper: ReactWrapper): HTMLInputElement => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return wrapper.getDOMNode() as HTMLInputElement;
-  }
+  };
 
   it("renders", () => {
     const spyMethod = sinon.spy();
@@ -137,7 +137,7 @@ describe("AutoSuggest", () => {
 
   const getSuggestionsAsync = async (value: string): Promise<AutoSuggestData[]> => {
     return Promise.resolve(getSuggestions(value));
-  }
+  };
 
   const getLabel = (value: string | undefined): string => {
     let label = "";

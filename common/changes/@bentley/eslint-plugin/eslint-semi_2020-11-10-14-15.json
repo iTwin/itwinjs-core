@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/eslint-plugin",
+      "comment": "Semicolons are now required by default everywhere where they apply",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/eslint-plugin",
+  "email": "66480813+paulius-valiunas@users.noreply.github.com"
+}
