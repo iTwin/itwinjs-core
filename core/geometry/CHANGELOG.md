@@ -1,6 +1,6 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Sat, 21 Nov 2020 15:53:59 GMT and should not be manually modified.
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
@@ -9,6 +9,11 @@ Fri, 23 Oct 2020 17:04:02 GMT
 
 - New methods PolyfaceQuery.buildAverageNormals and .buildPerFaceNormals
 - Fix bugs in integrated spirals with nonzero start radius
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+_Version update only_
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT

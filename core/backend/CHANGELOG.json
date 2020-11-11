@@ -8,7 +8,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Update to @bentleey/imodeljs-native@2.8.5"
+            "comment": "Update to @bentley/imodeljs-native@2.8.5"
           },
           {
             "comment": "Update to @bentley/imodeljs-native@2.8.7"
@@ -27,6 +27,18 @@
           },
           {
             "comment": "ConcurrencyManager documentation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.6",
+      "tag": "@bentley/imodeljs-backend_v2.7.6",
+      "date": "Wed, 11 Nov 2020 16:28:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.7.9"
           }
         ]
       }
