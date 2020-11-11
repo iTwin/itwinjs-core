@@ -104,7 +104,7 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       currentValueRef.current = value;
       const currentFormattedValue = formatInternal(currentValueRef.current);
       setFormattedValue(currentFormattedValue);
-    }, [formatInternal, value])
+    }, [formatInternal, value]);
 
     const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
       setFormattedValue(event.currentTarget.value);
