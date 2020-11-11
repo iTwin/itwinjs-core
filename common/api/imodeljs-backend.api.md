@@ -61,6 +61,8 @@ import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
+import { ElementGeometryRequest } from '@bentley/imodeljs-common';
+import { ElementGeometryUpdate } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { EmitOptions } from '@bentley/imodeljs-native';
@@ -100,6 +102,7 @@ import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
+import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
@@ -174,7 +177,6 @@ import { TextureFlags } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
-import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
@@ -2422,6 +2424,10 @@ export abstract class IModelDb extends IModel {
     deleteFileProperty(prop: FilePropertyProps): DbResult;
     // (undocumented)
     protected static readonly _edit = "StandaloneEdit";
+    // @alpha
+    elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
+    // @alpha
+    elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult;
     // (undocumented)
     readonly elements: IModelDb.Elements;
     // (undocumented)
@@ -2571,7 +2577,7 @@ export namespace IModelDb {
         // (undocumented)
         requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array>;
         // (undocumented)
-        requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps>;
+        requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps>;
     }
     export class Views {
         // @internal
@@ -2745,7 +2751,10 @@ export class IModelHostConfiguration {
 // @beta
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    autoExtendProjectExtents: boolean;
+    autoExtendProjectExtents: boolean | {
+        excludeOutliers: boolean;
+    };
+    computeProjectExtents(): void;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
@@ -2771,7 +2780,9 @@ export class IModelImporter {
 
 // @beta
 export interface IModelImportOptions {
-    autoExtendProjectExtents?: boolean;
+    autoExtendProjectExtents?: boolean | {
+        excludeOutliers: boolean;
+    };
 }
 
 // @public

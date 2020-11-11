@@ -45,7 +45,7 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
       displayLabel: "User",
       typename: StandardTypeNames.String,
     };
-  }
+  };
 
   private _userValue: DialogItemValue = { value: "unknown" };
   private get user(): string {
@@ -62,7 +62,7 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
       displayLabel: "City",
       typename: StandardTypeNames.String,
     };
-  }
+  };
 
   private _cityValue: DialogItemValue = { value: "unknown" };
   private get city(): string {
@@ -75,7 +75,7 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   // called to apply a single property value change.
   public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.processChangesInUi([updatedValue]);
-  }
+  };
 
   /** Called by UI to inform data provider of changes.  */
   public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
@@ -111,14 +111,14 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
       this.currentPageIndex++;
       this.reloadDialogItems();
     }
-  }
+  };
 
   public handlePrevious = () => {
     if (this.currentPageIndex > 0) {
       this.currentPageIndex--;
       this.reloadDialogItems();
     }
-  }
+  };
 
   public supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];
@@ -317,7 +317,7 @@ export class Frontstage4 extends FrontstageProvider {
 
   private _closeModal = () => {
     ModalDialogManager.closeDialog();
-  }
+  };
 
   private get _spinnerTestDialogItem() {
     return new CommandItemDef({
@@ -328,7 +328,7 @@ export class Frontstage4 extends FrontstageProvider {
   private handleOpenUiProviderDialogModal = () => {
     IModelApp.uiAdmin.openDialog(new TestUiProvider(), "Test UiProvider", true, "TestUiProvider", {movable: true,
       width: "auto"});
-  }
+  };
 
   private testReactSelectDialog(): React.ReactNode {
     return (
@@ -340,7 +340,7 @@ export class Frontstage4 extends FrontstageProvider {
   private handleOpenDynamicModal = () => {
     IModelApp.uiAdmin.openDialog(new DynamicModalUiDataProvider(), "Dynamic Model", true, "SampleApp:DynamicModal", {movable: true,
       width: 280, minWidth: 280});
-  }
+  };
 
   /** Define a NavigationWidget with Buttons to display in the TopRight zone.
    */

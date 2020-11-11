@@ -131,6 +131,30 @@ describe("KindOfQuantity", () => {
     it("sync - should throw for persistenceUnit having a non-existent format", () => {
       assert.throws(() => Schema.fromJsonSync(createSchemaJson(persistenceUnitNonExistentFormat), context), ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
+
+    // should deserialize for persistenceUnit with InvertedUnit
+    const persistenceUnitInvertedUnit = {
+      ...baseJson,
+      relativeError: 4,
+      persistenceUnit: "Formats.HORIZONTAL_PER_VERTICAL"
+    };
+    it("async - should successfully deserialize with persistenceUnit having an InvertedUnit", async () => {
+      schema = await Schema.fromJson(createSchemaJson(persistenceUnitInvertedUnit), context);
+      const testKoq = await schema.getItem<KindOfQuantity>(persistenceUnitInvertedUnit.name);
+      assert.isDefined(testKoq);
+
+      expect(testKoq!.persistenceUnit).exist;
+      expect(testKoq!.persistenceUnit!.name).eq("HORIZONTAL_PER_VERTICAL");
+    });
+
+    it("sync - should successfully deserialize with persistenceUnit having an InvertedUnit", async () => {
+      schema = await Schema.fromJsonSync(createSchemaJson(persistenceUnitInvertedUnit), context);
+      const testKoq = await schema.getItem<KindOfQuantity>(persistenceUnitInvertedUnit.name);
+      assert.isDefined(testKoq);
+
+      expect(testKoq!.persistenceUnit).exist;
+      expect(testKoq!.persistenceUnit!.name).eq("HORIZONTAL_PER_VERTICAL");
+    });
   });
 
   describe("format overrides", () => {

@@ -180,19 +180,19 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
 
   private _handleResize = (resizeBy: number) => {
     this.props.changeHandler.handlePanelResize(this.props.location, resizeBy);
-  }
+  };
 
   private _handleTargetChanged = (isTargeted: boolean) => {
     this.props.changeHandler.handlePanelTargetChange(isTargeted ? this.props.location : undefined);
-  }
+  };
 
   private _handleToggleCollapse = () => {
     this.props.changeHandler.handleTogglePanelCollapse(this.props.location);
-  }
+  };
 
   private _handlePaneTargetChanged = (paneIndex: number | undefined) => {
     this.props.changeHandler.handlePanelPaneTargetChange(this.props.location, paneIndex);
-  }
+  };
 
   private initializeSize() {
     if (this.props.panel.size !== undefined || !this._measurer.current)
@@ -229,5 +229,5 @@ export class SplitterPaneTarget extends React.PureComponent<SplitterPaneTargetPr
   private _handleTargetChanged = (isTargeted: boolean) => {
     const target = isTargeted ? this.props.paneIndex : undefined;
     this.props.onTargetChanged(target);
-  }
+  };
 }

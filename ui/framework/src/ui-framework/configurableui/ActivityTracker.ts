@@ -70,19 +70,19 @@ export class ActivityTracker {
     this._events.forEach((e) => {
       window.addEventListener(e, this._trackUiActivity, { capture: true });
     });
-  }
+  };
 
   private _unbindEvents = (): void => {
     this._events.forEach((e) => {
       window.removeEventListener(e, this._trackUiActivity, { capture: true });
     });
-  }
+  };
 
   private _trackUiInterval = (): void => {
     ConfigurableUiManager.onUiIntervalEvent.emit({ idleTimeout: this._idleTimeout });
-  }
+  };
 
   private _trackUiActivity = (event: Event): void => {
     ConfigurableUiManager.onUiActivityEvent.emit({ event });
-  }
+  };
 }

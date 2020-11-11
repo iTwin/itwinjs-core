@@ -111,7 +111,7 @@ export function DatePickerHost(props: DatePickerPopupButtonProps) {
   const handleOnDateChange = React.useCallback((day: Date) => {
     onDateChange && onDateChange(day);
     setCurrentDate(day);
-  }, [onDateChange])
+  }, [onDateChange]);
 
   return (
     <DatePickerPopupButton selected={currentDate} onDateChange={handleOnDateChange} {...otherProp} />
@@ -421,7 +421,7 @@ export class ComponentExamplesProvider {
 
     const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
     IModelApp.notifications.endActivityMessage(endReason);
-  }
+  };
 
   private static get messageSamples(): ComponentExampleCategory {
     return {
@@ -477,17 +477,17 @@ export class ComponentExamplesProvider {
     const onAngleChange = (value: number) => {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Angle value set to ${value}`));
       console.log(`Angle value set to: ${value}`);
-    }
+    };
     const onVolumeChange = (value: number) => {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Volume value set to ${value}`));
       console.log(`Volume value set to: ${value}`);
-    }
+    };
     const onTemperatureChange = (value: number) => {
       if (typeof value === "number") {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Temperature value set to ${value} C`));
         console.log(`Temperature value set to ${value} C`);
       }
-    }
+    };
 
     const initialLength = 3.5; // meters
     const initialAngle = Math.PI / 4; // radians

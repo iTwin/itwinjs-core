@@ -111,7 +111,7 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
 
   private _onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     this.drawCanvas(event, ContentViewManager.isMouseDown);
-  }
+  };
 
   private _onMouseLeave = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = this._htmlCanvas;
@@ -120,16 +120,16 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
       const boundingRect: DOMRect = (event.nativeEvent.target as any).getBoundingClientRect();
       ctx.clearRect(0, 0, boundingRect.width, boundingRect.height);
     }
-  }
+  };
 
   private _onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     this.drawCanvas(event, true);
     event.preventDefault();
-  }
+  };
 
   private _onMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     this.drawCanvas(event, false);
-  }
+  };
 }
 
 ConfigurableUiManager.registerControl(IModelViewportControl.id, IModelViewportControl);

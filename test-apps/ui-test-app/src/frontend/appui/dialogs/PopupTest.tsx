@@ -52,83 +52,83 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
 
   private _toggleTopLeft = () => {
     this.setState((prevState) => ({ showTopLeft: !prevState.showTopLeft }));
-  }
+  };
 
   private _closeTopLeft = () => {
     this.setState({ showTopLeft: false });
-  }
+  };
 
   private _toggleTop = () => {
     this.setState((prevState) => ({ showTop: !prevState.showTop }));
-  }
+  };
 
   private _closeTop = () => {
     this.setState({ showTop: false });
-  }
+  };
 
   private _toggleTopRight = () => {
     this.setState((prevState) => ({ showTopRight: !prevState.showTopRight }));
-  }
+  };
 
   private _onCloseTopRight = () => {
     this.setState({ showTopRight: false });
-  }
+  };
 
   private _toggleBottomLeft = () => {
     this.setState((prevState) => ({ showBottomLeft: !prevState.showBottomLeft }));
-  }
+  };
 
   private _onCloseBottomLeft = () => {
     this.setState({ showBottomLeft: false });
-  }
+  };
 
   private _toggleBottom = () => {
     this.setState((prevState) => ({ showBottom: !prevState.showBottom }));
-  }
+  };
 
   private _onCloseBottom = () => {
     this.setState({ showBottom: false });
-  }
+  };
 
   private _toggleBottomRight = () => {
     this.setState((prevState) => ({ showBottomRight: !prevState.showBottomRight }));
-  }
+  };
 
   private _onCloseBottomRight = () => {
     this.setState({ showBottomRight: false });
-  }
+  };
 
   private _toggleLeft = () => {
     this.setState((prevState) => ({ showLeft: !prevState.showLeft }));
-  }
+  };
 
   private _onCloseLeft = () => {
     this.setState({ showLeft: false });
-  }
+  };
 
   private _toggleRight = () => {
     this.setState((prevState) => ({ showRight: !prevState.showRight }));
-  }
+  };
 
   private _onCloseRight = () => {
     this.setState({ showRight: false });
-  }
+  };
 
   private _onArrowChange = () => {
     this.setState((prevState) => ({ showArrow: !prevState.showArrow }));
-  }
+  };
 
   private _onShadowChange = () => {
     this.setState((prevState) => ({ showShadow: !prevState.showShadow }));
-  }
+  };
 
   private _handleOK = () => {
     this._closeDialog();
-  }
+  };
 
   private _handleCancel = () => {
     this._closeDialog();
-  }
+  };
 
   private _closeDialog = () => {
     this.setState((_prevState) => ({
@@ -137,7 +137,7 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
       if (!this.state.opened)
         ModalDialogManager.closeDialog();
     });
-  }
+  };
 
   private renderPopup(title: string, onClose: () => any) {
     return (

@@ -58,7 +58,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._setTimelineDataProvider(this.props.viewport);
     });
-  }
+  };
 
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
@@ -91,7 +91,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
     } else {
       this.setShowOverlayState();
     }
-  }
+  };
 
   public componentWillUnmount() {
     this._componentMounted = false;
@@ -136,7 +136,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
     if (args.eventIds.has(SyncUiEventId.FrontstageReady)) {
       this.setShowOverlayState();
     }
-  }
+  };
 
   private async _getTimelineDataProvider(viewport: ScreenViewport): Promise<TimelineDataProvider | undefined> {
     let timelineDataProvider: TimelineDataProvider;

@@ -257,7 +257,7 @@ describe("PopupManager", () => {
       let inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
 
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" });
       await TestUtils.flushAsyncOperations();
       expect(spyCommit.calledOnce).to.be.true;
 
@@ -265,7 +265,7 @@ describe("PopupManager", () => {
       inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
 
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.called).to.be.true;
     });
@@ -289,7 +289,7 @@ describe("PopupManager", () => {
       const buttonNodes = wrapper.container.querySelectorAll("button");
       expect(buttonNodes.length).to.eq(2);
 
-      fireEvent.keyDown(buttonNodes[0] as HTMLElement, { key: "Escape" })
+      fireEvent.keyDown(buttonNodes[0] as HTMLElement, { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
     });
@@ -333,7 +333,7 @@ describe("PopupManager", () => {
       const buttonNodes = wrapper.container.querySelectorAll("button");
       expect(buttonNodes).not.to.be.null;
 
-      fireEvent.keyDown(buttonNodes[0] as HTMLElement, { key: "Escape" })
+      fireEvent.keyDown(buttonNodes[0] as HTMLElement, { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.called).to.be.true;
       PopupManager.hideCard();
@@ -368,7 +368,7 @@ describe("PopupManager", () => {
             displayLabel: "Source",
             typename: StandardTypeNames.String,
           };
-        }
+        };
 
         private _sourceValue: DialogItemValue = { value: "unknown" };
 
@@ -416,7 +416,7 @@ describe("PopupManager", () => {
       let inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
 
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" });
       await TestUtils.flushAsyncOperations();
       expect(spyChange.calledOnce).to.be.true;
 
@@ -426,14 +426,14 @@ describe("PopupManager", () => {
       inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
       fireEvent.click(inputNode as HTMLElement);
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
     });
 
     it("PopupRenderer should render Keyin Palette", async () => {
       const wrapper = render(<PopupRenderer />);
-      const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
+      const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyOk = sinon.spy();
       const spyCancel = sinon.spy();
@@ -443,7 +443,7 @@ describe("PopupManager", () => {
       expect(wrapper.container.querySelectorAll("div.uifw-command-palette-panel").length).to.eq(1);
       const inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.null;
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(spyCancel.calledOnce).to.be.true;
     });
