@@ -213,13 +213,16 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
    */
   public setOSMBuildingDisplay(options: { onOff?: boolean }): boolean {
+    if (!this.iModel.isGeoLocated)
+      return false;
+
     const doToggle = options.onOff === undefined;
 
     if (!doToggle && options.onOff !== undefined)
       return false;       // Nothing to do (unless more options are added)
 
-      const tilesetUrl = getCesiumOSMBuildingsUrl();
-      const currentIndex = this._contextRealityModels.findIndex((x) => x.url === tilesetUrl);
+    const tilesetUrl = getCesiumOSMBuildingsUrl();
+    const currentIndex = this._contextRealityModels.findIndex((x) => x.url === tilesetUrl);
     if (options.onOff || (currentIndex < 0 && doToggle)) {
 
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");

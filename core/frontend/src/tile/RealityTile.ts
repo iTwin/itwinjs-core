@@ -20,6 +20,7 @@ import { TileLoadStatus } from "./Tile";
 export interface RealityTileParams extends TileParams {
   readonly transformToRoot?: Transform;
   readonly additiveRefinement?: boolean;
+  readonly hasNoContents?: boolean;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
@@ -30,12 +31,14 @@ const scratchLoadedChildren = new Array<RealityTile>();
 export class RealityTile extends Tile {
   public readonly transformToRoot?: Transform;
   public readonly additiveRefinement?: boolean;
+  public readonly hasNoContents?: boolean;
   private _everDisplayed = false;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
     this.transformToRoot = props.transformToRoot;
     this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
+    this.hasNoContents = props.hasNoContents;
     if (undefined === this.transformToRoot)
       return;
 
@@ -51,6 +54,7 @@ export class RealityTile extends Tile {
   public get maxDepth(): number { return this.realityRoot.loader.maxDepth; }
   public get isPointCloud() { return this.realityRoot.loader.containsPointClouds; }
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
+  public get isDisplayable(): boolean { return !this.hasNoContents && super.isDisplayable; }
 
   public markUsed(args: TileDrawArgs): void {
     args.markUsed(this);
@@ -163,8 +167,8 @@ export class RealityTile extends Tile {
       return;
     }
 
-    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile())) {
-      if (!this.isOccluded(args.viewingSpace)) {
+    if (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile()) {
+      if (this.isDisplayable && !this.isOccluded(args.viewingSpace)) {
         context.selectOrQueue(this, args, traversalDetails);
 
         if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
@@ -204,7 +208,7 @@ export class RealityTile extends Tile {
       return -1;
 
     // some nodes are merely for structure and don't have any geometry
-    if (!this.isDisplayable)
+    if (0 === this.maximumSize)
       return 0;
 
     if (this.isLeaf)

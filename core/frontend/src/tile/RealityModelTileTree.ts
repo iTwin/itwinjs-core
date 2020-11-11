@@ -199,6 +199,7 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly transformToRoot?: Transform;
   public readonly additiveRefinement?: boolean;
   public readonly parent?: RealityTile;
+  public readonly hasNoContents?: boolean;
 
   constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
     this.contentId = thisId;
@@ -209,12 +210,12 @@ class RealityModelTileProps implements RealityTileParams {
     this.additiveRefinement = additiveRefinement;
 
     const hasContents = undefined !== getUrl(json.content);
-    if (hasContents) {
+    if (hasContents)
       this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume);
-      this.maximumSize = RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
-    } else {
-      this.maximumSize = 0.0;
-    }
+    else
+      this.hasNoContents = true;
+
+    this.maximumSize = RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
   }
 }
 
