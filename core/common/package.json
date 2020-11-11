@@ -30,7 +30,9 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
+    "@types/js-base64": "^2.3.1",
     "@ungap/url-search-params": "^0.1.2",
+    "flatbuffers": "~1.12.0",
     "semver": "^5.5.0"
   },
   "peerDependencies": {
@@ -49,11 +51,13 @@
     "@bentley/itwin-client": "2.9.0-dev.16",
     "@bentley/rbac-client": "2.9.0-dev.16",
     "@types/chai": "^4.1.4",
+    "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "eslint": "^6.8.0",
+    "js-base64": "^2.4.5",
     "mocha": "^5.2.0",
     "rimraf": "^3.0.2",
     "ts-node": "^7.0.1",
