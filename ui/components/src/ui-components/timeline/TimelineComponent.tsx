@@ -120,23 +120,23 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
         return; // throw error?
     }
     if (startPlaying)
-      this._onPlay()
+      this._onPlay();
     else
       this._onPause();
-  }
+  };
   // user clicked backward button
   private _onBackward = () => {
     // istanbul ignore else
     if (this.props.onJump)
       this.props.onJump(false);
-  }
+  };
 
   // user clicked forward button
   private _onForward = () => {
     // istanbul ignore else
     if (this.props.onJump)
       this.props.onJump(true);
-  }
+  };
 
   // user clicked play button
   private _onPlay = () => {
@@ -153,7 +153,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     // istanbul ignore else
     if (this.props.onPlayPause)
       this.props.onPlayPause(true);
-  }
+  };
 
   // user clicked pause button
   private _onPause = () => {
@@ -170,13 +170,13 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     // istanbul ignore else
     if (this.props.onPlayPause)
       this.props.onPlayPause(false);
-  }
+  };
 
   // user clicked on timeline rail or dragged scrubber handle
   private _onTimelineChange = (values: ReadonlyArray<number>) => {
     const currentDuration = values[0];
     this._setDuration(currentDuration);
-  }
+  };
 
   // set the current duration, which will call the OnChange callback
   private _setDuration = (currentDuration: number) => {
@@ -188,7 +188,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       const fraction = currentDuration / this.state.totalDuration;
       this.props.onChange(fraction);
     }
-  }
+  };
 
   // recursively update the animation until we hit the end or the pause button is clicked
   private _updateAnimation = (_timestamp: number) => {
@@ -220,7 +220,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
     // continue the animation - request the next frame
     this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
-  }
+  };
 
   private _play() {
     // start playing
@@ -234,7 +234,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   private _replay = () => {
     // timeline was complete, restart from the beginning
     this.setState({ currentDuration: 0 }, (() => this._play()));
-  }
+  };
 
   private _displayTime(millisec: number) {
     const addZero = (i: number) => {
@@ -262,15 +262,15 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     // NOTE: we should reset the current duration to 0
     const milliseconds = this._getMilliseconds(value);
     this._onSetTotalDuration(milliseconds);
-  }
+  };
 
   private _onSettingsClick = () => {
     this.setState((prevState) => ({ isSettingsOpen: !prevState.isSettingsOpen }));
-  }
+  };
 
   private _onCloseSettings = () => {
     this.setState({ isSettingsOpen: false });
-  }
+  };
 
   // istanbul ignore next - WIP
   private _onModeChanged = () => {
@@ -281,7 +281,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
           this.props.onSettingsChange({ minimized: this.state.minimized });
         }
       });
-  }
+  };
 
   private _onRepeatChanged = () => {
     this.setState(
@@ -292,7 +292,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
           this.props.onSettingsChange({ loop: this.state.repeat });
         }
       });
-  }
+  };
 
   private _currentDate = (): Date => {
     const fraction = this.state.currentDuration / this.state.totalDuration;
@@ -301,7 +301,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       return new Date(this.props.startDate.getTime() + timeElapsed);
     }
     return new Date();
-  }
+  };
 
   private _onSetTotalDuration = (milliseconds: number) => {
     this.setState(
@@ -312,7 +312,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
           this.props.onSettingsChange({ duration: milliseconds });
         }
       });
-  }
+  };
 
   private _renderSettings = () => {
     const expandName = (this.state.minimized) ? this._expandLabel : this._minimizeLabel;
@@ -335,7 +335,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
         </ContextMenu>
       </>
     );
-  }
+  };
 
   public render() {
     const { startDate, endDate, milestones, showDuration } = this.props;

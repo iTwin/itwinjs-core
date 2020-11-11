@@ -36,7 +36,7 @@ export class NavigationItem extends React.Component<NavigationItemProps> {
     if (this.props.onClicked) {
       this.props.onClicked();
     }
-  }
+  };
 
   public renderMovebarIndicator() {
     const percentageOffset = this.props.selectedTabIndex! * 100;
@@ -118,20 +118,20 @@ export class NavigationList extends React.Component<NavigationListProps, Navigat
 
   private _handleClick = (tabIndex: number) => {
     this.setState({ activeTab: tabIndex });
-  }
+  };
 
   // toggle pinned state
   private _handleExpandClick = () => {
     this.setState(
       (prevState) => ({ isPinned: !prevState.isPinned }),
       () => { this._handleOnPinClick(); });
-  }
+  };
 
   // handle pin clicked
   private _handleOnPinClick = () => {
     if (this.props.onExpandChanged)
       this.props.onExpandChanged(this.state.isPinned);
-  }
+  };
 
   private renderChildren() {
     return React.Children.map(this.props.children, (child: any, i) => {

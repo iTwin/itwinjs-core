@@ -70,11 +70,11 @@ export class AccuDrawPopupTools {
   private static _calculatorOnOk = (value: number) => {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Calculated value is ${value}`));
     AccuDrawPopupTools._closeCalculator();
-  }
+  };
 
   private static _calculatorOnCancel = () => {
     AccuDrawPopupTools._closeCalculator();
-  }
+  };
 
   private static _closeCalculator() {
     IModelApp.uiAdmin.hideCalculator();
@@ -94,16 +94,16 @@ export class AccuDrawPopupTools {
   private static _numberInputCommit = (value: number) => {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Updated value is ${value}`));
     AccuDrawPopupTools._closeInputEditor();
-  }
+  };
 
   private static _inputCommit = (value: Primitives.Value) => {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Updated value is ${value}`));
     AccuDrawPopupTools._closeInputEditor();
-  }
+  };
 
   private static _inputCancel = () => {
     AccuDrawPopupTools._closeInputEditor();
-  }
+  };
 
   private static _closeInputEditor() {
     IModelApp.uiAdmin.hideInputEditor();
@@ -162,7 +162,7 @@ export class AccuDrawPopupTools {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private static _HTMLElementOnCancel = () => {
     AccuDrawPopupTools._closeHTMLElement();
-  }
+  };
 
   private static _closeHTMLElement() {
     IModelApp.uiAdmin.hideHTMLElement();
@@ -233,15 +233,15 @@ export class AccuDrawPopupTools {
         { id: "accuDraw-mode-2", itemPriority: 80, label: "Mode 2", icon: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },
       ],
     };
-  }
+  };
 
   private static _toolbarItemExecuted = (_item: ActionButtonItemDef) => {
     AccuDrawPopupTools._closeToolbar();
-  }
+  };
 
   private static _toolbarCancel = () => {
     AccuDrawPopupTools._closeToolbar();
-  }
+  };
 
   private static _closeToolbar() {
     IModelApp.uiAdmin.hideToolbar();

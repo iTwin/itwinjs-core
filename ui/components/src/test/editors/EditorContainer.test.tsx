@@ -55,7 +55,7 @@ describe("<EditorContainer />", () => {
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter })
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -67,7 +67,7 @@ describe("<EditorContainer />", () => {
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Escape })
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Escape });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCancel.calledOnce).to.be.true;
   });
@@ -101,7 +101,7 @@ describe("<EditorContainer />", () => {
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Tab })
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Tab });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });

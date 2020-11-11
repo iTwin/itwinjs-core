@@ -55,7 +55,7 @@ describe("IModelViewportControl", () => {
 
     protected _getViewOverlay = (_viewport: ScreenViewport): React.ReactNode => {
       return <div data-testid="ViewOverlay">ViewOverlay</div>;
-    }
+    };
 
     protected initializeReactNode() {
       this._reactNode = <div data-testid="MainContent">

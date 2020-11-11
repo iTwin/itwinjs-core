@@ -54,30 +54,30 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   private _onClose = () => {
     if (this.props.onClose)
       this.props.onClose();
-  }
+  };
 
   private _onMyProjectsClicked = () => {
     this.getRecentProjects(ProjectScope.Invited);
-  }
+  };
 
   private _onFavoritesClicked = () => {
     this.getRecentProjects(ProjectScope.Favorites);
-  }
+  };
 
   private _onRecentClicked = () => {
     this.getRecentProjects(ProjectScope.MostRecentlyUsed);
-  }
+  };
 
   private _onSearchClicked = () => {
     this.setState({ projects: undefined, activeFilter: ProjectScope.All });
     // this.getRecentProjects(ProjectScope.All);
-  }
+  };
 
   private _onProjectSelected = (projectInfo: ProjectInfo) => {
     if (this.props.onProjectSelected) {
       this.props.onProjectSelected(projectInfo);
     }
-  }
+  };
 
   private _handleSearchValueChanged = (value: string): void => {
     if (!value || value.trim().length === 0) {
@@ -89,7 +89,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
         this.setState({ isLoading: false, projects: projectInfos, filter: value });
       });
     }
-  }
+  };
 
   private getNoProjectsPrompt(): string {
     switch (this.state.activeFilter) {

@@ -131,16 +131,16 @@ export class StagePanel extends React.PureComponent<StagePanelProps> {
 
     const direction = this.props.type === StagePanelType.Left || this.props.type === StagePanelType.Top ? 1 : -1;
     this.props.onResize && this.props.onResize(direction * resizeBy);
-  }
+  };
 
   private _handleResizeEnd = () => {
     this._lastPosition = undefined;
     this._relativePosition = undefined;
-  }
+  };
 
   private _handleResizeStart = (args: ResizeGripResizeArgs) => {
     const bounds = Rectangle.create(args.bounds);
     this._relativePosition = bounds.topLeft().getOffsetTo(args.position);
     this._lastPosition = Point.create(args.position);
-  }
+  };
 }
