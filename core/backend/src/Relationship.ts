@@ -7,28 +7,16 @@
  */
 
 import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
+export { SourceAndTarget, RelationshipProps } from "@bentley/imodeljs-common"; // for backwards compatibility
+
 const loggerCategory = BackendLoggerCategory.Relationship;
-
-/** Specifies the source and target elements of a [[Relationship]] instance.
- * @public
- */
-export interface SourceAndTarget {
-  sourceId: Id64String;
-  targetId: Id64String;
-}
-
-/** Properties that are common to all types of link table ECRelationships
- * @public
- */
-export interface RelationshipProps extends EntityProps, SourceAndTarget {
-}
 
 /** Base class for all link table ECRelationships
  * @public
