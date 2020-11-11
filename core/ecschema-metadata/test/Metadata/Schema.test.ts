@@ -23,7 +23,7 @@ import * as FileSystem from "fs";
 import { SchemaReadHelper } from "../../src/Deserialization/Helper";
 import { XmlParser } from "../../src/Deserialization/XmlParser";
 
-describe.only("Schema", () => {
+describe("Schema", () => {
   describe("api creation of schema", () => {
     it("with only the essentials", () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchemaCreation", "ts", 10, 99, 15);
@@ -641,7 +641,7 @@ describe.only("Schema", () => {
       await expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(ECObjectsError, "Could not locate the referenced schema, RefSchema.1.0.0, of ValidSchema");
     });
 
-    describe.only("toXML", () => {
+    describe("toXML", () => {
       let newDom: Document;
 
       beforeEach(() => {
@@ -687,7 +687,7 @@ describe.only("Schema", () => {
         expect(serialized.getAttribute("description")).to.eql(schemaJson.description);
       });
 
-      it.only("Deserialize after Serialization", async () => {
+      it("Deserialize after Serialization", async () => {
 
           const referenceJson = {
             $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -721,7 +721,7 @@ describe.only("Schema", () => {
           description: "A really long description...",
           references:[
             {
-               name:"FakeSchema",
+               name:"RefSchema",
                version:"01.02.03"
             },
             {
