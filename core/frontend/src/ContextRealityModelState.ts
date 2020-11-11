@@ -42,6 +42,7 @@ export class ContextRealityModelState {
   public readonly realityDataId?: string;
   public readonly description: string;
   public readonly iModel: IModelConnection;
+  public readonly isGlobal?: boolean;   // True if reality model includes geometry for entire globe ellipsoid.
   private _appearanceOverrides?: FeatureAppearance;
 
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
@@ -51,6 +52,7 @@ export class ContextRealityModelState {
     this.name = undefined !== props.name ? props.name : "";
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
+    this.isGlobal = props.isGlobal;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
 
     const classifiers = new SpatialClassifiers(props);

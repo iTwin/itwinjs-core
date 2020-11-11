@@ -1319,7 +1319,7 @@ export abstract class Viewport implements IDisposable {
    */
   public setOSMBuildingDisplay(options: { onOff?: boolean }) {
     if (this.displayStyle.setOSMBuildingDisplay(options))
-      this.invalidateRenderPlan();
+      this.synchWithView(false);      // May cahnge frustum depth...
   }
 
   /** Some changes may or may not require us to invalidate the scene.
