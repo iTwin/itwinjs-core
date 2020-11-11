@@ -2,7 +2,7 @@
 
 exports[`NumberInput should render correctly 1`] = `
 <div
-  className="core-numeric-input-container"
+  className="core-number-input-container"
 >
   <ForwardRef(Input)
     onBlur={[Function]}
@@ -11,10 +11,10 @@ exports[`NumberInput should render correctly 1`] = `
     value=""
   />
   <div
-    className="core-numeric-input-buttons-container"
+    className="core-number-input-buttons-container"
   >
     <div
-      className="core-numeric-input-button core-numeric-input-button-up"
+      className="core-number-input-button core-number-input-button-up"
       onClick={[Function]}
       tabIndex={-1}
     >
@@ -23,7 +23,7 @@ exports[`NumberInput should render correctly 1`] = `
       />
     </div>
     <div
-      className="core-numeric-input-button core-numeric-input-button-down"
+      className="core-number-input-button core-number-input-button-down"
       onClick={[Function]}
       tabIndex={-1}
     >

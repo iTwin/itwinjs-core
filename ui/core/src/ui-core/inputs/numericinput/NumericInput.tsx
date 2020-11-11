@@ -14,7 +14,7 @@ import * as React from "react";
 import { CommonProps } from "../../utils/Props";
 import { Omit } from "../../utils/typeUtils";
 import { ReactNumericInput, ReactNumericInputProps } from "./ReactNumericInput";
-import { StepFunctionProp } from "./NumberInput";
+import { StepFunctionProp } from "../numberinput/NumberInput";
 
 // cSpell:ignore nostyle
 

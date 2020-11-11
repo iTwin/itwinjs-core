@@ -180,20 +180,18 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       event.preventDefault();
     }, [applyStep]);
 
-    const containerClasses = classnames("core-numeric-input-container", containerClassName, showTouchButtons && "core-numeric-buttons-for-touch");
-    const upIconName = /* showTouchButtons ? "icon-add" : */ "icon-caret-up";
-    const downIconName = /* showTouchButtons ? "icon-line" : */ "icon-caret-down";
+    const containerClasses = classnames("core-number-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
     return (
       <div className={containerClasses} >
         <Input value={formattedValue} ref={ref} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} {...otherProps} />
-        <div className={classnames("core-numeric-input-buttons-container", showTouchButtons && "core-numeric-buttons-for-touch")}>
+        <div className={classnames("core-number-input-buttons-container", showTouchButtons && "core-number-buttons-for-touch")}>
           { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
-          <div className="core-numeric-input-button core-numeric-input-button-up" tabIndex={-1} onClick={handleUpClick}>
-            <WebFontIcon iconName={upIconName} />
+          <div className="core-number-input-button core-number-input-button-up" tabIndex={-1} onClick={handleUpClick}>
+            <WebFontIcon iconName="icon-caret-up" />
           </div>
           { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
-          <div className="core-numeric-input-button core-numeric-input-button-down" tabIndex={-1} onClick={handleDownClick}>
-            <WebFontIcon iconName={downIconName} />
+          <div className="core-number-input-button core-number-input-button-down" tabIndex={-1} onClick={handleDownClick}>
+            <WebFontIcon iconName="icon-caret-down" />
           </div>
         </div>
       </div>
