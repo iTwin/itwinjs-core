@@ -214,7 +214,7 @@ describe("AutoSuggest", () => {
           {...otherProps}
         />
       );
-    }
+    };
 
     const spyMethod = sinon.spy();
     const wrapper = mount(<AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={spyMethod} renderInputComponent={renderInput} />, { attachTo: outerNode });
