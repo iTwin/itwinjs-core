@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import * as sinon from "sinon";
+import produce from "immer";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createNineZoneState, EventEmitter, NineZoneState, PanelSide, PanelStateContext, PanelWidget, TabState, useMode, WidgetContentManagerContext, WidgetContentManagerContextArgs,
 } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
-import sinon = require("sinon");
-import produce from "immer";
 
 export const defaultProps = {
   onBeforeTransition: () => { },
@@ -18,7 +18,7 @@ export const defaultProps = {
   onTransitionEnd: () => { },
   size: undefined,
   transition: undefined,
-}
+};
 
 interface ProviderProps {
   children?: React.ReactNode;

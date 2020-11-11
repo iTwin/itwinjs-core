@@ -325,7 +325,7 @@ describe("useAnimatePanelWidgets", () => {
       .onSecondCall().callsFake(() => {
         // New widget ref is only set in layout effect
         setRefValue(result.current.getRef("w2"), w2);
-        return new Size(0, 400)
+        return new Size(0, 400);
       });
     sinon.stub(w2, "measure").returns(new Size(0, 200));
 
