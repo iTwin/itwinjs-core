@@ -120,7 +120,8 @@ function findFillWidget(panelWidgets: ReadonlyArray<string>, widgets: WidgetsSta
   });
 }
 
-function useMode(widgetId: string): "fit" | "fill" | "minimized" {
+/** @internal */
+export function useMode(widgetId: string): "fit" | "fill" | "minimized" {
   const panel = React.useContext(PanelStateContext);
   const widgets = React.useContext(WidgetsStateContext);
   const tabs = React.useContext(TabsStateContext);

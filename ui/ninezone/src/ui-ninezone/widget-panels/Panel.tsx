@@ -248,7 +248,8 @@ export const panelSides: [LeftPanelSide, RightPanelSide, TopPanelSide, BottomPan
   "bottom",
 ];
 
-function useAnimatePanelWidgets(): {
+/** @internal */
+export function useAnimatePanelWidgets(): {
   handleBeforeTransition: PanelWidgetProps["onBeforeTransition"];
   handlePrepareTransition: PanelWidgetProps["onPrepareTransition"];
   handleTransitionEnd: PanelWidgetProps["onTransitionEnd"];
@@ -256,23 +257,24 @@ function useAnimatePanelWidgets(): {
   transition: PanelWidgetProps["transition"];
   sizes: { [id: string]: PanelWidgetProps["size"] };
 } {
+  const panel = React.useContext(PanelStateContext);
+  assert(panel);
   const [prepareTransition, setPrepareTransition] = React.useState(false);
   const [transition, setTransition] = React.useState<PanelWidgetProps["transition"] | undefined>();
+  const [prevWidgets, setPrevWidgets] = React.useState(panel.widgets);
+  const [sizes, setSizes] = React.useState<{ [id: string]: number | undefined }>({});
   const refs = React.useRef(new Map<WidgetState["id"], React.RefObject<WidgetComponent>>());
   const widgetTransitions = React.useRef(new Map<WidgetState["id"], {
     from: number;
     to: number | undefined;
   }>());
-  const panel = React.useContext(PanelStateContext);
-  assert(panel);
   const horizontal = React.useRef(false);
   horizontal.current = isHorizontalPanelSide(panel.side);
-  const [prevWidgets, setPrevWidgets] = React.useState(panel.widgets);
-  const [sizes, setSizes] = React.useState<{ [id: string]: number | undefined }>({});
   if (prevWidgets !== panel.widgets) {
     const widgetsToMeasure = panel.widgets.length > prevWidgets.length ? panel.widgets : prevWidgets;
     for (const widgetId of widgetsToMeasure) {
       const ref = refs.current.get(widgetId);
+
       if (!ref || !ref.current) {
         widgetTransitions.current.set(widgetId, { from: 0, to: undefined });
         continue;
@@ -327,11 +329,14 @@ function useAnimatePanelWidgets(): {
     let initTransition = false;
     for (const [widgetId, widgetTransition] of widgetTransitions.current) {
       const ref = refs.current.get(widgetId);
-      assert(ref);
-      assert(ref.current);
+      if (!ref || !ref.current) {
+        initTransition = false;
+        widgetTransitions.current.clear();
+        break;
+      }
       const size = ref.current.measure();
-
       widgetTransition.to = getSize(horizontal.current, size);
+
       if (widgetTransition.from !== widgetTransition.to) {
         initTransition = true;
       }
@@ -344,18 +349,20 @@ function useAnimatePanelWidgets(): {
           draft[widgetId] = widgetTransition.from;
         }
       }));
+
       setTransition("init");
     }
   }, [prepareTransition]);
   React.useEffect(() => {
     if (transition !== "init")
       return;
-    requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       setSizes((prev) => produce(prev, (draft) => {
         for (const [widgetId, widgetTransition] of widgetTransitions.current) {
           draft[widgetId] = widgetTransition.to;
         }
       }));
+
       setTransition("transition");
     });
   }, [transition]);
@@ -380,8 +387,10 @@ function useAnimatePanelWidgets(): {
   const handleBeforeTransition = React.useCallback(() => {
     for (const wId of panel.widgets) {
       const ref = refs.current.get(wId);
-      assert(ref);
-      assert(ref.current);
+      if (!ref || !ref.current) {
+        widgetTransitions.current.clear();
+        return;
+      }
       const size = ref.current.measure();
       widgetTransitions.current.set(wId, { from: getSize(horizontal.current, size), to: undefined });
     }
