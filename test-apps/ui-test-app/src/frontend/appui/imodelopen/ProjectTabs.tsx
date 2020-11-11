@@ -34,7 +34,7 @@ export class ProjectTab extends React.Component<TabProps> {
     if (this.props.onTabClicked) {
       this.props.onTabClicked();
     }
-  }
+  };
 
   public renderIndicator() {
     const percentageOffset = this.props.selectedTabIndex! * 100;
@@ -99,7 +99,7 @@ export class ProjectTabs extends React.Component<TabsProps, TabsState> {
     // fire the tabs onClick
     if (this.props.onClick)
       this.props.onClick(tabIndex);
-  }
+  };
 
   private renderChildren() {
     return React.Children.map(this.props.children, (child: any, i) => {

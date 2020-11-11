@@ -103,7 +103,7 @@ export class TemporaryStorage<T> implements IDisposable {
       this._values.delete(id);
       this.props.onDisposedSingle && this.props.onDisposedSingle(id);
     }
-  }
+  };
 
   /**
    * Get a value from the storage. If the value with the

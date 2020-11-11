@@ -15,7 +15,7 @@ describe("BaseQuantityDescription", () => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       protected formatValue = (_numberValue: number): string => {
         return ("This is the number");
-      }
+      };
 
       protected parseString(_userInput: string): ParseResults {
         return { value: 10 };

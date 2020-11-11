@@ -218,3 +218,36 @@ To customize this setting, specify a value for the `mobileRealityTileMinToleranc
 ## Pickable isolines for thematic surfaces
 
 When using gradient mode [ThematicGradientMode.IsoLines]($common), thematically displayed surfaces will show pickable lines. Previously, trying to select an area in between the lines would count as selecting the underlying geometry. Now the empty space in between lines does not count.
+
+## Optional Class Validation for get and tryGet APIs
+
+The following methods now take an optional parameter that can be used to validate the class of the returned entity:
+
+- [IModelDb.Elements.getElement]($backend)
+- [IModelDb.Elements.tryGetElement]($backend)
+- [IModelDb.Models.getModel]($backend)
+- [IModelDb.Models.tryGetModel]($backend)
+- [IModelDb.Models.getSubModel]($backend)
+- [IModelDb.Models.tryGetSubModel]($backend)
+
+Code that used to be written as:
+
+```ts
+// The call below will only throw an IModelError if the entity is not found
+const element1 = iModelDb.elements.getElement<DefinitionElement>(elementId);
+
+// The call below will only return undefined if the entity is not found
+const element2 = iModelDb.elements.tryGetElement<DefinitionElement>(elementId);
+```
+
+can now optionally be written as:
+
+```ts
+// The call below will also throw an IModelError if the entity is not an instance of DefinitionElement
+const element1 = iModelDb.elements.getElement<DefinitionElement>(elementId, DefinitionElement);
+
+// The call below will also return undefined if the entity is not an instance of DefinitionElement
+const element2 = iModelDb.elements.tryGetElement<DefinitionElement>(elementId, DefinitionElement);
+```
+
+If the returned type is certain (result of an ECSQL query, for example), then the extra parameter is not required. However, it is often convenient to have the same error handling for *not found* and *class type mismatch*.

@@ -55,7 +55,8 @@ export abstract class TileTree {
   /** The length of time after which tiles belonging to this tree are considered elegible for disposal if they are no longer in use. */
   public readonly expirationTime: BeDuration;
   /** @internal */
-  public readonly loadPriority: TileLoadPriority;
+  public get loadPriority(): TileLoadPriority { return this._loadPriority; }
+  private readonly _loadPriority: TileLoadPriority;
   /** Optional tight bounding box around the entire contents of all of this tree's tiles. */
   public readonly contentRange?: ElementAlignedBox3d;
 
@@ -110,7 +111,7 @@ export abstract class TileTree {
     this.contentRange = params.contentRange;
 
     const admin = IModelApp.tileAdmin;
-    this.loadPriority = params.priority;
+    this._loadPriority = params.priority;
     this.expirationTime = params.expirationTime ?? admin.tileExpirationTime;
   }
 
@@ -121,6 +122,7 @@ export abstract class TileTree {
     this._lastSelected = BeTimePoint.now();
     const tiles = this._selectTiles(args);
     IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, tiles, args.readyTiles);
+    args.processSelectedTiles(tiles);
     return tiles;
   }
 

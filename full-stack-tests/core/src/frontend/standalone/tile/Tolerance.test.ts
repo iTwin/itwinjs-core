@@ -11,7 +11,7 @@ import {
   RenderMode, TileMetadata, TileProps, TileTreeMetadata,
 } from "@bentley/imodeljs-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, SnapshotConnection, Tile, TileAdmin, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileAdmin, TileTreeLoadStatus, ViewState,
 } from "@bentley/imodeljs-frontend";
 
 describe("Tile tolerance", () => {
@@ -134,7 +134,7 @@ describe("Tile tolerance", () => {
 
     // We know the tolerance we expect for the root tile...
     const knownRootTolerance = 0.14354; // approximate.
-    const rootTile = tree.rootTile as IModelTile;
+    const rootTile = (tree as IModelTileTree).staticBranch;
     const rootTolerance = computeTileChordTolerance(rootTile, true);
     expect(rootTolerance).least(knownRootTolerance);
     expect(rootTolerance).most(knownRootTolerance + 0.00001);

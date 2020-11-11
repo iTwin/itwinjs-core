@@ -126,7 +126,7 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
     const newSize = panel.collapsed ? 0 : panel.size;
     setTransition(undefined);
     setSize(newSize);
-  }, [panel.collapsed, panel.size])
+  }, [panel.collapsed, panel.size]);
   React.useLayoutEffect(() => {
     if (firstLayoutEffect.current)
       return;
@@ -150,7 +150,7 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
   const widgetPanel = React.useMemo<WidgetPanelContextArgs>(() => {
     return {
       getBounds,
-    }
+    };
   }, [getBounds]);
   if (panel.widgets.length === 0)
     return (

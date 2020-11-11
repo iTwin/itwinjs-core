@@ -34,13 +34,13 @@ export class FlatNonPrimitivePropertyRenderer extends React.Component<FlatNonPri
     /* istanbul ignore else */
     if (!this.props.isExpanded)
       this.props.onExpandToggled();
-  }
+  };
 
   private _onCollapsed = () => {
     /* istanbul ignore else */
     if (this.props.isExpanded)
       this.props.onExpandToggled();
-  }
+  };
 
   private getLabel(props: FlatNonPrimitivePropertyRendererProps): React.ReactNode {
     const { orientation, indentation, width, columnRatio, columnInfo } = props;

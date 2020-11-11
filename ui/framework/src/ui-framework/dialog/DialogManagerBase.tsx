@@ -144,6 +144,6 @@ export class DialogRendererBase extends React.PureComponent<DialogRendererProps>
 
   private _handleDialogChangedEvent = (_args: DialogChangedEventArgs) => {
     this.forceUpdate();
-  }
+  };
 
 }

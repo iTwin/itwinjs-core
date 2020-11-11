@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, Dictionary, dispose, Id64Array, IModelStatus } from "@bentley/bentleyjs-core";
-import { TileTreeProps } from "@bentley/imodeljs-common";
+import { IModelTileTreeProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
@@ -96,7 +96,7 @@ export class Tiles {
   }
 
   /** @internal */
-  public async getTileTreeProps(id: string): Promise<TileTreeProps> {
+  public async getTileTreeProps(id: string): Promise<IModelTileTreeProps> {
     return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
   }
 
@@ -141,6 +141,19 @@ export class Tiles {
   public forEachTreeOwner(func: (owner: TileTreeOwner) => void): void {
     for (const dict of this._treesBySupplier.values())
       dict.forEach((_key, value) => func(value));
+  }
+
+  /** Obtain the TileTreeOwners supplied by the specified supplier. */
+  public getTreeOwnersForSupplier(supplier: TileTreeSupplier): Iterable<{ id: any, owner: TileTreeOwner }> {
+    function* iterator(trees: Dictionary<any, TreeOwner> | undefined) {
+      if (trees)
+        for (const entry of trees)
+          yield { id: entry.key, owner: entry.value };
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(this._treesBySupplier.get(supplier)),
+    };
   }
 
   /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */

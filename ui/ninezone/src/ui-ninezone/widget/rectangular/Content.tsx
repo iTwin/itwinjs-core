@@ -67,5 +67,5 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
       return;
     this._scrollTop = this._content.current.scrollTop;
     this._scrollLeft = this._content.current.scrollLeft;
-  }
+  };
 }

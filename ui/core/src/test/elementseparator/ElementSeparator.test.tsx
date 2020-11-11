@@ -559,7 +559,7 @@ describe("ElementSeparator", () => {
 
     elementSeparator.unmount();
 
-    expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(2)
+    expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(2);
   });
 
   it("should call hover stop callback when unmounted while being hovered", () => {
@@ -577,7 +577,7 @@ describe("ElementSeparator", () => {
         onResizeHandleHoverChanged={onResizeHandleHoverChanged}
       />);
 
-    elementSeparator.simulate("pointerover")
+    elementSeparator.simulate("pointerover");
 
     expect(onResizeHandleHoverChanged.callCount).to.be.equal(1);
 

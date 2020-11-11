@@ -16,7 +16,7 @@ export class PlayerButton extends React.PureComponent<any> {
     // istanbul ignore else
     if (this.props.onClick)
       this.props.onClick();
-  }
+  };
 
   public render() {
     const { icon, title } = this.props;
@@ -74,7 +74,7 @@ export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonSta
       if (this.props.onPause)
         this.props.onPause();
     }
-  }
+  };
 
   public render() {
     const { tooltip } = this.props;

@@ -88,7 +88,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.processDateChange(this.state.typeConverter, newValue);
     }
-  }
+  };
 
   private _handleTimeChange = (time: TimeSpec): void => {
     // Combine new time into selected Date
@@ -101,7 +101,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
       newWorkingDate.setHours(time.hours, time.minutes, time.seconds);
       this._handleChange(newWorkingDate);
     }
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -159,7 +159,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
           // use 24 hr time display if alternateDateFormat is defined
           // istanbul ignore next
           if (alternateDateFormat && timeDisplay !== TimeDisplay.H24MS && timeDisplay !== TimeDisplay.H24M)
-            timeDisplay = TimeDisplay.H24MS
+            timeDisplay = TimeDisplay.H24MS;
         }
 
         // istanbul ignore else
@@ -217,7 +217,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
   private _handleEnter = async (): Promise<void> => {
     this._enterKey = true;
     await this._handleCommit();
-  }
+  };
 
   private _handleClose = async (): Promise<void> => {
     if (this._enterKey) {
@@ -227,18 +227,18 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
       if (this.props.onCancel)
         this.props.onCancel();
     }
-  }
+  };
 
   private _handleOk = async (_event: React.MouseEvent): Promise<void> => {
     await this._handleCommit();
-  }
+  };
 
   private _handleCancel = (_event: React.MouseEvent): void => {
     // istanbul ignore else
     if (this.props.onCancel) {
       this.props.onCancel();
     }
-  }
+  };
 
   private _handleCommit = async (): Promise<void> => {
     // istanbul ignore else
@@ -249,7 +249,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
         this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
       }
     }
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {

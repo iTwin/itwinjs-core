@@ -73,7 +73,7 @@ export class TimeTracker {
       this._idleStartTimestamp = Date.now();
       this._idleCount++;
     }
-  }
+  };
 
   private _trackActivity = (_args: UiActivityEventArgs): void => {
     this._lastActiveTimestamp = Date.now();
@@ -83,5 +83,5 @@ export class TimeTracker {
       this._totalIdleTime += lastIdleTime;
       this._idleStartTimestamp = 0;
     }
-  }
+  };
 }

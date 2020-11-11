@@ -129,18 +129,18 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
       if (this.props.onHotKeyParsed)
         this.props.onHotKeyParsed(hotKey);
     }
-  }
+  };
 
   private _handleFocus = (event: React.FocusEvent<HTMLDivElement>) => {
     event.stopPropagation();
-  }
+  };
 
   private _handleMouseOver = (_event: React.MouseEvent<HTMLDivElement>) => {
     // istanbul ignore else
     if (this._root && this._root.style.visibility !== "hidden" && this.props.onHover) {
       this.props.onHover();
     }
-  }
+  };
 
   public select = () => {
     // istanbul ignore else
@@ -149,18 +149,18 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
       if (this.props.parentMenu && this.props.parentMenu.props.parentSubmenu)
         this.props.parentMenu.props.parentSubmenu.close(true);
     }
-  }
+  };
 
   private _handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (this.props.onClick)
       this.props.onClick(event);
     if (this.props.onSelect)
       this.props.onSelect(event);
-  }
+  };
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === SpecialKey.Enter && this.props.onSelect !== undefined) {
       this.props.onSelect(event);
     }
-  }
+  };
 }

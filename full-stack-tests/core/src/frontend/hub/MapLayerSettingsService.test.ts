@@ -90,6 +90,6 @@ describe("MapLayerSettingsService (#integration)", () => {
     chai.assert.isTrue(success);
     const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, "test12345", true, projectId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
-  })
+  });
 
 });

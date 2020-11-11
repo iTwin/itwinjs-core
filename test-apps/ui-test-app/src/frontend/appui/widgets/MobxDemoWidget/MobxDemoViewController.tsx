@@ -32,7 +32,7 @@ export class MobxDemoViewController extends React.Component<MobxDemoViewControll
 
   public setBirdName = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setBird(e.target.value);
-  }
+  };
 
   public addBird = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +41,7 @@ export class MobxDemoViewController extends React.Component<MobxDemoViewControll
       this._viewModel.addBird(this.bird);
       this.setBird("");
     }
-  }
+  };
 
   public render() {
     return (
