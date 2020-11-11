@@ -125,7 +125,7 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
 
   private _handleTransitionEnd = () => {
     this.setStage(Stage.AnimatedOut);
-  }
+  };
 
   private setStage(stage: Stage) {
     this.setState((prevState) => ({

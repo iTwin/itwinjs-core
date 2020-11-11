@@ -115,11 +115,11 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
     // istanbul ignore else
     if (itemRef && itemRef.current)
       itemRef.current.focus();
-  }
+  };
 
   private _handleTabClick = (index: number) => {
     this._activateTab(index);
-  }
+  };
 
   /** Handle keydown on tabs */
   private _handleKeyDownEvent(event: React.KeyboardEvent, index: number) {
@@ -135,7 +135,7 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
     this.props.onClickLabel && this.props.onClickLabel(index);  // eslint-disable-line deprecation/deprecation
     this.props.onActivateTab && this.props.onActivateTab(index);
     this.setState({ activeIndex: index });
-  }
+  };
 
   /** @internal */
   public render(): JSX.Element {

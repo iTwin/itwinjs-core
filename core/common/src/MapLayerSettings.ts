@@ -159,7 +159,7 @@ export class MapLayerSettings {
   public readonly isBase: boolean;
   public readonly userName?: string;
   public readonly password?: string;
-  public readonly accessKey?: MapLayerKey
+  public readonly accessKey?: MapLayerKey;
   // eslint-disable-next-line no-undef-init
   private constructor(url: string, name: string, formatId: string = "WMS", visible = true, jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0, transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
     this.formatId = formatId;

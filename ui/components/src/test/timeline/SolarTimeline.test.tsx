@@ -18,7 +18,7 @@ class TestSolarDataProvider extends BaseSolarDataProvider {
 
   public onTimeChanged = (_time: Date) => {
     this.timeChangeCallbackCalled = true;
-  }
+  };
 
   constructor() {
     super();

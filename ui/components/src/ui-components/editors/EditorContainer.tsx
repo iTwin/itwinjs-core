@@ -123,15 +123,15 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     // istanbul ignore else
     if (!this.props.ignoreEditorBlur && this._propertyEditor?.containerHandlesBlur)
       this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private _handleContainerBlur = (e: React.FocusEvent) => {
     e.stopPropagation();
-  }
+  };
 
   private _handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-  }
+  };
 
   private _handleKeyDown = (e: KeyboardEvent) => {
     switch (e.key) {
@@ -147,11 +147,11 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       default:
         e.stopPropagation();
     }
-  }
+  };
 
   private _handleRightClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-  }
+  };
 
   private onPressEscape(e: KeyboardEvent): void {
     // istanbul ignore else
@@ -203,7 +203,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
   private _handleEditorCommit = (args: PropertyUpdatedArgs): void => {
     this.props.onCommit(args);
-  }
+  };
 
   private _commit = async () => {
     const newValue = await this.getEditor().getPropertyValue();
@@ -226,15 +226,15 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
         }
       }
     }
-  }
+  };
 
   private _handleEditorCancel = () => {
     this._commitCancel();
-  }
+  };
 
   private _commitCancel = () => {
     this.props.onCancel();
-  }
+  };
 
   /** @internal */
   public render() {

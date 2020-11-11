@@ -42,11 +42,11 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   // istanbul ignore next
   private _onBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
     this._sendChange(event.target.value);
-  }
+  };
 
   private _onFocus = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.target.select();
-  }
+  };
 
   private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === SpecialKey.Escape) {
@@ -56,11 +56,11 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
     } else if (event.key === SpecialKey.Enter) {
       this._sendChange(this.state.value);
     }
-  }
+  };
 
   private _onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ value: event.target.value });
-  }
+  };
 
   private _sendChange(value: string) {
     // istanbul ignore else

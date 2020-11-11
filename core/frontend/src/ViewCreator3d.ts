@@ -58,7 +58,7 @@ export class ViewCreator3d {
 
     const models = modelIds ? modelIds : await this._getAllModels();
     if (models === undefined || models.length === 0)
-      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no physical models found in iModel", Logger.logError, loggerCategory, () => ({ models }))
+      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no physical models found in iModel", Logger.logError, loggerCategory, () => ({ models }));
 
     const props = await this._createViewStateProps(models, options);
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
@@ -264,5 +264,5 @@ export class ViewCreator3d {
       rows.push(row.id);
 
     return rows;
-  }
+  };
 }

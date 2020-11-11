@@ -72,19 +72,19 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     if (this.props.readonly)
       return;
     this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
-  }
+  };
 
   private _onPopupOpened = () => {
-  }
+  };
 
   private _closePopup = () => {
     this.setState((_prevState) => ({ showPopup: false }));
-  }
+  };
 
   private _handleWeightPicked = (weight: number) => {
     this._closePopup();
     this.props.onLineWeightPick && this.props.onLineWeightPick(weight);
-  }
+  };
 
   public componentDidMount() {
     // eslint-disable-next-line no-console
@@ -150,11 +150,11 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
       else if (event.key === SpecialKey.ArrowUp)
         this.moveFocusInPopup(true, event);
     }
-  }
+  };
 
   private _setWeightContainer = (el: any) => {
     this._weightsContainer = el;
-  }
+  };
 
   private renderPopup(title: string | undefined) {
     return (
@@ -184,7 +184,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
 
   private _setTarget = (el: any) => {
     this._target = el;
-  }
+  };
 
   /** @internal */
   public render() {

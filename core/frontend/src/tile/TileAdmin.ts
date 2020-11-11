@@ -6,16 +6,18 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
-  RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
+  defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
+  NativeAppRpcInterface, RpcOperation, RpcRegistry, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderMemory } from "../render/RenderMemory";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
+import { InteractiveEditingSession } from "../InteractiveEditingSession";
+import { GeometricModelState } from "../ModelState";
 import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
@@ -123,7 +125,7 @@ export abstract class TileAdmin {
    * return the maximum *major* format version to be used to request tile content from the backend.
    * @see [[TileAdmin.Props.maximumMajorTileFormatVersion]]
    * @see [[CurrentImdlVersion]]
-   * @see [TileTreeProps.formatVersion]($common)
+   * @see [IModelTileTreeProps.formatVersion]($common)
    * @internal
    */
   public abstract getMaximumMajorTileFormatVersion(formatVersion?: number): number;
@@ -214,10 +216,13 @@ export abstract class TileAdmin {
   public abstract onShutDown(): void;
 
   /** @internal */
-  public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
+  public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
 
   /** @internal */
   public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
+
+  /** @internal */
+  public abstract async requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -250,7 +255,9 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract onCacheMiss(): void;
   /** @internal */
-  public abstract onActiveRequestCanceled(tile: Tile): void;
+  public abstract cancelIModelTileRequest(tile: Tile): void;
+  /** @internal */
+  public abstract cancelElementGraphicsRequest(tile: Tile): void;
 
   /** Event raised when a request to load a tile's content completes.
    * @internal
@@ -308,9 +315,9 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     totalDispatchedRequests: number;
     /** The total number of tiles for which content requests were dispatched and then canceled on the backend before completion. */
     totalAbortedRequests: number;
-    /** The number of in-flight TileTreeProps requests. */
+    /** The number of in-flight IModelTileTreeProps requests. */
     numActiveTileTreePropsRequests: number;
-    /** The number of pending TileTreeProps requests. */
+    /** The number of pending IModelTileTreeProps requests. */
     numPendingTileTreePropsRequests: number;
   }
 
@@ -325,7 +332,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     maxActiveRequests?: number;
 
-    /** The maximum number of simultaneously active requests for TileTreeProps. Requests are fulfilled in FIFO order.
+    /** The maximum number of simultaneously active requests for IModelTileTreeProps. Requests are fulfilled in FIFO order.
      *
      * Default value: 10
      * @alpha
@@ -538,15 +545,15 @@ class Queue extends PriorityQueue<TileRequest> {
   }
 }
 
-/** Some views contain thousands of models. When we open such a view, the first thing we do is request the TileTreeProps for each model. This involves a http request per model,
+/** Some views contain thousands of models. When we open such a view, the first thing we do is request the IModelTileTreeProps for each model. This involves a http request per model,
  * which can exceed the maximum number of simultaneous requests permitted by the browser.
- * Similar to how we throttle requests for tile *content*, we throttle requests for TileTreeProps based on `TileAdmin.Props.maxActiveTileTreePropsRequests`, heretofore referred to as `N`.
- * TileAdmin maintains a FIFO queue of requests for TileTreeProps. The first N of those requests have been dispatched; the remainder are waiting for their turn.
+ * Similar to how we throttle requests for tile *content*, we throttle requests for IModelTileTreeProps based on `TileAdmin.Props.maxActiveTileTreePropsRequests`, heretofore referred to as `N`.
+ * TileAdmin maintains a FIFO queue of requests for IModelTileTreeProps. The first N of those requests have been dispatched; the remainder are waiting for their turn.
  * When `TileAdmin.requestTileTreeProps` is called, it appends a new request to the queue, and if the queue length < N, dispatches it immediately.
  * When a request completes, throws an error, or is canceled, it is removed from the queue, and any not-yet-dispatched requests are dispatched (not exceeding N total in flight).
  * When an IModelConnection is closed, any requests associated with that iModel are canceled.
  * NOTE: This request queue currently does not interact at all with the tile content request queue.
- * NOTE: We rely on TreeOwner to not request the same TileTreeProps multiple times - we do not check the queue for presence of a requested tree before enqeueing it.
+ * NOTE: We rely on TreeOwner to not request the same IModelTileTreeProps multiple times - we do not check the queue for presence of a requested tree before enqeueing it.
  */
 class TileTreePropsRequest {
   private _isDispatched = false;
@@ -554,7 +561,7 @@ class TileTreePropsRequest {
   public constructor(
     public readonly iModel: IModelConnection,
     private readonly _treeId: string,
-    private readonly _resolve: (props: TileTreeProps) => void,
+    private readonly _resolve: (props: IModelTileTreeProps) => void,
     private readonly _reject: (error: Error) => void) {
   }
 
@@ -591,11 +598,11 @@ class TileTreePropsRequest {
 }
 
 /** @internal */
-export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<TileTreeProps>;
+export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<IModelTileTreeProps>;
 
 let requestTileTreePropsOverride: RequestTileTreePropsFunc | undefined;
 
-async function requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
+async function requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps> {
   if (requestTileTreePropsOverride)
     return requestTileTreePropsOverride(iModel, treeId);
 
@@ -654,9 +661,11 @@ class Admin extends TileAdmin {
   private readonly _pruneForMemoryUsageTime: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
-  private _canceledRequests?: Map<IModelConnection, Map<string, Set<string>>>;
+  private _canceledIModelTileRequests?: Map<IModelConnection, Map<string, Set<string>>>;
+  private _canceledElementGraphicsRequests?: Map<IModelConnection, string[]>;
   private _cancelBackendTileRequests: boolean;
   private _tileTreePropsRequests: TileTreePropsRequest[] = [];
+  private _cleanup?: () => void;
 
   public get emptyViewportSet(): ReadonlyViewportSet { return UniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -751,6 +760,15 @@ class Admin extends TileAdmin {
     this._contextPreloadParentDepth = Math.max(0, Math.min((options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth), 8));
     // If unspecified skip one level before preloading  of parents of context tiles.
     this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
+
+    this._cleanup = InteractiveEditingSession.onBegin.addListener((session) => {
+      const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
+      session.onEnded.addOnce((sesh: InteractiveEditingSession) => {
+        assert(sesh === session);
+        removeGeomListener();
+        this.onSessionEnd(session);
+      });
+    });
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
@@ -827,8 +845,8 @@ class Admin extends TileAdmin {
         this.cancel(active);
 
     // If the backend is servicing a single client, ask it to immediately stop processing requests for content we no longer want.
-    if (undefined !== this._canceledRequests && this._canceledRequests.size > 0) {
-      for (const [iModelConnection, entries] of this._canceledRequests) {
+    if (undefined !== this._canceledIModelTileRequests && this._canceledIModelTileRequests.size > 0) {
+      for (const [iModelConnection, entries] of this._canceledIModelTileRequests) {
         const treeContentIds: TileTreeContentIds[] = [];
         for (const [treeId, tileIds] of entries) {
           const contentIds = Array.from(tileIds);
@@ -840,7 +858,17 @@ class Admin extends TileAdmin {
         NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.getRpcProps(), treeContentIds);
       }
 
-      this._canceledRequests.clear();
+      this._canceledIModelTileRequests.clear();
+    }
+
+    if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
+      for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        NativeAppRpcInterface.getClient().cancelElementGraphicsRequests(connection.getRpcProps(), requestIds);
+        this._totalAbortedRequests += requestIds.length;
+      }
+
+      this._canceledElementGraphicsRequests.clear();
     }
 
     // Fill up the active requests from the queue.
@@ -1050,7 +1078,7 @@ class Admin extends TileAdmin {
         this.onViewportIModelClosed(vp);
     });
 
-    // Remove any TileTreeProps requests associated with this iModel
+    // Remove any TileTreeProps requests associated with this iModel.
     this._tileTreePropsRequests = this._tileTreePropsRequests.filter((req) => {
       if (req.iModel !== iModel)
         return true;
@@ -1059,11 +1087,20 @@ class Admin extends TileAdmin {
       return false;
     });
 
-    // Dispatch TileTreeProps requests not associated with this iModel
+    // Remove any canceled requests for this iModel.
+    this._canceledIModelTileRequests?.delete(iModel);
+    this._canceledElementGraphicsRequests?.delete(iModel);
+
+    // Dispatch TileTreeProps requests not associated with this iModel.
     this.dispatchTileTreePropsRequests();
   }
 
   public onShutDown(): void {
+    if (this._cleanup) {
+      this._cleanup();
+      this._cleanup = undefined;
+    }
+
     this._removeIModelConnectionOnCloseListener();
 
     for (const request of this._activeRequests)
@@ -1128,10 +1165,10 @@ class Admin extends TileAdmin {
     this._tileUsagePerViewport.delete(vp);
   }
 
-  public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
+  public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps> {
     this.initializeRpc();
     const requests = this._tileTreePropsRequests;
-    return new Promise<TileTreeProps>((resolve, reject) => {
+    return new Promise<IModelTileTreeProps>((resolve, reject) => {
       const request = new TileTreePropsRequest(iModel, treeId, resolve, reject);
       requests.push(request);
       if (this._tileTreePropsRequests.length <= this._maxActiveTileTreePropsRequests)
@@ -1159,6 +1196,12 @@ class Admin extends TileAdmin {
     return intfc.requestTileContent(iModelRpcProps, treeId, contentId, isCanceled, guid);
   }
 
+  public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+    this.initializeRpc();
+    const intfc = IModelTileRpcInterface.getClient();
+    return intfc.requestElementGraphics(iModel.getRpcProps(), requestProps);
+  }
+
   private initializeRpc(): void {
     // Would prefer to do this in constructor - but nothing enforces that the app initializes the rpc interfaces before it creates the TileAdmin (via IModelApp.startup()) - so do it on first request instead.
     if (this._rpcInitialized)
@@ -1172,11 +1215,12 @@ class Admin extends TileAdmin {
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
-    if (this._cancelBackendTileRequests) {
-      if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface))
-        this._cancelBackendTileRequests = false;
-      else
-        this._canceledRequests = new Map<IModelConnection, Map<string, Set<string>>>();
+    if (RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
+      this._canceledElementGraphicsRequests = new Map<IModelConnection, string[]>();
+      if (this._cancelBackendTileRequests)
+        this._canceledIModelTileRequests = new Map<IModelConnection, Map<string, Set<string>>>();
+    } else {
+      this._cancelBackendTileRequests = false;
     }
   }
 
@@ -1192,14 +1236,54 @@ class Admin extends TileAdmin {
       ++this._totalUndisplayable;
   }
 
-  public onActiveRequestCanceled(tile: Tile): void {
-    if (undefined === this._canceledRequests)
+  /** The geometry of one or models has changed during an [[InteractiveEditingSession]]. Invalidate the scenes and feature overrides of any viewports
+   * viewing any of those models.
+   */
+  private onModelGeometryChanged(changes: Iterable<ModelGeometryChanges>): void {
+    for (const vp of this._viewports) {
+      for (const change of changes) {
+        if (vp.view.viewsModel(change.id)) {
+          vp.invalidateScene();
+          vp.setFeatureOverrideProviderChanged();
+          break;
+        }
+      }
+    }
+  }
+
+  /** An interactive editing session has ended. Update geometry guid for affected models and invalidate scenes of affected viewports. */
+  private onSessionEnd(session: InteractiveEditingSession): void {
+    // Updating model's geometry guid will cause TileTreeReference to request new TileTree if guid changed.
+    const modelIds: Id64String[] = [];
+    for (const change of session.getGeometryChanges()) {
+      modelIds.push(change.id);
+      const model = session.iModel.models.getLoaded(change.id);
+      if (model && model instanceof GeometricModelState)
+        model.geometryGuid = change.geometryGuid;
+    }
+
+    // Invalidate scenes of all viewports viewing any affected model.
+    for (const vp of this._viewports) {
+      if (vp.iModel !== session.iModel)
+        continue;
+
+      for (const modelId of modelIds) {
+        if (vp.view.viewsModel(modelId)) {
+          vp.invalidateScene();
+          break;
+        }
+      }
+    }
+  }
+
+  public cancelIModelTileRequest(tile: Tile): void {
+    if (undefined === this._canceledIModelTileRequests)
       return;
 
-    let iModelEntry = this._canceledRequests.get(tile.tree.iModel);
+    let iModelEntry = this._canceledIModelTileRequests.get(tile.tree.iModel);
     if (undefined === iModelEntry) {
       iModelEntry = new Map<string, Set<string>>();
-      this._canceledRequests.set(tile.tree.iModel, iModelEntry);
+      this._canceledIModelTileRequests.set(tile.tree.iModel, iModelEntry);
     }
 
     let contentIds = iModelEntry.get(tile.tree.id);
@@ -1209,6 +1293,18 @@ class Admin extends TileAdmin {
     }
 
     contentIds.add(tile.contentId);
+  }
+
+  public cancelElementGraphicsRequest(tile: Tile): void {
+    const requests = this._canceledElementGraphicsRequests;
+    if (!requests)
+      return;
+
+    let ids = requests.get(tile.tree.iModel);
+    if (!ids)
+      requests.set(tile.tree.iModel, ids = []);
+
+    ids.push(tile.contentId);
   }
 
   public terminateTileTreePropsRequest(request: TileTreePropsRequest): void {

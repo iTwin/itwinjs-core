@@ -161,7 +161,7 @@ describe("ActiveFrontstageDefProvider", () => {
     newFrontstageDef.nineZoneState = undefined;
 
     const wrapper = mount<{ frontstageDef: FrontstageDef }>(<ActiveFrontstageDefProvider frontstageDef={frontstageDef} />);
-    wrapper.setProps({ frontstageDef: newFrontstageDef })
+    wrapper.setProps({ frontstageDef: newFrontstageDef });
 
     const nineZone = wrapper.find(NineZone);
     nineZone.prop("state").should.eq(frontstageDef.nineZoneState);

@@ -319,7 +319,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       default: selectionMode = SelectionMode.Single;
     }
     this.setState({ selectionMode });
-  }
+  };
 
   private _onChangeTableSelectionTarget = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e.target.value === "0") {
@@ -328,7 +328,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     }
 
     this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
-  }
+  };
 
   private _updatePropertyRecord(record: PropertyRecord, newValue: PropertyValue): PropertyRecord {
     return record.copyWithNewValue(newValue);
@@ -352,28 +352,28 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     }
 
     return updated;
-  }
+  };
 
   private _onRequestedTopRowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let requestedTopRow = 0;
     if (e.target.value)
       requestedTopRow = parseInt(e.target.value, 10);
     this.setState({ requestedTopRow });
-  }
+  };
 
   private _onScrollToRow = (topRowIndex: number) => {
     this.setState({ topRow: topRowIndex });
-  }
+  };
 
   private _handleCellContextMenu = (args: TableCellContextMenuArgs) => {
     // eslint-disable-next-line no-console
     console.log(`rowIndex ${args.rowIndex}, colIndex ${args.colIndex}, cellKey ${args.cellKey}`);
-  }
+  };
 
   private _onUtcChange = (checked: boolean) => {
     this.setState({useUtc: checked});
     this.loadData(checked);
-  }
+  };
 
   private _onFilteringChange = (checked: boolean) => {
     this._columns.forEach((column: ColumnDescription) => {
@@ -383,7 +383,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       this.state.dataProvider.onColumnsChanged.raiseEvent();
       this.state.dataProvider.onRowsChanged.raiseEvent();
     }
-  }
+  };
 
   public render(): React.ReactNode {
     return (

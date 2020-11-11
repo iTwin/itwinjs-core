@@ -63,7 +63,7 @@ export function PropertiesWidget(props: Props) {
   const setFilter = React.useCallback((filter) => {
     labelFilterer.current.filterText = filter;
     valueFilterer.current.filterText = filter;
-  }, [])
+  }, []);
 
   let content;
   if (isOverLimit) {
