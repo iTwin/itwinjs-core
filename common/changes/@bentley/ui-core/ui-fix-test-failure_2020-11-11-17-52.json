@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/ui-core",
-      "comment": "Add LabeledThemedSelect component",
+      "comment": "Clear FocusTrap timeout on unmount.",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-core",
-  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+  "email": "10091419+GerardasB@users.noreply.github.com"
 }
