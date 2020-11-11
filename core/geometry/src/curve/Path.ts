@@ -20,6 +20,7 @@ import { StrokeOptions } from "./StrokeOptions";
 /**
  * * A `Path` object is a collection of curves that join head-to-tail to form a path.
  * * A `Path` object does not bound a planar region.  Use `Loop` to indicate region bounding.
+ * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
 export class Path extends CurveChain {

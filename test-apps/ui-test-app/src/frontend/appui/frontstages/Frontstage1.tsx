@@ -318,7 +318,7 @@ class FrontstageToolWidget extends React.Component {
         const eventArgs: TimelinePausePlayArgs = { uiComponentId: "sampleApp-sampleTimeline", timelineAction: TimelinePausePlayAction.Toggle };
         UiAdmin.sendUiEvent(eventArgs);
       },
-    })
+    });
   }
   private _horizontalToolbar = (
     <Toolbar

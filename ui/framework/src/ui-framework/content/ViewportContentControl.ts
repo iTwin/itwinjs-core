@@ -104,7 +104,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
     }
 
     return navigationAidId;
-  }
+  };
 
   /** Returns true if this control supports processing ViewSelector changes. */
   public get supportsViewSelectorChange(): boolean { return true; }

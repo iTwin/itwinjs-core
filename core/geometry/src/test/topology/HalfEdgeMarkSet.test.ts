@@ -158,7 +158,7 @@ function verifyMarkSetState(ck: Checker, title: string, markSet: AbstractHalfEdg
     if (he)
       myLength++;
     else
-      numNull++
+      numNull++;
   }
   ck.testExactNumber(expectedLength, myLength, `${title} member count by iterator`);
   ck.testExactNumber(0, numNull, "check no nulls");
@@ -188,7 +188,7 @@ function verifyMarkSetRemoval(ck: Checker, markSet: AbstractHalfEdgeGraphMarkSet
     if (c)
       numMembers++;
     else
-      numNull++
+      numNull++;
   }
   ck.testExactNumber(numMembers, markSet.getLength(), "check length versus iterator");
   ck.testExactNumber(0, numNull, "check no nulls");

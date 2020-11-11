@@ -173,7 +173,7 @@ export class Form extends React.Component<FormProps, FormState> {
 
   private _setValues = (values: FieldValues) => {
     this.setState((prevState) => ({ values: { ...prevState.values, ...values } }));
-  }
+  };
 
   private _handleSubmit = (event: React.FormEvent<HTMLFormElement>, values: FieldValues) => {
     event.preventDefault();
@@ -191,7 +191,7 @@ export class Form extends React.Component<FormProps, FormState> {
       .catch((reason: Error) => {
         this.setState({ submitSuccess: false, errorMsg: reason.message });
       });
-  }
+  };
 
   public render() {
     const { submitSuccess, errorMsg } = this.state;

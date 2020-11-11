@@ -71,7 +71,7 @@ describe("PropertyValueRendererManager", () => {
     it("looks for custom renderer specified in `property.renderer` before looking at `property.typename`", () => {
       const record = TestUtils.createPrimitiveStringProperty("test_property", "Test");
       record.property.renderer = { name: "stub1" };
-      record.property.typename = "stub2"
+      record.property.typename = "stub2";
 
       const rendererManager = new PropertyValueRendererManager();
       rendererManager.registerRenderer("stub1", fakeRenderer);

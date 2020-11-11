@@ -84,7 +84,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
           this.setState((_prevState) => newState);
       }
     }
-  }
+  };
 
   public get id(): string {
     return `${this.props.workflowId}:${this.props.taskId}`;
@@ -102,7 +102,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
         Logger.logError(UiFramework.loggerCategory(this), `Task with id '${this.props.taskId}' not found`);
     } else
       Logger.logError(UiFramework.loggerCategory(this), `Workflow with id '${this.props.workflowId}' not found`);
-  }
+  };
 
   public componentDidUpdate(_prevProps: TaskLaunchBackstageItemProps) {
     const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
@@ -116,7 +116,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
     /* istanbul ignore else */
     if (isActive !== this.state.isActive)
       this.setState({ isActive });
-  }
+  };
 
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {

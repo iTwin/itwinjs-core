@@ -81,7 +81,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
     // Update tool settings title when active tool changes.
     const title = `${ToolSettingsManager.activeToolLabel}`;
     this.setState({ title });
-  }
+  };
 
   public componentDidMount(): void {
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
@@ -137,14 +137,14 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
         toolSettingsZoneContent,
       };
     });
-  }
+  };
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
       KeyboardShortcutManager.setFocusToHome();
     }
-  }
+  };
 
   private getToolSettingsWidget(): React.ReactNode {
     if (this.state.toolSettingsZoneContent === ToolSettingsZoneContent.Closed) {
@@ -192,9 +192,9 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
       return;
     const bounds = this._widget.current.getBounds();
     this.props.widgetChangeHandler.handleTabDragStart(this.props.zone.id, 0, initialPosition, bounds);
-  }
+  };
 
   private _handleResize = (resizeBy: number, handle: ResizeHandle) => {
     this.props.widgetChangeHandler.handleResize(this.props.zone.id, resizeBy, handle, 0);
-  }
+  };
 }

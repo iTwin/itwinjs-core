@@ -1551,7 +1551,7 @@ function appendIndexErrors(name: string, data: number[], numValues: number, erro
   for (i = 0; i < data.length; i++) {
     k = data[i];
     if (k < 0 || k >= numValues) {
-      errors.push({ indexArrayName: name, indexOfBadPointIndex: i, badPointIndex: k })
+      errors.push({ indexArrayName: name, indexOfBadPointIndex: i, badPointIndex: k });
       return;
     }
   }

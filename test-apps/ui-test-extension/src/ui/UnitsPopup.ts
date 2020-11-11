@@ -30,7 +30,7 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
 
   private _handleOK = () => {
     IModelApp.quantityFormatter.useImperialFormats = (this.option === UnitsOptions.Metric ? false : true);
-  }
+  };
 
 
   public supplyButtonData(): DialogButtonDef[] | undefined {
@@ -55,7 +55,7 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
   private _optionsValue: DialogItemValue = IModelApp.quantityFormatter.useImperialFormats ? { value: UnitsOptions.Imperial } : { value: UnitsOptions.Metric };
 
   public get option() {
@@ -68,7 +68,7 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
 
   public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.option = updatedValue.value.value;
-  }
+  };
 
   public supplyDialogItems(): DialogItem[] | undefined {
     const items = [{ value: this._optionsValue, property: UnitsPopupUiDataProvider._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } }];

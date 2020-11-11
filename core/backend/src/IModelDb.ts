@@ -18,12 +18,12 @@ import { Range3d } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
-  DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
+  DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
-  IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion,
+  IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
-  SyncMode, ThumbnailProps, TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
+  SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
@@ -162,7 +162,7 @@ export abstract class IModelDb extends IModel {
     this.initializeIModelDb();
 
     // The same file can be opened by multiple IModelDbs - make sure each gets a unique EventSink name.
-    const eventSinkId = `${this._fileKey}-${(IModelDb._nextEventSinkId++).toString()}`
+    const eventSinkId = `${this._fileKey}-${(IModelDb._nextEventSinkId++).toString()}`;
     this._eventSink = new EventSink(eventSinkId);
     this.nativeDb.setEventSink(this._eventSink);
   }
@@ -1147,6 +1147,20 @@ export abstract class IModelDb extends IModel {
   public exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult {
     return this.nativeDb.exportPartGraphics(exportProps);
   }
+
+  /** Request geometry stream information from an element.
+   * @alpha
+   */
+  public elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult {
+    return this.nativeDb.processGeometryStream(requestProps);
+  }
+
+  /** Update geometry stream for the supplied element.
+   * @alpha
+   */
+  public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
+    return this.nativeDb.updateGeometryStream(updateProps);
+  }
 }
 
 /** @public */
@@ -1879,16 +1893,16 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public constructor(private _iModel: IModelDb) { }
 
     /** @internal */
-    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps> {
+    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps> {
       requestContext.enter();
 
-      return new Promise<TileTreeProps>((resolve, reject) => {
+      return new Promise<IModelTileTreeProps>((resolve, reject) => {
         requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, `TreeId=${id}`));
           else
-            resolve(ret.result as TileTreeProps);
+            resolve(ret.result as IModelTileTreeProps);
         });
       });
     }

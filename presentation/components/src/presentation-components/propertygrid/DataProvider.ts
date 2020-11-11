@@ -201,7 +201,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
       Presentation.favoriteProperties.sortFields(this.imodel, fields);
     else
       fields.sort(priorityAndNameSortFunction);
-  }
+  };
 
   /**
    * Returns property data.

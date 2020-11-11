@@ -42,7 +42,7 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
     return {
       close: handleClose,
     };
-  }, [handleClose])
+  }, [handleClose]);
   const moreWidgetsTitle = useLabel("moreWidgetsTitle");
   return (
     <div

@@ -157,7 +157,7 @@ export function DatePicker(props: DatePickerProps) {
   const handleMoveToNextMonth = React.useCallback(() => {
     const newMonth = displayedMonthIndex !== 11 ? displayedMonthIndex + 1 : 0;
     const newYear = displayedMonthIndex !== 11 ? displayedYear : displayedYear + 1;
-    setMonthAndYear(newMonth, newYear)
+    setMonthAndYear(newMonth, newYear);
   }, [displayedMonthIndex, displayedYear, setMonthAndYear]);
 
   // when invoked, it will return another function which can be used for the onClick React listener.

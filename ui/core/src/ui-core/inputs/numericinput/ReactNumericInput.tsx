@@ -715,7 +715,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
         }
       }
     }
-  }
+  };
 
   /**
    * Stops the widget from auto-changing by clearing the timer (if any)
@@ -724,7 +724,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     if (this._timer) {
       window.clearTimeout(this._timer);
     }
-  }
+  };
 
   /**
    * Increments the value with one step and the enters a recursive calls
@@ -799,7 +799,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   private _onTouchEnd = (e: Event): void => {
     e.preventDefault();
     this._stop();
-  }
+  };
 
   /**
    * Helper method to invoke event callback functions if they are provided

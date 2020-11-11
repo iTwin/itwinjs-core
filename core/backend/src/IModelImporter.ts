@@ -6,11 +6,8 @@
  * @module iModels
  */
 import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import {
-  AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModel, IModelError, ModelProps, Placement3d,
-} from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, ElementAspectProps, ElementProps, IModel, IModelError, ModelProps } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { Element, GeometricElement3d } from "./Element";
 import { ElementAspect, ElementMultiAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 import { Model } from "./Model";
@@ -22,8 +19,10 @@ const loggerCategory: string = BackendLoggerCategory.IModelImporter;
  * @beta
  */
 export interface IModelImportOptions {
-  /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are imported. If `false`, throw an Error if an element would be outside of the projectExtents. */
-  autoExtendProjectExtents?: boolean;
+  /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
+   * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
+   */
+  autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
 }
 
 /** Base class for importing data into an iModel.
@@ -35,8 +34,10 @@ export interface IModelImportOptions {
 export class IModelImporter {
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
-  /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are imported. If `false`, throw an Error if an element would be outside of the projectExtents. */
-  public autoExtendProjectExtents: boolean;
+  /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
+   * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
+   */
+  public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @note `false` is the default
    */
@@ -149,32 +150,11 @@ export class IModelImporter {
     return elementProps.id!;
   }
 
-  /** Called before inserting or updating an element in the target iModel to make sure that it is within the projectExtents. */
-  private checkProjectExtents(targetElementProps: ElementProps): void {
-    const targetElementClass: typeof Element = this.targetDb.getJsClass<typeof Element>(targetElementProps.classFullName);
-    if (targetElementClass.prototype instanceof GeometricElement3d) {
-      const targetElementPlacement: Placement3d = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
-      if (targetElementPlacement.isValid) {
-        const targetExtents: AxisAlignedBox3d = targetElementPlacement.calculateRange();
-        if (!targetExtents.isNull && !this.targetDb.projectExtents.containsRange(targetExtents)) {
-          if (this.autoExtendProjectExtents) {
-            Logger.logTrace(loggerCategory, "Auto-extending projectExtents");
-            targetExtents.extendRange(this.targetDb.projectExtents);
-            this.targetDb.updateProjectExtents(targetExtents);
-          } else {
-            throw new IModelError(IModelStatus.BadElement, "Target element would be outside of projectExtents", Logger.logError, loggerCategory);
-          }
-        }
-      }
-    }
-  }
-
   /** Create a new Element from the specified ElementProps and insert it into the target iModel.
    * @returns The Id of the newly inserted Element.
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElement`.
    */
   protected onInsertElement(elementProps: ElementProps): Id64String {
-    this.checkProjectExtents(elementProps);
     try {
       const elementId: Id64String = this.targetDb.elements.insertElement(elementProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
@@ -200,7 +180,6 @@ export class IModelImporter {
     if (!elementProps.id) {
       throw new IModelError(IModelStatus.InvalidId, "ElementId not provided", Logger.logError, loggerCategory);
     }
-    this.checkProjectExtents(elementProps);
     this.targetDb.elements.updateElement(elementProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementForLogger(elementProps)}`);
     if (this.simplifyElementGeometry) {
@@ -428,5 +407,34 @@ export class IModelImporter {
   /** Format a Relationship for the Logger. */
   private formatRelationshipForLogger(relProps: RelationshipProps): string {
     return `${relProps.classFullName} sourceId=[${relProps.sourceId}] targetId=[${relProps.targetId}]`;
+  }
+
+  /** Optionally compute the projectExtents for the target iModel depending on the options for this IModelImporter.
+   * @note This method is automatically called from [IModelTransformer.processChanges]($backend) and [IModelTransformer.processAll]($backend).
+   * @see [IModelDb.computeProjectExtents]($backend), [[autoExtendProjectExtents]]
+   */
+  public computeProjectExtents(): void {
+    const computedProjectExtents = this.targetDb.computeProjectExtents({ reportExtentsWithOutliers: true, reportOutliers: true });
+    Logger.logInfo(loggerCategory, `Current projectExtents=${JSON.stringify(this.targetDb.projectExtents)}`);
+    Logger.logInfo(loggerCategory, `Computed projectExtents without outliers=${JSON.stringify(computedProjectExtents.extents)}`);
+    Logger.logInfo(loggerCategory, `Computed projectExtents with outliers=${JSON.stringify(computedProjectExtents.extentsWithOutliers)}`);
+    if (this.autoExtendProjectExtents) {
+      const excludeOutliers: boolean = typeof this.autoExtendProjectExtents === "object" ? this.autoExtendProjectExtents.excludeOutliers : false;
+      const newProjectExtents: AxisAlignedBox3d = excludeOutliers ? computedProjectExtents.extents : computedProjectExtents.extentsWithOutliers!;
+      if (!newProjectExtents.isAlmostEqual(this.targetDb.projectExtents)) {
+        this.targetDb.updateProjectExtents(newProjectExtents);
+        Logger.logInfo(loggerCategory, `Updated projectExtents=${JSON.stringify(this.targetDb.projectExtents)}`);
+      }
+      if (!excludeOutliers && computedProjectExtents.outliers && computedProjectExtents.outliers.length > 0) {
+        Logger.logInfo(loggerCategory, `${computedProjectExtents.outliers.length} outliers detected within projectExtents`);
+      }
+    } else {
+      if (!this.targetDb.projectExtents.containsRange(computedProjectExtents.extents)) {
+        Logger.logWarning(loggerCategory, "Current project extents may be too small");
+      }
+      if (computedProjectExtents.outliers && computedProjectExtents.outliers.length > 0) {
+        Logger.logInfo(loggerCategory, `${computedProjectExtents.outliers.length} outliers detected within projectExtents`);
+      }
+    }
   }
 }

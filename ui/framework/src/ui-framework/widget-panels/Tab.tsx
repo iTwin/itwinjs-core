@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import "./Tab.scss"
+import "./Tab.scss";
 import * as React from "react";
 import { WidgetTab } from "@bentley/ui-ninezone";
 import { useWidgetDef } from "./Content";

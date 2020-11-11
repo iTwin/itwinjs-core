@@ -10,8 +10,8 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, RpcManager,
-  SnapshotIModelRpcInterface,
+  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition,
+  RpcManager, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -85,12 +85,21 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 }
 
 export const getRpcInterfaces = (appType: "native" | "browser"): RpcInterfaceDefinition[] => {
-  const rpcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
+  const rpcs: RpcInterfaceDefinition[] = [
+    DtaRpcInterface,
+    Editor3dRpcInterface,
+    IModelReadRpcInterface,
+    IModelTileRpcInterface,
+    IModelWriteRpcInterface,
+    SnapshotIModelRpcInterface,
+    StandaloneIModelRpcInterface,
+  ];
+
   if ("native" === appType)
     rpcs.push(NativeAppRpcInterface);
 
   return rpcs;
-}
+};
 
 const setupStandaloneConfiguration = () => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
@@ -112,6 +121,9 @@ const setupStandaloneConfiguration = () => {
 
   if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
     configuration.signInForStandalone = true;
+
+  if (undefined !== process.env.SVT_READ_WRITE)
+    configuration.openReadWrite = true;
 
   if (undefined !== process.env.SVT_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
@@ -212,7 +224,7 @@ const setupStandaloneConfiguration = () => {
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
 
   return configuration;
-}
+};
 
 export const initializeDtaBackend = async () => {
   const dtaConfig = setupStandaloneConfiguration();
@@ -250,4 +262,4 @@ export const initializeDtaBackend = async () => {
 
   if (dtaConfig.useFakeCloudStorageTileCache)
     IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
-}
+};

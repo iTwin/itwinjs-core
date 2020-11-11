@@ -75,7 +75,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
         }
       });
     }
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
