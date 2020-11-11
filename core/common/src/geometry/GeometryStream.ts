@@ -358,7 +358,7 @@ export class GeometryStreamBuilder {
     const localBrep: BRepEntity.DataProps = {
       data: brep.data,
       type: brep.type,
-      transform: localTrans.isIdentity ? undefined : localTrans,
+      transform: localTrans.isIdentity ? undefined : localTrans.toJSON(),
       faceSymbology: brep.faceSymbology,
     };
     this.geometryStream.push({ brep: localBrep });
@@ -675,7 +675,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
       } else if (entry.brep) {
         if (this.entry.localToWorld !== undefined) {
           const entityTrans = Transform.fromJSON(entry.brep.transform);
-          entry.brep.transform = entityTrans.multiplyTransformTransform(this.entry.localToWorld);
+          entry.brep.transform = entityTrans.multiplyTransformTransform(this.entry.localToWorld).toJSON();
         }
 
         this.entry.setBRep(entry.brep);

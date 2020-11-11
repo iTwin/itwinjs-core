@@ -289,7 +289,7 @@ class ElementTile extends Tile {
   }
 }
 
-function * makeIdSequence() {
+function* makeIdSequence() {
   let current = 0;
   while (true) {
     if (current >= Number.MAX_SAFE_INTEGER)
@@ -346,7 +346,7 @@ class GraphicsTile extends Tile {
       elementId: this.parent.contentId,
       toleranceLog10: this.toleranceLog10,
       formatVersion: idProvider.majorFormatVersion,
-      location: this.tree.iModelTransform,
+      location: this.tree.iModelTransform.toJSON(),
       contentFlags: idProvider.contentFlags,
       omitEdges: !this.tree.hasEdges,
       clipToProjectExtents: true,

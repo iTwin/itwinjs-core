@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, Id64, Id64Array } from "@bentley/bentleyjs-core";
-import { Point3d, Transform, TransformProps } from "@bentley/geometry-core";
+import { Point3d, Transform } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import {
   BeButtonEvent, CoreTools, DynamicsContext, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, NotifyMessageDetails,
@@ -109,8 +109,8 @@ export class MoveElementTool extends PrimitiveToolEx {
   private async doMove(endPointView?: Point3d) {
     const endPoint = endPointView || this._endPoint!;
     const xlat = endPoint.minus(this._startPoint!);
-    const tprops: TransformProps = Transform.createTranslationXYZ(xlat.x, xlat.y, xlat.z);
-    return this.editorConnection.applyTransform(tprops);
+    const tprops = Transform.createTranslationXYZ(xlat.x, xlat.y, xlat.z);
+    return this.editorConnection.applyTransform(tprops.toJSON());
   }
 
   public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
