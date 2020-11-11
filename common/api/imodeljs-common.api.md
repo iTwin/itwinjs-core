@@ -717,6 +717,10 @@ export interface ChangedElements {
     // (undocumented)
     opcodes: number[];
     // (undocumented)
+    parentClassIds?: Id64String[];
+    // (undocumented)
+    parentIds?: Id64String[];
+    // (undocumented)
     properties?: Id64String[][];
     // (undocumented)
     type: number[];
@@ -1456,8 +1460,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1048576,
-    Major = 16,
+    Combined = 1114112,
+    Major = 17,
     Minor = 0
 }
 
