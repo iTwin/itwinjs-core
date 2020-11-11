@@ -78,6 +78,7 @@ export * from "./ui-core/inputs/LabeledInput";
 export * from "./ui-core/inputs/LabeledTextarea";
 export * from "./ui-core/inputs/numericinput/NumericInput";
 export * from "./ui-core/inputs/numericinput/ReactNumericInput";
+export * from "./ui-core/inputs/numericinput/NumberInput";
 export * from "./ui-core/inputs/Textarea";
 
 export * from "./ui-core/listbox/Listbox";
