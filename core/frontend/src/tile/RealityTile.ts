@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Transform } from "@bentley/geometry-core";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
@@ -24,6 +24,7 @@ export interface RealityTileParams extends TileParams {
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
+const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
  * @internal
@@ -252,5 +253,12 @@ export class RealityTile extends Tile {
           return true;
 
     return this._childrenLoadStatus === TileTreeLoadStatus.NotFound;
+  }
+  public getSizeProjectionCorners(): Point3d[] | undefined {
+    if (!this.tree.isContentUnbounded)
+      return undefined;           // For a non-global tree use the standard size algorithm.
+
+    // For global tiles (as in OSM buildings) return the range corners - this allows an algorithm that uses the area of the projected corners to attenuate horizon tiles.
+    return this.range.corners(scratchCorners);
   }
 }

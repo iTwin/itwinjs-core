@@ -347,10 +347,13 @@ export class RealityModelTileTree extends RealityTileTree {
 
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
-      if (worldContentRange.diagonal()!.magnitude() < Constant.earthRadiusWGS84.equator)
-        this.iModel.expandDisplayedExtents(worldContentRange);
+      this.iModel.expandDisplayedExtents(worldContentRange);
     }
   }
+  public get isContentUnbounded() {
+    return this.rootTile.contentRange.diagonal!().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
+  }
+
 }
 
 /** @internal */

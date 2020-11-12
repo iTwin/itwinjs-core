@@ -8,11 +8,11 @@
 
 import { Map4d, Matrix4d, Point3d, Point4d, Range1d } from "@bentley/geometry-core";
 import { FrustumPlanes } from "@bentley/imodeljs-common";
-import { MapTile, Tile, TileDrawArgs } from "./internal";
+import { MapTile, RealityTile, Tile, TileDrawArgs } from "./internal";
 
 const scratchXRange = Range1d.createNull();
 const scratchYRange = Range1d.createNull();
-const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
+const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 
 /** @internal */
 export class RealityTileDrawArgs extends TileDrawArgs {
@@ -31,15 +31,14 @@ export class RealityTileDrawArgs extends TileDrawArgs {
   }
 
   public getPixelSize(tile: Tile): number {
-    if (tile instanceof MapTile) {
-      /* For background maps which contain only rectangles with textures, use the projected screen rectangle rather than sphere to calculate pixel size.  */
-      const rangeCorners = tile.getRangeCorners(scratchCorners);
+    const sizeProjectionCorners = (tile instanceof RealityTile) ? tile.getSizeProjectionCorners() : undefined;
+    if (sizeProjectionCorners) {
+      /* For maps or global reality models we use the projected screen rectangle rather than sphere to calculate pixel size to avoid excessive tiles at horizon.  */
       scratchXRange.setNull();
       scratchYRange.setNull();
 
       let behindEye = false;
-      for (let i = 0; i < 4; i++) {  // Look at only 4 of 8 corners -- before height adjustment terrain tiles may have exaggerated heights that will cause excessive loading.
-        const corner = rangeCorners[i];
+      for (const corner of sizeProjectionCorners) {
         const viewCorner = this._tileToView.multiplyPoint3d(corner, 1, this._scratchViewCorner);
         if (viewCorner.w < 0.0) {
           behindEye = true;
