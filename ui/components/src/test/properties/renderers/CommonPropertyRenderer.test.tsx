@@ -11,29 +11,29 @@ import { CommonPropertyRenderer } from "../../../ui-components/properties/render
 
 describe("CommonPropertyRenderer", () => {
   describe("createNewDisplayValue", () => {
-    it("should create a value which is highlighted if highlighProps are provided and searchText matches part of propertyRecord", ()=>{
+    it("should create a value which is highlighted if highlighProps are provided and searchText matches part of propertyRecord", () => {
       const propertyRecord = PropertyRecord.fromString("asdtestasd");
       const highlightProps = {
         searchText: "test",
       }
-      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, highlightProps);
-      const {container} = render(<div>{displayValue}</div>);
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
+      const { container } = render(<div>{displayValue}</div>);
       const element = container.querySelector("mark");
       expect(element?.textContent).to.equal("test");
     })
 
-    it("should create a value which is not highlighted if highlighProps are provided but searchText does not match any part of propertyRecord", ()=>{
+    it("should create a value which is not highlighted if highlighProps are provided but searchText does not match any part of propertyRecord", () => {
       const propertyRecord = PropertyRecord.fromString("asdtestasd");
       const highlightProps = {
         searchText: "gav",
       }
-      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, highlightProps);
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
       const { container } = render(<div>{displayValue}</div>);
       const element = container.querySelector("mark");
       expect(element?.textContent).to.be.undefined;
     })
 
-    it("should create a value which is not highlighted if highlighProps are not provided", ()=>{
+    it("should create a value which is not highlighted if highlighProps are not provided", () => {
       const propertyRecord = PropertyRecord.fromString("asdtestasd");
 
       const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined);
@@ -56,7 +56,7 @@ describe("CommonPropertyRenderer", () => {
           },
         },
       }
-      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, highlightProps);
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
       const { container } = render(<div>{displayValue}</div>);
       const element = container.querySelector("mark");
       expect(element?.textContent).to.equal("test");
@@ -77,7 +77,7 @@ describe("CommonPropertyRenderer", () => {
           },
         },
       }
-      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, highlightProps);
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
       const { container } = render(<div>{displayValue}</div>);
       const element = container.querySelector("mark");
       expect(element?.textContent).to.equal("test");
@@ -98,7 +98,7 @@ describe("CommonPropertyRenderer", () => {
           },
         },
       }
-      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, highlightProps);
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
       const { container } = render(<div>{displayValue}</div>);
       const element = container.querySelector("mark");
       expect(element?.textContent).to.equal("test");

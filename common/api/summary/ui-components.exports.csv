@@ -163,6 +163,7 @@ beta;FilterCompositionLogicalOperator
 beta;FilterDescriptor
 beta;FilterDescriptorCollection 
 beta;class FilterDescriptorCollectionBase
+alpha;FilteredPropertyData 
 public;FilteringInput 
 public;FilteringInputProps 
 alpha;FilteringPropertyDataProvider 

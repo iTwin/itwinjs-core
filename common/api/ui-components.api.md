@@ -1810,6 +1810,14 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
     remove(item: TDescriptor): boolean;
 }
 
+// @alpha
+export interface FilteredPropertyData extends PropertyData {
+    // (undocumented)
+    getMatchByIndex?: (index: number) => PropertyRecordMatchInfo | undefined;
+    // (undocumented)
+    matchesCount?: number;
+}
+
 // @public
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
     constructor(props: FilteringInputProps);

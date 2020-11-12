@@ -12,7 +12,6 @@ import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory"
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider";
 import { IPropertyDataFilterer } from "./filterers/PropertyDataFiltererBase";
 
-/** @internal */
 interface FilteredRecords {
   filteredRecords: PropertyRecord[];
   shouldExpandNodeParents: boolean;
@@ -21,8 +20,11 @@ interface FilteredRecords {
   filteredResultMatches: { id: string, matchesCount: { label?: number, value?: number } }[];
 }
 
-/** @beta */
-interface FilteredPropertyData extends PropertyData {
+/**
+ *  Data returned by [[FilteringPropertyDataProvider]]
+ * @alpha
+ */
+export interface FilteredPropertyData extends PropertyData {
   /*
   * Shows how many matches were found when filtering data.
   * Undefined when filterer is not active
