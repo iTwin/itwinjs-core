@@ -6,7 +6,7 @@ The quickest way to get access to a cloud hosted iModel is by creating an iModel
 - Give your test iModel a name
 - Select a dataset from the dropdown.
   - Add the email addresses of anyone else you would like to grant access to the iModel
-  - Any other users will also have to have a Bentley account.
+  - Any other users will also have to have a Bentley account
 - Click Submit
 
 ### Stadium
