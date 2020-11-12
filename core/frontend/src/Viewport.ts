@@ -1318,9 +1318,11 @@ export abstract class Viewport implements IDisposable {
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
    */
   public setOSMBuildingDisplay(options: { onOff?: boolean, appearanceOverrides?: FeatureAppearance }) {
+    const originalOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
     if (this.displayStyle.setOSMBuildingDisplay(options)) {
+      const newOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
       this._changeFlags.setDisplayStyle();
-      if (options.onOff !== undefined)
+      if (newOn !== originalOn)
         this.synchWithView(false);      // May change frustum depth...
       if (options.appearanceOverrides)
         this.invalidateRenderPlan();
