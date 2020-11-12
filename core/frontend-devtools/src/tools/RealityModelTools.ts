@@ -248,19 +248,25 @@ export class AttachCesiumAssetTool extends Tool {
 export class ToggleOSMBuildingDisplay extends Tool {
   public static toolId = "SetBuildingDisplay";
   public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get maxArgs() { return 2; }
 
-  public run(onOff?: boolean): boolean {
+  public run(onOff?: boolean, transparency?: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
-    vp.setOSMBuildingDisplay({ onOff });
+    if (onOff === undefined)
+      onOff = vp.displayStyle.getOSMBuildingDisplayIndex() < 0;    // Toggle current state.
+
+    const appearanceOverrides = (transparency !== undefined && transparency > 0 && transparency < 1) ? FeatureAppearance.fromJSON({ transparency }) : undefined;
+
+    vp.setOSMBuildingDisplay({ onOff, appearanceOverrides });
     return true;
   }
 
   public parseAndRun(...args: string[]): boolean {
     const toggle = parseToggle(args[0]);
-    return typeof toggle === "string" ? false : this.run(toggle);
+    const transparency = args.length > 0 ? parseFloat(args[1]) : undefined;
+    return typeof toggle === "string" ? false : this.run(toggle, transparency);
   }
 }

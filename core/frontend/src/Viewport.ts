@@ -1317,9 +1317,14 @@ export abstract class Viewport implements IDisposable {
   /** Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
    */
-  public setOSMBuildingDisplay(options: { onOff?: boolean }) {
-    if (this.displayStyle.setOSMBuildingDisplay(options))
-      this.synchWithView(false);      // May cahnge frustum depth...
+  public setOSMBuildingDisplay(options: { onOff?: boolean, appearanceOverrides?: FeatureAppearance }) {
+    if (this.displayStyle.setOSMBuildingDisplay(options)) {
+      this._changeFlags.setDisplayStyle();
+      if (options.onOff !== undefined)
+        this.synchWithView(false);      // May change frustum depth...
+      if (options.appearanceOverrides)
+        this.invalidateRenderPlan();
+    }
   }
 
   /** Some changes may or may not require us to invalidate the scene.

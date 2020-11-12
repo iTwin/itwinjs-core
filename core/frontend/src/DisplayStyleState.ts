@@ -221,24 +221,23 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * Set the display of the OpenStreetMap worldwide building layer in this display style by attaching or detaching the reality model displaying the buildings.
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
    */
-  public setOSMBuildingDisplay(options: { onOff?: boolean }): boolean {
+  public setOSMBuildingDisplay(options: { onOff?: boolean, appearanceOverrides?: FeatureAppearance }): boolean {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
       return false;
 
-    const doToggle = options.onOff === undefined;
-
-    if (!doToggle && options.onOff !== undefined)
-      return false;       // Nothing to do (unless more options are added)
-
-
-    const currentIndex = this.getOSMBuildingDisplayIndex();
-    if (options.onOff || (currentIndex < 0 && doToggle)) {
+    let currentIndex = this.getOSMBuildingDisplayIndex();
+    if (options.onOff === false && currentIndex >= 0) {
+      this.detachRealityModelByIndex(currentIndex);
+      return true;
+    }
+    if (options.onOff === true && currentIndex < 0) {
       const tilesetUrl = getCesiumOSMBuildingsUrl();
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
+      currentIndex = this._contextRealityModels.length;
       this.attachRealityModel({ tilesetUrl, name, isGlobal: true });
     }
-    else
-      this.detachRealityModelByIndex(currentIndex)
+    if (options.appearanceOverrides)
+      this.overrideRealityModelAppearance(currentIndex, options.appearanceOverrides);
 
     return true;
   }
@@ -647,8 +646,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
+  public isBackgroundMapVisible(): boolean {
+    return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
+  }
+
+  /** @internal */
   public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
-    if ((!this.viewFlags.backgroundMap && !this.anyMapLayersVisible(false)) || undefined === this.iModel.ecefLocation)
+    if (undefined === this.iModel.ecefLocation)
       return undefined;
 
     let bimElevationBias = this.backgroundMapSettings.groundBias;
@@ -667,7 +671,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public getGlobalGeometryAndHeightRange(): { geometry: BackgroundMapGeometry, heightRange: Range1d } | undefined {
-    let geometry = this.getBackgroundMapGeometry();
+    let geometry = this.isBackgroundMapVisible() ? this.getBackgroundMapGeometry() : undefined;
     let terrainRange = ApproximateTerrainHeights.instance.globalHeightRange
     let heightRange = this.displayTerrain ? terrainRange : Range1d.createXX(-1, 1);
     if (this.globeMode === GlobeMode.Ellipsoid && this._contextRealityModels.find((model) => model.isGlobal)) {
