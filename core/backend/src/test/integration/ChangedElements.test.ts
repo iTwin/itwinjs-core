@@ -149,9 +149,9 @@ describe("ChangedElements (#integration)", () => {
       && changeData!.changedElements.elements.length === changeData!.changedElements.opcodes.length
       && changeData!.changedElements.elements.length === changeData!.changedElements.type.length
       && changeData?.changedElements.elements.length === changeData!.changedElements.properties!.length
-      && changeData?.changedElements.elements.length === changeData!.changedElements.modelIds!.length
-      && changeData?.changedElements.elements.length === changeData!.changedElements.parentIds!.length
-      && changeData?.changedElements.elements.length === changeData!.changedElements.parentClassIds!.length
+      && changeData?.changedElements.elements.length === changeData.changedElements.modelIds!.length
+      && changeData?.changedElements.elements.length === changeData.changedElements.parentIds!.length
+      && changeData?.changedElements.elements.length === changeData.changedElements.parentClassIds!.length
     );
     assert.isTrue(changeData!.changedModels.modelIds.length === changeData!.changedModels.bboxes.length);
   });

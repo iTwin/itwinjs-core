@@ -6,7 +6,6 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Matrix3d } from "./Matrix3d";
 
 /**
  * interface for class with `x` and `y` as number properties.
@@ -105,11 +104,11 @@ export type XYProps = {
  * * `Matrix3d` object
  * @public
  */
-export type Matrix3dProps = number[][] | Matrix3d | number[];
+export type Matrix3dProps = number[][] | number[];
 /**
  * interface for variant json (one of)
  * * array of number arrays, with each low level array containing 4 numbers of a transform row (qx, qy, qz, ax)
- * * flat array of 12 numbers, in row-major order for the 3 rows fo 4 values
+ * * flat array of 12 numbers, in row-major order for the 3 rows of 4 values
  * * `Transform` object
  * @public
  */

@@ -119,6 +119,7 @@ import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
+import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
@@ -148,6 +149,7 @@ import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
 import { Readable } from 'stream';
 import { RelatedElement } from '@bentley/imodeljs-common';
+import { RelationshipProps } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
@@ -162,6 +164,7 @@ import { SheetTemplateProps } from '@bentley/imodeljs-common';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SnapshotOpenOptions } from '@bentley/imodeljs-common';
+import { SourceAndTarget } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
@@ -1841,6 +1844,11 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
+// @public
+export type EntityClassType<T> = Function & {
+    prototype: T;
+};
+
 // @internal
 export class EventSink implements IDisposable {
     constructor(id: string);
@@ -2517,9 +2525,9 @@ export namespace IModelDb {
         deleteElement(ids: Id64Arg): void;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
-        getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
+        getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T;
         // @internal
-        getElementJson<T extends ElementProps>(elementIdArg: string): T;
+        getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T;
         getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         getRootSubject(): Subject;
         hasSubModel(elementId: Id64String): boolean;
@@ -2531,7 +2539,7 @@ export namespace IModelDb {
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal
         queryLastModifiedTime(elementId: Id64String): string;
-        tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
+        tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined;
         tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
         updateElement(elProps: ElementProps): void;
@@ -2541,17 +2549,17 @@ export namespace IModelDb {
         constructor(_iModel: IModelDb);
         createModel<T extends Model>(modelProps: ModelProps): T;
         deleteModel(ids: Id64Arg): void;
-        getModel<T extends Model>(modelId: Id64String): T;
+        getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T;
         // @internal
-        getModelJson(modelIdArg: string): string;
-        getModelProps<T extends ModelProps>(modelId: Id64String): T;
-        getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T;
+        getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T;
+        getModelProps<T extends ModelProps>(id: Id64String): T;
+        getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T;
         insertModel(props: ModelProps): Id64String;
         // @internal
         queryLastModifiedTime(modelId: Id64String): string;
-        tryGetModel<T extends Model>(modelId: Id64String): T | undefined;
-        tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined;
-        tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined;
+        tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
+        tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
+        tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
         updateModel(props: UpdateModelOptions): void;
     }
     // @internal
@@ -3416,9 +3424,7 @@ export class Relationship extends Entity implements RelationshipProps {
     update(): void;
 }
 
-// @public
-export interface RelationshipProps extends EntityProps, SourceAndTarget {
-}
+export { RelationshipProps }
 
 // @public
 export class Relationships {
@@ -3649,13 +3655,7 @@ export class SnapshotDb extends IModelDb {
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }
 
-// @public
-export interface SourceAndTarget {
-    // (undocumented)
-    sourceId: Id64String;
-    // (undocumented)
-    targetId: Id64String;
-}
+export { SourceAndTarget }
 
 // @public
 export class SpatialCategory extends Category {
@@ -3933,15 +3933,17 @@ export class TextAnnotation3d extends GraphicalElement3d {
 }
 
 // @public
-export class Texture extends DefinitionElement implements TextureProps {
+export class Texture extends DefinitionElement {
     // @internal
-    constructor(props: TextureProps, iModel: IModelDb);
+    constructor(props: TextureProps & {
+        data: Uint8Array | string;
+    }, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: string, width: number, height: number, description: string, flags: TextureFlags): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     // (undocumented)
-    data: string;
+    data: Uint8Array;
     // (undocumented)
     description?: string;
     // (undocumented)
