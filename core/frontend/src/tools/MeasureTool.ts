@@ -757,7 +757,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
     const initialValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, MeasureAreaByPointsTool._orientationName);

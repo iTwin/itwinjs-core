@@ -43,8 +43,8 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       isMountedRef.current = true;
       return () => {
         isMountedRef.current = false;
-      }
-    }, [])
+      };
+    }, []);
 
     // See if new initialValue props have changed since component mounted
     React.useEffect(() => {
@@ -55,11 +55,11 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
         setFormattedValue(lastFormattedValueRef.current);
         setHasBadInput(false);
       }
-    }, [formatValue, initialValue])
+    }, [formatValue, initialValue]);
 
     const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
       setFormattedValue(event.currentTarget.value);
-    }, [])
+    }, []);
 
     const updateValueFromString = React.useCallback((strVal: string) => {
       if (lastFormattedValueRef.current === strVal)
@@ -70,16 +70,17 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       if (!parseResults.parseError) {
         // istanbul ignore else
         if (undefined !== parseResults.value && typeof parseResults.value === "number") {
+          const currentValue = parseResults.value;
           // istanbul ignore else
-          if (currentValueRef.current !== parseResults.value) {
-            currentValueRef.current = parseResults.value;
-            lastFormattedValueRef.current = formatValue(currentValueRef.current);
+          if (currentValue !== currentValueRef.current) {
+            currentValueRef.current = currentValue;
             onChange && onChange(currentValueRef.current);
-            // istanbul ignore else
-            if (isMountedRef.current) {
-              setFormattedValue(lastFormattedValueRef.current);
-              setHasBadInput(false);
-            }
+          }
+          // istanbul ignore else
+          if (isMountedRef.current) {
+            lastFormattedValueRef.current = formatValue(currentValue);
+            setFormattedValue(lastFormattedValueRef.current);
+            setHasBadInput(false);
           }
         }
       } else {
@@ -107,6 +108,6 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
     const classNames = classnames(className, "components-parsed-input", hasBadInput && "components-parsed-input-has-error");
 
     return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={handleKeyDown} onBlur={handleBlur}
-      onChange={handleChange} value={formattedValue} disabled={readonly} />
+      onChange={handleChange} value={formattedValue} disabled={readonly} />;
   }
 );

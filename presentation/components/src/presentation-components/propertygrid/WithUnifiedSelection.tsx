@@ -140,7 +140,7 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private onSelectionChanged = (evt: SelectionChangeEventArgs): void => {
       this.updateDataProviderSelection(evt.level);
-    }
+    };
 
     public render() {
       const {

@@ -65,9 +65,9 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
       if (script)
         this._viewport.timePoint = script.computeDuration().fractionToPoint(animationFraction);
     }
-  }
+  };
 
   public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
     this.updateSettings(settings);
-  }
+  };
 }

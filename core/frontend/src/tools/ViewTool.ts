@@ -2168,7 +2168,7 @@ class ViewLookAndMove extends ViewNavigate {
               // Keep section of last contour to account for loosing sight of what is underfoot while moving forward...
               const partialCurve = this._lastContour.clonePartialCurve(fractLo, fractHi);
               if (undefined !== partialCurve && partialCurve instanceof LineString3d)
-                contourLine.addPoints(partialCurve.packedPoints)
+                contourLine.addPoints(partialCurve.packedPoints);
             } else {
               // Moved too far from last contour...
               detectStepUp = true;
@@ -2748,7 +2748,7 @@ class ViewLookAndMove extends ViewNavigate {
           ctx.lineTo(start + mid, -mid);
           ctx.stroke();
           ctx.rotate(-angle);
-        }
+        };
 
         ctx.strokeStyle = "black";
         ctx.lineWidth = 5;
@@ -2796,7 +2796,7 @@ class ViewLookAndMove extends ViewNavigate {
           ctx.lineTo(0, midY);
           ctx.lineTo(-midX, end);
           ctx.stroke();
-        }
+        };
 
         ctx.strokeStyle = "black";
         ctx.lineWidth = 3;
@@ -4169,7 +4169,7 @@ export class SetupCameraTool extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _useTargetHeightValue: DialogItemValue = { value: false };
   public get useTargetHeight(): boolean { return this._useTargetHeightValue.value as boolean; }
@@ -4188,7 +4188,7 @@ export class SetupCameraTool extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _cameraHeightValue: DialogItemValue = { value: 0.0 };
   public get cameraHeight(): number { return this._cameraHeightValue.value as number; }
@@ -4199,7 +4199,7 @@ export class SetupCameraTool extends PrimitiveTool {
     if (!SetupCameraTool._cameraHeightDescription)
       SetupCameraTool._cameraHeightDescription = new LengthDescription(SetupCameraTool._cameraHeightName, ViewTool.translate("SetupCamera.Labels.CameraHeight"));
     return SetupCameraTool._cameraHeightDescription;
-  }
+  };
 
   private _targetHeightValue: DialogItemValue = { value: 0.0 };
   public get targetHeight(): number { return this._targetHeightValue.value as number; }
@@ -4210,7 +4210,7 @@ export class SetupCameraTool extends PrimitiveTool {
     if (!SetupCameraTool._targetHeightDescription)
       SetupCameraTool._targetHeightDescription = new LengthDescription(SetupCameraTool._targetHeightName, ViewTool.translate("SetupCamera.Labels.TargetHeight"));
     return SetupCameraTool._targetHeightDescription;
-  }
+  };
 
   private syncCameraHeightState(): void {
     const cameraHeightValue = { value: this.cameraHeight, displayValue: SetupCameraTool._cameraHeightDescription!.format(this.cameraHeight) };

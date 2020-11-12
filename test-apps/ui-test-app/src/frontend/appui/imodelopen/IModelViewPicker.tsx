@@ -36,7 +36,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
           this.props.onClick();
       },
     );
-  }
+  };
 
   public render() {
     let name: string | undefined = this.props.view.code.value;
@@ -91,7 +91,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
   private _onClose = () => {
     if (this.props.onClose)
       this.props.onClose();
-  }
+  };
 
   private _onViewClick = (view: ViewDefinitionProps) => {
     const views = [...this.state.selectedViews];
@@ -101,12 +101,12 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
     else
       views.splice(index, 1); // unselected, remove the view
     this.setState({ selectedViews: views });
-  }
+  };
 
   private _onOKPressed = () => {
     if (this.props.onViewsSelected && this.state.views)
       this.props.onViewsSelected(this.state.selectedViews);
-  }
+  };
 
   private async startRetrieveViews() {
     if (this.props.iModelInfo) {

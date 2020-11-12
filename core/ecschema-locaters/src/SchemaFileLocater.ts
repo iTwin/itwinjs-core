@@ -232,5 +232,5 @@ export abstract class SchemaFileLocater {
    */
   public compareSchemaKeyByVersion = (lhs: FileSchemaKey, rhs: FileSchemaKey): number => {
     return lhs.compareByVersion(rhs);
-  }
+  };
 }

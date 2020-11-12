@@ -31,7 +31,7 @@ export class NonPrimitivePropertyLabelRenderer extends React.PureComponent<NonPr
       this.props.onCollapse();
     else
       this.props.onExpand();
-  }
+  };
 
   public render() {
     return (
