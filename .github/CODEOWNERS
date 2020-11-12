@@ -26,7 +26,7 @@ rush.json @calebmshafer @scsewall
 /common/api/analytical-backend.api.md               @scsewall
 /common/api/backend-application-insights-client.api.md @calebmshafer @ramanujam-raman
 /common/api/backend-itwin-client.api.md             @calebmshafer @ramanujam-raman
-/common/api/bentleyjs-core.api.md                   @imodeljs/admins @grigasp
+/common/api/bentleyjs-core.api.md                   @imodeljs/admins
 /common/api/config-loader.api.md                    @calebmshafer @wgoehrig
 /common/api/context-registry-client.api.md          @calebmshafer @ramanujam-raman
 /common/api/ecschema-locaters.api.md                @calebmshafer @ColinKerr @wgoehrig
@@ -65,7 +65,7 @@ rush.json @calebmshafer @scsewall
 /common/api/rbac-client.api.md                      @calebmshafer @ramanujam-raman
 /common/api/reality-data-client.api.md              @calebmshafer @ramanujam-raman
 /common/api/telemetry-client.api.md                 @calebmshafer @ramanujam-raman
-/common/api/ui-*.api.md                             @imodeljs/ui @grigasp
+/common/api/ui-*.api.md                             @imodeljs/ui
 /common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
 /common/api/webgl-compatibility.api.md              @pmconne
 
@@ -128,7 +128,7 @@ rush.json @calebmshafer @scsewall
 /test-apps/ninezone-test-app                @imodeljs/ui
 /test-apps/presentation-test-app            @imodeljs/presentation
 /test-apps/synchro-schedule-importer        @RBBentley
-/test-apps/ui-test-app                      @imodeljs/ui @grigasp
+/test-apps/ui-test-app                      @imodeljs/ui
 /test-apps/ui-test-extension                @imodeljs/ui
 
 /tools/backend-webpack @calebmshafer @wgoehrig
@@ -144,7 +144,7 @@ rush.json @calebmshafer @scsewall
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
-/ui @imodeljs/ui @grigasp
-/ui/components/src/ui-components/properties   @bsteinbk @DanEastBentley @imodeljs/presentation
-/ui/components/src/ui-components/propertygrid @bsteinbk @DanEastBentley @imodeljs/presentation
-/ui/components/src/ui-components/tree         @bsteinbk @DanEastBentley @imodeljs/presentation
+/ui @imodeljs/ui
+/ui/components/src/ui-components/properties   @imodeljs/ui @imodeljs/presentation
+/ui/components/src/ui-components/propertygrid @imodeljs/ui @imodeljs/presentation
+/ui/components/src/ui-components/tree         @imodeljs/ui @imodeljs/presentation
