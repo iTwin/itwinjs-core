@@ -243,7 +243,7 @@ function FavoriteFieldActionButton(props: { imodel: IModelConnection, field: Fie
       await Presentation.favoriteProperties.add(field, imodel, FAVORITES_SCOPE);
   }, [field, imodel]);
   return (
-    <div className="favorite-action-button" onClick={toggleFavoriteProperty}>
+    <div className="favorite-action-button" onClick={toggleFavoriteProperty} onKeyDown={toggleFavoriteProperty} role="button" tabIndex={0}>
       {Presentation.favoriteProperties.has(field, imodel, FAVORITES_SCOPE) ?
         <div style={{ width: "20px", height: "20px", background: "orange" }} /> :
         <div style={{ width: "20px", height: "20px", background: "blue" }} />}
