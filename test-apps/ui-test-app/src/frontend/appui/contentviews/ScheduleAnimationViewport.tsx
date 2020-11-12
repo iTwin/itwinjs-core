@@ -122,7 +122,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
 
     if (this.state.dataProvider && this.state.dataProvider.onAnimationFractionChanged)
       this.state.dataProvider.onAnimationFractionChanged(animationFraction);
-  }
+  };
 
   private _setTimelineDataProvider(viewState: ViewState): boolean {
     const dataProvider = this._getTimelineDataProvider(viewState);

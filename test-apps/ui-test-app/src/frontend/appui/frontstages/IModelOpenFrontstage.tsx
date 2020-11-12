@@ -23,7 +23,7 @@ class IModelOpenControl extends ContentControl {
   // called when an imodel has been selected on the IModelOpen
   private _onOpenIModel = async (iModelInfo: IModelInfo) => {
     await SampleAppIModelApp.showIModelIndex(iModelInfo.projectInfo.wsgId, iModelInfo.wsgId);
-  }
+  };
 }
 
 export class IModelOpenFrontstage extends FrontstageProvider {

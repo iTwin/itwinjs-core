@@ -18,7 +18,7 @@ function isFocusable(element: HTMLElement): boolean {
     return false;
 
   // istanbul ignore next
-  if (element.classList && element.classList.contains ("core-focus-trap-ignore-initial"))
+  if (element.classList && element.classList.contains("core-focus-trap-ignore-initial"))
     return false;
 
   if (element.tabIndex > 0 || (element.tabIndex === 0 && element.getAttribute("tabIndex") !== null)) {
@@ -148,6 +148,7 @@ export function FocusTrap(props: FocusTrapProps) {
   const initialFocusElement = React.useRef<Element | null>(null);
   const focusContainer = React.useRef<HTMLDivElement | null>(null);
   const isInitialMount = React.useRef(true);
+  const timeoutRef = React.useRef<number | undefined>();
 
   // Run on initial mount and when dependencies change. which could happen often.
   React.useEffect(() => {
@@ -162,7 +163,7 @@ export function FocusTrap(props: FocusTrapProps) {
         initialFocusElement.current = getInitialFocusElement(focusContainer.current, props.initialFocusElement);
         if (initialFocusElement.current) {
           // delay setting focus immediately because in some browsers other focus events happen when popup is initially opened.
-          setTimeout(() => {
+          timeoutRef.current = window.setTimeout(() => {
             attemptFocus((initialFocusElement.current as HTMLElement), true);
           }, 60);
         }
@@ -173,6 +174,7 @@ export function FocusTrap(props: FocusTrapProps) {
   // Return function to run only when FocusTrap is unmounted to restore focus
   React.useEffect(() => {
     return () => {
+      window.clearTimeout(timeoutRef.current);
       if (restoreFocusElement.current)
         (restoreFocusElement.current as HTMLElement).focus({ preventScroll: true });
     };

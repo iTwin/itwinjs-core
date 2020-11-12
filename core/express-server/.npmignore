@@ -4,4 +4,5 @@
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
+test
 !*.md

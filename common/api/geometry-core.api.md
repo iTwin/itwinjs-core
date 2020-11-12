@@ -4403,7 +4403,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     intersect(other: Range3d, result?: Range3d): Range3d;
     intersectsRange(other: Range3d): boolean;
     intersectsRangeXY(other: Range3d): boolean;
-    isAlmostEqual(other: Range3d): boolean;
+    isAlmostEqual(other: Range3d, tol?: number): boolean;
     get isAlmostZeroX(): boolean;
     get isAlmostZeroY(): boolean;
     get isAlmostZeroZ(): boolean;

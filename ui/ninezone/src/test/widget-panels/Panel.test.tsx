@@ -220,7 +220,7 @@ describe("WidgetPanel", () => {
     nineZone = produce(nineZone, (draft) => {
       draft.panels.left.size = 200;
       draft.panels.left.collapsed = true;
-    })
+    });
     const { container, rerender } = render(
       <WidgetPanel
         panel={nineZone.panels.left}
@@ -251,7 +251,7 @@ describe("WidgetPanel", () => {
     nineZone = produce(nineZone, (draft) => {
       draft.panels.left.size = 200;
       draft.panels.left.collapsed = true;
-    })
+    });
     const { container } = render(
       <WidgetPanel
         panel={nineZone.panels.left}

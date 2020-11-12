@@ -109,7 +109,7 @@ class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
       displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Source"),
       typename: "string",
     };
-  }
+  };
 
   private _sourceValue: DialogItemValue = { value: "unknown" };
 
@@ -237,7 +237,7 @@ export class ToolWithSettings extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
 
@@ -266,7 +266,7 @@ export class ToolWithSettings extends PrimitiveTool {
       typename: "boolean",
       editor: { name: "toggle" },
     };
-  }
+  };
 
   private _lockToggleDisabled = false;
   private _lockValue: DialogItemValue = { value: true };
@@ -299,7 +299,7 @@ export class ToolWithSettings extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _imageCheckboxDisabled = false;
 
@@ -321,7 +321,7 @@ export class ToolWithSettings extends PrimitiveTool {
       displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.City"),
       typename: "string",
     };
-  }
+  };
 
   private _cityValue: DialogItemValue = { value: "Exton" };
 
@@ -349,7 +349,7 @@ export class ToolWithSettings extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _stateValue: DialogItemValue = { value: "PA" };
 
@@ -369,7 +369,7 @@ export class ToolWithSettings extends PrimitiveTool {
       displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate"),
       typename: "string",
     };
-  }
+  };
 
   private _coordinateValue: DialogItemValue = { value: "0.0, 0.0, 0.0" };
 
@@ -403,7 +403,7 @@ export class ToolWithSettings extends PrimitiveTool {
       displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station"),
       typename: "string",
     };
-  }
+  };
 
   private formatStation(numberValue: number): string {
     if (this.stationFormatterSpec) {
@@ -437,7 +437,7 @@ export class ToolWithSettings extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _isUseLengthCheckboxDisabled = false;
   private _useLengthValue: DialogItemValue = { value: true };
@@ -521,7 +521,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   private _handleToolSettingsPopupCancel = () => {
     IModelApp.uiAdmin.closeToolSettingsPopup();
-  }
+  };
 
   /** A tool is responsible for providing tool assistance appropriate to the current tool state following significant events.
    * After onPostInstall to establish instructions for the initial tool state.

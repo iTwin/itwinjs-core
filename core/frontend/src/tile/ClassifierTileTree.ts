@@ -59,7 +59,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
       batchType: id.type,
     };
 
-    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, model.geometryGuid, options);
+    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
     return new IModelTileTree(params);
   }
 

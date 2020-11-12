@@ -14,12 +14,12 @@ import {
   StorageValue,
   TileTreeContentIds,
 } from "@bentley/imodeljs-common";
-import { EmitStrategy } from "@bentley/imodeljs-native";
+import { EmitStrategy, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ProgressCallback, ProgressInfo } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { EventSink } from "../EventSink";
-import { BriefcaseDb } from "../IModelDb";
+import { BriefcaseDb, IModelDb } from "../IModelDb";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { NativeAppStorage } from "../NativeAppStorage";
 import { cancelTileContentRequests } from "./IModelTileRpcImpl";
@@ -74,6 +74,11 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
 
   public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
+  }
+
+  public async cancelElementGraphicsRequests(rpcProps: IModelRpcProps, requestIds: string[]): Promise<void> {
+    const iModel = IModelDb.findByKey(rpcProps.key);
+    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
   }
 
   /**
@@ -296,5 +301,19 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
       redirectUrl: config.redirectUri,
       scope: config.scope,
     });
+  }
+
+  public async toggleInteractiveEditingSession(tokenProps: IModelRpcProps, startSession: boolean): Promise<boolean> {
+    const imodel = IModelDb.findByKey(tokenProps.key);
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
+    if (val.error)
+      throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
+
+    return val.result!;
+  }
+
+  public async isInteractiveEditingSupported(tokenProps: IModelRpcProps): Promise<boolean> {
+    const imodel = IModelDb.findByKey(tokenProps.key);
+    return imodel.nativeDb.isGeometricModelTrackingSupported();
   }
 }
