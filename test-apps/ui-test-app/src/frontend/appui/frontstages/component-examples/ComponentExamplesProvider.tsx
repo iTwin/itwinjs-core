@@ -10,7 +10,7 @@ import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumericInput, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
+  NewBadge, NumberInput, NumericInput, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
   ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
@@ -27,6 +27,27 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+
+function exoticStep(direction: string) {
+  if (direction === "up")
+    return .5;
+  return .1;
+}
+
+function parseDollar(stringValue: string) {
+  const noDollarSign = stringValue.replace(/^\$/, "");
+  let n = parseFloat(noDollarSign);
+  if (isNaN(n) || !isFinite(n))
+    n = 0;
+  return n;
+}
+
+function formatDollar(num: number | undefined | null, fallback: string) {
+  if (undefined === num || null === num)
+    return fallback;
+
+  return `$${num.toFixed(2)}`;
+}
 
 function fahrenheitToCelsius(f: number) {
   return (f - 32) * 5 / 9;
@@ -344,7 +365,13 @@ export class ComponentExamplesProvider {
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
         createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
-        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore - full - width" />),
+        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
+        createComponentExample("Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input .25 step w/snap", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input .25 step w/snap custom format and parser", "New Numeric Input component", <NumberInput value={10.5} format={formatDollar} parse={parseDollar} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/touch buttons", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={.5} snap showTouchButtons containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/snap  & custom step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={exoticStep} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/placeholder", "New Numeric Input component", <NumberInput placeholder="Enter Input" precision={2} step={0.25} containerClassName="uicore-full-width" />),
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
