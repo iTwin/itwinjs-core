@@ -214,3 +214,9 @@ To customize this setting, specify a value for the `mobileRealityTileMinToleranc
 ## Pickable isolines for thematic surfaces
 
 When using gradient mode [ThematicGradientMode.IsoLines]($common), thematically displayed surfaces will show pickable lines. Previously, trying to select an area in between the lines would count as selecting the underlying geometry. Now the empty space in between lines does not count.
+
+## Breaking API changes
+
+The union type [Matrix3dProps]($geometry-core) incorrectly included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure Javascript types. To fix code that was using `Matrix3d` where a `Matrix3dProps` is expected, use [Matrix3d.toJSON]($geometry-core) instead.
+
+* The type of [Texture.data]($frontend) has been corrected from `string` to `Uint8Array`.
