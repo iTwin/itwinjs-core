@@ -185,6 +185,7 @@ public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeF
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
+beta;HighlightedRecordProps
 beta;HighlightingEngine
 internal;HitBoxX
 internal;HitBoxY
@@ -344,6 +345,7 @@ public;PropertyGridProps
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
 public;PropertyPopupState
+beta;PropertyRecordMatchInfo
 public;PropertyRenderer 
 public;PropertyRendererProps 
 beta;PropertyUpdatedArgs

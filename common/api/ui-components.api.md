@@ -1364,6 +1364,7 @@ export class DirectionHelpers {
 
 // @alpha
 export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
+    constructor(filterText?: string);
     // (undocumented)
     get filterText(): string;
     set filterText(value: string);
@@ -1813,6 +1814,8 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
     constructor(props: FilteringInputProps);
     // @internal (undocumented)
+    componentDidUpdate(prevProps: FilteringInputProps, _prevState: FilteringInputState): void;
+    // @internal (undocumented)
     static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState): {
         context: InputContext;
     } | null;
@@ -1823,18 +1826,24 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 // @public
 export interface FilteringInputProps extends CommonProps {
     autoFocus?: boolean;
+    // @alpha
+    filteringComplete?: boolean;
     filteringInProgress: boolean;
     onFilterCancel: () => void;
     onFilterClear: () => void;
     onFilterStart: (searchText: string) => void;
+    // @beta
+    resetResultSelectOnPropsChange?: boolean;
     resultSelectorProps?: ResultSelectorProps;
 }
 
 // @alpha
-export class FilteringPropertyDataProvider implements IPropertyDataProvider {
+export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDisposable {
     constructor(_dataProvider: IPropertyDataProvider, _filterer: IPropertyDataFilterer);
     // (undocumented)
-    getData(): Promise<PropertyData>;
+    dispose(): void;
+    // (undocumented)
+    getData(): Promise<FilteredPropertyData>;
     // (undocumented)
     onDataChanged: PropertyDataChangeEvent;
 }
@@ -2010,6 +2019,14 @@ export interface HighlightableTreeNodeProps {
 export interface HighlightableTreeProps {
     // (undocumented)
     activeMatch?: ActiveMatchInfo;
+    // (undocumented)
+    searchText: string;
+}
+
+// @beta
+export interface HighlightedRecordProps {
+    // (undocumented)
+    activeMatch?: PropertyRecordMatchInfo;
     // (undocumented)
     searchText: string;
 }
@@ -2438,6 +2455,7 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
 
 // @alpha
 export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
+    constructor(filterText?: string);
     // (undocumented)
     get filterText(): string;
     set filterText(value: string);
@@ -3111,6 +3129,8 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
 
 // @public
 export interface PrimitiveRendererProps extends SharedRendererProps {
+    // @beta
+    highlightProps?: HighlightedRecordProps;
     indentation?: number;
     valueElement?: React.ReactNode;
     valueElementRenderer?: () => React.ReactNode;
@@ -3188,6 +3208,10 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
 
 // @alpha
 export interface PropertyDataFilterResult {
+    matchesCount?: {
+        label?: number;
+        value?: number;
+    };
     matchesFilter: boolean;
     shouldExpandNodeParents?: boolean;
     shouldForceIncludeDescendants?: boolean;
@@ -3348,8 +3372,10 @@ export class PropertyLabelRenderer extends React.PureComponent<PropertyLabelRend
 
 // @public
 export interface PropertyLabelRendererProps {
-    children: string;
+    children: string | JSX.Element;
     renderColon?: boolean;
+    // @beta
+    tooltip?: string;
 }
 
 // @public
@@ -3361,6 +3387,19 @@ export interface PropertyPopupState {
         top: number;
         left: number;
     };
+}
+
+// @beta
+export interface PropertyRecordMatchInfo {
+    // (undocumented)
+    matchCounts: {
+        label: number;
+        value: number;
+    };
+    // (undocumented)
+    matchIndex: number;
+    // (undocumented)
+    propertyName: string;
 }
 
 // @public
@@ -3381,6 +3420,8 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
 // @public
 export interface PropertyRendererProps extends SharedRendererProps {
+    // @beta
+    highlightProps?: HighlightedRecordProps;
     indentation?: number;
     // @beta
     isEditing?: boolean;
@@ -5400,6 +5441,7 @@ export interface VirtualizedPropertyGridContext {
         isResizeHandleBeingDragged?: boolean;
         onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
         columnInfo?: PropertyGridColumnInfo;
+        highlightedRecordProps?: HighlightedRecordProps;
     };
     // (undocumented)
     gridEventHandler: IPropertyGridEventHandler;
@@ -5430,6 +5472,8 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     // (undocumented)
     eventHandler: IPropertyGridEventHandler;
     // (undocumented)
+    highlightedRecordProps?: HighlightedRecordProps;
+    // (undocumented)
     model: IPropertyGridModel;
 }
 
@@ -5440,6 +5484,8 @@ export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedProper
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
     // (undocumented)
     dataProvider: IPropertyDataProvider;
+    // (undocumented)
+    highlightedRecordProps?: HighlightedRecordProps;
 }
 
 // @beta
