@@ -396,6 +396,19 @@ export class CurveLocationDetail {
       return defaultFraction;
     return a;
   }
+  /**
+   * Return the detail with smaller `a` value -- detailA returned if equal.
+   * @param detailA first candidate
+   * @param detailB second candidate
+   */
+  public static chooseSmallerA(detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined): CurveLocationDetail | undefined {
+    if (detailA) {
+      if (!detailB)
+        return detailA;
+      return detailA.a <= detailB.a ? detailA : detailB;
+    }
+    return detailB;
+  }
 }
 /** Enumeration of configurations for intersections and min/max distance-between-curve
  * @public

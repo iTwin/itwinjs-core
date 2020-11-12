@@ -61,7 +61,7 @@ export class TableNonPrimitiveValueRenderer extends React.PureComponent<TableNon
     const dialogState: PropertyDialogState = { content: this.props.dialogContents, title: this.props.dialogTitle };
 
     this.props.onDialogOpen(dialogState);
-  }
+  };
 
   // TODO: Enable, when table gets refactored
   // Disabled fancy tooltips, because table controls it's state.

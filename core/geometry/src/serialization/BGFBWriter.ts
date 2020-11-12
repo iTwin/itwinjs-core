@@ -30,6 +30,8 @@ import { TorusPipe } from "../solid/TorusPipe";
 import { Cone } from "../solid/Cone";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { BSplineSurface3d, BSplineSurface3dH, UVSelect } from "../bspline/BSplineSurface";
+import { PointString3d } from "../curve/PointString3d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 
 
 /**
@@ -137,7 +139,7 @@ export class BGFBWriter {
     const order = bcurve.order;
     const closed = false;   // typescript bcurves are not closed.  There is API to impose wrapping . . .
     const polesOffset = this.writeNumberArray(bcurve.copyXYZFloat64Array(false));
-    const weightsOffset = this.writeNumberArray(bcurve.copyWeightsFloat64Array())
+    const weightsOffset = this.writeNumberArray(bcurve.copyWeightsFloat64Array());
     const knotsOffset = this.writeNumberArray(bcurve.copyKnots(true));
     const headerOffset = BGFBAccessors.BsplineCurve.createBsplineCurve(this.builder,
       order, closed, polesOffset, weightsOffset, knotsOffset);
@@ -177,6 +179,17 @@ export class BGFBWriter {
     }
     return undefined;
   }
+  public writePointString3dAsFBVariantGeometry(pointString: PointString3d): number | undefined {
+    if (pointString instanceof PointString3d) {
+      const coordinates = extractNumberArray(pointString.points);
+      const headerOffset = BGFBAccessors.PointString.createPointString(this.builder,
+        BGFBAccessors.PointString.createPointsVector(this.builder, coordinates));
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPointString, headerOffset, 0);
+
+    }
+    return undefined;
+  }
+
   public writeSolidPrimitiveAsFBVariantGeometry(solid: SolidPrimitive): number | undefined {
     // NOTE: Box, Sphere, Cone, and TorusPipe have "detail" within a "table"
     // BUT:  linear, rotational, and ruled sweeps have their contour and numerics directly within their table.
@@ -210,7 +223,7 @@ export class BGFBWriter {
       const carrierOffset = BGFBAccessors.DgnSphere.createDgnSphere(this.builder, detailOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnSphere, carrierOffset, 0);
     } else if (solid instanceof Cone) {
-      const centerA = solid.getCenterA()
+      const centerA = solid.getCenterA();
       const centerB = solid.getCenterB();
       const vectorX = solid.getVectorX();
       const vectorY = solid.getVectorY();
@@ -380,6 +393,8 @@ export class BGFBWriter {
       return offset;
     if (g instanceof BSplineSurface3dH && (offset = this.writeBSplineSurfaceAsFBVariantGeometry(g)) !== undefined)
       return offset;
+    if (g instanceof PointString3d && (offset = this.writePointString3dAsFBVariantGeometry(g)) !== undefined)
+      return offset;
     return undefined;
   }
   /**
@@ -433,13 +448,19 @@ export class BGFBWriter {
     return undefined;
   }
 }
-function extractNumberArray(data: GrowableXYZArray): number[] {
-  // ugh -- accessors only deal with number[] ..
+function extractNumberArray(data: GrowableXYZArray | Point3d[]): number[] {
   const result = [];
-  const numCoordinate = 3 * data.length;
-  const source = data.float64Data();
-  for (let i = 0; i < numCoordinate; i++)
-    result.push(source[i]);
+  if (data instanceof GrowableXYZArray) {
+    // ugh -- accessors only deal with number[] ..
+    const numCoordinate = 3 * data.length;
+    const source = data.float64Data();
+    for (let i = 0; i < numCoordinate; i++)
+      result.push(source[i]);
+    return result;
+  } else if (Array.isArray(data)) {
+    for (const xyz of data)
+      result.push(xyz.x, xyz.y, xyz.z);
+  }
   return result;
 }
 /** Copy the active data to a simple number array. */

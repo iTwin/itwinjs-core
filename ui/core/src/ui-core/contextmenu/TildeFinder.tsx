@@ -62,5 +62,5 @@ export class TildeFinder {
       }
     }
     return { character: undefined, node };
-  }
+  };
 }

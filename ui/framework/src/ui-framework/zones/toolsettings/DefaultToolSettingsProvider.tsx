@@ -30,7 +30,7 @@ class ToolSettingsUiDataProvider extends UiLayoutDataProvider {
   public applyUiPropertyChange = (syncItem: DialogPropertySyncItem) => {
     // istanbul ignore next
     IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.applyToolSettingPropertyChange(syncItem);
-  }
+  };
 }
 
 /** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool.

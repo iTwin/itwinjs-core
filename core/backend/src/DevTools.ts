@@ -71,7 +71,7 @@ export class DevToolsStatsFormatter {
     if (DevToolsStatsFormatter._secondsProps.includes(key))
       return `${value.toFixed()} secs`;
     return value;
-  }
+  };
 
   /** Converts the input stats to another JSON object with the appropriate units setup for various fields */
   public static toFormattedJson(stats: any) {

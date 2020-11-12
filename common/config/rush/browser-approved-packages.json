@@ -340,7 +340,7 @@
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "chalk",

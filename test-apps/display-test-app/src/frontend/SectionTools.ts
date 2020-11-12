@@ -207,7 +207,7 @@ export class TwoPanelDivider {
     document.addEventListener("mousemove", this._mouseMoveDraggable);
     document.addEventListener("mouseup", this._mouseUpDraggable);
     this._oldPosition = e.clientX;
-  }
+  };
 
   private _mouseMoveDraggable = (e: MouseEvent) => {
     e.preventDefault();
@@ -221,10 +221,10 @@ export class TwoPanelDivider {
     const left = newPosition - this._bounds.left;
     const right = this._bounds.right - left - this.dividerElem.clientWidth;
     this.onDraggedEvent.raiseEvent(left, right);
-  }
+  };
 
   private _mouseUpDraggable = (_e: MouseEvent) => {
     document.removeEventListener("mousemove", this._mouseMoveDraggable);
     document.removeEventListener("mouseup", this._mouseUpDraggable);
-  }
+  };
 }

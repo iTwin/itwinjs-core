@@ -36,7 +36,7 @@ export interface DateFieldProps extends CommonProps {
  */
 export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined {
   if (customFormatter) {
-    return customFormatter.formateDate(inputDate)
+    return customFormatter.formateDate(inputDate);
   }
 
   if (alternateDateFormat) {
@@ -102,8 +102,8 @@ export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, 
   }, [initialDate, dateFormatter, timeDisplay]);
 
   const handleInputChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.currentTarget.value)
-  }, [])
+    setInputValue(event.currentTarget.value);
+  }, []);
 
   const parseDate = React.useCallback((dateString: string) => {
     try {
@@ -120,7 +120,7 @@ export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, 
     }
     // istanbul ignore next
     return undefined;
-  }, [dateFormatter])
+  }, [dateFormatter]);
 
   const updateInputDate = React.useCallback((dateString: string) => {
     try {
@@ -139,7 +139,7 @@ export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, 
   }, [onDateChange, parseDate]);
 
   const handleOnBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
-    updateInputDate(event.target.value)
+    updateInputDate(event.target.value);
   }, [updateInputDate]);
 
   function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
@@ -151,5 +151,5 @@ export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, 
   }
   const classNames = classnames(className, "components-date-input", hasBadInput && "components-date-has-error");
   return <Input data-testid="components-date-input" style={style} className={classNames} onKeyDown={onInputKeyDown} onBlur={handleOnBlur}
-    onChange={handleInputChange} value={inputValue} disabled={readOnly || (dateFormatter && !(dateFormatter.parseDate))} />
+    onChange={handleInputChange} value={inputValue} disabled={readOnly || (dateFormatter && !(dateFormatter.parseDate))} />;
 }

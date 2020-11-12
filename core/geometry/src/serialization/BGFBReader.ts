@@ -31,6 +31,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { RuledSweep } from "../solid/RuledSweep";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
+import { PointString3d } from "../curve/PointString3d";
 
 /**
  * Context to write to a flatbuffer blob.
@@ -76,7 +77,7 @@ export class BGFBReader {
    */
   public readBSplineCurve(header: BGFBAccessors.BsplineCurve): BSplineCurve3d | BSplineCurve3dH | undefined {
     const order = header.order();
-    const xyzArray = header.polesArray()
+    const xyzArray = header.polesArray();
     const knots = header.knotsArray();
     const weightsArray = header.weightsArray();
     // const closed = header.closed();
@@ -124,6 +125,24 @@ export class BGFBReader {
     }
     return undefined;
   }
+  /**
+   * Extract a curve primitive
+   * @param variant read position in the flat buffer.
+   */
+  public readPointStringFromVariant(variant: BGFBAccessors.VariantGeometry): PointString3d | undefined {
+    const geometryType = variant.geometryType();
+    if (geometryType === BGFBAccessors.VariantGeometryUnion.tagPointString) {
+      const offsetToLineString = variant.geometry(new BGFBAccessors.PointString())!;
+      const numCoordinates = offsetToLineString.pointsLength();
+      const result = PointString3d.create();
+      for (let i = 0; i + 2 < numCoordinates; i += 3) {
+        result.points.push(Point3d.create(offsetToLineString.points(i)!, offsetToLineString.points(i + 1)!, offsetToLineString.points(i + 2)!));
+      }
+      return result;
+    }
+    return undefined;
+  }
+
   /**
  * Extract a mesh
  * @param variant read position in the flat buffer.
@@ -362,8 +381,13 @@ export class BGFBReader {
           }
           return geometry;
         }
-      case BGFBAccessors.VariantGeometryUnion.tagBsplineSurface:
+      case BGFBAccessors.VariantGeometryUnion.tagBsplineSurface: {
         return this.readBSplineSurfaceFromVariant(variant);
+      }
+      case BGFBAccessors.VariantGeometryUnion.tagPointString:
+        {
+          return this.readPointStringFromVariant(variant);
+        }
     }
     return undefined;
   }
@@ -394,7 +418,7 @@ export class BGFBReader {
 function nullToUndefined<T>(data: any): T | undefined {
   if (data === null)
     return undefined;
-  return data
+  return data;
 }
 
 function createTypedCurveCollection(collectionType: number): CurveCollection {

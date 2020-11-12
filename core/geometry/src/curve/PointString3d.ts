@@ -20,7 +20,7 @@ import { GeometryQuery } from "./GeometryQuery";
 
 /**
  * A PointString3d is an array of points.
- * * PointString3D is first class (persistible, displayable) geometry derived from the GeometryQuery base class.
+ * * PointString3D is first class (displayable, possibly persistent) geometry derived from the GeometryQuery base class.
  * * The various points in the PointString3d are NOT connected by line segments for display or other calculations.
  * @public
  */
@@ -147,7 +147,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     transform.multiplyPoint3dArrayInPlace(this._points);
     return true;
   }
-  /** Return the index and coordinates of the closest point to spacepoint. */
+  /** Return the index and coordinates of the closest point to spacePoint. */
   public closestPoint(spacePoint: Point3d): { index: number, xyz: Point3d } {
     const result = { index: -1, xyz: Point3d.create() };
     const index = Point3dArray.closestPointIndex(this._points, spacePoint);

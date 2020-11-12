@@ -403,7 +403,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   private _handleToolSettingsPopupCancel = () => {
     IModelApp.uiAdmin.closeToolSettingsPopup();
-  }
+  };
 
   /** A tool is responsible for providing tool assistance appropriate to the current tool state following significant events.
    * After onPostInstall to establish instructions for the initial tool state.

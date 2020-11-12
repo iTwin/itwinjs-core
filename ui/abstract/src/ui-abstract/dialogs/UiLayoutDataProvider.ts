@@ -177,7 +177,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     const record = new PropertyRecord(propertyValue as PrimitiveValue, dialogItem.property);
     record.isDisabled = UiLayoutDataProvider.getItemDisabledState(dialogItem);
     return record;
-  }
+  };
 
   /** Determines if a dialog row only contains button group editors */
   public static onlyContainButtonGroupEditors(row: DialogRow): boolean {

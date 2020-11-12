@@ -10,8 +10,8 @@ import {
 } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, DisplayStyleProps, ElectronRpcConfiguration,
-  ElectronRpcManager, FeatureAppearance, FeatureAppearanceProps, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager,
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DesktopAuthorizationClientConfiguration, DisplayStyleProps, ElectronRpcConfiguration,
+  ElectronRpcManager, FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager,
   RenderMode, RpcConfiguration, SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
@@ -33,6 +33,8 @@ let gpuFramesCollected = 0; // Keep track of how many gpu timings we have collec
 const fixed = 4; // The number of decimal places the csv file should save for each data point
 const testNamesImages = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for images
 const testNamesTimings = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for timings
+const defaultHilite = new Hilite.Settings();
+const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 let minimize = false;
 interface Options {
   [key: string]: any; // Add index signature
@@ -259,6 +261,25 @@ function getBackgroundMapProps(): string {
   return bmPropsStr;
 }
 
+function hiliteSettingsStr(settings: Hilite.Settings): string {
+  let hsStr = (settings.color.colors.r * 256 * 256 + settings.color.colors.g * 256 + settings.color.colors.b).toString(36).padStart(5, "0");
+  hsStr += (settings.silhouette * 256 * 256 + Math.round(settings.visibleRatio * 255) * 256 + Math.round(settings.hiddenRatio * 255)).toString(36).padStart(4, "0");
+  return hsStr.toUpperCase();
+}
+
+function getOtherProps(): string {
+  let propsStr = "";
+  if (undefined !== theViewport!.hilite) {
+    if (!Hilite.equalSettings(theViewport!.hilite, defaultHilite))
+      propsStr += `+h${hiliteSettingsStr(theViewport!.hilite)}`;
+  }
+  if (undefined !== theViewport!.emphasisSettings) {
+    if (!Hilite.equalSettings(theViewport!.emphasisSettings, defaultEmphasis))
+      propsStr += `+e${hiliteSettingsStr(theViewport!.emphasisSettings)}`;
+  }
+  return propsStr;
+}
+
 function getViewFlagsString(): string {
   let vfString = "";
   if (activeViewState.viewState) for (const [key, value] of Object.entries(activeViewState.viewState.displayStyle.viewFlags)) {
@@ -409,6 +430,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrame
   rowData.set("Render Options", getRenderOpts() !== "" ? ` ${getRenderOpts()}` : "");
   rowData.set("Tile Props", getTileProps() !== "" ? ` ${getTileProps()}` : "");
   rowData.set("Bkg Map Props", getBackgroundMapProps() !== "" ? ` ${getBackgroundMapProps()}` : "");
+  if (getOtherProps() !== "") rowData.set("Other Props", ` ${getOtherProps()}`);
   if (pixSelectStr) rowData.set("ReadPixels Selector", ` ${pixSelectStr}`);
   rowData.set("Test Name", getTestName(configs));
   rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
@@ -524,6 +546,7 @@ function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, 
   testName += getRenderOpts() !== "" ? `_${getRenderOpts()}` : "";
   testName += getTileProps() !== "" ? `_${getTileProps()}` : "";
   testName += getBackgroundMapProps() !== "" ? `_${getBackgroundMapProps()}` : "";
+  testName += getOtherProps() !== "" ? `_${getOtherProps()}` : "";
   testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
   if (!ignoreDupes) {
     let testNum = isImage ? testNamesImages.get(testName) : testNamesTimings.get(testName);
@@ -581,6 +604,8 @@ class DefaultConfigs {
   public backgroundMap?: BackgroundMapProps;
   public renderOptions: RenderSystem.Options = {};
   public tileProps?: TileAdmin.Props;
+  public hilite?: Hilite.Settings;
+  public emphasis?: Hilite.Settings;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
     if (useDefaults) {
@@ -615,6 +640,10 @@ class DefaultConfigs {
       this.tileProps = this.updateData(prevConfigs.tileProps, this.tileProps) as TileAdmin.Props || undefined;
       this.viewFlags = this.updateData(prevConfigs.viewFlags, this.viewFlags);
       this.backgroundMap = this.updateData(prevConfigs.backgroundMap, this.backgroundMap) as BackgroundMapProps || undefined;
+      if (undefined !== prevConfigs.hilite)
+        this.hilite = Hilite.cloneSettings(prevConfigs.hilite);
+      if (undefined !== prevConfigs.emphasis)
+        this.emphasis = Hilite.cloneSettings(prevConfigs.emphasis);
     } else if (jsonData.argOutputPath)
       this.outputPath = jsonData.argOutputPath;
     if (jsonData.view) this.view = new ViewSize(jsonData.view.width, jsonData.view.height);
@@ -646,6 +675,48 @@ class DefaultConfigs {
     this.tileProps = this.updateData(jsonData.tileProps, this.tileProps) as TileAdmin.Props || undefined;
     this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
     this.backgroundMap = this.updateData(jsonData.backgroundMap, this.backgroundMap) as BackgroundMapProps || undefined;
+    if (jsonData.hilite) {
+      if (undefined === this.hilite)
+        this.hilite = Hilite.cloneSettings(defaultHilite);
+      const colors = this.hilite.color.colors;
+      let visibleRatio = this.hilite.visibleRatio;
+      let hiddenRatio = this.hilite.hiddenRatio;
+      let silhouette = this.hilite.silhouette;
+      if (undefined !== jsonData.hilite.red)
+        colors.r = jsonData.hilite.red;
+      if (undefined !== jsonData.hilite.green)
+        colors.g = jsonData.hilite.green;
+      if (undefined !== jsonData.hilite.blue)
+        colors.b = jsonData.hilite.blue;
+      if (undefined !== jsonData.hilite.visibleRatio)
+        visibleRatio = jsonData.hilite.visibleRatio;
+      if (undefined !== jsonData.hilite.hiddenRatio)
+        hiddenRatio = jsonData.hilite.hiddenRatio;
+      if (undefined !== jsonData.hilite.silhouette)
+        silhouette = jsonData.hilite.silhouette;
+      this.hilite = new Hilite.Settings(ColorDef.from(colors.r, colors.g, colors.b, 0), visibleRatio, hiddenRatio, silhouette);
+    }
+    if (jsonData.emphasis) {
+      if (undefined === this.emphasis)
+        this.emphasis = Hilite.cloneSettings(defaultEmphasis);
+      const colors = this.emphasis.color.colors;
+      let visibleRatio = this.emphasis.visibleRatio;
+      let hiddenRatio = this.emphasis.hiddenRatio;
+      let silhouette = this.emphasis.silhouette;
+      if (undefined !== jsonData.emphasis.red)
+        colors.r = jsonData.emphasis.red;
+      if (undefined !== jsonData.emphasis.green)
+        colors.g = jsonData.emphasis.green;
+      if (undefined !== jsonData.emphasis.blue)
+        colors.b = jsonData.emphasis.blue;
+      if (undefined !== jsonData.emphasis.visibleRatio)
+        visibleRatio = jsonData.emphasis.visibleRatio;
+      if (undefined !== jsonData.emphasis.hiddenRatio)
+        hiddenRatio = jsonData.emphasis.hiddenRatio;
+      if (undefined !== jsonData.emphasis.silhouette)
+        silhouette = jsonData.emphasis.silhouette;
+      this.emphasis = new Hilite.Settings(ColorDef.from(colors.r, colors.g, colors.b, 0), visibleRatio, hiddenRatio, silhouette);
+    }
 
     debugPrint(`view: ${this.view !== undefined ? (`${this.view.width}X${this.view.height}`) : "undefined"}`);
     debugPrint(`numRendersToTime: ${this.numRendersToTime}`);
@@ -972,6 +1043,12 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   // now connect the view to the canvas
   await openView(activeViewState, testConfig.view!);
   // assert(theViewport !== undefined, "ERROR: theViewport is undefined");
+
+  // Set the hilite/emphasis settings
+  if (undefined !== testConfig.hilite)
+    theViewport!.hilite = Hilite.cloneSettings(testConfig.hilite);
+  if (undefined !== testConfig.emphasis)
+    theViewport!.emphasisSettings = Hilite.cloneSettings(testConfig.emphasis);
 
   // Set the display style
   const iModCon = activeViewState.iModelConnection;

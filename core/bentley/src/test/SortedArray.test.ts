@@ -56,6 +56,7 @@ describe("SortedArray", () => {
     expect(list.length).to.equal(1);
     let index = list.indexOf(thing);
     expect(index).to.equal(0);
+    expect(list.indexOfEquivalent((x) => compareThings(x, thing))).to.equal(index);
 
     // not allowing duplicates
     index = list.insert(thing);
@@ -66,6 +67,7 @@ describe("SortedArray", () => {
     let found = list.findEqual(new Thing(1, 1));
     expect(found).not.to.be.undefined;
     expect(found).to.equal(thing);
+    expect(list.findEquivalent((x) => compareThings(x, new Thing(1, 1)))).to.equal(thing);
 
     found = list.get(0);
     expect(found).not.to.be.undefined;
@@ -76,7 +78,9 @@ describe("SortedArray", () => {
     index = list.insert(new Thing(-1, 1));
     expect(index).to.equal(0);
     expect(list.indexOf(thing)).to.equal(1);
+    expect(list.indexOfEquivalent((x) => compareThings(x, thing))).to.equal(1);
     expect(list.indexOf(new Thing(2, 1))).to.equal(2);
+    expect(list.indexOfEquivalent((x) => compareThings(x, new Thing(2, 1)))).to.equal(2);
     expect(list.length).to.equal(3);
 
     const thing05 = new Thing(0, 5);
@@ -100,6 +104,7 @@ describe("SortedArray", () => {
     expect(found).not.to.be.undefined;
     expect(found).not.to.equal(id);
     expect(found!.compare(id)).to.equal(0);
+    expect(list.findEquivalent((x) => x.compare(id))).to.equal(found);
     list.insert(id);
     expect(list.length).to.equal(2);
     const lengthA = list.length;

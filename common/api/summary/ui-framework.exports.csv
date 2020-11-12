@@ -241,7 +241,6 @@ public;GroupItemProps
 alpha;HideIsolateEmphasizeAction
 alpha;class HideIsolateEmphasizeActionHandler
 alpha;HideIsolateEmphasizeManager 
-internal;HollowIcon(props: IconProps): JSX.Element
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
@@ -323,8 +322,9 @@ public;MessageAddedEvent
 public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
-internal;MessageLabel(props:
 public;MessageManager
+beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
+beta;MessageRendererProps 
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager

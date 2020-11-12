@@ -34,7 +34,7 @@ export class TestTreeDataProvider implements ITreeDataProvider {
       throw new Error(`Deferred load for node '${nodeId}' has not been initiated`);
 
     await this._delayedLoads[nodeId].resolve(this._makeTreeNodeItem(node));
-  }
+  };
 
   public getNodesCount = async (parent?: TreeNodeItem): Promise<number> => this._getChildren(parent).length;
 
@@ -52,11 +52,11 @@ export class TestTreeDataProvider implements ITreeDataProvider {
     }));
 
     return children.map((node) => this._makeTreeNodeItem(node));
-  }
+  };
 
   private _makeTreeNodeItem = (node: TestTreeHierarchyNode): DelayLoadedTreeNodeItem => {
     return { id: node.id, label: PropertyRecord.fromString(node.id, "label"), autoExpand: node.autoExpand, hasChildren: node.children && node.children.length > 0 };
-  }
+  };
 
   private _findNode = (nodeId: string): TestTreeHierarchyNode => {
     const findNodeRecursively = (children: TestTreeHierarchyNode[]): TestTreeHierarchyNode | undefined => {
@@ -79,14 +79,14 @@ export class TestTreeDataProvider implements ITreeDataProvider {
       throw new Error(`Unknown tree nodeId: '${nodeId}'`);
 
     return node;
-  }
+  };
 
   private _getChildren = (parent?: TreeNodeItem): TestTreeHierarchyNode[] => {
     if (!parent)
       return this._hierarchy;
 
     return this._findNode(parent.id).children || [];
-  }
+  };
 }
 
 /** @internal */

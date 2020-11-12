@@ -230,7 +230,7 @@ export class FrontstageManager {
     if (args.current && FrontstageManager.activeFrontstageDef && !FrontstageManager.isLoading) {
       FrontstageManager.activeFrontstageDef.setActiveViewFromViewport(args.current);
     }
-  }
+  };
 
   /** @internal */
   public static get isInitialized(): boolean { return FrontstageManager._initialized; }

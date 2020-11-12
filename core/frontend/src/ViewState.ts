@@ -1880,7 +1880,7 @@ class SpatialTileTrees {
       if (undefined !== script) {
         const model = this._iModel.models.getLoaded(modelId)?.asGeometricModel3d;
         if (model)
-          addAnimatedTileTreeReferences(refs, this._view, model, script)
+          addAnimatedTileTreeReferences(refs, this._view, model, script);
       }
     }
   }

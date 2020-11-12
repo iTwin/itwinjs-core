@@ -20,6 +20,6 @@ export class StatusBarItemUtilities {
     id, section, itemPriority, reactNode,
     isCustom: true,
     ...itemProps ? itemProps : {},
-  })
+  });
 
 }

@@ -808,7 +808,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelRpcProps);
     request.parameters[0] = this.getRpcProps(); // Modify the token of the original request before resubmitting it.
     resubmit();
-  }
+  };
 
   /** Close this RemoteBriefcaseConnection
    * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
