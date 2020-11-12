@@ -10,7 +10,7 @@ import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { DraggedPanelSideContext } from "../base/DragManager";
-import { NineZoneDispatchContext } from "../base/NineZone";
+import { NineZoneDispatchContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
@@ -258,20 +258,23 @@ export function useAnimatePanelWidgets(): {
   sizes: { [id: string]: PanelWidgetProps["size"] };
 } {
   const panel = React.useContext(PanelStateContext);
+  const widgets = React.useContext(WidgetsStateContext);
   assert(panel);
   const [prepareTransition, setPrepareTransition] = React.useState(false);
   const [transition, setTransition] = React.useState<PanelWidgetProps["transition"] | undefined>();
-  const [prevWidgets, setPrevWidgets] = React.useState(panel.widgets);
+  const [prevPanelWidgets, setPrevPanelWidgets] = React.useState(panel.widgets);
+  const [prevWidgets, setPrevWidgets] = React.useState(widgets);
   const [sizes, setSizes] = React.useState<{ [id: string]: number | undefined }>({});
   const refs = React.useRef(new Map<WidgetState["id"], React.RefObject<WidgetComponent>>());
   const widgetTransitions = React.useRef(new Map<WidgetState["id"], {
     from: number;
     to: number | undefined;
   }>());
+  const measured = React.useRef(false);
   const horizontal = React.useRef(false);
   horizontal.current = isHorizontalPanelSide(panel.side);
-  if (prevWidgets !== panel.widgets) {
-    const widgetsToMeasure = panel.widgets.length > prevWidgets.length ? panel.widgets : prevWidgets;
+  if (prevPanelWidgets !== panel.widgets) {
+    const widgetsToMeasure = panel.widgets.length > prevPanelWidgets.length ? panel.widgets : prevPanelWidgets;
     for (const widgetId of widgetsToMeasure) {
       const ref = refs.current.get(widgetId);
 
@@ -282,42 +285,65 @@ export function useAnimatePanelWidgets(): {
       const size = ref.current.measure();
       widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, size), to: undefined });
     }
-    if (panel.widgets.length < prevWidgets.length) {
+    if (panel.widgets.length < prevPanelWidgets.length) {
       // Widget removed.
       let removedWidgetIndex = 0;
-      for (let i = 0; i < prevWidgets.length; i++) {
+      for (let i = 0; i < prevPanelWidgets.length; i++) {
         const newWidget = panel.widgets[i];
-        const lastWidget = prevWidgets[i];
+        const lastWidget = prevPanelWidgets[i];
         if (newWidget !== lastWidget) {
           removedWidgetIndex = i;
           break;
         }
       }
 
-      let fillWidgetIndex = removedWidgetIndex - 1;
+      const removedWidget = prevPanelWidgets[removedWidgetIndex];
+      let fillWidget: string | undefined;
       if (removedWidgetIndex === 0) {
-        fillWidgetIndex = removedWidgetIndex + 1;
+        for (let i = removedWidgetIndex + 1; i < prevPanelWidgets.length; i++) {
+          const widgetId = prevPanelWidgets[i];
+          const widget = prevWidgets[widgetId];
+          if (widget.minimized)
+            continue;
+          fillWidget = widgetId;
+          break;
+        }
+      } else {
+        for (let i = removedWidgetIndex - 1; i >= 0; i--) {
+          const widgetId = prevPanelWidgets[i];
+          const widget = prevWidgets[widgetId];
+          if (widget.minimized)
+            continue;
+          fillWidget = widgetId;
+          break;
+        }
       }
 
-      const removedWidget = prevWidgets[removedWidgetIndex];
-      const fillWidget = prevWidgets[fillWidgetIndex];
+      if (fillWidget) {
+        const removedWidgetTransition = widgetTransitions.current.get(removedWidget);
+        const fillWidgetTransition = widgetTransitions.current.get(fillWidget);
+        assert(removedWidgetTransition);
+        assert(fillWidgetTransition);
+        const removedWidgetSize = removedWidgetTransition.from;
+        const fillWidgetSize = fillWidgetTransition.from;
 
-      const removedWidgetTransition = widgetTransitions.current.get(removedWidget);
-      const fillWidgetTransition = widgetTransitions.current.get(fillWidget);
-      assert(removedWidgetTransition);
-      assert(fillWidgetTransition);
-      const removedWidgetSize = removedWidgetTransition.from;
-      const fillWidgetSize = fillWidgetTransition.from;
-
-      widgetTransitions.current.delete(removedWidget);
-      fillWidgetTransition.from = removedWidgetSize + fillWidgetSize;
+        widgetTransitions.current.delete(removedWidget);
+        fillWidgetTransition.from = removedWidgetSize + fillWidgetSize;
+      }
     }
+    measured.current = true;
     setPrepareTransition(true);
     // Reset before measuring in case we were already in a transition.
     setTransition(undefined);
     setSizes({});
-    setPrevWidgets(panel.widgets);
+    setPrevPanelWidgets(panel.widgets);
   }
+  React.useEffect(() => {
+    setPrevWidgets(widgets);
+  }, [widgets]);
+  React.useEffect(() => {
+    measured.current = false;
+  });
   const handleTransitionEnd = React.useCallback(() => {
     widgetTransitions.current.clear();
     setSizes({});
@@ -385,6 +411,9 @@ export function useAnimatePanelWidgets(): {
     refs.current = newRefs;
   }, [panel.widgets]);
   const handleBeforeTransition = React.useCallback(() => {
+    // PanelWidget reports mode changes on same render pass, but we want to keep our initial measurements if panel.widgets have changed.
+    if (measured.current)
+      return;
     for (const wId of panel.widgets) {
       const ref = refs.current.get(wId);
       if (!ref || !ref.current) {
@@ -392,7 +421,8 @@ export function useAnimatePanelWidgets(): {
         return;
       }
       const size = ref.current.measure();
-      widgetTransitions.current.set(wId, { from: getSize(horizontal.current, size), to: undefined });
+      const from = getSize(horizontal.current, size);
+      widgetTransitions.current.set(wId, { from, to: undefined });
     }
   }, [panel.widgets]);
   const handlePrepareTransition = React.useCallback(() => {

@@ -281,13 +281,18 @@ describe("useAnimatePanelWidgets", () => {
     children?: React.ReactNode;
     state?: NineZoneState;
     side?: PanelSide;
+    onAfterRender?(): void;
   }
 
   function Wrapper({
     children,
+    onAfterRender,
     state = createNineZoneState(),
     side = "left",
   }: WrapperProps) {
+    React.useLayoutEffect(() => {
+      onAfterRender && onAfterRender();
+    });
     return (
       <NineZoneProvider
         state={state}
@@ -449,6 +454,123 @@ describe("useAnimatePanelWidgets", () => {
     Number(300).should.eq(result.current.sizes.w3);
   });
 
+  it("should fill upper not minimized widget when widget is removed", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
+    state = addPanelWidget(state, "left", "w3", ["t3"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+      initialProps: {
+        state,
+      },
+      wrapper,
+    });
+
+    const w1 = {
+      measure: () => new Size(),
+    };
+    const w2 = {
+      measure: () => new Size(),
+    };
+    const w3 = {
+      measure: () => new Size(),
+    };
+    sinon.stub(w1, "measure")
+      .onFirstCall().returns(new Size(0, 300))
+      .onSecondCall().returns(new Size(0, 200));
+    sinon.stub(w2, "measure")
+      .onFirstCall().returns(new Size(0, 300))
+      .onSecondCall().returns(new Size(0, 700));
+    sinon.stub(w3, "measure").returns(new Size(0, 300));
+
+    setRefValue(result.current.getRef("w1"), w1);
+    setRefValue(result.current.getRef("w2"), w2);
+    setRefValue(result.current.getRef("w3"), w3);
+
+    state = produce(state, (draft) => {
+      draft.panels.left.widgets = ["w1", "w2"];
+    });
+
+    rerender({ state });
+    "init".should.eq(result.current.transition);
+    Number(600).should.eq(result.current.sizes.w1);
+    Number(300).should.eq(result.current.sizes.w2);
+  });
+
+  it("should fill lower not minimized widget when widget is removed", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
+    state = addPanelWidget(state, "left", "w3", ["t3"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+      initialProps: {
+        state,
+      },
+      wrapper,
+    });
+
+    const w1 = {
+      measure: () => new Size(),
+    };
+    const w2 = {
+      measure: () => new Size(),
+    };
+    const w3 = {
+      measure: () => new Size(),
+    };
+    sinon.stub(w1, "measure").returns(new Size(0, 300));
+
+    sinon.stub(w2, "measure")
+      .onFirstCall().returns(new Size(0, 300))
+      .onSecondCall().returns(new Size(0, 700));
+    sinon.stub(w3, "measure")
+      .onFirstCall().returns(new Size(0, 300))
+      .onSecondCall().returns(new Size(0, 200));
+
+    setRefValue(result.current.getRef("w1"), w1);
+    setRefValue(result.current.getRef("w2"), w2);
+    setRefValue(result.current.getRef("w3"), w3);
+
+    state = produce(state, (draft) => {
+      draft.panels.left.widgets = ["w2", "w3"];
+    });
+
+    rerender({ state });
+    "init".should.eq(result.current.transition);
+    Number(300).should.eq(result.current.sizes.w2);
+    Number(600).should.eq(result.current.sizes.w3);
+  });
+
+  it("should not fail when last widget is removed", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addTab(state, "t1");
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+      initialProps: {
+        state,
+      },
+      wrapper,
+    });
+
+    const w1 = {
+      measure: () => new Size(),
+    };
+
+    setRefValue(result.current.getRef("w1"), w1);
+
+    state = produce(state, (draft) => {
+      draft.panels.left.widgets = [];
+    });
+
+    (() => rerender({ state })).should.not.throw();
+  });
+
   it("should not transition when from and to sizes are equal", () => {
     let state = createNineZoneState();
     state = addPanelWidget(state, "left", "w1", ["t1"]);
@@ -605,5 +727,44 @@ describe("useAnimatePanelWidgets", () => {
     rerender({ state });
 
     should().not.exist(result.current.transition);
+  });
+
+  it("should not re-measure on same render pass if panel.widgets have changed", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addPanelWidget(state, "left", "w2", ["t2"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+      initialProps: {
+        onAfterRender: () => { },
+        state,
+      },
+      wrapper,
+    });
+
+    const w1 = {
+      measure: () => new Size(),
+    };
+    const w2 = {
+      measure: () => new Size(),
+    };
+    setRefValue(result.current.getRef("w1"), w1);
+    setRefValue(result.current.getRef("w2"), w2);
+
+    state = produce(state, (draft) => {
+      draft.panels.left.widgets = ["w1"];
+    });
+
+    const onAfterRender = () => {
+      spy.resetHistory();
+      result.current.handleBeforeTransition();
+    };
+
+    const spy = sinon.spy(w1, "measure");
+    rerender({ state, onAfterRender });
+
+    sinon.assert.notCalled(spy);
   });
 });
