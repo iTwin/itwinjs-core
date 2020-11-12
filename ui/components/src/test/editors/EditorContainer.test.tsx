@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { EditorContainer } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
 import { SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render } from "@testing-library/react";
@@ -48,16 +48,13 @@ describe("<EditorContainer />", () => {
   it("calls onCommit for Enter", async () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const spyOnCommit = sinon.spy();
-    function handleCommit(_commit: PropertyUpdatedArgs): void {
-      spyOnCommit();
-    }
-    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
     fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
     await TestUtils.flushAsyncOperations();
-    expect(spyOnCommit.calledOnce).to.be.true;
+    sinon.assert.calledOnce(spyOnCommit);
   });
 
   it("calls onCancel for Escape", async () => {
@@ -69,7 +66,7 @@ describe("<EditorContainer />", () => {
 
     fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Escape });
     await TestUtils.flushAsyncOperations();
-    expect(spyOnCancel.calledOnce).to.be.true;
+    sinon.assert.calledOnce(spyOnCancel);
   });
 
   it("calls onCancel for Cancel button in popup", async () => {
@@ -87,32 +84,26 @@ describe("<EditorContainer />", () => {
     okButton.first().simulate("click");
     await TestUtils.flushAsyncOperations();
 
-    expect(spyOnCancel.calledOnce).to.be.true;
+    sinon.assert.calledOnce(spyOnCancel);
     wrapper.unmount();
   });
 
   it("calls onCommit for Tab", async () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const spyOnCommit = sinon.spy();
-    function handleCommit(_commit: PropertyUpdatedArgs): void {
-      spyOnCommit();
-    }
-    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
     fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Tab });
     await TestUtils.flushAsyncOperations();
-    expect(spyOnCommit.calledOnce).to.be.true;
+
+    sinon.assert.calledOnce(spyOnCommit);
   });
 
   it("processes other input node events", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
-    const spyOnCommit = sinon.spy();
-    function handleCommit(_commit: PropertyUpdatedArgs): void {
-      spyOnCommit();
-    }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     const inputNode = wrapper.find("input");
     expect(inputNode.length).to.eq(1);
 
@@ -120,7 +111,7 @@ describe("<EditorContainer />", () => {
     inputNode.simulate("click");
     inputNode.simulate("contextMenu");
 
-    const renderedWrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const renderedWrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     const renderedInputNode = renderedWrapper.container.querySelector("input");
     fireEvent.keyDown(renderedInputNode as HTMLElement, { key: SpecialKey.ArrowLeft });
     wrapper.unmount();

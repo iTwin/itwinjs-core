@@ -10,6 +10,14 @@
       "allowWarningsInSuccessfulBuild": true
     },
     {
+      "name": "fix-copyrights",
+      "commandKind": "global",
+      "summary": "Fixes whitespace-only changes caused by broken copyright linter",
+      "description": "Manually runs the new copyright linter on all files changed between the current branch and master.",
+      "shellCommand": "node common/scripts/copyright-linter.js --fix",
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "clean",
       "commandKind": "bulk",
       "summary": "Cleans build output within each package",
