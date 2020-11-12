@@ -257,7 +257,10 @@ export interface PresentationManagerProps {
     id?: string;
     localeDirectories?: string[];
     mode?: PresentationManagerMode;
-    presentationAssetsRoot?: string;
+    presentationAssetsRoot?: string | {
+        backend: string;
+        common: string;
+    };
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
     taskAllocationsMap?: {

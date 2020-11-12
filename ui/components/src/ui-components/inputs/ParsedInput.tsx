@@ -70,16 +70,17 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       if (!parseResults.parseError) {
         // istanbul ignore else
         if (undefined !== parseResults.value && typeof parseResults.value === "number") {
+          const currentValue = parseResults.value;
           // istanbul ignore else
-          if (currentValueRef.current !== parseResults.value) {
-            currentValueRef.current = parseResults.value;
-            lastFormattedValueRef.current = formatValue(currentValueRef.current);
+          if (currentValue !== currentValueRef.current) {
+            currentValueRef.current = currentValue;
             onChange && onChange(currentValueRef.current);
-            // istanbul ignore else
-            if (isMountedRef.current) {
-              setFormattedValue(lastFormattedValueRef.current);
-              setHasBadInput(false);
-            }
+          }
+          // istanbul ignore else
+          if (isMountedRef.current) {
+            lastFormattedValueRef.current = formatValue(currentValue);
+            setFormattedValue(lastFormattedValueRef.current);
+            setHasBadInput(false);
           }
         }
       } else {
