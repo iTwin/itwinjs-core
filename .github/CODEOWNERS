@@ -17,8 +17,6 @@
 .gitignore @calebmshafer @scsewall
 rush.json @calebmshafer @scsewall
 
-/common/changes @imodeljs/core @imodeljs/display
-
 /clients              @calebmshafer @ramanujam-raman
 # /clients/imodelhub    @amikoliunas @Animagne
 
@@ -68,6 +66,11 @@ rush.json @calebmshafer @scsewall
 /common/api/ui-*.api.md                             @imodeljs/ui
 /common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
 /common/api/webgl-compatibility.api.md              @pmconne
+
+# Specifying both of these with a large number of possible reviewers.
+# All significant changes will be covered by other requirements.
+/common/api/summary @imodeljs/core @imodeljs/display
+/common/changes @imodeljs/core @imodeljs/display
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
