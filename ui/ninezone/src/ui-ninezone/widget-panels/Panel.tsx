@@ -375,22 +375,23 @@ export function useAnimatePanelWidgets(): {
           draft[widgetId] = widgetTransition.from;
         }
       }));
-
       setTransition("init");
     }
   }, [prepareTransition]);
   React.useEffect(() => {
     if (transition !== "init")
       return;
-    window.requestAnimationFrame(() => {
+    const handle = window.requestAnimationFrame(() => {
       setSizes((prev) => produce(prev, (draft) => {
         for (const [widgetId, widgetTransition] of widgetTransitions.current) {
           draft[widgetId] = widgetTransition.to;
         }
       }));
-
       setTransition("transition");
     });
+    return () => {
+      window.cancelAnimationFrame(handle);
+    };
   }, [transition]);
   const getRef = React.useCallback((widgetId: WidgetState["id"]) => {
     let ref = refs.current.get(widgetId);
