@@ -75,7 +75,7 @@ export class QParams2d {
   public static fromZeroToOne(rangeScale = Quantization.rangeScale16) { return QParams2d.fromRange(Range2d.createArray([Point2d.create(0, 0), Point2d.create(1, 1)]), undefined, rangeScale); }
 
   // Return the range diagonal.
-  public get rangeDiagonal(): Vector2d { return Vector2d.createFrom({ x: Quantization.rangeScale16 / this.scale.x, y: Quantization.rangeScale16 / this.scale.y }); }
+  public get rangeDiagonal(): Vector2d { return Vector2d.createFrom({ x: 0 === this.scale.x ? 0 : Quantization.rangeScale16 / this.scale.x, y: 0 === this.scale.y ? 0 : Quantization.rangeScale16 / this.scale.y }); }
 
 }
 
@@ -283,7 +283,7 @@ export class QParams3d {
   public static fromZeroToOne(rangeScale = Quantization.rangeScale16) { return QParams3d.fromRange(Range3d.createArray([Point3d.create(0, 0, 0), Point3d.create(1, 1, 1)]), undefined, rangeScale); }
 
   // Return the range diagonal.
-  public get rangeDiagonal(): Vector3d { return Vector3d.createFrom({ x: Quantization.rangeScale16 / this.scale.x, y: Quantization.rangeScale16 / this.scale.y, z: Quantization.rangeScale16 / this.scale.z }); }
+  public get rangeDiagonal(): Vector3d { return Vector3d.createFrom({ x: this.scale.x === 0 ? 0 : Quantization.rangeScale16 / this.scale.x, y: this.scale.y === 0 ? 0 : Quantization.rangeScale16 / this.scale.y, z: this.scale.z === 0 ? 0 : Quantization.rangeScale16 / this.scale.z }); }
 }
 
 /** Represents a quantized 3d point as an (x, y, z) triplet in the integer range [0, 0xffff].
