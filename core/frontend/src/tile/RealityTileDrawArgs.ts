@@ -6,13 +6,12 @@
  * @module Tiles
  */
 
-import { Map4d, Matrix4d, Point3d, Point4d, Range1d } from "@bentley/geometry-core";
+import { Map4d, Matrix4d, Point4d, Range1d } from "@bentley/geometry-core";
 import { FrustumPlanes } from "@bentley/imodeljs-common";
-import { MapTile, RealityTile, Tile, TileDrawArgs } from "./internal";
+import { RealityTile, Tile, TileDrawArgs } from "./internal";
 
 const scratchXRange = Range1d.createNull();
 const scratchYRange = Range1d.createNull();
-const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 
 /** @internal */
 export class RealityTileDrawArgs extends TileDrawArgs {

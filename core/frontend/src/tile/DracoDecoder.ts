@@ -51,7 +51,7 @@ export class DracoDecoder {
         if (colorDracoAttribute) {
           const dracoColors = new DracoDecoder._dracoDecoderModule.DracoUInt8Array();
           dracoDecoder.GetAttributeUInt8ForAllPoints(dracoPointCloud, colorDracoAttribute, dracoColors);
-          const length = 3 * dracoPointCloud.num_points()
+          const length = 3 * dracoPointCloud.num_points();
           const attrLength = dracoColors.size();
           assert(length === attrLength);
           decodedPointCloud.colors = new Uint8Array(length);

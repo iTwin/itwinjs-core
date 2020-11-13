@@ -198,7 +198,7 @@ export abstract class GltfReader {
       if (undefined !== transformToRoot)
         transform = transformToRoot.multiplyTransformTransform(transform);
 
-      range = transform.inverse()!.multiplyRange(contentRange)
+      range = transform.inverse()!.multiplyRange(contentRange);
     }
     renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
     if (transform) {

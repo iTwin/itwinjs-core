@@ -89,7 +89,7 @@ export class B3dmReader extends GltfReader {
             const classId = classIds[instanceIndex];
             const instanceClass = classes[classId];
             const instances = instanceClass.instances;
-            const indexInClass = classIndexes[instanceIndex]
+            const indexInClass = classIndexes[instanceIndex];
             for (const key in instances) { // eslint-disable-line guard-for-in
               const value = instances[key][indexInClass];
               if (value !== undefined && value !== null)

@@ -141,8 +141,7 @@ export class RealityTile extends Tile {
   }
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
-    let corners = this.rangeCorners ? this.rangeCorners : this.range.corners();
-    builder.addRangeBoxFromCorners(corners);
+    builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
   }
 
   public allChildrenIncluded(tiles: Tile[]) {

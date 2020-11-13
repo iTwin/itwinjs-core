@@ -118,7 +118,7 @@ export class RealityModelTileUtils {
           }
         }
       }
-      range = Range3d.createArray(corners)
+      range = Range3d.createArray(corners);
     } else if (Array.isArray(boundingVolume.sphere)) {
       const sphere: number[] = boundingVolume.sphere;
       const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
@@ -145,7 +145,7 @@ export class RealityModelTileUtils {
         addEllipsoidCorner(minLongitude, maxLatitude);
         addEllipsoidCorner(maxLongitude, minLatitude);
         addEllipsoidCorner(maxLongitude, maxLatitude);
-        range = Range3d.createArray(corners)
+        range = Range3d.createArray(corners);
       } else {
         const minEq = Constant.earthRadiusWGS84.equator + minHeight, maxEq = Constant.earthRadiusWGS84.equator + maxHeight;
         const minEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, minEq, minEq, Constant.earthRadiusWGS84.polar + minHeight);
@@ -238,7 +238,7 @@ class RealityModelTileProps implements RealityTileParams {
       this.rangeCorners = boundingVolume.corners;
     } else {
       this.range = Range3d.createNull();
-      assert(false, "Unbounded tile")
+      assert(false, "Unbounded tile");
     }
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     this.transformToRoot = transformToRoot;

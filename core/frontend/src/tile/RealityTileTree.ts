@@ -8,7 +8,7 @@
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, ThematicDisplaySensor, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -60,9 +60,9 @@ export class TraversalChildrenDetails {
 export class TraversalSelectionContext {
   public preloaded = new Set<RealityTile>();
   public missing = new Array<RealityTile>();
-  public get selectionCountExceeded() { return (this.missing.length + this.selected.length) > this.maxSelectionCount; }   // Avoid selecting excessive number of tiles.
-  public get preloadCountExceeded() { return this.preloaded.size > this.maxPreloadCount; }                                // Avoid preloading excessive number of tiles.
-  constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadDebugBuilder?: GraphicBuilder, private maxSelectionCount = 500, private maxPreloadCount = 50) { }
+  public get selectionCountExceeded() { return (this.missing.length + this.selected.length) > this._maxSelectionCount; }   // Avoid selecting excessive number of tiles.
+  public get preloadCountExceeded() { return this.preloaded.size > this._maxPreloadCount; }                                // Avoid preloading excessive number of tiles.
+  constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadDebugBuilder?: GraphicBuilder, private _maxSelectionCount = 500, private _maxPreloadCount = 100) { }
 
   public selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     tile.selectSecondaryTiles(args, this);
