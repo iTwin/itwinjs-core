@@ -57,7 +57,7 @@ As a side effect, any additional plugins added in consumer packages won't be loa
 "@bentley/no-internal": [
 "error",
   {
-    "warnOn": ["internal", "alpha", "beta"]
+    "tag": ["internal", "alpha", "beta"]
   }
 ]
 ```
@@ -65,8 +65,8 @@ As a side effect, any additional plugins added in consumer packages won't be loa
 ```json
 // default config
 "@bentley/no-internal": "error"
-// warnOn is set to ["internal", "alpha"] by default
+// tag is set to ["internal", "alpha"] by default
 ```
 
-The rule will report an error whenever you use anything marked with one of the tags configured in the `warnOn` option.
+The rule will report an error whenever you use anything marked with one of the tags configured in the `tag` option.
 Allowed tags: `internal`, `alpha`, `beta`, `public`.

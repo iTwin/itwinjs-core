@@ -28,7 +28,7 @@ module.exports = {
         type: "object",
         additionalProperties: false,
         properties: {
-          warnOn: {
+          tag: {
             type: "array",
             uniqueItems: true,
             items: {
@@ -38,12 +38,11 @@ module.exports = {
           }
         }
       }
-
     ]
   },
 
   create(context) {
-    const bannedTags = (context.options.length > 0 && context.options[0].warnOn) || ["alpha", "internal"];
+    const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
@@ -202,21 +201,3 @@ module.exports = {
     };
   }
 }
-
-
-// function resolveSignature(node, candidatesOutArray, checkMode) {
-//   switch (node.kind) {
-//       case 195 /* CallExpression */:
-//           return resolveCallExpression(node, candidatesOutArray, checkMode);
-//       case 196 /* NewExpression */:
-//           return resolveNewExpression(node, candidatesOutArray, checkMode);
-//       case 197 /* TaggedTemplateExpression */:
-//           return resolveTaggedTemplateExpression(node, candidatesOutArray, checkMode);
-//       case 156 /* Decorator */:
-//           return resolveDecorator(node, candidatesOutArray, checkMode);
-//       case 266 /* JsxOpeningElement */:
-//       case 265 /* JsxSelfClosingElement */:
-//           return resolveJsxOpeningLikeElement(node, candidatesOutArray, checkMode);
-//   }
-//   throw ts.Debug.assertNever(node, "Branch in 'resolveSignature' should be unreachable.");
-// }
