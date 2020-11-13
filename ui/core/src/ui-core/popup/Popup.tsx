@@ -46,6 +46,8 @@ export interface PopupProps extends CommonProps {
   onClose?: () => void;
   /** Function called when the popup is closed on Enter */
   onEnter?: () => void;
+  /** Function called when the wheel is used */
+  onWheel?: (e: WheelEvent) => void;
   /** Offset from the parent (defaults to 4) */
   offset: number;
   /** Target element to position popup */
@@ -64,6 +66,8 @@ export interface PopupProps extends CommonProps {
   animate?: boolean;
   /** Indicates whether to close the popup when Enter is pressed (defaults to true) */
   closeOnEnter?: boolean;
+  /** Indicates whether to close the popup when the wheel is used (defaults to true) */
+  closeOnWheel?: boolean;
 }
 
 /** @internal */
@@ -158,7 +162,13 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _handleWheel = (event: WheelEvent) => {
     if (this._popup && this._popup.contains(event.target as Node))
       return;
-    this._hide();
+
+    if (this.props.onWheel)
+      return this.props.onWheel(event);
+
+    const closeOnWheel = this.props.closeOnWheel !== undefined ? this.props.closeOnWheel : true;
+    if (closeOnWheel)
+      this._hide();
   };
 
   private _handleOutsideClick = (event: MouseEvent): void => {
