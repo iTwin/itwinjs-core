@@ -61,6 +61,7 @@ import { RpcInterfaceStatus } from '@bentley/bentleyjs-core';
 import { SerializedClientRequestContext } from '@bentley/bentleyjs-core';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
+import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { Writable } from 'stream';
 import { XAndY } from '@bentley/geometry-core';
@@ -2982,7 +2983,7 @@ export class GltfBufferData {
 
 // @internal
 export class GltfBufferView {
-    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any);
+    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number);
     // (undocumented)
     readonly accessor: any;
     // (undocumented)
@@ -2991,6 +2992,8 @@ export class GltfBufferView {
     readonly count: number;
     // (undocumented)
     readonly data: Uint8Array;
+    // (undocumented)
+    readonly stride: number;
     // (undocumented)
     toBufferData(desiredType: GltfDataType): GltfBufferData | undefined;
     // (undocumented)
@@ -5155,6 +5158,8 @@ export class QParams2d {
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
+    get rangeDiagonal(): Vector2d;
+    // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
 }
@@ -5171,6 +5176,8 @@ export class QParams3d {
     static fromZeroToOne(rangeScale?: number): QParams3d;
     // (undocumented)
     readonly origin: Point3d;
+    // (undocumented)
+    get rangeDiagonal(): Vector3d;
     // (undocumented)
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
@@ -5203,6 +5210,7 @@ export class QPoint2dList {
     add(pt: Point2d): void;
     clear(): void;
     static fromPoints(points: Point2d[], out?: QPoint2dList): QPoint2dList;
+    fromTypedArray(range: Range2d, array: Uint16Array): void;
     get length(): number;
     // (undocumented)
     get list(): QPoint2d[];
@@ -5251,6 +5259,8 @@ export class QPoint3dList {
     // (undocumented)
     static createFrom(points: Point3d[], params: QParams3d): QPoint3dList;
     static fromPoints(points: Point3d[], out?: QPoint3dList): QPoint3dList;
+    // (undocumented)
+    fromTypedArray(range: Range3d, array: Uint16Array): void;
     get length(): number;
     // (undocumented)
     get list(): QPoint3d[];

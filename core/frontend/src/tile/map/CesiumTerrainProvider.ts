@@ -29,6 +29,7 @@ enum QuantizedMeshExtensionIds {
 /** @internal */
 const cesiumRequestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
 
+/** @internal */
 export function getCesiumOSMBuildingsUrl() {
   const osmAssetId = 96188;
   return `$CesiumIonAsset=${osmAssetId}:${cesiumRequestKey}`;

@@ -298,7 +298,7 @@ export class ViewingSpace {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, !this.view.displayStyle.isBackgroundMapVisible() /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
+    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, !this.view.displayStyle.getIsBackgroundMapVisible() /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
     if (newRootToNpc.map === undefined) {
       this.frustFraction = 0; // invalid frustum
       return;
