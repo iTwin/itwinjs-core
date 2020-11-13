@@ -81,7 +81,7 @@ export class ContextRealityModelState {
   public get isGlobal(): boolean {
     if (undefined === this._isGlobal) {
       const range = this.treeRef.computeWorldContentRange();
-      this._isGlobal = range.diagonal!().magnitude() > 2 * Constant.earthRadiusWGS84.equator
+      this._isGlobal = range.diagonal!().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
     }
     return this._isGlobal;
   }
