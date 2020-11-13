@@ -8,7 +8,7 @@ import {
 } from "@bentley/ui-abstract";
 import { SampleTool } from "./tools/SampleTool";
 import { UnitsPopupUiDataProvider } from "./UnitsPopup";
-// import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.
+import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.
 import { I18N } from "@bentley/imodeljs-i18n";
 import { ExtensionFrontstage } from "./Frontstage";
 import { IModelApp } from "@bentley/imodeljs-frontend";
@@ -48,14 +48,14 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
    * documentation on imodeljs.org.
    */
   public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
-    const unitsIcon = "icon-app-1";   // `svg:${statusBarButtonSvg}` change once svg imports are working.
+    const unitsIcon = `svg:${statusBarButtonSvg}`;
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
         AbstractStatusBarItemUtilities.createActionItem("UiTestExtension:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, ExtensionUiItemsProvider.i18n.translate("uiTestExtension:StatusBar.UnitsFlyover"),
           () => {
             IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(ExtensionUiItemsProvider.i18n), ExtensionUiItemsProvider.i18n.translate("uiTestExtension:StatusBar.Units"),
-              true, "uiTestExtension:units-popup", {movable: true,  width: 280, minWidth: 280});
+              true, "uiTestExtension:units-popup", { movable: true, width: 280, minWidth: 280 });
           }
         ));
     }
