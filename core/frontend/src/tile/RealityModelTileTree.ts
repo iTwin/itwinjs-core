@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
+import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import { Cartographic, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -93,18 +93,24 @@ const realityTreeSupplier = new RealityTreeSupplier();
 /** @internal */
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference { return new RealityTreeReference(props); }
 
+const zeroPoint = Point3d.createZero();
+const earthEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
+const scratchRay = Ray3d.createXAxis();
 /** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[] } | undefined {
     if (undefined === boundingVolume)
       return undefined;
+
+    let corners: Point3d[] | undefined;
+    let range: Range3d | undefined;
     if (undefined !== boundingVolume.box) {
       const box: number[] = boundingVolume.box;
       const center = Point3d.create(box[0], box[1], box[2]);
       const ux = Vector3d.create(box[3], box[4], box[5]);
       const uy = Vector3d.create(box[6], box[7], box[8]);
       const uz = Vector3d.create(box[9], box[10], box[11]);
-      const corners: Point3d[] = [];
+      corners = new Array<Point3d>();
       for (let j = 0; j < 2; j++) {
         for (let k = 0; k < 2; k++) {
           for (let l = 0; l < 2; l++) {
@@ -112,22 +118,43 @@ export class RealityModelTileUtils {
           }
         }
       }
-      return Range3d.createArray(corners);
+      range = Range3d.createArray(corners)
     } else if (Array.isArray(boundingVolume.sphere)) {
       const sphere: number[] = boundingVolume.sphere;
       const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
       const radius = sphere[3];
-      return Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
+      range = Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
     } else if (Array.isArray(boundingVolume.region)) {
-      const minEq = Constant.earthRadiusWGS84.equator + boundingVolume.region[4], maxEq = Constant.earthRadiusWGS84.equator + boundingVolume.region[5];
+      const minHeight = boundingVolume.region[4];
+      const maxHeight = boundingVolume.region[5];
+      const minLongitude = boundingVolume.region[0];
+      const maxLongitude = boundingVolume.region[2];
       const minLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(boundingVolume.region[1]);
       const maxLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(boundingVolume.region[3]);
-      const minEllipsoid = Ellipsoid.createCenterMatrixRadii(Point3d.createZero(), undefined, minEq, minEq, Constant.earthRadiusWGS84.polar + boundingVolume.region[4]);
-      const maxEllipsoid = Ellipsoid.createCenterMatrixRadii(Point3d.createZero(), undefined, maxEq, maxEq, Constant.earthRadiusWGS84.polar + boundingVolume.region[5]);
-      const range = minEllipsoid.patchRangeStartEndRadians(boundingVolume.region[0], boundingVolume.region[2], minLatitude, maxLatitude);
-      range.extendRange(maxEllipsoid.patchRangeStartEndRadians(boundingVolume.region[0], boundingVolume.region[2], minLatitude, maxLatitude));
-      return range;
-    } else return undefined;
+      const maxAngle = Math.max(Math.abs(maxLatitude - minLatitude), Math.abs(maxLongitude - minLongitude));
+
+      if (maxAngle < Math.PI / 8) {
+        corners = new Array<Point3d>();
+        const chordTolerance = (1 - Math.cos(maxAngle / 2)) * Constant.earthRadiusWGS84.polar;
+        const addEllipsoidCorner = ((long: number, lat: number) => {
+          const ray = earthEllipsoid.radiansToUnitNormalRay(long, lat, scratchRay)!;
+          corners!.push(ray.fractionToPoint(minHeight - chordTolerance));
+          corners!.push(ray.fractionToPoint(maxHeight + chordTolerance));
+        });
+        addEllipsoidCorner(minLongitude, minLatitude);
+        addEllipsoidCorner(minLongitude, maxLatitude);
+        addEllipsoidCorner(maxLongitude, minLatitude);
+        addEllipsoidCorner(maxLongitude, maxLatitude);
+        range = Range3d.createArray(corners)
+      } else {
+        const minEq = Constant.earthRadiusWGS84.equator + minHeight, maxEq = Constant.earthRadiusWGS84.equator + maxHeight;
+        const minEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, minEq, minEq, Constant.earthRadiusWGS84.polar + minHeight);
+        const maxEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, maxEq, maxEq, Constant.earthRadiusWGS84.polar + maxHeight);
+        range = minEllipsoid.patchRangeStartEndRadians(minLongitude, maxLongitude, minLatitude, maxLatitude);
+        range.extendRange(maxEllipsoid.patchRangeStartEndRadians(minLongitude, maxLongitude, minLatitude, maxLatitude));
+      }
+    }
+    return range ? { range, corners } : undefined;
 
   }
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
@@ -200,18 +227,25 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly additiveRefinement?: boolean;
   public readonly parent?: RealityTile;
   public readonly noContentButTerminateOnSelection?: boolean;
+  public readonly rangeCorners?: Point3d[];
 
   constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
     this.contentId = thisId;
     this.parent = parent;
-    this.range = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume)!;
+    const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume);
+    if (boundingVolume) {
+      this.range = boundingVolume.range;
+      this.rangeCorners = boundingVolume.corners;
+    } else {
+      this.range = Range3d.createNull();
+      assert(false, "Unbounded tile")
+    }
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     this.transformToRoot = transformToRoot;
     this.additiveRefinement = additiveRefinement;
     const hasContents = undefined !== getUrl(json.content);
-
     if (hasContents)
-      this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume);
+      this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume)?.range;
     else {
       // A node without content should probably be selectable even if not additive refinement - But restrict it to that case here
       // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world buidling set.

@@ -79,10 +79,6 @@ export interface ContextRealityModelProps {
   description?: string;
   /** @beta */
   classifiers?: SpatialClassificationProps.Properties[];
-  /** @beta
-   *  true if the reality model represents the entire globe ellipsoid
-   */
-  isGlobal?: boolean;
   /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.
    * @beta
    *

@@ -27,7 +27,7 @@ export class RealityTileDrawArgs extends TileDrawArgs {
     const tileToWorld = Matrix4d.createTransform(this.location);
     this._worldToViewMap = worldToViewMap;
     this._frustumPlanes = frustumPlanes;
-    this._tileToView = tileToWorld.multiplyMatrixMatrix(worldToViewMap.transform0);
+    this._tileToView = worldToViewMap.transform0.multiplyMatrixMatrix(tileToWorld);
   }
 
   public getPixelSize(tile: Tile): number {

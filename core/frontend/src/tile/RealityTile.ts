@@ -21,6 +21,7 @@ export interface RealityTileParams extends TileParams {
   readonly transformToRoot?: Transform;
   readonly additiveRefinement?: boolean;
   readonly noContentButTerminateOnSelection?: boolean;
+  readonly rangeCorners?: Point3d[];
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
@@ -33,6 +34,7 @@ export class RealityTile extends Tile {
   public readonly transformToRoot?: Transform;
   public readonly additiveRefinement?: boolean;
   public readonly noContentButTerminateOnSelection?: boolean;
+  public readonly rangeCorners?: Point3d[];
   private _everDisplayed = false;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -40,6 +42,7 @@ export class RealityTile extends Tile {
     this.transformToRoot = props.transformToRoot;
     this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
+    this.rangeCorners = props.rangeCorners;
 
     if (undefined === this.transformToRoot)
       return;
@@ -138,7 +141,8 @@ export class RealityTile extends Tile {
   }
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
-    builder.addRangeBox(this.range);
+    let corners = this.rangeCorners ? this.rangeCorners : this.range.corners();
+    builder.addRangeBoxFromCorners(corners);
   }
 
   public allChildrenIncluded(tiles: Tile[]) {
