@@ -364,8 +364,6 @@ export class ComponentExamplesProvider {
         createComponentExample("Basic Textarea", "Textarea with placeholder", <Textarea placeholder="Basic Textarea" />),
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
-        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
-        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
         createComponentExample("Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" />),
         createComponentExample("Number Input .25 step w/snap", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
         createComponentExample("Number Input .25 step w/snap custom format and parser", "New Numeric Input component", <NumberInput value={10.5} format={formatDollar} parse={parseDollar} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
@@ -787,6 +785,15 @@ export class ComponentExamplesProvider {
       ],
     };
   }
+  private static get deprecatedComponentSamples(): ComponentExampleCategory {
+    return {
+      title: "Deprecated Components",
+      examples: [
+        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
+      ],
+    };
+  }
 
   public static get categories(): ComponentExampleCategory[] {
     return [
@@ -811,6 +818,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
       ComponentExamplesProvider.toggleSamples,
+      ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }
 }
