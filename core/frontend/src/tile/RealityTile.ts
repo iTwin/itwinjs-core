@@ -181,7 +181,7 @@ export class RealityTile extends Tile {
     if (visibility >= 1 && this.noContentButTerminateOnSelection)
       return;
 
-    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile())) {
+    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded)) {
       if (!this.isOccluded(args.viewingSpace)) {
         context.selectOrQueue(this, args, traversalDetails);
 
@@ -236,7 +236,7 @@ export class RealityTile extends Tile {
     if (visibility < 0)
       return;
 
-    if (visibility * preloadSizeModifier > 1) {
+    if (visibility * preloadSizeModifier > 1 || context.preloadCountExceeded) {
       if (this.isDisplayable)
         context.preload(this, args);
     } else {
