@@ -170,6 +170,8 @@ public;NoChildrenProps
 beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
 beta;NodeCheckboxRenderProps = Omit
+beta;NumberInput: React.ForwardRefExoticComponent
+beta;NumberInputProps 
 beta;NumericInput 
 internal;NumericInputDefaultProps = Pick
 beta;NumericInputProps 
