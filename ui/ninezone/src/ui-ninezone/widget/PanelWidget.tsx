@@ -89,7 +89,7 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
             style={style}
             ref={refs}
           >
-            <WidgetTabBar />
+            <WidgetTabBar separator={isHorizontalPanelSide(panel.side) ? true : !widget.minimized} />
             <WidgetContentContainer />
           </Widget>
         </WidgetProvider>
