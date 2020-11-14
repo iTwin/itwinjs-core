@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { AbstractMenuItemProps, UiError } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps, ConditionalBooleanValue, UiError } from "@bentley/ui-abstract";
 import { ContextMenuItem, ContextSubMenu, IconSpec } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
@@ -47,6 +47,8 @@ export class MenuItem extends ItemDefBase {
         this.setLabel(this._actionItem.label);
       if (!this.badgeType)
         this.badgeType = this._actionItem.badgeType;
+      if (!this.isDisabled)
+        this.isDisabled = this._actionItem.isDisabled;
     } else if (props.submenu) {
       props.submenu.forEach((childProps: MenuItemProps) => {
         const childItem = new MenuItem(childProps, onSelection);
@@ -117,11 +119,12 @@ export class MenuItemHelpers {
     const iconSpec = item.iconSpec;
     const iconRightSpec = item.iconRightSpec;
     const badgeType = item.badgeType;
+    const isDisabled: boolean = ConditionalBooleanValue.getValue(item.isDisabled);
 
     if (item.actionItem) {
       const sel = () => item.itemPicked();
       node = (
-        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} iconRight={iconRightSpec} badgeType={badgeType}>
+        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} iconRight={iconRightSpec} badgeType={badgeType} disabled={isDisabled}>
           {label}
         </ContextMenuItem>
       );
@@ -131,7 +134,7 @@ export class MenuItemHelpers {
         const items = this.createMenuItemNodes(item.submenu);
 
         node = (
-          <ContextSubMenu key={index} icon={iconSpec} label={label} badgeType={badgeType}>
+          <ContextSubMenu key={index} icon={iconSpec} label={label} badgeType={badgeType} disabled={isDisabled}>
             {items}
           </ContextSubMenu>
         );
