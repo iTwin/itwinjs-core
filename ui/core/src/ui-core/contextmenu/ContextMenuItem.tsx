@@ -152,6 +152,9 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   };
 
   private _handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (this.props.disabled === true)
+      return;
+
     if (this.props.onClick)
       this.props.onClick(event);
     if (this.props.onSelect)
@@ -159,7 +162,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   };
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === SpecialKey.Enter && this.props.onSelect !== undefined) {
+    if (event.key === SpecialKey.Enter && this.props.onSelect !== undefined && this.props.disabled !== true) {
       this.props.onSelect(event);
     }
   };
