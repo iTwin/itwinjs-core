@@ -308,6 +308,22 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
   description?: string;
 }
 
+/** Options for loading a [[DisplayStyleProps]].
+ * @see [[ViewStateLoadProps]].
+ * @public
+ */
+export interface DisplayStyleLoadProps {
+  /** If true, the element Ids in the display style's schedule script will be empty. The element Ids are not required on the frontend for display and can be quite large.
+   * @public
+   */
+  omitScheduleScriptElementIds?: boolean;
+  /** If true, the Ids of excluded elements will be compressed into a single string.
+   * @see [[DisplayStyleSettingsProps.excludedElements]]
+   * @public
+   */
+  compressExcludedElementIds?: boolean;
+}
+
 /** Parameters to specify what element to load for [IModelDb.Elements.getElementProps]($backend).
  * @public
  */
@@ -322,13 +338,7 @@ export interface ElementLoadProps {
   /** Properties to omit when loading a [[DisplayStyle]].
    * @internal
    */
-  displayStyle?: {
-    /** If true, the element Ids in the display style's schedule script will be empty. The element Ids are not required on the frontend for display.
-     * @note [IModelDb.Views.getViewStateData]($backend) sets this to true, affecting the result of [IModelConnection.Views.load]($frontend).
-     * @internal
-     */
-    omitScheduleScriptElementIds?: boolean;
-  };
+  displayStyle?: DisplayStyleLoadProps;
 }
 
 /** Properties of an [ElementAspect]($backend)

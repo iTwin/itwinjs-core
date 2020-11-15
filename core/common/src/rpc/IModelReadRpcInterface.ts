@@ -19,7 +19,7 @@ import { QueryLimit, QueryPriority, QueryQuota, QueryResponse } from "../Paging"
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
-import { ViewStateProps } from "../ViewProps";
+import { ViewStateLoadProps, ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
@@ -65,7 +65,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]> { return this.forward(arguments); }
   public async getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
   public async getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]> { return this.forward(arguments); }
-  public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string): Promise<ViewStateProps> { return this.forward(arguments); }
+  public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps> { return this.forward(arguments); }
   public async readFontJson(_iModelToken: IModelRpcProps): Promise<any> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }

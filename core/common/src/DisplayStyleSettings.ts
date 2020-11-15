@@ -8,7 +8,7 @@
 
 // cspell:ignore greyscale ovrs
 
-import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
@@ -142,8 +142,8 @@ export interface DisplayStyleSettingsProps {
   backgroundMap?: BackgroundMapProps;
   /** Contextual Reality Models */
   contextRealityModels?: ContextRealityModelProps[];
-  /** List of IDs of excluded elements */
-  excludedElements?: Id64String[];
+  /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
+  excludedElements?: Id64Array | CompressedId64Set;
   /** Map Imagery.
    * @alpha
    */

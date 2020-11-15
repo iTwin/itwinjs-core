@@ -14,7 +14,7 @@ import { DefinitionElementProps, ElementProps, SheetProps } from "./ElementProps
 import { EntityQueryParams } from "./EntityProps";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
-/** Returned from [IModelDb.Views.getViewStateData]($backend)
+/** Returned from [IModelDb.Views.getViewStateData]($backend).
  * @public
  */
 export interface ViewStateProps {
@@ -30,6 +30,14 @@ export interface ViewStateProps {
    * @alpha
    */
   modelExtents?: Range3dProps;
+}
+
+/** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateData]($backend).
+ * @public
+ */
+export interface ViewStateLoadProps {
+  /** Options for loading the view's [[DisplayStyleProps]]. */
+  displayStyle?: DisplayStyleLoadProps;
 }
 
 /** Properties that define a ModelSelector
