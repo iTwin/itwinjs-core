@@ -86,6 +86,9 @@ export namespace CompressedId64Set {
    * @beta
    */
   export function compressIds(ids: OrderedId64Iterable): CompressedId64Set {
+    if ("string" === typeof ids)
+      return ids;
+
     let str = "";
 
     const prevId = new Uint64();
@@ -411,6 +414,12 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     this._inserted.clear();
     this._deleted.clear();
     this.onCleared.raiseEvent();
+  }
+
+  /** Remove all Ids from the set, then add the specified Ids. */
+  public reset(ids?: CompressedId64Set): void {
+    this.clear();
+    this._ids = ids ?? "";
   }
 
   /** Obtain an iterator over the Ids in this set. The Ids are returned in ascending order based on their unsigned 64-bit integer values. */

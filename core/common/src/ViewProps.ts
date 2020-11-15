@@ -10,7 +10,7 @@ import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { AngleProps, Range3dProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, ElementProps, SheetProps } from "./ElementProps";
+import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
