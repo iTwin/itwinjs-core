@@ -48,6 +48,8 @@ export interface PopupProps extends CommonProps {
   onEnter?: () => void;
   /** Function called when the wheel is used */
   onWheel?: (e: WheelEvent) => void;
+  /** Function called when the right mouse button is pressed */
+  onContextMenu?: (e: MouseEvent) => void;
   /** Offset from the parent (defaults to 4) */
   offset: number;
   /** Target element to position popup */
@@ -68,6 +70,8 @@ export interface PopupProps extends CommonProps {
   closeOnEnter?: boolean;
   /** Indicates whether to close the popup when the wheel is used (defaults to true) */
   closeOnWheel?: boolean;
+  /** Indicates whether to close the popup when the right mouse button is pressed (defaults to true) */
+  closeOnContextMenu?: boolean;
 }
 
 /** @internal */
@@ -144,7 +148,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _bindWindowEvents = () => {
     window.addEventListener("pointerdown", this._handleOutsideClick);
     window.addEventListener("resize", this._hide);
-    window.addEventListener("contextmenu", this._hide);
+    window.addEventListener("contextmenu", this._handleContextMenu);
     window.addEventListener("scroll", this._hide);
     window.addEventListener("wheel", this._handleWheel);
     window.addEventListener("keydown", this._handleKeyboard);
@@ -153,7 +157,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _unBindWindowEvents = () => {
     window.removeEventListener("pointerdown", this._handleOutsideClick);
     window.removeEventListener("resize", this._hide);
-    window.removeEventListener("contextmenu", this._hide);
+    window.removeEventListener("contextmenu", this._handleContextMenu);
     window.removeEventListener("scroll", this._hide);
     window.removeEventListener("wheel", this._handleWheel);
     window.removeEventListener("keydown", this._handleKeyboard);
@@ -185,6 +189,18 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
 
     this._onClose();
+  };
+
+  private _handleContextMenu = (event: MouseEvent) => {
+    if (this._popup && this._popup.contains(event.target as Node))
+      return;
+
+    if (this.props.onContextMenu)
+      return this.props.onContextMenu(event);
+
+    const closeOnContextMenu = this.props.closeOnContextMenu !== undefined ? this.props.closeOnContextMenu : true;
+    if (closeOnContextMenu)
+      this._hide();
   };
 
   private _handleKeyboard = (event: KeyboardEvent): void => {
