@@ -3151,6 +3151,9 @@ export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?
     url?: string;
 }>;
 
+// @beta (undocumented)
+export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string;
+
 // @internal (undocumented)
 export function getCesiumOSMBuildingsUrl(): string;
 
@@ -5373,7 +5376,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected _totalDistanceMarker?: MeasureLabel;
     // (undocumented)
-    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent, reopenToolTip: boolean): Promise<void>;
+    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected updateTotals(): Promise<void>;
 }
