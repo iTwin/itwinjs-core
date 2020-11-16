@@ -261,7 +261,7 @@ class ExcludedElements implements OrderedId64Iterable {
     this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
   }
 
-  public toJSON(): CompressedId64Set {
+  public get ids(): CompressedId64Set {
     return this._ids.ids;
   }
 
@@ -578,6 +578,11 @@ export class DisplayStyleSettings {
     return this._excludedElements;
   }
 
+  /** @internal */
+  public get compressedExcludedElementIds(): CompressedId64Set {
+    return this._excludedElements.ids;
+  }
+
   /** Add one or more elements to the set of elements not to be displayed.
    * @param id The IDs of the element(s) to be excluded.
    */
@@ -608,7 +613,7 @@ export class DisplayStyleSettings {
   /** @internal */
   public toJSON(): DisplayStyleSettingsProps {
     // Synchronize with excluded elements.
-    const excluded = this._excludedElements.toJSON();
+    const excluded = this._excludedElements.ids;
     if (0 === excluded.length)
       delete this._json.excludedElements;
     else
@@ -671,7 +676,7 @@ export class DisplayStyleSettings {
 
       props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
       props.modelOvr = this._json.modelOvr ? [...this._json.modelOvr] : [];
-      props.excludedElements = this._excludedElements.toJSON();
+      props.excludedElements = this._excludedElements.ids;
     }
 
     return props;

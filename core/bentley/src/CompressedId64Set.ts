@@ -7,7 +7,6 @@
  */
 
 import { assert } from "./Assert";
-import { BeEvent } from "./BeEvent";
 import { Id64, Id64Array, Id64Set, Id64String } from "./Id";
 import { OrderedId64Iterable } from "./OrderedId64Iterable";
 import { SortedArray } from "./SortedArray";
@@ -370,12 +369,6 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
   private _ids: CompressedId64Set;
   private readonly _inserted = new OrderedId64Array();
   private readonly _deleted = new OrderedId64Array();
-  /** Emitted after `id` is added to this set. */
-  public readonly onAdded = new BeEvent<(id: Id64String) => void>();
-  /** Emitted after `id` is deleted from this set. */
-  public readonly onDeleted = new BeEvent<(id: Id64String) => void>();
-  /** Emitted after this set's contents are cleared. */
-  public readonly onCleared = new BeEvent<() => void>();
 
   /** Construct a new set, optionally initialized to contain the Ids represented by `ids`. */
   public constructor(ids?: CompressedId64Set) {
@@ -395,7 +388,6 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
 
     this._deleted.remove(id);
     this._inserted.insert(id);
-    this.onAdded.raiseEvent(id);
   }
 
   /** Remove the specified Id from the set. */
@@ -405,7 +397,6 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
 
     this._inserted.remove(id);
     this._deleted.insert(id);
-    this.onDeleted.raiseEvent(id);
   }
 
   /** Remove all Ids from the set. */
@@ -413,7 +404,6 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     this._ids = "";
     this._inserted.clear();
     this._deleted.clear();
-    this.onCleared.raiseEvent();
   }
 
   /** Remove all Ids from the set, then add the specified Ids. */

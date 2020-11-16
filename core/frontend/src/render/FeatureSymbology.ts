@@ -95,10 +95,8 @@ export namespace FeatureSymbology {
       this.neverDrawnAnimationNodes.clear();
       this.animationNodeOverrides.clear();
 
-      const excludedElements = view.displayStyle.settings.excludedElements;
-      excludedElements.forEach((element: Id64String) => {
-        this.setNeverDrawn(element);
-      });
+      for (const excluded of view.displayStyle.settings.excludedElementIds)
+        this.setNeverDrawn(excluded);
 
       this._constructions = constructions;
       this._dimensions = dimensions;
