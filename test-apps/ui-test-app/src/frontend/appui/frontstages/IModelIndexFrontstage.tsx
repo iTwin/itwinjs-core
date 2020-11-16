@@ -29,7 +29,7 @@ class IModelIndexControl extends ContentControl {
       const iModelId = iModelConnection.iModelId!;
       await SampleAppIModelApp.openIModelAndViews(contextId, iModelId, viewIds);
     }
-  }
+  };
 }
 
 export class IModelIndexFrontstage extends FrontstageProvider {

@@ -681,7 +681,13 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       this.extendXYZ(x / w, y / w, z / w);
   }
   /** Expand this range to include a point. */
-  public extendPoint(point: Point3d): void { this.extendXYZ(point.x, point.y, point.z); }
+  public extendPoint(point: Point3d, transform?: Transform): void {
+    if (transform) {
+      this.extendTransformedXYZ(transform, point.x, point.y, point.z);
+    } else {
+      this.extendXYZ(point.x, point.y, point.z);
+    }
+  }
 
   /** Expand this range to include a transformed point. */
   public extendTransformedPoint(transform: Transform, point: Point3d): void {

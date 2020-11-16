@@ -1,0 +1,4 @@
+# start off ignoring everything, and then add back only the files we want
+*
+!dist/**/*.js
+!*.md

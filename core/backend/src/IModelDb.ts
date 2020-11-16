@@ -19,7 +19,7 @@ import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } f
 import {
   AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
-  DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
+  DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
@@ -1145,6 +1145,20 @@ export abstract class IModelDb extends IModel {
    */
   public exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult {
     return this.nativeDb.exportPartGraphics(exportProps);
+  }
+
+  /** Request geometry stream information from an element.
+   * @alpha
+   */
+  public elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult {
+    return this.nativeDb.processGeometryStream(requestProps);
+  }
+
+  /** Update geometry stream for the supplied element.
+   * @alpha
+   */
+  public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
+    return this.nativeDb.updateGeometryStream(updateProps);
   }
 }
 

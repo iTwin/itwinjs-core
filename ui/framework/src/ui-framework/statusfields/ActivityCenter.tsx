@@ -53,17 +53,17 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
       percentage: args.percentage,
       isActivityMessageVisible: true,
     });
-  }
+  };
 
   private _handleActivityMessageCancelledEvent = () => {
     this.setState({
       isActivityMessageVisible: false,
     });
-  }
+  };
 
   private _openActivityMessage = () => {
     MessageManager.setupActivityMessageValues(this.state.message, this.state.percentage, true);
-  }
+  };
 
   public render(): React.ReactNode {
     let footerMessages: React.ReactNode;

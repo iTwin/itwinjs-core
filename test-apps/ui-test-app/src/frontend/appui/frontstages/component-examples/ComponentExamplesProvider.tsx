@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -6,24 +5,81 @@
 import * as React from "react";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { DateFormatter, IconSpecUtilities, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
+import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumericInput, ProgressBar, ProgressSpinner, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect,
-  Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
+  NewBadge, NumberInput, NumericInput, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
+  ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps, IntlFormatter } from "@bentley/ui-components";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import {
+  adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
+  IntlFormatter, ParsedInput, QuantityInput,
+} from "@bentley/ui-components";
+import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
+import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType } from "@bentley/imodeljs-frontend";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+
+function exoticStep(direction: string) {
+  if (direction === "up")
+    return .5;
+  return .1;
+}
+
+function parseDollar(stringValue: string) {
+  const noDollarSign = stringValue.replace(/^\$/, "");
+  let n = parseFloat(noDollarSign);
+  if (isNaN(n) || !isFinite(n))
+    n = 0;
+  return n;
+}
+
+function formatDollar(num: number | undefined | null, fallback: string) {
+  if (undefined === num || null === num)
+    return fallback;
+
+  return `$${num.toFixed(2)}`;
+}
+
+function fahrenheitToCelsius(f: number) {
+  return (f - 32) * 5 / 9;
+}
+
+function parseStringToCelsius(userInput: string): ParseResults {
+  let convertFromFahrenheit = false;
+  let temperatureStr = userInput;
+  // if explicitly specified honor specification
+  if (userInput.endsWith("f") || userInput.endsWith("F")) {
+    convertFromFahrenheit = true;
+    temperatureStr = userInput.slice(0, userInput.length - 1);
+  } else if (userInput.endsWith("c") || userInput.endsWith("C")) {
+    convertFromFahrenheit = false;
+    temperatureStr = userInput.slice(0, userInput.length - 1);
+  }
+
+  try {
+    let temperature = Number.parseFloat(temperatureStr);
+    if (Number.isNaN(temperature))
+      return { parseError: "unable to parse temperature" };
+    if (convertFromFahrenheit)
+      temperature = fahrenheitToCelsius(temperature);
+    return { value: temperature };
+  } catch (_e) {
+    return { parseError: "unable to parse temperature" };
+  }
+}
+
+function formatCelsiusValue(temperature: number): string {
+  return `${temperature.toFixed(1)}C`;
+}
 
 /** An example formatter that both formats and parses dates. */
 class MdyFormatter implements DateFormatter {
@@ -76,7 +132,7 @@ export function DatePickerHost(props: DatePickerPopupButtonProps) {
   const handleOnDateChange = React.useCallback((day: Date) => {
     onDateChange && onDateChange(day);
     setCurrentDate(day);
-  }, [onDateChange])
+  }, [onDateChange]);
 
   return (
     <DatePickerPopupButton selected={currentDate} onDateChange={handleOnDateChange} {...otherProp} />
@@ -308,7 +364,12 @@ export class ComponentExamplesProvider {
         createComponentExample("Basic Textarea", "Textarea with placeholder", <Textarea placeholder="Basic Textarea" />),
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
-        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput placeholder="Icon Input" min={1} max={100} className="uicore-full-width" />),
+        createComponentExample("Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input .25 step w/snap", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input .25 step w/snap custom format and parser", "New Numeric Input component", <NumberInput value={10.5} format={formatDollar} parse={parseDollar} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/touch buttons", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={.5} snap showTouchButtons containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/snap  & custom step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={exoticStep} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/placeholder", "New Numeric Input component", <NumberInput placeholder="Enter Input" precision={2} step={0.25} containerClassName="uicore-full-width" />),
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
@@ -356,6 +417,59 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get _reactMessage(): ReactMessage {
+    const reactNode = (
+      <span>
+        For more details, <UnderlinedButton onClick={() => { }}>click here</UnderlinedButton>.
+      </span >
+    );
+    return ({ reactNode });
+  }
+
+  /** Tool that will start a sample activity and display ActivityMessage.
+   */
+  private static _activityTool = async () => {
+    let isCancelled = false;
+    let progress = 0;
+
+    const details = new ActivityMessageDetails(true, true, true, true);
+    details.onActivityCancelled = () => {
+      isCancelled = true;
+    };
+    IModelApp.notifications.setupActivityMessage(details);
+
+    while (!isCancelled && progress <= 100) {
+      IModelApp.notifications.outputActivityMessage("This is a sample activity message", progress);
+      await BeDuration.wait(100);
+      progress++;
+    }
+
+    const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
+    IModelApp.notifications.endActivityMessage(endReason);
+  };
+
+  private static get messageSamples(): ComponentExampleCategory {
+    return {
+      title: "Messages",
+      examples: [
+        createComponentExample("Toast", undefined,
+          <UnderlinedButton onActivate={
+            () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", undefined, OutputMessageType.Toast))
+          }>Toast message</UnderlinedButton>),
+        createComponentExample("Toast with link", undefined,
+          <UnderlinedButton onActivate={
+            () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage)
+            )}>Toast with link</UnderlinedButton>),
+        createComponentExample("Sticky", undefined,
+          <UnderlinedButton onActivate={
+            () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky))
+          }>Sticky message</UnderlinedButton>),
+        createComponentExample("Activity", undefined,
+          <UnderlinedButton onActivate={this._activityTool}>Activity message</UnderlinedButton>),
+      ],
+    };
+  }
+
   private static get progressIndicatorsSamples(): ComponentExampleCategory {
     return {
       title: "Progress Indicators",
@@ -376,6 +490,45 @@ export class ComponentExamplesProvider {
         createComponentExample("ProgressSpinner XLarge", "width/height of 96", <ProgressSpinner indeterminate size={SpinnerSize.XLarge} />),
         createComponentExample("ProgressSpinner with style", "width/height of 120",
           <div><ProgressSpinner indeterminate style={{ display: "inline-block", width: 120, height: 120 }} />... Loading</div>),
+      ],
+    };
+  }
+
+  private static get quantitySamples(): ComponentExampleCategory {
+    const onLengthChange = (value: number) => {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Length value set to ${value}`));
+      console.log(`Length value set to: ${value}`);
+    };
+    const onAngleChange = (value: number) => {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Angle value set to ${value}`));
+      console.log(`Angle value set to: ${value}`);
+    };
+    const onVolumeChange = (value: number) => {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Volume value set to ${value}`));
+      console.log(`Volume value set to: ${value}`);
+    };
+    const onTemperatureChange = (value: number) => {
+      if (typeof value === "number") {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Temperature value set to ${value} C`));
+        console.log(`Temperature value set to ${value} C`);
+      }
+    };
+
+    const initialLength = 3.5; // meters
+    const initialAngle = Math.PI / 4; // radians
+    const initialVolume = 1.0; // meters^3
+    const initialTemperature = 20; // 20 Celsius
+    return {
+      title: "Quantity Input",
+      examples: [
+        createComponentExample("Length", undefined,
+          <QuantityInput initialValue={initialLength} quantityType={QuantityType.Length} onQuantityChange={onLengthChange} />),
+        createComponentExample("Angle", undefined,
+          <QuantityInput initialValue={initialAngle} quantityType={QuantityType.Angle} onQuantityChange={onAngleChange} />),
+        createComponentExample("Volume", undefined,
+          <QuantityInput initialValue={initialVolume} quantityType={QuantityType.Volume} onQuantityChange={onVolumeChange} />),
+        createComponentExample("Temperature (Custom)", undefined,
+          <ParsedInput onChange={onTemperatureChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />),
       ],
     };
   }
@@ -632,6 +785,15 @@ export class ComponentExamplesProvider {
       ],
     };
   }
+  private static get deprecatedComponentSamples(): ComponentExampleCategory {
+    return {
+      title: "Deprecated Components",
+      examples: [
+        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
+      ],
+    };
+  }
 
   public static get categories(): ComponentExampleCategory[] {
     return [
@@ -645,7 +807,9 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.inputsSamples,
       ComponentExamplesProvider.listboxSamples,
       ComponentExamplesProvider.loadingSamples,
+      ComponentExamplesProvider.messageSamples,
       ComponentExamplesProvider.progressIndicatorsSamples,
+      ComponentExamplesProvider.quantitySamples,
       ComponentExamplesProvider.searchBoxSample,
       ComponentExamplesProvider.selectSamples,
       ComponentExamplesProvider.sliderSamples,
@@ -654,6 +818,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
       ComponentExamplesProvider.toggleSamples,
+      ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }
 }

@@ -24,7 +24,7 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
       displayLabel: "User",
       typename: StandardTypeNames.String,
     };
-  }
+  };
 
   private _userValue: DialogItemValue = { value: "unknown" };
   private get user(): string {
@@ -41,7 +41,7 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
       displayLabel: "City",
       typename: StandardTypeNames.String,
     };
-  }
+  };
 
   private _cityValue: DialogItemValue = { value: "unknown" };
   private get city(): string {
@@ -54,7 +54,7 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
   // called to apply a single property value change.
   public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.processChangesInUi([updatedValue]);
-  }
+  };
 
   /** Called by UI to inform data provider of changes.  */
   public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
@@ -90,14 +90,14 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
       this.currentPageIndex++;
       this.reloadDialogItems();
     }
-  }
+  };
 
   public handlePrevious = () => {
     if (this.currentPageIndex > 0) {
       this.currentPageIndex--;
       this.reloadDialogItems();
     }
-  }
+  };
 
   public supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];

@@ -266,7 +266,7 @@ export class WidgetDef {
         this.setWidgetState(newState);
       }
     }
-  }
+  };
 
   /** @alpha */
   public get preferredPanelSize() {

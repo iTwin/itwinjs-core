@@ -211,7 +211,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
         {widgetDef.reactNode}
       </div>
     );
-  }
+  };
 
   private _handlePanelStateChangedEvent = ({ panelDef, panelState }: PanelStateChangedEventArgs) => {
     // istanbul ignore else
@@ -221,7 +221,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     this.setState({
       panelState,
     });
-  }
+  };
 
   private _handleWidgetStateChangedEvent = ({ widgetDef }: WidgetStateChangedEventArgs) => {
     const runtimeProps = this.props.runtimeProps;
@@ -232,7 +232,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     this.setState({
       stagePanelWidgets: this._getVisibileStagePanelWidgets(),
     });
-  }
+  };
 
   private _getVisibileStagePanelWidgets() {
     const panelDef = this.props.runtimeProps?.panelDef;

@@ -48,7 +48,7 @@ describe("ConnectedContent", () => {
         if (2 === clickCount) {
           this.props.setDefaultIModelViewportControlId(viewportControlId);
         }
-      }
+      };
 
       public render() {
         return <div>

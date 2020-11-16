@@ -170,7 +170,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
   private _handleSizeChanged = (size: SizeProps) => {
     this._size = size;
     this.updatePosition();
-  }
+  };
 
   private _handlePointerMessageChangedEvent = (args: PointerMessageChangedEventArgs) => {
     this._relativePosition = args.relativePosition;
@@ -183,13 +183,13 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       messageDetails: args.messageDetails,
     }));
     this.updatePosition();
-  }
+  };
 
   private _handlePointerMessagePositionChangedEvent = (args: PointerMessagePositionChangedEventArgs) => {
     this._relativePosition = args.relativePosition;
     this._position = args.pt;
     this.updatePosition();
-  }
+  };
 
   private updatePosition() {
     const adjustmentOffset = 20;
