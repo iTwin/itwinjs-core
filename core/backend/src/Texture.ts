@@ -14,20 +14,20 @@ import { IModelDb } from "./IModelDb";
 /** Defines a rendering texture that is associated with a Material and applied to surface geometry.
  * @public
  */
-export class Texture extends DefinitionElement implements TextureProps {
+export class Texture extends DefinitionElement {
   /** @internal */
   public static get className(): string { return "Texture"; }
   public format: ImageSourceFormat;
-  public data: string;
+  public data: Uint8Array;
   public width: number;
   public height: number;
   public flags: TextureFlags;
   public description?: string;
   /** @internal */
-  constructor(props: TextureProps, iModel: IModelDb) {
+  constructor(props: TextureProps & { data: Uint8Array | string }, iModel: IModelDb) {
     super(props, iModel);
     this.format = props.format;
-    this.data = props.data;
+    this.data = (typeof props.data == "string") ? Buffer.from(props.data, "base64") : props.data;
     this.width = props.width;
     this.height = props.height;
     this.flags = props.flags;
@@ -37,7 +37,7 @@ export class Texture extends DefinitionElement implements TextureProps {
   public toJSON(): TextureProps {
     const val = super.toJSON() as TextureProps;
     val.format = this.format;
-    val.data = this.data;
+    val.data = Buffer.from(this.data).toString("base64");
     val.width = this.width;
     val.height = this.height;
     val.flags = this.flags;
