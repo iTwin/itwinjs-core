@@ -2781,7 +2781,7 @@ export function useAnimatePanelWidgets(): {
     sizes: {
         [id: string]: PanelWidgetProps["size"];
     };
-}
+};
 
 // @internal (undocumented)
 export function useBorders(widgetId: WidgetState["id"]): {
