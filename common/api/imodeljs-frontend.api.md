@@ -6403,7 +6403,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected _imperialFormatSpecsByType: Map<QuantityType, FormatterSpec>;
     // (undocumented)
     protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
-    loadFormatAndParsingMaps(useImperial: boolean): Promise<void>;
+    loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
     protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
