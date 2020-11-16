@@ -449,7 +449,7 @@ export namespace ElementGeometry {
     if (wantBRepData && null !== entityData)
       data = Base64.fromUint8Array(entityData);
 
-    return { data, type, transform, faceSymbology };
+    return { data, type, transform: transform?.toJSON(), faceSymbology };
   }
 
   export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined {
