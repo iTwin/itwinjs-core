@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "removed Matrix3d from Matrix3dProps. ***breaking change***",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "33296803+kabentley@users.noreply.github.com"
+}

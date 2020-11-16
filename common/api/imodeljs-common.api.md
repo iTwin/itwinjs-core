@@ -717,6 +717,10 @@ export interface ChangedElements {
     // (undocumented)
     opcodes: number[];
     // (undocumented)
+    parentClassIds?: Id64String[];
+    // (undocumented)
+    parentIds?: Id64String[];
+    // (undocumented)
     properties?: Id64String[][];
     // (undocumented)
     type: number[];
@@ -1456,8 +1460,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1048576,
-    Major = 16,
+    Combined = 1114112,
+    Major = 17,
     Minor = 0
 }
 
@@ -4408,6 +4412,14 @@ export interface ModelGeometryChangesProps {
 }
 
 // @public
+export interface ModelLoadProps {
+    // (undocumented)
+    code?: CodeProps;
+    // (undocumented)
+    id?: Id64String;
+}
+
+// @public
 export interface ModelProps extends EntityProps {
     // (undocumented)
     isPrivate?: boolean;
@@ -5376,6 +5388,10 @@ export class RelatedElement implements RelatedElementProps {
 export interface RelatedElementProps {
     id: Id64String;
     relClassName?: string;
+}
+
+// @public
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 // @beta
@@ -6551,6 +6567,14 @@ export interface SolarShadowSettingsProps {
     // @internal (undocumented)
     bias?: number;
     color?: ColorDefProps;
+}
+
+// @public
+export interface SourceAndTarget {
+    // (undocumented)
+    sourceId: Id64String;
+    // (undocumented)
+    targetId: Id64String;
 }
 
 // @beta
