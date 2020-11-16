@@ -53,7 +53,6 @@ export abstract class IModelBridge {
     abstract getApplicationVersion(): string;
     // (undocumented)
     abstract getBridgeName(): string;
-    // (undocumented)
     getDataChangesDescription?(): string;
     getJobSubjectName(sourcePath: string): string;
     abstract importDefinitions(): Promise<any>;
