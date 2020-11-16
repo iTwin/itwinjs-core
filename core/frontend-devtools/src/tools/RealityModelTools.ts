@@ -221,7 +221,9 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
 }
 
 
-/** @beta */
+/** Attach a cesium asset from the Ion ID and key.
+ * @beta
+ */
 export class AttachCesiumAssetTool extends Tool {
   public static toolId = "AttachCesiumAssetTool";
   public static get minArgs() { return 1; }
@@ -244,7 +246,9 @@ export class AttachCesiumAssetTool extends Tool {
 }
 
 
-/** @beta */
+/** Turn on/off display of OpenStreetMap buildings
+ * @beta
+ */
 export class ToggleOSMBuildingDisplay extends Tool {
   public static toolId = "SetBuildingDisplay";
   public static get minArgs() { return 0; }
