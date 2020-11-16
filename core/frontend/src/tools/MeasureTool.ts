@@ -431,9 +431,9 @@ export class MeasureDistanceTool extends PrimitiveTool {
     return toolTip;
   }
 
-  protected async updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent): Promise<void> {
+  protected async updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent, reopenToolTip: boolean): Promise<void> {
     seg.marker.title = await this.getMarkerToolTip(seg.distance, seg.slope, seg.start, seg.end, seg.marker.isSelected ? seg.delta : undefined);
-    if (undefined === ev.viewport || !IModelApp.notifications.isToolTipOpen)
+    if (!reopenToolTip || undefined === ev.viewport || !IModelApp.notifications.isToolTipOpen)
       return;
     IModelApp.notifications.clearToolTip();
     ev.viewport.openToolTip(seg.marker.title, ev.viewPoint);
@@ -460,10 +460,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
             return true;
 
           let selectedMarker: MeasureMarker | undefined;
+          let pickedMarker: MeasureMarker | undefined;
           for (const seg of this._acceptedSegments) {
             if (!seg.marker.pick(ev.viewPoint))
               continue;
             selectedMarker = (seg.marker.isSelected ? undefined : seg.marker);
+            pickedMarker = seg.marker;
             break;
           }
 
@@ -471,7 +473,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
             const wasSelected = seg.marker.isSelected;
             seg.marker.isSelected = (seg.marker === selectedMarker);
             if (wasSelected !== seg.marker.isSelected)
-              this.updateSelectedMarkerToolTip(seg, ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+              this.updateSelectedMarkerToolTip(seg, ev, (seg.marker === pickedMarker)); // eslint-disable-line @typescript-eslint/no-floating-promises
           }
 
           if (undefined !== ev.viewport)
