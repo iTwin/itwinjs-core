@@ -5354,7 +5354,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected _totalDistanceMarker?: MeasureLabel;
     // (undocumented)
-    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent): Promise<void>;
+    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent, reopenToolTip: boolean): Promise<void>;
     // (undocumented)
     protected updateTotals(): Promise<void>;
 }
