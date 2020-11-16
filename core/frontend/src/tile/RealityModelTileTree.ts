@@ -542,9 +542,10 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       strings.push(cesiumAsset ? `Cesium Asset: ${cesiumAsset.id}` : this._url);
     }
 
-    for (const key of Object.keys(batch))
-      if (-1 === key.indexOf("#"))     // Avoid internal cesium
-        strings.push(`${key}: ${batch[key]}`);
+    if (batch !== undefined)
+      for (const key of Object.keys(batch))
+        if (-1 === key.indexOf("#"))     // Avoid internal cesium
+          strings.push(`${key}: ${batch[key]}`);
 
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");

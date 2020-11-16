@@ -8,7 +8,7 @@
  */
 
 import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@bentley/imodeljs-common";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -231,7 +231,7 @@ export class AttachCesiumAssetTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
-    const props = { tilesetUrl: `$CesiumIonAsset=${assetId}:${requestKey}` };
+    const props = { tilesetUrl: getCesiumAssetUrl(assetId, requestKey) };
     vp.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
     return true;
