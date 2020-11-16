@@ -385,7 +385,7 @@ export class RealityModelTileTree extends RealityTileTree {
     }
   }
   public get isContentUnbounded() {
-    return this.rootTile.contentRange.diagonal!().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
+    return this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
   }
 
 }
