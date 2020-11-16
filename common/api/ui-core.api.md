@@ -1507,6 +1507,7 @@ export interface PopupProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
     closeOnEnter?: boolean;
+    closeOnWheel?: boolean;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
     isPinned?: boolean;
@@ -1517,6 +1518,7 @@ export interface PopupProps extends CommonProps {
     onEnter?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
+    onWheel?: (e: WheelEvent) => void;
     position: RelativePosition;
     role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;

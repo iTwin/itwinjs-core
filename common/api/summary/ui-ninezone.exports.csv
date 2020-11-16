@@ -233,14 +233,12 @@ beta;Overflow
 beta;OverflowProps 
 alpha;Panel 
 internal;PanelInitializeAction
-internal;PanelPinnedContext: React.Context
 alpha;PanelProps 
 internal;PanelSetCollapsedAction
 internal;PanelSetSizeAction
 internal;PanelSide = VerticalPanelSide | HorizontalPanelSide
 internal;PanelSideContext: React.Context
 internal;panelSides: [LeftPanelSide, RightPanelSide, TopPanelSide, BottomPanelSide]
-internal;PanelSpanContext: React.Context
 alpha;PanelsProvider 
 alpha;PanelsProviderProps
 internal;PanelsState
@@ -251,7 +249,7 @@ internal;PanelTarget: React.NamedExoticComponent
 internal;PanelToggleCollapsedAction
 internal;PanelTogglePinnedAction
 internal;PanelToggleSpanAction
-internal;PanelWidget: React.NamedExoticComponent
+internal;PanelWidget: React.MemoExoticComponent
 internal;PanelWidgetDragStartAction
 internal;PanelWidgetProps
 internal;PinToggle: React.NamedExoticComponent
@@ -397,6 +395,7 @@ beta;TooltipProps
 internal;TopPanelSide = "top"
 internal;UpdateWindowResizeSettings 
 internal;useAllowedPanelTarget(): boolean
+internal;useAnimatePanelWidgets():
 internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
@@ -413,18 +412,17 @@ internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPo
 internal;UseDragToolSettingsArgs
 internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
 internal;UseDragWidgetArgs
-internal;useForceFill(): boolean
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
 internal;useIsMainPanelWidget(): boolean
 internal;useLabel(labelKey: keyof NineZoneLabels): string | undefined
+internal;useMode(widgetId: string): "fit" | "fill" | "minimized"
 internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray
 internal;usePanelsAutoCollapse
 internal;usePanelTarget
 internal;UsePanelTargetArgs
 internal;usePointerCaptor: 
-internal;usePreferredPanelWidgetSize(widgetId: WidgetState["id"]): "fit-content" | undefined
 internal;useResizeGrip: 
 beta;UserProfile 
 beta;UserProfileProps 

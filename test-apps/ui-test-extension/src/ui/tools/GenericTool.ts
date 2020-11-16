@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore Sharepoint
 
@@ -12,7 +12,6 @@ import {
 import { Point3d } from "@bentley/geometry-core";
 import { UiFramework } from "@bentley/ui-framework";
 import { ToolbarItemUtilities } from "@bentley/ui-abstract";
-
 import genericToolSvg from "./generic-tool.svg?sprite";
 
 export class GenericTool extends PrimitiveTool {
