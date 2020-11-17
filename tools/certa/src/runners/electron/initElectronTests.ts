@@ -5,6 +5,16 @@
 import { ipcRenderer, remote } from "electron";
 import Mocha = require("mocha");
 
+window.onerror = (_message: any, _source: any, _lineno: any, _colno: any, error: any) => {
+  const { message, stack } = error || {};
+  ipcRenderer.send("certa-error", { message, stack });
+};
+
+window.onunhandledrejection = (event: any) => {
+  const { message, stack } = event.reason;
+  ipcRenderer.send("certa-error", { message, stack });
+};
+
 // Initialize mocha
 declare const window: any;
 window.mocha = new Mocha();
@@ -16,11 +26,6 @@ window._CertaConsole = (name: string, args: any[] = [""]) => {
 };
 import "../../utils/initMocha";
 
-window.onunhandledrejection = (event: any) => {
-  const { message, stack } = event.reason;
-  ipcRenderer.send("certa-error", { message, stack });
-};
-
 async function startCertaTests(entryPoint: string) {
   try {
     // Setup source maps
@@ -28,7 +33,15 @@ async function startCertaTests(entryPoint: string) {
     require("../../utils/initSourceMaps");
 
     // Load tests
-    require(entryPoint);
+    // Note that we need to use a script tag instead of `require` here - that way debuggers can break on the first statement and resolve breakpoints.
+    const script = document.createElement("script");
+    script.src = entryPoint;
+    const loaded = new Promise((res, rej) => {
+      script.onload = res;
+      script.onerror = rej;
+    });
+    document.head.appendChild(script);
+    await loaded;
 
     // Execute tests
     mocha.run((failedCount) => ipcRenderer.send("certa-done", failedCount));
