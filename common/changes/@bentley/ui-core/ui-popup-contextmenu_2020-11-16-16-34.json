@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Popup - added onContextMenu & closeOnContextMenu props",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}
