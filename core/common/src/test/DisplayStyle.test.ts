@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { CompressedId64Set } from "@bentley/bentleyjs-core";
 import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import { DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, MonochromeMode } from "../DisplayStyleSettings";
@@ -240,7 +241,7 @@ describe("DisplayStyleSettings overrides", () => {
       nonLocatable: true,
       emphasized: true,
     }],
-    excludedElements: ["0x4", "0x8", "0x10"],
+    excludedElements: CompressedId64Set.compressIds(["0x4", "0x8", "0x10"]),
     contextRealityModels: [{
       tilesetUrl: "google.com",
       name: "google",
@@ -416,7 +417,7 @@ describe("DisplayStyleSettings overrides", () => {
       }],
     });
 
-    test({ viewflags, excludedElements: ["0xdeadbeef", "0xbaadf00d"] });
+    test({ viewflags, excludedElements: CompressedId64Set.compressIds(["0xdeadbeef", "0xbaadf00d"]) });
 
     test({
       viewflags,

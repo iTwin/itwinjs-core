@@ -414,8 +414,7 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
 
   /** Obtain an iterator over the Ids in this set. The Ids are returned in ascending order based on their unsigned 64-bit integer values. */
   public [Symbol.iterator]() {
-    assert(!this._isDirty);
-    return CompressedId64Set.iterator(this._ids);
+    return CompressedId64Set.iterator(this.ids);
   }
 
   /** Compute a compact string representation of the union of this and another set of Ids - i.e., those Ids present in either this and/or the other set. */

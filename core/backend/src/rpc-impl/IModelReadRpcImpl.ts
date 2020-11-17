@@ -147,7 +147,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
-    return IModelDb.findByKey(tokenProps.key).views.getViewStateData(viewDefinitionId, opts);
+    return IModelDb.findByKey(tokenProps.key).views.getViewStateData(viewDefinitionId, options);
   }
 
   public async readFontJson(tokenProps: IModelRpcProps): Promise<any> {

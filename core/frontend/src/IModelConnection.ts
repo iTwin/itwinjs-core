@@ -1300,8 +1300,10 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
       const options: ViewStateLoadProps = {
-        omitScheduleScriptElementIds: true,
-        compressExcludedElementIds: true,
+        displayStyle: {
+          omitScheduleScriptElementIds: true,
+          compressExcludedElementIds: true,
+        },
       };
       const viewProps = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewStateData(this._iModel.getRpcProps(), viewDefinitionId, options);
 

@@ -64,7 +64,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     if (context.isBetweenIModels && targetElementProps?.jsonProperties?.styles) {
       const settings = targetElementProps.jsonProperties.styles as DisplayStyleSettingsProps;
       if (settings.subCategoryOvr) {
-        for (let i = 0; i < settings.subCategoryOvr; /* */) {
+        for (let i = 0; i < settings.subCategoryOvr.length; /* */) {
           const ovr = settings.subCategoryOvr[i];
           ovr.subCategory = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
           if (Id64.invalid === ovr.subCategory)
@@ -75,7 +75,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
       }
 
       if (settings.excludedElements) {
-        const excluded = typeof "string" === settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
+        const excluded: Id64Array = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
         for (let i = 0; i < excluded.length; /* */) {
           const remapped = context.findTargetElementId(excluded[i]);
           if (Id64.invalid === remapped)
@@ -87,7 +87,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
         if (0 === excluded.length)
           delete settings.excludedElements;
         else
-          settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excludedElements));
+          settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
       }
     }
   }
