@@ -120,6 +120,18 @@ export class ToolWithSettings extends PrimitiveTool {
     this._showCoordinatesOnPointerMove = !this._showCoordinatesOnPointerMove;
   }
 
+  // ------------- use length toggle  ---------------
+  public useLengthProperty = new DialogProperty<boolean>(
+    PropertyDescriptionHelper.buildCheckboxDescription("useLength", "",
+      [
+        {
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
+      ]
+    ),
+    true, undefined, false);
+
   // ------------- Color Enum ---------------
   private enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
   private getColorChoices = () => {
@@ -206,19 +218,6 @@ export class ToolWithSettings extends PrimitiveTool {
   public stationProperty = new DialogProperty<string>(
     PropertyDescriptionHelper.buildTextEditorDescription("station", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station")),
     this.formatStation(0.0), undefined);
-
-
-  // ------------- use length toggle  ---------------
-  public useLengthProperty = new DialogProperty<boolean>(
-    PropertyDescriptionHelper.buildCheckboxDescription("useLength", "",
-      [
-        {
-          type: PropertyEditorParamTypes.SuppressEditorLabel,
-          suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-      ]
-    ),
-    true, undefined, false);
 
   // ------------- Length (persisted in meters) ---------------
   public lengthProperty = new DialogProperty<number>(new LengthDescription("length"), 1.5);
