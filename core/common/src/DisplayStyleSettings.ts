@@ -631,6 +631,11 @@ export class DisplayStyleSettings {
     this._excludedElements.delete("string" === typeof id ? [id] : id);
   }
 
+  /** Remove all elements from the set of elements not to be displayed. */
+  public clearExcludedElements(): void {
+    this._excludedElements.reset(undefined);
+  }
+
   /** @internal */
   public toJSON(): DisplayStyleSettingsProps {
     return this._json;

@@ -134,6 +134,8 @@ describe("DisplayStyleSettings", () => {
       test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.excludedElements.delete("0x1"); });
 
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.clear(); });
+
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
     });
   });
 });
