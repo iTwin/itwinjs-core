@@ -16,6 +16,7 @@ steps:
       testRunTitle: "Clients - Context Registry Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - Extension Test Results"
     inputs:
@@ -23,6 +24,7 @@ steps:
       testRunTitle: "Clients - Extension Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - Forms Data Management Test Results"
     inputs:
@@ -30,6 +32,7 @@ steps:
       testRunTitle: "Clients - Forms Data Management Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - Frontend Authorization Test Results"
     inputs:
@@ -58,6 +61,7 @@ steps:
       testRunTitle: "Clients - Product Settings Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - ProjectShare Test Results"
     inputs:
@@ -65,6 +69,7 @@ steps:
       testRunTitle: "Clients - ProjectShare Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - RBAC Test Results"
     inputs:
@@ -72,6 +77,7 @@ steps:
       testRunTitle: "Clients - RBAC Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - Reality Data Test Results"
     inputs:
@@ -79,6 +85,7 @@ steps:
       testRunTitle: "Clients - Reality Data Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - Usage Logging Test Results"
     inputs:
@@ -86,6 +93,7 @@ steps:
       testRunTitle: "Clients - Usage Logging Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
 
   #-------
   # Core Tests
