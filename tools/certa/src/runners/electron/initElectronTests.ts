@@ -28,15 +28,7 @@ async function startCertaTests(entryPoint: string) {
     require("../../utils/initSourceMaps");
 
     // Load tests
-    // Note that we need to use a script tag instead of `require` here - that way debuggers can break on the first statement and resolve breakpoints.
-    const script = document.createElement("script");
-    script.src = entryPoint;
-    const loaded = new Promise((res, rej) => {
-      script.onload = res;
-      script.onerror = rej;
-    });
-    document.head.appendChild(script);
-    await loaded;
+    require(entryPoint);
 
     // Execute tests
     mocha.run((failedCount) => ipcRenderer.send("certa-done", failedCount));
