@@ -1,7 +1,6 @@
 # iModel.js Integration PR Validation Build
 #
 # Note: Currently a subset of all integration tests
-
 trigger:
   - master
   - release/*
