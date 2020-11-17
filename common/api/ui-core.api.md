@@ -134,7 +134,7 @@ export function BlockText(props: TextProps): JSX.Element;
 // @public
 export function BodyText(props: TextProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export type BoundsFunctionProp = number | (() => number | undefined);
 
 // @public
@@ -1344,6 +1344,34 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 };
 
 // @beta
+export const NumberInput: React.ForwardRefExoticComponent<NumberInputProps & React.RefAttributes<HTMLInputElement>>;
+
+// @beta
+export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur" | "onKeyDown" | "defaultValue" | "onInvalid"> {
+    containerClassName?: string;
+    // (undocumented)
+    format?: (num: number | null | undefined, formattedValue: string) => string;
+    // (undocumented)
+    max?: number;
+    // (undocumented)
+    min?: number;
+    // (undocumented)
+    onChange?: (value: number | undefined, stringValue: string) => void;
+    // (undocumented)
+    parse?: ((value: string) => number | null | undefined);
+    // (undocumented)
+    precision?: number;
+    // (undocumented)
+    showTouchButtons?: boolean;
+    // (undocumented)
+    snap?: boolean;
+    // (undocumented)
+    step?: StepFunctionProp;
+    // (undocumented)
+    value?: number;
+}
+
+// @beta @deprecated
 export class NumericInput extends React.Component<NumericInputProps> {
     // @internal (undocumented)
     static readonly defaultProps: NumericInputDefaultProps;
@@ -1351,10 +1379,10 @@ export class NumericInput extends React.Component<NumericInputProps> {
     render(): JSX.Element;
     }
 
-// @internal
+// @internal @deprecated
 export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
-// @beta
+// @beta @deprecated
 export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
     // (undocumented)
     step?: StepFunctionProp;
@@ -1478,7 +1506,9 @@ export interface PopupContextMenuProps extends CommonProps {
 export interface PopupProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
+    closeOnContextMenu?: boolean;
     closeOnEnter?: boolean;
+    closeOnWheel?: boolean;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
     isPinned?: boolean;
@@ -1486,9 +1516,11 @@ export interface PopupProps extends CommonProps {
     moveFocus?: boolean;
     offset: number;
     onClose?: () => void;
+    onContextMenu?: (e: MouseEvent) => void;
     onEnter?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
+    onWheel?: (e: WheelEvent) => void;
     position: RelativePosition;
     role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;
@@ -1598,7 +1630,7 @@ export interface ReactMessage {
     reactNode: React.ReactNode;
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
     constructor(props: ReactNumericInputProps);
     componentDidMount(): void;
@@ -1625,7 +1657,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     static SPEED: number;
     }
 
-// @beta
+// @beta @deprecated
 export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
     // (undocumented)
     componentClass?: string;
@@ -1676,7 +1708,7 @@ export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<H
     value?: number | string;
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export type ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined);
 
 // @internal

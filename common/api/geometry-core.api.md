@@ -3174,7 +3174,7 @@ export class Matrix3d implements BeJSONFunctions {
     setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d | undefined): void;
     setColumnsPoint4dXYZ(vectorU: Point4d, vectorV: Point4d, vectorW: Point4d): void;
     setFrom(other: Matrix3d | undefined): void;
-    setFromJSON(json?: Matrix3dProps): void;
+    setFromJSON(json?: Matrix3dProps | Matrix3d): void;
     setIdentity(): void;
     setRow(rowIndex: number, value: Vector3d): void;
     setRowValues(axx: number, axy: number, axz: number, ayx: number, ayy: number, ayz: number, azx: number, azy: number, azz: number): void;
@@ -3201,7 +3201,7 @@ export class Matrix3d implements BeJSONFunctions {
 }
 
 // @public
-export type Matrix3dProps = number[][] | Matrix3d | number[];
+export type Matrix3dProps = number[][] | number[];
 
 // @public
 export class Matrix4d implements BeJSONFunctions {
@@ -5142,7 +5142,7 @@ export class Transform implements BeJSONFunctions {
     multiplyXYZWToFloat64Array(x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array;
     get origin(): XYZ;
     setFrom(other: Transform): void;
-    setFromJSON(json?: TransformProps): void;
+    setFromJSON(json?: TransformProps | Transform): void;
     setIdentity(): void;
     setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void;
     setOriginAndMatrixColumns(origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined): void;
