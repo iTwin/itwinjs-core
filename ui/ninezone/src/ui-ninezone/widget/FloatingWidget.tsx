@@ -16,7 +16,7 @@ import { NineZoneDispatchContext } from "../base/NineZone";
 import { FloatingWidgetState, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
-import { Widget, WidgetProvider } from "./Widget";
+import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 
@@ -74,7 +74,9 @@ export const FloatingWidgetContext = React.createContext<FloatingWidgetState | u
 FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 
 const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
+  const widget = React.useContext(WidgetStateContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
+  assert(widget);
   assert(floatingWidgetId);
   const item = React.useMemo(() => ({
     id: floatingWidgetId,
@@ -91,7 +93,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
       className={className}
       style={props.style}
     >
-      <WidgetTabBar />
+      <WidgetTabBar separator={!widget.minimized} />
       <WidgetContentContainer />
       <FloatingWidgetHandle handle="left" />
       <FloatingWidgetHandle handle="top" />

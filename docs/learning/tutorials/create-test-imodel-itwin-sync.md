@@ -12,7 +12,7 @@ Before you create an iModel, you must first have an iTwin project that will cont
 - Give your test iModel a name
 - Select the iTwin Synchronizer radio option
   - Add the email addresses of anyone else you would like to grant access to the iModel
-  - Any other users will also have to have a Bentley account described in [Step 1](#1-Creating-a-Bentley-user-account)
+  - Any other users will also have to have a Bentley account
 - Click Submit
 
 A iTwin project containing an empty iModel will be created for you.

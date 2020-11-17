@@ -22,7 +22,6 @@ import { Point3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
-
 import sampleToolSvg from "./SampleTool.svg?sprite";
 
 enum ToolOptions {

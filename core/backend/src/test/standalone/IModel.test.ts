@@ -422,7 +422,7 @@ describe("iModel", () => {
     const texture = imodel2.elements.getElement<Texture>(textureId);
     assert((texture instanceof Texture) === true, "did not retrieve an instance of Texture");
     expect(texture.format).to.equal(testTextureFormat);
-    expect(texture.data).to.equal(testTextureData);
+    expect(Array.from(texture.data)).to.deep.equal(pngData);
     expect(texture.width).to.equal(testTextureWidth);
     expect(texture.height).to.equal(testTextureHeight);
     expect(texture.description).to.equal(testTextureDescription);

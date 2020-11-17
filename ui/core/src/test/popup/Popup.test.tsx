@@ -677,6 +677,99 @@ describe("<Popup />", () => {
       expect(wrapper.state().isOpen).true;
       wrapper.unmount();
     });
+
+    it("should not hide when scrolling if closeOnWheel=false", () => {
+      const wrapper = mount<Popup>(<Popup isOpen closeOnWheel={false} />);
+
+      const scroll = document.createEvent("HTMLEvents");
+      scroll.initEvent("wheel");
+      sinon.stub(scroll, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(scroll);
+
+      expect(wrapper.state().isOpen).true;
+      wrapper.unmount();
+    });
+
+    it("should not hide when scrolling if onWheel prop is passed", () => {
+      const spyWheel = sinon.spy();
+      const wrapper = mount<Popup>(<Popup isOpen onWheel={spyWheel} />);
+
+      const scroll = document.createEvent("HTMLEvents");
+      scroll.initEvent("wheel");
+      sinon.stub(scroll, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(scroll);
+
+      expect(wrapper.state().isOpen).true;
+      sinon.assert.called(spyWheel);
+      wrapper.unmount();
+    });
+
+  });
+
+  describe("context menu", () => {
+    it("should hide when context menu used", () => {
+      const wrapper = mount<Popup>(<Popup isOpen />);
+
+      const contextMenu = document.createEvent("HTMLEvents");
+      contextMenu.initEvent("contextmenu");
+      sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(contextMenu);
+
+      expect(wrapper.state().isOpen).false;
+      wrapper.unmount();
+    });
+
+    it("should not hide when context menu used popup content", () => {
+      const wrapper = mount<Popup>(<Popup isOpen />);
+      const popup = wrapper.find(".core-popup").getDOMNode();
+
+      const contextMenu = document.createEvent("HTMLEvents");
+      contextMenu.initEvent("contextmenu");
+      sinon.stub(contextMenu, "target").get(() => popup);
+      window.dispatchEvent(contextMenu);
+
+      expect(wrapper.state().isOpen).true;
+      wrapper.unmount();
+    });
+
+    it("should not hide when context menu used if pinned", () => {
+      const wrapper = mount<Popup>(<Popup isOpen isPinned />);
+
+      const contextMenu = document.createEvent("HTMLEvents");
+      contextMenu.initEvent("contextmenu");
+      sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(contextMenu);
+
+      expect(wrapper.state().isOpen).true;
+      wrapper.unmount();
+    });
+
+    it("should not hide when context menu used if closeOnContextMenu=false", () => {
+      const wrapper = mount<Popup>(<Popup isOpen closeOnContextMenu={false} />);
+
+      const contextMenu = document.createEvent("HTMLEvents");
+      contextMenu.initEvent("contextmenu");
+      sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(contextMenu);
+
+      expect(wrapper.state().isOpen).true;
+      wrapper.unmount();
+    });
+
+    it("should not hide when context menu used if onContextMenu prop is passed", () => {
+      const spyContextMenu = sinon.spy();
+      const wrapper = mount<Popup>(<Popup isOpen onContextMenu={spyContextMenu} />);
+
+      const contextMenu = document.createEvent("HTMLEvents");
+      contextMenu.initEvent("contextmenu");
+      sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(contextMenu);
+
+      expect(wrapper.state().isOpen).true;
+      sinon.assert.called(spyContextMenu);
+      wrapper.unmount();
+    });
+
   });
 
   describe("keyboard handling", () => {
