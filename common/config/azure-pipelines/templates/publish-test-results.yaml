@@ -40,6 +40,7 @@ steps:
       testRunTitle: "Clients - Frontend Authorization Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - iModelHub Test Results"
     inputs:
@@ -47,6 +48,7 @@ steps:
       testRunTitle: "Clients - iModelHub Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Clients - iTwin Test Results"
     inputs:
@@ -119,6 +121,7 @@ steps:
       testRunTitle: "Core - Backend iTwin Client Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
+    enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Common Backend Test Results"
     inputs:
