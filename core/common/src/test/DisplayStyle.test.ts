@@ -455,7 +455,7 @@ describe("DisplayStyleSettings overrides", () => {
       }],
     });
 
-    test({ viewflags, excludedElements: CompressedId64Set.compressIds(["0xdeadbeef", "0xbaadf00d"]) });
+    test({ viewflags, excludedElements: CompressedId64Set.compressIds(["0xbaadf00d", "0xdeadbeef"]) });
 
     test({
       viewflags,
