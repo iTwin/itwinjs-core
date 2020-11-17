@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ipcRenderer } from "electron";
 import * as path from "path";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { relaunchInElectron } from "../../utils/SpawnUtils";
@@ -20,13 +19,13 @@ export class ElectronTestRunner {
     const { app } = require("electron");
     if (config.debug)
       app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
+
+    const timeout = new Promise((_resolve, reject) => setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000));
+    await Promise.race([app.whenReady(), timeout]);
   }
 
   public static async runTests(config: CertaConfig): Promise<void> {
     const { BrowserWindow, app, ipcMain } = require("electron"); // eslint-disable-line @typescript-eslint/naming-convention
-
-    const timeout = new Promise((_resolve, reject) => setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000));
-    await Promise.race([app.whenReady(), timeout]);
 
     const rendererWindow = new BrowserWindow({
       show: config.debug,
@@ -65,25 +64,21 @@ export class ElectronTestRunner {
     });
 
     rendererWindow.webContents.once("did-finish-load", async () => {
-      try {
-        const initScriptPath = require.resolve("./initElectronTests.js");
-        const startTests = async () => rendererWindow.webContents.executeJavaScript(`
+      const initScriptPath = require.resolve("./initElectronTests.js");
+      const startTests = async () => rendererWindow.webContents.executeJavaScript(`
         var _CERTA_CONFIG = ${JSON.stringify(config)};
         require(${JSON.stringify(initScriptPath)});
         startCertaTests(${JSON.stringify(config.testBundle)});`);
 
-        if (config.debug) {
-          // For some reason, the VS Code chrome debugger doesn't work correctly unless we reload the window before running tests.
-          await rendererWindow.webContents.executeJavaScript(`window.location.reload();`);
-          // Note that we'll have to wait for the did-finish-load event again since we just reloaded.
-          rendererWindow.webContents.once("did-finish-load", startTests);
-          return;
-        }
-
-        await startTests();
-      } catch ({ message, stack }) {
-        ipcRenderer.send("certa-error", { message, stack });
+      if (config.debug) {
+        // For some reason, the VS Code chrome debugger doesn't work correctly unless we reload the window before running tests.
+        await rendererWindow.webContents.executeJavaScript(`window.location.reload();`);
+        // Note that we'll have to wait for the did-finish-load event again since we just reloaded.
+        rendererWindow.webContents.once("did-finish-load", startTests);
+        return;
       }
+
+      await startTests();
     });
     await rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
   }
