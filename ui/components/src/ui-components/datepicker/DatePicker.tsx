@@ -14,8 +14,6 @@ import { UiComponents } from "../UiComponents";
 
 import "./DatePicker.scss";
 
-const MILLISECONDS_PER_DAY = 86400000;
-
 function isSameDay(a: Date, b: Date) {
   return (
     a &&
