@@ -249,47 +249,60 @@ export interface DisplayStyleOverridesOptions {
  * @internal
  */
 class ExcludedElements implements OrderedId64Iterable {
+  private readonly _json: DisplayStyleSettingsProps;
   private readonly _ids: MutableCompressedId64Set;
   private _set?: ObservableSet<Id64String>;
+  private _synchronizing = false;
 
-  public constructor(ids: CompressedId64Set | OrderedId64Iterable | undefined) {
-    this._ids = new MutableCompressedId64Set((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
+  public constructor(json: DisplayStyleSettingsProps) {
+    this._json = json;
+    if (Array.isArray(json.excludedElements))
+      this._ids = new MutableCompressedId64Set(CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(json.excludedElements)));
+    else
+      this._ids = new MutableCompressedId64Set(json.excludedElements);
   }
 
   public reset(ids: CompressedId64Set | OrderedId64Iterable | undefined) {
-    this._set = undefined;
-    this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
+    this.synchronize(() => {
+      this._set?.clear();
+      this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
+    });
   }
 
   public get ids(): CompressedId64Set {
     return this._ids.ids;
   }
 
-  public add(id: Id64String): void {
-    // If the set is allocated, our event callback will also add id to _ids.
-    if (this._set)
-      this._set.add(id);
-    else
-      this._ids.add(id);
+  public add(ids: Iterable<Id64String>): void {
+    this.synchronize(() => {
+      for (const id of ids) {
+        this._ids.add(id);
+        this._set?.add(id);
+      }
+    });
   }
 
-  public delete(id: Id64String): void {
-    // If the set is allocated, our event callback will also delete id from _ids.
-    if (this._set)
-      this._set.delete(id);
-    else
-      this._ids.delete(id);
+  public delete(ids: Iterable<Id64String>): void {
+    this.synchronize(() => {
+      for (const id of ids) {
+        this._ids.delete(id);
+        this._set?.delete(id);
+      }
+    });
   }
 
   public obtainSet(): Set<Id64String> {
     if (this._set)
       return this._set;
 
-    this._set = new ObservableSet<string>(this._ids);
-    this._set.onAdded.addListener((id) => this.onAdded(id));
-    this._set.onDeleted.addListener((id) => this.onDeleted(id));
-    this._set.onCleared.addListener(() => this._ids.clear());
+    this.synchronize(() => {
+      this._set = new ObservableSet<string>(this._ids);
+      this._set.onAdded.addListener((id) => this.onAdded(id));
+      this._set.onDeleted.addListener((id) => this.onDeleted(id));
+      this._set.onCleared.addListener(() => this.onCleared());
+    });
 
+    assert(undefined !== this._set);
     return this._set;
   }
 
@@ -298,15 +311,34 @@ class ExcludedElements implements OrderedId64Iterable {
   }
 
   private onAdded(id: Id64String): void {
-    // Unclear whether ObservableSet.onAdded will be raised when constructing the Set from an Iterable.
-    if (this._set)
-      this._ids.add(id);
+    this.synchronize(() => this._ids.add(id));
   }
 
   private onDeleted(id: Id64String): void {
-    // Unclear whether ObservableSet.onDeleted will be raised when constructing the Set from an Iterable.
-    if (this._set)
-      this._ids.delete(id);
+    this.synchronize(() => this._ids.delete(id));
+  }
+
+  private onCleared(): void {
+    this.synchronize(() => this._ids.clear());
+  }
+
+  /** The JSON must be kept up-to-date at all times. */
+  private synchronize(func: () => void): void {
+    if (this._synchronizing)
+      return;
+
+    this._synchronizing = true;
+    try {
+      func();
+    } finally {
+      this._synchronizing = false;
+
+      const ids = this._ids.ids;
+      if (0 === ids.length)
+        delete this._json.excludedElements;
+      else
+        this._json.excludedElements = ids;
+    }
   }
 }
 
@@ -347,10 +379,7 @@ export class DisplayStyleSettings {
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
     this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
 
-    if (Array.isArray(this._json.excludedElements))
-      this._excludedElements = new ExcludedElements(OrderedId64Iterable.sortArray(this._json.excludedElements));
-    else
-      this._excludedElements = new ExcludedElements(this._json.excludedElements);
+    this._excludedElements = new ExcludedElements(this._json);
 
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
@@ -587,38 +616,23 @@ export class DisplayStyleSettings {
    * @param id The IDs of the element(s) to be excluded.
    */
   public addExcludedElements(id: Id64String | Iterable<Id64String>) {
-    if ("string" === typeof id)
-      this._excludedElements.add(id);
-    else
-      for (const i of id)
-        this._excludedElements.add(i);
+    this._excludedElements.add("string" === typeof id ? [id] : id);
   }
 
   /** Remove an element from the set of elements not to be displayed. */
   public dropExcludedElement(id: Id64String): void {
-    this._excludedElements.delete(id);
+    this._excludedElements.delete([id]);
   }
 
   /** Remove one or more elements from the set of elements not to be displayed.
    * @param id The IDs of the element(s) to be removed from the set of excluded elements.
    */
   public dropExcludedElements(id: Id64String | Iterable<Id64String>) {
-    if ("string" === typeof id)
-      this._excludedElements.delete(id);
-    else
-      for (const i of id)
-        this._excludedElements.delete(i);
+    this._excludedElements.delete("string" === typeof id ? [id] : id);
   }
 
   /** @internal */
   public toJSON(): DisplayStyleSettingsProps {
-    // Synchronize with excluded elements.
-    const excluded = this._excludedElements.ids;
-    if (0 === excluded.length)
-      delete this._json.excludedElements;
-    else
-      this._json.excludedElements = excluded;
-
     return this._json;
   }
 
@@ -922,7 +936,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** @internal */
-  public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
+  public toJSON(): DisplayStyle3dSettingsProps {
+    return this._json3d;
+  }
 
   /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
    * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
