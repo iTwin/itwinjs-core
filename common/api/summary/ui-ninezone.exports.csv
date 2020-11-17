@@ -396,6 +396,7 @@ internal;TopPanelSide = "top"
 internal;UpdateWindowResizeSettings 
 internal;useAllowedPanelTarget(): boolean
 internal;useAnimatePanelWidgets():
+internal;useBorders(widgetId: WidgetState["id"]):
 internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
@@ -484,6 +485,7 @@ internal;WidgetState
 internal;WidgetStateContext: React.Context
 internal;WidgetTab: React.NamedExoticComponent
 internal;WidgetTabBar: React.NamedExoticComponent
+internal;WidgetTabBarProps
 internal;WidgetTabClickAction
 internal;WidgetTabDoubleClickAction
 internal;WidgetTabDragAction
