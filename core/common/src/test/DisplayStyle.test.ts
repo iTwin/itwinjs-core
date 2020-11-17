@@ -14,6 +14,9 @@ import { SpatialClassificationProps } from "../SpatialClassificationProps";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 
+/* eslint-disable deprecation/deprecation */
+//  - for DisplayStyleSettings.excludedElements.
+
 describe("DisplayStyleSettings", () => {
   describe("plan projection settings", () => {
     interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }

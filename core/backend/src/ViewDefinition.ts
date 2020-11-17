@@ -13,7 +13,7 @@ import {
 import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera,
   CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, LightLocationProps, MapImageryProps, ModelSelectorProps, PlanProjectionSettingsProps, RelatedElement,
+  DisplayStyleProps, DisplayStyleSettings, LightLocationProps, MapImageryProps, ModelSelectorProps, PlanProjectionSettingsProps, RelatedElement,
   RenderSchedule, SkyBoxImageProps, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -62,7 +62,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     super.onCloned(context, sourceElementProps, targetElementProps);
 
     if (context.isBetweenIModels && targetElementProps?.jsonProperties?.styles) {
-      const settings = targetElementProps.jsonProperties.styles as DisplayStyleSettingsProps;
+      const settings = targetElementProps.jsonProperties.styles;
       if (settings.subCategoryOvr) {
         for (let i = 0; i < settings.subCategoryOvr.length; /* */) {
           const ovr = settings.subCategoryOvr[i];

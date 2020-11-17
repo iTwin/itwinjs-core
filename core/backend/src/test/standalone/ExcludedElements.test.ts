@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as path from "path";
-import { DbResult, Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, QueryResponseStatus, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-import { BackendRequestContext, DictionaryModel, DisplayStyle3d, ECSqlStatement, Element, SnapshotDb } from "../../imodeljs-backend";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { BisCodeSpec, DisplayStyleProps, IModel } from "@bentley/imodeljs-common";
+import { DisplayStyle3d, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
 
 // spell-checker: disable
 
@@ -43,7 +41,7 @@ describe("ExcludedElements", () => {
       expect(styleId).not.to.equal(Id64.invalid);
       imodel.saveChanges();
 
-      let rows: any[] = [];
+      const rows: any[] = [];
       for await (const row of imodel.query("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", [styleId]))
         rows.push(row);
 
