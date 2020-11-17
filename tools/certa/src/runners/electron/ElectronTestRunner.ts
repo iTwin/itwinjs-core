@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
+import { ipcRenderer } from "electron";
 import * as path from "path";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { relaunchInElectron } from "../../utils/SpawnUtils";
@@ -64,21 +65,25 @@ export class ElectronTestRunner {
     });
 
     rendererWindow.webContents.once("did-finish-load", async () => {
-      const initScriptPath = require.resolve("./initElectronTests.js");
-      const startTests = async () => rendererWindow.webContents.executeJavaScript(`
+      try {
+        const initScriptPath = require.resolve("./initElectronTests.js");
+        const startTests = async () => rendererWindow.webContents.executeJavaScript(`
         var _CERTA_CONFIG = ${JSON.stringify(config)};
         require(${JSON.stringify(initScriptPath)});
         startCertaTests(${JSON.stringify(config.testBundle)});`);
 
-      if (config.debug) {
-        // For some reason, the VS Code chrome debugger doesn't work correctly unless we reload the window before running tests.
-        await rendererWindow.webContents.executeJavaScript(`window.location.reload();`);
-        // Note that we'll have to wait for the did-finish-load event again since we just reloaded.
-        rendererWindow.webContents.once("did-finish-load", startTests);
-        return;
-      }
+        if (config.debug) {
+          // For some reason, the VS Code chrome debugger doesn't work correctly unless we reload the window before running tests.
+          await rendererWindow.webContents.executeJavaScript(`window.location.reload();`);
+          // Note that we'll have to wait for the did-finish-load event again since we just reloaded.
+          rendererWindow.webContents.once("did-finish-load", startTests);
+          return;
+        }
 
-      await startTests();
+        await startTests();
+      } catch ({ message, stack }) {
+        ipcRenderer.send("certa-error", { message, stack });
+      }
     });
     await rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
   }
