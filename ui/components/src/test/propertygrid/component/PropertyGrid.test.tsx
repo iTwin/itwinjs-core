@@ -762,7 +762,7 @@ describe("PropertyGrid", () => {
 
       const inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" });
       await TestUtils.flushAsyncOperations();
       expect(spyMethod).to.be.calledOnce;
     });
@@ -810,7 +810,7 @@ describe("PropertyGrid", () => {
 
       const inputNode = wrapper.container.querySelector("input");
       expect(inputNode).not.to.be.null;
-      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" })
+      fireEvent.keyDown(inputNode as HTMLElement, { key: "Escape" });
       await TestUtils.flushAsyncOperations();
       expect(wrapper.container.querySelector(".components-cell-editor"), "Cell editor did not disappear after pressing Escape").to.be.null;
     });

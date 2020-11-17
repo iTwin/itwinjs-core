@@ -36,8 +36,8 @@ describe("<DatePicker />", () => {
     * This is useful when showing sunrise and sunset times for a project location in a different time zone
     * and the time displayed should appear as if the user is seeing clock in project location. */
     const londonDate = new Date("July 22, 2018 07:22:13 +0100");
-    const adjustedDate = adjustDateToTimezone(londonDate, 1*60);
-    expect (adjustedDate.getHours()).to.eq(7);
+    const adjustedDate = adjustDateToTimezone(londonDate, 1 * 60);
+    expect(adjustedDate.getHours()).to.eq(7);
   });
 
   it("should render ", () => {
@@ -48,7 +48,7 @@ describe("<DatePicker />", () => {
     const spanValue = span!.textContent;
     expect(spanValue!.match(/month.long.july/)).not.to.be.null;
     expect(spanValue!.match(/2018/)).not.to.be.null;
-    const month = renderedComponent.getByRole ("listbox");
+    const month = renderedComponent.getByRole("listbox");
     expect(month).not.to.be.undefined;
   });
 
@@ -112,7 +112,7 @@ describe("<DatePicker />", () => {
   it("should trigger onDateChange", () => {
     const renderedComponent = render(<DatePicker selected={testDate} onDateChange={renderSpy} />);
     const testDayTicks = new Date(2018, 6, 19).getTime();
-    const dataValueSelector=`li[data-value='${testDayTicks}']`; // li[data-value='1531972800000']
+    const dataValueSelector = `li[data-value='${testDayTicks}']`; // li[data-value='1531972800000']
     const dayEntry = renderedComponent.container.querySelector(dataValueSelector);
     expect(dayEntry).not.to.be.null;
     fireEvent.click(dayEntry!);

@@ -165,15 +165,15 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
     this.setState({ isUiVisible: args.visible });
-  }
+  };
 
   private _handleWidgetsChanged = (_args: WidgetsChangedEventArgs): void => {
     this.updateWidgetDefs();
-  }
+  };
 
   private _handleWidgetProvidersChanged = (_args: WidgetProvidersChangedEventArgs): void => {
     this.updateWidgetDefs();
-  }
+  };
 
   private updateWidgetDefs() {
     if (!this.props.runtimeProps)
@@ -294,7 +294,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     };
     this._contentRefs.set(widget, newRef);
     return newRef;
-  }
+  };
 
   // This uses ConfigurableUi to render the content
   private doContentLayoutRender(): React.ReactNode {
@@ -593,13 +593,13 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     if (this.props.widgetDef !== args.widgetDef)
       return;
     this.forceUpdate();
-  }
+  };
 
   private _handleToolActivatedEvent = () => {
     if (this.props.toolSettingsMode === undefined)
       return;
     this.forceUpdate();
-  }
+  };
 }
 
 /** @internal */

@@ -82,7 +82,7 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
           this.setState({ hoverMode: HoverMode.Below });
       }
     }
-  }
+  };
 }
 
 /** @internal */

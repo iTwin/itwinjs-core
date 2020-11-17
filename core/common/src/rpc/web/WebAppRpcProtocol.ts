@@ -31,7 +31,7 @@ class InitializeInterface extends RpcInterface {
       public protocol = protocol;
     };
 
-    RpcConfiguration.assignWithRouting(InitializeInterface, routing, config)
+    RpcConfiguration.assignWithRouting(InitializeInterface, routing, config);
 
     const instance = RpcConfiguration.obtain(config);
     RpcConfiguration.initializeInterfaces(instance);

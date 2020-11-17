@@ -61,6 +61,8 @@ import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
+import { ElementGeometryRequest } from '@bentley/imodeljs-common';
+import { ElementGeometryUpdate } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { EmitOptions } from '@bentley/imodeljs-native';
@@ -2428,6 +2430,10 @@ export abstract class IModelDb extends IModel {
     deleteFileProperty(prop: FilePropertyProps): DbResult;
     // (undocumented)
     protected static readonly _edit = "StandaloneEdit";
+    // @alpha
+    elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
+    // @alpha
+    elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult;
     // (undocumented)
     readonly elements: IModelDb.Elements;
     // (undocumented)
@@ -2751,7 +2757,10 @@ export class IModelHostConfiguration {
 // @beta
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    autoExtendProjectExtents: boolean;
+    autoExtendProjectExtents: boolean | {
+        excludeOutliers: boolean;
+    };
+    computeProjectExtents(): void;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
@@ -2777,7 +2786,9 @@ export class IModelImporter {
 
 // @beta
 export interface IModelImportOptions {
-    autoExtendProjectExtents?: boolean;
+    autoExtendProjectExtents?: boolean | {
+        excludeOutliers: boolean;
+    };
 }
 
 // @public

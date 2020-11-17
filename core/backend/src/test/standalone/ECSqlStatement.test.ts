@@ -1768,7 +1768,7 @@ describe("ECSqlStatement", () => {
       });
 
       ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)", (stmt: ECSqlStatement) => {
-        let idSet: Id64String[] = []
+        let idSet: Id64String[] = [];
         stmt.bindIdSet(1, idSet);
         let result = stmt.step();
         assert.equal(result, DbResult.BE_SQLITE_DONE);

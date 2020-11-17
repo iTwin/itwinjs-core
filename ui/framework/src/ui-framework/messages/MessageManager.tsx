@@ -23,6 +23,7 @@ import { UiFramework } from "../UiFramework";
 import { MessageSpan } from "./MessageSpan";
 import { PointerMessage } from "./Pointer";
 import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
+import { StatusMessageManager } from "./StatusMessageManager";
 
 class MessageBoxCallbacks {
   constructor(
@@ -32,7 +33,7 @@ class MessageBoxCallbacks {
 
   public handleMessageBoxResult = (result: MessageBoxValue) => {
     this.onFulfilled(result);
-  }
+  };
 }
 
 /** [[MessageAddedEvent]] arguments.
@@ -134,8 +135,9 @@ export class MessageManager {
   private static _maxCachedMessages = 500;
   private static _maxDisplayedStickyMessages = 3;
   private static _messages: NotifyMessageDetailsType[] = [];
-  private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
+  private static _ongoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
   private static _lastMessage?: NotifyMessageDetailsType;
+  private static _activeMessageManager = new StatusMessageManager();
 
   /** The MessageAddedEvent is fired when a message is added via outputMessage(). */
   public static readonly onMessageAddedEvent = new MessageAddedEvent();
@@ -163,11 +165,21 @@ export class MessageManager {
   /** List of messages as NotifyMessageDetailsType. */
   public static get messages(): Readonly<NotifyMessageDetailsType[]> { return this._messages; }
 
+  /** Manager of active messages. */
+  public static get activeMessageManager(): StatusMessageManager { return this._activeMessageManager; }
+
   /** Clear the message list. */
   public static clearMessages(): void {
     this._messages.splice(0);
+    this._activeMessageManager.initialize();
+
     this.onMessagesUpdatedEvent.emit({});
     this._lastMessage = undefined;
+  }
+
+  /** Update the message list. */
+  public static updateMessages(): void {
+    this.onMessagesUpdatedEvent.emit({});
   }
 
   /** Set the maximum number of cached message. */
@@ -210,6 +222,8 @@ export class MessageManager {
       this._lastMessage = message;
     }
 
+    this._activeMessageManager.add(message);
+
     this.onMessageAddedEvent.emit({ message });
   }
 
@@ -237,8 +251,8 @@ export class MessageManager {
    * @returns true if details is valid and can be used to display ActivityMessage
    */
   public static setupActivityMessageDetails(details: ActivityMessageDetails): boolean {
-    this._OngoingActivityMessage.details = details;
-    this._OngoingActivityMessage.isRestored = details.showDialogInitially;
+    this._ongoingActivityMessage.details = details;
+    this._ongoingActivityMessage.isRestored = details.showDialogInitially;
     return true;
   }
 
@@ -262,17 +276,17 @@ export class MessageManager {
    * @returns true if details is valid and can be used to display ActivityMessage
    */
   public static setupActivityMessageValues(message: NotifyMessageType, percentage: number, restored?: boolean): boolean {
-    this._OngoingActivityMessage.message = message;
-    this._OngoingActivityMessage.percentage = percentage;
+    this._ongoingActivityMessage.message = message;
+    this._ongoingActivityMessage.percentage = percentage;
 
     this.onActivityMessageUpdatedEvent.emit({
       message,
       percentage,
-      details: this._OngoingActivityMessage.details,
-      restored: (restored !== undefined) ? restored : this._OngoingActivityMessage.isRestored,
+      details: this._ongoingActivityMessage.details,
+      restored: (restored !== undefined) ? restored : this._ongoingActivityMessage.isRestored,
     });
 
-    this._OngoingActivityMessage.isRestored = false;
+    this._ongoingActivityMessage.isRestored = false;
 
     return true;
   }
@@ -294,9 +308,9 @@ export class MessageManager {
    */
   private static endActivityProcessing(isCompleted: boolean): void {
     if (isCompleted)
-      this._OngoingActivityMessage.details.onActivityCompleted();
+      this._ongoingActivityMessage.details.onActivityCompleted();
     else
-      this._OngoingActivityMessage.details.onActivityCancelled();
+      this._ongoingActivityMessage.details.onActivityCancelled();
   }
 
   /**

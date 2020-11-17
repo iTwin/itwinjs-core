@@ -54,7 +54,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
       this._show(item);
     else
       this._hide(item);
-  }
+  };
 
   private _hide = (item: ShowHideItem<T>) => {
     this.setState(
@@ -63,7 +63,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
         if (this.props.onShowHideChange)
           this.props.onShowHideChange(this.state.hiddenColumns);
       });
-  }
+  };
 
   private _show = (item: ShowHideItem<T>) => {
     const hiddenColumns = this.state.hiddenColumns.filter((value) => {
@@ -74,7 +74,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
       if (this.props.onShowHideChange)
         this.props.onShowHideChange(this.state.hiddenColumns);
     });
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {

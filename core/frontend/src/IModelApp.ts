@@ -400,7 +400,7 @@ export class IModelApp {
       MapboxImagery: { key: "access_token", value: "pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg" },
       // eslint-disable-next-line @typescript-eslint/naming-convention
       BingMaps: { key: "key", value: "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt" },
-    }
+    };
     if (opts.mapLayerOptions) {
       // if we were passed maplayeroptions, fill in any gaps with defaultMapLayerOptions
       for (const key of Object.keys(defaultMapLayerOptions)) {
@@ -756,17 +756,17 @@ export class IModelApp {
    * @beta
    */
   public static translateStatus(status: number) {
-    let key: { scope: string, val: string, status?: string }
+    let key: { scope: string, val: string, status?: string };
     if (typeof status !== "number") {
-      key = { scope: "Errors", val: "IllegalValue" }
+      key = { scope: "Errors", val: "IllegalValue" };
     } else {
       key = { scope: "BentleyStatus", val: BentleyStatus[status] };
       if (!key.val)
-        key = { scope: "IModelStatus", val: IModelStatus[status] }
+        key = { scope: "IModelStatus", val: IModelStatus[status] };
       if (!key.val)
-        key = { scope: "DbResult", val: DbResult[status] }
+        key = { scope: "DbResult", val: DbResult[status] };
       if (!key.val)
-        key = { scope: "Errors", val: "Status", status: status.toString() }
+        key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
     return this.i18n.translate(`${key.scope}.${key.val}`, key);

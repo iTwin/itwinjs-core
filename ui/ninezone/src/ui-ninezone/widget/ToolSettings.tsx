@@ -146,29 +146,29 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
   private _handleResizeStart = (args: ResizeGripResizeArgs) => {
     const bounds = Rectangle.create(args.bounds);
     this._relativePosition = bounds.topLeft().getOffsetTo(args.position);
-  }
+  };
 
   private _handleResizeEnd = () => {
     this._relativePosition = undefined;
-  }
+  };
 
   private _handleLeftGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
     difference && this.props.onResize && this.props.onResize(difference.x, ResizeHandle.Left);
-  }
+  };
 
   private _handleTopGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
     difference && this.props.onResize && this.props.onResize(difference.y, ResizeHandle.Top);
-  }
+  };
 
   private _handleRightGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
     difference && this.props.onResize && this.props.onResize(difference.x, ResizeHandle.Right);
-  }
+  };
 
   private _handleBottomGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
     difference && this.props.onResize && this.props.onResize(difference.y, ResizeHandle.Bottom);
-  }
+  };
 }

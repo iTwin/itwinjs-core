@@ -69,7 +69,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
   public async processDateChange(typeConverter: TypeConverter, newValue: Date): Promise<void> {
     // istanbul ignore else
     if (this.props.propertyRecord) {
-      const displayValue = await typeConverter.convertPropertyToString (this.props.propertyRecord.property, newValue);
+      const displayValue = await typeConverter.convertPropertyToString(this.props.propertyRecord.property, newValue);
       this.setState({
         value: newValue,
         displayValue,
@@ -80,28 +80,28 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
   private _handleChange = (newValue: Date): void => {
     // istanbul ignore else
     if (this._isMounted && this.state.typeConverter) {
-    // istanbul ignore else
+      // istanbul ignore else
       if (this.state.editInUtc) {
-        newValue = adjustDateToTimezone(newValue, newValue.getTimezoneOffset()*-1);
+        newValue = adjustDateToTimezone(newValue, newValue.getTimezoneOffset() * -1);
       }
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.processDateChange (this.state.typeConverter, newValue);
+      this.processDateChange(this.state.typeConverter, newValue);
     }
-  }
+  };
 
   private _handleTimeChange = (time: TimeSpec): void => {
     // Combine new time into selected Date
     if (this.state.editInUtc) {
-      const newWorkingDate =  adjustDateToTimezone(this.state.value, 0);
+      const newWorkingDate = adjustDateToTimezone(this.state.value, 0);
       newWorkingDate.setUTCHours(time.hours, time.minutes, time.seconds);
-      this._handleChange (newWorkingDate);
+      this._handleChange(newWorkingDate);
     } else {
       const newWorkingDate = new Date(this.state.value.getTime());
       newWorkingDate.setHours(time.hours, time.minutes, time.seconds);
-      this._handleChange (newWorkingDate);
+      this._handleChange(newWorkingDate);
     }
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -123,9 +123,9 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
 
   private async setStateFromProps() {
     const record = this.props.propertyRecord;
-    let initialValue: Date|undefined;
-    let typeConverter: TypeConverter|undefined;
-    let timeDisplay: TimeDisplay|undefined;
+    let initialValue: Date | undefined;
+    let typeConverter: TypeConverter | undefined;
+    let timeDisplay: TimeDisplay | undefined;
     let alternateDateFormat = AlternateDateFormats.None;
     let editInUtc = false;
 
@@ -159,7 +159,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
           // use 24 hr time display if alternateDateFormat is defined
           // istanbul ignore next
           if (alternateDateFormat && timeDisplay !== TimeDisplay.H24MS && timeDisplay !== TimeDisplay.H24M)
-            timeDisplay = TimeDisplay.H24MS
+            timeDisplay = TimeDisplay.H24MS;
         }
 
         // istanbul ignore else
@@ -191,16 +191,16 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
 
     // istanbul ignore next
     if (!initialValue) {
-      throw new Error ("Bad Value");
+      throw new Error("Bad Value");
     }
 
     // istanbul ignore next
     if (!typeConverter) {
-      throw new Error ("Unable to determine TypeConverter");
+      throw new Error("Unable to determine TypeConverter");
     }
 
     const isDisabled = record && !!record.isDisabled;
-    const displayValue = await typeConverter.convertPropertyToString (record!.property, initialValue);
+    const displayValue = await typeConverter.convertPropertyToString(record!.property, initialValue);
 
     // istanbul ignore else
     if (this._isMounted)
@@ -217,7 +217,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
   private _handleEnter = async (): Promise<void> => {
     this._enterKey = true;
     await this._handleCommit();
-  }
+  };
 
   private _handleClose = async (): Promise<void> => {
     if (this._enterKey) {
@@ -227,18 +227,18 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
       if (this.props.onCancel)
         this.props.onCancel();
     }
-  }
+  };
 
   private _handleOk = async (_event: React.MouseEvent): Promise<void> => {
     await this._handleCommit();
-  }
+  };
 
   private _handleCancel = (_event: React.MouseEvent): void => {
     // istanbul ignore else
     if (this.props.onCancel) {
       this.props.onCancel();
     }
-  }
+  };
 
   private _handleCommit = async (): Promise<void> => {
     // istanbul ignore else
@@ -249,7 +249,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
         this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
       }
     }
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {
@@ -269,12 +269,12 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
           <PopupContent>
             <>
               <div className="components-date-picker-calendar-popup-panel" data-testid="components-date-picker-calendar-popup-panel">
-                <DatePicker selected={date} onDateChange={this._handleChange} showFocusOutline={false}/>
+                <DatePicker selected={date} onDateChange={this._handleChange} showFocusOutline={false} />
                 {this.state.timeDisplay &&
-                <div className="time-container">
-                  <BodyText className="time-label">{"Time"}</BodyText>
-                  <TimeField time={timeSpec} timeDisplay={this.state.timeDisplay} onTimeChange={this._handleTimeChange} />
-                </div>
+                  <div className="time-container">
+                    <BodyText className="time-label">{"Time"}</BodyText>
+                    <TimeField time={timeSpec} timeDisplay={this.state.timeDisplay} onTimeChange={this._handleTimeChange} />
+                  </div>
                 }
               </div>
             </>
@@ -292,7 +292,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
   */
 export class ShortDateTimePropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {
-    return <DateTimeEditor showTime={false}/>;
+    return <DateTimeEditor showTime={false} />;
   }
   // istanbul ignore next
   public get containerHandlesTab(): boolean {
@@ -306,7 +306,7 @@ export class ShortDateTimePropertyEditor extends PropertyEditorBase {
   */
 export class DateTimePropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {
-    return <DateTimeEditor showTime={true}/>;
+    return <DateTimeEditor showTime={true} />;
   }
   // istanbul ignore next
   public get containerHandlesTab(): boolean {

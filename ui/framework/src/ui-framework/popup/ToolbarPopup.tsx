@@ -41,7 +41,7 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, Toolbar
     // istanbul ignore else
     if (!this.state.size.equals(newSize))
       this.setState({ size: Size.create(newSize) });
-  }
+  };
 
   private _handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
     switch (event.key) {
@@ -49,7 +49,7 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, Toolbar
         this._cancel();
         break;
     }
-  }
+  };
 
   private _cancel() {
     // istanbul ignore else

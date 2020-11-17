@@ -114,12 +114,12 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
   private _onEditCommit = (args: PropertyUpdatedArgs) => {
     if (this.props.onEditCommit)
       this.props.onEditCommit(args);
-  }
+  };
 
   private _onEditCancel = () => {
     if (this.props.onEditCancel)
       this.props.onEditCancel();
-  }
+  };
 
   /** Display property record value in an editor */
   public updateDisplayValueAsEditor(props: PropertyRendererProps) {

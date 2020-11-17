@@ -33,7 +33,7 @@ export default class FindSimilarWidget extends React.PureComponent<Props> {
   private _onDismissClicked = () => {
     if (this.props.onDismissed)
       this.props.onDismissed();
-  }
+  };
   public render() {
     return (
       <div className="find-similar-widget">

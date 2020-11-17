@@ -63,7 +63,7 @@ export class CoreTools {
     return (
       <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />
     );
-  }
+  };
 
   public static get keyinPaletteButtonItemDef() {
     return new ToolItemDef({

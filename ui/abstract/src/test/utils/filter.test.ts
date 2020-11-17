@@ -580,7 +580,7 @@ describe("Filters", () => {
     "HTMLSourceElement","HTMLSpanElement","HTMLStyleElement","HTMLTableAlignment","HTMLTableCaptionElement","HTMLTableCellElement","HTMLTableColElement",
     "HTMLTableDataCellElement","HTMLTableElement","HTMLTableHeaderCellElement","HTMLTableRowElement","HTMLTableSectionElement","HTMLTemplateElement",
     "HTMLTextAreaElement","HTMLTimeElement","HTMLTitleElement","HTMLTrackElement","HTMLUListElement","HTMLUnknownElement","HTMLVideoElement","HTMLVideoElementEventMap",
-  ]
+  ];
 
   function countMatches(match: IFilter, testPatterns: string[]) {
     let count = 0;
