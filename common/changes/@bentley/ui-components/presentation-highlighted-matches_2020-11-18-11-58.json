@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "updated [[FilteringInput]]component",
+      "comment": "Updated [[FilteringInput]] component. Component's `filteringInProgress` property was labeled as deprecated and new status property was introduced, making component more flexible and easier to use",
       "type": "none"
     }
   ],
