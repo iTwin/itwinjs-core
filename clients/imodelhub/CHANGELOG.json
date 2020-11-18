@@ -2,6 +2,21 @@
   "name": "@bentley/imodelhub-client",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/imodelhub-client_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed the briefcase deletion optimization - added a lock query to see if there are any locks to delete to avoid users with no permissions attempting to delete  locks"
+          },
+          {
+            "comment": "Added CheckpointCreated event"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.1",
       "tag": "@bentley/imodelhub-client_v2.8.1",
       "date": "Tue, 03 Nov 2020 00:33:56 GMT",

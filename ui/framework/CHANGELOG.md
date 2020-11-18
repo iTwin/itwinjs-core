@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Sat, 21 Nov 2020 16:01:10 GMT and should not be manually modified.
+This log was last generated on Sat, 21 Nov 2020 16:37:51 GMT and should not be manually modified.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- Change ComponentGenerator to remove need for setImmediate call.
+- Update test snapshot file due to change to support ForwardRef of Input controls.
+- Rename ToolUiManager to ToolSettingsManager
+- Add support for reloading enum choices or reloading all components constructed from UiDataProvider data.
+- Changed AutoSuggest getSuggestions prop to async and removed @deprecated tag
+- Added FrameworkUiAdmin.showReactCard
+- Update 2.0 status bar background color.
+- Change Editor components to process native keyboard events instead of synthe
+- Added MessagePopup - Displays Toast & Sticky messages without a StatusBar
+- Respect WidgetState.Hidden when rendering widget tabs.
 
 ## 2.8.1
 Tue, 03 Nov 2020 00:33:56 GMT

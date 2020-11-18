@@ -2,6 +2,30 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/geometry-core_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "method to search a curve collection and return the curvePrimitive, fraction, and xyz of point closest to a spacePoint"
+          },
+          {
+            "comment": "New method UVSurfaceOps.sampledRangeOfOffsetPatch"
+          },
+          {
+            "comment": "New method PolyfaceQuery.boundaryOfVisibleSubset"
+          },
+          {
+            "comment": "Serialize and deserialize typescript geometry to/from flatbuffers"
+          },
+          {
+            "comment": "Read and Write PointString in flatbuffer"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.1",
       "tag": "@bentley/geometry-core_v2.8.1",
       "date": "Tue, 03 Nov 2020 00:33:56 GMT",

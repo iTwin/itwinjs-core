@@ -2,6 +2,18 @@
   "name": "@bentley/forms-data-management-client",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/forms-data-management-client_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add new functions to FormDataManagementClient to interact with FDM/IRS"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.1",
       "tag": "@bentley/forms-data-management-client_v2.8.1",
       "date": "Tue, 03 Nov 2020 00:33:56 GMT",

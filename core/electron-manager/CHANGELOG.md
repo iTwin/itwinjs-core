@@ -1,6 +1,13 @@
 # Change Log - @bentley/electron-manager
 
-This log was last generated on Sat, 21 Nov 2020 16:01:09 GMT and should not be manually modified.
+This log was last generated on Sat, 21 Nov 2020 16:37:51 GMT and should not be manually modified.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- Support for push events
 
 ## 2.8.1
 Tue, 03 Nov 2020 00:33:56 GMT

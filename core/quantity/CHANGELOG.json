@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-quantity",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/imodeljs-quantity_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix parsing of composite values like 1'-3\" where it was treating '-' separator as a negative value."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.1",
       "tag": "@bentley/imodeljs-quantity_v2.8.1",
       "date": "Tue, 03 Nov 2020 00:33:56 GMT",
