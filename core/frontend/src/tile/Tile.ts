@@ -476,6 +476,10 @@ export abstract class Tile {
       addRangeGraphic(builder, range, this.tree.is2d);
     }
   }
+  /** If size projection corners are used to compute the screen size of the tile.   These are are used for reality tiles
+   * with OBB to produce more accurate size calculation.
+   * @internal */
+  public getSizeProjectionCorners(): Point3d[] | undefined { return undefined; }
 }
 
 /**

@@ -235,7 +235,7 @@ export class RealityTile extends Tile {
     if (visibility < 0)
       return;
 
-    if (visibility * preloadSizeModifier > 1 || context.preloadCountExceeded) {
+    if (visibility * preloadSizeModifier > 1) {
       if (this.isDisplayable)
         context.preload(this, args);
     } else {

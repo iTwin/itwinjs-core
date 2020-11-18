@@ -272,7 +272,7 @@ class RealityModelTileLoader extends RealityTileLoader {
     super();
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
-    this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true, shadows: false });
+    this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true });
     this._viewFlagOverrides.clearPresent(ViewFlagPresence.VisibleEdges);      // Display these if they are present (Cesium outline extension)
     this._viewFlagOverrides.clearPresent(ViewFlagPresence.HiddenEdges);
   }
