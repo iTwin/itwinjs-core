@@ -7,7 +7,7 @@
  */
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyRecordMatchInfo } from "../../../ui-components";
+import { PropertyRecordMatchInfo } from "../component/VirtualizedPropertyGrid";
 import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider";
 import { IPropertyDataFilterer } from "./filterers/PropertyDataFiltererBase";

@@ -9,12 +9,12 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { HighlightedRecordProps } from "../../../../ui-components";
 import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
 import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
 import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
 import { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import { HighlightedRecordProps } from "../../component/VirtualizedPropertyGrid";
 import { PropertyCategory } from "../../PropertyDataProvider";
 import { FlatNonPrimitivePropertyRenderer } from "./FlatNonPrimitivePropertyRenderer";
 
@@ -83,8 +83,6 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
     valueElementRenderer,
     indentation: props.indentation,
   };
-
-  // const displayValue = CommonPropertyRenderer.createNewDisplayValue(props.orientation, props.propertyRecord, props.indentation, props.propertyValueRendererManager, undefined, undefined, undefined,  props.highlightProps);
   switch (props.propertyRecord.value.valueFormat) {
     case PropertyValueFormat.Primitive:
       return (<PrimitivePropertyRenderer highlightProps={highlightProps} {...primitiveRendererProps} />);

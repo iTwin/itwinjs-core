@@ -17,7 +17,7 @@ import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDa
 export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
   private _filterText: string = "";
 
-  public constructor(filterText: string="") {
+  public constructor(filterText: string = "") {
     super();
     this._filterText = filterText;
   }
@@ -41,7 +41,7 @@ export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
       return { matchesFilter: false };
 
     const displayValue = node.value.displayValue?.toLowerCase() ?? "";
-    const matchesCount = countMatchesInString(displayValue, this.filterText)
+    const matchesCount = countMatchesInString(displayValue, this.filterText);
 
     if (matchesCount === 0)
       return { matchesFilter: false };

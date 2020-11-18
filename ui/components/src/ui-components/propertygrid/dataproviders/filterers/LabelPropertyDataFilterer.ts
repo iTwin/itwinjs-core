@@ -40,7 +40,7 @@ export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
     const displayLabel = node.property.displayLabel.toLowerCase();
     const matchesCount = countMatchesInString(displayLabel, this.filterText);
     if (matchesCount === 0)
-      return { matchesFilter: false }
+      return { matchesFilter: false };
 
     return {
       matchesFilter: true,
