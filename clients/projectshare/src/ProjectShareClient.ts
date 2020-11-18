@@ -50,6 +50,9 @@ export class ProjectShareFolder extends WsgInstance {
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Size")
   public size?: number;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FolderHasContent](direction:backward).relatedInstance[Folder]")
+  public parentFolder?: ProjectShareFolder;
 }
 
 /** This class is used to upload file and store extracted information related to file in project share.
@@ -113,6 +116,14 @@ export class ProjectShareFile extends WsgInstance {
  */
 export class ProjectShareQuery extends WsgQuery {
   /**
+   * Assures that pas is valid
+   * @param path given path
+   */
+  protected correctPath(path: string) {
+    return (path.trim() === "" || path.trim() === "/") ? "" : path.endsWith("/") ? path : `${path}/`;
+  }
+
+  /**
    * Query for children inside the specified folder
    * @param contextId Context Id (e.g., projectId or assetId)
    * @note This cannot be combined with other queries.
@@ -170,7 +181,7 @@ export class ProjectShareQuery extends WsgQuery {
    * <ul>
    */
   public startsWithPathAndNameLike(contextId: GuidString, path: string, nameLike: string = "*") {
-    const correctedPath = path.endsWith("/") ? path : `${path}/`;
+    const correctedPath = this.correctPath(path);
     this.addFilter(`startswith(Path,'${contextId}/${correctedPath}') and Name like '${nameLike}'`);
     return this;
   }
@@ -212,7 +223,7 @@ export class ProjectShareFolderQuery extends ProjectShareQuery {
    * <ul>
    */
   public inPath(contextId: GuidString, path: string) {
-    const correctedPath = path.endsWith("/") ? path : `${path}/`;
+    const correctedPath = super.correctPath(path);
     this.filter(`Path eq '${contextId}/${correctedPath}'`);
     return this;
   }
@@ -460,6 +471,27 @@ export class ProjectShareClient extends WsgClient {
   }
 
   /**
+   * Create new folder.
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
+   * @param contextId Context Id (e.g., projectId or assetId)
+   * @param folderId Id of the folder where we need to upload that file.
+   * @param newFolder ProjectShareFolder
+   * @return The instance after the changes
+   * @note If Folder already exist with that name then it create a Folder with same name and append index in brackets.
+   */
+  public async createFolder(requestContext: AuthorizedClientRequestContext, contextId: GuidString, folderId: GuidString, newFolder: ProjectShareFolder): Promise<ProjectShareFolder> {
+    const folder = new ProjectShareFolder();
+    folder.wsgId = folderId;
+    folder.changeState = "existing";
+    folder.ecId = folderId;
+    folder.contentType
+    const mappedFolder: any = ECJsonTypeMap.toJson<ProjectShareFolder>("wsg", folder);
+    newFolder.parentFolder = mappedFolder;
+    const relativeUrl = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/Folder/`;
+    return this.postInstance<ProjectShareFolder>(requestContext, ProjectShareFolder, relativeUrl, newFolder);
+  }
+
+  /**
    * upload a file with file existing property set to false, and return the new state of the file.
    * file existing property need to update after content uploaded in file.
    * @param requestContext Client request context that includes the authorization information to access Project Share.
@@ -517,6 +549,32 @@ export class ProjectShareClient extends WsgClient {
     const relativeUrl = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/File/${fileId}`;
     return this.postInstance<ProjectShareFile>(requestContext, ProjectShareFile, relativeUrl, updateInstance);
   }
+
+  /**
+   * Delete folder permanently or send folder to recycle bin.
+   * @param requestContext Client request context that includes the authorization information to access Project Share.
+   * @param contextId Context Id (e.g., projectId or assetId)
+   * @param folderId Id of the folder where we need to upload that file.
+   * @param deleteOption By default delete folder permanently.
+   */
+  public async deleteFolder(requestContext: AuthorizedClientRequestContext, contextId: GuidString, folderId: GuidString, deleteOption: RecycleOption = RecycleOption.DeletePermanently): Promise<ProjectShareFile | void> {
+    const url = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/Folder/${folderId}`;
+    switch (deleteOption) {
+      case RecycleOption.DeletePermanently:
+        return this.deleteInstance<ProjectShareFolder>(requestContext, url);
+      case RecycleOption.SendToRecycleBin:
+        const updateInstance = new ProjectShareFolder();
+        updateInstance.instanceId = folderId;
+        updateInstance.changeState = "modified";
+        const projectShareRequestOptions = {
+          CustomOptions: { // eslint-disable-line @typescript-eslint/naming-convention
+            IsDeleted: true, // eslint-disable-line @typescript-eslint/naming-convention
+          },
+        };
+        return this.postInstance<ProjectShareFolder>(requestContext, ProjectShareFolder, url, updateInstance, projectShareRequestOptions);
+    }
+  }
+
 
   /**
    * Delete file permanently or send file to recyle bin.
