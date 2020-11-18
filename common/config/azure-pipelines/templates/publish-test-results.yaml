@@ -287,7 +287,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Example Snippets"
     inputs:
-      testResultsFiles: "example-code/Snippets/lib/test/junit_results.xml"
+      testResultsFiles: "example-code/snippets/lib/test/junit_results.xml"
       testRunTitle: "Example Apps - Snippets Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
