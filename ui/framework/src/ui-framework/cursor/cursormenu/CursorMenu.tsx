@@ -52,7 +52,7 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
         this.setState({ menuVisible: false, items: undefined });
       }
     }
-  }
+  };
 
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
@@ -91,9 +91,9 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
 
   private _hideContextMenu = () => {
     this.setState({ menuVisible: false });
-  }
+  };
 
   private _itemPicked = (): void => {
     this._hideContextMenu();
-  }
+  };
 }

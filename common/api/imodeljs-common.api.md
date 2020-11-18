@@ -717,6 +717,10 @@ export interface ChangedElements {
     // (undocumented)
     opcodes: number[];
     // (undocumented)
+    parentClassIds?: Id64String[];
+    // (undocumented)
+    parentIds?: Id64String[];
+    // (undocumented)
     properties?: Id64String[][];
     // (undocumented)
     type: number[];
@@ -1456,8 +1460,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1048576,
-    Major = 16,
+    Combined = 1114112,
+    Major = 17,
     Minor = 0
 }
 
@@ -2030,12 +2034,114 @@ export interface ElementAspectProps extends EntityProps {
 }
 
 // @alpha
+export namespace ElementGeometry {
+    // (undocumented)
+    export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
+    // (undocumented)
+    export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
+    // (undocumented)
+    export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
+    // (undocumented)
+    export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    // (undocumented)
+    export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+    export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
+    // (undocumented)
+    export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
+    // (undocumented)
+    export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
+    // (undocumented)
+    export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
+    // (undocumented)
+    export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
+    // (undocumented)
+    export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
+    export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
+    // (undocumented)
+    export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
+}
+
+// @alpha
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
 // @alpha
 export namespace ElementGeometryChange {
     export function iterable(modelChanges: ModelGeometryChangesProps): Iterable<ElementGeometryChange>;
     export function iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange>;
+}
+
+// @alpha
+export interface ElementGeometryDataEntry {
+    data: Uint8Array;
+    opcode: number;
+}
+
+// @alpha
+export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
+
+// @alpha
+export interface ElementGeometryInfo {
+    bbox?: Float64Array;
+    brepsPresent?: boolean;
+    categoryId?: Id64String;
+    entryArray: ElementGeometryDataEntry[];
+    sourceToWorld?: Float64Array;
+    viewIndependent?: boolean;
+}
+
+// @alpha
+export enum ElementGeometryOpcode {
+    ArcPrimitive = 7,
+    BasicSymbology = 4,
+    BRep = 25,
+    BsplineSurface = 12,
+    CurveCollection = 8,
+    CurvePrimitive = 10,
+    Fill = 19,
+    Image = 28,
+    LineStyleModifiers = 23,
+    Material = 21,
+    PartReference = 3,
+    Pattern = 20,
+    PointPrimitive = 5,
+    PointPrimitive2d = 6,
+    Polyface = 9,
+    SolidPrimitive = 11,
+    SubGraphicRange = 2,
+    TextString = 22
+}
+
+// @alpha
+export interface ElementGeometryRequest {
+    angleTol?: number;
+    chordTol?: number;
+    elementId: Id64String;
+    maxEdgeLength?: number;
+    minBRepFeatureSize?: number;
+    onGeometry: ElementGeometryFunction;
+    replaceBReps?: boolean;
+    skipBReps?: boolean;
+}
+
+// @alpha
+export interface ElementGeometryUpdate {
+    elementId: Id64String;
+    entryArray: ElementGeometryDataEntry[];
+    is2dPart?: boolean;
+    isWorld?: boolean;
+    viewIndependent?: boolean;
 }
 
 // @internal
@@ -4306,6 +4412,14 @@ export interface ModelGeometryChangesProps {
 }
 
 // @public
+export interface ModelLoadProps {
+    // (undocumented)
+    code?: CodeProps;
+    // (undocumented)
+    id?: Id64String;
+}
+
+// @public
 export interface ModelProps extends EntityProps {
     // (undocumented)
     isPrivate?: boolean;
@@ -5274,6 +5388,10 @@ export class RelatedElement implements RelatedElementProps {
 export interface RelatedElementProps {
     id: Id64String;
     relClassName?: string;
+}
+
+// @public
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 // @beta
@@ -6449,6 +6567,14 @@ export interface SolarShadowSettingsProps {
     // @internal (undocumented)
     bias?: number;
     color?: ColorDefProps;
+}
+
+// @public
+export interface SourceAndTarget {
+    // (undocumented)
+    sourceId: Id64String;
+    // (undocumented)
+    targetId: Id64String;
 }
 
 // @beta

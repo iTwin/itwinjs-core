@@ -6,34 +6,32 @@
  * @module Inputs
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import "./NumericInput.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../../utils/Props";
 import { Omit } from "../../utils/typeUtils";
 import { ReactNumericInput, ReactNumericInputProps } from "./ReactNumericInput";
+import { StepFunctionProp } from "../numberinput/NumberInput";
 
 // cSpell:ignore nostyle
 
-/** Step function prototype for [[NumericInput]] component
- * @beta
- */
-export type StepFunctionProp = number | ((direction: string) => number | undefined);
-
 /** Properties for the [[NumericInput]] component
- * @beta
+ * @beta @deprecated use NumberInput
  */
 export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
   step?: StepFunctionProp;
 }
 
 /** Default properties of [[NumericInput]] component.
- * @internal
+ * @internal @deprecated use NumberInput
  */
 export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
 /** Numeric Input React component.
- * @beta
+ * @beta @deprecated use NumberInput
  */
 export class NumericInput extends React.Component<NumericInputProps> {
 
@@ -51,7 +49,7 @@ export class NumericInput extends React.Component<NumericInputProps> {
         result = this.props.step(direction);
     }
     return result;
-  }
+  };
 
   public render() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

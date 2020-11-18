@@ -90,7 +90,7 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
   private _onEditCommit = (args: PropertyUpdatedArgs) => {
     if (this.props.onEditCommit && this.props.category)
       this.props.onEditCommit(args, this.props.category);
-  }
+  };
 
   private afterRender() {
     if (this.props.orientation !== Orientation.Horizontal || !this._listRef.current)

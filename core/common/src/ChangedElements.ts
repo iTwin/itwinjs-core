@@ -28,6 +28,8 @@ export interface ChangedElements {
   type: number[];
   modelIds?: Id64String[];
   properties?: Id64String[][];
+  parentIds?: Id64String[];
+  parentClassIds?: Id64String[];
 }
 
 /** @internal */

@@ -146,13 +146,13 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     this.setState({ searchStarted: false, searchText: "" });
     this.props.onFilterCancel();
     this.focus();
-  }
+  };
 
   private _onClearButtonClick = () => {
     this.setState({ searchStarted: false, searchText: "" });
     this.props.onFilterClear();
     this.focus();
-  }
+  };
 
   private _onFilterKeyDown = (e: React.KeyboardEvent<HTMLElement>): void => {
     if (e.key !== Key.Enter)
@@ -164,7 +164,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     this.props.onFilterStart(this.state.searchText);
     this.setState({ searchStarted: true });
     e.stopPropagation();
-  }
+  };
 
   private _onInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     if(this.state.searchStarted){
@@ -172,6 +172,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     }
     this.setState({ searchText: e.target.value, searchStarted: false});
   }
+
 
   /** @internal */
   public componentDidUpdate(prevProps: FilteringInputProps) {

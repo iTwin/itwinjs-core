@@ -100,7 +100,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
 
   private _onClick = () => {
     this.props.onClick(this.props.viewProps);
-  }
+  };
 
   public renderThumbnail() {
     if (this.state.waitingForThumbnail) {

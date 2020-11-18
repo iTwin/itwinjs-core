@@ -80,7 +80,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
   // istanbul ignore next
   public applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {
-    throw (new Error ("Derived UiDataProvider should implement this to apply change to a single property."))
+    throw (new Error ("Derived UiDataProvider should implement this to apply change to a single property."));
   };
 
   private _rows: DialogRow[] | undefined;
@@ -177,7 +177,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     const record = new PropertyRecord(propertyValue as PrimitiveValue, dialogItem.property);
     record.isDisabled = UiLayoutDataProvider.getItemDisabledState(dialogItem);
     return record;
-  }
+  };
 
   /** Determines if a dialog row only contains button group editors */
   public static onlyContainButtonGroupEditors(row: DialogRow): boolean {

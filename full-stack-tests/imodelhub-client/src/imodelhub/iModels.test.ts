@@ -553,7 +553,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should update iModel name and description (#iModelBank)", async () => {
-    const testIModelName = utils.getUniqueIModelName(imodelName)
+    const testIModelName = utils.getUniqueIModelName(imodelName);
     mockGetIModelByName(projectId, testIModelName);
     const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(testIModelName)))[0];
     chai.expect(imodel.name).to.be.equal(testIModelName);

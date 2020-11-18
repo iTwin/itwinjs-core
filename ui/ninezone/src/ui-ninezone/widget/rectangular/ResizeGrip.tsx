@@ -124,7 +124,7 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
     if (this._movedBy > 0)
       return;
     this.props.onClick && this.props.onClick();
-  }
+  };
 
   private _handlePointerDown = (e: PointerEvent) => {
     this.setState({ isPointerDown: true });
@@ -146,7 +146,7 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
       },
       bounds: bounds.toProps(),
     });
-  }
+  };
 
   private _handlePointerUp = (e: PointerEvent) => {
     this.setState({ isPointerDown: false });
@@ -168,7 +168,7 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
       },
       bounds: bounds.toProps(),
     });
-  }
+  };
 
   private _handlePointerMove = (e: PointerEvent) => {
     const grip = this._grip.current;
@@ -187,5 +187,5 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
       },
       bounds: bounds.toProps(),
     });
-  }
+  };
 }

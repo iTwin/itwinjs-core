@@ -199,7 +199,7 @@ describe("DateTimeTypeConverter", () => {
       const hour24 = await converter.convertToStringWithOptions(date, options);
       options = { timeDisplay: TimeDisplay.H12MC };
       const hour12 = await converter.convertToStringWithOptions(date, options);
-      expect(hour12.length > hour24.length)
+      expect(hour12.length > hour24.length);
     });
 
     it("returns formatted date if date is a string", () => {

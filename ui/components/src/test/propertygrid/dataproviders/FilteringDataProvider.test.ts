@@ -129,7 +129,7 @@ describe("FilteringDataProvider", () => {
 
     it("Should return empty property data and matchesCount equal to 0 if filter is enabled and nothing matches it", async () => {
       mockFilterer.setup((x) => x.isActive).returns(() => true);
-      mockFilterer.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }))
+      mockFilterer.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProvider, mockFilterer.object);
 
@@ -165,7 +165,7 @@ describe("FilteringDataProvider", () => {
         }
       }
 
-      throw Error(`Property with name: ${name} not found. Check test data.`)
+      throw Error(`Property with name: ${name} not found. Check test data.`);
     }
 
     const createPropertyData = (records: PropertyRecord[]) => {

@@ -200,5 +200,5 @@ class FuzzySearchResultsIterator<T> {
       done: this.counter === this.fsr.results.length,
       value: this.fsr.results[this.counter++] as FuzzySearchResult<T>,
     };
-  }
+  };
 }

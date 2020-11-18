@@ -44,7 +44,7 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
     if (e.target.value) {
       UiFramework.setActiveSelectionScope(e.target.value);
     }
-  }
+  };
 
   public render(): React.ReactNode {
     return (

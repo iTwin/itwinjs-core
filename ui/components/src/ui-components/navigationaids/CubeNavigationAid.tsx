@@ -162,7 +162,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
         this.setState({ startRotMatrix: newMatrix, endRotMatrix: newMatrix, animation: 1, face: Face.None });
       }
     }
-  }
+  };
 
   private _animation = () => {
     const t = Date.now();
@@ -181,7 +181,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       this._lastTime = undefined;
       this._animationEnd();
     }
-  }
+  };
 
   private _animationEnd = () => {
     ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, this.state.face, true);
@@ -194,7 +194,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
           this.props.onAnimationEnd();
       });
     }
-  }
+  };
 
   private static _animationFn = (t: number) => t < .5 ? 2 * t ** 2 : -1 + (4 - 2 * t) * t;
 
@@ -207,7 +207,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     // Assuming matrix is a proper rotation matrix:
     // if matrix viewing a face, there will be a total of 3 values either almost -1, or almost 1.
     return sum === 3;
-  }
+  };
 
   public render(): React.ReactNode {
     const { animation, startRotMatrix, endRotMatrix } = this.state;
@@ -272,7 +272,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     const hoverMap = this.state.hoverMap;
     hoverMap[`${vect.x}-${vect.y}-${vect.z}`] = state;
     this.setState({ hoverMap });
-  }
+  };
 
   private static _getMatrixFace = (rotMatrix: Matrix3d): Face => {
     if (!CubeNavigationAid._isMatrixFace(rotMatrix)) {
@@ -293,7 +293,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     }
 
     return matrixFace;
-  }
+  };
 
   private static _interpolateRotMatrix = (start: Matrix3d, anim: number, end: Matrix3d): Matrix3d => {
     if (anim === 0)
@@ -315,7 +315,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     }
     // istanbul ignore next
     return end;
-  }
+  };
 
   private static correctSmallNumber(value: number, tolerance: number): number {
     return Math.abs(value) < tolerance ? 0 : value;
@@ -403,7 +403,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   private _onArrowClick = (arrow: Pointer) => {
     const { newRotation, face } = this.getArrowRotationAndFace(arrow);
     this._animateRotation(newRotation, face);
-  }
+  };
 
   private getArrowTitle(arrow: Pointer) {
     const { face } = this.getArrowRotationAndFace(arrow);
@@ -438,12 +438,12 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     window.addEventListener("mouseup", this._onMouseUp, false);
     this._lastClientXY = Vector2d.create(event.clientX, event.clientY);
     this._start = this._lastClientXY;
-  }
+  };
 
   private _onMouseMove = (event: MouseEvent) => {
     const mousePos = Vector2d.create(event.clientX, event.clientY);
     this._processDrag(mousePos);
-  }
+  };
 
   private _onMouseUp = () => {
     if (this.state.dragging) {
@@ -454,7 +454,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     // remove so event only triggers after this.onMouseStartDrag
     window.removeEventListener("mousemove", this._onMouseMove);
     window.removeEventListener("mouseup", this._onMouseUp);
-  }
+  };
 
   private _handleBoxTouchStart = (event: any) => {
     if (1 !== event.targetTouches.length)
@@ -463,14 +463,14 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     window.addEventListener("touchend", this._onTouchEnd, false);
     this._lastClientXY = Vector2d.create(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
     this._start = this._lastClientXY;
-  }
+  };
 
   private _onTouchMove = (event: TouchEvent) => {
     if (1 !== event.targetTouches.length)
       return;
     const mousePos = Vector2d.create(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
     this._processDrag(mousePos);
-  }
+  };
 
   private _onTouchEnd = (event: TouchEvent) => {
     if (0 !== event.targetTouches.length)
@@ -483,7 +483,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
 
     window.removeEventListener("touchmove", this._onTouchMove);
     window.removeEventListener("touchend", this._onTouchEnd);
-  }
+  };
 
   private _handleFaceCellClick = (pos: Vector3d, face: Face) => {
     const { endRotMatrix } = this.state;
@@ -505,7 +505,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       this._animateRotation(rotMatrix, face);
     }
     window.removeEventListener("mousemove", this._onMouseMove);
-  }
+  };
 
   private _animateRotation = (endRotMatrix: Matrix3d, face: Face) => {
     if (this.state.endRotMatrix.isAlmostEqual(endRotMatrix))
@@ -517,7 +517,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       animation: 0,
       face,
     }));
-  }
+  };
 
   private _setRotation = (endRotMatrix: Matrix3d, face: Face) => {
     ViewportComponentEvents.setCubeMatrix(endRotMatrix, face);
@@ -528,7 +528,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       animation: 1,
       face,
     });
-  }
+  };
 }
 
 /** @internal */
@@ -581,7 +581,7 @@ export class NavCubeFace extends React.Component<NavCubeFaceProps> {
     const yVect = faceY !== Face.None ? cubeNavigationFaceLocs[faceY] : Vector3d.createZero();
 
     return faceVect.plus(xVect).plus(yVect);
-  }
+  };
 }
 
 interface FaceRowProps extends React.AllHTMLAttributes<HTMLDivElement> {
@@ -644,29 +644,29 @@ export class FaceCell extends React.Component<FaceCellProps> {
   private _handleMouseOver = () => {
     const { vector } = this.props;
     this.props.onFaceCellHoverChange(vector, CubeHover.Hover);
-  }
+  };
   private _handleMouseOut = () => {
     const { vector } = this.props;
     this.props.onFaceCellHoverChange(vector, CubeHover.None);
-  }
+  };
   private _handleMouseDown = (event: React.MouseEvent) => {
     const { clientX, clientY } = event;
     this.handlePointerDown(clientX, clientY);
-  }
+  };
   private _handleMouseUp = (event: React.MouseEvent) => {
     const { clientX, clientY } = event;
     this.handlePointerUp(clientX, clientY);
-  }
+  };
 
   private _handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.targetTouches.length === 1 && this.handlePointerDown(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
-  }
+  };
 
   private _handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.changedTouches.length === 1 && this.handlePointerUp(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
-  }
+  };
 
   private handlePointerDown(x: number, y: number) {
     const { vector } = this.props;
@@ -735,5 +735,5 @@ class PointerButton extends React.Component<PointerProps> {
     const { pointerType } = this.props;
     event.preventDefault();
     this.props.onArrowClick(pointerType);
-  }
+  };
 }
