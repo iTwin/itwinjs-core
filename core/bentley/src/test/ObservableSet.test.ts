@@ -48,4 +48,15 @@ describe("ObservableSet", () => {
     listener.expectDelete(() => set.delete("def"));
     listener.expectClear(() => set.clear());
   });
+
+  it("should construct from iterable", () => {
+    // Original problem:
+    //  Set constructor invokes add(), which ObservableSet overrides to raise an event.
+    //  The event is undefined until Set constructor finishes, producing an exception.
+    // Solution: suppress events during construction - no listeners can be registered yet anyway.
+    const elems = ["a", "b", "c"];
+    const observable = new ObservableSet<string>(elems);
+    const set = new Set<string>(elems);
+    expect(observable).to.deep.equal(set);
+  });
 });

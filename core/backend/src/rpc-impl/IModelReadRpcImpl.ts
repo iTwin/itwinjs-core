@@ -12,7 +12,7 @@ import {
   ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps,
   ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesResponseProps, IModelReadRpcInterface,
   IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface,
-  RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, ViewStateProps,
+  RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -146,8 +146,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return codeSpecs;
   }
 
-  public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string): Promise<ViewStateProps> {
-    return IModelDb.findByKey(tokenProps.key).views.getViewStateData(viewDefinitionId);
+  public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
+    return IModelDb.findByKey(tokenProps.key).views.getViewStateData(viewDefinitionId, options);
   }
 
   public async readFontJson(tokenProps: IModelRpcProps): Promise<any> {

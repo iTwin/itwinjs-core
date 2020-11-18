@@ -24,7 +24,7 @@ import {
   IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
-  SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
+  SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -1791,16 +1791,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    public getViewStateData(viewDefinitionId: string): ViewStateProps {
+    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
       const elements = this._iModel.elements;
       const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       const viewDefinitionProps = viewDefinitionElement.toJSON();
       const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
 
-      // Schedule scripts include huge lists of element Ids that are entirely unneeded for frontend display. Omit them.
       const displayStyleOptions: ElementLoadProps = {
         id: viewDefinitionProps.displayStyleId,
-        displayStyle: { omitScheduleScriptElementIds: true },
+        displayStyle: options?.displayStyle,
       };
       const displayStyleProps = elements.getElementProps<DisplayStyleProps>(displayStyleOptions);
 

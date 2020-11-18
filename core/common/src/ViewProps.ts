@@ -10,11 +10,11 @@ import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { AngleProps, Range3dProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, ElementProps, SheetProps } from "./ElementProps";
+import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
-/** Returned from [IModelDb.Views.getViewStateData]($backend)
+/** Returned from [IModelDb.Views.getViewStateData]($backend).
  * @public
  */
 export interface ViewStateProps {
@@ -30,6 +30,14 @@ export interface ViewStateProps {
    * @alpha
    */
   modelExtents?: Range3dProps;
+}
+
+/** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateData]($backend).
+ * @public
+ */
+export interface ViewStateLoadProps {
+  /** Options for loading the view's [[DisplayStyleProps]]. */
+  displayStyle?: DisplayStyleLoadProps;
 }
 
 /** Properties that define a ModelSelector

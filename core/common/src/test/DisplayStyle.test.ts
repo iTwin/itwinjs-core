@@ -4,100 +4,142 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { CompressedId64Set, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
-import { DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, MonochromeMode } from "../DisplayStyleSettings";
+import { DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStyleSettings, MonochromeMode } from "../DisplayStyleSettings";
 import { LinePixels } from "../LinePixels";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
 import { SpatialClassificationProps } from "../SpatialClassificationProps";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 
+/* eslint-disable deprecation/deprecation */
+//  - for DisplayStyleSettings.excludedElements.
+
 describe("DisplayStyleSettings", () => {
-  interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }
+  describe("plan projection settings", () => {
+    interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }
 
-  it("round-trips plan projection settings", () => {
-    const roundTrip = (planProjections: SettingsMap | undefined) => {
-      const settings = new DisplayStyle3dSettings({ styles: { planProjections } });
-      const json = settings.toJSON();
-      expect(JSON.stringify(json.planProjections)).to.equal(JSON.stringify(planProjections));
-    };
+    it("round-trips plan projection settings", () => {
+      const roundTrip = (planProjections: SettingsMap | undefined) => {
+        const settings = new DisplayStyle3dSettings({ styles: { planProjections } });
+        const json = settings.toJSON();
+        expect(JSON.stringify(json.planProjections)).to.equal(JSON.stringify(planProjections));
+      };
 
-    roundTrip(undefined);
-    roundTrip({});
-    roundTrip({ "not an id": { transparency: 0.5 } });
-    roundTrip({ "0x1": { overlay: true } });
-    roundTrip({ "0x1": { overlay: false } });
-    roundTrip({ "0x1": { enforceDisplayPriority: true } });
-    roundTrip({ "0x1": { enforceDisplayPriority: false } });
-    roundTrip({ "0x1": { transparency: 0.5 }, "0x2": { elevation: -5 } });
+      roundTrip(undefined);
+      roundTrip({});
+      roundTrip({ "not an id": { transparency: 0.5 } });
+      roundTrip({ "0x1": { overlay: true } });
+      roundTrip({ "0x1": { overlay: false } });
+      roundTrip({ "0x1": { enforceDisplayPriority: true } });
+      roundTrip({ "0x1": { enforceDisplayPriority: false } });
+      roundTrip({ "0x1": { transparency: 0.5 }, "0x2": { elevation: -5 } });
+    });
+
+    it("sets and round-trips plan projection settings", () => {
+      const roundTrip = (planProjections: SettingsMap | undefined, expected: SettingsMap | undefined | "input") => {
+        if ("input" === expected)
+          expected = planProjections;
+
+        const input = new DisplayStyle3dSettings({});
+        if (undefined !== planProjections)
+          for (const modelId of Object.keys(planProjections))
+            input.setPlanProjectionSettings(modelId, PlanProjectionSettings.fromJSON(planProjections[modelId]));
+
+        const output = new DisplayStyle3dSettings({ styles: input.toJSON() });
+        const json = output.toJSON();
+        expect(JSON.stringify(json.planProjections)).to.equal(JSON.stringify(expected));
+      };
+
+      roundTrip(undefined, undefined);
+      roundTrip({}, undefined);
+      roundTrip({ "not an id": { transparency: 0.5 } }, {});
+      roundTrip({ "0x1": { overlay: true } }, "input");
+      roundTrip({ "0x1": { overlay: false } }, {});
+      roundTrip({ "0x1": { enforceDisplayPriority: true } }, "input");
+      roundTrip({ "0x1": { enforceDisplayPriority: false } }, {});
+      roundTrip({ "0x1": { transparency: 0.5 }, "0x2": { elevation: -5 } }, "input");
+    });
+
+    it("deletes plan projection settings", () => {
+      const settings = new DisplayStyle3dSettings({});
+      expect(settings.planProjectionSettings).to.be.undefined;
+
+      const countSettings = () => {
+        let count = 0;
+        const iter = settings.planProjectionSettings;
+        if (undefined !== iter)
+          for (const _entry of iter) // eslint-disable-line @typescript-eslint/naming-convention
+            ++count;
+
+        return count;
+      };
+
+      const makeSettings = (props: PlanProjectionSettingsProps) => new PlanProjectionSettings(props);
+
+      settings.setPlanProjectionSettings("0x1", makeSettings({ elevation: 1 }));
+      expect(settings.planProjectionSettings).not.to.be.undefined;
+      expect(countSettings()).to.equal(1);
+      expect(settings.getPlanProjectionSettings("0x1")!.elevation).to.equal(1);
+
+      settings.setPlanProjectionSettings("0x2", makeSettings({ elevation: 2 }));
+      expect(countSettings()).to.equal(2);
+      expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.equal(2);
+
+      settings.setPlanProjectionSettings("0x2", makeSettings({ transparency: 0.2 }));
+      expect(countSettings()).to.equal(2);
+      expect(settings.getPlanProjectionSettings("0x2")!.transparency).to.equal(0.2);
+      expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.be.undefined;
+
+      settings.setPlanProjectionSettings("0x3", undefined);
+      expect(countSettings()).to.equal(2);
+
+      settings.setPlanProjectionSettings("0x1", undefined);
+      expect(countSettings()).to.equal(1);
+      expect(settings.getPlanProjectionSettings("0x1")).to.be.undefined;
+
+      settings.setPlanProjectionSettings("0x2", undefined);
+      expect(countSettings()).to.equal(0);
+      expect(settings.planProjectionSettings).to.be.undefined;
+    });
   });
 
-  it("sets and round-trips plan projection settings", () => {
-    const roundTrip = (planProjections: SettingsMap | undefined, expected: SettingsMap | undefined | "input") => {
-      if ("input" === expected)
-        expected = planProjections;
+  describe("excluded elements", () => {
+    it("synchronizes JSON and in-memory representations", () => {
+      const test = (expectedExcludedElements: string | undefined, func: (settings: DisplayStyleSettings) => void) => {
+        const settings = new DisplayStyleSettings({});
+        func(settings);
 
-      const input = new DisplayStyle3dSettings({});
-      if (undefined !== planProjections)
-        for (const modelId of Object.keys(planProjections))
-          input.setPlanProjectionSettings(modelId, PlanProjectionSettings.fromJSON(planProjections[modelId]));
+        expect(settings.toJSON().excludedElements).to.equal(expectedExcludedElements);
+        expect(settings.compressedExcludedElementIds).to.equal(undefined === expectedExcludedElements ? "" : expectedExcludedElements);
 
-      const output = new DisplayStyle3dSettings({ styles: input.toJSON() });
-      const json = output.toJSON();
-      expect(JSON.stringify(json.planProjections)).to.equal(JSON.stringify(expected));
-    };
+        const excludedIds = Array.from(settings.excludedElementIds);
+        expect(settings.excludedElements.size).to.equal(excludedIds.length);
+        const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElements));
+        expect(set).to.deep.equal(excludedIds);
+      };
 
-    roundTrip(undefined, undefined);
-    roundTrip({}, undefined);
-    roundTrip({ "not an id": { transparency: 0.5 } }, {});
-    roundTrip({ "0x1": { overlay: true } }, "input");
-    roundTrip({ "0x1": { overlay: false } }, {});
-    roundTrip({ "0x1": { enforceDisplayPriority: true } }, "input");
-    roundTrip({ "0x1": { enforceDisplayPriority: false } }, {});
-    roundTrip({ "0x1": { transparency: 0.5 }, "0x2": { elevation: -5 } }, "input");
-  });
+      test(undefined, (_settings) => undefined);
+      test(undefined, (settings) => settings.addExcludedElements([]));
 
-  it("deletes plan projection settings", () => {
-    const settings = new DisplayStyle3dSettings({});
-    expect(settings.planProjectionSettings).to.be.undefined;
+      test("+1", (settings) => settings.addExcludedElements("0x1"));
+      test("+1", (settings) => settings.addExcludedElements(["0x1"]));
 
-    const countSettings = () => {
-      let count = 0;
-      const iter = settings.planProjectionSettings;
-      if (undefined !== iter)
-        for (const _entry of iter) // eslint-disable-line @typescript-eslint/naming-convention
-          ++count;
+      test("+2", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElement("0x1"); });
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements(["0x2", "0x1"]); });
 
-      return count;
-    };
+      test("+3", (settings) => settings.excludedElements.add("0x3"));
+      test(undefined, (settings) => { settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x2"); });
+      test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x1"); });
+      test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.delete("0x2"); });
+      test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.excludedElements.delete("0x1"); });
 
-    const makeSettings = (props: PlanProjectionSettingsProps) => new PlanProjectionSettings(props);
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.clear(); });
 
-    settings.setPlanProjectionSettings("0x1", makeSettings({ elevation: 1 }));
-    expect(settings.planProjectionSettings).not.to.be.undefined;
-    expect(countSettings()).to.equal(1);
-    expect(settings.getPlanProjectionSettings("0x1")!.elevation).to.equal(1);
-
-    settings.setPlanProjectionSettings("0x2", makeSettings({ elevation: 2 }));
-    expect(countSettings()).to.equal(2);
-    expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.equal(2);
-
-    settings.setPlanProjectionSettings("0x2", makeSettings({ transparency: 0.2 }));
-    expect(countSettings()).to.equal(2);
-    expect(settings.getPlanProjectionSettings("0x2")!.transparency).to.equal(0.2);
-    expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.be.undefined;
-
-    settings.setPlanProjectionSettings("0x3", undefined);
-    expect(countSettings()).to.equal(2);
-
-    settings.setPlanProjectionSettings("0x1", undefined);
-    expect(countSettings()).to.equal(1);
-    expect(settings.getPlanProjectionSettings("0x1")).to.be.undefined;
-
-    settings.setPlanProjectionSettings("0x2", undefined);
-    expect(countSettings()).to.equal(0);
-    expect(settings.planProjectionSettings).to.be.undefined;
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
+    });
   });
 });
 
@@ -240,7 +282,7 @@ describe("DisplayStyleSettings overrides", () => {
       nonLocatable: true,
       emphasized: true,
     }],
-    excludedElements: ["0x4", "0x8", "0x10"],
+    excludedElements: CompressedId64Set.compressIds(["0x4", "0x8", "0x10"]),
     contextRealityModels: [{
       tilesetUrl: "google.com",
       name: "google",
@@ -416,7 +458,7 @@ describe("DisplayStyleSettings overrides", () => {
       }],
     });
 
-    test({ viewflags, excludedElements: ["0xdeadbeef", "0xbaadf00d"] });
+    test({ viewflags, excludedElements: CompressedId64Set.compressIds(["0xbaadf00d", "0xdeadbeef"]) });
 
     test({
       viewflags,

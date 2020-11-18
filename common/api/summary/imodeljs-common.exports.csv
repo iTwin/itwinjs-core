@@ -100,6 +100,7 @@ internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
+public;DisplayStyleLoadProps
 beta;DisplayStyleModelAppearanceProps 
 beta;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
@@ -562,6 +563,7 @@ public;ViewFlagPresence
 public;ViewFlagProps
 public;ViewFlags
 public;ViewQueryParams 
+public;ViewStateLoadProps
 public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 

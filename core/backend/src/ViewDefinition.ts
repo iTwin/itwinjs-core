@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, JsonUtils, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
@@ -52,23 +52,42 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     for (const [id] of this.settings.subCategoryOverrides) {
       predecessorIds.add(id);
     }
-    this.settings.excludedElements.forEach((id: Id64String) => predecessorIds.add(id));
+
+    for (const excludedElementId of this.settings.excludedElementIds)
+      predecessorIds.add(excludedElementId);
   }
+
   /** @alpha */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
+
     if (context.isBetweenIModels && targetElementProps?.jsonProperties?.styles) {
-      const subCategoryOverrides = JsonUtils.asArray(targetElementProps.jsonProperties.styles.subCategoryOvr);
-      if (undefined !== subCategoryOverrides) {
-        for (const subCategoryOverride of subCategoryOverrides) {
-          subCategoryOverride.subCategory = context.findTargetElementId(Id64.fromJSON(subCategoryOverride.subCategory));
+      const settings = targetElementProps.jsonProperties.styles;
+      if (settings.subCategoryOvr) {
+        for (let i = 0; i < settings.subCategoryOvr.length; /* */) {
+          const ovr = settings.subCategoryOvr[i];
+          ovr.subCategory = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
+          if (Id64.invalid === ovr.subCategory)
+            settings.subCategoryOvr.splice(i, 1);
+          else
+            i++;
         }
       }
-      const excludedElements = JsonUtils.asArray(targetElementProps.jsonProperties.styles.excludedElements);
-      if (undefined !== excludedElements) {
-        const targetExcludedElementIds: Id64String[] = [];
-        excludedElements.forEach((sourceId: Id64String) => targetExcludedElementIds.push(context.findTargetElementId(sourceId)));
-        targetElementProps.jsonProperties.styles.excludedElements = targetExcludedElementIds;
+
+      if (settings.excludedElements) {
+        const excluded: Id64Array = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
+        for (let i = 0; i < excluded.length; /* */) {
+          const remapped = context.findTargetElementId(excluded[i]);
+          if (Id64.invalid === remapped)
+            excluded.splice(i, 1);
+          else
+            excluded[i++] = remapped;
+        }
+
+        if (0 === excluded.length)
+          delete settings.excludedElements;
+        else
+          settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
       }
     }
   }
