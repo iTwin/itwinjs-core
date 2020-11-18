@@ -1313,6 +1313,17 @@ export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
 }
 
 // @public @deprecated
+export interface DEPRECATED_FilteringInputProps extends CommonProps {
+    autoFocus?: boolean;
+    // @deprecated
+    filteringInProgress: boolean;
+    onFilterCancel: () => void;
+    onFilterClear: () => void;
+    onFilterStart: (searchText: string) => void;
+    resultSelectorProps?: ResultSelectorProps;
+}
+
+// @public @deprecated
 export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     // @internal
     constructor(props: TreeProps);
@@ -1823,26 +1834,22 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     constructor(props: FilteringInputProps);
     // @internal (undocumented)
     componentDidUpdate(prevProps: FilteringInputProps, _prevState: FilteringInputState): void;
-    // @internal (undocumented)
-    static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState): {
-        context: InputContext;
+    // (undocumented)
+    static getDerivedStateFromProps(nextProps: FilteringInputProps, prevState: FilteringInputState): {
+        searchStarted: boolean;
     } | null;
     // (undocumented)
     render(): JSX.Element;
     }
 
 // @public
-export interface FilteringInputProps extends CommonProps {
-    autoFocus?: boolean;
-    // @alpha
-    filteringComplete?: boolean;
-    filteringInProgress: boolean;
-    onFilterCancel: () => void;
-    onFilterClear: () => void;
-    onFilterStart: (searchText: string) => void;
-    // @beta
-    resetResultSelectOnPropsChange?: boolean;
-    resultSelectorProps?: ResultSelectorProps;
+export type FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps;
+
+// @beta
+export enum FilteringInputStatus {
+    FilteringFinished = 2,
+    FilteringInProgress = 1,
+    ReadyToFilter = 0
 }
 
 // @alpha
@@ -2277,14 +2284,6 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
     // (undocumented)
     render(): JSX.Element;
     }
-
-// @internal
-export enum InputContext {
-    FilteringFinished = 2,
-    FilteringFinishedWithNoStepping = 3,
-    FilteringInProgress = 1,
-    ReadyToFilter = 0
-}
 
 // @internal (undocumented)
 export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> {
@@ -2838,6 +2837,17 @@ export class NavigationPropertyTypeConverter extends TypeConverter {
 export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
     render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
+}
+
+// @public
+export interface NEW_FilteringInputProps extends CommonProps {
+    autoFocus?: boolean;
+    onFilterCancel: () => void;
+    onFilterClear: () => void;
+    onFilterStart: (searchText: string) => void;
+    resultSelectorProps?: ResultSelectorProps;
+    // @beta
+    status: FilteringInputStatus;
 }
 
 // @public

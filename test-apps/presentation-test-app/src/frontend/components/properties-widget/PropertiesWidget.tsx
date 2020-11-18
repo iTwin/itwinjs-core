@@ -14,8 +14,8 @@ import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-fro
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteringInput,
-  FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData, PropertyGridContextMenuArgs, PropertyRecordMatchInfo,
-  useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData, PropertyGridContextMenuArgs,
+  PropertyRecordMatchInfo, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
 
@@ -120,14 +120,12 @@ export function PropertiesWidget(props: Props) {
       <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
       <div className="SearchBar" >
         <FilteringInput
-          filteringInProgress={false}
           onFilterCancel={() => { setFilter("") }}
           onFilterClear={() => { setFilter("") }}
           onFilterStart={(newFilter) => { setFilter(newFilter) }}
           style={{ flex: "auto" }}
           resultSelectorProps={resultSelectorProps}
-          filteringComplete={filterText.length !== 0}
-          resetResultSelectOnPropsChange={true}
+          status={filterText.length !== 0 ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter}
         />
         <Toggle
           title="Favorites"

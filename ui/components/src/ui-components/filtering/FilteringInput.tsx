@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Filtering
  */
+/* eslint-disable deprecation/deprecation */
 
 import "./FilteringInput.scss";
 import classnames from "classnames";
@@ -20,52 +21,83 @@ import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 interface FilteringInputState {
   /** A string which will be used for search */
   searchText: string;
-  /** @internal */
-  context: InputContext;
+  /**
+   *  Tells the component if the search was started.
+   *  Gets reset to false if search is canceled/cleared or searchText is changed.
+  */
+  searchStarted: boolean;
+  /* Used for resetting the state of [[ResultSelector]] component */
   resultSelectorKey: number;
+  /**
+   *  Parameter used to remember `props.filteringInProgress`.
+   *  Used in getDerivedStateFromProps to compare previous `props.filteringInProgress`
+   *  with current `props.filteringInProgress`.
+   *  Used for supporting deprecated usage of [[FilteringInput]] component
+   */
+  filteringInProgress?: boolean;
 }
 
 /** [[FilteringInput]] React Component properties
  * @public
+ * @deprecated
  */
-export interface FilteringInputProps extends CommonProps {
+export interface DEPRECATED_FilteringInputProps extends CommonProps {
   /** Filtering should start */
   onFilterStart: (searchText: string) => void;
   /** Filtering is canceled while still in progress */
   onFilterCancel: () => void;
   /** Filtering is cleared after everything's loaded */
   onFilterClear: () => void;
-  /** Tells the component if parent component is still handling the filtering */
-  filteringInProgress: boolean;
-  /** Tells the component if parent component has finished filtering
-   * @alpha
+  /**
+   * Tells the component if parent component is still handling the filtering.
+   * @deprecated use `status` to provide information about filtering status instead.
    */
-  filteringComplete?: boolean;
+  filteringInProgress: boolean;
   /** [[ResultSelector]] React Component properties */
   resultSelectorProps?: ResultSelectorProps;
   /** Specify that the <input> element should automatically get focus */
   autoFocus?: boolean;
-  /**
-   * Tells component to reset the state of internal [[ResultSelector]] whenever provided `resultSelectorProps` change.
-   * This allows resetting the selected active match back to 0.
-   * @beta
-  */
-  resetResultSelectOnPropsChange?: boolean;
 }
 
 /**
- * Enumeration of possible component contexts
- * @internal
+ * [[FilteringInput]] React Component properties
+ * @public
  */
-export enum InputContext {
+export interface NEW_FilteringInputProps extends CommonProps {
+  /** Filtering should start */
+  onFilterStart: (searchText: string) => void;
+  /** Filtering is canceled while still in progress */
+  onFilterCancel: () => void;
+  /** Filtering is cleared after everything's loaded */
+  onFilterClear: () => void;
+  /**
+   * Tells the component what is the status of filtering.
+   * @beta
+   */
+  status: FilteringInputStatus;
+  /** [[ResultSelector]] React Component properties */
+  resultSelectorProps?: ResultSelectorProps;
+  /** Specify that the <input> element should automatically get focus */
+  autoFocus?: boolean;
+}
+
+/**
+ * Props type for [[FilteringInput]]
+ * @public
+ */
+export type FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps;
+
+/**
+ * Enumeration of possible component contexts
+ * @beta
+ */
+export enum FilteringInputStatus {
   /** Component is ready to filter */
   ReadyToFilter,
   /** Component's parent is currently filtering */
   FilteringInProgress,
   /** Component's parent has finished filtering */
   FilteringFinished,
-  /** Component's parent has finished filtering, but ResultSelector(stepping through results) is not enabled */
-  FilteringFinishedWithNoStepping,
 }
 
 /** A helper component for filtering trees and stepping through results
@@ -81,8 +113,9 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     super(props);
     this.state = {
       searchText: "",
-      context: InputContext.ReadyToFilter,
+      searchStarted: false,
       resultSelectorKey: 0,
+      filteringInProgress: FilteringInput.isOldProps(props) ? props.filteringInProgress : undefined,
     };
   }
 
@@ -95,22 +128,23 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   private _onSearchButtonClick = () => {
     if (!this.state.searchText) {
       // Empty search string is the same as clearing the search.
-      this.setState({ context: InputContext.ReadyToFilter, searchText: "" });
+      this.setState({ searchStarted: false, searchText: "" });
       this.props.onFilterClear();
       return;
     }
 
     this.props.onFilterStart(this.state.searchText);
+    this.setState({ searchStarted: true });
   }
 
   private _onCancelButtonClick = () => {
-    this.setState({ context: InputContext.ReadyToFilter, searchText: "" });
+    this.setState({ searchStarted: false, searchText: "" });
     this.props.onFilterCancel();
     this.focus();
   }
 
   private _onClearButtonClick = () => {
-    this.setState({ context: InputContext.ReadyToFilter, searchText: "" });
+    this.setState({ searchStarted: false, searchText: "" });
     this.props.onFilterClear();
     this.focus();
   }
@@ -123,46 +157,60 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
       return;
 
     this.props.onFilterStart(this.state.searchText);
+    this.setState({ searchStarted: true });
     e.stopPropagation();
   }
 
   private _onInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchText: e.target.value, context: InputContext.ReadyToFilter });
-    if (this.props.filteringComplete)
+    if(this.state.searchStarted){
       this.props.onFilterCancel();
+    }
+    this.setState({ searchText: e.target.value, searchStarted: false});
   }
 
   /** @internal */
-  public static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState) {
-    if (props.filteringInProgress) {
-      return { context: InputContext.FilteringInProgress };
+  public componentDidUpdate(prevProps: FilteringInputProps, _prevState: FilteringInputState) {
+    if (FilteringInput.isNewProps(this.props) && this.props.resultSelectorProps !== prevProps.resultSelectorProps) {
+      this.setState((state, _props) => ({ resultSelectorKey: state.resultSelectorKey + 1 }));
     }
-
-    if (props.filteringComplete) {
-      if (props.resultSelectorProps)
-        return { context: InputContext.FilteringFinished };
-      return { context: InputContext.FilteringFinishedWithNoStepping };
+    if(FilteringInput.isOldProps(prevProps) && FilteringInput.isOldProps(this.props) && prevProps.filteringInProgress !== this.props.filteringInProgress){
+      this.setState((_state, props) => (FilteringInput.isOldProps(props)?{ filteringInProgress: props.filteringInProgress } : {filteringInProgress: undefined}));
     }
+  }
 
-    if (state.context === InputContext.FilteringInProgress && !props.filteringInProgress) {
-      if (state.searchText && props.resultSelectorProps)
-        return { context: InputContext.FilteringFinished };
-      else
-        return { context: InputContext.FilteringFinishedWithNoStepping };
+  public static getDerivedStateFromProps(nextProps: FilteringInputProps, prevState: FilteringInputState){
+    if (FilteringInput.isOldProps(nextProps) && !nextProps.filteringInProgress && prevState.filteringInProgress){
+      return { searchStarted: true};
     }
-
     return null;
   }
 
-  /** @internal */
-  public componentDidUpdate(prevProps: FilteringInputProps, _prevState: FilteringInputState ) {
-    if (this.props.resetResultSelectOnPropsChange && this.props.resultSelectorProps!==prevProps.resultSelectorProps) {
-      this.setState((state, _props) => ({ resultSelectorKey: state.resultSelectorKey + 1 }));
+  private static isNewProps(props: FilteringInputProps): props is NEW_FilteringInputProps {
+    if ((props as NEW_FilteringInputProps).status !== undefined) {
+      return true;
     }
+    return false;
+  }
+
+  private static isOldProps(props: FilteringInputProps): props is DEPRECATED_FilteringInputProps {
+    if ((props as DEPRECATED_FilteringInputProps).filteringInProgress !== undefined) {
+      return true;
+    }
+    return false;
+  }
+
+  private getStatus(props: FilteringInputProps) {
+    if (FilteringInput.isNewProps(props)) {
+      return props.status;
+    }
+    return (props.filteringInProgress ? FilteringInputStatus.FilteringInProgress :
+      (this.state.searchStarted ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter));
   }
 
 
   public render() {
+    const status = this.getStatus(this.props);
+
     return (
       // TODO: What is filtering-input-preload-images?
       <div className={classnames("components-filtering-input", "filtering-input-preload-images", this.props.className)}
@@ -181,20 +229,21 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
             aria-label={UiCore.translate("general.search")} />
 
           <span className="components-filtering-input-input-components">
-            {this.state.context === InputContext.FilteringFinished ?
-              <ResultSelector key={this.state.resultSelectorKey} {...this.props.resultSelectorProps!} /> : undefined}
-
-            {this.state.context === InputContext.ReadyToFilter ?
+            {/* FinishedFiltering */}
+            {status === FilteringInputStatus.FilteringFinished && this.props.resultSelectorProps ?
+              <ResultSelector key={this.state.resultSelectorKey} {...this.props.resultSelectorProps} /> : undefined}
+            {/* ReadyToFilter */}
+            {status === FilteringInputStatus.ReadyToFilter ?
               // eslint-disable-next-line jsx-a11y/click-events-have-key-events
               <span className="icon icon-search" onClick={this._onSearchButtonClick}
                 role="button" tabIndex={-1} title={this._searchLabel} /> : undefined}
-
-            {this.state.context === InputContext.FilteringInProgress ?
+            {/* filteringInProgress */}
+            {status === FilteringInputStatus.FilteringInProgress ?
               // eslint-disable-next-line jsx-a11y/click-events-have-key-events
               <span className="icon icon-close" onClick={this._onCancelButtonClick}
                 role="button" tabIndex={-1} title={this._cancelLabel} /> : undefined}
-
-            {this.state.context === InputContext.FilteringFinishedWithNoStepping || this.state.context === InputContext.FilteringFinished ?
+            {/* NoStepping */}
+            {status === FilteringInputStatus.FilteringFinished ?
               // eslint-disable-next-line jsx-a11y/click-events-have-key-events
               <span className="components-filtering-input-clear icon icon-close" onClick={this._onClearButtonClick}
                 role="button" tabIndex={-1} title={this._clearLabel} /> : undefined}

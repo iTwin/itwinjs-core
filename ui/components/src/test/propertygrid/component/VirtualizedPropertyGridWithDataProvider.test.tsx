@@ -18,7 +18,6 @@ import {
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { useEffect } from "react";
 
 describe("VirtualizedPropertyGridWithDataProvider", () => {
 
@@ -557,7 +556,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
   describe("dynamic node heights", () => {
     const StubComponent: React.FC<FlatPropertyRendererExports.FlatPropertyRendererProps> = (props) => {
-      useEffect(() => props.onHeightChanged!(15));
+      React.useEffect(() => props.onHeightChanged!(15));
       return <>Stub Component</>;
     };
 
