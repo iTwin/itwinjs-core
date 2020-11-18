@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-quantity
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Nov 2020 16:01:50 GMT and should not be manually modified.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- Fix parsing of composite values like 1'-3" where it was treating '-' separator as a negative value.
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT

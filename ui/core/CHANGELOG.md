@@ -1,6 +1,18 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Nov 2020 16:01:50 GMT and should not be manually modified.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- Updated Input and TextArea controls to support returning ref to native HTML control. PBI#484911.
+- Update DialogButtonType enum.
+- Changed AutoSuggest getSuggestions prop to async and removed @deprecated tag
+- Change Editor components to process native keyboard events instead of synthe
+- Add LabeledThemedSelect component
+- Added ProgressSpinner component
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT

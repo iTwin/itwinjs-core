@@ -2,6 +2,12 @@
   "name": "@bentley/linear-referencing-backend",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/linear-referencing-backend_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/linear-referencing-backend_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",

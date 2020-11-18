@@ -2,6 +2,33 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/ui-core_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated Input and TextArea controls to support returning ref to native HTML control. PBI#484911."
+          },
+          {
+            "comment": "Update DialogButtonType enum."
+          },
+          {
+            "comment": "Changed AutoSuggest getSuggestions prop to async and removed @deprecated tag"
+          },
+          {
+            "comment": "Change Editor components to process native keyboard events instead of synthe"
+          },
+          {
+            "comment": "Add LabeledThemedSelect component"
+          },
+          {
+            "comment": "Added ProgressSpinner component"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/ui-core_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",

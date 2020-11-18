@@ -2,6 +2,36 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/ui-components_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ParsedInput and QuantityInput controls used to parse and format numeric values."
+          },
+          {
+            "comment": "remove bogus \"code\" entries."
+          },
+          {
+            "comment": "Fix styling issue."
+          },
+          {
+            "comment": "Added FrameworkUiAdmin.showReactCard"
+          },
+          {
+            "comment": "Change Editor components to process native keyboard events instead of synthetic ones."
+          },
+          {
+            "comment": "Added MessagePopup - Displays Toast & Sticky messages without a StatusBar"
+          },
+          {
+            "comment": "Update EditorContainer tests in attempt to fix sporadic test failures."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/ui-components_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",

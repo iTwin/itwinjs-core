@@ -2,6 +2,18 @@
   "name": "@bentley/hypermodeling-frontend",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/hypermodeling-frontend_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add 'forcePrune' method to tile tree to adhere to new TileTree pattern."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/hypermodeling-frontend_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",

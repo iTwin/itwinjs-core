@@ -1,6 +1,28 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Nov 2020 16:01:50 GMT and should not be manually modified.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- pass map layer accessKeys through configOptions instead of hardcoded
+- Preliminary support for interactive editing sessions.
+- Clean up EventSource API for push events.
+- Fix ECEF for reality models
+- Change key name for MapboxLayers
+- Create animation tile trees if only transform present.
+- disable frontend Bentley telemetry in iModelBank use case
+- Thematic surface isolines are now pickable. Previously, trying to select an area in between isolines for a surface would select the surface. Now the empty space in between does not count.
+- Added ability to override the color of a point cloud.
+- Work around memory issues on iPads when rendering reality tile trees by introducing a mobile-only memory threshold which triggers a prune on tile trees.
+- Fix issue where some apps would exception when quantityFormatter.onIntialize was called before redux state was set up.
+- Fix QuantityFormatter volume definitions.
+- Support for push events
+- Set reality tile and terrain branches to own their own children.
+- Add call to reload tool settings UI.
+- Added ViewCreator APIs
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT

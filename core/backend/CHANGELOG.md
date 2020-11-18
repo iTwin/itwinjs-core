@@ -1,6 +1,23 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Nov 2020 16:01:50 GMT and should not be manually modified.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- getElement and getModel can optionally validate the expected class
+- Preliminary support for interactive editing sessions.
+- Clean up EventSink API for push events.
+- GeometryStream query and update using flatbuffer schema.
+- Improve projectExtents handling for IModelTransformer and IModelImporter
+- Add IModelImporter option to simplify element geometry
+- avoid waiting on usage logging requests to succeed/fail; disable backend Bentley telemetry in iModelBank use case
+- RpcPushConnection fix
+- Support for push events
+- Update ConcurrencyControl docs on locking and code management
+- Reorganize ConcurrencyControl API
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT

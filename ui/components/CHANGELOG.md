@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Nov 2020 16:01:50 GMT and should not be manually modified.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- Added ParsedInput and QuantityInput controls used to parse and format numeric values.
+- remove bogus "code" entries.
+- Fix styling issue.
+- Added FrameworkUiAdmin.showReactCard
+- Change Editor components to process native keyboard events instead of synthetic ones.
+- Added MessagePopup - Displays Toast & Sticky messages without a StatusBar
+- Update EditorContainer tests in attempt to fix sporadic test failures.
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT

@@ -2,6 +2,18 @@
   "name": "@bentley/ecschema-locaters",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@bentley/ecschema-locaters_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed unscoped 'this' warning"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/ecschema-locaters_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",

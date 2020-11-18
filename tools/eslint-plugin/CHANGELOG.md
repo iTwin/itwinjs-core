@@ -1,6 +1,13 @@
 # Change Log - @bentley/eslint-plugin
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Nov 2020 16:01:50 GMT and should not be manually modified.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- Semicolons are now required by default everywhere where they apply
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
