@@ -115,7 +115,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
   private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
     this._applyUpdatedValue(e.target.value);
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -231,11 +231,11 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       if (IModelApp.notifications)
         IModelApp.notifications.closeInputFieldMessage();
     }
-  }
+  };
 
   private _onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     e.target.select();
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {

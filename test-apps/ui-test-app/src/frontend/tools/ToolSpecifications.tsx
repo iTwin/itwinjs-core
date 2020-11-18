@@ -314,7 +314,7 @@ export class AppTools {
 
   private static _handleLink = () => {
     window.alert("The link was clicked");
-  }
+  };
 
   public static get infoMessageCommand() {
     return new CommandItemDef({
@@ -425,7 +425,7 @@ export class AppTools {
         title={title}
       />
     );
-  }
+  };
 
   public static get errorMessageBoxCommand() {
     return new CommandItemDef({

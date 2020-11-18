@@ -82,7 +82,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
           this.setState((_prevState) => newState);
       }
     }
-  }
+  };
 
   public execute = (): void => {
     Backstage.hide(); // eslint-disable-line deprecation/deprecation
@@ -92,7 +92,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
       FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
     else
       Logger.logError(UiFramework.loggerCategory(this), `Frontstage with id '${this.props.frontstageId}' not found`);
-  }
+  };
 
   public componentDidUpdate(_prevProps: FrontstageLaunchBackstageItemProps) {
     const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
@@ -106,7 +106,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
     /* istanbul ignore else */
     if (isActive !== this.state.isActive)
       this.setState({ isActive });
-  }
+  };
 
   // TODO: add tooltip, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {

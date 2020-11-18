@@ -25,12 +25,12 @@ class LocalFileOpenControl extends ContentControl {
 
   private _handleClose = () => {
     FrontstageManager.closeModalFrontstage();
-  }
+  };
 
   private _handleViewsSelected = async (iModelConnection: IModelConnection, views: Id64String[]) => {
     FrontstageManager.closeModalFrontstage();
     await SampleAppIModelApp.openViews(iModelConnection, views);
-  }
+  };
 }
 
 /** LocalFileOpenFrontstage displays the file picker and view picker. */
@@ -109,7 +109,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
     if (!this.state.iModelConnection && this._input) {
       this._input.click();
     }
-  }
+  };
 
   private _handleChange = async (_e: React.ChangeEvent) => {
     if (this._input) {
@@ -124,7 +124,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
         }
       }
     }
-  }
+  };
 
   private _handleViewsSelected = (views: ViewDefinitionProps[]): void => {
     const idsSelected = new Array<Id64String>();
@@ -135,7 +135,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
 
     if (this.state.iModelConnection && idsSelected.length)
       this.props.onViewsSelected(this.state.iModelConnection, idsSelected);
-  }
+  };
 
   public render() {
     if (!this.state.iModelConnection) {

@@ -48,7 +48,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     // istanbul ignore else
     if (this.props.onClick)
       this.props.onClick();
-  }
+  };
 
   public render() {
     const className = classnames(

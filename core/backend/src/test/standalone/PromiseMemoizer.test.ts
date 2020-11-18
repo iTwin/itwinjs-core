@@ -20,7 +20,7 @@ describe("PromiseMemoizer", () => {
 
   const testFunctionResult = (param: string, waitTime: number): string => {
     return `value ${param}:${waitTime}`;
-  }
+  };
 
   const maxCacheSize = 25;
   const cacheTimeout = 1500;
@@ -28,7 +28,7 @@ describe("PromiseMemoizer", () => {
 
   afterEach(() => {
     testMemoizer.clearCache();
-  })
+  });
 
   it("should be able to await memoized promise", async () => {
     const startTime = Date.now();
