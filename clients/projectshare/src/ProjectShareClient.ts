@@ -575,7 +575,6 @@ export class ProjectShareClient extends WsgClient {
     }
   }
 
-
   /**
    * Delete file permanently or send file to recyle bin.
    * @param requestContext Client request context that includes the authorization information to access Project Share.
