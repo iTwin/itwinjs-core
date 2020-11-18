@@ -116,7 +116,7 @@ export class ProjectShareFile extends WsgInstance {
  */
 export class ProjectShareQuery extends WsgQuery {
   /**
-   * Assures that pas is valid
+   * Modify path for further usage in queries
    * @param path given path
    */
   protected correctPath(path: string) {
@@ -474,21 +474,20 @@ export class ProjectShareClient extends WsgClient {
    * Create new folder.
    * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param contextId Context Id (e.g., projectId or assetId)
-   * @param folderId Id of the folder where we need to upload that file.
-   * @param newFolder ProjectShareFolder
+   * @param parentFolderId Id of the folder where we need to upload that folder.
+   * @param folder ProjectShareFolder
    * @return The instance after the changes
    * @note If Folder already exist with that name then it create a Folder with same name and append index in brackets.
    */
-  public async createFolder(requestContext: AuthorizedClientRequestContext, contextId: GuidString, folderId: GuidString, newFolder: ProjectShareFolder): Promise<ProjectShareFolder> {
-    const folder = new ProjectShareFolder();
-    folder.wsgId = folderId;
-    folder.changeState = "existing";
-    folder.ecId = folderId;
-    folder.contentType
-    const mappedFolder: any = ECJsonTypeMap.toJson<ProjectShareFolder>("wsg", folder);
-    newFolder.parentFolder = mappedFolder;
+  public async createFolder(requestContext: AuthorizedClientRequestContext, contextId: GuidString, parentFolderId: GuidString, folder: ProjectShareFolder): Promise<ProjectShareFolder> {
+    const parentFolder = new ProjectShareFolder();
+    parentFolder.wsgId = parentFolderId;
+    parentFolder.changeState = "existing";
+    parentFolder.ecId = parentFolderId;
+    const mappedFolder: any = ECJsonTypeMap.toJson<ProjectShareFolder>("wsg", parentFolder);
+    folder.parentFolder = mappedFolder;
     const relativeUrl = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/Folder/`;
-    return this.postInstance<ProjectShareFolder>(requestContext, ProjectShareFolder, relativeUrl, newFolder);
+    return this.postInstance<ProjectShareFolder>(requestContext, ProjectShareFolder, relativeUrl, folder);
   }
 
   /**
@@ -554,7 +553,7 @@ export class ProjectShareClient extends WsgClient {
    * Delete folder permanently or send folder to recycle bin.
    * @param requestContext Client request context that includes the authorization information to access Project Share.
    * @param contextId Context Id (e.g., projectId or assetId)
-   * @param folderId Id of the folder where we need to upload that file.
+   * @param folderId of the folder you want to delete.
    * @param deleteOption By default delete folder permanently.
    */
   public async deleteFolder(requestContext: AuthorizedClientRequestContext, contextId: GuidString, folderId: GuidString, deleteOption: RecycleOption = RecycleOption.DeletePermanently): Promise<ProjectShareFile | void> {
