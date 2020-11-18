@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable class-methods-use-this, @typescript-eslint/no-use-before-define */
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
   BadgeType,
@@ -16,38 +15,24 @@ import {
   UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { SyncUiEventDispatcher } from "@bentley/ui-framework";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
-/** I do this so that the Bentley webpack doesn't add a '.default' to the import */
-/* eslint-disable import/no-unresolved, @typescript-eslint/no-var-requires */
 import upstreamIcon from "./icons/upstream-query.svg?sprite";
 import connectedIcon from "./icons/connected-query.svg?sprite";
 import downstreamIcon from "./icons/downstream-query.svg?sprite";
 import traceIcon from "./icons/query-multi.svg?sprite";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
-/* eslint-enable import/no-unresolved, @typescript-eslint/no-var-requires */
 
 export class TraceUiItemsProvider implements UiItemsProvider {
-  public static syncEventIdTraceAvailable =
-    "network-topography-extension:trace-available-changed";
+  public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
 
   public readonly id = "TraceUiItemsProvider";
-
-  /** Private **/
-
   private static _i18n: I18N;
-
   private static _defaultNs: string;
-
   private static _traceAvailableProperty = false;
-
-  /** Constructor **/
 
   public constructor(i18n: I18N, defaultNs: string) {
     TraceUiItemsProvider._i18n = i18n;
     TraceUiItemsProvider._defaultNs = defaultNs;
-
-    // push i18m into trace tool
-    // NetworkTraceTool.setI18N(i18n, defaultNs);
   }
 
   private static translate(key: string) {
@@ -94,7 +79,7 @@ export class TraceUiItemsProvider implements UiItemsProvider {
 
       const getConnectedButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-connected",
-        200,
+        10, /* order within group button */
         IconSpecUtilities.createSvgIconSpec(connectedIcon),
         TraceUiItemsProvider.translate("trace-tool-connected"),
         (): void => {
@@ -108,7 +93,7 @@ export class TraceUiItemsProvider implements UiItemsProvider {
 
       const getDownstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-downstream",
-        210,
+        15, /* order within group button */
         IconSpecUtilities.createSvgIconSpec(downstreamIcon),
         TraceUiItemsProvider.translate("trace-tool-downstream"),
         (): void => {
@@ -122,7 +107,7 @@ export class TraceUiItemsProvider implements UiItemsProvider {
 
       const getUpstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-upstream",
-        220,
+        20, /* order within group button */
         IconSpecUtilities.createSvgIconSpec(upstreamIcon),
         TraceUiItemsProvider.translate("trace-tool-upstream"),
         (): void => {
@@ -161,7 +146,7 @@ export class TraceUiItemsProvider implements UiItemsProvider {
         "icon-symbol",
         "trace-tool-standalone",
         (): void => {
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-standalone activated", undefined, OutputMessageType.Toast))
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-standalone activated", undefined, OutputMessageType.Toast));
         },
         {
           isDisabled: isDisabledCondition,
