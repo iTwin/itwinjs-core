@@ -53,7 +53,7 @@ class TestBridge extends IModelBridge {
     }
   }
 
-  public async openSourceData(sourcePath: string): Promise<BentleyStatus> {
+  public async openSourceData(sourcePath: string): Promise<void> {
     // ignore the passed in source and open the test file
     const json = fs.readFileSync(sourcePath, "utf8");
     this._data = JSON.parse(json);
@@ -62,8 +62,8 @@ class TestBridge extends IModelBridge {
     const documentStatus = this.getDocumentStatus(); // make sure the repository link is created now, while we are in the repository channel
     this._sourceDataState = documentStatus.itemState;
     this._repositoryLink = documentStatus.element;
-    return BentleyStatus.SUCCESS;
   }
+
   public async importDomainSchema(_requestContext: AuthorizedClientRequestContext | ClientRequestContext): Promise<any> {
     if (this._sourceDataState === ItemState.Unchanged) {
       return;
