@@ -3,13 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "../scrollbar";
-@import "variables";
 
 .nz-widget-widget {
   background: $buic-background-2;
-  border: 1px solid $buic-background-5;
-  border-radius: 3px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
