@@ -2,7 +2,17 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "Updated filterers so that they would be able to distinguish label and value matches. Added new matching features to [[FilteringPropertyDataProvider]] component, now it's capable of returning a record by match index and return the number of all found matches. These changes made highlighting and active highlighting of a certain text in propertyRecords possible by passing through `HighlightedRecordProps`.",
+      "comment": "Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords.",
       "type": "none"
     }
   ],
