@@ -763,15 +763,6 @@ describe("Schema", () => {
         const schema =Schema.fromJsonSync(schemaJson, context);
         const serialized = (await schema.toXml(newDom)).documentElement;
 
-
-        expect(serialized.nodeName).to.eql("ECSchema");
-        expect(serialized.getAttribute("xmlns")).to.eql("http://www.bentley.com/schemas/Bentley.ECXML.3.2");
-        expect(serialized.getAttribute("schemaName")).to.eql(schemaJson.name);
-        expect(serialized.getAttribute("version")).to.eql("01.02.03");
-        expect(serialized.getAttribute("alias")).to.eql(schemaJson.alias);
-        expect(serialized.getAttribute("displayLabel")).to.eql(schemaJson.label);
-        expect(serialized.getAttribute("description")).to.eql(schemaJson.description);
-
         const deserialContext = new SchemaContext();
         const reader = new SchemaReadHelper(XmlParser, deserialContext);
         Schema.fromJsonSync(referenceJson, deserialContext);
