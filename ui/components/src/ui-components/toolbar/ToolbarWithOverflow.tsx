@@ -149,6 +149,7 @@ export function CustomItem({ item, addGroupSeparator }: { item: CustomToolbarIte
   if (item.buttonNode)
     return <>{item.buttonNode}</>;
 
+  // istanbul ignore next
   return null;
 }
 
@@ -212,6 +213,7 @@ export function ToolbarItemComponent({ item, addGroupSeparator }: { item: Toolba
       return <ActionItem item={item} addGroupSeparator={addGroupSeparator} />;
     }
   }
+  // istanbul ignore next
   return null;
 }
 
@@ -276,6 +278,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const handlePopupPanelOpenClose = React.useCallback((isOpening: boolean) => {
     // use setImmediate to avoid warning about setting state in ToolbarWithOverflow from render method of PopupItem/PopupItemWithDrag
     setImmediate(() => {
+      // istanbul ignore next
       if (!isMounted.current)
         return;
       setPopupPanelCount((prev) => {
@@ -445,6 +448,7 @@ function getChildKey(child: React.ReactNode, index: number) {
   if (React.isValidElement(child) && child.key !== null) {
     return child.key.toString();
   }
+  // istanbul ignore next
   return index.toString();
 }
 
