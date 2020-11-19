@@ -423,13 +423,11 @@ export abstract class GltfReader {
     return id ?? extractId(materialJson.pbrMetallicRoughness?.baseColorTexture?.index);
   }
 
-
   protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
     const textureId = this.extractTextureId(materialJson);
     const textureMapping = undefined !== textureId ? this.findTextureMapping(textureId) : undefined;
     const color = this.colorFromMaterial(materialJson);
-    const material = hasBakedLighting ? undefined : this._system.createMaterial(RenderMaterial.Params.defaults, this._iModel);
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, material, undefined, hasBakedLighting, textureMapping);
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
   }
   protected extractReturnToCenter(extensions: any): number[] | undefined {
     if (extensions === undefined) { return undefined; }
