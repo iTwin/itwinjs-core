@@ -83,10 +83,15 @@ export abstract class Client {
       return this._url;
     }
 
-    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
+    const resolvedRegion = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const searchKey: string = this.getUrlSearchKey();
+    const configuredUrl = Config.App.query(`imjs_url_${resolvedRegion}_${searchKey}`) ?? Config.App.query(`imjs_url_${searchKey}`);
+    if (configuredUrl)
+      return configuredUrl;
+
+    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     try {
-      const url = await urlDiscoveryClient.discoverUrl(requestContext, searchKey, undefined);
+      const url = await urlDiscoveryClient.discoverUrl(requestContext, searchKey, resolvedRegion);
       this._url = url;
       return this._url; // TODO: On the server this really needs a lifetime!!
     } catch (error) {
@@ -184,16 +189,11 @@ export class UrlDiscoveryClient extends Client {
    * @returns Registered URL for the service.
    */
   public async discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string> {
-
-    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
-    const configuredUrl = Config.App.query(`imjs_url_${resolvedRegion}_${searchKey}`) ?? Config.App.query(`imjs_url_${searchKey}`);
-    if (configuredUrl)
-      return configuredUrl;
-
     requestContext.enter();
 
     const urlBase: string = await this.getUrl();
     const url: string = `${urlBase}/GetUrl/`;
+    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const options: RequestOptions = {
       method: "GET",
       qs: {
