@@ -14,7 +14,7 @@ describe.skip("iModelHub Performance tests", () => {
   const imodelName = "imodeljs-clients Performance test";
   let briefcase1: Briefcase;
   let briefcase2: Briefcase;
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
 
   async function setup(recreate = false) {
@@ -24,6 +24,7 @@ describe.skip("iModelHub Performance tests", () => {
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, imodelName, contextId, true, recreate);
     imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    imodelHubClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcase1 = briefcases[0];
     briefcase2 = briefcases[1];

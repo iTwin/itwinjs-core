@@ -45,7 +45,7 @@ describe("iModelHubClient UserInfoHandler", () => {
   let imodelId: GuidString;
 
   const imodelName = "imodeljs-clients UserInfo test";
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
 
   before(async () => {
     const superAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
@@ -57,6 +57,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     projectId = projectId = await utils.getProjectId(requestContexts[0]);
     await utils.createIModel(requestContexts[0], imodelName);
     imodelId = await utils.getIModelId(requestContexts[0], imodelName);
+    imodelHubClient = utils.getDefaultClient();
 
     if (!TestConfig.enableMocks) {
       await utils.getBriefcases(requestContexts[0], imodelId, 1);

@@ -21,6 +21,7 @@ import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { assetsPath } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
+import { RequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
@@ -962,20 +963,6 @@ export class ProgressTracker {
 
 let cloudEnv: IModelCloudEnvironment | undefined;
 
-if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
-  cloudEnv = new TestIModelHubCloudEnv();
-} else {
-  cloudEnv = getIModelBankCloudEnv();
-  imodelBankClient = cloudEnv.imodelClient as IModelBankClient;
-}
-if (cloudEnv === undefined)
-  throw new Error("could not create cloudEnv");
-
-cloudEnv.startup()
-  .catch((err: Error) => {
-    Logger.logException(loggingCategory, err);
-  });
-
 // TRICKY! All of the "describe" functions are called first. Many of them call getCloudEnv,
 //  but they don't try to use it.
 
@@ -988,9 +975,13 @@ export function getCloudEnv(): IModelCloudEnvironment {
 // iModel server to finish starting up.
 
 before(async () => {
-  if (cloudEnv === undefined) {
-    Logger.logError(loggingCategory, "cloudEnv was not defined before tests began");
-    throw new Error();
+  await RequestHost.initialize();
+
+  if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
+    cloudEnv = new TestIModelHubCloudEnv();
+  } else {
+    cloudEnv = getIModelBankCloudEnv();
+    imodelBankClient = cloudEnv.imodelClient as IModelBankClient;
   }
 
   Logger.logInfo(loggingCategory, "Waiting for cloudEnv to startup...");

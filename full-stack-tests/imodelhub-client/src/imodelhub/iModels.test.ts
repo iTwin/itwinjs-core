@@ -240,7 +240,7 @@ describe("iModelHub iModelsHandler", () => {
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients iModels test";
   const createIModelName = "imodeljs-client iModels Create test";
-  const imodelClient: IModelClient = utils.getDefaultClient();
+  let imodelClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
 
@@ -258,6 +258,7 @@ describe("iModelHub iModelsHandler", () => {
     (requestContext as any).activityId = "iModelHub iModelsHandler";
     projectId = await utils.getProjectId(requestContext, "iModelJsTest");
     assetId = await utils.getAssetId(requestContext, undefined);
+    imodelClient = utils.getDefaultClient();
 
     if (!fs.existsSync(workDir)) {
       fs.mkdirSync(workDir);

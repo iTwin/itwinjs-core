@@ -80,7 +80,7 @@ describe("iModelHub PermissionsManager", () => {
   let projectId: string;
   let imodelId: GuidString;
   const imodelName = "imodeljs-clients PermissionHandler test";
-  const imodelClient: IModelClient = utils.getIModelHubClient();
+  let imodelClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
@@ -93,6 +93,7 @@ describe("iModelHub PermissionsManager", () => {
 
     await utils.createIModel(requestContext, imodelName, projectId);
     imodelId = await utils.getIModelId(requestContext, imodelName, projectId);
+    imodelClient = utils.getIModelHubClient();
 
     if (!fs.existsSync(workDir)) {
       fs.mkdirSync(workDir);

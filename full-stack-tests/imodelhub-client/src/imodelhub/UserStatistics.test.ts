@@ -60,7 +60,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   let imodelId: GuidString;
 
   const imodelName = "imodeljs-clients Statistics test";
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
 
   const user1BriefcasesCount = 2;
   const user1OwnedLocksCount = 1;
@@ -79,6 +79,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     contextId = await utils.getProjectId(requestContexts[0]);
     await utils.createIModel(requestContexts[0], imodelName, contextId, true, true);
     imodelId = await utils.getIModelId(requestContexts[0], imodelName, contextId);
+    imodelHubClient = utils.getDefaultClient();
 
     if (!TestConfig.enableMocks) {
       // generate data for user statistics
