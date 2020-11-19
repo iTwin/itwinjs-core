@@ -705,11 +705,33 @@ describe("Schema", () => {
               }}
             };
 
-        const context = new SchemaContext();
-        const CoreCustomjsonBuffer = FileSystem.readFileSync("./test/Metadata/CoreCustomAttributes.01.00.03.ecschema.json");
-        const CoreCustomjsonObj = JSON.parse(CoreCustomjsonBuffer.toString());
-        await Schema.fromJson(CoreCustomjsonObj, context);
+        const coreCASchema =
+          {
+            $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+            alias: "CoreCA",
+            description: "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
+            items: {
+               XIsMixin: {
+                  appliesTo: "EntityClass",
+                  description: "Applied to abstract ECEntityClasses which serve as secondary base classes for normal ECEntityClasses.",
+                  label: "Is Mixin",
+                  modifier: "Sealed",
+                  CoreCustomAttributes: [{
+                     description: "This mixin may only be applied to entity classes which derive from this class.  Class Name should be fully specified as 'alias:ClassName'",
+                     name: "AppliesToEntityClass",
+                     type: "PrimitiveProperty",
+                     typeName: "string"
+                  }],
+                  schemaItemType: "CustomAttributeClass"
+               }
+            },
+            label: "Core Custom Attributes",
+            name: "CoreCustomAttributes",
+            version: "01.00.03"
+         }
 
+        const context = new SchemaContext();
+        Schema.fromJsonSync(coreCASchema, context);
         Schema.fromJsonSync(referenceJson, context);
 
         const schemaJson = {
@@ -749,12 +771,11 @@ describe("Schema", () => {
         expect(serialized.getAttribute("alias")).to.eql(schemaJson.alias);
         expect(serialized.getAttribute("displayLabel")).to.eql(schemaJson.label);
         expect(serialized.getAttribute("description")).to.eql(schemaJson.description);
-        expect((serialized.childNodes[2] as Element).getAttribute("modifier")).to.eql("Abstract");
 
         const deserialContext = new SchemaContext();
         const reader = new SchemaReadHelper(XmlParser, deserialContext);
         Schema.fromJsonSync(referenceJson, deserialContext);
-        Schema.fromJsonSync(CoreCustomjsonObj, deserialContext);
+        Schema.fromJsonSync(coreCASchema, deserialContext);
 
         const deserialized = reader.readSchemaSync(new Schema(deserialContext), serialized.ownerDocument!);
         expect(deserialized).to.not.be.null;
