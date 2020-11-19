@@ -337,10 +337,10 @@ export async function request(requestContext: ClientRequestContext, url: string,
   if (options.parser)
     sareq = sareq.parse(options.parser);
 
-  if (options.agent)
-    sareq = sareq.agent(options.agent);
-  else if (RequestGlobalOptions.httpsProxy)
+  if (RequestGlobalOptions.httpsProxy)
     sareq = sareq.agent(RequestGlobalOptions.httpsProxy);
+  else if (options.agent)
+    sareq = sareq.agent(options.agent);
 
   if (options.progressCallback) {
     sareq = sareq.on("progress", (event: sarequest.ProgressEvent) => {
