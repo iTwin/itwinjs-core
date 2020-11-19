@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Sat, 21 Nov 2020 16:37:51 GMT and should not be manually modified.
+This log was last generated on Sat, 21 Nov 2020 16:42:45 GMT and should not be manually modified.
+
+## 2.9.1
+Thu, 19 Nov 2020 17:03:42 GMT
+
+### Updates
+
+- Fix calendar logic to avoid duplicate day numbers when day light saving ends, producing a 25hr day.
+- Revert width change to EnumEditor component instead set width to auto only for docked tool settings.
 
 ## 2.9.0
 Wed, 18 Nov 2020 16:01:50 GMT
