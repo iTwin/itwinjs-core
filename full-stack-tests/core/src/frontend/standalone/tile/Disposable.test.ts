@@ -327,8 +327,8 @@ describe("Disposal of WebGL Resources", () => {
       vp.renderFrame();
       fbo = target._fbo as FrameBuffer;
       expect(fbo).not.to.be.undefined;
-      expect(fbo!.isDisposed).to.be.false;
-      const tx = fbo!.getColor(0)!;
+      expect(fbo.isDisposed).to.be.false;
+      const tx = fbo.getColor(0)!;
       expect(tx).not.to.be.undefined;
       expect(tx.isDisposed).to.be.false;
 
