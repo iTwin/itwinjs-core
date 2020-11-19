@@ -274,9 +274,11 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
   }
 
   public dispose(): void {
-    IModelApp.viewManager.dropViewport(this, false); // do not allow dropViewport() to call dispose()...
-    super.dispose();
-    document.body.removeChild(this.parentDiv);
+    if (!this.isDisposed) {
+      IModelApp.viewManager.dropViewport(this, false); // do not allow dropViewport() to call dispose()...
+      super.dispose();
+      document.body.removeChild(this.parentDiv);
+    }
   }
 
   public static async createTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<ScreenTestViewport> {

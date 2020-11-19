@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ByteStream } from "@bentley/bentleyjs-core";
+import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
   RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap, TileTreeReference,
 } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
+import { testViewports } from "../../TestViewport";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
@@ -307,6 +308,47 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(clipMask));
     assert.isTrue(isDisposed(environmentMap));
     assert.isTrue(isDisposed(diffuseMap));
+  });
+
+  it("disposes of Target's framebuffer and attachments", async () => {
+    const views = await imodel1.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
+    expect(views.length).least(1);
+
+    await testViewports(views[0].id, imodel1, 10, 10, async (vp) => {
+      expect(vp instanceof ScreenViewport || vp instanceof OffScreenViewport).to.be.true;
+      expect(vp.isDisposed).to.be.false;
+
+      const target = (vp.target as any);
+      let fbo = target._fbo as FrameBuffer;
+      expect(fbo).to.be.undefined;
+      let blitGeom = target._blitGeom;
+      expect(blitGeom).to.be.undefined;
+
+      vp.renderFrame();
+      fbo = target._fbo as FrameBuffer;
+      expect(fbo).not.to.be.undefined;
+      expect(fbo!.isDisposed).to.be.false;
+      const tx = fbo!.getColor(0)!;
+      expect(tx).not.to.be.undefined;
+      expect(tx.isDisposed).to.be.false;
+
+      blitGeom = target._blitGeom as IDisposable;
+      expect(blitGeom === undefined).to.equal(vp instanceof OffScreenViewport);
+      if (blitGeom)
+        expect(blitGeom.isDisposed).to.be.false;
+
+      vp.dispose();
+      expect(vp.isDisposed).to.be.true;
+      expect(target.isDisposed).to.be.true;
+
+      expect(target._fbo).to.be.undefined;
+      expect(fbo.isDisposed).to.be.true;
+      expect(tx.isDisposed).to.be.true;
+      if (blitGeom) {
+        expect(target._blitGeom).to.be.undefined;
+        expect(blitGeom.isDisposed).to.be.true;
+      }
+    });
   });
 
   class Classifier extends RenderPlanarClassifier {
