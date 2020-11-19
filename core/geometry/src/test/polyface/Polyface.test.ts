@@ -550,6 +550,51 @@ describe("Polyface.Facets", () => {
     // writeAllMeshes(all, "SphereNN", [optionsN], 0.0, optionYStep);
     writeAllMeshes(all, "Sphere", true, allOptions, y0Sphere, optionYStep);
   });
+  it.only("SpheresDensity", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const allCountsA = [];
+    const allCountsB = [];
+    let y0 = 0;
+    for (const a of [10, 22, 45]) {
+      const countsA = [];
+      const countsB = [];
+      // use a as both angle in degrees and multiplier of chordTol
+      const optionsA = StrokeOptions.createForFacets();
+      const optionsB = StrokeOptions.createForCurves();
+      optionsA.angleTol = Angle.createDegrees(a);
+      optionsA.chordTol = undefined;
+      optionsB.chordTol = a * 0.1;
+      optionsB.angleTol = undefined;
+      let xA = 0;
+      let xB = 400;
+      for (const radius of [1, 10, 64]) {
+        xA += 2 * radius;
+        xB += 2 * radius;
+        const sphere = Sphere.createCenterRadius(Point3d.create(1, 23,), radius);
+        const builderA = PolyfaceBuilder.create(optionsA);
+        builderA.addSphere(sphere);
+        const facetsA = builderA.claimPolyface();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsA, xA, y0);
+        countsA.push(facetsA.facetCount);
+        const builderB = PolyfaceBuilder.create(optionsB);
+        builderB.addSphere(sphere);
+        const facetsB = builderB.claimPolyface();
+        countsB.push(facetsB.facetCount);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsA, xB, y0);
+      }
+      ck.testExactNumber(countsA[0], countsA[1], "angleTol counts not affected by radius");
+      ck.testExactNumber(countsA[1], countsA[2], "angleTol counts not affected by radius");
+      ck.testLT(countsB[0], countsB[1], "radiusTol count increases with radius");
+      ck.testLT(countsB[1], countsB[2], "radiusTol count increases with radius");
+      y0 += 200.0;
+      allCountsA.push(countsA);
+      allCountsB.push(countsB);
+    }
+    console.log({ angleCounts: allCountsA, chordCounts: allCountsB });
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("Boxes", () => {
     const allBox = flattenGeometry(Sample.createBoxes(false), Sample.createBoxes(true));
     writeAllMeshes(allBox, "Box", true, allOptions, y0Box, optionYStep);

@@ -1184,7 +1184,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Add facets from a Sphere
    */
   public addSphere(sphere: Sphere, strokeCount?: number) {
-    const numStrokeTheta = strokeCount ? strokeCount : this._options.defaultCircleStrokes;
+    const numStrokeTheta = strokeCount ? strokeCount : this.options.applyTolerancesToArc(sphere.maxAxisRadius());
     const numStrokePhi = Geometry.clampToStartEnd(Math.abs(numStrokeTheta * sphere.latitudeSweepFraction), 1, Math.ceil(numStrokeTheta * 0.5));
 
     const lineStringA = sphere.strokeConstantVSection(0.0, numStrokeTheta, this._options);
