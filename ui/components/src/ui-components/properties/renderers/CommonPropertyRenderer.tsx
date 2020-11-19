@@ -79,7 +79,7 @@ export class CommonPropertyRenderer {
 
     const activeMatchIndex = (propertyRecord.property.name === propertyName) && ((matchIndex - labelMatches) >= 0) ? (matchIndex - labelMatches) : undefined;
 
-    const highlightCallback = (text: string) => (<HighlightedText text={text} activeMatchIndex={activeMatchIndex} {...highlightProps} />)
+    const highlightCallback = (text: string) => (<HighlightedText text={text} activeMatchIndex={activeMatchIndex} {...highlightProps} />);
 
     return highlightCallback;
   }

@@ -140,7 +140,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 
     this.props.onFilterStart(this.state.searchText);
     this.setState({ searchStarted: true });
-  }
+  };
 
   private _onCancelButtonClick = () => {
     this.setState({ searchStarted: false, searchText: "" });
@@ -171,7 +171,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
       this.props.onFilterCancel();
     }
     this.setState({ searchText: e.target.value, searchStarted: false});
-  }
+  };
 
 
   /** @internal */

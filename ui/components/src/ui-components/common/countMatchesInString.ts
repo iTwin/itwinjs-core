@@ -11,11 +11,11 @@
 /** Counts how many times string 'lookup' is repeated in string 'str'.
  * @internal
  */
-export function countMatchesInString(str: string, lookup: string){
+export function countMatchesInString(str: string, lookup: string) {
   if (lookup.length <= 0)
     return (str.length + 1);
 
-  let n = 0, pos = 0
+  let n = 0, pos = 0;
   const step = lookup.length;
 
   while (true) {

@@ -65,4 +65,4 @@ const findChunksNoRegex = (args: FindChunksArgs): HighlighterChunk[] => {
     index = text.indexOf(term, index + 1);
   }
   return chunks;
-}
+};

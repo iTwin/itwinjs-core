@@ -179,7 +179,7 @@ describe("FilteringDataProvider", () => {
       };
 
       return data;
-    }
+    };
 
     const createDataProvider = (data: PropertyData) => {
       return {
@@ -373,7 +373,7 @@ describe("FilteringDataProvider", () => {
       const filteredData = await filteringProvider.getData();;
       const filteredData2 = await filteringProvider.getData();
 
-      expect(filteredData === filteredData2).to.be.true
+      expect(filteredData === filteredData2).to.be.true;
       mockFilterer.verifyAll();
     });
 
