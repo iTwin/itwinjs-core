@@ -64,7 +64,7 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
 
     this._filteredPropertyData = this._dataProvider.getData().then(async (propertyData) => {
       return ((this._filterer.isActive) ?
-        this.filterPropertyData(propertyData) : propertyData)
+        this.filterPropertyData(propertyData) : propertyData);
     });
 
     return this._filteredPropertyData;
@@ -133,7 +133,7 @@ async function matchHierarchy(filterer: IPropertyDataFilterer, categories: Prope
     if (filteredRecords.length !== 0 || filteredCategories.length !== 0) {
       const newCategory = copyPropertyCategory(category, filteredCategories);
       newRecords[newCategory.name] = filteredRecords;
-      newCategories.push(newCategory)
+      newCategories.push(newCategory);
     }
   };
 
@@ -166,7 +166,7 @@ async function matchRecordHierarchy(filterer: IPropertyDataFilterer, records: Pr
       // then `expandParent` should be set to true
       expandParent = expandParent || !!matchInfo.shouldExpandNodeParents;
       newRecord = copyPropertyRecord(record, filteredChildren, shouldExpandNodeParents);
-      filteredResultMatches.push({ id: newRecord?.property.name ?? "", matchesCount: (recordMatchesCount ?? { label: 0, value: 0 }) })
+      filteredResultMatches.push({ id: newRecord?.property.name ?? "", matchesCount: (recordMatchesCount ?? { label: 0, value: 0 }) });
     } else if (filteredChildren.length !== 0 || forceIncludeItem) {
       // Item is also included if it has at least one matched child or is forcefully included by its parent
       newRecord = copyPropertyRecord(record, filteredChildren, shouldExpandNodeParents);
