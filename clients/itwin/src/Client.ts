@@ -48,6 +48,7 @@ export class DefaultRequestOptionsProvider {
 export abstract class Client {
   private static _defaultRequestOptionsProvider: DefaultRequestOptionsProvider;
   protected _url?: string;
+  protected baseUrl?: string;
 
   /**  Creates an instance of Client. */
   protected constructor() {
@@ -85,9 +86,11 @@ export abstract class Client {
 
     const resolvedRegion = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const searchKey: string = this.getUrlSearchKey();
-    const configuredUrl = Config.App.query(`imjs_url_${resolvedRegion}_${searchKey}`) ?? Config.App.query(`imjs_url_${searchKey}`);
-    if (configuredUrl)
-      return configuredUrl;
+    const configuredUrl: string = Config.App.query(`imjs_url_${resolvedRegion}_${searchKey}`) ?? this.baseUrl;
+    if (configuredUrl) {
+      this._url = configuredUrl;
+      return this._url;
+    }
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     try {

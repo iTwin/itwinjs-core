@@ -143,6 +143,7 @@ export class ContextRegistryClient extends WsgClient {
 
   public constructor() {
     super("v2.5");
+    this.baseUrl = "https://api.bentley.com/contextregistry";
   }
 
   /** Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")

@@ -244,6 +244,7 @@ export class ProjectShareClient extends WsgClient {
    */
   public constructor() {
     super("v2.4");
+    this.baseUrl = "https://api.bentley.com/projectshare";
   }
 
   protected getRelyingPartyUrl(): string {
