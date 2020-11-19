@@ -156,7 +156,7 @@ export abstract class GltfReader {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
 
-    if (this._returnToCenter !== undefined || (pseudoRtcBias !== undefined && pseudoRtcBias.magnitude() < 1.0E15))
+    if (this._returnToCenter !== undefined || this._nodes[0]?.matrix !== undefined || (pseudoRtcBias !== undefined && pseudoRtcBias.magnitude() < 1.0E5))
       pseudoRtcBias = undefined;
 
     const childNodes = new Set<string>();
@@ -451,12 +451,17 @@ export abstract class GltfReader {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
       case GltfMeshMode.Lines:
-        // primitiveType = Mesh.PrimitiveType.Polyline;
-        return undefined; // ###TODO support polylines from glTF.
+        primitiveType = Mesh.PrimitiveType.Polyline;
         break;
+
+      case GltfMeshMode.Points:
+        primitiveType = Mesh.PrimitiveType.Point;
+        break;
+
       case GltfMeshMode.Triangles:
         primitiveType = Mesh.PrimitiveType.Mesh;
         break;
+
       default:
         assert(false);
         return undefined;
@@ -727,46 +732,30 @@ export abstract class GltfReader {
   }
 
   protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean {
-    const view = this.getBufferView(json, accessorName);
-    if (undefined === view)
+    const data = this.readBufferData32(json, accessorName);
+    if (undefined === data)
       return false;
 
-    const numIndices = new Uint32Array(1);
-    const niBytes = new Uint8Array(numIndices.buffer);
-    const index16 = new Uint16Array(1);
-    const i16Bytes = new Uint8Array(index16.buffer);
-    const index32 = new Uint32Array(1);
-    const i32Bytes = new Uint8Array(index32.buffer);
-
-    let ndx = 0;
-    for (let p = 0; p < view.count; ++p) {
-      for (let b = 0; b < 4; ++b)
-        niBytes[b] = view.data[ndx++];
-
-      if (!disjoint && numIndices[0] < 2)
-        continue;
-
-      const indices: number[] = new Array(numIndices[0]);
-
-      if (GltfDataType.UnsignedShort === view.type) {
-        for (let i = 0; i < numIndices[0]; ++i) {
-          for (let b = 0; b < 2; ++b)
-            i16Bytes[b] = view.data[ndx++];
-          indices[i] = index16[0];
+    const indices = new Array<number>();
+    if (disjoint) {
+      for (let i = 0; i < data.count;)
+        indices.push(data.buffer[i++])
+    } else {
+      for (let i = 0; i < data.count;) {
+        const index0 = data.buffer[i++];
+        const index1 = data.buffer[i++];
+        if (0 === indices.length || index0 !== indices[indices.length - 1]) {
+          if (indices.length !== 0) {
+            polylines.push(new MeshPolyline(indices))
+            indices.length = 0;
+          }
+          indices.push(index0);
         }
-        // Need to skip padding if we had an odd number of 16-bit indices.
-        if (0 !== numIndices[0] % 2)
-          ndx += 2;
-      } else if (GltfDataType.UInt32 === view.type) {
-        for (let i = 0; i < numIndices[0]; ++i) {
-          for (let b = 0; b < 4; ++b)
-            i32Bytes[b] = view.data[ndx++];
-          indices[i] = index32[0];
-        }
+        indices.push(index1);
       }
-
-      polylines.push(new MeshPolyline(indices));
     }
+    if (indices.length !== 0)
+      polylines.push(new MeshPolyline(indices))
 
     return true;
   }

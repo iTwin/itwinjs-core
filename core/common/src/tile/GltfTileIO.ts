@@ -27,6 +27,7 @@ export enum GltfV2ChunkTypes {
 
 /** @internal */
 export enum GltfMeshMode {
+  Points = 0,
   Lines = 1,
   LineStrip = 3,
   Triangles = 4,
