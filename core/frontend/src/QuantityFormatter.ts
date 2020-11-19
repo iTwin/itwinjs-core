@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, BeUiEvent } from "@bentley/bentleyjs-core";
 import {
   BadUnit, BasicUnit, Format, Formatter, FormatterSpec, Parser, ParseResult, ParserSpec, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
@@ -54,7 +54,7 @@ const unitData: UnitDefinition[] = [
   { name: "Units.WEEK", unitFamily: "Units.TIME", conversion: { numerator: 1.0, denominator: 604800.0, offset: 0.0 }, displayLabel: "weeks", altDisplayLabels: ["week"] },
   // 1 sec = 1/31536000.0 yr
   { name: "Units.YR", unitFamily: "Units.TIME", conversion: { numerator: 1.0, denominator: 31536000.0, offset: 0.0 }, displayLabel: "years", altDisplayLabels: ["year"] },
-  // Length( base unit length )
+  // conversion => specified unit to base unit of m
   { name: "Units.M", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m", altDisplayLabels: ["meter"] },
   { name: "Units.MM", unitFamily: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "mm", altDisplayLabels: ["MM"] },
   { name: "Units.CM", unitFamily: "Units.LENGTH", conversion: { numerator: 100.0, denominator: 1.0, offset: 0.0 }, displayLabel: "cm", altDisplayLabels: ["CM"] },
@@ -64,18 +64,19 @@ const unitData: UnitDefinition[] = [
   { name: "Units.MILLIINCH", unitFamily: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "mil", altDisplayLabels: [] },
   { name: "Units.MICROINCH", unitFamily: "Units.LENGTH", conversion: { numerator: 1000000.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "µin", altDisplayLabels: [] },
   { name: "Units.MILLIFOOT", unitFamily: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 0.3048, offset: 0.0 }, displayLabel: "mft", altDisplayLabels: [] },
-  // 1 m = 1/0.0254 "
+  // 1 m = 1/0.0254"
   { name: "Units.IN", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "in", altDisplayLabels: ["IN", "\""] },
   { name: "Units.FT", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.3048, offset: 0.0 }, displayLabel: "ft", altDisplayLabels: ["F", "FT", "'"] },
   { name: "Units.YRD", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.9144, offset: 0.0 }, displayLabel: "yd", altDisplayLabels: ["YRD", "yrd"] },
   { name: "Units.MILE", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1609.344, offset: 0.0 }, displayLabel: "mi", altDisplayLabels: ["mile", "Miles", "Mile"] },
   { name: "Units.SURVEY_FT", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.3048006096, offset: 0.0 }, displayLabel: "ft", altDisplayLabels: ["F", "FT", "'"] },
-
+  // conversion => specified unit base unit of m²
   { name: "Units.SQ_FT", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: .09290304, offset: 0.0 }, displayLabel: "ft²", altDisplayLabels: ["sf"] },
-  { name: "Units.SQ_M", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m²", altDisplayLabels: [] },
-
-  { name: "Units.CUB_FT", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
-  { name: "Units.CUB_M", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: [] },
+  { name: "Units.SQ_M", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m²", altDisplayLabels: ["sm"] },
+  // conversion => specified unit to base unit m³
+  { name: "Units.CUB_FT", unitFamily: "Units.VOLUME", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
+  { name: "Units.CUB_YD", unitFamily: "Units.VOLUME", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
+  { name: "Units.CUB_M", unitFamily: "Units.VOLUME", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: ["cm"] },
 ];
 
 /** Defines standard format types for tools that need to display measurements to user.
@@ -411,6 +412,19 @@ export class QuantityFormatter implements UnitsProvider {
   protected _imperialParserSpecsByType = new Map<QuantityType, ParserSpec>();
   protected _metricUnitParserSpecsByType = new Map<QuantityType, ParserSpec>();
 
+  /**
+   * constructor
+   * @param showMetricValues - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. This setting can be changed at
+   *                           runtime using `IModelApp.quantityFormatter.useImperialFormats`.
+   */
+  constructor(showMetricValues?: boolean) {
+    this._activeSystemIsImperial = !showMetricValues;
+  }
+
+  /** Called after the active unit system is changed.
+   */
+  public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial: boolean }>();
+
   public onInitialized() {
     // initialize default format and parsing specs
     this.loadFormatAndParsingMaps(this._activeSystemIsImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -569,7 +583,7 @@ export class QuantityFormatter implements UnitsProvider {
       case QuantityType.Area:
         return this.findUnitByName("Units.SQ_M");
       case QuantityType.Volume:
-        return this.findUnitByName("Units.M");
+        return this.findUnitByName("Units.CUB_M");
       case QuantityType.Coordinate:
       case QuantityType.Length:
       case QuantityType.Stationing:
@@ -698,10 +712,14 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */
-  public async loadFormatAndParsingMaps(useImperial: boolean): Promise<void> {
+  public async loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void> {
     const formatPromise = this.loadFormatSpecsForQuantityTypes(useImperial);
     const parsePromise = this.loadParsingSpecsForQuantityTypes(useImperial);
     await Promise.all([formatPromise, parsePromise]);
+    this._activeSystemIsImperial = useImperial;
+    this.onActiveUnitSystemChanged.emit({ useImperial });
+    if (IModelApp.toolAdmin && restartActiveTool)
+      IModelApp.toolAdmin.startDefaultTool();
   }
 
   /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
@@ -710,8 +728,6 @@ export class QuantityFormatter implements UnitsProvider {
     if (this._activeSystemIsImperial === useImperial)
       return;
 
-    IModelApp.toolAdmin.startDefaultTool();
-    this._activeSystemIsImperial = useImperial;
-    this.loadFormatAndParsingMaps(useImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.loadFormatAndParsingMaps(useImperial, true); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }

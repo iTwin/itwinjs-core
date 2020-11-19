@@ -78,22 +78,25 @@ function access(object: any, prop: string, defaultValue: any, ...args: any): any
 }
 
 /** Bounds function prototype for [[NumericInput]] component
- * @beta
+ * @beta @deprecated use NumberInput
  */
 export type BoundsFunctionProp = number | (() => number | undefined);
 
-/** @internal */
+/** @internal @deprecated use NumberInput */
+// eslint-disable-next-line deprecation/deprecation
 export type ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined);
 
 /** Base properties for the [[NumericInput]] component
- * @beta
+ * @beta @deprecated use NumberInput
  */
 export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
   componentClass?: string;
   defaultValue?: number | string;
   format?: ((value: number | null, strValue: string) => string);
+  // eslint-disable-next-line deprecation/deprecation
   max?: BoundsFunctionProp;
   maxLength?: number;
+  // eslint-disable-next-line deprecation/deprecation
   min?: BoundsFunctionProp;
   mobile?: boolean | "auto" | (() => boolean);
   noStyle?: boolean;
@@ -110,6 +113,7 @@ export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<H
   precision?: number | (() => number | null | undefined);
   snap?: boolean;
   /** @internal */
+  // eslint-disable-next-line deprecation/deprecation
   step?: ReactStepFunctionProp;
   strict: boolean;
   value?: number | string;
@@ -131,8 +135,9 @@ interface ReactNumericInputState {
 }
 /* eslint-enable */
 
-/** @internal */
+/** @internal @deprecated use NumberInput */
 // istanbul ignore next
+// eslint-disable-next-line deprecation/deprecation
 export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
 
   /**
@@ -362,6 +367,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   /**
    * Set the initial state and bind this._stop to the instance.
    */
+  // eslint-disable-next-line deprecation/deprecation
   constructor(props: ReactNumericInputProps) {
     super(props);
 
@@ -377,6 +383,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     };
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   private _propsToState(props: ReactNumericInputProps, initialMount = false) {
     const out: ReactNumericInputState = {};
 
@@ -406,6 +413,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
    * needed to "reconnect" it to the outer world, i.e. restore selection,
    * call some of the callbacks, validate etc.
    */
+  // eslint-disable-next-line deprecation/deprecation
   public componentDidUpdate(prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void {
     if (!this.refsInput)
       return;
@@ -589,7 +597,9 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     if (this._isStrict) {
       const precision = access(this.props, "precision", null, this);
       const q = Math.pow(10, precision === null ? 10 : precision);
+      // eslint-disable-next-line deprecation/deprecation
       const min = +access(this.props, "min", ReactNumericInput.defaultProps.min, this);
+      // eslint-disable-next-line deprecation/deprecation
       const max = +access(this.props, "max", ReactNumericInput.defaultProps.max, this);
       n = Math.min(Math.max(n, min), max);
       n = Math.round(n * q) / q;
@@ -641,11 +651,14 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     const step = +access(
       this.props,
       "step",
+      // eslint-disable-next-line deprecation/deprecation
       ReactNumericInput.defaultProps.step,
       this,
       (
         n > 0 ?
+          // eslint-disable-next-line deprecation/deprecation
           ReactNumericInput.DIRECTION_UP :
+          // eslint-disable-next-line deprecation/deprecation
           ReactNumericInput.DIRECTION_DOWN
       ),
     );
@@ -702,7 +715,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
         }
       }
     }
-  }
+  };
 
   /**
    * Stops the widget from auto-changing by clearing the timer (if any)
@@ -711,7 +724,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     if (this._timer) {
       window.clearTimeout(this._timer);
     }
-  }
+  };
 
   /**
    * Increments the value with one step and the enters a recursive calls
@@ -724,10 +737,12 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   private increase(_recursive: boolean = false, callback?: () => void): void {
     this._stop();
     this._step(1, callback);
+    // eslint-disable-next-line deprecation/deprecation
     const max = +access(this.props, "max", ReactNumericInput.defaultProps.max, this);
     if (this.state.value === undefined || this.state.value === null || isNaN(this.state.value) || +this.state.value < max) {
       this._timer = window.setTimeout(() => {
         this.increase(true);
+        // eslint-disable-next-line deprecation/deprecation
       }, _recursive ? ReactNumericInput.SPEED : ReactNumericInput.DELAY);
     }
   }
@@ -743,10 +758,12 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   private decrease(_recursive: boolean = false, callback?: () => void): void {
     this._stop();
     this._step(-1, callback);
+    // eslint-disable-next-line deprecation/deprecation
     const min = +access(this.props, "min", ReactNumericInput.defaultProps.min, this);
     if (this.state.value === undefined || this.state.value === null || isNaN(this.state.value) || +this.state.value > min) {
       this._timer = window.setTimeout(() => {
         this.decrease(true);
+        // eslint-disable-next-line deprecation/deprecation
       }, _recursive ? ReactNumericInput.SPEED : ReactNumericInput.DELAY);
     }
   }
@@ -782,7 +799,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   private _onTouchEnd = (e: Event): void => {
     e.preventDefault();
     this._stop();
-  }
+  };
 
   /**
    * Helper method to invoke event callback functions if they are provided
@@ -822,10 +839,11 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     noStyle = noStyle || style === false;
 
     // Build the styles
-    // eslint-disable-next-line guard-for-in
+    // eslint-disable-next-line guard-for-in, deprecation/deprecation
     for (const x in ReactNumericInput._style) {
       css[x] = Object.assign(
         {},
+        // eslint-disable-next-line deprecation/deprecation
         (ReactNumericInput._style as any)[x],
         style ? (style as any)[x] || {} : {},
       );

@@ -7,12 +7,12 @@ import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
-  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, ElectronRpcConfiguration,
-  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
-  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, TileContentIdentifier,
+  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface, ElectronRpcConfiguration,
+  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
+  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
-  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem, SnapshotConnection,
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
@@ -23,6 +23,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
+import { openStandaloneIModel } from "./openStandaloneIModel";
 
 const configuration: DtaConfiguration = {};
 
@@ -58,10 +59,9 @@ async function retrieveConfiguration(): Promise<void> {
   });
 }
 
-// opens the configured iModel from disk
-async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
+async function openIModel(filename: string, writable: boolean): Promise<IModelConnection> {
   configuration.standalone = true;
-  const iModelConnection = await SnapshotConnection.openFile(filename);
+  const iModelConnection = await openStandaloneIModel(filename, writable);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
 }
@@ -203,7 +203,16 @@ const dtaFrontendMain = async () => {
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
   // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, DtaRpcInterface];
+  const rpcInterfaces: RpcInterfaceDefinition[] = [
+    DtaRpcInterface,
+    Editor3dRpcInterface,
+    IModelReadRpcInterface,
+    IModelTileRpcInterface,
+    IModelWriteRpcInterface,
+    SnapshotIModelRpcInterface,
+    StandaloneIModelRpcInterface,
+  ];
+
   if (ElectronRpcConfiguration.isElectron) {
     rpcInterfaces.push(NativeAppRpcInterface);
     ElectronRpcManager.initializeClient({}, rpcInterfaces);
@@ -238,8 +247,9 @@ const dtaFrontendMain = async () => {
     let iModel: IModelConnection | undefined;
     const iModelName = configuration.iModelName;
     if (undefined !== iModelName) {
-      iModel = await openSnapshotIModel(iModelName);
-      setTitle(iModelName);
+      const writable = configuration.openReadWrite ?? false;
+      iModel = await openIModel(iModelName, writable);
+      setTitle(iModel);
     }
 
     await uiReady; // Now wait for the HTML UI to finish loading.
@@ -248,7 +258,7 @@ const dtaFrontendMain = async () => {
     alert(reason);
     return;
   }
-}
+};
 
 async function documentLoaded(): Promise<void> {
   const readyState = /^complete$/;
@@ -277,7 +287,7 @@ async function initView(iModel: IModelConnection | undefined) {
     input: document.getElementById("browserFileSelector") as HTMLInputElement,
   } : undefined;
 
-  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector);
+  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
 
   // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
   // Consistently reproducible for some folks, not others...

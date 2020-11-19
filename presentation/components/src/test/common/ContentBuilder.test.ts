@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { expect } from "chai";
 import * as faker from "faker";
 import {
@@ -162,10 +161,10 @@ describe("ContentBuilder", () => {
         const item = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, [], { test: "custom value" });
         const record = ContentBuilder.createPropertyRecord(field, item);
-        expect(record.links).to.be.not.undefined;
-        expect(record.links!.onClick).to.be.undefined;
-        expect(record.links!.matcher).to.be.not.undefined;
-        expect(record.links!.matcher).to.be.equal(getLinks);
+        expect(record!.links).to.be.not.undefined;
+        expect(record!.links!.onClick).to.be.undefined;
+        expect(record!.links!.matcher).to.be.not.undefined;
+        expect(record!.links!.matcher).to.be.equal(getLinks);
       });
 
       it("throws on invalid primitive value", () => {
@@ -557,7 +556,7 @@ describe("ContentBuilder", () => {
         expect(record).to.matchSnapshot();
       });
 
-      it("creates record with merged outside nested content value", () => {
+      it("creates record with merged nesting content value", () => {
         const nestedField = createRandomPrimitiveField();
         const field = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
@@ -588,7 +587,7 @@ describe("ContentBuilder", () => {
         const item = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, [field.name]);
         const record = ContentBuilder.createPropertyRecord(field, item);
-        expect((record.value as PrimitiveValue).displayValue).to.eq("");
+        expect((record!.value as PrimitiveValue).displayValue).to.eq("");
       });
 
       it("throws when display value of merged nested content is not primitive", () => {
@@ -607,7 +606,7 @@ describe("ContentBuilder", () => {
         expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
       });
 
-      it("creates record with merged inside nested content value", () => {
+      it("creates record with merged nested content value", () => {
         const nestedField = createRandomPrimitiveField();
         const field = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
@@ -735,6 +734,21 @@ describe("ContentBuilder", () => {
           faker.random.uuid(), undefined, values, displayValues, []);
         const record = ContentBuilder.createPropertyRecord(field3, item, { hiddenFieldPaths: [[field2, field12]] });
         expect(record).to.matchSnapshot();
+      });
+
+      it("returns undefined if created record has no members and `skipChildlessRecords` prop is set", () => {
+        const field = new NestedContentField(createRandomCategory(), faker.random.word(),
+          faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+          faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [], undefined, faker.random.boolean());
+        const values = {
+          [field.name]: [],
+        };
+        const displayValues = {
+          [field.name]: undefined,
+        };
+        const item = new Item([createRandomECInstanceKey()], faker.random.words(),
+          faker.random.uuid(), undefined, values, displayValues, [], { test: "custom value" });
+        expect(ContentBuilder.createPropertyRecord(field, item, { skipChildlessRecords: true })).to.be.undefined;
       });
 
     });

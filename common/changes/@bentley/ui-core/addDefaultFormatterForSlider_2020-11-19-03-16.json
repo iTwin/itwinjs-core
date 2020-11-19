@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "By default format slider tooltip with same number of decimal places as step specification.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

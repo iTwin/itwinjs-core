@@ -14,8 +14,6 @@ import { UiComponents } from "../UiComponents";
 
 import "./DatePicker.scss";
 
-const MILLISECONDS_PER_DAY = 86400000;
-
 function isSameDay(a: Date, b: Date) {
   return (
     a &&
@@ -51,7 +49,7 @@ function isSameDay(a: Date, b: Date) {
  * @alpha
  */
 export function adjustDateToTimezone(inDateTime: Date, utcOffset: number) {
-  return new Date (inDateTime.getTime()+(inDateTime.getTimezoneOffset()+utcOffset)*60000);
+  return new Date(inDateTime.getTime() + (inDateTime.getTimezoneOffset() + utcOffset) * 60000);
 }
 
 /**
@@ -71,8 +69,8 @@ export interface DatePickerProps {
  * @alpha
  */
 export function DatePicker(props: DatePickerProps) {
-  const previousMonthLabel = React.useRef (UiComponents.i18n.translate("UiComponents:datepicker.previousMonth"));
-  const nextMonthLabel = React.useRef (UiComponents.i18n.translate("UiComponents:datepicker.nextMonth"));
+  const previousMonthLabel = React.useRef(UiComponents.i18n.translate("UiComponents:datepicker.previousMonth"));
+  const nextMonthLabel = React.useRef(UiComponents.i18n.translate("UiComponents:datepicker.nextMonth"));
   const monthsLong = React.useRef([
     UiComponents.i18n.translate("UiComponents:month.long.january"),
     UiComponents.i18n.translate("UiComponents:month.long.february"),
@@ -108,26 +106,26 @@ export function DatePicker(props: DatePickerProps) {
     UiComponents.i18n.translate("UiComponents:days.short.saturday"),
   ]);
 
-  const [selectedDay, setSelectedDay] = React.useState (new Date(props.selected.getTime()));
-  const [displayedMonthIndex, setDisplayedMonthIndex] = React.useState (selectedDay.getMonth());
-  const [displayedYear, setDisplayedYear] = React.useState (selectedDay.getFullYear());
-  const [focusedDay, setFocusedDay] = React.useState (selectedDay);
-  const days = React.useMemo (() => {
+  const [selectedDay, setSelectedDay] = React.useState(new Date(props.selected.getTime()));
+  const [displayedMonthIndex, setDisplayedMonthIndex] = React.useState(selectedDay.getMonth());
+  const [displayedYear, setDisplayedYear] = React.useState(selectedDay.getFullYear());
+  const [focusedDay, setFocusedDay] = React.useState(selectedDay);
+  const days = React.useMemo(() => {
     const msFirstDayOfMonth = new Date(displayedYear, displayedMonthIndex, 1).getTime();
-    const offsetToFirst = new Date(msFirstDayOfMonth).getDay();
-    const msFirstDayOfWeek = msFirstDayOfMonth - (offsetToFirst * MILLISECONDS_PER_DAY);
+    let offsetToFirst = new Date(msFirstDayOfMonth).getDay();
+    if (0 === offsetToFirst)
+      offsetToFirst = 7;
 
     const daysInMonth: Date[] = [];
-    let runningTickCount = msFirstDayOfWeek;
     // generate 6 weeks of dates
-    for (let i=0; i<42; i++) {
-      daysInMonth.push(new Date(runningTickCount));
-      runningTickCount += MILLISECONDS_PER_DAY;
+    for (let i = 0; i < 42; i++) {
+      const adjustedDay = 1 + i - offsetToFirst;
+      daysInMonth.push(new Date(displayedYear, displayedMonthIndex, adjustedDay));
     }
     return daysInMonth;
-  },[displayedMonthIndex, displayedYear]);
+  }, [displayedMonthIndex, displayedYear]);
 
-  const weeks = React.useMemo (() => {
+  const weeks = React.useMemo(() => {
     const weeksInMonth = [];
     const weekCount = Math.ceil(days.length / 7);
     for (let i = 0; i < weekCount; i++) {
@@ -139,11 +137,11 @@ export function DatePicker(props: DatePickerProps) {
   const setMonthAndYear = React.useCallback((newMonth: number, newYear: number) => {
     setDisplayedMonthIndex(newMonth);
     setDisplayedYear(newYear);
-    if (selectedDay.getFullYear()===newYear && selectedDay.getMonth()===newMonth) {
-      setFocusedDay(new Date (selectedDay.getTime()));
+    if (selectedDay.getFullYear() === newYear && selectedDay.getMonth() === newMonth) {
+      setFocusedDay(new Date(selectedDay.getTime()));
     } else {
-      const newFocusDay = new Date (focusedDay.getTime());
-      newFocusDay.setFullYear (newYear, newMonth, 1);
+      const newFocusDay = new Date(focusedDay.getTime());
+      newFocusDay.setFullYear(newYear, newMonth, 1);
       setFocusedDay(newFocusDay);
     }
   }, [focusedDay, selectedDay]);
@@ -151,13 +149,13 @@ export function DatePicker(props: DatePickerProps) {
   const handleMoveToPreviousMonth = React.useCallback(() => {
     const newMonth = displayedMonthIndex !== 0 ? displayedMonthIndex - 1 : 11;
     const newYear = displayedMonthIndex !== 0 ? displayedYear : displayedYear - 1;
-    setMonthAndYear (newMonth, newYear);
+    setMonthAndYear(newMonth, newYear);
   }, [displayedMonthIndex, displayedYear, setMonthAndYear]);
 
   const handleMoveToNextMonth = React.useCallback(() => {
     const newMonth = displayedMonthIndex !== 11 ? displayedMonthIndex + 1 : 0;
     const newYear = displayedMonthIndex !== 11 ? displayedYear : displayedYear + 1;
-    setMonthAndYear (newMonth, newYear)
+    setMonthAndYear(newMonth, newYear);
   }, [displayedMonthIndex, displayedYear, setMonthAndYear]);
 
   // when invoked, it will return another function which can be used for the onClick React listener.
@@ -169,37 +167,37 @@ export function DatePicker(props: DatePickerProps) {
 
   const handleCalendarKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLUListElement>) => {
     if (event.key === SpecialKey.ArrowDown) {
-      const focusedDayIndex = days.findIndex ((day)=>isSameDay (day, focusedDay));
+      const focusedDayIndex = days.findIndex((day) => isSameDay(day, focusedDay));
       if ((focusedDayIndex + 7) > 41)
-        setFocusedDay (days[focusedDayIndex%7]);
+        setFocusedDay(days[focusedDayIndex % 7]);
       else
-        setFocusedDay (days[focusedDayIndex+7]);
+        setFocusedDay(days[focusedDayIndex + 7]);
       event.preventDefault();
     }
     if (event.key === SpecialKey.ArrowUp) {
-      const focusedDayIndex = days.findIndex ((day)=>isSameDay (day, focusedDay));
+      const focusedDayIndex = days.findIndex((day) => isSameDay(day, focusedDay));
       if ((focusedDayIndex - 7) < 0)
-        setFocusedDay (days[(focusedDayIndex%7)+35]);
+        setFocusedDay(days[(focusedDayIndex % 7) + 35]);
       else
-        setFocusedDay (days[focusedDayIndex-7]);
+        setFocusedDay(days[focusedDayIndex - 7]);
       event.preventDefault();
     }
     if (event.key === SpecialKey.ArrowLeft) {
-      const focusedDayIndex = days.findIndex ((day)=>isSameDay (day, focusedDay));
+      const focusedDayIndex = days.findIndex((day) => isSameDay(day, focusedDay));
       // istanbul ignore else
       if ((focusedDayIndex - 1) >= 0)
-        setFocusedDay (days[focusedDayIndex-1]);
+        setFocusedDay(days[focusedDayIndex - 1]);
       event.preventDefault();
     }
     if (event.key === SpecialKey.ArrowRight) {
-      const focusedDayIndex = days.findIndex ((day)=>isSameDay (day, focusedDay));
+      const focusedDayIndex = days.findIndex((day) => isSameDay(day, focusedDay));
       // istanbul ignore else
       if ((focusedDayIndex + 1) <= 41)
-        setFocusedDay (days[focusedDayIndex+1]);
+        setFocusedDay(days[focusedDayIndex + 1]);
       event.preventDefault();
     }
     if (event.key === SpecialKey.Enter || event.key === SpecialKey.Space) {
-      handleOnDayChange (focusedDay)(); // NB: immediately call returned handler function
+      handleOnDayChange(focusedDay)(); // NB: immediately call returned handler function
       event.preventDefault();
     }
   }, [days, focusedDay, handleOnDayChange]);
@@ -220,7 +218,7 @@ export function DatePicker(props: DatePickerProps) {
         </button>
       </div>
       <div className="components-date-picker-calendar-header-weekdays">
-        {[0,1,2,3,4,5,6].map ((dayOfWeek) =>
+        {[0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) =>
           <div key={`day-${dayOfWeek}`} className="components-date-picker-calendar-header-day-short"
             title={daysLong.current[dayOfWeek]}><span>{daysShort.current[dayOfWeek]}</span></div>)}
       </div>
@@ -231,7 +229,7 @@ export function DatePicker(props: DatePickerProps) {
               const isActive = selectedDay && day && isSameDay(selectedDay, day);
               const isFocused = focusedDay && day && isSameDay(focusedDay, day) && props.showFocusOutline;
               const isCurrentMonth = day.getMonth() === displayedMonthIndex;
-              const classNames = classnames("components-date-picker-calendar-day", isActive && "selected", !isCurrentMonth && "notCurrentMonth", isFocused && "focused" );
+              const classNames = classnames("components-date-picker-calendar-day", isActive && "selected", !isCurrentMonth && "notCurrentMonth", isFocused && "focused");
               const dateValue = day.getDate();
               return (
                 /* eslint-disable-next-line jsx-a11y/click-events-have-key-events */

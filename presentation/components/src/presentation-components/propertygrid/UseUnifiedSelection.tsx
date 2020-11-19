@@ -75,7 +75,7 @@ export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataP
 
 
   React.useEffect(() => updateDataProviderSelection(selectionHandler),
-    [updateDataProviderSelection, selectionHandler])
+    [updateDataProviderSelection, selectionHandler]);
 
   return { isOverLimit };
 }

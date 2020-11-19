@@ -128,11 +128,11 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
 
   private _handleCancel = () => {
     this._closeDialog();
-  }
+  };
 
   private _closeDialog = () => {
     this.setState({
       opened: false,
     });
-  }
+  };
 }

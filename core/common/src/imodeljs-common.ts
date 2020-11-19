@@ -79,6 +79,7 @@ export * from "./domains/GenericElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/BoundingSphere";
 export * from "./geometry/Cartographic";
+export * from "./geometry/ElementGeometry";
 export * from "./geometry/FrustumPlanes";
 export * from "./geometry/GeometryStream";
 export * from "./geometry/ImageGraphic";
@@ -92,6 +93,7 @@ export * from "./rpc/EditorRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
+export * from "./rpc/ModelGeometryChanges";
 export * from "./rpc/NativeAppRpcInterface";
 export * from "./rpc/SnapshotIModelRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
@@ -146,6 +148,10 @@ export * from "./tile/TileMetadata";
 /**
  * @docs-group-description Geometry
  * Types for working with geometry.
+ */
+/**
+ * @docs-group-description Serialization
+ * Types for serializing geometry
  */
 /**
  * @docs-group-description Views

@@ -146,7 +146,7 @@ export class CalculatorEngine {
     }
 
     return resultString;
-  }
+  };
 
   private _isMathOperator = (operator: CalculatorOperator): boolean => {
     switch (operator) {
@@ -157,7 +157,7 @@ export class CalculatorEngine {
         return true;
     }
     return false;
-  }
+  };
 
   private _calculate = (n1Str: string, operator: CalculatorOperator, n2Str: string): string => {
     let result = 0;
@@ -184,7 +184,7 @@ export class CalculatorEngine {
     }
 
     return result.toString();
-  }
+  };
 
   private _updateCalculatorState = (operator: CalculatorOperator, resultString: string, displayedNum: string): void => {
     let keyType = CalculatorKeyType.None;
@@ -222,5 +222,5 @@ export class CalculatorEngine {
     }
 
     this._previousKeyType = keyType;
-  }
+  };
 }

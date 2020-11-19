@@ -16,6 +16,7 @@ import {
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 import { MessageManager } from "../../ui-framework/messages/MessageManager";
+import { StatusMessagesContainer } from "../../ui-framework/messages/StatusMessagesContainer";
 
 describe("StatusBar", () => {
 
@@ -54,8 +55,13 @@ describe("StatusBar", () => {
     TestUtils.terminateUiFramework();
   });
 
+  beforeEach(() => {
+    MessageManager.activeMessageManager.initialize();
+  });
+
   it("StatusBar should mount", () => {
-    mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    wrapper.unmount();
   });
 
   it("StatusBar should render a Toast message", async () => {
@@ -68,6 +74,7 @@ describe("StatusBar", () => {
     expect(wrapper.find(Toast).length).to.eq(1);
     expect(wrapper.find(Message).length).to.eq(1);
     expect(wrapper.find(MessageLayout).length).to.eq(1);
+    wrapper.unmount();
   });
 
   it("StatusBar should render a Toast message and animate out", async () => {
@@ -85,6 +92,7 @@ describe("StatusBar", () => {
     wrapper.update();
 
     expect(wrapper.find(".nz-toast").length).to.eq(0);
+    wrapper.unmount();
   });
 
   it("StatusBar should render a Sticky message", () => {
@@ -97,6 +105,7 @@ describe("StatusBar", () => {
     expect(wrapper.find(Message).length).to.eq(1);
     expect(wrapper.find(MessageLayout).length).to.eq(1);
     expect(wrapper.find(MessageButton).length).to.eq(1);
+    wrapper.unmount();
   });
 
   it("Sticky message should close on button click", () => {
@@ -114,6 +123,7 @@ describe("StatusBar", () => {
     fakeTimers.restore();
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
+    wrapper.unmount();
   });
 
   it("StatusBar should render an Activity message", () => {
@@ -130,6 +140,7 @@ describe("StatusBar", () => {
     notifications.endActivityMessage(ActivityMessageEndReason.Completed);
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
+    wrapper.unmount();
   });
 
   it("Activity message should be canceled", () => {
@@ -144,6 +155,7 @@ describe("StatusBar", () => {
     wrapper.find(MessageHyperlink).simulate("click");
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
+    wrapper.unmount();
   });
 
   it("Activity message should be dismissed", () => {
@@ -158,6 +170,7 @@ describe("StatusBar", () => {
     wrapper.find(MessageButton).simulate("click");
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
+    wrapper.unmount();
   });
 
   it("StatusBar should render Toast, Sticky & Activity messages", async () => {
@@ -173,6 +186,7 @@ describe("StatusBar", () => {
     wrapper.update();
 
     expect(wrapper.find(Message).length).to.eq(3);
+    wrapper.unmount();
   });
 
   it("StatusBar should render maximum of 3 Sticky messages", async () => {
@@ -195,6 +209,7 @@ describe("StatusBar", () => {
     wrapper.update();
 
     expect(wrapper.find(Message).length).to.eq(3);
+    wrapper.unmount();
   });
 
   it("StatusBar should not render a Pointer message", () => {
@@ -205,6 +220,7 @@ describe("StatusBar", () => {
     wrapper.update();
 
     expect(wrapper.find(Message).length).to.eq(0);
+    wrapper.unmount();
   });
 
   it("StatusBar should clear messages", () => {
@@ -219,26 +235,45 @@ describe("StatusBar", () => {
     MessageManager.clearMessages();
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
+    wrapper.unmount();
+  });
+
+  it("StatusMessageRenderer should render empty correctly", () => {
+    const wrapper = mount(<StatusMessagesContainer
+      messages={[]}
+      activityMessageInfo={undefined}
+      isActivityMessageVisible={false}
+      toastTarget={null}
+      closeMessage={() => { }}
+      cancelActivityMessage={() => { }}
+      dismissActivityMessage={() => { }}
+    />);
+    expect(wrapper.find("div").length).to.eq(0);
+    wrapper.unmount();
   });
 
   it("StatusBarSpaceBetween should render correctly", () => {
     const wrapper = mount(<StatusBarSpaceBetween>Hello</StatusBarSpaceBetween>);
     expect(wrapper.find("div.uifw-statusbar-space-between").length).to.eq(1);
+    wrapper.unmount();
   });
 
   it("StatusBarLeftSection should render correctly", () => {
     const wrapper = mount(<StatusBarLeftSection>Hello</StatusBarLeftSection>);
     expect(wrapper.find("div.uifw-statusbar-left").length).to.eq(1);
+    wrapper.unmount();
   });
 
   it("StatusBarCenterSection should render correctly", () => {
     const wrapper = mount(<StatusBarCenterSection>Hello</StatusBarCenterSection>);
     expect(wrapper.find("div.uifw-statusbar-center").length).to.eq(1);
+    wrapper.unmount();
   });
 
   it("StatusBarRightSection should render correctly", () => {
     const wrapper = mount(<StatusBarRightSection>Hello</StatusBarRightSection>);
     expect(wrapper.find("div.uifw-statusbar-right").length).to.eq(1);
+    wrapper.unmount();
   });
 
 });

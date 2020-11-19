@@ -6,8 +6,7 @@
  * @module RpcInterface
  */
 
-import { Id64String, LogLevel } from "@bentley/bentleyjs-core";
-import { Range3dProps } from "@bentley/geometry-core";
+import { LogLevel } from "@bentley/bentleyjs-core";
 import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOptions, RequestBriefcaseProps } from "../BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
@@ -43,33 +42,9 @@ export namespace Events {
     export const onBriefcaseDownloadProgress = "download-progress";
     export const onInternetConnectivityChanged = "onInternetConnectivityChanged";
     export const onUserStateChanged = "onUserStateChanged";
-    /** [[QueuedEvent.data]] is an array of [[ModelGeometryChanges]]. */
+    /** [[QueuedEvent.data]] is an array of [[ModelGeometryChangesProps]]. */
     export const modelGeometryChanges = "modelGeometryChanges";
   }
-}
-
-/** Describes a change to the geometry of a [GeometricElement]($backend).
- * @alpha
- */
-export interface ElementGeometryChange {
-  id: Id64String;
-  range?: Range3dProps;
-}
-
-/** Describes changes to the geometry of a [GeometricModel]($backend).The changes can result from a normal transaction, or an undo/redo.
- * @alpha
- */
-export interface ModelGeometryChanges {
-  /** The Id of the geometric model whose geometry changed. */
-  modelId: Id64String;
-  /** The current range of the model. */
-  range?: Range3dProps;
-  /** A list of newly-inserted geometric elements. */
-  inserted?: ElementGeometryChange[];
-  /** A list of existing elements whose geometry was modified. */
-  updated?: ElementGeometryChange[];
-  /** A list of newly-deleted geometric elements. */
-  deleted?: Id64String[];
 }
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
@@ -109,7 +84,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.4.1";
+  public static interfaceVersion = "0.4.2";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -140,6 +115,12 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    */
   public async cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void> { return this.forward(arguments); }
 
+  /** Cancel element graphics requests.
+   * @see [[IModelTileRpcInterface.requestElementGraphics]].
+   */
+  public async cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void> {
+    return this.forward(arguments);
+  }
   /**
    * Request download of a briefcase. The call require internet connection and must have valid token.
    * @param _requestProps Properties required to locate the iModel and download it as a briefcase
@@ -265,4 +246,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _config configuration for oidc client
    */
   public async authInitialize(_issuer: string, _config: any): Promise<void> { return this.forward(arguments); }
+
+  public async toggleInteractiveEditingSession(_tokenProps: IModelRpcProps, _startSession: boolean): Promise<boolean> { return this.forward(arguments); }
+  public async isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 }

@@ -6,7 +6,7 @@ exports[`FloatingWidgets should render 1`] = `
   style="transform: translate(0px, 0px); height: 0px; width: 0px;"
 >
   <div
-    class="nz-widget-tabBar"
+    class="nz-widget-tabBar nz-separator"
   >
     <div
       class="nz-handle"

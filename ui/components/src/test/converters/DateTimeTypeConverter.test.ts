@@ -38,27 +38,27 @@ describe("ShortDateTypeConverter", () => {
 
   describe("convertToStringWithOptions", () => {
     it("returns correct string", () => {
-      const date = new Date(Date.UTC(2018,0,1));
-      let options = {alternateDateFormat: AlternateDateFormats.IsoDateTime };
+      const date = new Date(Date.UTC(2018, 0, 1));
+      let options = { alternateDateFormat: AlternateDateFormats.IsoDateTime };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("2018-01-01");
-      options = {alternateDateFormat: AlternateDateFormats.IsoShort};
+      options = { alternateDateFormat: AlternateDateFormats.IsoShort };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("2018-01-01");
-      options = {alternateDateFormat: AlternateDateFormats.UtcShort};
+      options = { alternateDateFormat: AlternateDateFormats.UtcShort };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("01 Jan 2018");
-      options = {alternateDateFormat: AlternateDateFormats.UtcShortWithDay};
+      options = { alternateDateFormat: AlternateDateFormats.UtcShortWithDay };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("Mon, 01 Jan 2018");
-      options = {alternateDateFormat: AlternateDateFormats.UtcDateTime};
+      options = { alternateDateFormat: AlternateDateFormats.UtcDateTime };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("01 Jan 2018");
-      options = {alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay};
+      options = { alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("Mon, 01 Jan 2018");
       expect(converter.convertToStringWithOptions(undefined, options)).to.be.eq("");
       expect(converter.convertToStringWithOptions(date, undefined)).to.be.eq(converter.convertToString(date));
     });
 
     it("returns formatted date if date is a string", () => {
-      const date = new Date(Date.UTC(2018,0,1));
+      const date = new Date(Date.UTC(2018, 0, 1));
       const str = "2018-01-01";
-      const options = {alternateDateFormat: AlternateDateFormats.IsoDateTime };
+      const options = { alternateDateFormat: AlternateDateFormats.IsoDateTime };
       expect(converter.convertToStringWithOptions(str, options)).to.be.eq(converter.convertToStringWithOptions(date, options));
     });
   });
@@ -101,9 +101,9 @@ describe("ShortDateTypeConverter", () => {
     });
 
     it("returns date at UTC-0", () => {
-      const date = new Date(Date.UTC(2018,0,1));
+      const date = new Date(Date.UTC(2018, 0, 1));
       const str = "2018-01-01";
-      const options = {alternateDateFormat: AlternateDateFormats.IsoDateTime };
+      const options = { alternateDateFormat: AlternateDateFormats.IsoDateTime };
       const convertedDate = converter.convertFromStringWithOptions(str, options) as Date;
       expect(date.getDate()).to.be.eq(convertedDate.getDate());
     });
@@ -176,36 +176,36 @@ describe("DateTimeTypeConverter", () => {
 
   describe("convertToStringWithOptions", () => {
     it("returns correct string", () => {
-      const date = new Date(Date.UTC(2018,0,1));
-      let options = {alternateDateFormat: AlternateDateFormats.IsoDateTime };
+      const date = new Date(Date.UTC(2018, 0, 1));
+      let options = { alternateDateFormat: AlternateDateFormats.IsoDateTime };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("2018-01-01T00:00:00.000Z");
-      options = {alternateDateFormat: AlternateDateFormats.IsoShort};
+      options = { alternateDateFormat: AlternateDateFormats.IsoShort };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("2018-01-01T00:00:00.000Z");
-      options = {alternateDateFormat: AlternateDateFormats.UtcShort};
+      options = { alternateDateFormat: AlternateDateFormats.UtcShort };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("01 Jan 2018 00:00:00 GMT");
-      options = {alternateDateFormat: AlternateDateFormats.UtcShortWithDay};
+      options = { alternateDateFormat: AlternateDateFormats.UtcShortWithDay };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("Mon, 01 Jan 2018 00:00:00 GMT");
-      options = {alternateDateFormat: AlternateDateFormats.UtcDateTime};
+      options = { alternateDateFormat: AlternateDateFormats.UtcDateTime };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("01 Jan 2018 00:00:00 GMT");
-      options = {alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay};
+      options = { alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay };
       expect(converter.convertToStringWithOptions(date, options)).to.be.eq("Mon, 01 Jan 2018 00:00:00 GMT");
       expect(converter.convertToStringWithOptions(undefined, options)).to.be.eq("");
       expect(converter.convertToStringWithOptions(date, undefined)).to.be.eq(converter.convertToString(date));
     });
 
     it("returns correct time string", async () => {
-      const date = new Date(Date.UTC(2018,0,1));
-      let options = {timeDisplay: TimeDisplay.H24M};
+      const date = new Date(Date.UTC(2018, 0, 1));
+      let options = { timeDisplay: TimeDisplay.H24M };
       const hour24 = await converter.convertToStringWithOptions(date, options);
-      options = {timeDisplay: TimeDisplay.H12MC};
+      options = { timeDisplay: TimeDisplay.H12MC };
       const hour12 = await converter.convertToStringWithOptions(date, options);
-      expect (hour12.length > hour24.length)
+      expect(hour12.length > hour24.length);
     });
 
     it("returns formatted date if date is a string", () => {
-      const date = new Date(Date.UTC(2018,0,1));
+      const date = new Date(Date.UTC(2018, 0, 1));
       const str = "2018-01-01";
-      const options = {alternateDateFormat: AlternateDateFormats.IsoDateTime};
+      const options = { alternateDateFormat: AlternateDateFormats.IsoDateTime };
       expect(converter.convertToStringWithOptions(str, options)).to.be.eq(converter.convertToStringWithOptions(date, options));
     });
   });

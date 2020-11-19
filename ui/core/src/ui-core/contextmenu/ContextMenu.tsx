@@ -143,17 +143,17 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       }
     }
     return dir;
-  }
+  };
 
   private _handleHotKeyParsed = (index: number, hotKey: string) => {
     this._hotKeyMap.set(index, hotKey);
-  }
+  };
 
   // istanbul ignore next
   private _handleOnOutsideClick = (event: MouseEvent): void => {
     if (this.props.opened && this.props.onOutsideClick)
       this.props.onOutsideClick(event);
-  }
+  };
 
   public render(): JSX.Element {
     const {
@@ -239,7 +239,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     }
 
     return className;
-  }
+  };
 
   private _injectMenuItemProps = (children: React.ReactNode, direction: ContextMenuDirection | undefined, selectedIndex: number) => {
     let index = 0;
@@ -273,15 +273,15 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     });
     this._length = index;
     return ch;
-  }
+  };
 
   private _rootRef = (el: HTMLDivElement | null) => {
     this._rootElement = el;
-  }
+  };
 
   private _menuRef = (el: HTMLDivElement | null) => {
     this._menuElement = el;
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -316,13 +316,13 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     // istanbul ignore else
     if (this._menuElement)
       this._menuElement.focus();
-  }
+  };
 
   public blur = () => {
     // istanbul ignore else
     if (this._menuElement)
       this._menuElement.blur();
-  }
+  };
 
   public getRect = (): ClientRect => {
     let clientRect: ClientRect = { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
@@ -332,18 +332,18 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       clientRect = this._menuElement.getBoundingClientRect();
     }
     return clientRect;
-  }
+  };
 
   private _handleFocusChange = (event: any): void => {
     // istanbul ignore else
     if (this._rootElement && this.props.opened && event.target instanceof Node && this.props.onOutsideClick && !this._rootElement.contains(event.target))
       this.props.onOutsideClick(event);
-  }
+  };
 
   private _handleClick = (event: React.MouseEvent<HTMLDivElement>): void => {
     if (this.props.onSelect)
       this.props.onSelect(event);
-  }
+  };
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>): void => {
     // istanbul ignore else
@@ -417,7 +417,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       }
     }
     this.setState({ selectedIndex });
-  }
+  };
 
   public componentDidUpdate(prevProps: ContextMenuProps) {
     if (prevProps.selectedIndex !== this.props.selectedIndex) {

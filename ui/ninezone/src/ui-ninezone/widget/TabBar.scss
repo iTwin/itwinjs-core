@@ -12,7 +12,10 @@
   flex: 0 0 auto;
   position: relative;
   height: $nz-widget-tab-height;
-  border-bottom: 1px solid $buic-background-5;
+
+  &.nz-separator {
+    border-bottom: 1px solid $buic-background-5;
+  }
 
   > .nz-handle {
     width: 100%;

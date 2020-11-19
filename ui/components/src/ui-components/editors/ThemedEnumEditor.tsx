@@ -89,7 +89,7 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
         }
       });
     }
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

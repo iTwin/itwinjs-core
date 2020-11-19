@@ -79,7 +79,7 @@ export class DemoITreeDataProvider implements ITreeDataProvider {
       return [];
     }
     return this._data.slice(start, end);
-  }
+  };
 
   public getNodesCount = async (parent?: TreeNodeItem): Promise<number> => {
     if (parent) {
@@ -88,7 +88,7 @@ export class DemoITreeDataProvider implements ITreeDataProvider {
       return 0;
     }
     return this._data.length;
-  }
+  };
 }
 
 /** @internal */
@@ -109,7 +109,7 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
       p.hasChildren = true;
     }
     this.onTreeNodeChanged.raiseEvent([parent]);
-  }
+  };
 
   public removeNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem): void => {
     let nodes = this._data;
@@ -126,7 +126,7 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
       }
       this.onTreeNodeChanged.raiseEvent([parent]);
     }
-  }
+  };
 
   public moveNode = (parent: TreeNodeItem | undefined, newParent: TreeNodeItem | undefined, child: TreeNodeItem, newIndex: number = -1): void => {
     let nodes = this._data;
@@ -168,7 +168,7 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
       }
       this.onTreeNodeChanged.raiseEvent(arr);
     }
-  }
+  };
 
   private _getNodeById(nodes: DelayLoadedTreeNodeItem[] | DelayLoadedTreeNodeItem, id: string): DelayLoadedTreeNodeItem | undefined {
     if (!("length" in nodes)) {
@@ -202,7 +202,7 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
     }
     if (c) return true;
     return false;
-  }
+  };
   public getNodeIndex = (parent: TreeNodeItem | undefined, node: TreeNodeItem): number => {
     let nodes = this._data;
     if (parent) {
@@ -216,7 +216,7 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
       }
     }
     return -1;
-  }
+  };
 }
 
 export const mockInterfaceTreeDataProvider = new DemoITreeDataProvider(dataProviderRaw);

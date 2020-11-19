@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, Geometry, LineSegment3d, LineString3d, Loop, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Sphere, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3dProps, TextString, TextStringProps, ViewFlags } from "@bentley/imodeljs-common";
+import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode, ThematicGradientSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, Timer } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);
 }
 
-function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64String {
+function createGeometryPartProps(geom: GeometryStreamProps): GeometryPartProps {
   const partProps: GeometryPartProps = {
     classFullName: GeometryPart.classFullName,
     model: IModel.dictionaryId,
     code: Code.createEmpty(),
     geom,
   };
-  return imodel.elements.insertElement(partProps);
+  return partProps;
 }
 
-function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
+function createPhysicalElementProps(seedElement: GeometricElement, placement?: Placement3dProps, geom?: GeometryStreamProps): PhysicalElementProps {
   const elementProps: PhysicalElementProps = {
     classFullName: PhysicalObject.classFullName,
     model: seedElement.model,
@@ -33,6 +33,16 @@ function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dPr
     geom,
     placement,
   };
+  return elementProps;
+}
+
+function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64String {
+  const partProps = createGeometryPartProps(geom);
+  return imodel.elements.insertElement(partProps);
+}
+
+function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
+  const elementProps = createPhysicalElementProps(seedElement, placement, geom);
   const el = imodel.elements.createElement<GeometricElement>(elementProps);
   return imodel.elements.insertElement(el);
 }
@@ -41,6 +51,12 @@ function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRol
   const builder = new GeometryStreamBuilder();
   builder.appendGeometryPart3d(partId, isRelative ? origin : undefined, isRelative ? angles : undefined);
   return createGeometricElem(builder.geometryStream, isRelative ? { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) } : { origin, angles }, imodel, seedElement);
+}
+
+function createPointPart(imodel: SnapshotDb): Id64String {
+  const builder = new GeometryStreamBuilder();
+  builder.appendGeometry(PointString3d.create(Point3d.createZero())); // NOTE: CoordinateXYZ isn't supported...
+  return createGeometryPart(builder.geometryStream, imodel);
 }
 
 function createCirclePart(radius: number, imodel: SnapshotDb): Id64String {
@@ -70,6 +86,195 @@ function createDisjointCirclesElem(radius: number, origin: Point3d, angles: YawP
   builder.appendGeometryParamsChange(geomParams);
   builder.appendGeometry(Arc3d.createXY(Point3d.create(xOffset), radius));
   return createGeometricElem(builder.geometryStream, { origin, angles }, imodel, seedElement);
+}
+
+function createIndexedPolyface(radius: number, origin?: Point3d, angleTol?: Angle): IndexedPolyface {
+  const options = StrokeOptions.createForFacets();
+
+  options.needParams = true;
+  options.needNormals = true;
+
+  if (angleTol)
+    options.angleTol = angleTol;
+
+  // Create indexed polyface for testing by facetting a sphere...
+  const sphere = Sphere.createCenterRadius(undefined !== origin ? origin : Point3d.createZero(), radius);
+  const polyBuilder = PolyfaceBuilder.create(options);
+  polyBuilder.handleSphere(sphere);
+
+  return polyBuilder.claimPolyface();
+}
+
+interface ExpectedElementGeometryEntry {
+  opcode: ElementGeometryOpcode;
+  geometryCategory?: GeometryQueryCategory;
+  geometrySubCategory?: string;
+  originalEntry?: ElementGeometryDataEntry;
+  geomParams?: GeometryParams;
+}
+
+function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElementGeometryEntry[], isWorld: boolean): void {
+  assert.isTrue(undefined !== info.entryArray && expected.length === info.entryArray.length);
+  const geomParams = (undefined !== info.categoryId ? new GeometryParams(info.categoryId) : undefined);
+
+  info.entryArray.forEach((entry, i) => {
+    assert.isTrue(expected[i].opcode === entry.opcode);
+
+    if (ElementGeometry.isGeometryQueryEntry(entry)) {
+      const geom = ElementGeometry.toGeometryQuery(entry);
+      assert.exists(geom);
+
+      if (undefined !== expected[i].geometryCategory) {
+        assert.isTrue(expected[i].geometryCategory === geom?.geometryCategory);
+      }
+
+      if (undefined !== expected[i].geometrySubCategory) {
+        switch (expected[i].geometryCategory) {
+          case "curvePrimitive": {
+            assert.isTrue(geom instanceof CurvePrimitive);
+            assert.isTrue(expected[i].geometrySubCategory === (geom as CurvePrimitive).curvePrimitiveType);
+            break;
+          }
+          case "curveCollection": {
+            assert.isTrue(geom instanceof CurveCollection);
+            assert.isTrue(expected[i].geometrySubCategory === (geom as CurveCollection).curveCollectionType);
+            break;
+          }
+          case "solid": {
+            assert.isTrue(geom instanceof SolidPrimitive);
+            assert.isTrue(expected[i].geometrySubCategory === (geom as SolidPrimitive).solidPrimitiveType);
+            break;
+          }
+        }
+      }
+    } else if (ElementGeometry.isGeometricEntry(entry)) {
+      switch (entry.opcode) {
+        case ElementGeometryOpcode.BRep:
+          const brep = ElementGeometry.toBRep(entry);
+          assert.exists(brep);
+          if (!isWorld && undefined !== expected[i].originalEntry) {
+            const other = ElementGeometry.toBRep(expected[i].originalEntry!);
+            assert.exists(other);
+            // NOTE: Don't compare brep type; set from entity data by backend, ignored if supplied to update...
+            const transform = Transform.fromJSON(brep?.transform);
+            const otherTrans = Transform.fromJSON(other?.transform);
+            assert.isTrue(transform.isAlmostEqual(otherTrans));
+            const faceSymbLen = (undefined !== brep?.faceSymbology ? brep?.faceSymbology.length : 0);
+            const otherSymbLen = (undefined !== other?.faceSymbology ? other?.faceSymbology.length : 0);
+            assert.isTrue(faceSymbLen === otherSymbLen);
+          }
+          break;
+        case ElementGeometryOpcode.TextString:
+          const text = ElementGeometry.toTextString(entry);
+          assert.exists(text);
+          if (!isWorld && undefined !== expected[i].originalEntry) {
+            const other = ElementGeometry.toTextString(expected[i].originalEntry!);
+            assert.exists(other);
+            assert.isTrue(text?.font === other?.font);
+            assert.isTrue(text?.text === other?.text);
+            assert.isTrue(text?.bold === other?.bold);
+            assert.isTrue(text?.italic === other?.italic);
+            assert.isTrue(text?.underline === other?.underline);
+            assert.isTrue(text?.height === other?.height);
+            assert.isTrue(text?.widthFactor === other?.widthFactor);
+            const origin = Point3d.fromJSON(text?.origin);
+            const otherOrigin = Point3d.fromJSON(other?.origin);
+            assert.isTrue(origin.isAlmostEqual(otherOrigin));
+            const angles = YawPitchRollAngles.fromJSON(text?.rotation);
+            const otherAngles = YawPitchRollAngles.fromJSON(other?.rotation);
+            assert.isTrue(angles.isAlmostEqual(otherAngles));
+          }
+          break;
+        case ElementGeometryOpcode.Image:
+          const image = ElementGeometry.toImageGraphic(entry);
+          assert.exists(image);
+          if (!isWorld && undefined !== expected[i].originalEntry) {
+            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry!);
+            assert.exists(other);
+            assert.isTrue(image?.textureId === other?.textureId);
+            assert.isTrue(image?.hasBorder === other?.hasBorder);
+            const corners = ImageGraphicCorners.fromJSON(image!.corners);
+            const otherCorners = ImageGraphicCorners.fromJSON(other!.corners);
+            assert.isTrue(corners[0].isAlmostEqual(otherCorners[0]));
+            assert.isTrue(corners[1].isAlmostEqual(otherCorners[1]));
+            assert.isTrue(corners[2].isAlmostEqual(otherCorners[2]));
+            assert.isTrue(corners[3].isAlmostEqual(otherCorners[3]));
+          }
+          break;
+        default:
+          assert.isTrue(false);
+          break;
+      }
+    } else if (ElementGeometryOpcode.SubGraphicRange === entry.opcode) {
+      const subRange = ElementGeometry.toSubGraphicRange(entry);
+      assert.exists(subRange);
+      assert.isFalse(subRange?.isNull);
+    } else if (ElementGeometryOpcode.PartReference === entry.opcode) {
+      const partToElement = Transform.createIdentity();
+      const part = ElementGeometry.toGeometryPart(entry, partToElement);
+      assert.exists(part);
+      if (!isWorld && undefined !== expected[i].originalEntry) {
+        const otherToElement = Transform.createIdentity();
+        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry!, otherToElement);
+        assert.exists(other);
+        assert.isTrue(partToElement.isAlmostEqual(otherToElement));
+      }
+    } else if (ElementGeometry.isAppearanceEntry(entry)) {
+      if (undefined !== geomParams) {
+        const updated = ElementGeometry.updateGeometryParams(entry, geomParams);
+        assert.isTrue(updated);
+        if (!isWorld && undefined !== expected[i].geomParams)
+          assert.isTrue(geomParams.isEquivalent(expected[i].geomParams!));
+      }
+    }
+  });
+}
+
+function validateGeometricElementProps(info: ElementGeometryInfo, expected: GeometricElement3dProps): void {
+  assert.isFalse(undefined === info.categoryId || undefined === info.sourceToWorld || undefined === info.bbox);
+  assert.isTrue(expected.category === info.categoryId);
+  const placement = Placement3d.fromJSON(expected.placement);
+  const sourceToWorld = ElementGeometry.toTransform(info.sourceToWorld!);
+  assert.exists(sourceToWorld);
+  assert.isTrue(sourceToWorld?.isAlmostEqual(placement.transform));
+  const bbox = ElementGeometry.toElementAlignedBox3d(info.bbox!);
+  assert.isFalse(bbox?.isNull);
+}
+
+function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, expected: ExpectedElementGeometryEntry[], isWorld: boolean, elementProps?: GeometricElement3dProps, brepOpt?: number): DbResult {
+  const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
+    if (undefined !== elementProps)
+      validateGeometricElementProps(info, elementProps);
+
+    if (1 === brepOpt || 2 === brepOpt)
+      assert.isTrue(info.brepsPresent);
+
+    validateElementInfo(info, expected, isWorld);
+  };
+
+  const requestProps: ElementGeometryRequest = {
+    onGeometry,
+    elementId,
+  };
+
+  if (1 === brepOpt)
+    requestProps.replaceBReps = true;
+  else if (2 === brepOpt)
+    requestProps.skipBReps = true;
+
+  return imodel.elementGeometryRequest(requestProps);
+}
+
+function doElementGeometryUpdate(imodel: SnapshotDb, elementId: Id64String, entryArray: ElementGeometryDataEntry[], isWorld: boolean): DbResult {
+  const updateProps: ElementGeometryUpdate = {
+    elementId,
+    entryArray,
+    isWorld,
+  };
+  const status = imodel.elementGeometryUpdate(updateProps);
+  if (DbResult.BE_SQLITE_OK === status)
+    imodel.saveChanges();
+  return status;
 }
 
 describe("GeometryStream", () => {
@@ -126,14 +331,7 @@ describe("GeometryStream", () => {
       pointS.y += 0.5; pointE.y += 0.5;
     });
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
@@ -215,14 +413,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
@@ -262,13 +453,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometryParamsChange(partParams);
     partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
 
-    const partProps: GeometryPartProps = {
-      classFullName: GeometryPart.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-      geom: partBuilder.geometryStream,
-    };
-
+    const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const partId = imodel.elements.insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
@@ -292,14 +477,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
@@ -325,13 +503,7 @@ describe("GeometryStream", () => {
     const partBuilder = new GeometryStreamBuilder();
     partBuilder.appendGeometry(Arc3d.createXY(Point3d.createZero(), 0.05));
 
-    const partProps: GeometryPartProps = {
-      classFullName: GeometryPart.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-      geom: partBuilder.geometryStream,
-    };
-
+    const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const partId = imodel.elements.insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
@@ -362,14 +534,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
@@ -445,14 +610,7 @@ describe("GeometryStream", () => {
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
@@ -539,13 +697,7 @@ describe("GeometryStream", () => {
     const partBuilder = new GeometryStreamBuilder();
     partBuilder.appendGeometry(Arc3d.createXY(Point3d.createZero(), 0.05));
 
-    const partProps: GeometryPartProps = {
-      classFullName: GeometryPart.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-      geom: partBuilder.geometryStream,
-    };
-
+    const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const partId = imodel.elements.insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
@@ -587,14 +739,7 @@ describe("GeometryStream", () => {
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
@@ -672,15 +817,7 @@ describe("GeometryStream", () => {
     const status = builder.appendTextString(textString);
     assert.isTrue(status);
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-      placement: { origin: testOrigin, angles: testAngles },
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
@@ -738,13 +875,7 @@ describe("GeometryStream", () => {
       partBuilder.appendGeometry(geom);
     }
 
-    const partProps: GeometryPartProps = {
-      classFullName: GeometryPart.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-      geom: partBuilder.geometryStream,
-    };
-
+    const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
     const partId = imodel.elements.insertElement(testPart);
     imodel.saveChanges();
@@ -785,14 +916,7 @@ describe("GeometryStream", () => {
       builder.appendGeometry(geom);
     }
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
@@ -826,13 +950,7 @@ describe("GeometryStream", () => {
 
     partBuilder.appendGeometry(arc);
 
-    const partProps: GeometryPartProps = {
-      classFullName: GeometryPart.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-      geom: partBuilder.geometryStream,
-    };
-
+    const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
     const partId = imodel.elements.insertElement(testPart);
     imodel.saveChanges();
@@ -846,15 +964,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(Loop.create(LineString3d.create(shapePts)));
     shapePts.forEach((pt) => { builder.appendGeometryPart3d(partId, pt, undefined, 0.25); }); // Position part (arc center) at each vertex...
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-      placement: { origin: testOrigin, angles: testAngles },
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
@@ -900,14 +1010,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(shape);
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
@@ -939,10 +1042,6 @@ describe("GeometryStream", () => {
   });
 
   it("create GeometricElement3d from world coordinate brep data", async () => {
-    // Currently parasolid limited to windows...
-    if ("win32" !== Platform.platformName)
-      return;
-
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -953,7 +1052,7 @@ describe("GeometryStream", () => {
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
 
-    //    builder.setLocalToWorld3d(testOrigin, testAngles); // Establish world to local transform...
+    builder.setLocalToWorld3d(testOrigin, testAngles); // Establish world to local transform...
 
     params.lineColor = ColorDef.red;
     params.weight = 2;
@@ -966,22 +1065,14 @@ describe("GeometryStream", () => {
     ];
 
     const brepProps: BRepEntity.DataProps = {
-      data: "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",
+      data: "encoding=base64;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",
       faceSymbology: faceSymb,
-      transform: Transform.createOriginAndMatrix(testOrigin, testAngles.toMatrix3d()),
+      transform: Transform.createOriginAndMatrix(testOrigin, testAngles.toMatrix3d()).toJSON(),
     };
 
     builder.appendBRepData(brepProps);
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-      //      placement: { origin: testOrigin, angles: testAngles },
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
@@ -1001,6 +1092,56 @@ describe("GeometryStream", () => {
     }
   });
 
+  it("create GeometricElement3d with local coordinate indexed polyface json data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const xOffset = Transform.createTranslation(Point3d.create(2.5));
+    const builder = new GeometryStreamBuilder();
+
+    // NOTE: It's a good idea to request sub-graphic ranges when adding multiple "large" polyfaces to a geometry stream...
+    builder.appendGeometryRanges();
+
+    const polyface = createIndexedPolyface(5.0);
+    builder.appendGeometry(polyface);
+
+    polyface.tryTransformInPlace(xOffset); // translate in x...
+    builder.appendGeometry(polyface);
+
+    polyface.tryTransformInPlace(xOffset); // translate in x again...
+    builder.appendGeometry(polyface);
+
+    // NOTE: For time comparison with ElementGeometry: create GeometricElement3d with local coordinate indexed polyface flatbuffer data
+    let timer = new Timer("createGeometricElem");
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const newId = createGeometricElem(builder.geometryStream, { origin: testOrigin, angles: testAngles }, imodel, seedElement);
+    timer.end();
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    timer = new Timer("queryGeometricElem");
+    const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true });
+    assert.isDefined(value.geom);
+
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
+    for (const entry of itLocal) {
+      assert.isTrue(entry.geomParams.categoryId === seedElement.category); // Current appearance information (default sub-category appearance in this case)...
+      assert.isTrue(undefined !== entry.localRange && !entry.localRange.isNull); // Make sure sub-graphic ranges were added...
+
+      assertTrue(entry.primitive.type === "geometryQuery");
+      assertTrue(entry.primitive.geometry instanceof IndexedPolyface);
+
+      const polyOut = entry.primitive.geometry;
+      assert.isTrue(polyOut.pointCount === polyface.pointCount);
+      assert.isTrue(polyOut.paramCount === polyface.paramCount);
+      assert.isTrue(polyOut.normalCount === polyface.normalCount);
+    }
+    timer.end();
+  });
+
   it("should preserve header with flags", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(Arc3d.createXY(Point3d.create(0, 0), 5));
@@ -1009,13 +1150,7 @@ describe("GeometryStream", () => {
       const iter = new GeometryStreamIterator(builder.geometryStream);
       expect((iter.flags === GeometryStreamFlags.ViewIndependent)).to.equal(builder.isViewIndependent);
 
-      const partProps: GeometryPartProps = {
-        classFullName: GeometryPart.classFullName,
-        model: IModel.dictionaryId,
-        code: Code.createEmpty(),
-        geom: builder.geometryStream,
-      };
-
+      const partProps = createGeometryPartProps(builder.geometryStream);
       const part = imodel.elements.createElement(partProps);
       const partId = imodel.elements.insertElement(part);
       imodel.saveChanges();
@@ -1051,6 +1186,609 @@ describe("GeometryStream", () => {
   });
 });
 
+describe("ElementGeometry", () => {
+  let imodel: SnapshotDb;
+
+  before(() => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+  });
+
+  after(() => {
+    imodel.close();
+  });
+
+  it("request geometry stream flatbuffer data from existing element", async () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const expected: ExpectedElementGeometryEntry[] = [{ opcode: ElementGeometryOpcode.SolidPrimitive, geometryCategory: "solid", geometrySubCategory: "sphere" }];
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, "0x1d", expected, false));
+  });
+
+  it("create GeometricElement3d from world coordinate point and arc primitive flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(5, 10, 0));
+    pts.push(Point3d.create(10, 10, 0));
+    pts.push(Point3d.create(10, 15, 0));
+    pts.push(Point3d.create(5, 15, 0));
+    pts.push(pts[0].clone());
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+
+    const entryLN = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
+    assert.exists(entryLN);
+    newEntries.push(entryLN!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
+
+    const entryLS = ElementGeometry.fromGeometryQuery(LineString3d.create(pts));
+    assert.exists(entryLS);
+    newEntries.push(entryLS!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
+
+    const entrySH = ElementGeometry.fromGeometryQuery(Loop.createPolygon(pts));
+    assert.exists(entrySH);
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    const entryPS = ElementGeometry.fromGeometryQuery(PointString3d.create(pts));
+    assert.exists(entryPS);
+    newEntries.push(entryPS!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "pointCollection" });
+
+    const entryAR = ElementGeometry.fromGeometryQuery(Arc3d.createXY(pts[0], pts[0].distance(pts[1])));
+    assert.exists(entryAR);
+    newEntries.push(entryAR!);
+    expected.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "arc" });
+
+    const entryEL = ElementGeometry.fromGeometryQuery(Loop.create(Arc3d.createXY(pts[0], pts[0].distance(pts[1]))));
+    assert.exists(entryEL);
+    newEntries.push(entryEL!);
+    expected.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, true));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, true, elementProps));
+  });
+
+  it("create GeometricElement3d with local coordinate indexed polyface flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const xOffset = Transform.createTranslation(Point3d.create(2.5));
+    const builder = new ElementGeometry.Builder();
+
+    // NOTE: It's a good idea to request sub-graphic ranges when adding multiple "large" polyfaces to a geometry stream...
+    builder.appendGeometryRanges();
+
+    const polyface = createIndexedPolyface(5.0);
+    builder.appendGeometryQuery(polyface);
+
+    polyface.tryTransformInPlace(xOffset); // translate in x...
+    builder.appendGeometryQuery(polyface);
+
+    polyface.tryTransformInPlace(xOffset); // translate in x again...
+    builder.appendGeometryQuery(polyface);
+
+    // NOTE: For time comparison with GeometryStream: create GeometricElement3d with local coordinate indexed polyface json data
+    let timer = new Timer("elementNoGeometryInsert");
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    timer.end();
+
+    timer = new Timer("elementGeometryUpdate");
+    let status = imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false });
+    timer.end();
+    assert.isTrue(DbResult.BE_SQLITE_OK === status);
+    imodel.saveChanges();
+
+    const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
+      assert.isTrue(6 === info.entryArray.length); // 3 pairs of sub-range + polyface...
+      const it = new ElementGeometry.Iterator(info);
+      for (const entry of it) {
+        assert.isTrue(entry.geomParams.categoryId === info.categoryId); // Current appearance information (default sub-category appearance in this case)...
+        assert.isTrue(undefined !== entry.localRange && !entry.localRange.isNull); // Make sure sub-graphic ranges were added...
+
+        const geom = entry.toGeometryQuery();
+        assert.exists(geom);
+        assert.isTrue(geom instanceof IndexedPolyface);
+
+        const polyOut = geom as IndexedPolyface;
+        assert.isTrue(polyOut.pointCount === polyface.pointCount);
+        assert.isTrue(polyOut.paramCount === polyface.paramCount);
+        assert.isTrue(polyOut.normalCount === polyface.normalCount);
+      }
+    };
+
+    timer = new Timer("elementGeometryRequest");
+    status = imodel.elementGeometryRequest({ onGeometry, elementId: newId });
+    timer.end();
+    assert.isTrue(DbResult.BE_SQLITE_OK === status);
+  });
+
+  it("create GeometricElement3d from local coordinate brep flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const expectedFacet: ExpectedElementGeometryEntry[] = [];
+    const expectedSkip: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+
+    // This brep has a face symbology attribute attached to one face, make it green.
+    const faceSymb: BRepEntity.FaceSymbologyProps[] = [
+      { color: ColorDef.blue.toJSON() }, // base symbology should match appearance...
+      { color: ColorDef.green.toJSON(), transparency: 0.5 },
+    ];
+
+    const brepProps: BRepEntity.DataProps = {
+      data: "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",
+      faceSymbology: faceSymb,
+      transform: Transform.createOriginAndMatrix(testOrigin, testAngles.toMatrix3d()).toJSON(),
+    };
+
+    const entry = ElementGeometry.fromBRep(brepProps);
+    assert.exists(entry);
+    newEntries.push(entry!);
+    expected.push({ opcode: ElementGeometryOpcode.BRep, originalEntry: entry });
+
+    // Why 6 and not 4?
+    expectedFacet.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
+  });
+
+  it("create GeometricElement3d from local coordinate textstring flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
+
+    let fontProps: FontProps = { id: 0, type: FontType.TrueType, name: "Arial" };
+    try {
+      fontProps = imodel.embedFont(fontProps); // throws Error
+      assert.isTrue(fontProps.id !== 0);
+    } catch (error) {
+      if ("win32" === Platform.platformName)
+        assert.fail("Font embed failed");
+      return; // failure expected if not windows, skip remainder of test...
+    }
+
+    assert.isTrue(0 !== imodel.fontMap.fonts.size);
+    const foundFont = imodel.fontMap.getFont("Arial");
+    assert.isTrue(foundFont && foundFont.id === fontProps.id);
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+
+    const textProps: TextStringProps = {
+      text: "ABC",
+      font: fontProps.id,
+      height: 2,
+      bold: true,
+      origin: testOrigin,
+      rotation: testAngles,
+    };
+
+    const entry = ElementGeometry.fromTextString(textProps);
+    assert.exists(entry);
+    newEntries.push(entry!);
+    expected.push({ opcode: ElementGeometryOpcode.TextString, originalEntry: entry });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+
+  it("create GeometricElement3d from local coordinate image flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+
+    const imageProps: ImageGraphicProps = {
+      corners: [Point3d.create(), Point3d.create(1, 0), Point3d.create(1, 1), Point3d.create(0, 1)],
+      textureId: "0x1",
+      hasBorder: true,
+    };
+
+    const entry = ElementGeometry.fromImageGraphic(imageProps);
+    assert.exists(entry);
+    newEntries.push(entry!);
+    expected.push({ opcode: ElementGeometryOpcode.Image, originalEntry: entry });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+
+  it("create GeometricElement3d with sub-graphic ranges flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+
+    const entrySG = ElementGeometry.fromSubGraphicRange(Range3d.create()); // Computed on backend, just need opcode...
+    assert.exists(entrySG);
+    newEntries.push(entrySG!);
+    expected.push({ opcode: ElementGeometryOpcode.SubGraphicRange });
+
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(0, 0, 0));
+    pts.push(Point3d.create(5, 5, 0));
+    pts.push(Point3d.create(-5, -5, 0));
+
+    const entryL1 = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
+    assert.exists(entryL1);
+    newEntries.push(entryL1!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
+
+    expected.push({ opcode: ElementGeometryOpcode.SubGraphicRange }); // Added on backend...
+
+    const entryL2 = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[2]));
+    assert.exists(entryL2);
+    newEntries.push(entryL2!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+
+  it("create GeometricElement3d with part reference flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const partId = createPointPart(imodel); // TODO: Invalid to create a part w/o geometry...
+    const expectedPart: ExpectedElementGeometryEntry[] = [];
+    const newPartEntries: ElementGeometryDataEntry[] = [];
+
+    const entryAR = ElementGeometry.fromGeometryQuery(Arc3d.createXY(Point3d.createZero(), 2.5));
+    assert.exists(entryAR);
+    newPartEntries.push(entryAR!);
+    expectedPart.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "arc" });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, partId, newPartEntries, false));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, partId, expectedPart, false));
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+
+    const entryPI = ElementGeometry.fromGeometryPart(partId);
+    assert.exists(entryPI);
+    newEntries.push(entryPI!);
+    expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPI });
+
+    const entryPT = ElementGeometry.fromGeometryPart(partId, Transform.createTranslation(Point3d.create(5, 5, 0)));
+    assert.exists(entryPT);
+    newEntries.push(entryPT!);
+    expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPT });
+
+    const entryPR = ElementGeometry.fromGeometryPart(partId, Transform.createOriginAndMatrix(testOrigin, testAngles.toMatrix3d()));
+    assert.exists(entryPR);
+    newEntries.push(entryPR!);
+    expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPR });
+
+    const entryPS = ElementGeometry.fromGeometryPart(partId, Transform.createScaleAboutPoint(testOrigin, 2));
+    assert.exists(entryPS);
+    newEntries.push(entryPS!);
+    expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPS });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+
+  it("create GeometricElement3d with appearance flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(5, 10, 0));
+    pts.push(Point3d.create(10, 10, 0));
+    pts.push(Point3d.create(10, 15, 0));
+    pts.push(Point3d.create(5, 15, 0));
+    pts.push(pts[0].clone());
+
+    const entrySH = ElementGeometry.fromGeometryQuery(Loop.createPolygon(pts));
+    assert.exists(entrySH);
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+    const geomParams = new GeometryParams(seedElement.category);
+
+    // Shape with red outline...
+    geomParams.lineColor = ColorDef.red;
+    let added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with gradient fill...
+    geomParams.fillDisplay = FillDisplay.ByView;
+    geomParams.gradient = new Gradient.Symb();
+    geomParams.gradient.mode = Gradient.Mode.Linear;
+    geomParams.gradient.flags = Gradient.Flags.Outline;
+    geomParams.gradient.keys.push(new Gradient.KeyColor({ value: 0.0, color: ColorDef.blue.toJSON() }));
+    geomParams.gradient.keys.push(new Gradient.KeyColor({ value: 0.5, color: ColorDef.red.toJSON() }));
+    geomParams.gradient.angle = Angle.createDegrees(45);
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Fill, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with themaic gradient fill...
+    geomParams.gradient.mode = Gradient.Mode.Thematic;
+    geomParams.gradient.thematicSettings = ThematicGradientSettings.fromJSON({ mode: ThematicGradientMode.Stepped, stepCount: 5 });
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Fill, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with bg fill...
+    geomParams.gradient = undefined;
+    geomParams.backgroundFill = BackgroundFill.Outline;
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Fill, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with solid fill...
+    geomParams.backgroundFill = undefined;
+    geomParams.fillColor = ColorDef.blue;
+    geomParams.fillTransparency = 0.75;
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Fill, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with solid fill and render material
+    geomParams.materialId = "0x5";
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Fill });
+    expected.push({ opcode: ElementGeometryOpcode.Material, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Green construction line to test ignoring region specific appearance like fill...
+    geomParams.materialId = undefined;
+    geomParams.lineColor = ColorDef.green;
+    geomParams.weight = 2;
+    const modifiers = new LineStyle.Modifier({
+      scale: 2, dashScale: 0.5, gapScale: 0.2,
+      startWidth: 0.1, endWidth: 0.3,
+      distPhase: 0.25, fractPhase: 0.1, centerPhase: true,
+      segmentMode: false, physicalWidth: true,
+      normal: Vector3d.unitZ().toJSON(),
+      rotation: YawPitchRollAngles.createDegrees(45, 0, 0).toJSON(),
+    });
+    geomParams.styleInfo = new LineStyle.Info(Id64.invalid, modifiers);
+    geomParams.elmTransparency = 0.5;
+    geomParams.geometryClass = GeometryClass.Construction;
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    geomParams.fillDisplay = geomParams.fillColor = geomParams.fillTransparency = undefined; // Region specific appearance ignored for open elements...
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.LineStyleModifiers, geomParams: geomParams.clone() });
+
+    const entryLN = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[2]));
+    assert.exists(entryLN);
+    newEntries.push(entryLN!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+
+  it("create GeometricElement3d with pattern flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(5, 10, 0));
+    pts.push(Point3d.create(10, 10, 0));
+    pts.push(Point3d.create(10, 15, 0));
+    pts.push(Point3d.create(5, 15, 0));
+    pts.push(pts[0].clone());
+
+    const entrySH = ElementGeometry.fromGeometryQuery(Loop.createPolygon(pts));
+    assert.exists(entrySH);
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+    const geomParams = new GeometryParams(seedElement.category);
+
+    // Shape with hatch w/o overrides...
+    geomParams.pattern = new AreaPattern.Params();
+    geomParams.pattern.space1 = 0.05;
+    geomParams.pattern.angle1 = Angle.createDegrees(45.0);
+    let added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with cross hatch with color/weight override...
+    geomParams.pattern.space2 = 0.1;
+    geomParams.pattern.angle2 = Angle.createDegrees(-30.0);
+    geomParams.pattern.color = ColorDef.red;
+    geomParams.pattern.weight = 0;
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with area pattern w/o overrides...
+    const partId = createCirclePart(1.0, imodel);
+    assert.isTrue(Id64.isValidId64(partId));
+    geomParams.pattern = new AreaPattern.Params();
+    geomParams.pattern.symbolId = partId;
+    geomParams.pattern.space1 = geomParams.pattern.space2 = 0.05;
+    geomParams.pattern.angle1 = Angle.createDegrees(45.0);
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with area pattern with color/weight and other overrides...
+    geomParams.pattern.origin = Point3d.create(0.05, 0.05, 0.0);
+    geomParams.pattern.rotation = YawPitchRollAngles.createDegrees(45, 0, 0);
+    geomParams.pattern.space1 = geomParams.pattern.space2 = geomParams.pattern.angle1 = undefined;
+    geomParams.pattern.color = ColorDef.red;
+    geomParams.pattern.weight = 1;
+    geomParams.pattern.snappable = geomParams.pattern.invisibleBoundary = true;
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with hatch definition w/o overrides (zig-zag)...
+    const defLines: AreaPattern.HatchDefLine[] = [
+      { offset: Point2d.create(0.1, 0.1), dashes: [0.1, -0.1] },
+      { angle: Angle.createDegrees(90.0), through: Point2d.create(0.1, 0.0), offset: Point2d.create(0.1, 0.1), dashes: [0.1, -0.1] },
+    ];
+
+    geomParams.pattern = new AreaPattern.Params();
+    geomParams.pattern.defLines = defLines;
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    // Shape with hatch definition with color/weight overrides...
+    geomParams.pattern.color = ColorDef.red;
+    geomParams.pattern.weight = 1;
+    added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
+    assert.isTrue(added);
+    expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
+
+    newEntries.push(entrySH!);
+    expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+});
+
 describe("exportGraphics", () => {
   let imodel: SnapshotDb;
 
@@ -1076,14 +1814,7 @@ describe("exportGraphics", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
@@ -1209,14 +1940,7 @@ describe("Mass Properties", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
@@ -1244,14 +1968,7 @@ describe("Mass Properties", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(shape);
 
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    };
-
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();

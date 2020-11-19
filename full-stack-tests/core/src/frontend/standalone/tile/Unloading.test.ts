@@ -99,15 +99,19 @@ describe("Tile unloading", async () => {
     await testViewports("0x41", imodel, 1854, 931, async (vp) => {
       await vp.waitForAllTilesToRender();
 
-      const tree = getTileTree(vp);
-      (tree as IModelTileTree).debugMaxDepth = 1;
+      const tree = getTileTree(vp) as IModelTileTree;
+      tree.debugMaxDepth = 1;
       expect(tree.isDisposed).to.be.false;
 
       vp.invalidateScene();
       await vp.waitForAllTilesToRender();
 
       const expectLoadedChildren = () => {
-        const children = tree.rootTile.children!;
+        let children = tree.rootTile.children!;
+        expect(children).not.to.be.undefined;
+        expect(children.length).to.equal(1);
+
+        children = children[0].children!;
         expect(children).not.to.be.undefined;
         expect(children.length).to.equal(8);
         for (const child of children)
@@ -244,8 +248,8 @@ describe("Tile unloading", async () => {
     await testViewports("0x41", imodel, 1854, 931, async (vp1: TestViewport) => {
       // vp1 loads+renders all tiles, then sits idle.
       await vp1.waitForAllTilesToRender();
-      const tree = getTileTree(vp1);
-      (tree as IModelTileTree).debugMaxDepth = 1;
+      const tree = getTileTree(vp1) as IModelTileTree;
+      tree.debugMaxDepth = 1;
 
       // After changing max depth we must re-select tiles...
       vp1.invalidateScene();
@@ -257,7 +261,11 @@ describe("Tile unloading", async () => {
         await vp2.waitForAllTilesToRender();
 
         const expectLoadedChildren = () => {
-          const children = tree.rootTile.children!;
+          let children = tree.rootTile.children!;
+          expect(children).not.to.be.undefined;
+          expect(children.length).to.equal(1);
+
+          children = children[0].children!;
           expect(children).not.to.be.undefined;
           expect(children.length).to.equal(8);
           for (const child of children)

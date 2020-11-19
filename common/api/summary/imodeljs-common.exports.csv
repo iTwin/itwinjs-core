@@ -75,6 +75,7 @@ internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId):
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
+internal;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModelProps
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
@@ -91,6 +92,7 @@ alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
 alpha;defaultMobileAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
+alpha;DeletedElementGeometryChange
 alpha;DesktopAuthorizationClientConfiguration
 internal;DesktopAuthorizationClientMessages
 internal;class DevToolsRpcInterface 
@@ -128,7 +130,17 @@ beta;ElectronRpcRequest
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
+alpha;ElementGeometry
+alpha;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 alpha;ElementGeometryChange
+alpha;ElementGeometryDataEntry
+alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
+alpha;ElementGeometryInfo
+alpha;ElementGeometryOpcode
+alpha;ElementGeometryRequest
+alpha;ElementGeometryUpdate
+internal;ElementGraphicsRequestProps
+alpha;ElementIdsAndRangesProps
 public;ElementLoadProps
 public;ElementProps 
 beta;EntityMetaData 
@@ -137,6 +149,7 @@ public;EntityProps
 public;EntityQueryParams
 public;EnvironmentProps
 internal;Events
+alpha;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
 public;Feature
 public;FeatureAppearance 
@@ -244,6 +257,7 @@ public;IModelRpcProps
 public;class IModelTileRpcInterface 
 internal;IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId
 internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string
+internal;IModelTileTreeProps 
 public;IModelVersion
 internal;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
@@ -293,6 +307,9 @@ alpha;ModelClipGroup
 internal;ModelClipGroupProps
 alpha;ModelClipGroups
 alpha;ModelGeometryChanges
+alpha;ModelGeometryChanges
+alpha;ModelGeometryChangesProps
+public;ModelLoadProps
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 
@@ -370,6 +387,7 @@ internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number |
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
+public;RelationshipProps 
 beta;class RenderMaterial
 beta;RenderMaterial
 beta;RenderMaterialProps 
@@ -464,6 +482,7 @@ public;SolarLight
 public;SolarLightProps
 public;SolarShadowSettings
 public;SolarShadowSettingsProps
+public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;class StandaloneIModelRpcInterface 
@@ -518,6 +537,7 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 alpha;TileVersionInfo
+internal;TreeFlags
 beta;Tween
 beta;TweenCallback = (obj: any) => void
 beta;Tweens
