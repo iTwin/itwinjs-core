@@ -11,7 +11,7 @@ import {
   RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap, TileTreeReference,
 } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, System, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 import { testViewports } from "../../TestViewport";
@@ -138,7 +138,7 @@ describe("Disposal of System", () => {
   });
 
   it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
-    const system = System.create();
+    const system = IModelApp.renderSystem;
 
     // Create image buffer and image source
     const imageBuff = ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1);
