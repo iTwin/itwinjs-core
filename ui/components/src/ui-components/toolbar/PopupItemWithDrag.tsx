@@ -9,7 +9,7 @@
 import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActionButton, ConditionalStringValue, GroupButton, RelativePosition, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, RelativePosition, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper, useRefState } from "@bentley/ui-core";
 import { ToolbarButtonItemProps } from "./Item";
 import { PopupItemPopup, ToolbarPopupContext } from "./PopupItem";
@@ -114,16 +114,15 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
 
   // handle open and closing popup panel
   const onGroupButtonClick = React.useCallback(() => {
-    // istanbul ignore else
-    if (activeAction)
-      activeAction.execute();
+    // only execute action if not disabled
+    activeAction && !ConditionalBooleanValue.getValue(activeAction.isDisabled) && activeAction.execute();
   }, [activeAction]);
 
   const badge = activeAction ? BadgeUtilities.getComponentForBadgeType(activeAction.badgeType) : props.badge;
   const icon = activeAction ? IconHelper.getIconReactNode(activeAction.icon, activeAction.internalData) : props.icon;
   const title = activeAction ? ConditionalStringValue.getValue(activeAction.label) : props.title;
   const isActive = activeAction ? activeAction.isActive : props.isActive;
-  const isDisabled = activeAction ? activeAction.isDisabled : props.isDisabled;
+  const isDisabled = ConditionalBooleanValue.getValue(activeAction ? activeAction.isDisabled : props.isDisabled);
 
   const { handlePointerDown, handleButtonClick } = useDragInteraction(onGroupButtonClick, onOpenPanel);
 
@@ -131,7 +130,7 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
     "components-toolbar-button-item",
     "components-toolbar-expandable-button",
     isActive && "components-active",
-    isDisabled && "components-disabled",
+    isDisabled && "components-disabled-drag",
     props.className);
 
   const [targetRef, target] = useRefState<HTMLButtonElement>();
@@ -139,7 +138,7 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
     processPanelOpenClose(false);
   }, [processPanelOpenClose]);
   const { hasOverflow } = useToolItemEntryContext();
-  const expandsToDirection = hasOverflow ? overflowExpandsTo : expandsTo;
+  const expandsToDirection = hasOverflow ? /* istanbul ignore next */ overflowExpandsTo : expandsTo;
 
   return (
     <ToolbarPopupContext.Provider value={{
@@ -149,7 +148,6 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
     }>
       <button
         ref={targetRef}
-        disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onPointerDown={handlePointerDown}
         onClick={handleButtonClick}
         onKeyDown={props.onKeyDown}
@@ -181,6 +179,7 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
 
 /** @internal */
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition {
+  // istanbul ignore next
   switch (expandsTo) {
     case Direction.Bottom: {
       if (alignment === ToolbarPanelAlignment.End)
