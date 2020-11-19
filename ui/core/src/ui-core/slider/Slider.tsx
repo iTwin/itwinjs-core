@@ -270,7 +270,7 @@ interface TooltipTrackProps {
   getEventData: (e: Event) => object;
   showTooltip?: boolean;
   tooltipBelow?: boolean;
-  formatTooltip?: (value: number) => string;
+  formatTooltip: (value: number) => string;
   multipleValues?: boolean;
 }
 
@@ -304,8 +304,8 @@ function TooltipTrack(props: TooltipTrackProps) {
 
   let tooltipText = "";
   if (multipleValues) {
-    const sourceValue = formatTooltip ? formatTooltip(source.value) : /* istanbul ignore next */ source.value.toString();
-    const targetValue = formatTooltip ? formatTooltip(target.value) : /* istanbul ignore next */  target.value.toString();
+    const sourceValue = formatTooltip(source.value);
+    const targetValue = formatTooltip(target.value);
     tooltipText = `${sourceValue} : ${targetValue}`;
   }
 
