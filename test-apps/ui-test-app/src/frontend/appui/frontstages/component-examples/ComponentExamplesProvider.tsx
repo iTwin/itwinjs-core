@@ -629,7 +629,7 @@ export class ComponentExamplesProvider {
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
             minImage={<Icon iconSpec="icon-placeholder" />} maxImage={<Icon iconSpec="icon-placeholder" />} />),
         createComponentExample("Slider w/ tick marks", "Slider with showTicks and getTickCount props",
-          <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
+          <Slider min={0} max={5} values={[2.25]} step={.01} showTooltip showMinMax
             showTicks getTickCount={() => 10} />),
         createComponentExample("Slider w/ multiple values", "Slider with array of values",
           <Slider min={0} max={100} values={[30, 70]} step={5} mode={2} showTooltip showMinMax
