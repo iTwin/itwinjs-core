@@ -180,7 +180,7 @@ export class BridgeRunner {
     this.initProgressMeter();
 
     await iModelDbBuilder.acquire();
-    if (undefined === iModelDbBuilder.imodel || true !== iModelDbBuilder.imodel.isOpen) {
+    if (undefined === iModelDbBuilder.imodel || !iModelDbBuilder.imodel.isOpen) {
       throw new IModelError(IModelStatus.BadModel, "Failed to open imodel", Logger.logError, loggerCategory);
     }
 
