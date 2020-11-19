@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { ActionButton, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper } from "@bentley/ui-core";
 import { BackArrow } from "./groupPanel/BackArrow";
 import { GroupColumn } from "./groupPanel/Column";
@@ -119,7 +119,7 @@ export function PopupItemsPanel(props: PopupItemsPanelProps) {
         if (ToolbarItemUtilities.isGroupButton(panelItem)) {
           return (
             <GroupToolExpander
-              isDisabled={!!panelItem.isDisabled}
+              isDisabled={ConditionalBooleanValue.getValue(panelItem.isDisabled)}
               key={panelItem.id}
               label={label}
               icon={icon}
@@ -132,7 +132,7 @@ export function PopupItemsPanel(props: PopupItemsPanelProps) {
 
         return (
           <GroupTool
-            isDisabled={!!panelItem.isDisabled}
+            isDisabled={ConditionalBooleanValue.getValue(panelItem.isDisabled)}
             isActive={!!panelItem.isActive}
             key={panelItem.id}
             label={label}
