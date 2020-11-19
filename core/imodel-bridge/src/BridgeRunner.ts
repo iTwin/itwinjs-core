@@ -425,7 +425,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     // WIP: need detectSpatialDataTransformChanged check?
     await this._bridge.updateExistingData();
 
-    return this._saveAndPushChanges("Data changes", ChangesType.Regular);
+    let dataChangesDescription = "Data changes";
+    if (this._bridge.getDataChangesDescription)
+      dataChangesDescription = this._bridge.getDataChangesDescription();
+
+    return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
   }
 
   /** Pushes any pending transactions to the hub. */
