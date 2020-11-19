@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ByteStream } from "@bentley/bentleyjs-core";
+import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
   RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap, TileTreeReference,
 } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
+import { testViewports } from "../../TestViewport";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
@@ -137,9 +138,6 @@ describe("Disposal of System", () => {
   });
 
   it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
-    if (!IModelApp.hasRenderSystem) {
-      return;
-    }
     const system = IModelApp.renderSystem;
 
     // Create image buffer and image source
@@ -186,8 +184,6 @@ describe("Disposal of WebGL Resources", () => {
 
   // ###TODO: Update TileIO.data.ts for new tile format...
   it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
-    if (!IModelApp.hasRenderSystem)
-      return;
     const system = IModelApp.renderSystem;
 
     // Create two MeshGraphics from arguments
@@ -231,82 +227,45 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(tileGraphic));
   });
 
-  it("expect disposal of target to trigger disposal of only owned resources", async () => {
-    if (!IModelApp.hasRenderSystem)
-      return;
+  it("disposes of Target's framebuffer and attachments", async () => {
+    const views = await imodel1.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
+    expect(views.length).least(1);
 
-    const system = IModelApp.renderSystem;
+    await testViewports(views[0].id, imodel1, 10, 10, async (vp) => {
+      expect(vp instanceof ScreenViewport || vp instanceof OffScreenViewport).to.be.true;
+      expect(vp.isDisposed).to.be.false;
 
-    // Let's grab an actual view and set up a target that is holding prepared decorations
-    const viewDefinitions = await imodel1.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
-    assert.isTrue(viewDefinitions.length > 0);
-    const viewState = await imodel1.views.load(viewDefinitions[0].id);
-    assert.exists(viewState);
+      const target = (vp.target as any);
+      let fbo = target._fbo as FrameBuffer;
+      expect(fbo).to.be.undefined;
+      let blitGeom = target._blitGeom;
+      expect(blitGeom).to.be.undefined;
 
-    const viewDiv = document.createElement("div");
-    viewDiv.style.width = viewDiv.style.height = "1000px";
-    document.body.appendChild(viewDiv);
+      vp.renderFrame();
+      fbo = target._fbo as FrameBuffer;
+      expect(fbo).not.to.be.undefined;
+      expect(fbo.isDisposed).to.be.false;
+      const tx = fbo.getColor(0)!;
+      expect(tx).not.to.be.undefined;
+      expect(tx.isDisposed).to.be.false;
 
-    const viewport = ScreenViewport.create(viewDiv, viewState);
-    viewport.changeView(viewState);
-    viewport.viewFlags.grid = true;   // force a decoration to be turned on
-    viewport.renderFrame(); // force a frame to be rendered
+      blitGeom = target._blitGeom as IDisposable;
+      expect(blitGeom === undefined).to.equal(vp instanceof OffScreenViewport);
+      if (blitGeom)
+        expect(blitGeom.isDisposed).to.be.false;
 
-    const target = viewport.target as OnScreenTarget;
-    const exposedTarget = new ExposedTarget(target);
+      vp.dispose();
+      expect(vp.isDisposed).to.be.true;
+      expect(target.isDisposed).to.be.true;
 
-    // Create a graphic and a texture
-    const textureParams = new RenderTexture.Params("-192837465");
-    let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
-    const graphicBuilder = target.createGraphicBuilder(GraphicType.Scene, viewport);
-    graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
-    const graphic = graphicBuilder.finish();
-
-    // Pre-disposal
-    assert.isFalse(isDisposed(target));
-    assert.isFalse(isDisposed(texture));
-    assert.isFalse(isDisposed(graphic));
-
-    system.dispose();
-    graphic.dispose();
-
-    // Post-disposal of non-related items
-    assert.isFalse(isDisposed(target));
-    assert.isTrue(isDisposed(texture));
-    assert.isTrue(isDisposed(graphic));
-
-    texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
-    assert.isFalse(isDisposed(texture));
-
-    // Get references to target members before they are modified due to disposing
-    const batches = exposedTarget.batchesClone;
-    const dynamics = exposedTarget.dynamics;
-    const worldDecorations = exposedTarget.worldDecorations;
-    const clipMask = exposedTarget.clipMask;
-    const environmentMap = exposedTarget.environmentMap;
-    const diffuseMap = exposedTarget.diffuseMap;
-    target.dispose();
-
-    // Post-disposal of target (not owned resource checks)
-    if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))
-      assert.isFalse(isDisposed(target));
-    else
-      assert.isTrue(isDisposed(target));
-    assert.isFalse(isDisposed(texture));
-    if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))
-      assert.isFalse(isDisposed(batches));  // we did not call getOverrides on any graphics
-    else
-      assert.isTrue(isDisposed(batches));
-
-    // Post-disposal of target (only owned resource checks)
-    assert.isTrue(isDisposed(target, ["_batches", "_scene"]));   // This test claims _batches and _scene are the only disposable target members that are NOT fully owned
-    assert.isTrue(isDisposed(exposedTarget.decorations));
-    assert.isTrue(isDisposed(target.compositor));
-    assert.isTrue(isDisposed(dynamics));
-    assert.isTrue(isDisposed(worldDecorations));
-    assert.isTrue(isDisposed(clipMask));
-    assert.isTrue(isDisposed(environmentMap));
-    assert.isTrue(isDisposed(diffuseMap));
+      expect(target._fbo).to.be.undefined;
+      expect(fbo.isDisposed).to.be.true;
+      expect(tx.isDisposed).to.be.true;
+      if (blitGeom) {
+        expect(target._blitGeom).to.be.undefined;
+        expect(blitGeom.isDisposed).to.be.true;
+      }
+    });
   });
 
   class Classifier extends RenderPlanarClassifier {
@@ -430,5 +389,82 @@ describe("Disposal of WebGL Resources", () => {
       () => new Drape(),
       (target, id) => target.target.getTextureDrape(id) as Drape,
       (target, newMap) => target.changeTextureDrapes(newMap));
+  });
+
+  // NB: This rather wacky test disposes of IModelApp.renderSystem. Therefore it must be run last of all of these tests, or subsequent tests expecting
+  // IModelApp.renderSystem to still be alive will fail.
+  it("expect disposal of target to trigger disposal of only owned resources", async () => {
+    const system = IModelApp.renderSystem;
+
+    // Let's grab an actual view and set up a target that is holding prepared decorations
+    const viewDefinitions = await imodel1.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
+    assert.isTrue(viewDefinitions.length > 0);
+    const viewState = await imodel1.views.load(viewDefinitions[0].id);
+    assert.exists(viewState);
+
+    const viewDiv = document.createElement("div");
+    viewDiv.style.width = viewDiv.style.height = "1000px";
+    document.body.appendChild(viewDiv);
+
+    const viewport = ScreenViewport.create(viewDiv, viewState);
+    viewport.changeView(viewState);
+    viewport.viewFlags.grid = true;   // force a decoration to be turned on
+    viewport.renderFrame(); // force a frame to be rendered
+
+    const target = viewport.target as OnScreenTarget;
+    const exposedTarget = new ExposedTarget(target);
+
+    // Create a graphic and a texture
+    const textureParams = new RenderTexture.Params("-192837465");
+    let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
+    const graphicBuilder = target.createGraphicBuilder(GraphicType.Scene, viewport);
+    graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
+    const graphic = graphicBuilder.finish();
+
+    // Pre-disposal
+    assert.isFalse(isDisposed(target));
+    assert.isFalse(isDisposed(texture));
+    assert.isFalse(isDisposed(graphic));
+
+    system.dispose();
+    graphic.dispose();
+
+    // Post-disposal of non-related items
+    assert.isFalse(isDisposed(target));
+    assert.isTrue(isDisposed(texture));
+    assert.isTrue(isDisposed(graphic));
+
+    texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
+    assert.isFalse(isDisposed(texture));
+
+    // Get references to target members before they are modified due to disposing
+    const batches = exposedTarget.batchesClone;
+    const dynamics = exposedTarget.dynamics;
+    const worldDecorations = exposedTarget.worldDecorations;
+    const clipMask = exposedTarget.clipMask;
+    const environmentMap = exposedTarget.environmentMap;
+    const diffuseMap = exposedTarget.diffuseMap;
+    target.dispose();
+
+    // Post-disposal of target (not owned resource checks)
+    if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))
+      assert.isFalse(isDisposed(target));
+    else
+      assert.isTrue(isDisposed(target));
+    assert.isFalse(isDisposed(texture));
+    if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))
+      assert.isFalse(isDisposed(batches));  // we did not call getOverrides on any graphics
+    else
+      assert.isTrue(isDisposed(batches));
+
+    // Post-disposal of target (only owned resource checks)
+    assert.isTrue(isDisposed(target, ["_batches", "_scene"]));   // This test claims _batches and _scene are the only disposable target members that are NOT fully owned
+    assert.isTrue(isDisposed(exposedTarget.decorations));
+    assert.isTrue(isDisposed(target.compositor));
+    assert.isTrue(isDisposed(dynamics));
+    assert.isTrue(isDisposed(worldDecorations));
+    assert.isTrue(isDisposed(clipMask));
+    assert.isTrue(isDisposed(environmentMap));
+    assert.isTrue(isDisposed(diffuseMap));
   });
 });
