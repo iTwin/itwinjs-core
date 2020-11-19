@@ -89,4 +89,7 @@ export abstract class IModelBridge {
   public abstract getApplicationId(): string;
   public abstract getApplicationVersion(): string;
   public abstract getBridgeName(): string;
+
+  /** Returns the description for data changeset. If method is undefined, "Data changes" is used for the description. */
+  public getDataChangesDescription?(): string;
 }
