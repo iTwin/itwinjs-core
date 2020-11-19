@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Wed, 18 Nov 2020 16:01:50 GMT and should not be manually modified.
+This log was last generated on Thu, 19 Nov 2020 17:03:42 GMT and should not be manually modified.
+
+## 2.9.1
+Thu, 19 Nov 2020 17:03:42 GMT
+
+### Updates
+
+- Added AutoSuggest props - renderInputComponent, renderSuggestionsContainer, onSuggestionsClearRequested
 
 ## 2.9.0
 Wed, 18 Nov 2020 16:01:50 GMT
