@@ -24,6 +24,9 @@ export enum RecycleOption {
  */
 @ECJsonTypeMap.classToJson("wsg", "ProjectShare.Folder", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ProjectShareFolder extends WsgInstance {
+  @ECJsonTypeMap.propertyToJson("wsg", "InstanceId")
+  public instanceId?: string;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
