@@ -325,8 +325,12 @@ class RealityModelTileLoader extends RealityTileLoader {
     if (undefined === subTree)
       return;
 
-    if (undefined !== subTree.content && undefined !== subTree.content.url)
-      subTree.content.url = prefix + subTree.content.url;
+    if (undefined !== subTree.content) {
+      if (undefined !== subTree.content.url)
+        subTree.content.url = prefix + subTree.content.url;
+      else if (undefined !== subTree.content.uri)
+        subTree.content.uri = prefix + subTree.content.uri;
+    }
 
     if (undefined !== subTree.children)
       for (const child of subTree.children)
