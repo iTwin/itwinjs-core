@@ -42,10 +42,10 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       const severity = advisory.severity.toUpperCase();
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
-      // For now, we'll only treat HIGH and CRITICAL vulnerabilities as errors in CI builds.
+      // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
       if (severity === "HIGH" || severity === "CRITICAL")
         logBuildError(message);
-      else
+      else if (severity === "MODERATE") // Only warn on Moderate severity items
         logBuildWarning(message);
     }
   }
