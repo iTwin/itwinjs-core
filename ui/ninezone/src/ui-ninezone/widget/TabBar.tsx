@@ -7,6 +7,7 @@
  */
 
 import "./TabBar.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { Point, Timer } from "@bentley/ui-core";
 import { assert } from "../base/assert";
@@ -20,7 +21,12 @@ import { WidgetTabs } from "./Tabs";
 import { WidgetIdContext } from "./Widget";
 
 /** @internal */
-export const WidgetTabBar = React.memo(function WidgetTabBar() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export interface WidgetTabBarProps {
+  separator?: boolean;
+}
+
+/** @internal */
+export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBarProps) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const dispatch = React.useContext(NineZoneDispatchContext);
   const id = React.useContext(WidgetIdContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
@@ -67,9 +73,13 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // eslint-disab
     });
   }, [dispatch, floatingWidgetId]);
   const ref = useDrag(handleDragStart, undefined, undefined, handleTouchStart);
+  const className = classnames(
+    "nz-widget-tabBar",
+    props.separator && "nz-separator",
+  );
   return (
     <div
-      className="nz-widget-tabBar"
+      className={className}
     >
       <div
         className="nz-handle"

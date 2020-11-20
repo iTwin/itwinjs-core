@@ -717,6 +717,10 @@ export interface ChangedElements {
     // (undocumented)
     opcodes: number[];
     // (undocumented)
+    parentClassIds?: Id64String[];
+    // (undocumented)
+    parentIds?: Id64String[];
+    // (undocumented)
     properties?: Id64String[][];
     // (undocumented)
     type: number[];
@@ -1456,8 +1460,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1048576,
-    Major = 16,
+    Combined = 1114112,
+    Major = 17,
     Minor = 0
 }
 
@@ -2033,6 +2037,19 @@ export interface ElementAspectProps extends EntityProps {
 export namespace ElementGeometry {
     // (undocumented)
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
+    export class Builder {
+        appendBRepData(brep: BRepEntity.DataProps): boolean;
+        appendGeometryParamsChange(geomParams: GeometryParams): boolean;
+        appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean;
+        appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
+        appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
+        appendGeometryQuery(geometry: GeometryQuery): boolean;
+        appendGeometryRanges(): boolean;
+        appendImageGraphic(image: ImageGraphic): boolean;
+        appendTextString(text: TextString): boolean;
+        // (undocumented)
+        readonly entries: ElementGeometryDataEntry[];
+    }
     // (undocumented)
     export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
     // (undocumented)
@@ -2051,6 +2068,40 @@ export namespace ElementGeometry {
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
     // (undocumented)
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    export class Iterator implements IterableIterator<IteratorEntry> {
+        // (undocumented)
+        [Symbol.iterator](): IterableIterator<IteratorEntry>;
+        constructor(info: ElementGeometryInfo, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
+        readonly brepsPresent?: boolean;
+        readonly entryArray: ElementGeometryDataEntry[];
+        next(): IteratorResult<IteratorEntry>;
+        readonly placement: Placement3d;
+        readonly viewIndependent?: boolean;
+    }
+    export interface IteratorData {
+        readonly geomParams: GeometryParams;
+        readonly localRange?: Range3d;
+        readonly localToWorld?: Transform;
+        readonly value: ElementGeometryDataEntry;
+    }
+    // (undocumented)
+    export class IteratorEntry implements IteratorData {
+        constructor(geomParams: GeometryParams, localToWorld: Transform);
+        // (undocumented)
+        readonly geomParams: GeometryParams;
+        // (undocumented)
+        localRange?: Range3d;
+        // (undocumented)
+        readonly localToWorld?: Transform;
+        toBRepData(wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+        toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined;
+        toGeometryQuery(): GeometryQuery | undefined;
+        toImageGraphic(): ImageGraphic | undefined;
+        toTextString(): TextString | undefined;
+        // (undocumented)
+        get value(): ElementGeometryDataEntry;
+        set value(value: ElementGeometryDataEntry);
+        }
     // (undocumented)
     export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
@@ -4408,6 +4459,14 @@ export interface ModelGeometryChangesProps {
 }
 
 // @public
+export interface ModelLoadProps {
+    // (undocumented)
+    code?: CodeProps;
+    // (undocumented)
+    id?: Id64String;
+}
+
+// @public
 export interface ModelProps extends EntityProps {
     // (undocumented)
     isPrivate?: boolean;
@@ -5376,6 +5435,10 @@ export class RelatedElement implements RelatedElementProps {
 export interface RelatedElementProps {
     id: Id64String;
     relClassName?: string;
+}
+
+// @public
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 // @beta
@@ -6551,6 +6614,14 @@ export interface SolarShadowSettingsProps {
     // @internal (undocumented)
     bias?: number;
     color?: ColorDefProps;
+}
+
+// @public
+export interface SourceAndTarget {
+    // (undocumented)
+    sourceId: Id64String;
+    // (undocumented)
+    targetId: Id64String;
 }
 
 // @beta

@@ -11,10 +11,10 @@ exports[`WidgetPanel should render captured 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"
@@ -104,10 +104,10 @@ exports[`WidgetPanel should render collapsed 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"
@@ -198,10 +198,10 @@ exports[`WidgetPanel should render horizontal 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill nz-border-bottom nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"
@@ -290,10 +290,10 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-bottom nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"
@@ -345,10 +345,10 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-left"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"
@@ -430,10 +430,10 @@ exports[`WidgetPanel should render spanned 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill nz-border-bottom nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"
@@ -524,10 +524,10 @@ exports[`WidgetPanel should render vertical 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"
@@ -616,10 +616,10 @@ exports[`WidgetPanel should render with span bottom 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"
@@ -708,10 +708,10 @@ exports[`WidgetPanel should render with top spanned 1`] = `
       class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
     />
     <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill"
+      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
     >
       <div
-        class="nz-widget-tabBar"
+        class="nz-widget-tabBar nz-separator"
       >
         <div
           class="nz-handle"

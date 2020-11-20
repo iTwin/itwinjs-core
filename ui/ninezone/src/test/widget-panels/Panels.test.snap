@@ -45,10 +45,10 @@ exports[`WidgetPanels should render widget content 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget nz-fill"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
-          class="nz-widget-tabBar"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
             class="nz-handle"

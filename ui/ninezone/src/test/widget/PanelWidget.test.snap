@@ -2,10 +2,10 @@
 
 exports[`PanelWidget should render 1`] = `
 <div
-  class="nz-widget-widget nz-widget-panelWidget nz-fill"
+  class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
 >
   <div
-    class="nz-widget-tabBar"
+    class="nz-widget-tabBar nz-separator"
   >
     <div
       class="nz-handle"
@@ -57,11 +57,11 @@ exports[`PanelWidget should render 1`] = `
 
 exports[`PanelWidget should render horizontal with fit-content 1`] = `
 <div
-  class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fit"
+  class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fit nz-border-bottom nz-border-left nz-border-right"
   style="max-width: 50%;"
 >
   <div
-    class="nz-widget-tabBar"
+    class="nz-widget-tabBar nz-separator"
   >
     <div
       class="nz-handle"
@@ -106,7 +106,7 @@ exports[`PanelWidget should render horizontal with fit-content 1`] = `
 
 exports[`PanelWidget should render minimized 1`] = `
 <div
-  class="nz-widget-widget nz-widget-panelWidget nz-minimized"
+  class="nz-widget-widget nz-widget-panelWidget nz-minimized nz-border-left nz-border-right"
 >
   <div
     class="nz-widget-tabBar"
@@ -161,11 +161,11 @@ exports[`PanelWidget should render minimized 1`] = `
 
 exports[`PanelWidget should render with fit-content 1`] = `
 <div
-  class="nz-widget-widget nz-widget-panelWidget nz-fit"
+  class="nz-widget-widget nz-widget-panelWidget nz-fit nz-border-bottom nz-border-left nz-border-right"
   style="max-height: 50%;"
 >
   <div
-    class="nz-widget-tabBar"
+    class="nz-widget-tabBar nz-separator"
   >
     <div
       class="nz-handle"

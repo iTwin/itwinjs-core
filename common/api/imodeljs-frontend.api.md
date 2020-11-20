@@ -5354,7 +5354,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected _totalDistanceMarker?: MeasureLabel;
     // (undocumented)
-    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent): Promise<void>;
+    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent, reopenToolTip: boolean): Promise<void>;
     // (undocumented)
     protected updateTotals(): Promise<void>;
 }
@@ -5937,7 +5937,7 @@ export class OffScreenTarget extends Target {
     // (undocumented)
     protected _assignDC(): boolean;
     // (undocumented)
-    protected _beginPaint(): void;
+    protected _beginPaint(fbo: FrameBuffer): void;
     // (undocumented)
     protected _endPaint(): void;
     // (undocumented)
@@ -5989,7 +5989,7 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     protected _assignDC(): boolean;
     // (undocumented)
-    protected _beginPaint(): void;
+    protected _beginPaint(fbo: FrameBuffer): void;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -6403,7 +6403,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected _imperialFormatSpecsByType: Map<QuantityType, FormatterSpec>;
     // (undocumented)
     protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
-    loadFormatAndParsingMaps(useImperial: boolean): Promise<void>;
+    loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
     protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
@@ -8481,6 +8481,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     addBatch(batch: Batch): void;
     // (undocumented)
+    protected allocateFbo(): FrameBuffer | undefined;
+    // (undocumented)
     ambientOcclusionSettings: AmbientOcclusion.Settings;
     // (undocumented)
     get analysisFraction(): number;
@@ -8498,7 +8500,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _assignDC(): boolean;
     // (undocumented)
-    protected abstract _beginPaint(): void;
+    protected abstract _beginPaint(fbo: FrameBuffer): void;
     // (undocumented)
     beginPerfMetricFrame(sceneMilSecElapsed?: number, readPixels?: boolean): void;
     // (undocumented)
@@ -8558,8 +8560,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get currentViewFlags(): ViewFlags;
     // (undocumented)
-    protected _dcAssigned: boolean;
-    // (undocumented)
     get debugControl(): RenderTargetDebugControl;
     // (undocumented)
     readonly decorationsState: BranchState;
@@ -8571,6 +8571,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     displayRealityTileRanges: boolean;
     // (undocumented)
     dispose(): void;
+    // (undocumented)
+    protected disposeFbo(): void;
     // (undocumented)
     drawForReadPixels: boolean;
     // (undocumented)
@@ -8593,8 +8595,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     endPerfMetricFrame(readPixels?: boolean): void;
     // (undocumented)
     endPerfMetricRecord(readPixels?: boolean): void;
-    // (undocumented)
-    protected _fbo?: FrameBuffer;
     // (undocumented)
     get flashed(): Id64.Uint32Pair | undefined;
     // (undocumented)

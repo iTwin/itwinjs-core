@@ -81,6 +81,10 @@ describe("Slider", () => {
     render(<Slider min={0} max={50} values={[0, 25]} showTooltip tooltipBelow />);
   });
 
+  it("should render with decimal step", () => {
+    render(<Slider min={0} max={5} values={[2.5]} step={0.25} showTooltip />);
+  });
+
   it("should call onChange", async () => {
     const spyOnChange = sinon.spy();
     const component = render(<Slider min={0} max={100} values={[50]} onChange={spyOnChange} />);

@@ -25,6 +25,11 @@ describe("DisplayValuePropertyDataFilterer", () => {
       expect(filterer.filterText).to.be.equal("");
     });
 
+    it(`Should return string which was set in the constructor`, () => {
+      const filterer = new DisplayValuePropertyDataFilterer("test");
+      expect(filterer.filterText).to.be.equal("test");
+    });
+
     it(`Should return filtering as disabled`, () => {
       const filterer = new DisplayValuePropertyDataFilterer();
       expect(filterer.isActive).to.be.false;
@@ -113,7 +118,7 @@ describe("DisplayValuePropertyDataFilterer", () => {
 
       filterer.filterText = "someFilter";
       const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true });
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { value: 1 } });
     });
 
     it("Should match when given fully matching property record", async () => {
@@ -122,7 +127,16 @@ describe("DisplayValuePropertyDataFilterer", () => {
 
       filterer.filterText = "displaySomefilteredValue";
       const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true });
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { value: 1 } });
+    });
+
+    it("Should match several times when given property record with repeated filter pattern", async () => {
+      const filterer = new DisplayValuePropertyDataFilterer();
+      const record = TestUtils.createPrimitiveStringProperty("Property", "Value", "DisplaySomeFilteredName");
+
+      filterer.filterText = "mE";
+      const matchResult = await filterer.matchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { value: 2 } });
     });
   });
 

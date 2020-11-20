@@ -18,6 +18,7 @@
   bottom: 10px;
   left: 40px;
   right: 40px;
+  pointer-events: none;
   @include uicore-z-index(view-overlay);
 }
 
@@ -35,6 +36,7 @@ $widget-transparency: 0.90;
   border-radius: $uicore-border-radius;
   // overflow: hidden;
   opacity: $widget-transparency;
+  pointer-events: auto;
 
   &:hover {
     opacity: 1.00;
