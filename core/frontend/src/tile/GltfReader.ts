@@ -11,7 +11,6 @@ import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector3d } from 
 import {
   BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfBufferData, GltfBufferView, GltfDataType, GltfHeader, GltfMeshMode,
   ImageSource, ImageSourceFormat, LinePixels, MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams3d, QPoint3d, QPoint3dList,
-  RenderMaterial,
   RenderTexture, TextureMapping, TileReadStatus,
 } from "@bentley/imodeljs-common";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "../ImageUtil";
@@ -737,14 +736,14 @@ export abstract class GltfReader {
     const indices = new Array<number>();
     if (disjoint) {
       for (let i = 0; i < data.count;)
-        indices.push(data.buffer[i++])
+        indices.push(data.buffer[i++]);
     } else {
       for (let i = 0; i < data.count;) {
         const index0 = data.buffer[i++];
         const index1 = data.buffer[i++];
         if (0 === indices.length || index0 !== indices[indices.length - 1]) {
           if (indices.length !== 0) {
-            polylines.push(new MeshPolyline(indices))
+            polylines.push(new MeshPolyline(indices));
             indices.length = 0;
           }
           indices.push(index0);
@@ -753,7 +752,7 @@ export abstract class GltfReader {
       }
     }
     if (indices.length !== 0)
-      polylines.push(new MeshPolyline(indices))
+      polylines.push(new MeshPolyline(indices));
 
     return true;
   }
