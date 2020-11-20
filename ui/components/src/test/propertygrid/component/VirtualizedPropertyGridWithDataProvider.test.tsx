@@ -1038,7 +1038,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       label: "Parent",
       expand: true,
     };
-    const highlightedRecordProps = {
+    const highlightedPropertyProps = {
       searchText: "Test",
       activeMatch: {
         propertyName: "testTest",
@@ -1048,8 +1048,8 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           value: 0,
         },
       },
-    };
-    const highlightedRecordProps2 = {
+    }
+    const highlightedPropertyProps2 = {
       searchText: "test",
       activeMatch: {
         propertyName: "test2",
@@ -1059,9 +1059,9 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           value: 0,
         },
       },
-    };
+    }
 
-    it("scrolls to highlighted item when highlightedRecordProps are updated", async () => {
+    it("scrolls to highlighted item when highlightedPropertyProps are updated", async () => {
       const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
       providerMock.setup(async (x) => x.getData()).returns(async () => ({
         label: PropertyRecord.fromString(""), categories: [parentCategory],
@@ -1079,7 +1079,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         <VirtualizedPropertyGridWithDataProvider
           orientation={Orientation.Horizontal}
           dataProvider={providerMock.object}
-          highlightedRecordProps={highlightedRecordProps}
+          highlightedPropertyProps={highlightedPropertyProps}
         />
       );
       await waitForElement(() => getByTitle(container, "test9"), { container });
@@ -1087,8 +1087,8 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       rerender(<VirtualizedPropertyGridWithDataProvider
         orientation={Orientation.Horizontal}
         dataProvider={providerMock.object}
-        highlightedRecordProps={highlightedRecordProps2}
-      />);
+        highlightedPropertyProps={highlightedPropertyProps2}
+      />)
       await waitForElement(() => getByTitle(container, "test9"), { container });
 
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(3);
@@ -1112,7 +1112,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         <VirtualizedPropertyGridWithDataProvider
           orientation={Orientation.Horizontal}
           dataProvider={providerMock.object}
-          highlightedRecordProps={highlightedRecordProps}
+          highlightedPropertyProps={highlightedPropertyProps}
         />
       );
       await waitForElement(() => getByTitle(container, "test9"), { container });
@@ -1120,7 +1120,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       rerender(<VirtualizedPropertyGridWithDataProvider
         orientation={Orientation.Horizontal}
         dataProvider={providerMock.object}
-      />);
+      />)
       await waitForElement(() => getByTitle(container, "test9"), { container });
 
       expect(scrollToItemFake).to.not.have.been.called;
@@ -1139,7 +1139,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         <VirtualizedPropertyGridWithDataProvider
           orientation={Orientation.Horizontal}
           dataProvider={providerMock.object}
-          highlightedRecordProps={highlightedRecordProps}
+          highlightedPropertyProps={highlightedPropertyProps}
         />
       );
       await waitForElement(() => container.querySelector('[class="components-property-grid"]'));
@@ -1147,14 +1147,14 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       rerender(<VirtualizedPropertyGridWithDataProvider
         orientation={Orientation.Horizontal}
         dataProvider={providerMock.object}
-      />);
+      />)
       await waitForElement(() => container.querySelector('[class="components-property-grid"]'));
 
       expect(scrollToItemFake).to.not.have.been.called;
     });
 
     it("doesn't scroll to item if there is no matching item in the grid", async () => {
-      const highlightedRecordProps3 = {
+      const highlightedPropertyProps3 = {
         searchText: "test",
         activeMatch: {
           propertyName: "falseTest2",
@@ -1164,7 +1164,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
             value: 0,
           },
         },
-      };
+      }
 
       const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
       providerMock.setup(async (x) => x.getData()).returns(async () => ({
@@ -1183,7 +1183,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         <VirtualizedPropertyGridWithDataProvider
           orientation={Orientation.Horizontal}
           dataProvider={providerMock.object}
-          highlightedRecordProps={highlightedRecordProps}
+          highlightedPropertyProps={highlightedPropertyProps}
         />
       );
       await waitForElement(() => getByTitle(container, "test9"), { container });
@@ -1191,8 +1191,8 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       rerender(<VirtualizedPropertyGridWithDataProvider
         orientation={Orientation.Horizontal}
         dataProvider={providerMock.object}
-        highlightedRecordProps={highlightedRecordProps3}
-      />);
+        highlightedPropertyProps={highlightedPropertyProps3}
+      />)
       await waitForElement(() => getByTitle(container, "test9"), { container });
 
       expect(scrollToItemFake).to.not.have.been.called;

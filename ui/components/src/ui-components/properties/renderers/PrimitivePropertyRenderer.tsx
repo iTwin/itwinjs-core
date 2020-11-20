@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightedRecordProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
+import { HighlightedPropertyProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
 import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
 import { SharedRendererProps } from "./PropertyRenderer";
@@ -28,7 +28,7 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
   /** Properties used for record highlighting
    * @beta
   */
-  highlightProps?: HighlightedRecordProps;
+  highlightedPropertyProps?: HighlightedPropertyProps;
 }
 
 /** React Component that renders primitive properties
@@ -41,13 +41,13 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
 
   /** @internal */
   public render() {
-    const { children, indentation, highlightProps, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { children, indentation, highlightedPropertyProps, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const displayLabel = this.props.propertyRecord.property.displayLabel;
     const offset = CommonPropertyRenderer.getLabelOffset(indentation, props.orientation, props.width, props.columnRatio, props.columnInfo?.minLabelWidth);
 
-    const activeMatchIndex = this.props.propertyRecord.property.name === highlightProps?.activeMatch?.propertyName? highlightProps.activeMatch.matchIndex : undefined;
-    const label = highlightProps ?
-      (HighlightedText({ text: displayLabel, searchText: highlightProps.searchText, activeMatchIndex })) :
+    const activeMatchIndex = this.props.propertyRecord.property.name === highlightedPropertyProps?.activeMatch?.propertyName? highlightedPropertyProps.activeMatch.matchIndex : undefined;
+    const label = highlightedPropertyProps ?
+      (HighlightedText({ text: displayLabel, searchText: highlightedPropertyProps.searchText, activeMatchIndex })) :
       displayLabel;
 
     return (

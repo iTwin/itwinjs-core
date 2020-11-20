@@ -6,15 +6,16 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@bentley/ui-abstract";
+
 import { countMatchesInString } from "../../../common/countMatchesInString";
+import { PropertyCategory } from "../../PropertyDataProvider";
 import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
 
 /**
- * PropertyData filter which matches on any record type label and includes descendant nodes on match
+ * PropertyData filterer which matches on PropertyCategory's label.
  * @alpha
  */
-export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
+export class CategoryPropertyDataFilterer extends PropertyDataFiltererBase {
   private _filterText: string = "";
 
   public constructor(filterText: string = "") {
@@ -33,12 +34,17 @@ export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
 
   public get isActive() { return this.filterText !== ""; }
 
-  public async recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
+  public async recordMatchesFilter(): Promise<PropertyDataFilterResult> {
+    return { matchesFilter: !this.isActive };
+  }
+
+  public async categoryMatchesFilter(node: PropertyCategory): Promise<PropertyDataFilterResult> {
     if (!this.isActive)
       return { matchesFilter: true };
 
-    const displayLabel = node.property.displayLabel.toLowerCase();
+    const displayLabel = node.label?.toLowerCase() ?? "";
     const matchesCount = countMatchesInString(displayLabel, this.filterText);
+
     if (matchesCount === 0)
       return { matchesFilter: false };
 
@@ -48,9 +54,5 @@ export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
       shouldForceIncludeDescendants: true,
       matchesCount: { label: matchesCount },
     };
-  }
-
-  public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {
-    return { matchesFilter: !this.isActive };
   }
 }

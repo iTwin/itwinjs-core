@@ -13,9 +13,9 @@ import {
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
-  ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteringInput,
-  FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData, PropertyGridContextMenuArgs,
-  PropertyRecordMatchInfo, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  ActionButtonRendererProps, CategoryPropertyDataFilterer, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer,
+  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData,
+  PropertyGridContextMenuArgs, PropertyMatchInfo, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
 
@@ -32,7 +32,7 @@ export function PropertiesWidget(props: Props) {
 
   const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
   const [filteringProvDataChanged, setFilteringProvDataChanged] = React.useState({});
-  const [activeMatch, setActiveMatch] = React.useState<PropertyRecordMatchInfo>();
+  const [activeMatch, setActiveMatch] = React.useState<PropertyMatchInfo>();
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
 
   const renderFavoritesActionButton = React.useCallback((buttonProps: ActionButtonRendererProps) => (<FavoritePropertyActionButton {...buttonProps} dataProvider={dataProvider} />), [dataProvider]);
@@ -60,9 +60,11 @@ export function PropertiesWidget(props: Props) {
   const filteringDataProvider = useDisposable(React.useCallback(() => {
     const valueFilterer = new DisplayValuePropertyDataFilterer(filterText);
     const labelFilterer = new LabelPropertyDataFilterer(filterText);
-    const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: isFavoritesFilterActive });
+    const categoryFilterer = new CategoryPropertyDataFilterer(filterText);
+    const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: isFavoritesFilterActive })
 
-    const textFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
+    const recordFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
+    const textFilterer = new CompositePropertyDataFilterer(recordFilterer, CompositeFilterType.Or, categoryFilterer);
     const favoriteTextFilterer = new CompositePropertyDataFilterer(textFilterer, CompositeFilterType.And, favoriteFilterer);
     const filteringDataProv = new FilteringPropertyDataProvider(dataProvider, favoriteTextFilterer);
     filteringDataProv.onDataChanged.addListener(() => {
@@ -82,20 +84,20 @@ export function PropertiesWidget(props: Props) {
     return filteringResult?.matchesCount !== undefined ? {
       onSelectedChanged: (index: React.SetStateAction<number>) => setActiveMatchIndex(index),
       resultCount: filteringResult.matchesCount,
-    } : undefined;
+    } : undefined
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteringResult, filteringProvDataChanged]);
+  }, [filteringResult, filteringProvDataChanged])
 
   React.useEffect(() => {
     if (filteringResult?.getMatchByIndex)
       setActiveMatch(filteringResult.getMatchByIndex(activeMatchIndex));
-  }, [activeMatchIndex, filteringDataProvider, filteringResult]);
+  }, [activeMatchIndex, filteringDataProvider, filteringResult])
 
   const setFilter = React.useCallback((filter) => {
     if (filter !== filterText) {
       setFilterText(filter);
     }
-  }, [filterText]);
+  }, [filterText])
 
   let content;
   if (isOverLimit) {
@@ -108,7 +110,7 @@ export function PropertiesWidget(props: Props) {
       actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
       orientation={Orientation.Horizontal}
       horizontalOrientationMinWidth={500}
-      highlightedRecordProps={filterText && filterText.length !== 0 ?
+      highlightedPropertyProps={filterText && filterText.length !== 0 ?
         { searchText: filterText, activeMatch } :
         undefined
       }
@@ -120,9 +122,9 @@ export function PropertiesWidget(props: Props) {
       <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
       <div className="SearchBar" >
         <FilteringInput
-          onFilterCancel={() => { setFilter(""); }}
-          onFilterClear={() => { setFilter(""); }}
-          onFilterStart={(newFilter) => { setFilter(newFilter); }}
+          onFilterCancel={() => { setFilter("") }}
+          onFilterClear={() => { setFilter("") }}
+          onFilterStart={(newFilter) => { setFilter(newFilter) }}
           style={{ flex: "auto" }}
           resultSelectorProps={resultSelectorProps}
           status={filterText.length !== 0 ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter}

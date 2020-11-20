@@ -39,7 +39,7 @@ import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRela
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
   model: IPropertyGridModel;
   eventHandler: IPropertyGridEventHandler;
-  highlightedRecordProps?: HighlightedRecordProps;
+  highlightedPropertyProps?: HighlightedPropertyProps;
 }
 
 /** State of [[VirtualizedPropertyGrid]] React component
@@ -91,22 +91,22 @@ export interface VirtualizedPropertyGridContext {
     onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
     columnInfo?: PropertyGridColumnInfo;
 
-    highlightedRecordProps?: HighlightedRecordProps;
+    highlightedPropertyProps?: HighlightedPropertyProps;
   };
 }
 
 /**
- * Record match info used for identification of a specific match in a record
+ * Record or Category match info used for identification of a specific match in a record
  * while also giving enough information about label and value matches counts
  * to know exactly where the match is located
  * @beta
  */
-export interface PropertyRecordMatchInfo {
-  /* Name of the record's property, used for identification of the record */
+export interface PropertyMatchInfo {
+  /* Name of the record's or category's property, used for its identification */
   propertyName: string;
-  /* Index of actively highlighted part in a record */
+  /* Index of actively highlighted part in a record or category */
   matchIndex: number;
-  /* Number of label matches found in a record, used for distinguishing label matches and value matches */
+  /* Number of label matches found in a record or category, used for distinguishing label matches and value matches */
   matchCounts: { label: number, value: number };
 }
 
@@ -115,11 +115,11 @@ export interface PropertyRecordMatchInfo {
  * Used for highlighting matching parts in records and actively highlighting one match in a specific record
  * @beta
  */
-export interface HighlightedRecordProps {
+export interface HighlightedPropertyProps {
   /* Filter text which we want to highlight */
   searchText: string;
   /* Information about the record which we want to actively highlight */
-  activeMatch?: PropertyRecordMatchInfo;
+  activeMatch?: PropertyMatchInfo;
 }
 
 /**
@@ -175,12 +175,12 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       this._listRef.current?.resetAfterIndex(0);
     }
 
-    if (this.props.highlightedRecordProps !== prevProps.highlightedRecordProps && this.props.highlightedRecordProps?.activeMatch && this.state.gridItems.length !== 0) {
+    if (this.props.highlightedPropertyProps !== prevProps.highlightedPropertyProps && this.props.highlightedPropertyProps?.activeMatch && this.state.gridItems.length !== 0) {
 
       let index = 0;
       let foundMatchingItem = false;
       for (const item of this.state.gridItems) {
-        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlightedRecordProps?.activeMatch?.propertyName === item.derivedRecord.property.name) {
+        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlightedPropertyProps?.activeMatch?.propertyName === item.derivedRecord.property.name) {
           foundMatchingItem = true;
           break;
         }
@@ -335,7 +335,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
                     actionButtonRenderers: this.props.actionButtonRenderers,
 
                     onNodeHeightChanged: this._handleNodeHeightChange,
-                    highlightedRecordProps: this.props.highlightedRecordProps,
+                    highlightedPropertyProps: this.props.highlightedPropertyProps,
                   },
                 };
 
@@ -396,6 +396,7 @@ const FlatGridItemNode = React.memo(
                 style={gridContext.style}
                 category={node.derivedCategory}
                 onExpansionToggled={onExpansionToggled}
+                highlightedPropertyProps={gridContext.highlightedPropertyProps}
               />
             </FlatItemNestedBorderWrapper>
           );
@@ -447,7 +448,7 @@ const FlatGridItemNode = React.memo(
                 onResizeHandleDragChanged={gridContext.onResizeHandleDragChanged}
                 onResizeHandleHoverChanged={gridContext.onResizeHandleHoverChanged}
 
-                highlightProps={gridContext.highlightedRecordProps}
+                highlightedPropertyProps={gridContext.highlightedPropertyProps}
               />
             </FlatItemNestedBorderWrapper>
           );

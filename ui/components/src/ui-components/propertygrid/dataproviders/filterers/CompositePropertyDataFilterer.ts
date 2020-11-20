@@ -7,6 +7,7 @@
  */
 
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyCategory } from "../../PropertyDataProvider";
 import { IPropertyDataFilterer, PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
 
 /**
@@ -31,10 +32,10 @@ export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
 
   public get isActive() { return this._leftFilterer.isActive || this._rightFilterer.isActive; }
 
-  public async matchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult> {
+  public async recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult> {
     const [lhs, rhs] = await Promise.all([
-      this._leftFilterer.matchesFilter(node, parents),
-      this._rightFilterer.matchesFilter(node, parents),
+      this._leftFilterer.recordMatchesFilter(node, parents),
+      this._rightFilterer.recordMatchesFilter(node, parents),
     ]);
 
     const matchesFilter = (this._operator === CompositeFilterType.And) ? (lhs.matchesFilter && rhs.matchesFilter) : (lhs.matchesFilter || rhs.matchesFilter);
@@ -46,6 +47,24 @@ export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
       shouldExpandNodeParents: lhs.shouldExpandNodeParents || rhs.shouldExpandNodeParents,
       shouldForceIncludeDescendants: lhs.shouldForceIncludeDescendants || rhs.shouldForceIncludeDescendants,
       matchesCount: { label: sumNullableNumbers(lhs.matchesCount?.label, rhs.matchesCount?.label), value: sumNullableNumbers(lhs.matchesCount?.value, rhs.matchesCount?.value) },
+    };
+  }
+
+  public async categoryMatchesFilter(node: PropertyCategory, parents: PropertyRecord[]): Promise<PropertyDataFilterResult> {
+    const [lhs, rhs] = await Promise.all([
+      this._leftFilterer.categoryMatchesFilter(node, parents),
+      this._rightFilterer.categoryMatchesFilter(node, parents),
+    ]);
+
+    const matchesFilter = (this._operator === CompositeFilterType.And) ? (lhs.matchesFilter && rhs.matchesFilter) : (lhs.matchesFilter || rhs.matchesFilter);
+    if (!matchesFilter)
+      return { matchesFilter: false };
+
+    return {
+      matchesFilter: true,
+      shouldExpandNodeParents: lhs.shouldExpandNodeParents || rhs.shouldExpandNodeParents,
+      shouldForceIncludeDescendants: lhs.shouldForceIncludeDescendants || rhs.shouldForceIncludeDescendants,
+      matchesCount: { label: sumNullableNumbers(lhs.matchesCount?.label, rhs.matchesCount?.label) },
     };
   }
 }

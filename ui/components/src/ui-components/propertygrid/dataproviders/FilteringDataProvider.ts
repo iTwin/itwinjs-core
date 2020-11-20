@@ -7,7 +7,7 @@
  */
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyRecordMatchInfo } from "../component/VirtualizedPropertyGrid";
+import { PropertyMatchInfo } from "../component/VirtualizedPropertyGrid";
 import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider";
 import { IPropertyDataFilterer } from "./filterers/PropertyDataFiltererBase";
@@ -16,7 +16,7 @@ interface FilteredRecords {
   filteredRecords: PropertyRecord[];
   shouldExpandNodeParents: boolean;
   matchesCount: number;
-  activeMatch?: PropertyRecordMatchInfo;
+  activeMatch?: PropertyMatchInfo;
   filteredResultMatches: { id: string, matchesCount: { label?: number, value?: number } }[];
 }
 
@@ -34,7 +34,7 @@ export interface FilteredPropertyData extends PropertyData {
   * Function used for getting PropertyRecordMatchInfo by index from all the filtered matches.
   * Undefined when filterer is not active
   */
-  getMatchByIndex?: (index: number) => PropertyRecordMatchInfo | undefined;
+  getMatchByIndex?: (index: number) => PropertyMatchInfo | undefined;
 }
 
 /**
@@ -75,7 +75,7 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
     const { filteredCategories, filteredRecords, matchesCount, filteredResultMatches } = await matchHierarchy(this._filterer, categories, records, undefined);
 
     const getMatchByIndex = (index: number) => {
-      let activeMatch: PropertyRecordMatchInfo | undefined;
+      let activeMatch: PropertyMatchInfo | undefined;
       if (index <= 0)
         return undefined;
 
@@ -147,7 +147,7 @@ async function matchRecordHierarchy(filterer: IPropertyDataFilterer, records: Pr
   let filteredResultMatches: { id: string, matchesCount: { label?: number, value?: number } }[] = [];
 
   for (const record of records) {
-    const matchInfo = await filterer.matchesFilter(record, parents);
+    const matchInfo = await filterer.recordMatchesFilter(record, parents);
     const shouldForceIncludeDescendants = forceIncludeItem || matchInfo.shouldForceIncludeDescendants;
     const { filteredRecords: filteredChildren, shouldExpandNodeParents, matchesCount: childrenMatchesCount, filteredResultMatches: childrenResultMatches } = await matchRecordHierarchy(filterer, record.getChildrenRecords(), [...parents, record], shouldForceIncludeDescendants);
     filteredResultMatches = filteredResultMatches.concat(childrenResultMatches);

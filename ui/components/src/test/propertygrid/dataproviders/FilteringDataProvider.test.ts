@@ -129,7 +129,7 @@ describe("FilteringDataProvider", () => {
 
     it("Should return empty property data and matchesCount equal to 0 if filter is enabled and nothing matches it", async () => {
       mockFilterer.setup((x) => x.isActive).returns(() => true);
-      mockFilterer.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProvider, mockFilterer.object);
 
@@ -179,7 +179,7 @@ describe("FilteringDataProvider", () => {
       };
 
       return data;
-    };
+    }
 
     const createDataProvider = (data: PropertyData) => {
       return {
@@ -241,13 +241,13 @@ describe("FilteringDataProvider", () => {
       (findRecordFromPropertyData("Array1-1-1", originalPropertyData).value as ArrayValue).itemsTypeName = "struct";
       (findRecordFromPropertyData("Array1-2-1", originalPropertyData).value as ArrayValue).itemsTypeName = "struct";
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Struct1-1-1-2", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 3, value: 5 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1-1-1-3", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 2, value: 4 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Array1-2-1-2-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 1, value: 5 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2, value: 0 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2-2", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 1, value: 3 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2-3-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true }));
-      mockFilterer.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Struct1-1-1-2", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 3, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1-1-1-3", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 2, value: 4 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Array1-2-1-2-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 1, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2, value: 0 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2-2", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 1, value: 3 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2-3-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProvider, mockFilterer.object);
 
@@ -274,8 +274,8 @@ describe("FilteringDataProvider", () => {
 
       mockFilterer.setup((x) => x.isActive).returns(() => true);
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2, value: 4 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2, value: 4 } }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
@@ -298,8 +298,8 @@ describe("FilteringDataProvider", () => {
 
       mockFilterer.setup((x) => x.isActive).returns(() => true);
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2 } }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
@@ -322,8 +322,8 @@ describe("FilteringDataProvider", () => {
 
       mockFilterer.setup((x) => x.isActive).returns(() => true);
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { value: 3 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { value: 2 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { value: 3 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { value: 2 } }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
@@ -347,7 +347,7 @@ describe("FilteringDataProvider", () => {
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
-      mockFilterer.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteredData = await filteringProvider.getData();
       let activeMatch;
@@ -366,14 +366,14 @@ describe("FilteringDataProvider", () => {
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true).verifiable(moq.Times.once());
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
       const filteredData = await filteringProvider.getData();;
       const filteredData2 = await filteringProvider.getData();
 
-      expect(filteredData === filteredData2).to.be.true;
+      expect(filteredData === filteredData2).to.be.true
       mockFilterer.verifyAll();
     });
 
@@ -386,7 +386,7 @@ describe("FilteringDataProvider", () => {
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true).verifiable(moq.Times.exactly(2));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
@@ -412,7 +412,7 @@ describe("FilteringDataProvider", () => {
 
       mockFilterer.setup((x) => x.isActive).returns(() => true).verifiable(moq.Times.exactly(2));
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 

@@ -13,14 +13,14 @@ import { DelayedSpinner } from "../../common/DelayedSpinner";
 import { usePropertyGridEventHandler, usePropertyGridModel, usePropertyGridModelSource } from "../internal/PropertyGridHooks";
 import { IPropertyDataProvider } from "../PropertyDataProvider";
 import { CommonPropertyGridProps } from "./PropertyGridCommons";
-import { HighlightedRecordProps, VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
+import { HighlightedPropertyProps, VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
 
 /** Properties for [[VirtualizedPropertyGridWithDataProvider]] React component
  * @alpha
  */
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
   dataProvider: IPropertyDataProvider;
-  highlightedRecordProps?: HighlightedRecordProps;
+  highlightedPropertyProps?: HighlightedPropertyProps;
 }
 
 /**

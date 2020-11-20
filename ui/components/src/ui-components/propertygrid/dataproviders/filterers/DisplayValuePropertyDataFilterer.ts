@@ -33,7 +33,7 @@ export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
 
   public get isActive() { return this.filterText !== ""; }
 
-  public async matchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
+  public async recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
     if (!this.isActive)
       return { matchesFilter: true };
 
@@ -51,5 +51,9 @@ export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
       shouldExpandNodeParents: true,
       matchesCount: { value: matchesCount },
     };
+  }
+
+  public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {
+    return { matchesFilter: !this.isActive };
   }
 }

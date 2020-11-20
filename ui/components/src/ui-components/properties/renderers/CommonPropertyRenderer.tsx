@@ -10,7 +10,7 @@ import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightedRecordProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
+import { HighlightedPropertyProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
 import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
 
 /**
@@ -46,9 +46,9 @@ export class CommonPropertyRenderer {
     isExpanded?: boolean,
     onExpansionToggled?: () => void,
     onHeightChanged?: (newHeight: number) => void,
-    highlightProps?: HighlightedRecordProps,
+    highlightedPropertyProps?: HighlightedPropertyProps,
   ) {
-    const highlightCallback = highlightProps ? CommonPropertyRenderer.createHighlightCallback(highlightProps, propertyRecord) : undefined;
+    const highlightCallback = highlightedPropertyProps ? CommonPropertyRenderer.createHighlightCallback(highlightedPropertyProps, propertyRecord) : undefined;
     const rendererContext: PropertyValueRendererContext = {
       orientation,
       containerType: PropertyContainerType.PropertyPane,
@@ -71,15 +71,15 @@ export class CommonPropertyRenderer {
     return displayValue;
   }
 
-  private static createHighlightCallback(highlightProps: HighlightedRecordProps, propertyRecord: PropertyRecord) {
-    const activeMatch = highlightProps.activeMatch;
+  private static createHighlightCallback(highlightedPropertyProps: HighlightedPropertyProps, propertyRecord: PropertyRecord) {
+    const activeMatch = highlightedPropertyProps.activeMatch;
     const propertyName = activeMatch?.propertyName;
     const matchIndex = activeMatch?.matchIndex ?? 0;
     const labelMatches = activeMatch?.matchCounts.label ?? 0;
 
     const activeMatchIndex = (propertyRecord.property.name === propertyName) && ((matchIndex - labelMatches) >= 0) ? (matchIndex - labelMatches) : undefined;
 
-    const highlightCallback = (text: string) => (<HighlightedText text={text} activeMatchIndex={activeMatchIndex} {...highlightProps} />);
+    const highlightCallback = (text: string) => (<HighlightedText text={text} activeMatchIndex={activeMatchIndex} {...highlightedPropertyProps} />);
 
     return highlightCallback;
   }

@@ -8,6 +8,7 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
  * Data structure for storing IPropertyDataFilterer matching results
@@ -53,7 +54,8 @@ export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesList
  */
 export interface IPropertyDataFilterer {
   readonly isActive: boolean;
-  matchesFilter: (node: PropertyRecord, parents: PropertyRecord[]) => Promise<PropertyDataFilterResult>;
+  recordMatchesFilter: (node: PropertyRecord, parents: PropertyRecord[]) => Promise<PropertyDataFilterResult>;
+  categoryMatchesFilter: (node: PropertyCategory, parents: PropertyRecord[]) => Promise<PropertyDataFilterResult>;
   onFilterChanged: PropertyFilterChangeEvent;
 }
 
@@ -64,5 +66,6 @@ export interface IPropertyDataFilterer {
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
   public onFilterChanged: PropertyFilterChangeEvent = new PropertyFilterChangeEvent();
   public abstract get isActive(): boolean;
-  public abstract async matchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
+  public abstract async recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
+  public abstract async categoryMatchesFilter(node: PropertyCategory, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
 }
