@@ -45,6 +45,13 @@ export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
       matchesFilter: true,
       shouldExpandNodeParents: lhs.shouldExpandNodeParents || rhs.shouldExpandNodeParents,
       shouldForceIncludeDescendants: lhs.shouldForceIncludeDescendants || rhs.shouldForceIncludeDescendants,
+      matchesCount: { label: sumNullableNumbers(lhs.matchesCount?.label, rhs.matchesCount?.label), value: sumNullableNumbers(lhs.matchesCount?.value, rhs.matchesCount?.value) },
     };
   }
+}
+
+function sumNullableNumbers(lhs: number | undefined, rhs: number | undefined) {
+  if (undefined === lhs && undefined === rhs)
+    return undefined;
+  return (lhs ?? 0) + (rhs ?? 0);
 }

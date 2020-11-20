@@ -6,7 +6,9 @@
  * @module Compatibility
  */
 
-import { WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus } from "./RenderCompatibility";
+import {
+  DriverBugWorkarounds, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus,
+} from "./RenderCompatibility";
 
 /** @internal */
 export type WebGLExtensionName =
@@ -60,7 +62,7 @@ export enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
-function _detectIsMobile() {
+function _detectIsMobile(): boolean {
   // Modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
   // ###TODO: consume and use the actual full 'detect-gpu' package when querying capabilities so we can stay up to date.
 
@@ -104,6 +106,7 @@ export class Capabilities {
 
   private _isWebGL2: boolean = false;
   private _isMobile: boolean = false;
+  private _requiresSurfaceDiscard = false;
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
@@ -147,6 +150,7 @@ export class Capabilities {
   public get supportsAntiAliasing(): boolean { return this._isWebGL2 && this.maxAntialiasSamples > 1; }
 
   public get isMobile(): boolean { return this._isMobile; }
+  public get requiresSurfaceDiscard(): boolean { return this._requiresSurfaceDiscard; }
 
   private findExtension(name: WebGLExtensionName): any {
     const ext = this._extensionMap[name];
@@ -296,6 +300,10 @@ export class Capabilities {
     const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
     const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
 
+    this._requiresSurfaceDiscard = undefined !== unmaskedRenderer && /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/.test(unmaskedRenderer);
+
+    const workarounds: DriverBugWorkarounds | undefined = this._requiresSurfaceDiscard ? { forceSurfaceDiscard: true } : undefined;
+
     return {
       status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),
       missingRequiredFeatures,
@@ -304,6 +312,7 @@ export class Capabilities {
       unmaskedVendor,
       userAgent: navigator.userAgent,
       createdContext: gl,
+      workarounds,
     };
   }
 

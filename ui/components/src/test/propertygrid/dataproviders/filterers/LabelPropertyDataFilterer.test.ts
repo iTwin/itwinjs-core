@@ -23,6 +23,11 @@ describe("LabelPropertyDataFilterer", () => {
       expect(filterer.filterText).to.be.equal("");
     });
 
+    it(`Should return string which was set in the constructor`, () => {
+      const filterer = new LabelPropertyDataFilterer("test");
+      expect(filterer.filterText).to.be.equal("test");
+    });
+
     it(`Should return filtering as disabled`, () => {
       const filterer = new LabelPropertyDataFilterer();
       expect(filterer.isActive).to.be.false;
@@ -83,7 +88,7 @@ describe("LabelPropertyDataFilterer", () => {
 
       filterer.filterText = "someFilter";
       const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true });
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 1 } });
     });
 
     it("Should match when given fully matching property record", async () => {
@@ -92,7 +97,7 @@ describe("LabelPropertyDataFilterer", () => {
 
       filterer.filterText = "displaySomefilteredNaMe";
       const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true });
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 1 } });
     });
 
     it("Should match when given matching struct record", async () => {
@@ -101,7 +106,7 @@ describe("LabelPropertyDataFilterer", () => {
 
       filterer.filterText = "StrUCt";
       const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true });
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 1 } });
     });
 
     it("Should match when given matching array record", async () => {
@@ -110,7 +115,34 @@ describe("LabelPropertyDataFilterer", () => {
 
       filterer.filterText = "ArRAy";
       const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true });
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 1 } });
+    });
+
+    it("Should match several times when given property record with repeated filter pattern", async () => {
+      const filterer = new LabelPropertyDataFilterer();
+      const record = TestUtils.createPrimitiveStringProperty("DisplaySomeFilteredName", "Value");
+
+      filterer.filterText = "mE";
+      const matchResult = await filterer.matchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 2 } });
+    });
+
+    it("Should match several times when given array record with repeated filter pattern", async () => {
+      const filterer = new LabelPropertyDataFilterer();
+      const record = TestUtils.createArrayProperty("ArrayAr");
+
+      filterer.filterText = "aR";
+      const matchResult = await filterer.matchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 2 } });
+    });
+
+    it("Should match several times when given struct record with repeated filter pattern", async () => {
+      const filterer = new LabelPropertyDataFilterer();
+      const record = TestUtils.createStructProperty("StructsTSt");
+
+      filterer.filterText = "ST";
+      const matchResult = await filterer.matchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 3 } });
     });
   });
 
