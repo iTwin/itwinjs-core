@@ -24,6 +24,7 @@ import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
 export class ExtensionClient extends Client {
   public constructor() {
     super();
+    this.baseUrl = "https://api.bentley.com/iModelExtensionService";
   }
 
   protected getUrlSearchKey(): string {

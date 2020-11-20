@@ -27,6 +27,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    */
   public constructor(public applicationId: string) {
     super();
+    this.baseUrl = "https://api.bentley.com/productsettings";
   }
 
   /** Gets name/key to query the service URLs from the URL Discovery Service
