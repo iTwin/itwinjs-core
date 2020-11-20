@@ -1664,7 +1664,6 @@ export class ContextRealityModelState {
     // (undocumented)
     readonly iModel: IModelConnection;
     intersectsProjectExtents(): Promise<boolean>;
-    // (undocumented)
     get isGlobal(): boolean;
     // (undocumented)
     matches(other: ContextRealityModelState): boolean;
@@ -5376,7 +5375,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected _totalDistanceMarker?: MeasureLabel;
     // (undocumented)
-    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent): Promise<void>;
+    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent, reopenToolTip: boolean): Promise<void>;
     // (undocumented)
     protected updateTotals(): Promise<void>;
 }
@@ -6625,9 +6624,9 @@ export class RealityTile extends Tile {
 
 // @internal (undocumented)
 export class RealityTileDrawArgs extends TileDrawArgs {
-    constructor(args: TileDrawArgs, worldToViewMap: Map4d, frustumPlanes: FrustumPlanes);
+    constructor(args: TileDrawArgs, worldToViewMap: Map4d, frustumPlanes: FrustumPlanes, maxSelectionCount?: number | undefined);
     // (undocumented)
-    getPixelSize(tile: Tile): number;
+    maxSelectionCount?: number | undefined;
     // (undocumented)
     get worldToViewMap(): Map4d;
     }
@@ -8932,6 +8931,8 @@ export abstract class Tile {
     extendRangeForContent(range: Range3d, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes): void;
     // @internal (undocumented)
     getRangeGraphic(context: SceneContext): RenderGraphic | undefined;
+    // @internal
+    getSizeProjectionCorners(): Point3d[] | undefined;
     protected _graphic?: RenderGraphic;
     get hasContentRange(): boolean;
     get hasGraphics(): boolean;
@@ -9232,6 +9233,8 @@ export class TileDrawArgs {
     markChildrenLoading(): void;
     markReady(tile: Tile): void;
     markUsed(tile: Tile): void;
+    // (undocumented)
+    get maxRealityTreeSelectionCount(): number | undefined;
     // @internal (undocumented)
     readonly now: BeTimePoint;
     // @internal (undocumented)
@@ -9924,15 +9927,13 @@ export class TraversalDetails {
 
 // @internal (undocumented)
 export class TraversalSelectionContext {
-    constructor(selected: Tile[], displayedDescendants: Tile[][], preloadDebugBuilder?: GraphicBuilder | undefined, _maxSelectionCount?: number, _maxPreloadCount?: number);
+    constructor(selected: Tile[], displayedDescendants: Tile[][], preloadDebugBuilder?: GraphicBuilder | undefined, _maxSelectionCount?: number | undefined);
     // (undocumented)
     displayedDescendants: Tile[][];
     // (undocumented)
     missing: RealityTile[];
     // (undocumented)
     preload(tile: RealityTile, args: TileDrawArgs): void;
-    // (undocumented)
-    get preloadCountExceeded(): boolean;
     // (undocumented)
     preloadDebugBuilder?: GraphicBuilder | undefined;
     // (undocumented)

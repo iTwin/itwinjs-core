@@ -101,7 +101,7 @@ export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AttachCesiumAssetTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -1494,7 +1494,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class ToggleOSMBuildingDisplay extends Tool {
     // (undocumented)
     static get maxArgs(): number;

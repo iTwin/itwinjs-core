@@ -3136,6 +3136,8 @@ export enum GltfMeshMode {
     // (undocumented)
     LineStrip = 3,
     // (undocumented)
+    Points = 0,
+    // (undocumented)
     Triangles = 4
 }
 
