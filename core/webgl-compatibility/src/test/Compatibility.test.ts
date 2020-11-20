@@ -21,8 +21,7 @@ let createContext = (canvas: HTMLCanvasElement, useWebGL2: boolean, contextAttri
 
 function makeTestContext(useWebGL2 = false): WebGLContext {
   const canvas = document.createElement("canvas");
-  expect(canvas).not.to.be.null;
-  const context = createContext(canvas!, useWebGL2);
+  const context = createContext(canvas, useWebGL2);
   expect(context).not.to.be.undefined;
   return context!;
 }

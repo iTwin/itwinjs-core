@@ -92,7 +92,7 @@ export interface DriverBugWorkarounds {
    * The fix is to always render as if ViewFlags.forceSurfaceDiscard is turned on; this should produce no visual differences aside from
    * *less* z-fighting in some views, but may reduce performance in 3d wireframe views or smooth views with edges turned off.
    */
-  forceSurfaceDiscard?: true,
+  forceSurfaceDiscard?: true;
 }
 
 /** WebGL rendering compatibility information produced by [[queryRenderCompatibility]].

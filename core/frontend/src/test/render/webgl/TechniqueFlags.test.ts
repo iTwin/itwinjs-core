@@ -16,7 +16,7 @@ class TestSystem extends System {
       const ext = ctx.getExtension("WEBGL_debug_renderer_info")!;
       if (ext) {
         const getParameter = ctx.getParameter.bind(ctx);
-        ctx.getParameter = (name: number) => {
+        ctx.getParameter = (name: number) => { // eslint-disable-line @typescript-eslint/unbound-method
           return (name === ext.UNMASKED_RENDERER_WEBGL) ? this._renderer : getParameter(name);
         };
       }
