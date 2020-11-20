@@ -41,6 +41,10 @@ export interface CustomFormatter {
   parseIntoQuantityValue(inString: string, spec: ParserSpec): ParseResult;
 }
 
+export interface OverrideFormatEntry {
+  imperial: any;
+  metric: any;
+}
 class CustomFormatterSpec extends FormatterSpec {
   private _quantityType: QuantityType;
   public get quantityType(): QuantityType { return this._quantityType; }
@@ -102,7 +106,7 @@ const unitData: UnitDefinition[] = [
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const QuantityType = { Length: 1, Angle: 2, Area: 3, Volume: 4, LatLong: 5, Coordinate: 6, Stationing: 7, LengthSurvey: 8, LengthEngineering: 9 }
+export const QuantityType = { Length: 1, Angle: 2, Area: 3, Volume: 4, LatLong: 5, Coordinate: 6, Stationing: 7, LengthSurvey: 8, LengthEngineering: 9 };
 export type QuantityType = (typeof QuantityType)[keyof typeof QuantityType] | string;
 
 // The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
@@ -434,7 +438,7 @@ const defaultFormatProps = {
   formatTraits: ["keepSingleZero", "showUnitLabel"],
   precision: 4,
   type: "Decimal",
-}
+};
 
 /** Formats quantity values into strings.
  * @alpha
@@ -450,7 +454,7 @@ export class QuantityFormatter implements UnitsProvider {
   protected _metricUnitParserSpecsByType = new Map<QuantityType, ParserSpec>();
   protected _customFormattersByType = new Map<QuantityType, CustomFormatterImpl>();
   protected _customFormatsByType = new Map<QuantityType, CustomFormatPair>();
-
+  protected _overrideFormatDataByType = new Map<QuantityType, OverrideFormatEntry>();
 
   /**
    * constructor
@@ -583,39 +587,71 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error("not yet implemented");
   }
 
-  protected async loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format> {
-    let formatData: any;
+  public async setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry) {
+    this._overrideFormatDataByType.set(type, entry);
+    await this.loadFormatSpecsForQuantityType(type, this._activeSystemIsImperial);
+    await this.loadParsingSpecsForQuantityType(type, this._activeSystemIsImperial);
+  }
 
-    const formatArray = imperial ? defaultsFormats.imperial : defaultsFormats.metric;
-    for (const entry of formatArray) {
-      if (entry.type === type as number) {
-        formatData = entry.format;
-        const format = new Format("stdFormat");
-        await format.fromJson(this, formatData);
-        return format;
-      }
+  public async clearOverrideFormats(type: QuantityType) {
+    this._overrideFormatDataByType.delete(type);
+    await this.loadFormatSpecsForQuantityType(type, this._activeSystemIsImperial);
+    await this.loadParsingSpecsForQuantityType(type, this._activeSystemIsImperial);
+  }
+
+  public async clearAllOverrideFormats() {
+    this._overrideFormatDataByType.clear();
+    await this.loadFormatSpecsForQuantityTypes(this._activeSystemIsImperial);
+    await this.loadParsingSpecsForQuantityTypes(this._activeSystemIsImperial);
+  }
+
+  protected async getOverrideFormat(type: QuantityType, imperial: boolean): Promise<any> {
+    const formatEntry = this._overrideFormatDataByType.get(type);
+    if (formatEntry) {
+      if (imperial)
+        return formatEntry.imperial;
+      return formatEntry.metric;
     }
+
+    return undefined;
+  }
+
+  protected async loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format> {
+    let formatProps = await this.getOverrideFormat(type, imperial);
+    if (undefined === formatProps) {
+      const formatArray = imperial ? defaultsFormats.imperial : defaultsFormats.metric;
+      formatProps = (formatArray.find((entry) => entry.type === type))?.format;
+    }
+
+    if (formatProps) {
+      const format = new Format("stdFormat");
+      await format.fromJson(this, formatProps);
+      return format;
+    }
+
     throw new BentleyError(BentleyStatus.ERROR, "IModelApp must define a formatsProvider class to provide formats for tools");
   }
 
   protected async getFormatByQuantityType(type: QuantityType, imperial: boolean): Promise<Format> {
+    if (this._isStandardQuantityType(type)) {
+      const activeMap = imperial ? this._imperialFormatsByType : this._metricFormatsByType;
+
+      let format = activeMap.get(type);
+      if (format)
+        return format;
+
+      format = await this.loadStdFormat(type, imperial);
+      if (format) {
+        activeMap.set(type, format);
+        return format;
+      }
+    }
+
     if (this._customFormatsByType.has(type)) {
       const [formatClass, jsonProps] = this._customFormatsByType.get(type) as CustomFormatPair;
       const _format: Format = new formatClass("customFormat");
       await _format.fromJson(this, jsonProps);
       return _format;
-    }
-
-    const activeMap = imperial ? this._imperialFormatsByType : this._metricFormatsByType;
-
-    let format = activeMap.get(type);
-    if (format)
-      return format;
-
-    format = await this.loadStdFormat(type, imperial);
-    if (format) {
-      activeMap.set(type, format);
-      return format;
     }
 
     throw new BentleyError(BentleyStatus.ERROR, "IModelApp must define a formatsProvider class to provide formats for tools");
@@ -641,6 +677,16 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
+  /** Asynchronous call to loadParsingSpecsForQuantityType. This method caches the ParserSpecs so they can be quickly accessed. */
+  protected async loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void> {
+    const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricUnitParserSpecsByType;
+    const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
+    const unitPromise = this.getUnitByQuantityType(quantityType);
+    const [format, outUnit] = await Promise.all([formatPromise, unitPromise]);
+    const parserSpec = await ParserSpec.create(format, this, outUnit);
+    activeMap.set(quantityType, parserSpec);
+  }
+
   /** Asynchronous call to loadParsingSpecsForQuantityTypes. This method caches all the ParserSpecs so they can be quickly accessed. */
   protected async loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
     const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume, QuantityType.LatLong, QuantityType.Coordinate, QuantityType.Stationing, QuantityType.LengthSurvey, QuantityType.LengthEngineering];
@@ -654,6 +700,16 @@ export class QuantityFormatter implements UnitsProvider {
       const parserSpec = await ParserSpec.create(format, this, outUnit);
       activeMap.set(quantityType, parserSpec);
     }
+  }
+
+  /** Asynchronous call to loadFormatSpecsForQuantityType. This method caches all the FormatSpec so they can be quickly accessed. */
+  protected async loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void> {
+    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
+    const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
+    const unitPromise = this.getUnitByQuantityType(quantityType);
+    const [format, unit] = await Promise.all([formatPromise, unitPromise]);
+    const spec = await FormatterSpec.create(format.name, format, this, unit);
+    activeMap.set(quantityType, spec);
   }
 
   /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
@@ -725,9 +781,9 @@ export class QuantityFormatter implements UnitsProvider {
     const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
 
     if (this._isStandardQuantityType(type)) {
-      return this._getStandardFormatterSpec(type, useImperial)
+      return this._getStandardFormatterSpec(type, useImperial);
     } else if (this._customFormattersByType.has(type)) {
-      return this._getCustomFormatterSpec(type, useImperial)
+      return this._getCustomFormatterSpec(type, useImperial);
     }
 
     throw new BentleyError(BentleyStatus.ERROR, "Unable to load FormatSpecs");
