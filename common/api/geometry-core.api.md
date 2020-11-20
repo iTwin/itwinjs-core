@@ -4914,6 +4914,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
     get latitudeSweepFraction(): number;
+    maxAxisRadius(): number;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "sphere";
     strokeConstantVSection(v: number, fixedStrokeCount: number | undefined, options?: StrokeOptions): LineString3d;
