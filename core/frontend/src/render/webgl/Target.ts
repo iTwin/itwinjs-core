@@ -95,8 +95,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  protected _fbo?: FrameBuffer;
-  protected _dcAssigned: boolean = false;
+  private _fbo?: FrameBuffer;
+  private _dcAssigned = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly uniforms = new TargetUniforms(this);
@@ -252,6 +252,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _isDisposed = false;
   public get isDisposed(): boolean {
     return this.graphics.isDisposed
+      && undefined === this._fbo
       && undefined === this._worldDecorations
       && undefined === this._planarClassifiers
       && undefined === this._textureDrapes
@@ -261,12 +262,42 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       && this._isDisposed;
   }
 
+  protected allocateFbo(): FrameBuffer | undefined {
+    if (this._fbo)
+      return this._fbo;
+
+    const rect = this.viewRect;
+    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (undefined === color)
+      return undefined;
+
+    this._fbo = FrameBuffer.create([color]);
+    if (undefined === this._fbo) {
+      color.dispose();
+      return undefined;
+    }
+
+    return this._fbo;
+  }
+
+  protected disposeFbo(): void {
+    if (!this._fbo)
+      return;
+
+    const tx = this._fbo.getColor(0);
+    this._fbo = dispose(this._fbo);
+    this._dcAssigned = false;
+
+    // We allocated our framebuffer's color attachment, so must dispose of it too.
+    assert(undefined !== tx);
+    dispose(tx);
+  }
+
   public dispose() {
     this.reset();
-
+    this.disposeFbo();
     dispose(this._compositor);
 
-    this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
     this._isDisposed = true;
   }
 
@@ -596,13 +627,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   private paintScene(sceneMilSecElapsed?: number): void {
-    if (!this._dcAssigned) {
+    if (!this._dcAssigned)
       return;
-    }
 
     this.beginPerfMetricFrame(sceneMilSecElapsed, this.drawForReadPixels);
     this.beginPerfMetricRecord("Begin Paint", this.drawForReadPixels);
-    this._beginPaint();
+    assert(undefined !== this._fbo);
+    this._beginPaint(this._fbo);
     this.endPerfMetricRecord(this.drawForReadPixels);
 
     const gl = this.renderSystem.context;
@@ -695,17 +726,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   private assignDC(): boolean {
-    if (!this._dcAssigned) {
-      if (!this._assignDC())
-        return false;
+    if (this._dcAssigned)
+      return true;
 
-      const rect = this.viewRect;
-      if (rect.width < 1 || rect.height < 1)
-        return false;
+    if (!this._assignDC())
+      return false;
 
-      this.uniforms.viewRect.update(rect.width, rect.height);
-      this._dcAssigned = true;
-    }
+    const rect = this.viewRect;
+    if (rect.width < 1 || rect.height < 1)
+      return false;
+
+    this.uniforms.viewRect.update(rect.width, rect.height);
+    this._dcAssigned = true;
 
     return true;
   }
@@ -1005,7 +1037,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   // ---- Methods expected to be overridden by subclasses ---- //
 
   protected abstract _assignDC(): boolean;
-  protected abstract _beginPaint(): void;
+  protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -1083,15 +1115,13 @@ export class OnScreenTarget extends Target {
   }
 
   public get isDisposed(): boolean {
-    return undefined === this._fbo
-      && undefined === this._blitGeom
+    return undefined === this._blitGeom
       && undefined === this._scratchProgParams
       && undefined === this._scratchDrawParams
       && super.isDisposed;
   }
 
   public dispose() {
-    this._fbo = dispose(this._fbo);
     this._blitGeom = dispose(this._blitGeom);
     this._scratchProgParams = undefined;
     this._scratchDrawParams = undefined;
@@ -1124,22 +1154,16 @@ export class OnScreenTarget extends Target {
   }
 
   protected _assignDC(): boolean {
-    dispose(this._fbo);
-
-    const rect = this.viewRect;
-    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === color)
+    this.disposeFbo();
+    const fbo = this.allocateFbo();
+    if (!fbo)
       return false;
 
-    this._fbo = FrameBuffer.create([color]);
-    if (undefined === this._fbo)
-      return false;
-
-    const tx = this._fbo.getColor(0);
+    const tx = fbo.getColor(0);
     assert(undefined !== tx.getHandle());
     this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
     if (undefined === this._blitGeom)
-      dispose(this._fbo);
+      this.disposeFbo();
 
     return undefined !== this._blitGeom;
   }
@@ -1152,12 +1176,10 @@ export class OnScreenTarget extends Target {
     return this._usingWebGLCanvas ? changedWebGL : changed2d;
   }
 
-  protected _beginPaint(): void {
-    assert(undefined !== this._fbo);
-
+  protected _beginPaint(fbo: FrameBuffer): void {
     // Render to our framebuffer
     const system = this.renderSystem;
-    system.frameBufferStack.push(this._fbo, true, false);
+    system.frameBufferStack.push(fbo, true, false);
 
     const viewRect = this.viewRect;
 
@@ -1248,8 +1270,7 @@ export class OnScreenTarget extends Target {
   }
 
   public onResized(): void {
-    this._dcAssigned = false;
-    this._fbo = dispose(this._fbo);
+    this.disposeFbo();
   }
 
   public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
@@ -1288,28 +1309,16 @@ export class OffScreenTarget extends Target {
       return;
     }
 
-    this._dcAssigned = false;
-    this._fbo = dispose(this._fbo);
+    this.disposeFbo();
     dispose(this._compositor);
   }
 
   protected _assignDC(): boolean {
-    if (this._fbo !== undefined)
-      return true;
-
-    const rect = this.viewRect;
-    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (color === undefined)
-      return false;
-
-    this._fbo = FrameBuffer.create([color]);
-    assert(this._fbo !== undefined);
-    return this._fbo !== undefined;
+    return undefined !== this.allocateFbo();
   }
 
-  protected _beginPaint(): void {
-    assert(this._fbo !== undefined);
-    this.renderSystem.frameBufferStack.push(this._fbo, true, false);
+  protected _beginPaint(fbo: FrameBuffer): void {
+    this.renderSystem.frameBufferStack.push(fbo, true, false);
   }
 
   protected _endPaint(): void {
