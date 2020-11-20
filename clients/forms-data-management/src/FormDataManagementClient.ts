@@ -399,7 +399,7 @@ export class FormDataManagementClient extends WsgClient {
   "imjs_form_data_management_relying_party_uri";
   public constructor() {
     super("sv1.2");
-    this.baseUrl = "https://api.bentley.com/formswsg";
+    // this.baseUrl = "https://api.bentley.com/formswsg";
   }
 
   /**
