@@ -78,12 +78,14 @@ export class ContextRealityModelState {
   public get appearanceOverrides(): FeatureAppearance | undefined { return this._appearanceOverrides; }
   public set appearanceOverrides(overrides: FeatureAppearance | undefined) { this._appearanceOverrides = overrides; }
   public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityTreeReference) ? this._treeRef.modelId : undefined; }
+  /** Return true if the model spans the entire globe ellipsoid in 3D */
   public get isGlobal(): boolean {
     if (undefined === this._isGlobal) {
       const range = this.treeRef.computeWorldContentRange();
-      this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
+      if (!range.isNull)
+        this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
     }
-    return this._isGlobal;
+    return this._isGlobal === undefined ? false : this._isGlobal;
   }
 
   public toJSON(): ContextRealityModelProps {

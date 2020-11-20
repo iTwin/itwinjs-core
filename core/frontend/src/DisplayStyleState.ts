@@ -36,6 +36,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private readonly _backgroundDrapeMap: MapTileTreeReference;
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _scheduleScript?: RenderScheduleState.Script;
+  private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
 
   /** The container for this display style's settings. */
   public abstract get settings(): DisplayStyleSettings;
@@ -676,8 +677,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const terrainRange = ApproximateTerrainHeights.instance.globalHeightRange;
     let heightRange = this.displayTerrain ? terrainRange : Range1d.createXX(-1, 1);
     if (this.globeMode === GlobeMode.Ellipsoid && this._contextRealityModels.find((model) => model.isGlobal)) {
-      if (!geometry)
-        geometry = new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, this.iModel);
+      if (!geometry) {
+        if (!this._ellipsoidMapGeometry)
+          this._ellipsoidMapGeometry = new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, this.iModel);
+
+        geometry = this._ellipsoidMapGeometry;
+      }
 
       heightRange = terrainRange;
     }
