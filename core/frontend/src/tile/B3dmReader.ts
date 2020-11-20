@@ -8,7 +8,7 @@
 
 import { ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { B3dmHeader, BatchType, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@bentley/imodeljs-common";
+import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
@@ -19,6 +19,9 @@ import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, Should
  * @internal
  */
 export class B3dmReader extends GltfReader {
+  private _batchIdRemap = new Map<number, number>();
+  private _colors?: Array<number>;
+
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
     system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, tileCenter: Point3d, transformToRoot?: Transform,
     isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap): B3dmReader | undefined {
@@ -61,14 +64,72 @@ export class B3dmReader extends GltfReader {
     // NB: For reality models with no batch table, we want the model ID in the feature table
     const featureTable: FeatureTable = new FeatureTable(this._batchTableLength ? this._batchTableLength : 1, this._modelId, this._type);
     if (this._batchTableLength > 0 && this._idMap !== undefined && this._batchTableJson !== undefined) {
-      for (let i = 0; i < this._batchTableLength; i++) {
-        const feature: any = {};
-        for (const key in this._batchTableJson) // eslint-disable-line guard-for-in
-          feature[key] = this._batchTableJson[key][i];
+      if (this._batchTableJson.extensions && this._batchTableJson.extensions["3DTILES_batch_table_hierarchy"]) {
+        const hierarchy = this._batchTableJson.extensions["3DTILES_batch_table_hierarchy"];
+        const { classIds, classes, parentIds, parentCounts, instancesLength } = hierarchy;
+        if (classes !== undefined && classIds !== undefined && instancesLength !== 0) {
+          const classCounts = new Array<number>(classes.length);
+          classCounts.fill(0);
+          const classIndexes = new Uint16Array(instancesLength);
+          for (let i = 0; i < instancesLength; ++i) {
+            const classId = classIds[i];
+            classIndexes[i] = classCounts[classId]++;
+          }
 
-        featureTable.insert(new Feature(this._idMap.getBatchId(feature)));
+          let parentMap: [][] | undefined;
+          if (parentIds) {
+            parentMap = new Array<[]>();
+            for (let i = 0, parentIndex = 0; i < instancesLength; i++) {
+              const parentCount = parentCounts === undefined ? 1 : parentCounts[i];
+              parentMap[i] = parentIds.slice(parentIndex, parentIndex += parentCount);
+            }
+          }
+
+          const getProperties = (instance: any, instanceIndex: number) => {
+            const classId = classIds[instanceIndex];
+            const instanceClass = classes[classId];
+            const instances = instanceClass.instances;
+            const indexInClass = classIndexes[instanceIndex];
+            for (const key in instances) { // eslint-disable-line guard-for-in
+              const value = instances[key][indexInClass];
+              if (value !== undefined && value !== null)
+                instance[key] = value;
+            }
+            if (parentIds !== undefined) {
+              const thisParents = parentMap![instanceIndex];
+              for (const parentId of thisParents) {
+                if (parentId !== instanceIndex)
+                  getProperties(instance, parentId);
+              }
+            }
+          };
+          for (let batchId = 0; batchId < instancesLength; batchId++) {
+            const instance: any = {};
+            getProperties(instance, batchId);
+            this._batchIdRemap.set(batchId, featureTable.insert(new Feature(this._idMap.getBatchId(instance))));
+            const cesiumColor = instance["cesium#color"];
+            if (undefined !== cesiumColor) {
+              if (!this._colors) {
+                this._colors = new Array<number>(instancesLength);
+                this._colors.fill(ColorDef.white.tbgr);
+              }
+              this._colors[batchId] = ColorDef.create(cesiumColor).tbgr;
+            }
+          }
+        }
+      } else {
+        for (let i = 0; i < this._batchTableLength; i++) {
+          const feature: any = {};
+          for (const key in this._batchTableJson) // eslint-disable-line guard-for-in
+            feature[key] = this._batchTableJson[key][i];
+
+          this._batchIdRemap.set(i, featureTable.insert(new Feature(this._idMap.getBatchId(feature))));
+        }
       }
-    } else {
+    }
+
+    if (featureTable.isEmpty) {
+      this._batchIdRemap.set(0, 0);
       const feature = new Feature(this._modelId);
       featureTable.insert(feature);
     }
@@ -80,19 +141,35 @@ export class B3dmReader extends GltfReader {
     return this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot, this._pseudoRtcBias);
   }
 
-  protected readFeatures(features: Mesh.Features, json: any): boolean {
-    let batchIds: any;
-    if (this._batchTableLength > 0 && undefined !== this._batchTableJson && undefined !== json.attributes && undefined !== (batchIds = super.readBufferData32(json.attributes, "_BATCHID"))) {
-      const indices = [];
-      for (let i = 0; i < batchIds.count; i++)
-        indices.push(batchIds.buffer[i]);
+  protected readBatchTable(mesh: Mesh, json: any) {
+    if (mesh.features !== undefined) {
+      if (this._batchTableLength > 0 && undefined !== this._batchTableJson && undefined !== json.attributes) {
+        const view = this.getBufferView(json.attributes, "_BATCHID");
+        let batchIds: undefined | GltfBufferData;
+        if (undefined !== view && (undefined !== (batchIds = view.toBufferData(GltfDataType.UInt32)) || undefined !== (batchIds = view.toBufferData(GltfDataType.Float)))) {
+          const indices = [];
+          const { colors, colorMap } = mesh;
+          let colorRemap: Uint32Array | undefined;
+          if (this._colors && this._colors.length === this._batchTableLength) {
+            colorRemap = new Uint32Array(this._batchTableLength);
 
-      features.setIndices(indices);
-      return true;
+            for (let i = 0; i < this._batchTableLength; i++)
+              colorRemap[i] = colorMap.insert(this._colors[i]);
+          }
+
+          for (let i = 0; i < batchIds.count; i++) {
+            const batchId = batchIds.buffer[i * view.stride];
+            const remapId = this._batchIdRemap.get(batchId);
+            indices.push(remapId === undefined ? 0 : remapId);
+            if (colorRemap)
+              colors.push(colorRemap[batchId]);
+          }
+          mesh.features.setIndices(indices);
+
+        }
+      } else {
+        mesh.features.add(new Feature(this._modelId), 1);
+      }
     }
-
-    const feature = new Feature(this._modelId);
-    features.add(feature, 1);
-    return true;
   }
 }
