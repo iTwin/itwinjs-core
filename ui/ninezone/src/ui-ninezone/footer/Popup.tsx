@@ -10,7 +10,7 @@ import "./Popup.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { PopupProps, Popup } from "@bentley/ui-core";
+import { PopupProps, CommonProps, Popup } from "@bentley/ui-core";
 
 /** Available footer popup content types.
  * @beta
@@ -25,13 +25,15 @@ export enum FooterPopupContentType {
 /** Properties of [[FooterPopup]] component.
  * @beta
  */
-export interface FooterPopupProps extends PopupProps {
+export interface FooterPopupProps extends CommonProps {
   /** Popup content. */
   children?: React.ReactNode;
   /** Describes content type. */
   contentType: FooterPopupContentType;
   /** Indicates if the popup is open. */
   isOpen?: boolean;
+  /** Indicates whether to close the popup when Enter is pressed (defaults to true) */
+  closeOnEnter?: boolean;
   /** Function called when the popup is closed. */
   onClose?: () => void;
   /** Function called when user clicks outside of the popup.  */
@@ -59,11 +61,7 @@ export class FooterPopup extends React.PureComponent<FooterPopupProps> {
     const { className, contentType, ...props } = this.props;
     return (
       <Popup
-        className={classnames(
-          "nz-footer-popup",
-          contentType,
-          className,
-        )}
+        className={classnames("nz-footer-popup", contentType, className)}
         position={RelativePosition.Top}
         showArrow
         showShadow={false}

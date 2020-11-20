@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/reality-data-client",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/reality-data-client",
+  "email": "jkirchartz@users.noreply.github.com"
+}
