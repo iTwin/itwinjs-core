@@ -15,7 +15,7 @@ import { areEqual, ListChildComponentProps, VariableSizeList } from "react-windo
 import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { MutableCategorizedPrimitiveProperty } from "../../../ui-components";
+import { MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
 import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
@@ -180,7 +180,8 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       let index = 0;
       let foundMatchingItem = false;
       for (const item of this.state.gridItems) {
-        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlightedPropertyProps?.activeMatch?.propertyName === item.derivedRecord.property.name) {
+        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlightedPropertyProps?.activeMatch?.propertyName === item.derivedRecord.property.name
+          || item instanceof MutableGridCategory && this.props.highlightedPropertyProps?.activeMatch?.propertyName === item.name) {
           foundMatchingItem = true;
           break;
         }

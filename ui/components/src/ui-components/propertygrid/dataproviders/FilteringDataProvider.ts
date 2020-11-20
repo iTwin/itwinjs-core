@@ -119,6 +119,17 @@ async function matchHierarchy(filterer: IPropertyDataFilterer, categories: Prope
   let allFilteredResultMatches: { id: string, matchesCount: { label?: number, value?: number } }[] = [];
 
   for (const category of categories) {
+
+    const parentMatchInfo = category.parentCategory ? await filterer.categoryMatchesFilter(category.parentCategory, []) : undefined;
+    const matchInfo = await filterer.categoryMatchesFilter(category, []);
+    if (matchInfo.matchesFilter || parentMatchInfo?.matchesFilter) {
+      newRecords[category.name] = records[category.name] ?? [];
+      newCategories.push(category);
+      if (matchInfo.matchesFilter) {
+        allFilteredResultMatches.push({ id: category?.name ?? "", matchesCount: (matchInfo.matchesCount ?? { label: 0, value: 0 }) });
+        matchesCount += matchInfo.matchesCount?.label ?? 0;
+      }
+    }
     const childRecords = records[category.name] ?? [];
     const { filteredRecords, matchesCount: count, filteredResultMatches } = await matchRecordHierarchy(filterer, childRecords, []);
     allFilteredResultMatches = allFilteredResultMatches.concat(filteredResultMatches);
@@ -130,7 +141,7 @@ async function matchHierarchy(filterer: IPropertyDataFilterer, categories: Prope
 
     matchesCount += childCount;
 
-    if (filteredRecords.length !== 0 || filteredCategories.length !== 0) {
+    if ((filteredRecords.length !== 0 || filteredCategories.length !== 0) && !matchInfo.matchesFilter) {
       const newCategory = copyPropertyCategory(category, filteredCategories);
       newRecords[newCategory.name] = filteredRecords;
       newCategories.push(newCategory);
