@@ -1833,7 +1833,7 @@ export interface FilteredPropertyData extends PropertyData {
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
     constructor(props: FilteringInputProps);
     // @internal (undocumented)
-    componentDidUpdate(prevProps: FilteringInputProps, _prevState: FilteringInputState): void;
+    componentDidUpdate(prevProps: FilteringInputProps): void;
     // (undocumented)
     static getDerivedStateFromProps(nextProps: FilteringInputProps, prevState: FilteringInputState): {
         searchStarted: boolean;
