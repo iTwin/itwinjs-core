@@ -2038,6 +2038,19 @@ export interface ElementAspectProps extends EntityProps {
 export namespace ElementGeometry {
     // (undocumented)
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
+    export class Builder {
+        appendBRepData(brep: BRepEntity.DataProps): boolean;
+        appendGeometryParamsChange(geomParams: GeometryParams): boolean;
+        appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean;
+        appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
+        appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
+        appendGeometryQuery(geometry: GeometryQuery): boolean;
+        appendGeometryRanges(): boolean;
+        appendImageGraphic(image: ImageGraphic): boolean;
+        appendTextString(text: TextString): boolean;
+        // (undocumented)
+        readonly entries: ElementGeometryDataEntry[];
+    }
     // (undocumented)
     export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
     // (undocumented)
@@ -2056,6 +2069,40 @@ export namespace ElementGeometry {
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
     // (undocumented)
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    export class Iterator implements IterableIterator<IteratorEntry> {
+        // (undocumented)
+        [Symbol.iterator](): IterableIterator<IteratorEntry>;
+        constructor(info: ElementGeometryInfo, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
+        readonly brepsPresent?: boolean;
+        readonly entryArray: ElementGeometryDataEntry[];
+        next(): IteratorResult<IteratorEntry>;
+        readonly placement: Placement3d;
+        readonly viewIndependent?: boolean;
+    }
+    export interface IteratorData {
+        readonly geomParams: GeometryParams;
+        readonly localRange?: Range3d;
+        readonly localToWorld?: Transform;
+        readonly value: ElementGeometryDataEntry;
+    }
+    // (undocumented)
+    export class IteratorEntry implements IteratorData {
+        constructor(geomParams: GeometryParams, localToWorld: Transform);
+        // (undocumented)
+        readonly geomParams: GeometryParams;
+        // (undocumented)
+        localRange?: Range3d;
+        // (undocumented)
+        readonly localToWorld?: Transform;
+        toBRepData(wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+        toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined;
+        toGeometryQuery(): GeometryQuery | undefined;
+        toImageGraphic(): ImageGraphic | undefined;
+        toTextString(): TextString | undefined;
+        // (undocumented)
+        get value(): ElementGeometryDataEntry;
+        set value(value: ElementGeometryDataEntry);
+        }
     // (undocumented)
     export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;

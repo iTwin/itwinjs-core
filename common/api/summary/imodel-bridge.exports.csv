@@ -1,7 +1,7 @@
 sep=;
 Release Tag;API Item
-alpha;BridgeJobDefArgs
+beta;BridgeJobDefArgs
 public;BridgeLoggerCategory
-alpha;BridgeRunner
-alpha;class IModelBridge
-alpha;loggerCategory: string
+beta;BridgeRunner
+beta;class IModelBridge
+beta;loggerCategory: string

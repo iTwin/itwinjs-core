@@ -14,7 +14,7 @@ import { IModelDb } from '@bentley/imodeljs-backend';
 import { IModelStatus } from '@bentley/bentleyjs-core';
 import { Subject } from '@bentley/imodeljs-backend';
 
-// @alpha
+// @beta
 export class BridgeJobDefArgs {
     allDocsProcessed: boolean;
     argsJson: any;
@@ -36,7 +36,7 @@ export enum BridgeLoggerCategory {
     Framework = "imodel-bridge.Framework"
 }
 
-// @alpha
+// @beta
 export class BridgeRunner {
     constructor(jobDefArgs: BridgeJobDefArgs, serverArgs?: ServerArgs | IModelBankArgs);
     static fromArgs(args: string[]): BridgeRunner;
@@ -45,7 +45,7 @@ export class BridgeRunner {
     synchronize(): Promise<BentleyStatus>;
 }
 
-// @alpha
+// @beta
 export abstract class IModelBridge {
     // (undocumented)
     abstract getApplicationId(): string;
@@ -53,6 +53,7 @@ export abstract class IModelBridge {
     abstract getApplicationVersion(): string;
     // (undocumented)
     abstract getBridgeName(): string;
+    getDataChangesDescription?(): string;
     getJobSubjectName(sourcePath: string): string;
     abstract importDefinitions(): Promise<any>;
     abstract importDomainSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
@@ -63,7 +64,7 @@ export abstract class IModelBridge {
     // (undocumented)
     get jobSubject(): Subject;
     onOpenIModel(): Promise<BentleyStatus>;
-    abstract openSourceData(sourcePath: string): Promise<BentleyStatus>;
+    abstract openSourceData(sourcePath: string): Promise<void>;
     supportsMultipleFilesPerChannel(): boolean;
     set synchronizer(sync: Synchronizer);
     // (undocumented)
@@ -71,7 +72,7 @@ export abstract class IModelBridge {
     abstract updateExistingData(): Promise<any>;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export const loggerCategory: string;
 
 
