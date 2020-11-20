@@ -70,7 +70,16 @@ describe("ChangedElements (#integration)", () => {
     changes = cache.getChangedElements(startChangesetId, endChangesetId);
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
-    assert.isTrue(changes!.elements.length === changes!.classIds.length && changes!.elements.length === changes!.opcodes.length && changes!.elements.length === changes!.type.length);
+    assert.isTrue(changes!.modelIds !== undefined);
+    assert.isTrue(changes!.parentIds !== undefined);
+    assert.isTrue(changes!.parentClassIds !== undefined);
+    assert.isTrue(changes!.elements.length === changes!.classIds.length
+      && changes!.elements.length === changes!.opcodes.length
+      && changes!.elements.length === changes!.type.length
+      && changes!.elements.length === changes!.modelIds!.length
+      && changes!.elements.length === changes!.parentIds!.length
+      && changes!.elements.length === changes!.parentClassIds!.length
+    );
     // Try getting changed models
     const models = cache.getChangedModels(startChangesetId, endChangesetId);
     assert.isTrue(models !== undefined);
@@ -90,8 +99,19 @@ describe("ChangedElements (#integration)", () => {
     changes = cache.getChangedElements(startChangesetId, endChangesetId);
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
+    assert.isTrue(changes!.properties !== undefined);
+    assert.isTrue(changes!.modelIds !== undefined);
+    assert.isTrue(changes!.parentIds !== undefined);
+    assert.isTrue(changes!.parentClassIds !== undefined);
     // Ensure format is returned correctly
-    assert.isTrue(changes!.elements.length === changes!.classIds.length && changes!.elements.length === changes!.opcodes.length && changes!.elements.length === changes!.type.length);
+    assert.isTrue(changes!.elements.length === changes!.classIds.length
+      && changes!.elements.length === changes!.opcodes.length
+      && changes!.elements.length === changes!.type.length
+      && changes!.elements.length === changes!.properties!.length
+      && changes!.elements.length === changes!.modelIds!.length
+      && changes!.elements.length === changes!.parentIds!.length
+      && changes!.elements.length === changes!.parentClassIds!.length
+    );
     // If model Ids are returned, check that they correspond to the right length
     if (changes!.modelIds)
       assert.isTrue(changes!.elements.length === changes!.modelIds.length);
@@ -109,7 +129,14 @@ describe("ChangedElements (#integration)", () => {
     changes = ChangedElementsManager.getChangedElements(iModel.iModelId, startChangesetId, endChangesetId);
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
-    assert.isTrue(changes!.elements.length === changes!.classIds.length && changes!.elements.length === changes!.opcodes.length && changes!.elements.length === changes!.type.length);
+    assert.isTrue(changes!.elements.length === changes!.classIds.length
+      && changes!.elements.length === changes!.opcodes.length
+      && changes!.elements.length === changes!.type.length
+      && changes!.elements.length === changes!.modelIds!.length
+      && changes!.elements.length === changes!.properties!.length
+      && changes!.elements.length === changes!.parentIds!.length
+      && changes!.elements.length === changes!.parentClassIds!.length
+    );
     if (changes!.modelIds)
       assert.isTrue(changes!.elements.length === changes!.modelIds.length);
 
@@ -118,7 +145,14 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changeData !== undefined);
     assert.isTrue(changeData!.changedElements !== undefined);
     assert.isTrue(changeData!.changedModels !== undefined);
-    assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.classIds.length && changeData!.changedElements.elements.length === changeData!.changedElements.opcodes.length && changeData!.changedElements.elements.length === changeData!.changedElements.type.length && changeData?.changedElements.elements.length === changeData!.changedElements.properties!.length);
+    assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.classIds.length
+      && changeData!.changedElements.elements.length === changeData!.changedElements.opcodes.length
+      && changeData!.changedElements.elements.length === changeData!.changedElements.type.length
+      && changeData?.changedElements.elements.length === changeData!.changedElements.properties!.length
+      && changeData?.changedElements.elements.length === changeData.changedElements.modelIds!.length
+      && changeData?.changedElements.elements.length === changeData.changedElements.parentIds!.length
+      && changeData?.changedElements.elements.length === changeData.changedElements.parentClassIds!.length
+    );
     assert.isTrue(changeData!.changedModels.modelIds.length === changeData!.changedModels.bboxes.length);
   });
 });

@@ -364,8 +364,6 @@ export class ComponentExamplesProvider {
         createComponentExample("Basic Textarea", "Textarea with placeholder", <Textarea placeholder="Basic Textarea" />),
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
-        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
-        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
         createComponentExample("Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" />),
         createComponentExample("Number Input .25 step w/snap", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
         createComponentExample("Number Input .25 step w/snap custom format and parser", "New Numeric Input component", <NumberInput value={10.5} format={formatDollar} parse={parseDollar} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
@@ -375,6 +373,8 @@ export class ComponentExamplesProvider {
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
+        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status={InputStatus.Warning} />),
+        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status={InputStatus.Error} />),
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
@@ -631,7 +631,7 @@ export class ComponentExamplesProvider {
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
             minImage={<Icon iconSpec="icon-placeholder" />} maxImage={<Icon iconSpec="icon-placeholder" />} />),
         createComponentExample("Slider w/ tick marks", "Slider with showTicks and getTickCount props",
-          <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
+          <Slider min={0} max={5} values={[2.25]} step={.01} showTooltip showMinMax
             showTicks getTickCount={() => 10} />),
         createComponentExample("Slider w/ multiple values", "Slider with array of values",
           <Slider min={0} max={100} values={[30, 70]} step={5} mode={2} showTooltip showMinMax
@@ -787,6 +787,15 @@ export class ComponentExamplesProvider {
       ],
     };
   }
+  private static get deprecatedComponentSamples(): ComponentExampleCategory {
+    return {
+      title: "Deprecated Components",
+      examples: [
+        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
+      ],
+    };
+  }
 
   public static get categories(): ComponentExampleCategory[] {
     return [
@@ -811,6 +820,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
       ComponentExamplesProvider.toggleSamples,
+      ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }
 }

@@ -13,7 +13,7 @@ describe("WidgetContentContainer ", () => {
   it("should render minimized", () => {
     const onSaveTransientState = new EventEmitter<(tabId: TabState["id"]) => void>();
     const widgetContentManager: WidgetContentManagerContextArgs = {
-      getWidgetContentContainerRef: () => React.createRef(),
+      setContainer: () => { },
       onRestoreTransientState: new EventEmitter<(tabId: TabState["id"]) => void>(),
       onSaveTransientState,
     };

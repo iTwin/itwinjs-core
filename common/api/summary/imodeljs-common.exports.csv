@@ -309,6 +309,7 @@ alpha;ModelClipGroups
 alpha;ModelGeometryChanges
 alpha;ModelGeometryChanges
 alpha;ModelGeometryChangesProps
+public;ModelLoadProps
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 
@@ -386,6 +387,7 @@ internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number |
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
+public;RelationshipProps 
 beta;class RenderMaterial
 beta;RenderMaterial
 beta;RenderMaterialProps 
@@ -480,6 +482,7 @@ public;SolarLight
 public;SolarLightProps
 public;SolarShadowSettings
 public;SolarShadowSettingsProps
+public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;class StandaloneIModelRpcInterface 

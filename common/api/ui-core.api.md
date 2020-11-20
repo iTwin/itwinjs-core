@@ -1506,7 +1506,9 @@ export interface PopupContextMenuProps extends CommonProps {
 export interface PopupProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
+    closeOnContextMenu?: boolean;
     closeOnEnter?: boolean;
+    closeOnWheel?: boolean;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
     isPinned?: boolean;
@@ -1514,9 +1516,11 @@ export interface PopupProps extends CommonProps {
     moveFocus?: boolean;
     offset: number;
     onClose?: () => void;
+    onContextMenu?: (e: MouseEvent) => void;
     onEnter?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
+    onWheel?: (e: WheelEvent) => void;
     position: RelativePosition;
     role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;

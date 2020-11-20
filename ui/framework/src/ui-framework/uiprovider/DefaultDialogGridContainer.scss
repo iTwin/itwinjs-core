@@ -204,3 +204,10 @@ div.nz-toolSettings-docked .uifw-default-editor:last-child {
   margin-bottom: 0;
   align-self: center;
 }
+
+/* Override the GridLayout case where width is 100% */
+div.nz-toolSettings-docked {
+  select.uicore-inputs-select.components-cell-editor.components-enum-editor {
+    width: auto;
+  }
+}
