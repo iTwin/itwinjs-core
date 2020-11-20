@@ -307,6 +307,23 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
+    {
+      "name": "WebGL Compatibility Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 8
+      },
+      "cwd": "${workspaceFolder}/core/webgl-compatibility/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/webgl-compatibility/lib/**/*.js"
+      ]
+    },
     // CLIENTS TESTS
     {
       "name": "Backend iTwin Client Tests (Integration)",
