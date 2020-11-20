@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import {
-  ColorEditorParams, equalsIgnoreCase, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+  ColorEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { ColorPickerButton } from "../color/ColorPickerButton";
@@ -129,13 +129,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
   /** @internal */
   public render() {
-    const record = this.props.propertyRecord;
-    let colorValue = 0;
-    // istanbul ignore else
-    if (record && record.value.valueFormat === PropertyValueFormat.Primitive)
-      colorValue = record.value.value as number;
-
-    const colorDef = ColorDef.create(colorValue);
+    const colorDef = ColorDef.create(this.state.colorValue);
     return (
       <div className={classnames("components-color-editor", this.props.className)} style={this.props.style}>
         <ColorPickerButton ref={this._buttonElement}
