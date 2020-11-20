@@ -414,7 +414,11 @@ export class Format implements FormatProps {
       if (undefined === this.units || this.units.length === 0)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
     }
+
+    await this.loadCustomPropsFromJson(unitsProvider, jsonObj);
   }
+
+  protected async loadCustomPropsFromJson(_unitsProvider: UnitsProvider, _jsonObj: any): Promise<void> { };
 
   /**
    * Returns a JSON object that contain the specification for this Format.
@@ -452,8 +456,12 @@ export class Format implements FormatProps {
       schemaJson.composite = composite;
     } else { }
 
-    return schemaJson;
+    return this.addCustomPropsToJson(schemaJson);
   }
+
+  protected addCustomPropsToJson(schemaJson: { [value: string]: any }) {
+    return schemaJson;
+  };
 }
 
 /** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format.

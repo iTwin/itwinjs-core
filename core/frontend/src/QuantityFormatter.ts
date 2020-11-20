@@ -36,6 +36,25 @@ interface UnitDefinition {
   readonly conversion: ConversionDef;
 }
 
+export interface CustomFormatter {
+  formatQuantity(magnitude: number, spec: FormatterSpec): string;
+  parseIntoQuantityValue(inString: string, spec: ParserSpec): ParseResult;
+}
+
+class CustomFormatterSpec extends FormatterSpec {
+  private _quantityType: QuantityType;
+  public get quantityType(): QuantityType { return this._quantityType; }
+  public constructor(quantityType: QuantityType, other: FormatterSpec) {
+    super(other.name, other.format, other.unitConversions);
+    this._quantityType = quantityType;
+  }
+}
+
+type CustomFormatterImpl<T extends CustomFormatter = CustomFormatter> = new () => T;
+
+type CustomFormatImpl = typeof Format;
+type CustomFormatPair = [CustomFormatImpl, { [value: string]: any }];
+
 // cSpell:ignore MILLIINCH, MICROINCH, MILLIFOOT
 // Set of supported units - this information will come from Schema-based units once the EC package is ready to provide this information.
 const unitData: UnitDefinition[] = [
@@ -82,7 +101,9 @@ const unitData: UnitDefinition[] = [
 /** Defines standard format types for tools that need to display measurements to user.
  * @beta
  */
-export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6, Stationing = 7, LengthSurvey = 8, LengthEngineering = 9 }
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const QuantityType = { Length: 1, Angle: 2, Area: 3, Volume: 4, LatLong: 5, Coordinate: 6, Stationing: 7, LengthSurvey: 8, LengthEngineering: 9 }
+export type QuantityType = (typeof QuantityType)[keyof typeof QuantityType] | string;
 
 // The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
 // units that are available from the registered units provider.
@@ -399,6 +420,22 @@ const defaultsFormats = {
   ],
 };
 
+const defaultFormatProps = {
+  composite: {
+    includeZero: true,
+    spacer: " ",
+    units: [
+      {
+        label: "m",
+        name: "Units.M",
+      },
+    ],
+  },
+  formatTraits: ["keepSingleZero", "showUnitLabel"],
+  precision: 4,
+  type: "Decimal",
+}
+
 /** Formats quantity values into strings.
  * @alpha
  */
@@ -411,6 +448,9 @@ export class QuantityFormatter implements UnitsProvider {
   protected _metricFormatSpecsByType = new Map<QuantityType, FormatterSpec>();
   protected _imperialParserSpecsByType = new Map<QuantityType, ParserSpec>();
   protected _metricUnitParserSpecsByType = new Map<QuantityType, ParserSpec>();
+  protected _customFormattersByType = new Map<QuantityType, CustomFormatterImpl>();
+  protected _customFormatsByType = new Map<QuantityType, CustomFormatPair>();
+
 
   /**
    * constructor
@@ -559,6 +599,13 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   protected async getFormatByQuantityType(type: QuantityType, imperial: boolean): Promise<Format> {
+    if (this._customFormatsByType.has(type)) {
+      const [formatClass, jsonProps] = this._customFormatsByType.get(type) as CustomFormatPair;
+      const _format: Format = new formatClass("customFormat");
+      await _format.fromJson(this, jsonProps);
+      return _format;
+    }
+
     const activeMap = imperial ? this._imperialFormatsByType : this._metricFormatsByType;
 
     let format = activeMap.get(type);
@@ -624,6 +671,36 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
+  protected async _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec> {
+    let spec: FormatterSpec | undefined;
+    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
+    if (activeMap.size > 0)
+      spec = activeMap.get(type);
+    else {
+      await this.loadFormatSpecsForQuantityTypes(useImperial);
+      if (activeMap.has(type)) {
+        spec = activeMap.get(type);
+      }
+    }
+
+    if (undefined === spec) {
+      throw new BentleyError(BentleyStatus.ERROR, "Unable to load FormatSpecs");
+    }
+
+    return spec;
+  }
+
+  protected async _getCustomFormatterSpec(type: QuantityType, useImperial: boolean) {
+    const formatPromise = this.getFormatByQuantityType(type, useImperial);
+    const unitPromise = this.getUnitByQuantityType(type);
+    const [format, unit] = await Promise.all([formatPromise, unitPromise]);
+    let spec = await FormatterSpec.create(format.name, format, this, unit);
+    // if a custom formatter has been defined for this quantity type, return a tagged FormatterSpec
+    spec = new CustomFormatterSpec(type, spec);
+    // TODO: cache custom formatter spec
+    return spec;
+  }
+
   /** Synchronous call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
    * cache is populated by the async call loadFormatSpecsForQuantityTypes.
    */
@@ -646,16 +723,13 @@ export class QuantityFormatter implements UnitsProvider {
    */
   public async getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec> {
     const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
-    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    if (activeMap.size > 0)
-      return activeMap.get(type) as FormatterSpec;
 
-    await this.loadFormatSpecsForQuantityTypes(useImperial);
-    if (activeMap.size > 0) {
-      const spec = activeMap.get(type);
-      if (spec)
-        return spec;
+    if (this._isStandardQuantityType(type)) {
+      return this._getStandardFormatterSpec(type, useImperial)
+    } else if (this._customFormattersByType.has(type)) {
+      return this._getCustomFormatterSpec(type, useImperial)
     }
+
     throw new BentleyError(BentleyStatus.ERROR, "Unable to load FormatSpecs");
   }
 
@@ -699,6 +773,12 @@ export class QuantityFormatter implements UnitsProvider {
    * @return the formatted string.
    */
   public formatQuantity(magnitude: number, formatSpec: FormatterSpec): string {
+    if (formatSpec instanceof CustomFormatterSpec) {
+      const formatterImpl = this._customFormattersByType.get(formatSpec.quantityType) as CustomFormatterImpl;
+      const formatter = new formatterImpl();
+      return formatter.formatQuantity(magnitude, formatSpec);
+    }
+
     return Formatter.formatQuantity(magnitude, formatSpec);
   }
 
@@ -722,6 +802,28 @@ export class QuantityFormatter implements UnitsProvider {
       IModelApp.toolAdmin.startDefaultTool();
   }
 
+  /** Registers a custom quantity type and a corresponding custom formatter.
+   * @param customQuantityType    The name of the custom quantity type. Please prefix with your extension name.
+   * @param formatter             The custom formatter class that will handle the given custom quantity type.
+   * @param suppliedFormat        Optional custom Format class for the given custom quantity type.
+   * @param formatProps           Optional format properties to initialize custom Format objects
+   * @return ParseResult object containing either the parsed value or an error value if unsuccessful.
+   */
+  public async registerCustomQuantityFormatter(customQuantityType: string, formatter: CustomFormatterImpl, suppliedFormat: CustomFormatImpl = Format, formatProps: any = defaultFormatProps): Promise<boolean> {
+    // Tries to create a Format object to validate formatProps
+    const format = new suppliedFormat("test");
+    // Will throw if invalid
+    await format.fromJson(this, formatProps);
+
+    if (this._customFormattersByType.has(customQuantityType)) {
+      return false;
+    }
+
+    this._customFormatsByType.set(customQuantityType, [suppliedFormat, formatProps]);
+    this._customFormattersByType.set(customQuantityType, formatter);
+    return true;
+  }
+
   /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
   public get useImperialFormats(): boolean { return this._activeSystemIsImperial; }
   public set useImperialFormats(useImperial: boolean) {
@@ -729,5 +831,9 @@ export class QuantityFormatter implements UnitsProvider {
       return;
 
     this.loadFormatAndParsingMaps(useImperial, true); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }
+
+  private _isStandardQuantityType(type: QuantityType): boolean {
+    return Object.keys(QuantityType).some((key) => (QuantityType as any)[key] === type);
   }
 }
