@@ -23,11 +23,11 @@ import { Synchronizer } from "./Synchronizer";
 import { ServerArgs } from "./IModelHubUtils";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
 
-/** @alpha */
+/** @beta */
 export const loggerCategory: string = BridgeLoggerCategory.Framework;
 
 /** Arguments that define how a bridge job should be run
- * @alpha
+ * @beta
  */
 export class BridgeJobDefArgs {
   /** Comment to be used as the initial string for all changesets.  Can be null. */
@@ -60,7 +60,7 @@ class StaticTokenStore {
 }
 
 /** The driver for synchronizing content to an iModel.
- * @alpha
+ * @beta
  */
 export class BridgeRunner {
   private _bridge?: IModelBridge;
@@ -180,17 +180,18 @@ export class BridgeRunner {
     this.initProgressMeter();
 
     await iModelDbBuilder.acquire();
-    if (undefined === iModelDbBuilder.imodel) {
+    if (undefined === iModelDbBuilder.imodel || !iModelDbBuilder.imodel.isOpen) {
       throw new IModelError(IModelStatus.BadModel, "Failed to open imodel", Logger.logError, loggerCategory);
     }
 
-    await this._bridge.openSourceData(this._bridgeArgs.sourcePath);
-    await this._bridge.onOpenIModel();
-    assert(iModelDbBuilder.imodel !== undefined);
-    await iModelDbBuilder.updateExistingIModel();
-
-    if (iModelDbBuilder.imodel.isBriefcaseDb() || iModelDbBuilder.imodel.isSnapshotDb()) {
-      iModelDbBuilder.imodel.close();
+    try {
+      await this._bridge.openSourceData(this._bridgeArgs.sourcePath);
+      await this._bridge.onOpenIModel();
+      await iModelDbBuilder.updateExistingIModel();
+    } finally {
+      if (iModelDbBuilder.imodel.isBriefcaseDb() || iModelDbBuilder.imodel.isSnapshotDb()) {
+        iModelDbBuilder.imodel.close();
+      }
     }
 
     return BentleyStatus.SUCCESS;
@@ -424,7 +425,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     // WIP: need detectSpatialDataTransformChanged check?
     await this._bridge.updateExistingData();
 
-    return this._saveAndPushChanges("Data changes", ChangesType.Regular);
+    let dataChangesDescription = "Data changes";
+    if (this._bridge.getDataChangesDescription)
+      dataChangesDescription = this._bridge.getDataChangesDescription();
+
+    return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
   }
 
   /** Pushes any pending transactions to the hub. */

@@ -1630,7 +1630,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   public dispose(): void {
-    assert(undefined !== this._target, "Double disposal of Viewport");
+    if (this.isDisposed)
+      return;
+
     this._disposeDecorationCache();
     this._target = dispose(this._target);
     this.subcategories.dispose();
