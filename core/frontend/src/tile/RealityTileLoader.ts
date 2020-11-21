@@ -18,7 +18,7 @@ import {
   TileDrawArgs, TileLoadPriority, TileRequest,
 } from "./internal";
 
-const defaultViewFlagOverrides = createDefaultViewFlagOverrides({ lighting: false });
+const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
 
 const scratchTileCenterWorld = new Point3d();
 const scratchTileCenterView = new Point3d();
@@ -77,7 +77,7 @@ export abstract class RealityTileLoader {
     switch (format) {
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        return { graphic: readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp) };
+        return { graphic: readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system) };
 
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());
