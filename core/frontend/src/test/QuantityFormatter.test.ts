@@ -59,7 +59,7 @@ const invalidFormatProps = {
   },
 };
 
-describe("Quantity formatter", async () => {
+describe.only("Quantity formatter", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
     quantityFormatter = new QuantityFormatter();
@@ -116,4 +116,48 @@ describe("Quantity formatter", async () => {
     const newFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("newQuantityType");
     assert.equal((newFormatterSpec.format as MyNewFormat).myProp, expected);
   });
+
+  it("Registering new length override", async () => {
+    const overrideEntry = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "cm", name: "Units.CM" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      imperial: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+    };
+
+    const metricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, false);
+    const metricFormattedValue = quantityFormatter.formatQuantity(1.5, metricFormatSpec);
+    assert.equal(metricFormattedValue, "1.5 m");
+
+    const imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
+    const imperialFormattedValue = quantityFormatter.formatQuantity(1.5, imperialFormatSpec);
+    assert.equal(imperialFormattedValue, `4'-11"`);
+
+    await quantityFormatter.setOverrideFormats(QuantityType.Length, overrideEntry);
+    const overrideMetricFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, false);
+    const overrideMetricFormattedValue = quantityFormatter.formatQuantity(1.5, overrideMetricFormatSpec);
+    assert.equal(overrideMetricFormattedValue, "150 cm");
+
+    const overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
+    const overrideImperialFormattedValue = quantityFormatter.formatQuantity(1.5, overrideImperialFormatSpec);
+    assert.equal(overrideImperialFormattedValue, "59.0551 in");
+  });
+
 });
+

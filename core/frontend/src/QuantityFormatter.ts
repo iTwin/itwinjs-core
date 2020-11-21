@@ -587,26 +587,44 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error("not yet implemented");
   }
 
+  private clearCachedData() {
+    this._imperialFormatsByType.clear();
+    this._metricFormatsByType.clear();
+    this._imperialFormatSpecsByType.clear();
+    this._metricFormatSpecsByType.clear();
+    this._imperialParserSpecsByType.clear();
+    this._metricUnitParserSpecsByType.clear();
+  }
+
+  private async reloadCachedData() {
+    await this.loadFormatSpecsForQuantityTypes(true);
+    await this.loadParsingSpecsForQuantityTypes(true);
+    await this.loadFormatSpecsForQuantityTypes(false);
+    await this.loadParsingSpecsForQuantityTypes(false);
+  }
+
   public async setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry) {
     this._overrideFormatDataByType.set(type, entry);
-    await this.loadFormatSpecsForQuantityType(type, this._activeSystemIsImperial);
-    await this.loadParsingSpecsForQuantityType(type, this._activeSystemIsImperial);
+    this.clearCachedData();
+    await this.reloadCachedData();
   }
 
   public async clearOverrideFormats(type: QuantityType) {
     this._overrideFormatDataByType.delete(type);
-    await this.loadFormatSpecsForQuantityType(type, this._activeSystemIsImperial);
-    await this.loadParsingSpecsForQuantityType(type, this._activeSystemIsImperial);
+    this.clearCachedData();
+    await this.reloadCachedData();
   }
 
   public async clearAllOverrideFormats() {
     this._overrideFormatDataByType.clear();
-    await this.loadFormatSpecsForQuantityTypes(this._activeSystemIsImperial);
-    await this.loadParsingSpecsForQuantityTypes(this._activeSystemIsImperial);
+    this.clearCachedData();
+    await this.reloadCachedData();
   }
 
   protected async getOverrideFormat(type: QuantityType, imperial: boolean): Promise<any> {
     const formatEntry = this._overrideFormatDataByType.get(type);
+    this._imperialParserSpecsByType.clear();
+    this._metricUnitParserSpecsByType.clear();
     if (formatEntry) {
       if (imperial)
         return formatEntry.imperial;
