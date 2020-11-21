@@ -50,4 +50,4 @@ jobs:
         env:
           commitid: ${{ github.sha }}
       - name: Push to master
-        run: git push https://$(GITHUBTOKEN)@github.com/calebmshafer/imodeljs HEAD:master
+        run: git push https://$(GITHUBTOKEN)@github.com/imodeljs/imodeljs HEAD:master
