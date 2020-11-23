@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Transform } from "@bentley/geometry-core";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
@@ -19,20 +19,31 @@ import { TileLoadStatus } from "./Tile";
 /** @internal */
 export interface RealityTileParams extends TileParams {
   readonly transformToRoot?: Transform;
+  readonly additiveRefinement?: boolean;
+  readonly noContentButTerminateOnSelection?: boolean;
+  readonly rangeCorners?: Point3d[];
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
+const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
  * @internal
  */
 export class RealityTile extends Tile {
   public readonly transformToRoot?: Transform;
+  public readonly additiveRefinement?: boolean;
+  public readonly noContentButTerminateOnSelection?: boolean;
+  public readonly rangeCorners?: Point3d[];
   private _everDisplayed = false;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
     this.transformToRoot = props.transformToRoot;
+    this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
+    this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
+    this.rangeCorners = props.rangeCorners;
+
     if (undefined === this.transformToRoot)
       return;
 
@@ -48,6 +59,12 @@ export class RealityTile extends Tile {
   public get maxDepth(): number { return this.realityRoot.loader.maxDepth; }
   public get isPointCloud() { return this.realityRoot.loader.containsPointClouds; }
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
+  public get isDisplayable(): boolean {
+    if (this.noContentButTerminateOnSelection)
+      return false;
+    else
+      return super.isDisplayable;
+  }
 
   public markUsed(args: TileDrawArgs): void {
     args.markUsed(this);
@@ -124,7 +141,7 @@ export class RealityTile extends Tile {
   }
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
-    builder.addRangeBox(this.range);
+    builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
   }
 
   public allChildrenIncluded(tiles: Tile[]) {
@@ -160,7 +177,10 @@ export class RealityTile extends Tile {
       return;
     }
 
-    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile())) {
+    if (visibility >= 1 && this.noContentButTerminateOnSelection)
+      return;
+
+    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded)) {
       if (!this.isOccluded(args.viewingSpace)) {
         context.selectOrQueue(this, args, traversalDetails);
 
@@ -171,6 +191,9 @@ export class RealityTile extends Tile {
         }
       }
     } else {
+      if (this.additiveRefinement && this.isDisplayable)
+        context.selectOrQueue(this, args, traversalDetails);
+
       this.selectRealityChildren(context, args, traversalDetails);
       if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
         const minimumVisibleFactor = .25;     // If the tile has not yet been displayed in this viewport -- display only if it is within 25% of visible. Avoid overly tiles popping into view unexpectedly (terrain)
@@ -198,7 +221,7 @@ export class RealityTile extends Tile {
       return -1;
 
     // some nodes are merely for structure and don't have any geometry
-    if (!this.isDisplayable)
+    if (0 === this.maximumSize)
       return 0;
 
     if (this.isLeaf)
@@ -213,7 +236,8 @@ export class RealityTile extends Tile {
       return;
 
     if (visibility * preloadSizeModifier > 1) {
-      context.preload(this, args);
+      if (this.isDisplayable)
+        context.preload(this, args);
     } else {
       const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
       if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
@@ -232,5 +256,12 @@ export class RealityTile extends Tile {
           return true;
 
     return this._childrenLoadStatus === TileTreeLoadStatus.NotFound;
+  }
+  public getSizeProjectionCorners(): Point3d[] | undefined {
+    if (!this.tree.isContentUnbounded)
+      return undefined;           // For a non-global tree use the standard size algorithm.
+
+    // For global tiles (as in OSM buildings) return the range corners - this allows an algorithm that uses the area of the projected corners to attenuate horizon tiles.
+    return this.range.corners(scratchCorners);
   }
 }
