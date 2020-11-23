@@ -34,6 +34,7 @@
     "@bentley/presentation-frontend": "2.10.0-dev.13",
     "@bentley/presentation-components": "2.10.0-dev.13",
     "@bentley/presentation-testing": "2.10.0-dev.13",
+    "@bentley/product-settings-client": "2.10.0-dev.13",
     "@bentley/ui-core": "2.10.0-dev.13",
     "@bentley/ui-components": "2.10.0-dev.13",
     "@bentley/ui-abstract": "2.10.0-dev.13",
