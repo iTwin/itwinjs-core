@@ -51,11 +51,7 @@ A [ChannelConstraintError]($backend) is thrown when an app breaks one of these r
 - "cannot write to the channel owned by A while in the repository channel"
 - "cannot write to the repository channel while in the channel owned by B"
 
-An app gets itself "into" a channel by setting the channelRoot property of the iModel, like this:
-
-```ts
-imodel1.concurrencyControl.channel.channelRoot = subject2;
-```
+## Channel Ownership
 
 > An app should not get into or try to modify a channel that it does not own.
 
@@ -66,35 +62,64 @@ The rules of locking are slightly different for channels:
 - When you lock a channel root element, you effectively lock everything in it.
 - You can only lock the channel that you are _in_.
 
-## Example
+## Connectors and Channels
+
+A connector ([IModelBridge]($backend)) always works in a channel. A connector does not create channels or change the channel. That is done by [BridgeRunner]($backend). It calls some connector methods in the repository channel and others in the bridge's own private channel. The channel is locked by BridgeRunner.
+
+## Non-Connector Apps and Channels
+
+An app other than a connector *may* create and work in a channel. That is not required. If your app wants to work in a channel, here is an example.
+
+The first example is how to create a channel and then get into it and write to it. Note how changes must be pushed in between changing channels.
 
 ```ts
-    // Get a briefcase
-    const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(managerRequestContext, testProjectId, readWriteTestIModel.id, { syncMode: SyncMode.PullAndPush });
-    managerRequestContext.enter();
-    const imodel1 = await BriefcaseDb.open(managerRequestContext, briefcaseProps.key);
-    managerRequestContext.enter();
-    // To make things simple, set optimistic concurrency and go into bulk mode.
-    // That way, we don't have to worry about locks or code-reservations.
-    imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
-    imodel1.concurrencyControl.startBulkMode();
+// Get a briefcase
+const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, testProjectId, readWriteTestIModel.id, { syncMode: SyncMode.PullAndPush });
+requestContext.enter();
+const imodel1 = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+requestContext.enter();
+// To make things simple, set optimistic concurrency and go into bulk mode.
+// That way, we don't have to worry about locks or code-reservations.
+imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+imodel1.concurrencyControl.startBulkMode();
 
-    // Create the channel root. Note that, initially, we are in the repository channel.
-    const channel3 = imodel1.elements.insertElement(Subject.create(imodel1, imodel1.elements.getRootSubject().id, "channel3"));
-    const channel3Info = "this is channel3"; // could be an object or anything you like
-    ChannelRootAspect.insert(imodel1, channel3, channel3Info); // Create one of the channels using the new aspect in the way iModel.js apps would set them up.
+// Create the channel root. Note that, initially, we are in the repository channel.
+const channel3 = imodel1.elements.insertElement(Subject.create(imodel1, imodel1.elements.getRootSubject().id, "channel3"));
+const channel3Info = "this is channel3"; // could be an object or anything you like
+ChannelRootAspect.insert(imodel1, channel3, channel3Info); // Create one of the channels using the new aspect in the way iModel.js apps would set them up.
 
-    // Push the change to the repository channel.
-    await imodel1.concurrencyControl.request(managerRequestContext);
-    imodel1.saveChanges();
-    await imodel1.pushChanges(managerRequestContext, "channel3 root created");
+// Push the change to the repository channel.
+await imodel1.concurrencyControl.request(requestContext);
+imodel1.saveChanges();
+await imodel1.pushChanges(requestContext, "channel3 root created");
 
-    // Now enter channel3 and write to it.
-    imodel1.concurrencyControl.channel.channelRoot = channel3;
-    const m3 = createAndInsertPhysicalPartitionAndModel(imodel1, "m3", true, channel3; // some function that creates a model
+// Now enter channel3 and write to it.
+imodel1.concurrencyControl.channel.channelRoot = channel3;
+const m3 = createAndInsertPhysicalPartitionAndModel(imodel1, "m3", true, channel3; // some function that creates a model
 
-    // Push the changes to channel3
-    await imodel1.concurrencyControl.request(managerRequestContext);
-    imodel1.saveChanges();
-    await imodel1.pushChanges(managerRequestContext, "channel3 populated");
+// Push the changes to channel3
+await imodel1.concurrencyControl.request(requestContext);
+imodel1.saveChanges();
+await imodel1.pushChanges(requestContext, "channel3 populated");
+```
+
+The next example is how to enter an existing channel and lock it in a pessimistic locking situation.
+
+```ts
+// Get the channel root element
+const channel3 = imodel1.elements.getElement<Subject>({code: "channel3"});
+
+// Enter that channel
+imodel1.concurrencyControl.channel.channelRoot = channel3;
+
+// Lock that channel. That effectively locks everything in that channel.
+await imodel1.concurrencyControl.channel.lockChannelRoot(requestContext);
+requestContext.enter();
+
+... make changes to elements and models in this channel.
+
+// Push the changes to channel3
+await imodel1.concurrencyControl.request(requestContext);
+imodel1.saveChanges();
+await imodel1.pushChanges(requestContext, "channel3 populated");
 ```
