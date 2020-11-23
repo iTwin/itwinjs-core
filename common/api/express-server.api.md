@@ -19,6 +19,10 @@ export class IModelJsExpressServer {
     protected _configureMiddleware(): void;
     // (undocumented)
     protected _configureRoutes(): void;
+    // (undocumented)
+    static defaults: {
+        uploadLimit: string;
+    };
     initialize(port: number | string): Promise<Server>;
     // @alpha (undocumented)
     get rpcConfiguration(): RpcConfiguration;
