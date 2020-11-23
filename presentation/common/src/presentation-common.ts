@@ -54,6 +54,7 @@ export * from "./presentation-common/content/Editor";
 export * from "./presentation-common/content/Fields";
 export * from "./presentation-common/content/Item";
 export * from "./presentation-common/content/Property";
+export * from "./presentation-common/content/Renderer";
 export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
 
