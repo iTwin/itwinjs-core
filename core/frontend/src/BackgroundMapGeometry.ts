@@ -49,12 +49,12 @@ export class BackgroundMapGeometry {
   private static _scratchRayAngles = new Array<LongitudeLatitudeNumber>();
   private static _scratchPoint = Point3d.createZero();
 
-  constructor(private _bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection) {
-    this._ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(_bimElevationBias);
+  constructor(private _bimElevationBias: number, globeMode: GlobeMode, private _iModel: IModelConnection) {
+    this._ecefToDb = _iModel.backgroundMapLocation.getMapEcefToDb(_bimElevationBias);
     this.globeMode = globeMode;
-    this.cartesianRange = BackgroundMapGeometry.getCartesianRange(iModel);
+    this.cartesianRange = BackgroundMapGeometry.getCartesianRange(_iModel);
     this.cartesianTransitionRange = this.cartesianRange.clone();
-    this.cartesianTransitionRange.expandInPlace(BackgroundMapGeometry.getCartesianTransitionDistance(iModel));
+    this.cartesianTransitionRange.expandInPlace(BackgroundMapGeometry.getCartesianTransitionDistance(_iModel));
     this.cartesianDiagonal = this.cartesianRange.diagonal().magnitudeXY();
     const earthRadius = Constant.earthRadiusWGS84.equator;
     this.globeOrigin = this._ecefToDb.origin.cloneAsPoint3d();
@@ -65,7 +65,7 @@ export class BackgroundMapGeometry {
     this.cartesianPlane = this.getPlane();
     this.geometry = (globeMode === GlobeMode.Ellipsoid) ? this.getEarthEllipsoid() : this.cartesianPlane;
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
-    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(this._ecefToDb, _bimElevationBias, iModel, false);
+    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(this._ecefToDb, _bimElevationBias, _iModel, false);
   }
   public static getCartesianRange(iModel: IModelConnection, result?: Range3d): Range3d {
     const cartesianRange = Range3d.createFrom(iModel.projectExtents, result);
@@ -80,6 +80,12 @@ export class BackgroundMapGeometry {
     if (undefined === result)
       result = Cartographic.fromRadians(0, 0, 0);
 
+    if (this.cartesianRange.containsPoint(Point3d.createFrom(db))) {
+      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+        return await this._iModel.spatialToCartographic(db);
+      })().catch(() => { });
+    }
+
     if (this.globeMode === GlobeMode.Plane) {
       const mercatorFraction = this._mercatorFractionToDb.multiplyInversePoint3d(db)!;
       return this._mercatorTilingScheme.fractionToCartographic(mercatorFraction.x, mercatorFraction.y, result, mercatorFraction.z);
@@ -90,13 +96,21 @@ export class BackgroundMapGeometry {
   }
 
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
+    let db;
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);
       this._mercatorTilingScheme.cartographicToFraction(cartographic.latitude, cartographic.longitude, fraction);
-      return this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
+      db = this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
     } else {
-      return this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
+      db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
     }
+    if (this.cartesianRange.containsPoint(db)) {
+      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+        db = await this._iModel.cartographicToSpatialFromGcs(cartographic);
+      })().catch(() => { })
+    }
+    return db;
+
   }
 
   public getEarthEllipsoid(radiusOffset = 0): Ellipsoid {
