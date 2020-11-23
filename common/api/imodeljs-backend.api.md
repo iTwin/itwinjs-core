@@ -2726,7 +2726,6 @@ export class IModelHostConfiguration {
     // @deprecated
     briefcaseCacheDir?: string;
     cacheDir?: string;
-    // @beta
     compressCachedTiles?: boolean;
     // (undocumented)
     concurrentQuery: Config;
