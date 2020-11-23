@@ -57,7 +57,7 @@ function mockUpdateCheckpointV2(imodelId: GuidString, checkpoint: CheckpointV2) 
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "CheckpointV2", checkpoint.wsgId!);
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "CheckpointV2", checkpoint.wsgId);
   const requestResponse = ResponseBuilder.generatePostResponse(checkpoint);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse);
 }
@@ -125,7 +125,7 @@ describe("iModelHub CheckpointV2Handler", () => {
 
   // CheckpointV2 not in QA yet, make unit tests until they can be reenabled as integration tests
   it("should query CheckpointsV2 with ContainerAccessKey (#unit)", async () => {
-    mockGetCheckpointV2(imodelId, `?$select=*,HasContainer-forward-ContainerAccessKey.*`, mockCheckpointV2("", CheckpointV2State.Successful, '1', true));
+    mockGetCheckpointV2(imodelId, `?$select=*,HasContainer-forward-ContainerAccessKey.*`, mockCheckpointV2("", CheckpointV2State.Successful, "1", true));
     const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().selectContainerAccessKey());
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
