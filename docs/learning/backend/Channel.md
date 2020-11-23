@@ -32,6 +32,8 @@ In this example, PhysicalPartition11 and Subject2 are the channel roots. They ar
 
 Not everything in an iModel is in a channel. Everything that is not in a specially marked channel is, by default, assigned to the special "repository channel". In the diagram above, everything in black is in the repository channel.
 
+## Channel Constraints
+
 A read-write app does not _have to_ create a channel before it can write to an iModel. The app must, nevertheless, follow the rules when regarding channels that were created by other apps.
 
 There are two fundamental rules that apply to (non-repository) channels:
@@ -51,6 +53,10 @@ A [ChannelConstraintError]($backend) is thrown when an app breaks one of these r
 - "cannot write to the channel owned by A while in the repository channel"
 - "cannot write to the repository channel while in the channel owned by B"
 
+You will get this error if you try to change channels without pushing your changes first:
+
+- "Must push changes before changing channel"
+
 ## Channel Ownership
 
 > An app should not get into or try to modify a channel that it does not own.
@@ -68,7 +74,7 @@ A connector ([IModelBridge]($backend)) always works in a channel. A connector do
 
 ## Non-Connector Apps and Channels
 
-An app other than a connector *may* create and work in a channel. That is not required. If your app wants to work in a channel, here is an example.
+An app other than a connector _may_ create and work in a channel. That is not required. If your app wants to work in a channel, here is an example.
 
 The first example is how to create a channel and then get into it and write to it. Note how changes must be pushed in between changing channels.
 
