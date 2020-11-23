@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "Fix calendar logic to avoid duplicate day numbers when day light saving ends, producing a 25hr day.",
+      "comment": "Fix issue where entries in ButtonGroup would not properly disable/enable.",
       "type": "none"
     }
   ],

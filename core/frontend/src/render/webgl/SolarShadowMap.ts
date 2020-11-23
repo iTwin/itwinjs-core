@@ -41,6 +41,10 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
       this._processTiles = process;
     }
 
+    // The solar shadow projection is parallel - which can cause excessive tile selection if it is along an axis of an unbounded tile
+    // tree such as the OSM buildings.  Rev limit the selection here.
+    public get maxRealityTreeSelectionCount(): undefined | number { return 500; }
+
     public processSelectedTiles(tiles: Tile[]): void {
       this._processTiles(tiles);
     }
