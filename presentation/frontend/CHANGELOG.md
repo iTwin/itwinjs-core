@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Thu, 19 Nov 2020 17:03:42 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 15:33:50 GMT and should not be manually modified.
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+### Updates
+
+- Added check for invalid paged request result to avoid infinite loop.
 
 ## 2.9.1
 Thu, 19 Nov 2020 17:03:42 GMT

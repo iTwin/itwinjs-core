@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 19 Nov 2020 17:03:42 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 15:33:50 GMT and should not be manually modified.
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+### Updates
+
+- Apply workaround for transparency anomalies caused by buggy Intel drivers.
 
 ## 2.9.1
 Thu, 19 Nov 2020 17:03:42 GMT
