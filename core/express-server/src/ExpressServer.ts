@@ -14,6 +14,10 @@ import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } fro
  * @public
  */
 export class IModelJsExpressServer {
+  public static defaults = {
+    uploadLimit: "5mb",
+  };
+
   private _protocol: WebAppRpcProtocol;
   protected _app: import("express").Application = express();
 
@@ -25,8 +29,8 @@ export class IModelJsExpressServer {
   }
 
   protected _configureMiddleware() {
-    this._app.use(express.text());
-    this._app.use(express.raw());
+    this._app.use(express.text({ limit: IModelJsExpressServer.defaults.uploadLimit }));
+    this._app.use(express.raw({ limit: IModelJsExpressServer.defaults.uploadLimit }));
   }
 
   protected _configureHeaders() {
