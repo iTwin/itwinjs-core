@@ -13,6 +13,7 @@ export * from "./imodelhub/Errors";
 export * from "./imodelhub/Briefcases";
 export * from "./imodelhub/ChangeSets";
 export * from "./imodelhub/Checkpoints";
+export * from "./imodelhub/CheckpointsV2";
 export * from "./imodelhub/Codes";
 export * from "./imodelhub/Events";
 export * from "./imodelhub/GlobalEvents";

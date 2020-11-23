@@ -12,7 +12,7 @@ import {
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@bentley/geometry-core";
-import { Checkpoint } from "@bentley/imodelhub-client";
+import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
@@ -61,6 +61,14 @@ function exerciseGc() {
     const fmt = obj.value.toString();
     assert.isTrue(i === parseInt(fmt, 10));
   }
+}
+
+function generateChangeSetId(): string {
+  let result = "";
+  for (let i = 0; i < 20; ++i) {
+    result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
+  }
+  return result;
 }
 
 describe("iModel", () => {
@@ -1714,28 +1722,28 @@ describe("iModel", () => {
     iModel.close();
   });
 
-  it("should be able to open checkpoints", async () => {
+  it.only("should be able to open checkpoints", async () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const imodelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = Guid.createValue();
+    const changeSetId = generateChangeSetId();
     snapshot.close();
 
     // Mock iModelHub
-    const mockCheckpoint: Checkpoint = {
+    const mockCheckpointV2: CheckpointV2 = {
       wsgId: "INVALID",
       ecId: "INVALID",
-      mergedChangeSetId: changeSetId,
-      bcvAccessKeyAccount: "testAccount",
-      bcvAccessKeyContainer: `imodelblocks-${imodelId}`,
-      bcvAccessKeySAS: "testSAS",
-      bcvAccessKeyDbName: "testDb",
+      changeSetId: changeSetId,
+      containerAccessKeyAccount: "testAccount",
+      containerAccessKeyContainer: `imodelblocks-${imodelId}`,
+      containerAccessKeySAS: "testSAS",
+      containerAccessKeyDbName: "testDb",
     };
-    const checkpointsHandler = BriefcaseManager.imodelClient.checkpoints;
-    sinon.stub(checkpointsHandler, "get").callsFake(async () => [mockCheckpoint]);
-    sinon.stub(BriefcaseManager.imodelClient, "checkpoints").get(() => checkpointsHandler);
+    const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
+    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
+    sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);

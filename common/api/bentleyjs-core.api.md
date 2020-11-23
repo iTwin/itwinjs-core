@@ -710,6 +710,10 @@ export enum IModelHubStatus {
     // (undocumented)
     ChangeSetPointsToBadSeed = 102414,
     // (undocumented)
+    CheckpointAlreadyExists = 102450,
+    // (undocumented)
+    CheckpointDoesNotExist = 102451,
+    // (undocumented)
     CodeDoesNotExist = 102431,
     // (undocumented)
     CodeReservedByAnotherBriefcase = 102430,

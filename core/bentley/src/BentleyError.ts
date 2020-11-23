@@ -316,6 +316,9 @@ export enum IModelHubStatus {
 
   LockChunkDoesNotExist = IMODELHUBERROR_BASE + 49,
 
+  CheckpointAlreadyExists = IMODELHUBERROR_BASE + 50,
+  CheckpointDoesNotExist = IMODELHUBERROR_BASE + 51,
+
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
   InvalidArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 2,

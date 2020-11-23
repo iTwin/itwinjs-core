@@ -20,6 +20,7 @@ import { ThumbnailHandler } from "./imodelhub/Thumbnails";
 import { UserInfoHandler } from "./imodelhub/Users";
 import { VersionHandler } from "./imodelhub/Versions";
 import { PermissionHandler } from "./imodelhub/Permissions";
+import { CheckpointV2Handler } from "./imodelhub/CheckpointsV2";
 
 /**
  * Base class that allows access to different iModel related Class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
@@ -95,6 +96,14 @@ export abstract class IModelClient {
    */
   public get checkpoints(): CheckpointHandler {
     return new CheckpointHandler(this._handler, this._fileHandler);
+  }
+
+  /**
+   * Get the handler for [[CheckpointV2]]s.
+   * @alpha
+   */
+  public get checkpointsV2(): CheckpointV2Handler {
+    return new CheckpointV2Handler(this._handler);
   }
 
   /**
