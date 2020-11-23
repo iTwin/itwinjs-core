@@ -10,7 +10,7 @@ import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@bentle
 import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfBufferData, GltfBufferView, GltfDataType, GltfHeader, GltfMeshMode,
-  ImageSource, ImageSourceFormat, LinePixels, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams3d, QPoint3d, QPoint3dList,
+  ImageSource, ImageSourceFormat, LinePixels, MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams3d, QPoint3d, QPoint3dList,
   RenderTexture, TextureMapping, TileReadStatus,
 } from "@bentley/imodeljs-common";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "../ImageUtil";
@@ -155,7 +155,7 @@ export abstract class GltfReader {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
 
-    if (this._returnToCenter !== undefined || (pseudoRtcBias !== undefined && pseudoRtcBias.magnitude() < 1.0E5))
+    if (this._returnToCenter !== undefined || this._nodes[0]?.matrix !== undefined || (pseudoRtcBias !== undefined && pseudoRtcBias.magnitude() < 1.0E5))
       pseudoRtcBias = undefined;
 
     const childNodes = new Set<string>();
@@ -182,21 +182,9 @@ export abstract class GltfReader {
     else
       renderGraphic = this._system.createGraphicList(renderGraphicList);
 
-    const range = contentRange.clone();
-    if (undefined !== this._returnToCenter) {
-      range.low.plusXYZ(-this._returnToCenter[0], -this._returnToCenter[1], -this._returnToCenter[2], range.low);
-      range.high.plusXYZ(-this._returnToCenter[0], -this._returnToCenter[1], -this._returnToCenter[2], range.high);
-    }
-
-    if (undefined !== pseudoRtcBias) {
-      range.low.subtractInPlace(pseudoRtcBias);
-      range.high.subtractInPlace(pseudoRtcBias);
-    }
-    renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
     let transform;
+    let range = contentRange;
     if (undefined !== this._returnToCenter || undefined !== pseudoRtcBias || this._yAxisUp || undefined !== transformToRoot) {
-      const branch = new GraphicBranch(true);
-      branch.add(renderGraphic);
       if (undefined !== this._returnToCenter)
         transform = Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
       else if (undefined !== pseudoRtcBias)
@@ -204,8 +192,17 @@ export abstract class GltfReader {
       else
         transform = Transform.createIdentity();
 
-      if (this._yAxisUp) transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
-      if (undefined !== transformToRoot) transform = transformToRoot.multiplyTransformTransform(transform);
+      if (this._yAxisUp)
+        transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
+      if (undefined !== transformToRoot)
+        transform = transformToRoot.multiplyTransformTransform(transform);
+
+      range = transform.inverse()!.multiplyRange(contentRange);
+    }
+    renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
+    if (transform) {
+      const branch = new GraphicBranch(true);
+      branch.add(renderGraphic);
       renderGraphic = this._system.createBranch(branch, transform);
     }
 
@@ -319,12 +316,13 @@ export abstract class GltfReader {
           break;
       }
 
+      const byteStride = bufferView.byteStride ? bufferView.byteStride : componentCount * dataSize;
       const offset = ((bufferView && bufferView.byteOffset) ? bufferView.byteOffset : 0) + (accessor.byteOffset ? accessor.byteOffset : 0);
-      const length = componentCount * dataSize * accessor.count;
+      const length = byteStride * accessor.count;
       // If the data is misaligned (Scalable mesh tile publisher) use slice to copy -- else use subarray.
       // assert(0 === offset % dataSize);
       const bytes = (0 === (this._binaryData.byteOffset + offset) % dataSize) ? this._binaryData.subarray(offset, offset + length) : this._binaryData.slice(offset, offset + length);
-      return new GltfBufferView(bytes, accessor.count as number, type, accessor);
+      return new GltfBufferView(bytes, accessor.count as number, type, accessor, byteStride / dataSize);
     } catch (e) {
       return undefined;
     }
@@ -450,12 +448,17 @@ export abstract class GltfReader {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
       case GltfMeshMode.Lines:
-        // primitiveType = Mesh.PrimitiveType.Polyline;
-        return undefined; // ###TODO support polylines from glTF.
+        primitiveType = Mesh.PrimitiveType.Polyline;
         break;
+
+      case GltfMeshMode.Points:
+        primitiveType = Mesh.PrimitiveType.Point;
+        break;
+
       case GltfMeshMode.Triangles:
         primitiveType = Mesh.PrimitiveType.Mesh;
         break;
+
       default:
         assert(false);
         return undefined;
@@ -491,18 +494,19 @@ export abstract class GltfReader {
           mesh.uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
     }
 
-    if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
-      return undefined;
-    if (primitive.extensions && primitive.extensions.KHR_draco_mesh_compression) {
-      return undefined;     // Defer Draco support until moved to web worker.
+    if (primitive.extensions?.KHR_draco_mesh_compression) {
+      return undefined; // Defer Draco decompression until web workers implementation.
       /*
       const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
       const bufferView = this._bufferViews[dracoExtension.bufferView];
       if (undefined === bufferView) return undefined;
       const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
 
-      return  DracoDecoder.readDracoMesh(mesh, primitive, bufferData); */
+      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData, dracoExtension.attributes); */
     }
+
+    this.readBatchTable(mesh, primitive);
+
     if (!this.readVertices(mesh.points, primitive, pseudoRtcBias))
       return undefined;
 
@@ -533,6 +537,16 @@ export abstract class GltfReader {
     if (displayParams.textureMapping && 0 === mesh.uvParams.length)
       return undefined;
 
+    if (primitive.extensions?.CESIUM_primitive_outline) {
+      const data = this.readBufferData32(primitive.extensions.CESIUM_primitive_outline, "indices");
+      if (data !== undefined) {
+        assert(0 === data.count % 2);
+        mesh.edges = new MeshEdges();
+        for (let i = 0; i < data.count;)
+          mesh.edges.visible.push(new MeshEdge(data.buffer[i++], data.buffer[i++]));
+      }
+    }
+
     return mesh;
   }
 
@@ -553,13 +567,15 @@ export abstract class GltfReader {
       const buffer = view.toBufferData(GltfDataType.Float);
       if (undefined === buffer)
         return false;
+
+      const strideSkip = view.stride - 3;
       const range = Range3d.createNull();
-      for (let i = 0; i < buffer.buffer.length;)
+      for (let i = 0; i < buffer.buffer.length; i += strideSkip)
         range.extendXYZ(buffer.buffer[i++], buffer.buffer[i++], buffer.buffer[i++]);
 
       positions.reset(QParams3d.fromRange(range));
       const scratchPoint = new Point3d();
-      for (let i = 0, j = 0; i < buffer.count; i++) {
+      for (let i = 0, j = 0; i < buffer.count; i++, j += strideSkip) {
         scratchPoint.set(buffer.buffer[j++], buffer.buffer[j++], buffer.buffer[j++]);
         if (undefined !== pseudoRtcBias)
           scratchPoint.subtractInPlace(pseudoRtcBias);
@@ -592,7 +608,7 @@ export abstract class GltfReader {
       }
       positions.reset(QParams3d.fromRange(qRange));
       for (let i = 0; i < view.count; i++) {
-        const index = i * 3; // 3 uint16 per QPoint3d...
+        const index = i * view.stride;
         qpt.setFromScalars(buffer.buffer[index], buffer.buffer[index + 1], buffer.buffer[index + 2]);
         positions.push(qpt);
       }
@@ -613,13 +629,7 @@ export abstract class GltfReader {
     return indices;
   }
 
-  protected readFeatures(features: Mesh.Features, json: any): boolean {
-    const indices = this.readFeatureIndices(json);
-    if (undefined === indices)
-      return false;
-
-    features.setIndices(indices);
-    return true;
+  protected readBatchTable(_mesh: Mesh, _json: any) {
   }
 
   protected readMeshIndices(mesh: Mesh, json: any): boolean {
@@ -651,7 +661,8 @@ export abstract class GltfReader {
           return false;
 
         const scratchNormal = new Vector3d();
-        for (let i = 0, j = 0; i < data.count; i++) {
+        const strideSkip = view.stride - 3;
+        for (let i = 0, j = 0; i < data.count; i++, j += strideSkip) {
           scratchNormal.set(data.buffer[j++], data.buffer[j++], data.buffer[j++]);
           normals.push(OctEncodedNormal.fromVector(scratchNormal));
         }
@@ -666,7 +677,7 @@ export abstract class GltfReader {
         // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
         for (let i = 0; i < data.count; i++) {
           // ###TODO? not clear why ray writes these as pairs of uint8...
-          const index = i * 2;
+          const index = i * view.stride;
           const normal = data.buffer[index] | (data.buffer[index + 1] << 8);
           normals.push(new OctEncodedNormal(normal));
         }
@@ -687,7 +698,7 @@ export abstract class GltfReader {
         data = this.readBufferDataFloat(json, accessorName);
 
         for (let i = 0; i < data.count; i++) {
-          const index = 2 * i; // 2 float per param...
+          const index = view.stride * i; // 2 float per param...
           params.push(new Point2d(data.buffer[index], data.buffer[index + 1]));
         }
         break;
@@ -707,7 +718,7 @@ export abstract class GltfReader {
         if (undefined === qData) { return false; }
 
         for (let i = 0; i < view.count; i++) {
-          const index = 2 * i; // 3 uint16 per QPoint3d...
+          const index = view.stride * i; // 3 uint16 per QPoint3d...
           params.push(new Point2d(qData.buffer[index] * decodeMatrix[0] + decodeMatrix[6], qData.buffer[index + 1] * decodeMatrix[4] + decodeMatrix[7]));
         }
         break;
@@ -718,46 +729,30 @@ export abstract class GltfReader {
   }
 
   protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean {
-    const view = this.getBufferView(json, accessorName);
-    if (undefined === view)
+    const data = this.readBufferData32(json, accessorName);
+    if (undefined === data)
       return false;
 
-    const numIndices = new Uint32Array(1);
-    const niBytes = new Uint8Array(numIndices.buffer);
-    const index16 = new Uint16Array(1);
-    const i16Bytes = new Uint8Array(index16.buffer);
-    const index32 = new Uint32Array(1);
-    const i32Bytes = new Uint8Array(index32.buffer);
-
-    let ndx = 0;
-    for (let p = 0; p < view.count; ++p) {
-      for (let b = 0; b < 4; ++b)
-        niBytes[b] = view.data[ndx++];
-
-      if (!disjoint && numIndices[0] < 2)
-        continue;
-
-      const indices: number[] = new Array(numIndices[0]);
-
-      if (GltfDataType.UnsignedShort === view.type) {
-        for (let i = 0; i < numIndices[0]; ++i) {
-          for (let b = 0; b < 2; ++b)
-            i16Bytes[b] = view.data[ndx++];
-          indices[i] = index16[0];
+    const indices = new Array<number>();
+    if (disjoint) {
+      for (let i = 0; i < data.count;)
+        indices.push(data.buffer[i++]);
+    } else {
+      for (let i = 0; i < data.count;) {
+        const index0 = data.buffer[i++];
+        const index1 = data.buffer[i++];
+        if (0 === indices.length || index0 !== indices[indices.length - 1]) {
+          if (indices.length !== 0) {
+            polylines.push(new MeshPolyline(indices));
+            indices.length = 0;
+          }
+          indices.push(index0);
         }
-        // Need to skip padding if we had an odd number of 16-bit indices.
-        if (0 !== numIndices[0] % 2)
-          ndx += 2;
-      } else if (GltfDataType.UInt32 === view.type) {
-        for (let i = 0; i < numIndices[0]; ++i) {
-          for (let b = 0; b < 4; ++b)
-            i32Bytes[b] = view.data[ndx++];
-          indices[i] = index32[0];
-        }
+        indices.push(index1);
       }
-
-      polylines.push(new MeshPolyline(indices));
     }
+    if (indices.length !== 0)
+      polylines.push(new MeshPolyline(indices));
 
     return true;
   }
