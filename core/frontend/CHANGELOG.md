@@ -1,11 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 23 Nov 2020 18:20:22 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 18:27:53 GMT and should not be manually modified.
 
 ## 2.8.1
 Tue, 03 Nov 2020 00:33:56 GMT
 
-_Version update only_
+### Updates
+
+- disable frontend Bentley telemetry in iModelBank use case
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
@@ -41,7 +43,7 @@ Fri, 23 Oct 2020 16:23:50 GMT
 
 ### Updates
 
-- disable frontend Bentley telemetry in iModelBank use case
+- Reduce threshold for ecef validation.
 
 ## 2.7.4
 Mon, 19 Oct 2020 17:57:01 GMT
