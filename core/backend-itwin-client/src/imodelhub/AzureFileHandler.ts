@@ -146,7 +146,7 @@ export class AzureFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, sourceUrl: string, targetUrl: string, progressCallback?: ProgressCallback): Promise<void> {
+  private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Using AzCopy with verison ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
@@ -180,7 +180,7 @@ export class AzureFileHandler implements FileHandler {
       Logger.logInfo(loggerCategory, `AzCopy runtime error: ${args}`);
     });
     // start download by spawning in a azcopy process
-    const rc = await azcopy.copy(sourceUrl, targetUrl);
+    const rc = await azcopy.copy(source, target);
     if (rc !== 0) {
       throw new Error(`AzCopy failed with return code: ${rc}`);
     }
