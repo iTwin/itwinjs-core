@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipVector, Map4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { ClipVector, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
 import { FeatureAppearanceProvider, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -22,6 +22,10 @@ import { Tile, TileGraphicType, TileTree } from "./internal";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();
+const scratchPoint4d = Point4d.create();
+const scratchXRange = Range1d.createNull();
+const scratchYRange = Range1d.createNull();
+const scratchMatrix4d = Matrix4d.createIdentity();
 
 /** Parameters used to construct [[TileDrawArgs]]
  * @beta
@@ -80,11 +84,43 @@ export class TileDrawArgs {
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
+    const sizeFromProjection = this.getPixelSizeFromProjection(tile);
+    if (undefined !== sizeFromProjection)
+      return sizeFromProjection;
+
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = this.getTileCenter(tile);
 
     const pixelSizeAtPt = this.computePixelSizeInMetersAtClosestPoint(center, radius);
     return 0 !== pixelSizeAtPt ? this.context.adjustPixelSizeForLOD(radius / pixelSizeAtPt) : 1.0e-3;
+  }
+
+  /** If the tile provides corners (from an OBB) then this produces most accurate representation of the tile size */
+  private getPixelSizeFromProjection(tile: Tile): number | undefined {
+    const sizeProjectionCorners = tile.getSizeProjectionCorners();
+    if (!sizeProjectionCorners)
+      return undefined;
+
+    /* For maps or global reality models we use the projected screen rectangle rather than sphere to calculate pixel size to avoid excessive tiles at horizon.  */
+    const tileToView = this.worldToViewMap.transform0.multiplyMatrixMatrix(Matrix4d.createTransform(this.location, scratchMatrix4d), scratchMatrix4d);
+    scratchXRange.setNull();
+    scratchYRange.setNull();
+
+    let behindEye = false;
+    for (const corner of sizeProjectionCorners) {
+      const viewCorner = tileToView.multiplyPoint3d(corner, 1, scratchPoint4d);
+      if (viewCorner.w < 0.0) {
+        behindEye = true;
+        break;
+      }
+
+      scratchXRange.extendX(viewCorner.x / viewCorner.w);
+      scratchYRange.extendX(viewCorner.y / viewCorner.w);
+    }
+    if (behindEye)
+      return undefined;
+
+    return scratchXRange.isNull ? 1.0E-3 : this.context.adjustPixelSizeForLOD(Math.sqrt(scratchXRange.length() * scratchYRange.length()));
   }
 
   /** Compute the size in meters of one pixel at the point on the tile's bounding sphere closest to the camera. */
@@ -258,4 +294,7 @@ export class TileDrawArgs {
    * @internal
    */
   public processSelectedTiles(_tiles: Tile[]): void { }
+
+  /* @internal */
+  public get maxRealityTreeSelectionCount(): number | undefined { return undefined; }
 }

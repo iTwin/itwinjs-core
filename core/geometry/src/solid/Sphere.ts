@@ -139,6 +139,13 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return undefined;
   }
   /**
+   * Return the larger of the primary xyz axis radii
+   */
+  public maxAxisRadius(): number {
+    const matrix = this._localToWorld.matrix;
+    return Geometry.maxXYZ(matrix.columnXMagnitude(), matrix.columnYMagnitude(), matrix.columnYMagnitude());
+  }
+  /**
    * Return a (clone of) the sphere's local to world transformation.
    */
   public cloneLocalToWorld(): Transform { return this._localToWorld.clone(); }

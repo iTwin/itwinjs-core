@@ -3,16 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import sinon from "sinon";
+import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Field, KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { FAVORITES_CATEGORY_NAME } from "@bentley/presentation-components/lib/presentation-components/favorite-properties/DataProvider";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PropertyFullName } from "@bentley/presentation-frontend";
-import {
-  IModelAppFavoritePropertiesStorage,
-} from "@bentley/presentation-frontend/lib/presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
@@ -264,11 +262,16 @@ describe("Favorite properties", () => {
       await initializeWithClientServices();
     });
 
-    beforeEach(() => {
-      FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX = Guid.createValue();
-    });
-
     it("favorite properties survive Presentation re-initialization", async () => {
+      const storage = new Map<string, any>();
+      sinon.stub(IModelApp.settings, "saveUserSetting").callsFake(async (_, value, _settingNs, settingId) => {
+        storage.set(settingId, value);
+        return new SettingsResult(SettingsStatus.Success);
+      });
+      sinon.stub(IModelApp.settings, "getUserSetting").callsFake(async (_, _settingNs, settingId) => {
+        return new SettingsResult(SettingsStatus.Success, undefined, storage.get(settingId));
+      });
+
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
       let propertyData = await propertiesDataProvider.getData();
       expect(propertyData.categories.length).to.be.eq(5);
@@ -298,41 +301,6 @@ describe("Favorite properties", () => {
       expect(propertyData.categories.some((category) => category.name === FAVORITES_CATEGORY_NAME)).to.be.true;
       expect(propertyData.records[FAVORITES_CATEGORY_NAME].length).to.eq(1);
       expect(propertyData.records[FAVORITES_CATEGORY_NAME][0].property.displayLabel).to.eq("Model");
-    });
-
-  });
-
-});
-
-describe("IModelAppFavoritePropertiesStorage", () => {
-
-  let storage: IModelAppFavoritePropertiesStorage;
-
-  describe("#with-services", () => {
-
-    before(async () => {
-      await initializeWithClientServices();
-    });
-
-    after(async () => {
-      await terminate();
-    });
-
-    beforeEach(async () => {
-      storage = new IModelAppFavoritePropertiesStorage();
-    });
-
-    it("loads saved favorite properties from global scope", async () => {
-      const propertyInfoIdentifier1 = `propertyInfo-global-${Guid.createValue()}`;
-      const propertyInfoIdentifier2 = `propertyInfo-global-${Guid.createValue()}`;
-      const properties = new Set<PropertyFullName>([propertyInfoIdentifier1, propertyInfoIdentifier2]);
-      await storage.saveProperties(properties);
-
-      const returnedStorage = await storage.loadProperties();
-      expect(returnedStorage).is.not.null;
-      expect(returnedStorage!.size).to.eq(2);
-      expect(returnedStorage!.has(propertyInfoIdentifier1)).to.be.true;
-      expect(returnedStorage!.has(propertyInfoIdentifier2)).to.be.true;
     });
 
   });

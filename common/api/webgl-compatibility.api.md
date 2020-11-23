@@ -45,6 +45,8 @@ export class Capabilities {
     // (undocumented)
     static readonly requiredFeatures: WebGLFeature[];
     // (undocumented)
+    get requiresSurfaceDiscard(): boolean;
+    // (undocumented)
     setMaxAnisotropy(desiredMax: number | undefined, gl: WebGLRenderingContext | WebGL2RenderingContext): void;
     // (undocumented)
     get supports32BitElementIndex(): boolean;
@@ -96,6 +98,11 @@ export enum DepthType {
     TextureUnsignedInt32 = 2
 }
 
+// @alpha
+export interface DriverBugWorkarounds {
+    forceSurfaceDiscard?: true;
+}
+
 // @beta
 export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo;
 
@@ -137,6 +144,8 @@ export interface WebGLRenderCompatibilityInfo {
     unmaskedRenderer?: string;
     unmaskedVendor?: string;
     userAgent: string;
+    // @alpha
+    workarounds?: DriverBugWorkarounds;
 }
 
 // @beta
