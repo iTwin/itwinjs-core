@@ -73,19 +73,23 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Info);
+  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation_Localization, LogLevel.Info);
   Logger.setLevel(PresentationBackendLoggerCategory.Package, LogLevel.Info);
   Logger.setLevel(PresentationFrontendLoggerCategory.Package, LogLevel.Info);
   Logger.setLevel(PresentationComponentsLoggerCategory.Package, LogLevel.Info);
 
+  const libDir = path.resolve("lib");
+  console.log(`Backend's lib directory path: ${libDir}`); // eslint-disable-line no-console
+
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
-    rulesetDirectories: ["lib/assets/rulesets"],
-    localeDirectories: ["lib/assets/locales"],
+    rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
+    localeDirectories: [path.join(libDir, "assets", "locales")],
     activeLocale: "en-PSEUDO",
     taskAllocationsMap: {
       [RequestPriority.Max]: 1,
     },
-    cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join("lib", "cache") },
+    cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join(libDir, "cache") },
   };
   const frontendInitProps: PresentationFrontendProps = {
     activeLocale: "en-PSEUDO",
