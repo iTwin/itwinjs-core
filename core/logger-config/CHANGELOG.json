@@ -2,6 +2,12 @@
   "name": "@bentley/logger-config",
   "entries": [
     {
+      "version": "2.9.2",
+      "tag": "@bentley/logger-config_v2.9.2",
+      "date": "Mon, 23 Nov 2020 15:33:50 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.9.1",
       "tag": "@bentley/logger-config_v2.9.1",
       "date": "Thu, 19 Nov 2020 17:03:42 GMT",
